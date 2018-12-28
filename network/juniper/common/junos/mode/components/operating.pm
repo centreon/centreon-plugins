@@ -33,19 +33,6 @@ my %map_operating_states = (
     7 => 'standby',
 );
 
-# In MIB 'mib-jnx-chassis'
-my $mapping = {
-    jnxOperatingDescr => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.5' },
-    jnxOperatingState => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.6', map => \%map_operating_states },
-};
-my $oid_jnxOperatingEntry = '.1.3.6.1.4.1.2636.3.1.13.1';
-
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_jnxOperatingEntry, start => $mapping->{jnxOperatingDescr}->{oid}, end => $mapping->{jnxOperatingState}->{oid} };
-}
-
 sub check {
     my ($self) = @_;
     
@@ -53,21 +40,26 @@ sub check {
     $self->{components}->{operating} = {name => 'operatings', total => 0, skip => 0};
     return if ($self->check_filter(section => 'operating'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_jnxOperatingEntry}})) {
-        next if ($oid !~ /^$mapping->{jnxOperatingDescr}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_jnxOperatingEntry}, instance => $instance);
+    my $mapping = {
+        jnxOperatingState => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.6', map => \%map_operating_states },
+    };
+
+    my $results = $self->{snmp}->get_table(oid => $self->{oids_operating}->{jnxOperatingEntry}, start => $mapping->{jnxOperatingState}->{oid}, end => $mapping->{jnxOperatingState}->{oid});
+    
+    foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_operating}->{jnxOperatingEntry}, oid_name => $self->{oids_operating}->{jnxOperatingDescr})) {
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
         
         next if ($self->check_filter(section => 'operating', instance => $instance));
         $self->{components}->{operating}->{total}++;
-
+        
+        my $desc = $self->get_cache(oid_entry => $self->{oids_operating}->{jnxOperatingEntry}, oid_name => $self->{oids_operating}->{jnxOperatingDescr}, instance => $instance);
         $self->{output}->output_add(long_msg => sprintf("Operating '%s' state is %s [instance: %s]", 
-                                                        $result->{jnxOperatingDescr}, $result->{jnxOperatingState}, $instance));
+                                                        $desc, $result->{jnxOperatingState}, $instance));
         my $exit = $self->get_severity(section => 'operating', value => $result->{jnxOperatingState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Operating '%s' state is %s", 
-                                    $result->{jnxOperatingDescr}, $result->{jnxOperatingState}));
+                                            $desc, $result->{jnxOperatingState}));
         }
     }
 }

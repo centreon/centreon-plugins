@@ -65,22 +65,6 @@ my %map_fru_states = (
     10 => 'standby',
 );
 
-# In MIB 'mib-jnx-chassis'
-my $mapping = {
-    jnxFruName => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.5' },
-    jnxFruType => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.6', map => \%map_fru_type },
-    jnxFruState => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.8', map => \%map_fru_states },
-    jnxFruTemp => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.9' },
-    jnxFruOfflineReason => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.10', map => \%map_fru_offline },
-};
-my $oid_jnxFruEntry = '.1.3.6.1.4.1.2636.3.1.15.1';
-
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_jnxFruEntry, start => $mapping->{jnxFruName}->{oid}, end => $mapping->{jnxFruOfflineReason}->{oid} };
-}
-
 sub check {
     my ($self) = @_;
     
@@ -88,23 +72,31 @@ sub check {
     $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fru'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_jnxFruEntry}})) {
-        next if ($oid !~ /^$mapping->{jnxFruName}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_jnxFruEntry}, instance => $instance);
+    my $mapping = {
+        jnxFruState => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.8', map => \%map_fru_states },
+        jnxFruTemp => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.9' },
+        jnxFruOfflineReason => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.10', map => \%map_fru_offline },
+    };
+
+    my $results = $self->{snmp}->get_table(oid => $self->{oids_fru}->{jnxFruEntry}, start => $mapping->{jnxFruState}->{oid}, end => $mapping->{jnxFruOfflineReason}->{oid});
+
+    foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruName})) {
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
         
         next if ($self->check_filter(section => 'fru', instance => $instance));
         next if ($result->{jnxFruState} =~ /empty/i && 
                  $self->absent_problem(section => 'fru', instance => $instance));
         $self->{components}->{fru}->{total}++;
 
+        my $name = $self->get_cache(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruName}, instance => $instance);
+        my $type = $self->get_cache(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruType}, instance => $instance);
         $self->{output}->output_add(long_msg => sprintf("Fru '%s' state is %s [instance: %s, type: %s, offline reason: %s]", 
-                                    $result->{jnxFruName}, $result->{jnxFruState}, 
-                                    $instance, $result->{jnxFruType}, $result->{jnxFruOfflineReason}));
+                                    $name, $result->{jnxFruState}, 
+                                    $instance, $map_fru_type{$type}, $result->{jnxFruOfflineReason}));
         my $exit = $self->get_severity(section => 'fru', value => $result->{jnxFruState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fru '%s' state is %s [offline reason: %s]", $result->{jnxFruName}, $result->{jnxFruState},
+                                        short_msg => sprintf("Fru '%s' state is %s [offline reason: %s]", $name, $result->{jnxFruState},
                                                              $result->{jnxFruOfflineReason}));
         }
         
@@ -112,9 +104,9 @@ sub check {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fru-temperature', instance => $instance, value => $result->{jnxFruTemp});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Fru '%s' temperature is %s degree centigrade", $result->{jnxFruName}, $result->{jnxFruTemp}));
+                                            short_msg => sprintf("Fru '%s' temperature is %s degree centigrade", $name, $result->{jnxFruTemp}));
             }
-            $self->{output}->perfdata_add(label => "temp_" . $result->{jnxFruName}, unit => 'C',
+            $self->{output}->perfdata_add(label => "temp_" . $name, unit => 'C',
                                           value => $result->{jnxFruTemp},
                                           warning => $warn,
                                           critical => $crit);
