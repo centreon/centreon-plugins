@@ -207,12 +207,12 @@ Filter mailboxes.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{storage_used} > %{issue_warning_quota}').
+Set warning threshold for status (Default: '%{used} > %{issue_warning_quota}').
 Can used special variables like: %{used}, %{issue_warning_quota}, %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{storage_used} > %{prohibit_send_quota}').
+Set critical threshold for status (Default: '%{used} > %{prohibit_send_quota}').
 Can used special variables like: %{used}, %{issue_warning_quota}, %{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
 =item B<--active-only>
