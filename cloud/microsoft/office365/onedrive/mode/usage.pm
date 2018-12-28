@@ -183,7 +183,7 @@ sub manage_selection {
             next;
         }
         if ($self->{option_results}->{active_only} && defined($site->{'Last Activity Date'}) && $site->{'Last Activity Date'} eq '') {
-            $self->{output}->output_add(long_msg => "skipping  '" . $site->{'User Principal Name'} . "': no activity.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no activity.", debug => 1);
             next;
         }
 
