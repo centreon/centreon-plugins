@@ -101,6 +101,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "filter-user:s"     => { name => 'filter_user' },
+                                    "active-only"       => { name => 'active_only' },
                                 });
     
     return $self;
@@ -122,6 +123,10 @@ sub manage_selection {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
+            next;
+        }
+        if ($self->{option_results}->{active_only} && defined($user->{'Last Activity Date'}) && $user->{'Last Activity Date'} eq '') {
+            $self->{output}->output_add(long_msg => "skipping  '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
         }
 
@@ -168,6 +173,10 @@ Can be: 'viewed-edited-file-count', 'file-count', 'shared-int-file-count',
 Threshold critical.
 Can be: 'viewed-edited-file-count', 'file-count', 'shared-int-file-count',
 'shared-ext-file-count', 'visited-page-count'.
+
+=item B<--active-only>
+
+Filter only active entries ('Last Activity' set).
 
 =back
 

@@ -149,6 +149,11 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'last-activity', threshold => 0, set => {
+                key_values => [ { name => 'last_activity_date' }, { name => 'url' }, { name => 'id' } ],
+                output_template => 'Last Activity: %s',
+            }
+        },
     ];
 }
 
@@ -164,6 +169,7 @@ sub new {
                                     "filter-id:s"       => { name => 'filter_id' },
                                     "units:s"           => { name => 'units', default => '%' },
                                     "free"              => { name => 'free' },
+                                    "active-only"       => { name => 'active_only' },
                                 });
     
     return $self;
@@ -194,7 +200,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site Id'} . "': no matching filter name.", debug => 1);
             next;
         }
-
+        if ($self->{option_results}->{active_only} && defined($site->{'Last Activity Date'}) && $site->{'Last Activity Date'} eq '') {
+            $self->{output}->output_add(long_msg => "skipping  '" . $site->{'User Principal Name'} . "': no activity.", debug => 1);
+            next;
+        }
+        
         $self->{sites}->{$site->{'Site Id'}}->{id} = $site->{'Site Id'};
         $self->{sites}->{$site->{'Site Id'}}->{url} = $site->{'Site URL'};
         $self->{sites}->{$site->{'Site Id'}}->{file_count} = $site->{'File Count'};
@@ -203,6 +213,7 @@ sub manage_selection {
         $self->{sites}->{$site->{'Site Id'}}->{page_view_count} = $site->{'Page View Count'};
         $self->{sites}->{$site->{'Site Id'}}->{storage_used} = $site->{'Storage Used (Byte)'};
         $self->{sites}->{$site->{'Site Id'}}->{storage_allocated} = $site->{'Storage Allocated (Byte)'};
+        $self->{sites}->{$site->{'Site Id'}}->{last_activity_date} = $site->{'Last Activity Date'};
     }
     
     if (scalar(keys %{$self->{sites}}) <= 0) {
@@ -240,6 +251,10 @@ Can be: 'usage', 'file-count', 'active-file-count',
 Threshold critical.
 Can be: 'usage', 'file-count', 'active-file-count',
 'visited-file-count', 'page-view-count'.
+
+=item B<--active-only>
+
+Filter only active entries ('Last Activity' set).
 
 =back
 
