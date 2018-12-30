@@ -147,9 +147,23 @@ sub autoreduce_table {
         $self->{snmp_params}->{Retries} = 1;
         $self->connect();
     }
+    
     return 1 if (${$options{repeat_count}} == 1);
     ${$options{repeat_count}} = int(${$options{repeat_count}} / 2);
+    return 0;
+}
+
+sub autoreduce_multiple_table {
+    my ($self, %options) = @_;
     
+    if ($self->{snmp_params}->{Retries} > 1) {
+        $self->{snmp_params}->{Retries} = 1;
+        $self->connect();
+    }
+    return 1 if (${$options{repeat_count}} == 1);
+    
+    ${$options{repeat_count}} = int(${$options{repeat_count}} / 2);
+    $self->{subsettable} = int($self->{subsettable} / 2);
     return 0;
 }
 
@@ -429,8 +443,11 @@ sub get_multiple_table {
                 next;
             }
             
+            if ($self->{snmp_autoreduce} == 1 && ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == -24)) {
+                next if ($self->autoreduce_multiple_table(repeat_count => \$repeat_count) == 0);
+            }
+            
             my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
-        
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
                 $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -555,7 +572,6 @@ sub get_table {
         $last_oid =~ /(.*)\.(\d+)([\.\s]*)$/;
         my $vb = new SNMP::VarList([$1, $2]);
     
-        print "===" . $repeat_count . "===\n";
         if ($self->is_snmpv1() || defined($self->{snmp_force_getnext})) {
             $self->{session}->getnext($vb);
         } else {
