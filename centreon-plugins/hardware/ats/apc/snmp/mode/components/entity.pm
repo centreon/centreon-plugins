@@ -68,8 +68,9 @@ sub check {
         $self->{components}->{entity}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("entity '%s' status is '%s' [instance = %s]",
-                                                        $mapping->{$_}->{label}, $result->{$_}, $mapping->{$_}->{label}));
+                                                        $mapping->{$_}->{label}, defined($result->{$_}) ? $result->{$_} : 'n/a', $mapping->{$_}->{label}));
         
+        next if (!defined($result->{$_}));
         my $exit = $self->get_severity(section => 'entity', instance => $mapping->{$_}->{label}, value => $result->{$_});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,

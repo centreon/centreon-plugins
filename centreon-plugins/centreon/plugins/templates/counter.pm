@@ -293,7 +293,7 @@ sub run_instances {
         $prefix_output = '' if (!defined($prefix_output));        
         $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) if (defined($options{config}->{cb_suffix_output}));
         $suffix_output = '' if (!defined($suffix_output));
-
+        
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         # in mode grouped, we don't display 'ok'
         my $debug = 0;
@@ -312,9 +312,7 @@ sub run_instances {
                                         );
         }
         
-        if ($self->{multiple_lvl1} == 0 && $multiple_lvl2 == 0 && !$options{multi}) {
-            $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output);
-        }
+        $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output) unless ($self->{multiple_lvl1} == 1 || ($multiple_lvl2 == 1 && !defined($options{multi})));
 
         if ($options{multi}) {
             foreach my $counter (@{$options{config}->{counters}}) {
