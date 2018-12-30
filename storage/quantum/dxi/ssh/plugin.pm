@@ -33,8 +33,8 @@ sub new {
     %{$self->{modes}} = (
                             'compaction'                => 'storage::quantum::dxi::ssh::mode::compaction',
                             'disk-usage'                => 'storage::quantum::dxi::ssh::mode::diskusage',
-                            'hostbus-adapter-status'    => 'storage::quantum::dxi::ssh::mode::hostbusadapterstatus',
                             'health'                    => 'storage::quantum::dxi::ssh::mode::health',
+                            'hostbus-adapter-status'    => 'storage::quantum::dxi::ssh::mode::hostbusadapterstatus',
                             'memory'                    => 'storage::quantum::dxi::ssh::mode::memory',
                             'network'                   => 'storage::quantum::dxi::ssh::mode::network',
                             'reclamation'               => 'storage::quantum::dxi::ssh::mode::reclamation',
