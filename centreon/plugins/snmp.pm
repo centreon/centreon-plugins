@@ -181,8 +181,8 @@ sub autoreduce_leef {
     my $array_ref = [];
     my $subset_current = 0;
     my $subset_construct = [];
-    foreach ([@{$options{current}}, @{$self->{array_ref_ar}}]) {
-        foreach my $entry (@$_) {
+    foreach ([@{$options{current}}], @{$self->{array_ref_ar}}) {
+        foreach my $entry (@$_) {;
             push @$subset_construct, [$entry->[0], $entry->[1]];
             $subset_current++;
             if ($subset_current == $self->{subsetleef}) {
@@ -197,7 +197,7 @@ sub autoreduce_leef {
         push @$array_ref, \@$subset_construct;
     }
 
-    $self->{array_ref_ar} = $array_ref;
+    $self->{array_ref_ar} = \@$array_ref;
     return 0;
 }
 
