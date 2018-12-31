@@ -32,6 +32,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+                            'hardware'              => 'centreon::common::broadcom::megaraid::snmp::mode::hardware',
                             'performance'           => 'storage::avid::isis::snmp::mode::performance',
                             'status'                => 'storage::avid::isis::snmp::mode::status',
                             'usage'                 => 'storage::avid::isis::snmp::mode::usage',
@@ -46,6 +47,8 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Avid ISIS storage (5xxx, 7xxx) through SNMP
+Check Avid ISIS storage (5xxx, 7xxx) through SNMP.
+
+Mode 'hardware' will work if storage is managed by LSI/Broadcom MegaRAID card.
 
 =cut
