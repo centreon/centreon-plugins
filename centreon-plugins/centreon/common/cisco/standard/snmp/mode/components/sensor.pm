@@ -188,7 +188,7 @@ sub check {
         next if (!defined($self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance}));
         my $sensor_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         
-        next if ($self->check_filter(section => 'sensor', instance => $instance));
+        next if ($self->check_filter(section => 'sensor', instance => $result->{entSensorType} . '.' . $instance));
         $self->{components}->{sensor}->{total}++;
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 
