@@ -53,7 +53,7 @@ sub new {
                   "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
                   "subsetleef:s"              => { name => 'subsetleef', default => 50 },
                   "subsettable:s"             => { name => 'subsettable', default => 100 },
-                  "snmp-autoreduce"           => { name => 'snmp_autoreduce' },
+                  "snmp-autoreduce:s"         => { name => 'snmp_autoreduce' },
                   "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
                   "snmp-username:s"           => { name => 'snmp_security_name' },
                   "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
@@ -149,7 +149,8 @@ sub autoreduce_table {
     }
     
     return 1 if (${$options{repeat_count}} == 1);
-    ${$options{repeat_count}} = int(${$options{repeat_count}} / 2);
+    ${$options{repeat_count}} = int(${$options{repeat_count}} / $self->{snmp_autoreduce_divisor});
+    ${$options{repeat_count}} = 1 if (${$options{repeat_count}} < 1);
     return 0;
 }
 
@@ -162,8 +163,9 @@ sub autoreduce_multiple_table {
     }
     return 1 if (${$options{repeat_count}} == 1);
     
-    ${$options{repeat_count}} = int(${$options{repeat_count}} / 2);
-    $self->{subsettable} = int($self->{subsettable} / 2);
+    ${$options{repeat_count}} = int(${$options{repeat_count}} / $self->{snmp_autoreduce_divisor});
+    $self->{subsettable} = int($self->{subsettable} / $self->{snmp_autoreduce_divisor});
+    ${$options{repeat_count}} = 1 if (${$options{repeat_count}} < 1);
     return 0;
 }
 
@@ -176,7 +178,8 @@ sub autoreduce_leef {
     }
     
     return 1 if ($self->{subsetleef} == 1);
-    $self->{subsetleef} = int($self->{subsetleef} / 2);
+    $self->{subsetleef} = int($self->{subsetleef} / $self->{snmp_autoreduce_divisor});
+    $self->{subsetleef} = 1 if ($self->{subsetleef} < 1);
     
     my $array_ref = [];
     my $subset_current = 0;
@@ -726,7 +729,11 @@ sub check_options {
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
     $self->{subsettable} = (defined($options{option_results}->{subsettable}) && $options{option_results}->{subsettable} =~ /^[0-9]+$/) ? $options{option_results}->{subsettable} : 100;
     $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
-    $self->{snmp_autoreduce} = defined($options{option_results}->{snmp_autoreduce}) ? 1 : 0;
+    $self->{snmp_autoreduce_divisor} = 2;
+    if (defined($options{option_results}->{snmp_autoreduce})) {
+        $self->{snmp_autoreduce} = 1;
+        $self->{snmp_autoreduce_divisor} = $1 if ($options{option_results}->{snmp_autoreduce} =~ /(\d+(\.\d+)?)/ && $1 > 1);
+    }
 
     %{$self->{snmp_params}} = (DestHost => $options{option_results}->{host},
                                Community => $options{option_results}->{snmp_community},
@@ -936,7 +943,7 @@ How many oid values per SNMP request (default: 50) (for get_leef method. Be caut
 
 =item B<--snmp-autoreduce>
  
-Auto reduce SNMP request size in case of SNMP errors.
+Auto reduce SNMP request size in case of SNMP errors (By default, the divisor is 2).
 
 =item B<--snmp-force-getnext>
 
