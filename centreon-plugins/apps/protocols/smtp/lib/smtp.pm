@@ -95,14 +95,14 @@ sub connect {
         $smtp_options{-$1} = $2;
     }
     
-    my ($stdout);
+    my ($stdout, $error_msg);
     {
         eval {
             local $SIG{ALRM} = sub { die 'timeout' };
             local *STDOUT;
             open STDOUT, '>', \$stdout;
             alarm($self->{option_results}->{timeout});
-            $smtp_handle = Email::Send::SMTP::Gmail->new(-smtp=> $self->{option_results}->{hostname},
+            ($smtp_handle, $error_msg) = Email::Send::SMTP::Gmail->new(-smtp=> $self->{option_results}->{hostname},
                                                         %smtp_options);
             alarm(0);
         };
@@ -114,10 +114,10 @@ sub connect {
         $self->{output}->display();
         $self->{output}->exit();
     }
-    if (defined($stdout) && $smtp_handle == -1) {
+    if ($smtp_handle == -1) {
         chomp $stdout;
         $self->{output}->output_add(severity => $connection_exit,
-                                    short_msg => 'Unable to connect to SMTP: ' . $stdout);
+                                    short_msg => 'Unable to connect to SMTP: ' . (defined($stdout) ? $stdout : $error_msg));
         $self->{output}->display();
         $self->{output}->exit();
     }
