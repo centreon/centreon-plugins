@@ -225,6 +225,7 @@ sub run_instances {
     my $level = 1;
     my $multiple_lvl2 = 0;
     my $instances = $self->{$options{config}->{name}};
+    my $no_message_multiple = 1;
 
     if (defined($options{instance}) && $options{instance} ne '') {
         $level = 2;
@@ -238,10 +239,6 @@ sub run_instances {
             $self->{multiple_lvl1} = 1;
         }
     }
-    if (($self->{multiple_lvl1} > 0 && $resume == 0 && !defined($options{instance})) || ($self->{multiple_lvl1} == 0 && $multiple_lvl2 > 0)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $options{config}->{message_multiple});
-    }
 
     foreach my $instance (sort keys %{$instances}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
@@ -252,12 +249,13 @@ sub run_instances {
             next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
+            $no_message_multiple = 0;
             $obj->set(instance => $instance);
             
             if (defined($options{instance}) && $options{instance} ne '') {
                 $obj->set(instance => $options{instance} . '_' . $instance);
             }
-        
+
             my $value_check = $obj->execute(new_datas => $self->{new_datas}, values => $instances->{$instance});
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
@@ -298,7 +296,7 @@ sub run_instances {
         # in mode grouped, we don't display 'ok'
         my $debug = 0;
         $debug = 1 if ($display_status_long_output == 1 && $self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1));
-        if (scalar @{$self->{maps_counters}->{$options{config}->{name}}} > 0) {
+        if (scalar @{$self->{maps_counters}->{$options{config}->{name}}} > 0 && $long_msg ne '') {
             $self->{output}->output_add(long_msg => ($display_status_long_output == 1 ? lc($exit) . ': ' : '') . $prefix_output . $long_msg . $suffix_output, debug => $debug);
         }
         if ($resume == 1) {
@@ -312,7 +310,7 @@ sub run_instances {
                                         );
         }
         
-        $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output) unless ($self->{multiple_lvl1} == 1 || ($multiple_lvl2 == 1 && !defined($options{multi})));
+        $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output) unless ($self->{multiple_lvl1} == 1 || ($multiple_lvl2 == 1 && !defined($options{multi})) || $long_msg eq '');
 
         if ($options{multi}) {
             foreach my $counter (@{$options{config}->{counters}}) {
@@ -323,6 +321,10 @@ sub run_instances {
                 }
             }
         }
+    }
+    
+    if ($no_message_multiple == 0 && ($self->{multiple_lvl1} > 0 && $resume == 0 && !defined($options{instance})) || ($self->{multiple_lvl1} == 0 && $multiple_lvl2 > 0)) {
+        $self->{output}->output_add(short_msg => $options{config}->{message_multiple});
     }
 }
 
