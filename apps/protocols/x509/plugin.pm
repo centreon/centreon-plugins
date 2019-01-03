@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'validity'     => 'apps::protocols::x509::mode::validity',
+                        'certificate'   => 'apps::protocols::x509::mode::certificate',
+                        'validity'      => 'apps::protocols::x509::mode::validity', #legacy mode
                         );
     return $self;
 }
