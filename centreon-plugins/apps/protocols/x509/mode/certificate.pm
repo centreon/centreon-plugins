@@ -109,6 +109,7 @@ sub new {
                                     "port:s"                    => { name => 'port' },
                                     "servername:s"              => { name => 'servername' },
                                     "ssl-opt:s@"                => { name => 'ssl_opt' },
+                                    "timeout:s"                 => { name => 'timeout', default => '3' },
                                     "warning-status:s"          => { name => 'warning_status', default => '%{expiration} < 60' },
                                     "critical-status:s"         => { name => 'critical_status', default => '%{expiration} < 30' },
          });
@@ -169,7 +170,8 @@ sub manage_selection {
         $socket = IO::Socket::SSL->new(
             PeerHost => $self->{option_results}->{hostname},
             PeerPort => $self->{option_results}->{port},
-            $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ):(),
+            $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ) : '',
+            $self->{option_results}->{timeout} ? ( Timeout => $self->{option_results}->{timeout} ) : '',
         );
     };
     if ($@) {
@@ -251,6 +253,10 @@ Examples:
 Do not verify certificate: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE"
 
 Verify certificate: --ssl-opt="SSL_verify_mode => SSL_VERIFY_PEER" --ssl-opt="SSL_version => TLSv1"
+
+=item B<--timeout>
+
+Set timeout in seconds for SSL connection (Default: '3') (only with IO::Socket::SSL >= 1.984).
 
 =item B<--warning-status>
 
