@@ -180,6 +180,8 @@ __END__
 
 Check X509's certificate validity (for SMTPS, POPS, IMAPS, HTTPS)
 
+Legacy mode, use 'certificate' mode instead.
+
 =over 8
 
 =item B<--hostname>
