@@ -170,8 +170,8 @@ sub manage_selection {
         $socket = IO::Socket::SSL->new(
             PeerHost => $self->{option_results}->{hostname},
             PeerPort => $self->{option_results}->{port},
-            $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ) : '',
-            $self->{option_results}->{timeout} ? ( Timeout => $self->{option_results}->{timeout} ) : '',
+            $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ) : (),
+            $self->{option_results}->{timeout} ? ( Timeout => $self->{option_results}->{timeout} ) : (),
         );
     };
     if ($@) {
