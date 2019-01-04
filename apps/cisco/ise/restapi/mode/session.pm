@@ -27,11 +27,11 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'active-sessions', set => {
                 key_values => [ { name => 'active' } ],
@@ -67,13 +67,13 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                     "filter-counters:s" => { name => 'filter_counters' },
                                 });
-   
+
     return $self;
 }
 
@@ -89,9 +89,13 @@ sub manage_selection {
     my $posture = $options{custom}->get_endpoint(category => '/Session/PostureCount');
     my $profiler = $options{custom}->get_endpoint(category => '/Session/ProfilerCount');
 
-    my $self->{global} = '';
+    $self->{global} = '';
 
-
+    $self->{global} = {
+        active => $active->{count},
+        postured => $posture->{count},
+        profiler => $profiler->{count},
+    };
 }
 
 1;

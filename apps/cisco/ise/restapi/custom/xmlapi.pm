@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::cisco::api::restapi::custom::xmlapi;
+package apps::cisco::ise::restapi::custom::xmlapi;
 
 use strict;
 use warnings;
@@ -51,7 +51,7 @@ sub new {
                         "proxyurl:s"            => { name => 'proxyurl' },
                         "timeout:s"             => { name => 'timeout' },
                         "ssl-opt:s@"            => { name => 'ssl_opt' },
- 		    });
+                    });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
 
@@ -86,17 +86,17 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    
+
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 80;
-    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
+    $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/admin/API/mnt/';
+    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/admin/API/mnt';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
- 
+
     if (!defined($self->{option_results}->{username}) || $self->{option_results}->{username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
         $self->{output}->option_exit();
@@ -135,19 +135,19 @@ sub settings {
 
 sub get_connection_info {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname} . ":" . $self->{port};
 }
 
 sub get_hostname {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname};
 }
 
 sub get_port {
     my ($self, %options) = @_;
-    
+
     return $self->{port};
 }
 
@@ -155,11 +155,11 @@ sub get_endpoint {
     my ($self, %options) = @_;
 
     $self->settings;
-    
-    my $response = $self->{http}->request(url_path => $self->{url_path} . '/' . $options{category});
-    
+
+    my $response = $self->{http}->request(url_path => $self->{url_path} . $options{category});
+
     my $xml_hash = XMLin($response);
-    
+
     return $xml_hash;
 }
 
@@ -185,15 +185,15 @@ API hostname.
 
 =item B<--url-path>
 
-API url path (Default: '/admin/API/mnt/')
+API url path (Default: '/admin/API/mnt')
 
 =item B<--port>
 
-API port (Default: 80)
+API port (Default: 443)
 
 =item B<--proto>
 
-Specify https if needed (Default: 'http')
+Specify https if needed (Default: 'https')
 
 =item B<--username>
 
