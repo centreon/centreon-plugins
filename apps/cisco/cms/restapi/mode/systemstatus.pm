@@ -109,7 +109,7 @@ sub set_counters {
     $self->{maps_counters}->{rates} = [
         { label => 'audio-outgoing-rate', set => {
                 key_values => [ { name => 'audioBitRateOutgoing' } ],
-                output_template => 'for outgoing audio streams: %s %s/s',
+                output_template => 'outgoing audio streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'audio_outgoing_rate', value => 'audioBitRateOutgoing_absolute', template => '%d',
@@ -119,7 +119,7 @@ sub set_counters {
         },
         { label => 'audio-incoming-rate', set => {
                 key_values => [ { name => 'audioBitRateIncoming' } ],
-                output_template => 'for incoming audio streams: %s %s/s',
+                output_template => 'incoming audio streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'audio_incoming_rate', value => 'audioBitRateIncoming_absolute', template => '%d',
@@ -129,7 +129,7 @@ sub set_counters {
         },
         { label => 'video-outgoing-rate', set => {
                 key_values => [ { name => 'videoBitRateOutgoing' } ],
-                output_template => 'for outgoing video streams: %s %s/s',
+                output_template => 'outgoing video streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'video_outgoing_rate', value => 'videoBitRateOutgoing_absolute', template => '%d',
@@ -139,7 +139,7 @@ sub set_counters {
         },
         { label => 'video-incoming-rate', set => {
                 key_values => [ { name => 'videoBitRateIncoming' } ],
-                output_template => 'for incoming video streams: %s %s/s',
+                output_template => 'incoming video streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'video_incoming_rate', value => 'videoBitRateIncoming_absolute', template => '%d',
@@ -156,10 +156,10 @@ sub prefix_leg_output {
     return "Legs ";
 }
 
-sub prefix_leg_output {
+sub prefix_rate_output {
     my ($self, %options) = @_;
 
-    return "Rate ";
+    return "Rates ";
 }
 
 sub new {
