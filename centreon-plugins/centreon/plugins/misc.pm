@@ -402,6 +402,43 @@ sub convert_bytes {
     return $value;
 }
 
+sub parse_threshold {
+    my ($perf) = @_;
+
+    $perf = trim($perf);
+
+    my $arobase = 0;
+    my $infinite_neg = 0;
+    my $infinite_pos = 0;
+    my $value_start = "";
+    my $value_end = "";
+    my $global_status = 1;
+    
+    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
+        $value_start = $2 if (defined($2));
+        $value_end = $3 if (defined($3));
+        $arobase = 1 if (defined($1) && $1 eq '@');
+        $value_start =~ s/[\+:]//g;
+        $value_end =~ s/\+//;
+        if ($value_end eq '') {
+            $value_end = 1e500;
+            $infinite_pos = 1;
+        }
+        $value_start = 0 if ($value_start eq '');      
+        $value_start =~ s/,/\./;
+        $value_end =~ s/,/\./;
+        
+        if ($value_start eq '~') {
+            $value_start = -1e500;
+            $infinite_neg = 1;
+        }
+    } else {
+        $global_status = 0;
+    }
+
+    return ($global_status, $value_start, $value_end, $arobase, $infinite_neg, $infinite_pos);
+}
+
 1;
 
 __END__

@@ -123,15 +123,7 @@ sub check_options {
         }
     }
     
-    if (defined($self->{option_results}->{change_perfdata})) {
-        foreach (@{$self->{option_results}->{change_perfdata}}) {
-            if (! /^(.+?),(.+)$/) {
-                $self->add_option_msg(short_msg => "Wrong change-perfdata option '" . $_ . "' (syntax: match,substitute)");
-                $self->option_exit();
-            }
-            $self->{change_perfdata}->{$1} = $2;
-        }
-    }
+    $self->load_perfdata_extend_args();
 }
 
 sub add_option_msg {
@@ -192,36 +184,6 @@ sub perfdata_add {
     }
     $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
-}
-
-sub change_perfdatas {
-    my ($self, %options) = @_;
-    
-    if ($self->{option_results}->{change_perfdata}) {
-        foreach (@{$self->{perfdatas}}) {
-            foreach my $filter (keys %{$self->{change_perfdata}}) {
-                if ($_->{label} =~ /$filter/) {
-                    eval "\$_->{label} =~ s{$filter}{$self->{change_perfdata}->{$filter}}";
-                    last;
-                }
-            }
-        }
-    }
-    
-    return if ($self->{explode_perfdata_total} == 0);
-    foreach (@{$self->{perfdatas}}) {
-        next if ($_->{max} eq '');
-        if ($self->{explode_perfdata_total} == 2) {
-            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
-            next;
-        }
-        foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
-            if ($_->{label} =~ /$regexp/) {
-                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
-                last;
-            }
-        }
-    }
 }
 
 sub range_perfdata {
@@ -744,6 +706,61 @@ sub is_disco_show {
         return 1;
     }
     return 0;
+}
+
+# --add-perfdata=used,,scale(auto)
+# --add-perfdata=used,,scale(MB)
+# --add-perfdata=traffic_in,,scale(Mbps),mbps
+# --add-perfdata=used,,percent()
+# --add-perfdata=perfx,,math(perfx+10-100) 
+# --add-perfdata=free,used,used()
+# --add-perfdata=used,free,free()
+# ^([KMGTP])?(B|b|bps|\/s|auto)$
+
+# parse_threshold est dans misc maintenant.
+
+sub load_perfdata_extend_args {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{option_results}->{change_perfdata})) {
+        foreach (@{$self->{option_results}->{change_perfdata}}) {
+            if (! /^(.+?),(.+)$/) {
+                $self->add_option_msg(short_msg => "Wrong change-perfdata option '" . $_ . "' (syntax: match,substitute)");
+                $self->option_exit();
+            }
+            $self->{change_perfdata}->{$1} = $2;
+        }
+    }
+}
+
+sub change_perfdatas {
+    my ($self, %options) = @_;
+    
+    if ($self->{option_results}->{change_perfdata}) {
+        foreach (@{$self->{perfdatas}}) {
+            foreach my $filter (keys %{$self->{change_perfdata}}) {
+                if ($_->{label} =~ /$filter/) {
+                    eval "\$_->{label} =~ s{$filter}{$self->{change_perfdata}->{$filter}}";
+                    last;
+                }
+            }
+        }
+    }
+    
+    return if ($self->{explode_perfdata_total} == 0);
+    foreach (@{$self->{perfdatas}}) {
+        next if ($_->{max} eq '');
+        if ($self->{explode_perfdata_total} == 2) {
+            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
+            next;
+        }
+        foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
+            if ($_->{label} =~ /$regexp/) {
+                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
+                last;
+            }
+        }
+    }
 }
 
 1;
