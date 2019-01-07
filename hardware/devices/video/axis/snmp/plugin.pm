@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'environment'      => 'hardware::devices::video::axis::snmp::mode::environment',
+        'uptime'           => 'snmp_standard::mode::uptime',
     );
 
     return $self;
