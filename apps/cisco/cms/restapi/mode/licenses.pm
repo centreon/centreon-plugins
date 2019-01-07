@@ -68,8 +68,8 @@ sub custom_status_calc {
     $self->{result_values}->{feature} = $options{new_datas}->{$self->{instance} . '_feature'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{expiry_date} = $options{new_datas}->{$self->{instance} . '_expiry_date'};
-    $self->{result_values}->{expiry_seconds} = $options{new_datas}->{$self->{instance} . '_expiry_timestamp'} - time();
-    $self->{result_values}->{expiry_days} = $self->{result_values}->{expiry_seconds} / 86400;
+    $self->{result_values}->{expiry_seconds} = $options{new_datas}->{$self->{instance} . '_expiry_seconds'};
+    $self->{result_values}->{expiry_days} = ($self->{result_values}->{expiry_seconds} ne '') ? $self->{result_values}->{expiry_seconds} / 86400 : 0;
     return 0;
 }
 
@@ -82,7 +82,7 @@ sub set_counters {
 
     $self->{maps_counters}->{features} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'feature' }, { name => 'status' }, { name => 'expiry_date' }, { name => 'expiry_timestamp' } ],
+                key_values => [ { name => 'feature' }, { name => 'status' }, { name => 'expiry_date' }, { name => 'expiry_seconds' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -106,8 +106,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "warning-status:s"      => { name => 'warning_status', default => '%{expiry_days} < 60' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{expiry_days} < 30' },
+                                    "warning-status:s"      => { name => 'warning_status', default => '%{status} eq "activated" && %{expiry_days} < 60' },
+                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} eq "activated" && %{expiry_days} < 30' },
                                 });
 
     return $self;
@@ -147,7 +147,7 @@ sub manage_selection {
             feature => $feature,
             status => $results->{features}->{$feature}->{status},
             expiry_date => (defined($results->{features}->{$feature}->{expiry})) ? $results->{features}->{$feature}->{expiry} : '',
-            expiry_timestamp => (defined($results->{features}->{$feature}->{expiry})) ? $dt->epoch : '',
+            expiry_seconds => (defined($results->{features}->{$feature}->{expiry})) ? $dt->epoch - time() : '',
         };
     }
 
@@ -169,12 +169,12 @@ Check features licensing.
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '%{expiry_days} < 60').
+Set warning threshold for status. (Default: '%{status} eq "activated" && %{expiry_days} < 60').
 Can use special variables like: %{status}, %{expiry_days}, %{feature}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{expiry_days} < 30').
+Set critical threshold for status. (Default: '%{status} eq "activated" && %{expiry_days} < 30').
 Can use special variables like: %{status}, %{expiry_days}, %{feature}
 
 =back
