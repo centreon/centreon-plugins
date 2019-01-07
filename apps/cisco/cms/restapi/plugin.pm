@@ -31,7 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+                            'alarms'            => 'apps::cisco::cms::restapi::mode::alarms',
+                            'calls'             => 'apps::cisco::cms::restapi::mode::calls',
                             'database-status'   => 'apps::cisco::cms::restapi::mode::databasestatus',
+                            'licenses'          => 'apps::cisco::cms::restapi::mode::licenses',
                             'system-status'     => 'apps::cisco::cms::restapi::mode::systemstatus',
                         );
     $self->{custom_modes}{api} = 'apps::cisco::cms::restapi::custom::xmlapi';

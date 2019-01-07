@@ -18,12 +18,13 @@
 # limitations under the License.
 #
 
-package apps::cisco::cms::restapi::mode::databasestatus;
+package apps::cisco::cms::restapi::mode::licenses;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use DateTime;
 
 my $instance_mode;
 
@@ -54,18 +55,21 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("master status is '%s', up is '%s' [Sync behind: %s B]",
-        $self->{result_values}->{master}, $self->{result_values}->{up}, $self->{result_values}->{sync_behind});
+    my $msg = sprintf("status is '%s'", $self->{result_values}->{status}); 
+    $msg .= sprintf(", expires in %d days [%s]",
+        $self->{result_values}->{expiry_days},
+        $self->{result_values}->{expiry_date}) if (defined($self->{result_values}->{expiry_date}) && $self->{result_values}->{expiry_date} ne '');
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{sync_behind} = $options{new_datas}->{$self->{instance} . '_syncBehind'};
-    $self->{result_values}->{master} = $options{new_datas}->{$self->{instance} . '_master'};
-    $self->{result_values}->{up} = $options{new_datas}->{$self->{instance} . '_up'};
-    $self->{result_values}->{hostname} = $options{new_datas}->{$self->{instance} . '_hostname'};
+    $self->{result_values}->{feature} = $options{new_datas}->{$self->{instance} . '_feature'};
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{expiry_date} = $options{new_datas}->{$self->{instance} . '_expiry_date'};
+    $self->{result_values}->{expiry_seconds} = $options{new_datas}->{$self->{instance} . '_expiry_timestamp'} - time();
+    $self->{result_values}->{expiry_days} = $self->{result_values}->{expiry_seconds} / 86400;
     return 0;
 }
 
@@ -73,13 +77,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All database hosts are ok' },
+        { name => 'features', type => 1, cb_prefix_output => 'prefix_feature_output', message_multiple => 'All features licensing are ok' },
     ];
 
-    $self->{maps_counters}->{nodes} = [
+    $self->{maps_counters}->{features} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'syncBehind' }, { name => 'master' }, { name => 'up' },
-                    { name => 'hostname' } ],
+                key_values => [ { name => 'feature' }, { name => 'status' }, { name => 'expiry_date' }, { name => 'expiry_timestamp' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -89,10 +92,10 @@ sub set_counters {
     ];
 }
 
-sub prefix_node_output {
+sub prefix_feature_output {
     my ($self, %options) = @_;
 
-    return "Node '" . $options{instance_value}->{hostname} . "' ";
+    return "Feature '" . $options{instance_value}->{feature} . "' ";
 }
 
 sub new {
@@ -103,8 +106,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{up} !~ /true/i' },
+                                    "warning-status:s"      => { name => 'warning_status', default => '%{expiry_days} < 60' },
+                                    "critical-status:s"     => { name => 'critical_status', default => '%{expiry_days} < 30' },
                                 });
 
     return $self;
@@ -131,26 +134,25 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->get_endpoint(method => '/system/database');
+    my $results = $options{custom}->get_endpoint(method => '/system/licensing');
 
-    $self->{nodes} = {};
+    $self->{features} = {};
 
-    if (defined($results->{clustered}) && $results->{clustered} ne 'enabled' ) {
-        $self->{output}->add_option_msg(short_msg => "Database clustering is not enabled");
-        $self->{output}->option_exit();
-    }
+    foreach my $feature (keys %{$results->{features}}) {
+        my %months = ("Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5, "Jun" => 6, "Jul" => 7, "Aug" => 8, "Sep" => 9, "Oct" => 10, "Nov" => 11, "Dec" => 12);
+        $results->{features}->{$feature}->{expiry} =~ /^(\d+)-(\w+)-(\d+)$/ if (defined($results->{features}->{$feature}->{expiry})); # 2100-Jan-01
+        my $dt = DateTime->new(year => $1, month => $months{$2}, day => $3);
 
-    foreach my $node (@{$results->{cluster}->{node}}) {
-        $self->{nodes}->{$node->{hostname}} = {
-            hostname => $node->{hostname},
-            master => $node->{master},
-            up => $node->{up},
-            syncBehind => $node->{syncBehind},
+        $self->{features}->{$feature} = {
+            feature => $feature,
+            status => $results->{features}->{$feature}->{status},
+            expiry_date => (defined($results->{features}->{$feature}->{expiry})) ? $results->{features}->{$feature}->{expiry} : '',
+            expiry_timestamp => (defined($results->{features}->{$feature}->{expiry})) ? $dt->epoch : '',
         };
     }
 
-    if (scalar(keys %{$self->{nodes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No nodes found.");
+    if (scalar(keys %{$self->{features}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No features found.");
         $self->{output}->option_exit();
     }
 }
@@ -161,19 +163,19 @@ __END__
 
 =head1 MODE
 
-Check database status.
+Check features licensing.
 
 =over 8
 
 =item B<--warning-status>
 
-Set warning threshold for status. (Default: '').
-Can use special variables like: %{hostname}, %{master}, %{up}, %{sync_behind}
+Set warning threshold for status. (Default: '%{expiry_days} < 60').
+Can use special variables like: %{status}, %{expiry_days}, %{feature}
 
 =item B<--critical-status>
 
-Set critical threshold for status. (Default: '%{up} !~ /true/i').
-Can use special variables like: %{hostname}, %{master}, %{up}, %{sync_behind}
+Set critical threshold for status. (Default: '%{expiry_days} < 30').
+Can use special variables like: %{status}, %{expiry_days}, %{feature}
 
 =back
 

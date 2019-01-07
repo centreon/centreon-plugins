@@ -123,6 +123,7 @@ sub build_options_for_httplib {
     $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
+    $self->{option_results}->{unknown_status} = '';
 }
 
 sub settings {
@@ -156,11 +157,37 @@ sub get_endpoint {
 
     $self->settings;
 
-    my $response = $self->{http}->request(url_path => $self->{url_path} . $options{method});
+    my $content = $self->{http}->request(url_path => $self->{url_path} . $options{method});
+    my $response = $self->{http}->get_response();
+    
+    if ($response->code() != 200) {
+        my $xml_result;
+        eval {
+            $xml_result = XMLin($content);
+        };
+        if ($@) {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
+            $self->{output}->option_exit();
+        }
+        if (defined($xml_result)) {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Api return errors: " . join(', ', keys %{$xml_result}));
+            $self->{output}->option_exit();
+        }
+    }
 
-    my $xml_hash = XMLin($response);
+    my $xml_result;
+    eval {
+        $xml_result = XMLin($content, ForceArray => ['node', 'call', 'alarm'], KeyAttr => []);
+    };
+    if ($@) {
+        $self->{output}->output_add(long_msg => $content, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
+        $self->{output}->option_exit();
+    }
 
-    return $xml_hash;
+    return $xml_result;
 }
 
 1;
