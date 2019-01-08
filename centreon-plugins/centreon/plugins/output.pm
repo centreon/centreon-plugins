@@ -1010,10 +1010,26 @@ Filter perfdata that match the regexp.
 Put max perfdata (if it exist) in a specific perfdata 
 (without values: same with '_max' suffix) (Multiple options)
 
-=item B<--change-perfdata>
+=item B<--change-perfdata> B<--extend-perfdata> 
 
-Change perfdata name (Multiple option)
-Syntax: regexp_matching,regexp_substitute
+Change or extend perfdata. 
+Syntax: --extend-perfdata=searchlabel,newlabel,target[,newuom]
+
+Common examples:
+
+=over 4
+
+Change storage free perfdata in used: --change-perfdata=free,used,invert()
+
+Change storage free perfdata in used: --change-perfdata=used,free,invert()
+
+Scale traffic values automaticaly: --change-perfdata=traffic,,scale(auto)
+
+Scale traffic values in Mbps: --change-perfdata=traffic_in,,scale(Mbps),mbps
+
+Change traffic values in percent: --change-perfdata=traffic_in,,percent()
+
+=back
 
 =item B<--range-perfdata>
 
