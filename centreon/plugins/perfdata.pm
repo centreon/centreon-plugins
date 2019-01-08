@@ -22,6 +22,7 @@ package centreon::plugins::perfdata;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -77,13 +78,14 @@ sub threshold_validate {
     # $options{value} : threshold value
 
     my $status = 1;
-    $self->{threshold_label}->{$options{label}} = {value => $options{value}, start => undef, end => undef, arobase => undef, infinite_neg => undef, infinite_pos => undef};
+    $self->{threshold_label}->{$options{label}} = { value => $options{value}, start => undef, end => undef, arobase => undef, infinite_neg => undef, infinite_pos => undef };
     if (!defined($options{value}) || $options{value} eq '') {
         return $status;
     }
 
-    ($status, $self->{threshold_label}->{$options{label}}->{start}, $self->{threshold_label}->{$options{label}}->{end}, $self->{threshold_label}->{$options{label}}->{arobase}, $self->{threshold_label}->{$options{label}}->{infinite_neg}, $self->{threshold_label}->{$options{label}}->{infinite_pos}) = $self->parse_threshold($options{value});
-
+    ($status, my $result_perf) = 
+        centreon::plugins::misc::parse_threshold(threshold => $options{value});
+    $self->{threshold_label}->{$options{label}} = { %{$self->{threshold_label}->{$options{label}}}, %$result_perf };
     return $status;
 }
 
@@ -111,43 +113,6 @@ sub trim {
     $value =~ s/^[ \t]+//;
     $value =~ s/[ \t]+$//;
     return $value;
-}
-
-sub parse_threshold {
-    my ($self, $perf) = @_;
-
-    $perf = $self->trim($perf);
-
-    my $arobase = 0;
-    my $infinite_neg = 0;
-    my $infinite_pos = 0;
-    my $value_start = "";
-    my $value_end = "";
-    my $global_status = 1;
-    
-    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
-        $value_start = $2 if (defined($2));
-        $value_end = $3 if (defined($3));
-        $arobase = 1 if (defined($1) && $1 eq '@');
-        $value_start =~ s/[\+:]//g;
-        $value_end =~ s/\+//;
-        if ($value_end eq '') {
-            $value_end = 1e500;
-            $infinite_pos = 1;
-        }
-        $value_start = 0 if ($value_start eq '');      
-        $value_start =~ s/,/\./;
-        $value_end =~ s/,/\./;
-        
-        if ($value_start eq '~') {
-            $value_start = -1e500;
-            $infinite_neg = 1;
-        }
-    } else {
-        $global_status = 0;
-    }
-
-    return ($global_status, $value_start, $value_end, $arobase, $infinite_neg, $infinite_pos);
 }
 
 sub change_bytes {

@@ -389,17 +389,95 @@ sub change_seconds {
     return $str;
 }
 
+sub scale_bytesbit {
+    my (%options) = @_;
+    
+    my $base = 1024;
+    if (defined($options{dst_unit}) && defined($options{src_unit})) {
+        $options{value} *= 8 if ($options{dst_unit} =~ /b/ && $options{src_unit} =~ /B/);
+        $options{value} /= 8 if ($options{dst_unit} =~ /B/ && $options{src_unit} =~ /b/);
+        if ($options{dst_unit} =~ /b/) {
+            $base = 1000;
+        }
+    }
+        
+    my %expo = ('' => 0, k => 1, m => 2, g => 3, t => 4, p => 5, e => 6);
+    my ($src_expo, $dst_expo) = (0, 0);
+    $src_expo = $expo{lc($options{src_quantity})} if (defined($options{src_quantity}) && $options{src_quantity} =~ /[kmgtpe]/i);
+    if ($options{dst_unit} eq 'auto') {
+        my @auto = ('', 'k', 'm', 'g', 't', 'p', 'e');
+        my $i = defined($options{src_quantity}) ? $expo{$options{src_quantity}} : 0;
+        for (; $i < scalar(@auto); $i++) {
+            last if ($options{value} < $base);
+            $options{value} = $options{value} / $base;
+        }
+
+        return ($options{value}, $auto[$i], $options{src_unit});
+    } elsif (defined($options{dst_quantity}) && ($options{dst_quantity} eq '' || $options{dst_quantity} =~ /[kmgtpe]/i )) {
+        my $dst_expo = $expo{lc($options{dst_quantity})};
+        if ($dst_expo - $src_expo > 0) {
+            $options{value} = $options{value} / ($base ** ($dst_expo - $src_expo));
+        } elsif ($dst_expo - $src_expo < 0) {
+            $options{value} = $options{value} * ($base ** (($dst_expo - $src_expo) * -1));
+        }
+    }
+    
+    return $options{value};
+}
+
 sub convert_bytes {
     my (%options) = @_;
-    my %expo = (k => 1, m => 2, g => 3, t => 4);
+
+    my %expo = (k => 1, m => 2, g => 3, t => 4, p => 5);
     my $value = $options{value};
-    my $base = defined($options{network}) ? 1000 : 1024;
-    
+    my $base = defined($options{network}) ? 1000 : 1024;    
     if ($options{unit} =~ /([kmgt])b/i) {
         $value = $value * ($base ** $expo{lc($1)});
     }
 
     return $value;
+}
+
+sub parse_threshold {
+    my (%options) = @_;
+
+    my $perf = trim($options{threshold});
+    my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => "", end => "" };
+
+    my $global_status = 1;    
+    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
+        $perf_result->{start} = $2 if (defined($2));
+        $perf_result->{end} = $3 if (defined($3));
+        $perf_result->{arobase} = 1 if (defined($1) && $1 eq '@');
+        $perf_result->{start} =~ s/[\+:]//g;
+        $perf_result->{end} =~ s/\+//;
+        if ($perf_result->{end} eq '') {
+            $perf_result->{end} = 1e500;
+            $perf_result->{infinite_pos} = 1;
+        }
+        $perf_result->{start} = 0 if ($perf_result->{start} eq '');      
+        $perf_result->{start} =~ s/,/\./;
+        $perf_result->{end} =~ s/,/\./;
+        
+        if ($perf_result->{start} eq '~') {
+            $perf_result->{start} = -1e500;
+            $perf_result->{infinite_neg} = 1;
+        }
+    } else {
+        $global_status = 0;
+    }
+
+    return ($global_status, $perf_result);
+}
+
+sub get_threshold_litteral {
+    my (%options) = @_;
+    
+    my $perf_output = ($options{arobase} == 1 ? "@" : "") . 
+                      (($options{infinite_neg} == 0) ? $options{start} : "~") . 
+                      ":" . 
+                      (($options{infinite_pos} == 0) ? $options{end} : "");
+    return $perf_output;
 }
 
 1;
