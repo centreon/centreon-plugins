@@ -37,7 +37,7 @@ sub new {
                             'licenses'          => 'apps::cisco::cms::restapi::mode::licenses',
                             'system-status'     => 'apps::cisco::cms::restapi::mode::systemstatus',
                         );
-    $self->{custom_modes}{api} = 'apps::cisco::cms::restapi::custom::xmlapi';
+    $self->{custom_modes}{xmlapi} = 'apps::cisco::cms::restapi::custom::xmlapi';
     return $self;
 }
 
