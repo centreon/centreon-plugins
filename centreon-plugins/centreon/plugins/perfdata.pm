@@ -78,14 +78,14 @@ sub threshold_validate {
     # $options{value} : threshold value
 
     my $status = 1;
-    $self->{threshold_label}->{$options{label}} = {value => $options{value}, start => undef, end => undef, arobase => undef, infinite_neg => undef, infinite_pos => undef};
+    $self->{threshold_label}->{$options{label}} = { value => $options{value}, start => undef, end => undef, arobase => undef, infinite_neg => undef, infinite_pos => undef };
     if (!defined($options{value}) || $options{value} eq '') {
         return $status;
     }
 
-    ($status, $self->{threshold_label}->{$options{label}}->{start}, $self->{threshold_label}->{$options{label}}->{end}, $self->{threshold_label}->{$options{label}}->{arobase}, $self->{threshold_label}->{$options{label}}->{infinite_neg}, $self->{threshold_label}->{$options{label}}->{infinite_pos}) = 
-        centreon::plugins::misc::parse_threshold($options{value});
-
+    ($status, my $result_perf) = 
+        centreon::plugins::misc::parse_threshold(threshold => $options{value});
+    $self->{threshold_label}->{$options{label}} = { %{$self->{threshold_label}->{$options{label}}}, %$result_perf };
     return $status;
 }
 
