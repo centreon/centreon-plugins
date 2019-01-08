@@ -33,7 +33,7 @@ sub new {
     %{$self->{modes}} = (
                             'session'       => 'apps::cisco::ise::restapi::mode::session',
                         );
-    $self->{custom_modes}{api} = 'apps::cisco::ise::restapi::custom::xmlapi';
+    $self->{custom_modes}{xmlapi} = 'apps::cisco::ise::restapi::custom::xmlapi';
     return $self;
 }
 
