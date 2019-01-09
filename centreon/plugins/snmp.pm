@@ -324,8 +324,8 @@ sub get_leef {
             return undef;
         }
 
-        # Some devices could not send "tooBig" ErrorNum ?
-        if(($self->{snmp_autoreduce} == 1) && scalar($vb) && (scalar(@{@$vb[-1]}) < 3)) {
+        # Some devices may not send "tooBig" ErrorNum ?
+        if(($self->{snmp_autoreduce} == 1) && scalar(@$vb) && (scalar(@{@$vb[-1]}) < 3)) {
             next if ($self->autoreduce_leef(current => $entry) == 0);
         }
 
