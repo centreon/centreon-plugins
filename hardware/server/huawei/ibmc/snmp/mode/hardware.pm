@@ -49,6 +49,14 @@ sub set_system {
             ['optimal', 'OK'],
             ['unknown', 'UNKNOWN'],
         ],
+        'raidcontroller' => [
+            ['memory correctable error', 'WARNING'],
+            ['memory uncorrectable error', 'CRITICAL'],
+            ['memory ECC error reached limit', 'CRITICAL'],
+            ['NVRAM uncorrectable error', 'CRITICAL'],
+            ['ok', 'OK'],
+            ['unknown', 'UNKNOWN'],
+        ],
     };
 
     $self->{components_path} = 'hardware::server::huawei::ibmc::snmp::mode::components';
