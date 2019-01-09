@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::docker::cadvisor::plugin;
+package cloud::cadvisor::restapi::plugin;
 
 use strict;
 use warnings;
@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.3';
     %{$self->{modes}} = (
-                        'container-usage'   => 'cloud::docker::cadvisor::mode::containerusage',
-                        'disk-io'           => 'cloud::docker::cadvisor::mode::diskio',
-                        'traffic'           => 'cloud::docker::cadvisor::mode::traffic',
-                        'list-containers'   => 'cloud::docker::cadvisor::mode::listcontainers',
-                        'node-status'       => 'cloud::docker::cadvisor::mode::nodestatus',
+                        'container-usage'   => 'cloud::cadvisor::restapi::mode::containerusage',
+                        'disk-io'           => 'cloud::cadvisor::restapi::mode::diskio',
+                        'traffic'           => 'cloud::cadvisor::restapi::mode::traffic',
+                        'list-containers'   => 'cloud::cadvisor::restapi::mode::listcontainers',
+                        'node-status'       => 'cloud::cadvisor::restapi::mode::nodestatus',
                         );
 
-    $self->{custom_modes}{api} = 'cloud::docker::cadvisor::custom::api';
+    $self->{custom_modes}{api} = 'cloud::cadvisor::restapi::custom::api';
     return $self;
 }
 
@@ -48,14 +48,13 @@ sub init {
     $self->SUPER::init(%options);
 }
 
-
 1;
 
 __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Docker nodes and containers through cAdvisor API.
+Check nodes and containers through cAdvisor API.
 Requirements: cAdvisor supporting API version 1.3+
 
 =cut

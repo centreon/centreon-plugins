@@ -18,62 +18,18 @@
 # limitations under the License.
 #
 
-package cloud::docker::cadvisor::mode::nodestatus;
+package cloud::cadvisor::restapi::mode::nodestatus;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_node_status}) && $instance_mode->{option_results}->{critical_node_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_node_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_node_status}) && $instance_mode->{option_results}->{warning_node_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_node_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status} . ' [manager status: ' . $self->{result_values}->{manager_status} . ']';
-
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{manager_status} = $options{new_datas}->{$self->{instance} . '_manager_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
         { name => 'node', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node informations are ok', skipped_code => { -11 => 1 } },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All node status are ok', skipped_code => { -11 => 1 } },
     ];
     
     $self->{maps_counters}->{nodes} = [
@@ -134,19 +90,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  "warning-node-status:s"  => { name => 'warning_node_status', default => '' },
-                                  "critical-node-status:s" => { name => 'critical_node_status', default => '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/' },
                                 });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
-    $self->change_macros();
 }
 
 sub prefix_node_output {
@@ -155,21 +101,10 @@ sub prefix_node_output {
     return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_node_status', 'critical_node_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
                   
     $self->{node} = {};
-    $self->{nodes} = {};
     my $result = $options{custom}->api_list_nodes();
     foreach my $node_name (keys %{$result}) {
         $self->{node}->{$node_name} = {
@@ -197,25 +132,15 @@ Check node status.
 
 =over 8
 
-=item B<--warning-node-status>
-
-Set warning threshold for status (Default: -)
-Can used special variables like: %{display}, %{status}, %{manager_status}.
-
-=item B<--critical-node-status>
-
-Set critical threshold for status (Default: '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/').
-Can used special variables like: %{display}, %{status}, %{manager_status}.
-
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'containers-running', 'containers-paused', 'containers-stopped'.
+Can be: 'containers-running', 'num-cores', 'memory-capacity', 'cpu-frequency'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'containers-running', 'containers-paused', 'containers-stopped'., 
+Can be: 'containers-running', 'num-cores', 'memory-capacity', 'cpu-frequency'.
 
 =back
 
