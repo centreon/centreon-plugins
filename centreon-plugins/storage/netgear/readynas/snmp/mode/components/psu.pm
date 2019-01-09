@@ -40,16 +40,16 @@ my $oid_psuTable_v4 = '.1.3.6.1.4.1.4526.18.8';
 sub load {
     my ($self) = @_;
     
-	$mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
-	$oid_psuTable = $self->{mib_ver} == 4 ? $oid_psuTable_v4 : $oid_psuTable_v6;
-	
+    $mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
+    $oid_psuTable = $self->{mib_ver} == 4 ? $oid_psuTable_v4 : $oid_psuTable_v6;
+    
     push @{$self->{request}}, { oid => $oid_psuTable };
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking power supply");
+    $self->{output}->output_add(long_msg => "checking power supply");
     $self->{components}->{psu} = {name => 'psu', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
 
@@ -63,7 +63,7 @@ sub check {
 
         $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is %s.",
                                     $instance, $result->{psuStatus}));
-		my $exit = $self->get_severity(section => 'psu', value => $result->{psuStatus});
+        my $exit = $self->get_severity(section => 'psu', value => $result->{psuStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Power Supply '%s' status is %s.", $instance, $result->{psuStatus}));

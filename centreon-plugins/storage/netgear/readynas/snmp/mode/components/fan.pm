@@ -33,59 +33,64 @@ my $mapping_v6 = {
 my $oid_fanTable_v6 = '.1.3.6.1.4.1.4526.22.4';
 
 my $mapping_v4 = {
-    fanRPM   => { oid => '.1.3.6.1.4.1.4526.18.4.1.2' },
+    fanRPM      => { oid => '.1.3.6.1.4.1.4526.18.4.1.2' },
 };
 my $oid_fanTable_v4 = '.1.3.6.1.4.1.4526.18.4';
 
 sub load {
     my ($self) = @_;
     
-	$mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
-	$oid_fanTable = $self->{mib_ver} == 4 ? $oid_fanTable_v4 : $oid_fanTable_v6;
-	
+    $mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
+    $oid_fanTable = $self->{mib_ver} == 4 ? $oid_fanTable_v4 : $oid_fanTable_v6;
+    
     push @{$self->{request}}, { oid => $oid_fanTable };
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking fan");
+    $self->{output}->output_add(long_msg => "checking fan");
     $self->{components}->{fan} = {name => 'fan', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fan'));
 
-	if ($self->{mib_ver} == 6){
-		foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanTable}})) {
-			next if ($oid !~ /^$mapping->{fanStatus}->{oid}\.(\d+)/);
-			my $instance = $1;
-			my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanTable}, instance => $instance);
+    if ($self->{mib_ver} == 6) {
+        foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanTable}})) {
+            next if ($oid !~ /^$mapping->{fanStatus}->{oid}\.(\d+)/);
+            my $instance = $1;
+            my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanTable}, instance => $instance);
 
-			next if ($self->check_filter(section => 'fan', instance => $instance));
-			$self->{components}->{fan}->{total}++;
+            next if ($self->check_filter(section => 'fan', instance => $instance));
+            $self->{components}->{fan}->{total}++;
 
-			$self->{output}->output_add(long_msg => sprintf("fan '%s' status is %s.", $instance, $result->{fanStatus}));
-			my $exit = $self->get_severity(label => 'default', section => 'fan', value => $result->{fanStatus});
-			if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-				$self->{output}->output_add(severity => $exit,
-											short_msg => sprintf("fan '%s' status is %s", $instance, $result->{fanStatus}));
-			}
-		}
-	}elsif ($self->{mib_ver} == 4){
-		foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanTable}})) {
-			next if ($oid !~ /^$mapping->{fanRPM}->{oid}\.(\d+)/);
-			my $instance = $1;
-			my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanTable}, instance => $instance);
+            $self->{output}->output_add(long_msg => sprintf("fan '%s' status is %s.", $instance, $result->{fanStatus}));
+            my $exit = $self->get_severity(label => 'default', section => 'fan', value => $result->{fanStatus});
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("fan '%s' status is %s", $instance, $result->{fanStatus}));
+            }
+        }
+        return ;
+    }
+    
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_fanTable}})) {
+        next if ($oid !~ /^$mapping->{fanRPM}->{oid}\.(\d+)/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fanTable}, instance => $instance);
 
-			next if ($self->check_filter(section => 'fan', instance => $instance));
-			$self->{components}->{fan}->{total}++;
-			
-			$self->{output}->output_add(long_msg => sprintf("fan '%s' rpm is %s.", $instance, $result->{fanRPM}));	
-			my ($exit) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{fanRPM});
-			if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-				$self->{output}->output_add(severity => $exit,
-											short_msg => sprintf("fan '%s' rpm is %s", $instance, $result->{fanRPM}));
-			}
-			$self->{output}->perfdata_add(label => "fan_" . $instance, unit => 'RPM', value => $result->{fanRPM});
-		}
+        next if ($self->check_filter(section => 'fan', instance => $instance));
+        $self->{components}->{fan}->{total}++;
+        
+        $self->{output}->output_add(long_msg => sprintf("fan '%s' rpm is %s.", $instance, $result->{fanRPM}));    
+        my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{fanRPM});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("fan '%s' rpm is %s", $instance, $result->{fanRPM}));
+        }
+        
+        $self->{output}->perfdata_add(label => "fan_" . $instance, unit => 'rpm',
+                                      value => $result->{fanRPM},
+                                      warning => $warn,
+                                      critical => $crit);        
     }
 }
 
