@@ -63,7 +63,7 @@ sub check {
                                     $result->{logicalDriveRAIDControllerIndex}, $result->{logicalDriveIndex}, $result->{logicalDriveState}, $instance, 
                                     ));
    
-        my $exit = $self->get_severity(label => 'logicaldrive', section => 'logicaldrive', value => $result->{logicalDriveState});
+        my $exit = $self->get_severity(section => 'logicaldrive', value => $result->{logicalDriveState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Logical drive '%s.%s' status is '%s'", 
