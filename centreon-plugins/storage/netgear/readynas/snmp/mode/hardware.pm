@@ -78,7 +78,7 @@ sub init_mib_ver {
     
     my $result = $options{snmp}->get_leef(oids => [$oid_MgrSoftwareVersion_v4, $oid_MgrSoftwareVersion_v6]);
     
-    $self->{mib_ver} = defined($result->{$oid_MgrSoftwareVersion_v4}) ? 4 : 6;
+    $self->{mib_ver} = defined($result->{$oid_MgrSoftwareVersion_v4}) ? 'v4' : 'v6';
 }
 
 sub snmp_execute {

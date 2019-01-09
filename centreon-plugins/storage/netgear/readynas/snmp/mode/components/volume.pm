@@ -25,27 +25,26 @@ package storage::netgear::readynas::snmp::mode::components::volume;
 use strict;
 use warnings;
 
-my ($mapping, $oid_volumeTable);
-
-my $mapping_v6 = {
-    volumeName    => { oid => '.1.3.6.1.4.1.4526.22.7.1.2' },
-    volumeStatus  => { oid => '.1.3.6.1.4.1.4526.22.7.1.4' },
+my $mapping = {
+    v6 => {
+        volumeName    => { oid => '.1.3.6.1.4.1.4526.22.7.1.2' },
+        volumeStatus  => { oid => '.1.3.6.1.4.1.4526.22.7.1.4' },
+    },
+    v4 => {
+        volumeName    => { oid => '.1.3.6.1.4.1.4526.18.7.1.2' },
+        volumeStatus  => { oid => '.1.3.6.1.4.1.4526.18.7.1.4' },
+    },
 };
-my $oid_volumeTable_v6 = '.1.3.6.1.4.1.4526.22.7';
-
-my $mapping_v4 = {
-    volumeName    => { oid => '.1.3.6.1.4.1.4526.18.7.1.2' },
-    volumeStatus  => { oid => '.1.3.6.1.4.1.4526.18.7.1.4' },
+my $oid_volumeTable = {
+    v4 => '.1.3.6.1.4.1.4526.18.7',
+    v6 => '.1.3.6.1.4.1.4526.22.7',
 };
-my $oid_volumeTable_v4 = '.1.3.6.1.4.1.4526.18.7';
 
 sub load {
     my ($self) = @_;
     
-    $mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
-    $oid_volumeTable = $self->{mib_ver} == 4 ? $oid_volumeTable_v4 : $oid_volumeTable_v6;
-    
-    push @{$self->{request}}, { oid => $oid_volumeTable };
+     push @{$self->{request}}, { oid => $oid_volumeTable->{$self->{mib_ver}}, 
+        start => $mapping->{$self->{mib_ver}}->{volumeName}, end => $mapping->{$self->{mib_ver}}->{volumeStatus} };
 }
 
 sub check {
@@ -55,10 +54,10 @@ sub check {
     $self->{components}->{volume} = {name => 'volume', total => 0, skip => 0};
     return if ($self->check_filter(section => 'volume'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_volumeTable}})) {
-        next if ($oid !~ /^$mapping->{volumeStatus}->{oid}\.(\d+)/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $oid_volumeTable->{$self->{mib_ver}} }})) {
+        next if ($oid !~ /^$mapping->{$self->{mib_ver}}->{volumeStatus}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_volumeTable}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{mib_ver}}, results => $self->{results}->{ $oid_volumeTable->{$self->{mib_ver}} }, instance => $instance);
 
         next if ($self->check_filter(section => 'volume', instance => $instance));
         $self->{components}->{volume}->{total}++;
