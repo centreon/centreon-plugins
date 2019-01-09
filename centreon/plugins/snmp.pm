@@ -324,6 +324,11 @@ sub get_leef {
             return undef;
         }
 
+        # Some devices could not send "tooBig" ErrorNum ?
+        if(($self->{snmp_autoreduce} == 1) && scalar($vb) && (scalar(@{@$vb[-1]}) < 3)) {
+            next if ($self->autoreduce_leef(current => $entry) == 0);
+        }
+
         foreach my $entry (@$vb) {
             if ($#$entry < 3) {
                 # Can be snmpv1 not find
@@ -729,6 +734,7 @@ sub check_options {
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
     $self->{subsettable} = (defined($options{option_results}->{subsettable}) && $options{option_results}->{subsettable} =~ /^[0-9]+$/) ? $options{option_results}->{subsettable} : 100;
     $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
+    $self->{snmp_autoreduce} = 0;
     $self->{snmp_autoreduce_divisor} = 2;
     if (defined($options{option_results}->{snmp_autoreduce})) {
         $self->{snmp_autoreduce} = 1;
