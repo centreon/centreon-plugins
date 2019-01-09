@@ -25,28 +25,27 @@ package storage::netgear::readynas::snmp::mode::components::temperature;
 use strict;
 use warnings;
 
-my ($mapping, $oid_temperatureTable);
-
-my $mapping_v6 = {
-    temperatureValue => { oid => '.1.3.6.1.4.1.4526.22.5.1.2' },
-    temperatureType => { oid => '.1.3.6.1.4.1.4526.22.5.1.3' },
-    temperatureMax => { oid => '.1.3.6.1.4.1.4526.22.5.1.5' },
+my $mapping = {
+    v6 => {
+        temperatureValue => { oid => '.1.3.6.1.4.1.4526.22.5.1.2' },
+        temperatureType => { oid => '.1.3.6.1.4.1.4526.22.5.1.3' },
+        temperatureMax => { oid => '.1.3.6.1.4.1.4526.22.5.1.5' },
+    },
+    v4 => {
+        temperatureValue => { oid => '.1.3.6.1.4.1.4526.18.5.1.2' },
+        temperatureStatus => { oid => '.1.3.6.1.4.1.4526.18.5.1.3' },
+    },
 };
-my $oid_temperatureTable_v6 = '.1.3.6.1.4.1.4526.22.5';
-
-my $mapping_v4 = {
-    temperatureValue => { oid => '.1.3.6.1.4.1.4526.18.5.1.2' },
-    temperatureStatus => { oid => '.1.3.6.1.4.1.4526.18.5.1.3' },
+my $oid_temperatureTable = {
+    v4 => '.1.3.6.1.4.1.4526.18.5',
+    v6 => '.1.3.6.1.4.1.4526.22.5',
 };
-my $oid_temperatureTable_v4 = '.1.3.6.1.4.1.4526.18.5';
 
 sub load {
     my ($self) = @_;
     
-    $mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
-    $oid_temperatureTable = $self->{mib_ver} == 4 ? $oid_temperatureTable_v4 : $oid_temperatureTable_v6;
-    
-    push @{$self->{request}}, { oid => $oid_temperatureTable };
+    push @{$self->{request}}, { oid => $oid_temperatureTable->{$self->{mib_ver}}, 
+        start => $mapping->{$self->{mib_ver}}->{temperatureValue} };
 }
 
 sub check {
@@ -56,10 +55,10 @@ sub check {
     $self->{components}->{temperature} = { name => 'temperatures', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
     
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_temperatureTable}})) {
-        next if ($oid !~ /^$mapping->{temperatureValue}->{oid}\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $oid_temperatureTable->{$self->{mib_ver}} }})) {
+        next if ($oid !~ /^$mapping->{$self->{mib_ver}}->{temperatureValue}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_temperatureTable}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{mib_ver}}, results => $self->{results}->{ $oid_temperatureTable->{$self->{mib_ver}} }, instance => $instance);
         $instance .= "_" . $result->{temperatureType} if (defined($result->{temperatureType}));
         
         next if ($self->check_filter(section => 'temperature', instance => $instance));
