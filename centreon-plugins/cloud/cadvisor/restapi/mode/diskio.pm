@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,42 +18,39 @@
 # limitations under the License.
 #
 
-package cloud::docker::cadvisor::mode::traffic;
+package cloud::cadvisor::restapi::mode::diskio;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 use DateTime;
-
-my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'containers_traffic', type => 1, cb_prefix_output => 'prefix_containers_traffic_output', message_multiple => 'All container traffics are ok', skipped_code => { -11 => 1 } },
+        { name => 'containers_diskio', type => 1, cb_prefix_output => 'prefix_containers_diskio_output', message_multiple => 'All container disk IOps are ok', skipped_code => { -11 => 1 } },
     ];
     
-    $self->{maps_counters}->{containers_traffic} = [
-        { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in' }, { name => 'display' } ],
-                output_change_bytes => 2,
-                output_template => 'Traffic In: %s %s/s',
+    $self->{maps_counters}->{containers_diskio} = [
+        { label => 'diskio-read', set => {
+                key_values => [ { name => 'diskio_read' }, { name => 'display' } ],
+                output_change_bytes => 1,
+                output_template => 'Disk IO Read: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_absolute', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'diskio_read', value => 'diskio_read_absolute', template => '%.2f',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        { label => 'traffic-out', set => {
-                key_values => [ { name => 'traffic_out' }, { name => 'display' } ],
-                output_change_bytes => 2,
-                output_template => 'Traffic Out: %s %s/s',
+        { label => 'diskio-write', set => {
+                key_values => [ { name => 'diskio_write' }, { name => 'display' } ],
+                output_change_bytes => 1,
+                output_template => 'Disk IO Write: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_absolute', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'diskio_write', value => 'diskio_write_absolute', template => '%.2f',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -72,42 +69,19 @@ sub new {
                                   "container-name:s"            => { name => 'container_name' },
                                   "filter-name:s"               => { name => 'filter_name' },
                                   "use-name"                    => { name => 'use_name' },
-                                  "warning-container-status:s"  => { name => 'warning_container_status', default => '' },
-                                  "critical-container-status:s" => { name => 'critical_container_status', default => '' },
                                 });
    
     return $self;
 }
 
-sub check_options {
+sub prefix_containers_diskio_output {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub prefix_containers_traffic_output {
-    my ($self, %options) = @_;
-    
     return "Container '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_container_status', 'critical_container_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
                                                            
-    $self->{containers} = {};
-    $self->{containers_traffic} = {};
     $self->{containers_diskio} = {};
     my $result = $options{custom}->api_get_containers(
         container_id => $self->{option_results}->{container_id}, 
@@ -117,12 +91,14 @@ sub manage_selection {
 
     foreach my $container_id (keys %{$result}) {
         next if (!defined($result->{$container_id}->{Stats})); 
+        
         my $name = $result->{$container_id}->{Name};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
+        
         my $first_index = 0;
         my $first_stat = $result->{$container_id}->{Stats}[$first_index];
         my $first_ts = $first_stat->{timestamp};
@@ -134,6 +110,8 @@ sub manage_selection {
         my $last_dt = $self->parse_date(date => $last_ts);
 
         my $diff_ts = $last_dt - $first_dt;
+        my $read_io = {};
+        my $write_io = {};
 
 
         $self->{containers}->{$container_id} = {
@@ -141,13 +119,26 @@ sub manage_selection {
             display             => defined($self->{option_results}->{use_name}) ? $name : $container_id,
             name                => $name,
        };
-       foreach my $interface_index (0..(scalar(@{$first_stat->{network}->{interfaces}}) - 1)) {
+       # The API does not present the devices in the same order between the first and the last stats sample, so we can't just compare [0] with [0] and [1] with [1], we have to check the name of the device
+       foreach my $diskio_index (0..(scalar(@{$first_stat->{diskio}->{io_service_bytes}}) - 1)) {
             my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
-            $name .= '.' . $first_stat->{network}->{interfaces}->[$interface_index]->{name};
-            $self->{containers_traffic}->{$name} = {
-                display => $name,
-                traffic_in => ($last_stat->{network}->{interfaces}->[$interface_index]->{rx_packets} - $first_stat->{network}->{interfaces}->[$interface_index]->{rx_packets}) / $diff_ts * 8,
-                traffic_out => ($last_stat->{network}->{interfaces}->[$interface_index]->{tx_packets} - $first_stat->{network}->{interfaces}->[$interface_index]->{tx_packets}) / $diff_ts * 8,
+            my $device = $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{device};
+            $name .= ':' . $device;
+            $read_io->{$name} = {first => $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Read}};
+            $write_io->{$name} = {first => $first_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Write}};
+        }
+       foreach my $diskio_index (0..(scalar(@{$last_stat->{diskio}->{io_service_bytes}}) - 1)) {
+            my $name = defined($self->{option_results}->{use_name}) ? $name : $container_id;
+            my $device = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{device};
+            $name .= ':' . $device;
+            $read_io->{$name}->{last} = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Read};
+            $write_io->{$name}->{last} = $last_stat->{diskio}->{io_service_bytes}->[$diskio_index]->{stats}->{Write};
+        }
+        foreach my $diskio_disk (keys %$read_io) {
+            $self->{containers_diskio}->{$diskio_disk} = {
+                display         => $diskio_disk,
+                diskio_read     => ($read_io->{$diskio_disk}->{last} - $read_io->{$diskio_disk}->{first}) / $diff_ts ,
+                diskio_write    => ($write_io->{$diskio_disk}->{last} - $write_io->{$diskio_disk}->{first}) / $diff_ts,
             };
         }
     }
@@ -176,13 +167,14 @@ sub parse_date {
     return $dt->epoch.".".$7;
 }
 
+
 1;
 
 __END__
 
 =head1 MODE
 
-Check container usage.
+Check container disk io.
 
 =over 8
 
@@ -196,7 +188,7 @@ Exact container name (if multiple names: names separated by ':').
 
 =item B<--use-name>
 
-Use docker name for perfdata and display.
+Use name for perfdata and display.
 
 =item B<--filter-name>
 
@@ -205,29 +197,17 @@ Filter by container name (can be a regexp).
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^container-status$'
+Example: --filter-counters='^diskio-read$'
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out', 
-'cpu' (%), 'memory' (%).
+Can be: 'diskio-read', 'diskio-write'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
-'cpu' (%), 'memory' (%).
-
-=item B<--warning-container-status>
-
-Set warning threshold for status (Default: -)
-Can used special variables like: %{name}, %{state}.
-
-=item B<--critical-container-status>
-
-Set critical threshold for status (Default: -).
-Can used special variables like: %{name}, %{state}.
+Can be: 'diskio-read', 'diskio-write'.
 
 =back
 

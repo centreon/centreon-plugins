@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::docker::cadvisor::custom::api;
+package cloud::cadvisor::restapi::custom::api;
 
 use strict;
 use warnings;
@@ -47,6 +47,7 @@ sub new {
                         "hostname:s@"   => { name => 'hostname' },
                         "port:s"        => { name => 'port', default => 8080 },
                         "proto:s"       => { name => 'proto', default => 'http' },
+                        "path:s"        => { name => 'path', default => '/containers/docker/' },
                         "credentials"   => { name => 'credentials' },
                         "username:s"    => { name => 'username' },
                         "password:s"    => { name => 'password' },
@@ -59,7 +60,7 @@ sub new {
                         "cacert-file:s" => { name => 'cacert_file' },
                         "cert-pwd:s"    => { name => 'cert_pwd' },
                         "cert-pkcs12"   => { name => 'cert_pkcs12' },
-                        "api-version:s"         => { name => 'api_version', default => 'v1.3' },
+                        "api-version:s" => { name => 'api_version', default => 'v1.3' },
                     });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -100,8 +101,6 @@ sub check_options {
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
 
-    return 0 if (defined($self->{option_results}->{api_read_file}) && $self->{option_results}->{api_read_file} ne '');
-
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
@@ -134,7 +133,7 @@ sub internal_api_list_nodes {
     my ($self, %options) = @_;
     
     my $response = $self->{http}->{$options{node_name}}->request(
-        url_path => '/api/' . $self->{option_results}->{api_version} . '/containers/docker/',
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path},
         unknown_status => '', critical_status => '', warning_status => '');
     my $nodes;
     eval {
@@ -174,7 +173,7 @@ sub internal_api_list_containers {
     my ($self, %options) = @_;
     
     my $response = $self->{http}->{$options{node_name}}->request(
-        url_path => '/api/' . $self->{option_results}->{api_version} . '/containers/docker/',
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path},
         unknown_status => '', critical_status => '', warning_status => '');
     my $containers = [];
     my $containers_ids;
@@ -192,7 +191,12 @@ sub internal_api_list_containers {
                 url_path => '/api/' . $self->{option_results}->{api_version} . '/containers/' . $container->{name}
             )
         );
-        push @$containers, {id => $json_response->{id}, names => $json_response->{aliases}, node => $options{node_name}};
+        
+        push @$containers, {
+            id => defined($json_response->{id}) ? $json_response->{id} : $json_response->{name}, 
+            names => defined($json_response->{aliases}) ? $json_response->{aliases} : [$json_response->{name}],
+            node => $options{node_name} 
+        };
     }
     
     return $containers;
@@ -222,7 +226,7 @@ sub internal_api_get_machine_stats {
 sub internal_api_get_container_stats {
     my ($self, %options) = @_;
     my $response = $self->{http}->{$options{node_name}}->request(
-        url_path => '/api/' . $self->{option_results}->{api_version} . '/containers/docker/' . $options{container_id},
+        url_path => '/api/' . $self->{option_results}->{api_version} . $self->{option_results}->{path} . '/' . $options{container_id},
         unknown_status => '', critical_status => '', warning_status => '');
     my $container_stats;
     my $full_container_stats;
@@ -278,8 +282,6 @@ sub api_list_nodes {
             num_cores => $info_node->{num_cores},
             cpu_frequency_khz => $info_node->{cpu_frequency_khz},
             memory_capacity => $info_node->{memory_capacity},
-            #containers_stopped => $info_node->{ContainersStopped},
-            #containers_paused => $info_node->{ContainersPaused},
         };
         foreach my $node (@{$list_nodes->{subcontainers}}) {
             push @{$nodes->{$node_name}->{nodes}}, { 
@@ -293,9 +295,6 @@ sub api_list_nodes {
 
 sub api_get_containers {
     my ($self, %options) = @_;
-    if (defined($self->{option_results}->{api_read_file}) && $self->{option_results}->{api_read_file} ne '') {
-        return $self->api_read_file();
-    }
 
     my $content_total = $self->api_list_containers();
     if (defined($options{container_id}) && $options{container_id} ne '') {
@@ -330,11 +329,11 @@ __END__
 
 =head1 NAME
 
-Docker REST API
+cadvisor REST API
 
 =head1 SYNOPSIS
 
-Docker Rest API custom mode
+CAdvisor Rest API custom mode
 
 =head1 REST API OPTIONS
 
@@ -342,7 +341,7 @@ Docker Rest API custom mode
 
 =item B<--hostname>
 
-IP Addr/FQDN of the docker node (can be multiple).
+IP Addr/FQDN of the cadvisor node (can be multiple).
 
 =item B<--port>
 
@@ -351,6 +350,10 @@ Port used (Default: 8080)
 =item B<--proto>
 
 Specify https if needed (Default: 'http')
+
+=item B<--path>
+
+Path used (Default: '/containers/docker')
 
 =item B<--credentials>
 
