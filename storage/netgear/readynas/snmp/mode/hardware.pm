@@ -32,40 +32,39 @@ sub set_system {
     
     $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|disk|volume|temperature)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(fan|temperature)$';
-	
-	$self->{cb_hook1} = 'init_mib_ver';
+    
+    $self->{cb_hook1} = 'init_mib_ver';
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
-        # fan, temperature (v4)
         default => [
             ['Normal', 'OK'],
             ['Ok', 'OK'],
-			['Unknown', 'CRITICAL'],
-			['Failed', 'CRITICAL'],
+            ['Unknown', 'CRITICAL'],
+            ['Failed', 'CRITICAL'],
         ],
         disk => [
             ['Online', 'OK'],
-			['Ok', 'OK'],
-			['Unknown', 'OK'],
+            ['Ok', 'OK'],
+            ['Unknown', 'OK'],
             ['Offline', 'CRITICAL'],
         ],
-		psu => [
-			['On', 'OK'],
-			['Ok', 'OK'],
-			['Off', 'CRITICAL'],
-			['Unknown', 'CRITICAL']
-		],
+        psu => [
+            ['On', 'OK'],
+            ['Ok', 'OK'],
+            ['Off', 'CRITICAL'],
+            ['Unknown', 'CRITICAL']
+        ],
         volume => [
             ['Redundant', 'OK'],
-			['Ok', 'OK'],
+            ['Ok', 'OK'],
             ['Unprotected', 'WARNING'],
             ['Degraded', 'CRITICAL'],
             ['Dead', 'CRITICAL'],
             ['Unknown', 'CRITICAL'],
         ],
     };
-	
+    
     $self->{components_path} = 'storage::netgear::readynas::snmp::mode::components';
     $self->{components_module} = ['psu', 'fan', 'disk', 'volume', 'temperature'];
 }
@@ -73,21 +72,20 @@ sub set_system {
 sub init_mib_ver {
     my ($self, %options) = @_;
 
-	# make the difference between READYNASOS-MIB (v6) and READYNAS-MIB (v4)
-	my $oid_MgrSoftwareVersion_v4 = '.1.3.6.1.4.1.4526.18.1.0';
-	my $oid_MgrSoftwareVersion_v6 = '.1.3.6.1.4.1.4526.22.1.0';
-	
-	my $result = $options{snmp}->get_leef(oids => [$oid_MgrSoftwareVersion_v4, $oid_MgrSoftwareVersion_v6]);
-	
-	$self->{mib_ver} = defined($result->{$oid_MgrSoftwareVersion_v4}) ? 4 : 6;
+    # make the difference between READYNASOS-MIB (v6) and READYNAS-MIB (v4)
+    my $oid_MgrSoftwareVersion_v4 = '.1.3.6.1.4.1.4526.18.1.0';
+    my $oid_MgrSoftwareVersion_v6 = '.1.3.6.1.4.1.4526.22.1.0';
+    
+    my $result = $options{snmp}->get_leef(oids => [$oid_MgrSoftwareVersion_v4, $oid_MgrSoftwareVersion_v6]);
+    
+    $self->{mib_ver} = defined($result->{$oid_MgrSoftwareVersion_v4}) ? 4 : 6;
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
     
-	$self->{snmp} = $options{snmp};
+    $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
-	
 }
 
 sub new {
@@ -96,12 +94,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    
-	# In v4, fanRPM must be >0
-	$options{options}->add_options(arguments => {
-            "critical:s@" => { name => 'critical', default => ['fan,.*,1:'] },
-			});
-   	
+    $options{options}->add_options(arguments =>
+                                {
+                                });
+       
     return $self;
 }
 
@@ -138,12 +134,12 @@ Example: --threshold-overload='psu,CRITICAL,^(?!(on)$)'
 
 =item B<--warning>
 
-Set warning threshold for temperatures (syntax: type,instance,threshold)
+Set warning threshold for temperatures, fan (syntax: type,instance,threshold)
 Example: --warning='xxxxx,.*,30'
 
 =item B<--critical>
 
-Set critical threshold for temperatures (syntax: type,instance,threshold)
+Set critical threshold for temperatures, fan (syntax: type,instance,threshold)
 Example: --critical='xxxxx,.*,40'
 
 =back

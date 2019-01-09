@@ -42,16 +42,16 @@ my $oid_volumeTable_v4 = '.1.3.6.1.4.1.4526.18.7';
 sub load {
     my ($self) = @_;
     
-	$mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
-	$oid_volumeTable = $self->{mib_ver} == 4 ? $oid_volumeTable_v4 : $oid_volumeTable_v6;
-	
+    $mapping = $self->{mib_ver} == 4 ? $mapping_v4 : $mapping_v6;
+    $oid_volumeTable = $self->{mib_ver} == 4 ? $oid_volumeTable_v4 : $oid_volumeTable_v6;
+    
     push @{$self->{request}}, { oid => $oid_volumeTable };
 }
 
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking volume");
+    $self->{output}->output_add(long_msg => "checking volume");
     $self->{components}->{volume} = {name => 'volume', total => 0, skip => 0};
     return if ($self->check_filter(section => 'volume'));
 
