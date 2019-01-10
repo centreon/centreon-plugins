@@ -326,7 +326,7 @@ sub get_leef {
         
         # Some equipments gives a partial response and no error.
         # We look the last value if it's empty or not
-        if (scalar(@$vb) && (scalar(@{@$vb[-1]}) < 3)) {
+        if ((scalar(@$vb) != scalar(@{$entry})) || (scalar(@{@$vb[-1]}) < 3)) {
             next if ($self->{snmp_autoreduce} == 1 && $self->autoreduce_leef(current => $entry) == 0);
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => "SNMP partial response. Please try --snmp-autoreduce option");
