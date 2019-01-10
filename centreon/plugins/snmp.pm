@@ -333,7 +333,7 @@ sub get_leef {
                 $self->{output}->option_exit(exit_litteral => "SNMP partial response");
             }
             
-            $self->set_error(error_status => -1, error_msg => $msg);
+            $self->set_error(error_status => -1, error_msg => "SNMP partial response");
             return undef;
         }
 
