@@ -323,6 +323,19 @@ sub get_leef {
             $self->set_error(error_status => -1, error_msg => $msg);
             return undef;
         }
+        
+        # Some equipments gives a partial response and no error.
+        # We look the last value if it's empty or not
+        if (scalar(@$vb) && (scalar(@{@$vb[-1]}) < 3)) {
+            next if ($self->{snmp_autoreduce} == 1 && $self->autoreduce_leef(current => $entry) == 0);
+            if ($dont_quit == 0) {
+                $self->{output}->add_option_msg(short_msg => "SNMP partial response. Please try --snmp-autoreduce option");
+                $self->{output}->option_exit(exit_litteral => "SNMP partial response");
+            }
+            
+            $self->set_error(error_status => -1, error_msg => $msg);
+            return undef;
+        }
 
         foreach my $entry (@$vb) {
             if ($#$entry < 3) {
@@ -661,7 +674,6 @@ sub set {
         # 2    noSuchName    Variable inexistante.
     
         my $msg = 'SNMP SET Request : ' . $self->{session}->{ErrorStr};
-        
         if ($dont_quit == 0) {
             $self->{output}->add_option_msg(short_msg => $msg);
             $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -729,6 +741,7 @@ sub check_options {
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
     $self->{subsettable} = (defined($options{option_results}->{subsettable}) && $options{option_results}->{subsettable} =~ /^[0-9]+$/) ? $options{option_results}->{subsettable} : 100;
     $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
+    $self->{snmp_autoreduce} = 0;
     $self->{snmp_autoreduce_divisor} = 2;
     if (defined($options{option_results}->{snmp_autoreduce})) {
         $self->{snmp_autoreduce} = 1;
