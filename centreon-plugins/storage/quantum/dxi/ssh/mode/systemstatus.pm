@@ -109,7 +109,7 @@ sub new {
                                   "sudo"                => { name => 'sudo' },
                                   "command:s"           => { name => 'command', default => 'syscli' },
                                   "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-getstatus systemboard' },
+                                  "command-options:s"   => { name => 'command_options', default => '--getstatus systemboard' },
                                   "warning-status:s"    => { name => 'warning_status' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Normal/i' },
                                 });
@@ -234,7 +234,7 @@ Command path.
 
 =item B<--command-options>
 
-Command options (Default: '-getstatus systemboard').
+Command options (Default: '--getstatus systemboard').
 
 =back
 
