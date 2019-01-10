@@ -69,6 +69,10 @@ sub set_system {
             ['non-raid', 'OK'],
             ['removed', 'OK'],
         ],
+        'pdisk.smartalert' => [
+            ['off', 'OK'],
+            ['on', 'WARNING'],
+        ],
         'vdisk.state' => [
             ['unknown', 'UNKNOWN'],
             ['online', 'OK'],
