@@ -29,10 +29,16 @@ our %map_status;
 our %map_probe_status;
 our %map_amperage_type;
 our %map_pdisk_state;
+our %map_pdisk_smartstate;
 our %map_vdisk_state;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type %map_pdisk_state %map_vdisk_state);
+our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type %map_pdisk_state %map_pdisk_smartstate %map_vdisk_state);
+
+%map_pdisk_smartstate = (
+    0 => 'off',
+    1 => 'on',
+);
 
 %map_probe_status = (
     1 => 'other', 
