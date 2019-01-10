@@ -709,6 +709,15 @@ sub is_disco_show {
     return 0;
 }
 
+sub is_verbose {
+    my ($self) = @_;
+
+    if (defined($self->{option_results}->{verbose})) {
+        return 1;
+    }
+    return 0;
+}
+
 sub parse_pfdata_scale {
     my ($self, %options) = @_;
     
