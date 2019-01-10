@@ -70,7 +70,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['id', 'name', 'node' ,'status','type','vmid']);
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'node' ,'state','type','vmid']);
 }
 
 sub disco_show {
