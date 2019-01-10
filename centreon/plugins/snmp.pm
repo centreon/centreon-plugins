@@ -330,7 +330,7 @@ sub get_leef {
             next if ($self->{snmp_autoreduce} == 1 && $self->autoreduce_leef(current => $entry) == 0);
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => "SNMP partial response. Please try --snmp-autoreduce option");
-                $self->{output}->option_exit(exit_litteral => "SNMP partial response");
+                $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
             }
             
             $self->set_error(error_status => -1, error_msg => "SNMP partial response");
