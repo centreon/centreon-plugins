@@ -1,5 +1,5 @@
 #
-# Copyright 2019 Centreon (http://www.centreon.com/)
+# Copyright 2018 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -75,12 +75,15 @@ sub set_system {
             ['failed', 'CRITICAL'],
             ['degraded', 'WARNING'],
         ],
+        'smart.state' => [
+            ['normal', 'OK']
+        ]
     };
 
     $self->{components_path} = 'hardware::server::dell::idrac::snmp::mode::components';
     $self->{components_module} = ['psu', 'punit', 'temperature', 'voltage', 'amperage', 
         'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
-        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'];
+        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk', 'smart'];
 
     $self->{regexp_threshold_overload_check_section_option} = 
         '^(?:' . join('|', @{$self->{components_module}}). ')\.(?:status|state)$';
