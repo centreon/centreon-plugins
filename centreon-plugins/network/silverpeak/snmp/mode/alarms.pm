@@ -140,10 +140,10 @@ my %map_severity = (0 => 'info', 1 => 'warning', 2 => 'minor', 3 => 'major',
     4 => 'critical', 5 => 'cleared', 6 => 'acknowledged', 7 => 'unacknowledged', 8 => 'indeterminate');
 
 my $mapping = {
-    spsActiveAlarmSource        => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.6' },
-    spsActiveAlarmDescr         => { oid => ' 1.3.6.1.4.1.23867.3.1.1.2.1.1.5' },
-    spsActiveAlarmLogTime       => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.11' }, # timestamp
     spsActiveAlarmSeverity      => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.3', map => \%map_severity },
+    spsActiveAlarmSource        => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.6' },
+    spsActiveAlarmDescr         => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.5' },
+    spsActiveAlarmLogTime       => { oid => '.1.3.6.1.4.1.23867.3.1.1.2.1.1.11' }, # timestamp
 };
 
 sub manage_selection {
