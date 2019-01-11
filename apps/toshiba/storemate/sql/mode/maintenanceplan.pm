@@ -158,7 +158,7 @@ sub manage_selection {
         $row->{LOGDATE} =~ /^(\d+)-(\d+)-(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
         
         my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                               time_zone => $self->{option_results}->{timezone});
+                               %tz);
 
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
 
