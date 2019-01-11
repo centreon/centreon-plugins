@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::h3c::snmp::mode::hardware;
+package centreon::common::h3c::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -112,7 +112,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::h3c::snmp::mode::components';
+    $self->{components_path} = 'centreon::common::h3c::snmp::mode::components';
     $self->{components_module} = ['chassis', 'backplane', 'container', 'psu', 'fan', 'sensor',
         'module', 'port', 'stack', 'cpu', 'other', 'unknown'];
     
