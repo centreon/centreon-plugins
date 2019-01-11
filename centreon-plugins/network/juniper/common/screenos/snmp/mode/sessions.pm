@@ -100,6 +100,8 @@ sub manage_selection {
 
 __END__
 
+=head1 MODE
+
 Check Juniper sessions usage and failed sessions (NETSCREEN-RESOURCE-MIB).
 
 =over 8

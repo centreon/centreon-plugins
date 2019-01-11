@@ -315,6 +315,8 @@ sub manage_selection {
 
 1;
 
+__END__
+
 =head1 MODE
 
 Check VM usage on Proxmox VE Cluster.
