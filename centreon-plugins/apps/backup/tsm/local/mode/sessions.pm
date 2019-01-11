@@ -161,12 +161,12 @@ sub manage_selection {
     $self->{sessions} = {};
     $self->{global} = { total => 0 };
 
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     while ($response =~ /^(.*?),(.*?),(.*?),(.*?),(.*?)$/mg) {
         my ($session_id, $client_name, $start_time, $state, $session_type) = ($1, $2, $3, $4, $5);
         $start_time =~ /^(\d+)-(\d+)-(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
         
-        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                               time_zone => $self->{option_results}->{timezone});
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
 
         if (defined($self->{option_results}->{filter_clientname}) && $self->{option_results}->{filter_clientname} ne '' &&
             $client_name !~ /$self->{option_results}->{filter_clientname}/) {

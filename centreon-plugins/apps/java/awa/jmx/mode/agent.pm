@@ -142,7 +142,8 @@ sub manage_selection {
                           { name => 'Active' }, { name => 'Name' } ] },
     ];
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 1);
-
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
+    
     foreach my $mbean (keys %{$result}) {
         $mbean =~ /name=(.*?)(,|$)/i;
         my $name = $1;
@@ -164,7 +165,7 @@ sub manage_selection {
             hour       => $4,
             minute     => $5,
             second     => $6,
-            time_zone  => $self->{option_results}->{timezone},
+            %$tz
         );
         
         $self->{agent}->{$display} = { 

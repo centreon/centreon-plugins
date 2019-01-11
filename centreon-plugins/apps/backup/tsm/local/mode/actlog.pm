@@ -152,12 +152,13 @@ sub manage_selection {
     my %map_severity = (E => 'error', W => 'warning', I => 'information', S => 'severe', K => 'kernel');
     my ($i, $current_time) = (1, time());
     #2017-09-19 12:08:14.000000,I,"ANR1283I File count is incorrect fo..."
+    
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     while ($response =~ /^(.*?),(.*?),(.*)$/mg) {
         my ($date, $severity, $message) = ($1, $2, $3);
         $date =~ /^(\d+)-(\d+)-(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
         
-        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                               time_zone => $self->{option_results}->{timezone});
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
 
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
 

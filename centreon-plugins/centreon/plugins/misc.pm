@@ -480,6 +480,24 @@ sub get_threshold_litteral {
     return $perf_output;
 }
 
+sub set_timezone {
+    my (%options) = @_;
+    
+    return {} if (!defined($options{name}) || $options{name} eq '');
+     
+    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'DateTime::TimeZone',
+                                           error_msg => "Cannot load module 'DateTime::TimeZone'.");
+    if (DateTime::TimeZone->is_valid_name($options{name})) {
+        return { time_zone => DateTime::TimeZone->new(name => $options{name}) };
+    }
+    
+    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'POSIX',
+                                           error_msg => "Cannot load module 'POSIX'.");
+    $ENV{TZ} = $options{name};
+    POSIX::tzset();
+    return {};
+}
+
 1;
 
 __END__
