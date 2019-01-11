@@ -159,6 +159,7 @@ sub manage_selection {
     }
 
     my ($i, $current_time) = (1, time());
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{eventLogSeverity}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -167,8 +168,7 @@ sub manage_selection {
         my $date = $result->{eventLogDate} . ' ' . $result->{eventLogTime};
         $date =~ /^(\d+)\/(\d+)\/(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
 
-        my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6,
-                               time_zone => $self->{option_results}->{timezone});
+        my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6, %$tz);
 
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
 

@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use DateTime;
 
 my $instance_mode;
@@ -104,7 +105,7 @@ sub custom_last_calc {
             hour       => $4,
             minute     => $5,
             second     => $6,
-            time_zone  => $instance_mode->{option_results}->{timezone},
+            %{$self->{tz}}
         );
         $self->{result_values}->{diff} = time() - $dt->epoch;
         $self->{result_values}->{date_time} = $dt->datetime();
@@ -177,6 +178,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    $self->{tz} = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     $instance_mode = $self;
     $self->change_macros();
 }

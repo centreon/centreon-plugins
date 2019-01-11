@@ -152,6 +152,7 @@ sub manage_selection {
     }
     
     my ($i, $current_time) = (1, time());
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone}));
     while (my $row = $self->{sql}->fetchrow_hashref()) {
         # date form: 2017-09-22 01:01:08.133
         $row->{LOGDATE} =~ /^(\d+)-(\d+)-(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
