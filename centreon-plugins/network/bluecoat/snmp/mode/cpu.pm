@@ -97,13 +97,7 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
     $self->{cpu} = {};
- #   my $snmp_result = $options{snmp}->get_table(oid => $oid_table, start => $mapping->{sgProxyCpuCoreBusyTime}, end => $mapping->{sgProxyCpuCoreIdleTime}, nothing_quit => 1);   
-    my $snmp_result = {
-        '.1.3.6.1.4.1.3417.2.11.2.4.1.3.15' => 500,
-        '.1.3.6.1.4.1.3417.2.11.2.4.1.4.15' => 500,
-        '.1.3.6.1.4.1.3417.2.11.2.4.1.3.16' => 500,
-        '.1.3.6.1.4.1.3417.2.11.2.4.1.4.16' => 500,
-    };
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_table, start => $mapping->{sgProxyCpuCoreBusyTime}, end => $mapping->{sgProxyCpuCoreIdleTime}, nothing_quit => 1);
     my $i = 0;
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result})) {
         next if ($oid !~ /^$mapping->{sgProxyCpuCoreBusyTime}->{oid}\.(.*)$/);
