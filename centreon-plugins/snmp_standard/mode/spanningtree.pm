@@ -51,7 +51,7 @@ sub custom_status_threshold {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = " spanning tree state is '" . $self->{result_values}->{state} . "' [index: '" . $self->{result_values}->{index} . "']";
+    my $msg = "spanning tree state is '" . $self->{result_values}->{state} . "' [index: '" . $self->{result_values}->{index} . "']";
 
     return $msg;
 }
@@ -88,7 +88,7 @@ sub set_counters {
 sub prefix_peers_output {
     my ($self, %options) = @_;
 
-    return "Port: '" . $options{instance_value}->{display} . "' ";
+    return "Port '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {

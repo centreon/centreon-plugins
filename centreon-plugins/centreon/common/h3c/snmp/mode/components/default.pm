@@ -18,50 +18,62 @@
 # limitations under the License.
 #
 
-package network::h3c::snmp::mode::components::psu;
+package centreon::common::h3c::snmp::mode::components::default;
 
 use strict;
 use warnings;
 
-my %map_psu_status = (
+my %map_default_status = (
     1 => 'notSupported',
     2 => 'normal',
+    3 => 'postFailure',
     4 => 'entityAbsent',
+    11 => 'poeError',
+    21 => 'stackError',
+    22 => 'stackPortBlocked',
+    23 => 'stackPortFailed',
+    31 => 'sfpRecvError',
+    32 => 'sfpSendError',
+    33 => 'sfpBothError',
+    41 => 'fanError',
     51 => 'psuError',
+    61 => 'rpsError',
+    71 => 'moduleFaulty',
+    81 => 'sensorError',
     91 => 'hardwareFaulty',
 );
 
 sub check {
-    my ($self) = @_;
+    my ($self, %options) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'psu'));
+    $self->{output}->output_add(long_msg => "Checking " . $options{component});
+    $self->{components}->{$options{component}} = {name => $options{component}, total => 0, skip => 0};
+    return if ($self->check_filter(section => $options{component}));
 
     my $mapping = {
-        EntityExtErrorStatus => { oid => $self->{branch} . '.19', map => \%map_psu_status },
+        EntityExtErrorStatus => { oid => $self->{branch} . '.19', map => \%map_default_status },
     };
 
-    foreach my $instance (sort $self->get_instance_class(class => { 6 => 1 }) ) {
+    foreach my $instance (sort $self->get_instance_class(class => { $options{component_class} => 1 })) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$self->{branch} . '.19'}, instance => $instance);
 
         next if (!defined($result->{EntityExtErrorStatus}));
-        next if ($self->check_filter(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => $options{component}, instance => $instance));
         if ($result->{EntityExtErrorStatus} =~ /entityAbsent/i) {
-            $self->absent_problem(section => 'psu', instance => $instance);
+            $self->absent_problem(section => $options{component}, instance => $instance);
             next;
         }
         
         my $name = '';
         $name = $self->get_short_name(instance => $instance) if (defined($self->{short_name}) && $self->{short_name} == 1);
         $name = $self->get_long_name(instance => $instance) unless (defined($self->{short_name}) && $self->{short_name} == 1 && defined($name) && $name ne '');
-        $self->{components}->{psu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is '%s' [instance = %s]",
-                                                        $name, $result->{EntityExtErrorStatus}, $instance));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{EntityExtErrorStatus});
+        $self->{components}->{$options{component}}->{total}++;
+        $self->{output}->output_add(long_msg => sprintf("%s '%s' status is '%s' [instance = %s]",
+                                                        ucfirst($options{component}), $name, $result->{EntityExtErrorStatus}, $instance));
+        my $exit = $self->get_severity(section => $options{component}, value => $result->{EntityExtErrorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", $name, $result->{EntityExtErrorStatus}));
+                                        short_msg => sprintf("%s '%s' status is '%s'", $options{component}, $name, $result->{EntityExtErrorStatus}));
         }
     }
 }

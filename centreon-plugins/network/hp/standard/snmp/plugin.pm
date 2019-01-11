@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::h3c::snmp::plugin;
+package network::hp::standard::snmp::plugin;
 
 use strict;
 use warnings;
@@ -36,6 +36,8 @@ sub new {
                          'interfaces'       => 'snmp_standard::mode::interfaces', 
                          'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
                          'memory'           => 'centreon::common::h3c::snmp::mode::memory',
+                         'spanning-tree'    => 'snmp_standard::mode::spanningtree',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;
@@ -47,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check h3c equipments in SNMP.
+Check HP switches in SNMP.
 
 =cut

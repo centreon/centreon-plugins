@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::h3c::snmp::mode::components::sensor;
+package centreon::common::h3c::snmp::mode::components::sensor;
 
 use strict;
 use warnings;
