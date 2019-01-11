@@ -53,6 +53,8 @@ sub run {
 
 1;
 
+__END__
+
 =head1 MODE
 
 Get Proxmox VE Version

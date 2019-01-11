@@ -233,6 +233,8 @@ sub manage_selection {
 
 1;
 
+__END__
+
 =head1 MODE
 
 Check storage usage.
