@@ -491,10 +491,11 @@ sub set_timezone {
         return { time_zone => DateTime::TimeZone->new(name => $options{name}) };
     }
     
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'POSIX',
-                                           error_msg => "Cannot load module 'POSIX'.");
-    $ENV{TZ} = $options{name};
-    POSIX::tzset();
+    # try to manage syntax (:Pacific/Noumea for example)
+    if ($options{name} =~ /^:(.*)$/ && DateTime::TimeZone->is_valid_name($1)) {
+        return { time_zone => DateTime::TimeZone->new(name => $1) };
+    }
+
     return {};
 }
 
