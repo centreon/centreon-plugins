@@ -72,7 +72,7 @@ sub custom_status_output {
     while ($msg =~ /%\{(.*?)\}/g) {
         my $key = $1;
         if (defined($self->{result_values}->{$key})) {
-            $msg =~ s/%{$key}/$self->{result_values}->{$key}/g;
+            $msg =~ s/%\{$key\}/$self->{result_values}->{$key}/g;
         }
     }
 
