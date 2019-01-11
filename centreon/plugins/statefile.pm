@@ -148,9 +148,9 @@ sub read {
     }
     
     if (! -e $self->{statefile_dir} . "/" . $self->{statefile}) {
-        if (! -w $self->{statefile_dir}) {
+        if (! -w $self->{statefile_dir} || ! -x $self->{statefile_dir}) {
             $self->error(1);
-            $self->{output}->add_option_msg(short_msg =>  "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write permissions on directory.");
+            $self->{output}->add_option_msg(short_msg =>  "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write/exec permissions on directory.");
             if ($self->{no_quit} == 0) {
                 $self->{output}->option_exit();
             }
