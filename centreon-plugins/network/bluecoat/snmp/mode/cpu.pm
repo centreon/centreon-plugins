@@ -39,7 +39,7 @@ sub set_counters {
                 output_template => '%.2f %%', output_use => 'used_prct', threshold_use => 'used_prct',
                 perfdatas => [
                     { label => 'cpu', value => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -49,6 +49,7 @@ sub set_counters {
 sub custom_data_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     my $delta_busy = $options{new_datas}->{$self->{instance} . '_busy'} - $options{old_datas}->{$self->{instance} . '_busy'};
     my $delta_idle = $options{new_datas}->{$self->{instance} . '_idle'} - $options{old_datas}->{$self->{instance} . '_idle'};
     my $total = $delta_busy + $delta_idle;
@@ -96,7 +97,13 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
     $self->{cpu} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_table, start => $mapping->{sgProxyCpuCoreBusyTime}, end => $mapping->{sgProxyCpuCoreIdleTime}, nothing_quit => 1);   
+ #   my $snmp_result = $options{snmp}->get_table(oid => $oid_table, start => $mapping->{sgProxyCpuCoreBusyTime}, end => $mapping->{sgProxyCpuCoreIdleTime}, nothing_quit => 1);   
+    my $snmp_result = {
+        '.1.3.6.1.4.1.3417.2.11.2.4.1.3.15' => 500,
+        '.1.3.6.1.4.1.3417.2.11.2.4.1.4.15' => 500,
+        '.1.3.6.1.4.1.3417.2.11.2.4.1.3.16' => 500,
+        '.1.3.6.1.4.1.3417.2.11.2.4.1.4.16' => 500,
+    };
     my $i = 0;
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result})) {
         next if ($oid !~ /^$mapping->{sgProxyCpuCoreBusyTime}->{oid}\.(.*)$/);
