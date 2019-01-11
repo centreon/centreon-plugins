@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::h3c::snmp::mode::memory;
+package centreon::common::h3c::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
