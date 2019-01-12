@@ -22,6 +22,7 @@ package apps::protocols::snmp::plugin;
 
 use strict;
 use warnings;
+use Time::HiRes qw(gettimeofday);
 use base qw(centreon::plugins::script_snmp);
 
 sub new {
@@ -33,11 +34,20 @@ sub new {
     %{$self->{modes}} = (
         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
         'numeric-value'      => 'snmp_standard::mode::numericvalue',
+        'response-time'      => 'apps::protocols::snmp::mode::responsetime',
         'string-value'       => 'snmp_standard::mode::stringvalue',
         'uptime'             => 'snmp_standard::mode::uptime',
     );
 
     return $self;
+}
+
+sub run {
+    my ($self) = @_;
+    if ($self->{mode_name} eq "response-time") {
+        $self->{mode}{timing0} = [gettimeofday];
+    }
+    $self->SUPER::run();
 }
 
 1;
