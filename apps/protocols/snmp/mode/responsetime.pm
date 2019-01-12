@@ -72,6 +72,7 @@ sub run {
     my ($timing1, $timing2, $timeelapsed, $packetlost);
     my $sysDescr=".1.3.6.1.2.1.1.1.0";
     $timing1 = [gettimeofday];
+    $self->{snmp}{subsetleef} = 1;
     $self->{snmp}->get_leef(oids => [$sysDescr], nothing_quit => 0, dont_quit => 1);
     $timing2 = [gettimeofday];
     $timeelapsed = fmod((tv_interval ($timing1, $timing2) * 1000), ($self->{snmp}{snmp_params}{Timeout} / 1000));
