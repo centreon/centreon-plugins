@@ -35,41 +35,43 @@ sub new {
     $self->{version} = '1.2';
     $options{options}->add_options(arguments =>
             {
-            "hostname:s"            => { name => 'hostname' },
-            "http-peer-addr:s"      => { name => 'http_peer_addr' },
-            "port:s"                => { name => 'port', },
-            "method:s"              => { name => 'method' },
-            "proto:s"               => { name => 'proto' },
-            "urlpath:s"             => { name => 'url_path' },
-            "credentials"           => { name => 'credentials' },
-            "basic"                 => { name => 'basic' },
-            "ntlm"                  => { name => 'ntlm' }, # Deprecated
-            "ntlmv2"                => { name => 'ntlmv2' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "proxypac:s"            => { name => 'proxypac' },
-            "expected-string:s"     => { name => 'expected_string' },
-            "timeout:s"             => { name => 'timeout' },
-            "no-follow"             => { name => 'no_follow', },
-            "ssl:s"                 => { name => 'ssl', },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            "cert-file:s"           => { name => 'cert_file' },
-            "key-file:s"            => { name => 'key_file' },
-            "cacert-file:s"         => { name => 'cacert_file' },
-            "cert-pwd:s"            => { name => 'cert_pwd' },
-            "cert-pkcs12"           => { name => 'cert_pkcs12' },
-            "header:s@"             => { name => 'header' },
-            "get-param:s@"          => { name => 'get_param' },
-            "post-param:s@"         => { name => 'post_param' },
-            "cookies-file:s"        => { name => 'cookies_file' },
-            "unknown-status:s"      => { name => 'unknown_status' },
-            "warning-status:s"      => { name => 'warning_status' },
-            "critical-status:s"     => { name => 'critical_status' },
-            "warning:s"             => { name => 'warning' },
-            "critical:s"            => { name => 'critical' },
-            "warning-size:s"        => { name => 'warning_size' },
-            "critical-size:s"       => { name => 'critical_size' },
+            "hostname:s"                    => { name => 'hostname' },
+            "http-peer-addr:s"              => { name => 'http_peer_addr' },
+            "port:s"                        => { name => 'port', },
+            "method:s"                      => { name => 'method' },
+            "proto:s"                       => { name => 'proto' },
+            "urlpath:s"                     => { name => 'url_path' },
+            "credentials"                   => { name => 'credentials' },
+            "basic"                         => { name => 'basic' },
+            "ntlm"                          => { name => 'ntlm' }, # Deprecated
+            "ntlmv2"                        => { name => 'ntlmv2' },
+            "username:s"                    => { name => 'username' },
+            "password:s"                    => { name => 'password' },
+            "proxyurl:s"                    => { name => 'proxyurl' },
+            "proxypac:s"                    => { name => 'proxypac' },
+            "expected-headers:s@"           => { name => 'expected_headers' },
+            "expected-first-headers:s@"     => { name => 'expected_first_headers' },
+            "expected-string:s"             => { name => 'expected_string' },
+            "timeout:s"                     => { name => 'timeout' },
+            "no-follow"                     => { name => 'no_follow', },
+            "ssl:s"                         => { name => 'ssl', },
+            "ssl-opt:s@"                    => { name => 'ssl_opt' },
+            "cert-file:s"                   => { name => 'cert_file' },
+            "key-file:s"                    => { name => 'key_file' },
+            "cacert-file:s"                 => { name => 'cacert_file' },
+            "cert-pwd:s"                    => { name => 'cert_pwd' },
+            "cert-pkcs12"                   => { name => 'cert_pkcs12' },
+            "header:s@"                     => { name => 'header' },
+            "get-param:s@"                  => { name => 'get_param' },
+            "post-param:s@"                 => { name => 'post_param' },
+            "cookies-file:s"                => { name => 'cookies_file' },
+            "unknown-status:s"              => { name => 'unknown_status' },
+            "warning-status:s"              => { name => 'warning_status' },
+            "critical-status:s"             => { name => 'critical_status' },
+            "warning:s"                     => { name => 'warning' },
+            "critical:s"                    => { name => 'critical' },
+            "warning-size:s"                => { name => 'warning_size' },
+            "critical-size:s"               => { name => 'critical_size' },
             });
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
@@ -294,6 +296,14 @@ Threshold warning for content size
 =item B<--critical-size>
 
 Threshold critical for content size
+
+=item B<--expected-headers>
+
+Specify String to check on the final response headers (Multiple option)
+
+=item B<--expected-first-headers>
+
+Specify String to check on the first response headers (Multiple option)
 
 =item B<--expected-string>
 
