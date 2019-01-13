@@ -111,7 +111,7 @@ sub run {
     
     $self->{output}->output_add(long_msg => $webcontent);
 
-    if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
+    if ($webcontent =~ /$self->{option_results}->{expected_string}/msi) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
     } else {
