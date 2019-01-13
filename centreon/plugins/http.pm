@@ -340,6 +340,16 @@ sub get_headers {
     return $self->{headers};
 }
 
+sub get_first_headers {
+    my ($self, %options) = @_;
+
+    my $first_response = $self->{response};
+    while (exists($first_response->{_previous})) {
+        $first_response = $first_response->{_previous};
+    }
+    return $first_response->{_headers};
+}
+
 sub get_response {
     my ($self, %options) = @_;
 
