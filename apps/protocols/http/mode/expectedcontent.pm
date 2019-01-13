@@ -113,6 +113,37 @@ sub run {
     
     $self->{output}->output_add(long_msg => $webcontent);
 
+    # Expected first headers check
+    if (defined($self->{option_results}->{expected_first_headers})) {
+        my $headers = $self->{http}->get_first_headers();
+        $headers = join(', ', map("$_: $headers->{$_}", keys %$headers));
+        foreach my $expected (@{$self->{option_results}->{expected_first_headers}}) {
+            if ($headers =~ /$expected/i) {
+                $self->{output}->output_add(severity => 'OK',
+                                            short_msg => sprintf("'%s' is present in first headers.", $expected));
+            } else {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => sprintf("'%s' is not present in first headers.", $expected));
+            }
+        }
+    }
+
+    # Expected headers check
+    if (defined($self->{option_results}->{expected_headers})) {
+        my $headers = $self->{http}->get_headers();
+        $headers = join(', ', map("$_: $headers->{$_}", keys %$headers));
+        foreach my $expected (@{$self->{option_results}->{expected_headers}}) {
+            if ($headers =~ /$expected/i) {
+                $self->{output}->output_add(severity => 'OK',
+                                            short_msg => sprintf("'%s' is present in headers.", $expected));
+            } else {
+                $self->{output}->output_add(severity => 'CRITICAL',
+                                            short_msg => sprintf("'%s' is not present in headers.", $expected));
+            }
+        }
+    }
+
+    # Expected string check
     if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
