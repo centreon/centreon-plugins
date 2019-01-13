@@ -70,6 +70,8 @@ sub new {
             "critical:s"            => { name => 'critical' },
             "warning-size:s"        => { name => 'warning_size' },
             "critical-size:s"       => { name => 'critical_size' },
+            "warning-extracted:s"   => { name => 'warning_extracted' },
+            "critical-extracted:s"  => { name => 'critical_extracted' },
             });
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
@@ -99,6 +101,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical-size threshold '" . $self->{option_results}->{critical_size} . "'.");
         $self->{output}->option_exit();
     }
+    if (($self->{perfdata}->threshold_validate(label => 'warning-extracted', value => $self->{option_results}->{warning_extracted})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong warning-extracted threshold '" . $self->{option_results}->{warning_extracted} . "'.");
+        $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'critical-extracted', value => $self->{option_results}->{critical_extracted})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong critical-extracted threshold '" . $self->{option_results}->{critical_extracted} . "'.");
+        $self->{output}->option_exit();
+    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -108,12 +118,27 @@ sub run {
     my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request();
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
+    my $extracted;
     
     $self->{output}->output_add(long_msg => $webcontent);
 
     if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
+        $extracted = $1;
+        if(defined($extracted)) {
+            $extracted =~ s/,/\./;
+            my $exit = $self->{perfdata}->threshold_check(value => $extracted,
+                                                          threshold => [ { label => 'critical-extracted', exit_litteral => 'critical' }, { label => 'warning-extracted', exit_litteral => 'warning' } ]);
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Extracted value : %s", $extracted));
+            $self->{output}->perfdata_add(label => "extracted",
+                                          value => $extracted,
+                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-extracted'),
+                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-extracted'));
+        }
+        else {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
+        }
     } else {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
@@ -295,9 +320,17 @@ Threshold warning for content size
 
 Threshold critical for content size
 
+=item B<--warning-extracted>
+
+Threshold warning for extracted value from expected string
+
+=item B<--critical-extracted>
+
+Threshold critical for extracted value from expected string
+
 =item B<--expected-string>
 
-Specify String to check on the Webpage
+Specify String to check on the Webpage, an extracted value can be surrounded by ()
 
 =back
 
