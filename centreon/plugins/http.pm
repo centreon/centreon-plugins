@@ -334,7 +334,7 @@ sub request {
     return $response->content;
 }
 
-sub get_header {
+sub get_headers {
     my ($self, %options) = @_;
 
     return $self->{headers};

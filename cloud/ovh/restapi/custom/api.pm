@@ -188,7 +188,7 @@ sub get {
 
     my $response = $self->{http}->request(full_url => $map_ovh_type{uc($self->{ovh_type})} . $options{path},
                                           hostname => '', critical_status => '', warning_status => '');
-    my $headers = $self->{http}->get_header();
+    my $headers = $self->{http}->get_headers();
     my $client_warning = $headers->header('Client-Warning');
     if (defined($client_warning) && $client_warning eq 'Internal response') {
         $self->{output}->add_option_msg(short_msg => "Internal LWP::UserAgent error: $response");

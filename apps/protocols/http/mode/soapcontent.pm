@@ -165,7 +165,7 @@ sub check_encoding {
     my ($self, %options) = @_;
     
     my $charset;
-    my $headers = $self->{http}->get_header();
+    my $headers = $self->{http}->get_headers();
     my $content_type = $headers->header('Content-Type');
     if (defined($content_type) && $content_type =~ /charset\s*=\s*(\S+)/i) {
         $charset = $1;

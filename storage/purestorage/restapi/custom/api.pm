@@ -197,7 +197,7 @@ sub get_session {
 
     $self->settings();
     my $decoded = $self->request_api(method => 'POST', url_path => $self->{api_path} . '/auth/session', query_form_post => $encoded);
-    my $headers = $self->{http}->get_header();
+    my $headers = $self->{http}->get_headers();
     my $cookie = $headers->header('Set-Cookie');
     if (!defined($cookie)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get session");
