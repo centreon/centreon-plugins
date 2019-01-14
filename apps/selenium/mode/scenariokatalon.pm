@@ -235,17 +235,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_state', 'critical_state')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_state', 'critical_state']);
 }
 
 sub manage_selection {
