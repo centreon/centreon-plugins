@@ -27,8 +27,7 @@ use warnings;
 use Time::HiRes qw(gettimeofday);
 use XML::XPath;
 use WWW::Selenium;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions;
 
 my %handlers = (ALRM => {} );
 
@@ -82,30 +81,6 @@ sub custom_count_calc {
     $self->{result_values}->{value_prct} = $self->{result_values}->{value} / $self->{result_values}->{total} * 100;
 
     return 0;
-}
-
-sub custom_state_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_state}) && $instance_mode->{option_results}->{critical_state} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_state}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_state}) && $instance_mode->{option_results}->{warning_state} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_state}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
 }
 
 sub custom_state_output {
@@ -186,7 +161,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_state_threshold'),
+                closure_custom_threshold_check => &centreon::plugins::templates::catalog_functions::catalog_status_threshold,
             }
         },
         { label => 'time-step', set => {
@@ -260,7 +235,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
-    $instance_mode = $self;
     $self->change_macros();
 }
 
