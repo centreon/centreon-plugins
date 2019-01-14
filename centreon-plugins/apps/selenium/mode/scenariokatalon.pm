@@ -161,7 +161,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => &centreon::plugins::templates::catalog_functions::catalog_status_threshold,
+                closure_custom_threshold_check => \&centreon::plugins::templates::catalog_functions::catalog_status_threshold,
             }
         },
         { label => 'time-step', set => {
