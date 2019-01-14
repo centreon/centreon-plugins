@@ -425,6 +425,16 @@ sub manage_selection {
     #$self->{cache_name} = "choose_name_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
     #    (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
+
+sub change_macros {
+    my ($self, %options) = @_;
+
+    foreach (@{$options{macros}}) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
+        }
+    }
+}
     
 1;
 
