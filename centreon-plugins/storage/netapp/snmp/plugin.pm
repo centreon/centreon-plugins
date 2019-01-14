@@ -51,6 +51,7 @@ sub new {
                          'temperature'      => 'storage::netapp::snmp::mode::temperature',
                          'volumeoptions'    => 'storage::netapp::snmp::mode::volumeoptions',
                          'cache-age'        => 'storage::netapp::snmp::mode::cacheage',
+                         'uptime'           => 'snmp_standard::mode::uptime',
                          );
 
     return $self;
