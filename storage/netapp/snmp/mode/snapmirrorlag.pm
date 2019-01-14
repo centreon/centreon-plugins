@@ -24,9 +24,20 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+#use Schedule::Cron::Events; to use with .1.3.6.1.4.1.789.1.9.20.1.19 in a future version
+
+my %states = (
+    1 => ['uninitialized', 'CRITICAL'], 
+    2 => ['snapmirrored', 'OK'], 
+    3 => ['brokenOff', 'CRITICAL'], 
+    4 => ['quiesced', 'WARNING'],
+    5 => ['source', 'OK'],
+    6 => ['unknown', 'CRITICAL'],
+);
 
 my $oid_snapmirrorOn = '.1.3.6.1.4.1.789.1.9.1.0';
 my $oid_snapmirrorSrc = '.1.3.6.1.4.1.789.1.9.20.1.2';
+my $oid_snapmirrorState = '.1.3.6.1.4.1.789.1.9.20.1.5';
 my $oid_snapmirrorLag = '.1.3.6.1.4.1.789.1.9.20.1.6'; # hundreth of seconds
 
 sub new {
@@ -100,24 +111,26 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_snapmirrorLag], instances => $self->{snapmirrors_id_selected});
+    $self->{snmp}->load(oids => [$oid_snapmirrorState, $oid_snapmirrorLag], instances => $self->{snapmirrors_id_selected});
     my $result = $self->{snmp}->get_leef(nothing_quit => 1);
-    
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All snapmirrors lags are ok.');
-    }
 
+    my $destinations = 0;
     foreach my $instance (sort @{$self->{snapmirrors_id_selected}}) {
         my $name = $self->{result_names}->{$oid_snapmirrorSrc . '.' . $instance};
+        my $state = $result->{$oid_snapmirrorState . '.' . $instance};
         my $lag = int($result->{$oid_snapmirrorLag . '.' . $instance} / 100);
+
+        if (${$states{$state}}[0] eq "source") {
+            next;
+        }
+        $destinations++ ;
         
         my $exit = $self->{perfdata}->threshold_check(value => $lag, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
-        $self->{output}->output_add(long_msg => sprintf("Snapmirror '%s' lag: %s seconds", $name, $lag));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Snapmirror '%s' lag: %s seconds", $name, $lag));
+        $self->{output}->output_add(long_msg => sprintf("Snapmirror '%s' is %s, lag: %s seconds", $name, ${$states{$state}}[0], $lag));
+        if (${$states{$state}}[1] ne "OK" || !$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
+            $self->{output}->output_add(severity => $self->{output}->get_most_critical(status => [ ${$states{$state}}[1], $exit ]),
+                                        short_msg => sprintf("Snapmirror '%s' is %s, lag: %s seconds", $name, ${$states{$state}}[0], $lag));
         }
 
         my $extra_label = '';
@@ -129,7 +142,17 @@ sub run {
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
     }
-    
+
+    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
+        if ($destinations) {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => 'All $destinations snapmirrors lags are ok.');
+        } else {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => 'No destination-snapmirrors found.');
+        }
+    }
+
     $self->{output}->display();
     $self->{output}->exit();
 }
