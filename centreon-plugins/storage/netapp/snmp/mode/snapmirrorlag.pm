@@ -114,10 +114,10 @@ sub run {
         
         my $exit = $self->{perfdata}->threshold_check(value => $lag, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
-        $self->{output}->output_add(long_msg => sprintf("Snapmirror '%s' lag: %s secondes", $name, $lag));
+        $self->{output}->output_add(long_msg => sprintf("Snapmirror '%s' lag: %s seconds", $name, $lag));
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Snapmirror '%s' lag: %s secondes", $name, $lag));
+                                        short_msg => sprintf("Snapmirror '%s' lag: %s seconds", $name, $lag));
         }
 
         my $extra_label = '';
