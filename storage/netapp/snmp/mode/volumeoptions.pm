@@ -26,6 +26,7 @@ use strict;
 use warnings;
 
 my $oid_volName = '.1.3.6.1.4.1.789.1.5.8.1.2';
+my $oid_volState = '.1.3.6.1.4.1.789.1.5.8.1.5';
 my $oid_volOptions = '.1.3.6.1.4.1.789.1.5.8.1.7';
 
 sub new {
@@ -41,6 +42,7 @@ sub new {
                                   "name:s"          => { name => 'name' },
                                   "regexp"          => { name => 'use_regexp' },
                                   "option:s"        => { name => 'option' },
+                                  "state"           => { name => 'state' },
                                 });
     $self->{volume_id_selected} = [];
     $self->{status} = 'OK';
@@ -93,34 +95,46 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_volOptions], instances => $self->{volume_id_selected});
+    $self->{snmp}->load(oids => [$oid_volState, $oid_volOptions], instances => $self->{volume_id_selected});
     my $result = $self->{snmp}->get_leef();
     
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All volume options are ok.');
+                                    short_msg => 'All volume state and options are ok.');
     }
     
     my $failed = 0;
     foreach my $instance (sort @{$self->{volume_id_selected}}) {
         my $name = $self->{result_names}->{$oid_volName . '.' . $instance};
+        my $state = $result->{$oid_volState . '.' . $instance};
         my $option = $result->{$oid_volOptions . '.' . $instance};
        
-        $self->{output}->output_add(long_msg => sprintf("Volume '%s' options: %s", $name, $option));
+        $self->{output}->output_add(long_msg => sprintf("Volume '%s' is %s, options: %s", $name, $state, $option));
 
-        my $status;
-        if (defined($self->{option_results}->{option}) && $option !~ /$self->{option_results}->{option}/) {
-            $status = $self->{status};
+        my $status_state;
+        if (defined($self->{option_results}->{state}) && $state ne "online") {
+            $status_state = $self->{status};
             $failed++;
         }
+
+        my $status_option;
+        if (defined($self->{option_results}->{option}) && $option !~ /$self->{option_results}->{option}/) {
+            $status_option = $self->{status};
+            $failed++ if (!defined($status_state));
+        }
         
-        # Can be 'ok' if we don't set a threshold option '--warn', '--crit'
-        if (defined($status)) {
-            $self->{output}->output_add(severity => $status,
+        if (defined($status_state)) {
+            $self->{output}->output_add(severity => $status_state,
+                                        short_msg => sprintf("Volume '%s' is %s", $name, $state));
+        }
+        if (defined($status_option)) {
+            $self->{output}->output_add(severity => $status_option,
                                         short_msg => sprintf("Volume '%s' pattern '%s' is not matching", $name, $self->{option_results}->{option}));
-        } elsif (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
-             $self->{output}->output_add(severity => $status,
-                                         short_msg => sprintf("Volume '%s' option is ok", $name));
+        }
+        # Can be 'ok' if we don't set a threshold option '--warn', '--crit'
+        if (!defined($status_state) && !defined($status_option) && defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
+             $self->{output}->output_add(severity => 'OK',
+                                         short_msg => sprintf("Volume '%s' state and options are ok", $name));
         }
     }
     
@@ -144,7 +158,7 @@ Check options from volumes.
 
 =item B<--warn>
 
-Return Warning (need '--option' also).
+Return Warning (need '--option' and/or '--state' also).
 
 =item B<--critical>
 
@@ -161,6 +175,10 @@ Allows to use regexp to filter volume name (with option --name).
 =item B<--option>
 
 Options to check (Example: if 'nosnap=off' not maching, returns Warning or Critical for the volume).
+
+=item B<--state>
+
+Check volume state (online, offline)
 
 =back
 
