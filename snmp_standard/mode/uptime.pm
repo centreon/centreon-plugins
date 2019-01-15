@@ -69,7 +69,7 @@ sub check_overload {
     return $options{timeticks} if (!defined($self->{option_results}->{check_overload}));
     
     my $current_time = floor(time() * 100);
-    $self->{new_datas} = { last_time => $current_time, uptime => $options{timeticks}};
+    $self->{new_datas} = { last_time => $current_time, uptime => $options{timeticks} };
     $self->{statefile_cache}->read(statefile => "cache_" . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
     my $old_uptime = $self->{statefile_cache}->get(name => 'uptime');
     my $last_time = $self->{statefile_cache}->get(name => 'last_time');
@@ -81,6 +81,8 @@ sub check_overload {
         if ((($old_uptime + $diff_time - 250) <  4294967296) || ($options{timeticks} >= (($old_uptime + $diff_time - 250) % 4294967296)) &&
             (($old_uptime + $diff_time + 250) >= 4294967296) && ($options{timeticks} <= (($old_uptime + $diff_time + 250) % 4294967296))) {
             $overload++;
+        } else {
+            $overload = 0;
         }
     }
     $options{timeticks} += ($overload * 4294967296);
