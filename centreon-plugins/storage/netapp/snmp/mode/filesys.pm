@@ -256,7 +256,7 @@ sub manage_selection {
         $self->{fs}->{$instance} = { display => $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance}};
         $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{dfKBytesTotal}->{oid} . '.' . $instance} * 1024;
         $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{dfKBytesUsed}->{oid} . '.' . $instance} * 1024;
-        if (defined($result2->{df64TotalKBytes}) && $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} > 0) {
+        if (defined($result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance}) && $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} > 0) {
             $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} * 1024;
             $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{df64UsedKBytes}->{oid} . '.' . $instance} * 1024;
         }
