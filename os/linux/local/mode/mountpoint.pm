@@ -57,7 +57,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{mountpoints} = [
-        { label => 'options', set => {
+        { label => 'status', set => {
                 key_values => [ { name => 'display' }, { name => 'options' }, { name => 'type' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
