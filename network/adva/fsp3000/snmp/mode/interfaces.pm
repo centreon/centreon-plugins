@@ -25,8 +25,6 @@ use base qw(snmp_standard::mode::interfaces);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub set_oids_traffic {
     my ($self, %options) = @_;
     
@@ -105,10 +103,10 @@ sub custom_traffic_perfdata {
     }
     
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
@@ -124,9 +122,9 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     }
     return $exit;
@@ -148,7 +146,7 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
     
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
 
     # we choose the performance value (1day is updated every 15 minutes. 15min is updated all the time but reset every 15min
     my $counter = 'traffic_' . $options{extra_options}->{label_ref} . '_15min';
@@ -181,7 +179,6 @@ sub new {
                                 }
     );
     
-    $instance_mode = $self;
     return $self;
 }
 
