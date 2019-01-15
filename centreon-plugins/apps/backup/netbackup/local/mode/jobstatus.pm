@@ -26,8 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_threshold {
     my ($self, %options) = @_; 
@@ -39,14 +38,14 @@ sub custom_status_threshold {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
         # To exclude some OK
-        if (defined($instance_mode->{option_results}->{ok_status}) && $instance_mode->{option_results}->{ok_status} ne '' &&
-            eval "$instance_mode->{option_results}->{ok_status}") {
+        if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{ok_status}") {
             $status = 'ok';
-        } elsif (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -74,30 +73,6 @@ sub custom_status_calc {
     return 0;
 }
 
-sub custom_long_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_long}) && $instance_mode->{option_results}->{critical_long} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_long}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_long}) && $instance_mode->{option_results}->{warning_long} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_long}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
-
 sub custom_long_output {
     my ($self, %options) = @_;
     my $msg = 'started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
@@ -119,8 +94,6 @@ sub custom_long_calc {
     return 0;
 }
 
-my $last_status_frozen;
-
 sub custom_frozen_threshold {
     my ($self, %options) = @_; 
     my $status = 'ok';
@@ -130,11 +103,11 @@ sub custom_frozen_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_frozen}) && $instance_mode->{option_results}->{critical_frozen} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_frozen}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_frozen}) && $self->{instance_mode}->{option_results}->{critical_frozen} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_frozen}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_frozen}) && $instance_mode->{option_results}->{warning_frozen} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_frozen}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_frozen}) && $self->{instance_mode}->{option_results}->{warning_frozen} ne '' &&
+                 eval "$self->{instance_mode}->{option_results}->{warning_frozen}") {
             $status = 'warning';
         }
     };
@@ -142,7 +115,7 @@ sub custom_frozen_threshold {
        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
     }
 
-    $last_status_frozen = $status;
+    $self->{instance_mode}->{last_status_frozen} = $status;
     return $status;
 }
 
@@ -150,7 +123,7 @@ sub custom_frozen_output {
     my ($self, %options) = @_;
     my $msg = 'frozen : no';
 
-    if (!$self->{output}->is_status(value => $last_status_frozen, compare => 'ok', litteral => 1)) {
+    if (!$self->{output}->is_status(value => $self->{instance_mode}->{last_status_frozen}, compare => 'ok', litteral => 1)) {
         $msg = 'frozen: yes';
     }    
     return $msg;
@@ -207,7 +180,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_long_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'frozen', threshold => 0, set => {
@@ -261,8 +234,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['ok_status', 'warning_status', 'critical_status', 'warning_long', 'critical_long', 'warning_frozen', 'critical_frozen']);
 }
 
 sub policy_long_output {
@@ -281,16 +253,6 @@ sub prefix_job_output {
     my ($self, %options) = @_;
     
     return "job '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('ok_status', 'warning_status', 'critical_status', 'warning_long', 'critical_long', 'warning_frozen', 'critical_frozen')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 my %job_type = (
