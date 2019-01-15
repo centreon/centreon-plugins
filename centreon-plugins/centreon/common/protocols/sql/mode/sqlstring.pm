@@ -23,8 +23,7 @@ package centreon::common::protocols::sql::mode::sqlstring;
 use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -60,11 +59,11 @@ sub custom_string_output {
     my $msg;
     my $message;
 
-    if (defined($instance_mode->{option_results}->{printf_format}) && $instance_mode->{option_results}->{printf_format} ne '') {
+    if (defined($self->{instance_mode}->{option_results}->{printf_format}) && $self->{instance_mode}->{option_results}->{printf_format} ne '') {
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
             local $SIG{__DIE__} = sub { $message = $_[0]; };
-            $msg = sprintf("$instance_mode->{option_results}->{printf_format}", eval $instance_mode->{option_results}->{printf_value});
+            $msg = sprintf("$self->{instance_mode}->{option_results}->{printf_format}", eval $self->{instance_mode}->{option_results}->{printf_value});
         };
     } else {
         $msg = sprintf("'%s'", $self->{result_values}->{value_field});
@@ -85,11 +84,11 @@ sub custom_string_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
-        if (defined($instance_mode->{option_results}->{critical_string}) && $instance_mode->{option_results}->{critical_string} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_string}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_string}) && $self->{instance_mode}->{option_results}->{critical_string} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_string}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_string}) && $instance_mode->{option_results}->{warning_string} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_string}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_string}) && $self->{instance_mode}->{option_results}->{warning_string} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_string}") {
             $status = 'warning';
         }
     };
@@ -124,23 +123,13 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    $instance_mode = $self;
 
-    if (!defined($instance_mode->{option_results}->{sql_statement}) || $instance_mode->{option_results}->{sql_statement} eq '') {
-        $instance_mode->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
-        $instance_mode->{output}->option_exit();
+    if (!defined($self->{instance_mode}->{option_results}->{sql_statement}) || $self->{instance_mode}->{option_results}->{sql_statement} eq '') {
+        $self->{instance_mode}->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
+        $self->{instance_mode}->{output}->option_exit();
     }
 
-    $instance_mode->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    foreach (('warning_string', 'critical_string')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->{instance_mode}->change_macros(macros => ['warning_string', 'critical_string']);
 }
 
 sub manage_selection {
