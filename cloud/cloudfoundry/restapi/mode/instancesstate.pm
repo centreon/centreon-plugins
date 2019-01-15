@@ -194,16 +194,6 @@ sub new {
     return $self;
 }
 
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach ('warning_app_state', 'critical_app_state', 'warning_instance_state', 'critical_instance_state') {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
-}
-
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
@@ -214,7 +204,7 @@ sub check_options {
     }
     
     $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_app_state', 'critical_app_state', 'warning_instance_state', 'critical_instance_state']);
 }
 
 sub manage_selection {

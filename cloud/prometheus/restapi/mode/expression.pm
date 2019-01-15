@@ -24,8 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
@@ -35,40 +34,16 @@ sub custom_status_perfdata {
         $extra_label .= '_' . $self->{result_values}->{instance};
     }
     
-    foreach my $key (@{$instance_mode->{custom_keys}}) {
+    foreach my $key (@{$self->{instance_mode}->{custom_keys}}) {
         $self->{output}->perfdata_add(label => $key . $extra_label,
                                       value => $self->{result_values}->{$key});
     }
 }
 
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
-
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = $instance_mode->{option_results}->{output};
+    my $msg = $self->{instance_mode}->{option_results}->{output};
     while ($msg =~ /%\{(.*?)\}/g) {
         my $key = $1;
         if (defined($self->{result_values}->{$key})) {
@@ -83,7 +58,7 @@ sub custom_status_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{instance} = $options{new_datas}->{$self->{instance} . '_instance'};
-    foreach my $key (@{$instance_mode->{custom_keys}}) {
+    foreach my $key (@{$self->{instance_mode}->{custom_keys}}) {
         $self->{result_values}->{$key} = $options{new_datas}->{$self->{instance} . '_' . $key};
     }
     
@@ -104,7 +79,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -172,18 +147,7 @@ sub check_options {
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
     $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
 
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
