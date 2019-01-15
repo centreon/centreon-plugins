@@ -22,6 +22,10 @@ package centreon::plugins::templates::catalog_functions;
 
 use strict;
 use warnings;
+use Exporter;
+
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw(catalog_status_threshold);
 
 sub catalog_status_threshold {
     my ($self, %options) = @_;
