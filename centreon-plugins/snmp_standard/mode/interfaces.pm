@@ -28,8 +28,6 @@ use centreon::plugins::values;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 #########################
 # Calc functions
 #########################
@@ -42,17 +40,17 @@ sub custom_threshold_output {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
             $status = 'warning';
         }
         
-        $instance_mode->{last_status} = 0;
-        if (eval "$instance_mode->{check_status}") {
-            $instance_mode->{last_status} = 1;
+        $self->{instance_mode}->{last_status} = 0;
+        if (eval "$self->{instance_mode}->{check_status}") {
+            $self->{instance_mode}->{last_status} = 1;
         }
     };
     if (defined($message)) {
@@ -81,7 +79,7 @@ sub custom_status_calc {
 sub custom_cast_calc {
     my ($self, %options) = @_;
 
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
@@ -92,7 +90,7 @@ sub custom_cast_calc {
                 + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}}) 
                 + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}});
 
-    if ($total == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
+    if ($total == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
@@ -111,21 +109,21 @@ sub custom_traffic_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
+    if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{result_values}->{traffic_per_seconds} /= 8;
         $self->{result_values}->{speed} /= 8 if (defined($self->{result_values}->{speed}));
     }
     
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
     
-    if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
+    if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{output}->perfdata_add(label => $self->{result_values}->{label} . $extra_label,
                                       value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
                                       warning => $warning,
@@ -144,9 +142,9 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     }
     return $exit;
@@ -165,14 +163,14 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
     
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_traffic'} ne $options{old_datas}->{$self->{instance} . '_mode_traffic'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
     }
   
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    if ($diff_traffic == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
+    if ($diff_traffic == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
@@ -198,7 +196,7 @@ sub custom_errors_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    if ($instance_mode->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
         $self->{output}->perfdata_add(label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1} . $extra_label, unit => '%',
                                   value => sprintf("%.2f", $self->{result_values}->{prct}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
@@ -217,7 +215,7 @@ sub custom_errors_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     } else {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
@@ -237,7 +235,7 @@ sub custom_errors_output {
 sub custom_errors_calc {
     my ($self, %options) = @_;
 
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
@@ -247,7 +245,7 @@ sub custom_errors_calc {
         $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}});
     my $total = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
         $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
-    if ($total == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
+    if ($total == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
@@ -535,12 +533,6 @@ sub set_key_values_out_traffic {
      return [ { name => 'out', diff => 1 }, { name => 'speed_out'}, { name => 'display' }, { name => 'mode_traffic' } ];
 }
 
-sub set_instance {
-    my ($self, %options) = @_;
-    
-    $instance_mode = $self;
-}
-
 sub set_oids_label {
     my ($self, %options) = @_;
 
@@ -793,7 +785,6 @@ sub check_options {
     $self->set_oids_label();
     $self->check_oids_label();
     
-    $self->set_instance();
     $self->{statefile_cache}->check_options(%options);
     $self->{statefile_value}->check_options(%options);
     
