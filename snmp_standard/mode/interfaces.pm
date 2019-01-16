@@ -766,6 +766,7 @@ sub new {
                                                       output => $self->{output}, perfdata => $self->{perfdata},
                                                       label => $name);
             $self->{maps_counters}->{$key}->{$_}->{obj}->set(%{$self->{maps_counters}->{$key}->{$_}->{set}});
+            $self->{maps_counters}->{$key}->{$_}->{obj}->{instance_mode} = $self;
         }
     }
     
