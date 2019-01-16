@@ -18,80 +18,31 @@
 # limitations under the License.
 #
 
-package snmp_standard::mode::spanningtree;
+package snmp_standard::mode::listspanningtrees;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    my $msg = sprintf("spanning tree state is '%s' [op status: '%s'] [admin status: '%s'] [index: '%s']",
-        $self->{result_values}->{state}, $self->{result_values}->{op_status},
-        $self->{result_values}->{admin_status}, $self->{result_values}->{index});
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{port} = $options{new_datas}->{$self->{instance} . '_description'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{admin_status} = $options{new_datas}->{$self->{instance} . '_admin_status'};
-    $self->{result_values}->{op_status} = $options{new_datas}->{$self->{instance} . '_op_status'};
-    $self->{result_values}->{index} = $options{new_datas}->{$self->{instance} . '_index'};
-    return 0;
-}
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'spanningtrees', type => 1, cb_prefix_output => 'prefix_peers_output', message_multiple => 'All spanning trees are ok' },
-    ];
-    $self->{maps_counters}->{spanningtrees} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'admin_status' }, { name => 'op_status' },
-                                { name => 'index' }, { name => 'description' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-    ];
-}
-
-sub prefix_peers_output {
-    my ($self, %options) = @_;
-
-    return "Port '" . $options{instance_value}->{description} . "' ";
-}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-
+    
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                     "filter-port:s"         => { name => 'filter_port' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{op_status} =~ /up/ && %{state} =~ /blocking|broken/' },
                                 });
+    $self->{spanningtrees} = {};
 
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->SUPER::init(%options);
 }
 
 my %mapping_state = (
@@ -126,8 +77,7 @@ my $oid_ifOpStatus = '.1.3.6.1.2.1.2.2.1.8';
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{spanningtrees} = {};
+
     my $results = $options{snmp}->get_table(oid => $oid_dot1dStpPortEntry, start => $mapping->{dot1dStpPortState}->{oid}, end => $mapping->{dot1dStpPortEnable}->{oid}, nothing_quit => 1);
 
     my @instances = ();
@@ -177,10 +127,42 @@ sub manage_selection {
             description => $description
         };
     }
+}
 
-    if (scalar(keys %{$self->{spanningtrees}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No port with Spanning Tree Protocol found.');
-        $self->{output}->option_exit();
+sub run {
+    my ($self, %options) = @_;
+  
+    $self->manage_selection(%options);
+    foreach my $instance (sort keys %{$self->{spanningtrees}}) { 
+        $self->{output}->output_add(long_msg => sprintf("[port = %s] [state = %s] [op_status = %s] [admin_status = %s] [index = %s]",
+            $self->{spanningtrees}->{$instance}->{description}, $self->{spanningtrees}->{$instance}->{state}, $self->{spanningtrees}->{$instance}->{op_status},
+            $self->{spanningtrees}->{$instance}->{admin_status}, $self->{spanningtrees}->{$instance}->{index}));
+    }
+    
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List ports with Spanning Tree Protocol:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+    
+    $self->{output}->add_disco_format(elements => ['port', 'state', 'op_status', 'admin_status', 'index']);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    $self->manage_selection(%options);
+    foreach my $instance (sort keys %{$self->{spanningtrees}}) {             
+        $self->{output}->add_disco_entry(
+            port => $self->{spanningtrees}->{$instance}->{description},
+            state => $self->{spanningtrees}->{$instance}->{state},
+            op_status => $self->{spanningtrees}->{$instance}->{op_status},
+            admin_status => $self->{spanningtrees}->{$instance}->{admin_status},
+            index => $self->{spanningtrees}->{$instance}->{index}
+        );
     }
 }
 
@@ -190,26 +172,15 @@ __END__
 
 =head1 MODE
 
-Check port Spanning Tree Protocol current state (BRIDGE-MIB).
+List ports using Spanning Tree Protocol.
 
 =over 8
 
 =item B<--filter-port>
 
-Filter on port description (can be a regexp).
-
-=item B<--warning-status>
-
-Set warning threshold for status.
-Can used special variables like: %{state}, %{op_status},
-%{admin_status}, %{port}, %{index}.
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{op_status} =~ /up/ && %{state} =~ /blocking|broken/').
-Can used special variables like: %{state}, %{op_status},
-%{admin_status}, %{port}, %{index}.
+Filter by port description (can be a regexp).
 
 =back
 
 =cut
+    
