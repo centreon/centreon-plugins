@@ -198,7 +198,7 @@
       #     Replication type  = SYNCHRONIZATION
       #     Replication state = Enabled
       #     Replication sync id = Library_DC1
-      #     Replication target = 172.24.173.3
+      #     Replication target = 1.2.3.5
       #     Replication start = Tue Jun 12 11:00:36 2018
       #     Replication completion = Wed Jun 13 09:22:14 2018
       #     Replication status = SUCCESS
@@ -212,7 +212,7 @@
       #     Replication type  = SYNCHRONIZATION
       #     Replication state = Enabled
       #     Replication sync id = vtl_dc1_plat
-      #     Replication target = 172.24.173.3
+      #     Replication target = 1.2.3.4
       #     Replication start = Tue Jun 12 10:38:01 2018
       #     Replication completion = Tue Jun 12 11:06:36 2018
       #     Replication status = SUCCESS
