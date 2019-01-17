@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::lync::2013::mssql::mode::poorcalls;
+package centreon::common::microsoft::skype::mssql::mode::poorcalls;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -37,10 +37,10 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'global', set => {
                 key_values => [ { name => 'count' } ],
-                output_template => '%d Poor calls',
+                output_template => 'Poor Calls: %d',
                 perfdatas => [
                     { label => 'poor_calls', value => 'count_absolute', template => '%d',
-                      unit => 'calls', min => 0, label_extra_instance => 0 },
+                      unit => 'calls', min => 0 },
                 ],
             }
         },
@@ -48,11 +48,7 @@ sub set_counters {
     $self->{maps_counters}->{uri} = [
         { label => 'user', set => {
                 key_values => [ { name => 'count' }, { name => 'display' } ],
-                output_template => 'count : %d',
-                perfdatas => [
-                    { label => 'poor_calls', value => 'count_absolute', template => '%d',
-                      unit => 'calls', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                output_template => 'poor calls count: %d',
             }
         },
     ];
@@ -66,8 +62,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                  'lookback:s' => { name => 'lookback', default => '65' },
-                                  'filter-user:s' => { name => 'filter_user' },
+                                    "lookback:s"            => { name => 'lookback', default => '65' }, # not used
+                                    "timeframe:s"           => { name => 'timeframe', default => '900' },
+                                    "filter-user:s"         => { name => 'filter_user' },
+                                    "filter-counters:s"     => { name => 'filter_counters', default => '' },
                                 });
     return $self;
 }
@@ -75,19 +73,24 @@ sub new {
 sub prefix_uri_output {
     my ($self, %options) = @_;
 
-    return "'" . $options{instance_value}->{display} . "' ";
+    return "User '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
+    
     $self->{sql} = $options{sql};
     $self->{sql}->connect();
 
-    $self->{sql}->query(query => "SELECT URI, LastPoorCallTime
-                                   FROM [QoEMetrics].[dbo].[User]
-                                   WHERE LastPoorCallTime>=dateadd(minute,-".$self->{option_results}->{lookback}.",getdate())");
-    my $total;
+    my $query = "SELECT URI, LastPoorCallTime
+                FROM [QoEMetrics].[dbo].[User]
+                WHERE LastPoorCallTime > (DATEADD(SECOND,-" . $self->{option_results}->{timeframe} . ",SYSUTCDATETIME()))
+                AND LastPoorCallTime < SYSUTCDATETIME()";
+    
+    $self->{sql}->query(query => $query);
+
+    $self->{global}->{count} = 0;
+
     while (my $row = $self->{sql}->fetchrow_hashref()) {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $row->{URI} !~ /$self->{option_results}->{filter_user}/) {
@@ -95,10 +98,9 @@ sub manage_selection {
             next;
         }
         $self->{global}->{count}++;
-        $self->{uri}->{$row->{URI}} = {count => 0, display => $row->{URI}} if (!defined($self->{uri}->{$row->{URI}}));
+        $self->{uri}->{$row->{URI}} = { count => 0, display => $row->{URI} } if (!defined($self->{uri}->{$row->{URI}}));
         $self->{uri}->{$row->{URI}}->{count}++;
     }
-
 }
 
 1;
@@ -107,7 +109,7 @@ __END__
 
 =head1 MODE
 
-Check Lync Poor Calls during last X minutes (Total and per users)
+Check poor calls from SQL Server (Lync 2013, Skype 2015).
 
 =over 8
 
@@ -119,17 +121,17 @@ Filter user name (can be a regexp)
 
 Only display some counters (regexp can be used).
 
-=item B<--lookback>
+=item B<--timeframe>
 
-Minutes to lookback (From you to UTC) default: 65
+Set the timeframe to query in seconds (Default: 900)
 
-=item B<--warning-*>
+=item B<--warning-global>
 
-Set warning threshold for number of poor calls. Can be : 'global', 'user'
+Set warning threshold for number of poor calls.
 
-=item B<--critical-*>
+=item B<--critical-global>
 
-Set critical threshold for number of poor calls. Can be : 'global', 'user'
+Set critical threshold for number of poor calls.
 
 =back
 
