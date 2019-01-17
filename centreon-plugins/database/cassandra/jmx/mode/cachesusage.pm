@@ -73,6 +73,7 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
+    return -10 if ($options{new_datas}->{$self->{instance} . '_Capacity_Value'} <= 0);
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_Capacity_Value'};
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_Size_Value'};
@@ -135,8 +136,8 @@ sub manage_selection {
         my $name = $1;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
+            $scope !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $scope . "': no matching filter.", debug => 1);
             next;
         }
         
