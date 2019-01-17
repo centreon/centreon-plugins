@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'thpool', type => 1, cb_prefix_output => 'prefix_thpool_output', skipped_code => { -10 => 1 } },
+        { name => 'thpool', type => 1, cb_prefix_output => 'prefix_thpool_output', message_multiple => 'All thread pools are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{thpool} = [
