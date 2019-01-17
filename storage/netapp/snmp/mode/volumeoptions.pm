@@ -95,7 +95,11 @@ sub run {
     $self->{snmp} = $options{snmp};
 
     $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_volState, $oid_volOptions], instances => $self->{volume_id_selected});
+    if (defined($self->{option_results}->{option})) {
+        $self->{snmp}->load(oids => [$oid_volState, $oid_volOptions], instances => $self->{volume_id_selected});
+    } else {
+        $self->{snmp}->load(oids => [$oid_volState], instances => $self->{volume_id_selected});
+    }
     my $result = $self->{snmp}->get_leef();
     
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
@@ -108,8 +112,10 @@ sub run {
         my $name = $self->{result_names}->{$oid_volName . '.' . $instance};
         my $state = $result->{$oid_volState . '.' . $instance};
         my $option = $result->{$oid_volOptions . '.' . $instance};
-       
-        $self->{output}->output_add(long_msg => sprintf("Volume '%s' is %s, options: %s", $name, $state, $option));
+
+        if (defined($self->{option_results}->{option})) {
+            $self->{output}->output_add(long_msg => sprintf("Volume '%s' is %s, options: %s", $name, $state, $option));
+        }
 
         my $status_state;
         if (defined($self->{option_results}->{state}) && $state ne "online") {
