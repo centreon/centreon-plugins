@@ -149,10 +149,10 @@ sub manage_selection {
         partition_count => $result->{'kafka.server:name=PartitionCount,type=ReplicaManager'}->{Value},
         leader_count => $result->{'kafka.server:name=LeaderCount,type=ReplicaManager'}->{Value},
         active_controller_count => $result->{'kafka.controller:name=ActiveControllerCount,type=KafkaController'}->{Value},
-        unclean_leader_elections => $result->{'kafka.controller:name=UncleanLeaderElectionsPerSec,type=ControllerStats'}->{Value},
-        traffic_in => $result->{'kafka.server:name=BytesInPerSec,type=BrokerTopicMetrics'}->{Value} * 8,
-        traffic_out => $result->{'kafka.server:name=BytesOutPerSec,type=BrokerTopicMetrics'}->{Value} * 8,
-        total_fetch_requests => $result->{'kafka.server:name=TotalFetchRequestsPerSec,type=BrokerTopicMetrics'}->{Value},
+        unclean_leader_elections => $result->{'kafka.controller:name=UncleanLeaderElectionsPerSec,type=ControllerStats'}->{Count},
+        traffic_in => $result->{'kafka.server:name=BytesInPerSec,type=BrokerTopicMetrics'}->{Count} * 8,
+        traffic_out => $result->{'kafka.server:name=BytesOutPerSec,type=BrokerTopicMetrics'}->{Count} * 8,
+        total_fetch_requests => $result->{'kafka.server:name=TotalFetchRequestsPerSec,type=BrokerTopicMetrics'}->{Count},
     };
     
     $self->{cache_name} = "kafka_" . $self->{mode} . '_' . md5_hex($options{custom}->get_connection_info()) . '_' .
