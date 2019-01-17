@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::java::kafka::jmx::mode::stats;
+package apps::java::kafka::jmx::mode::globalstats;
 
 use base qw(centreon::plugins::templates::counter);
 
