@@ -48,7 +48,7 @@ sub set_counters {
         { label => 'hits', set => {
                 key_values => [ { name => 'Requests_Count', diff => 1 }, { name => 'Hits_Count', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_hits_calc'),
-                output_template => 'Hits = %.2f %%', output_use => 'hits_prct',
+                output_template => 'Hits = %.2f %%', output_use => 'hits_prct', threshold_use => 'prct_used',
                 perfdatas => [
                     { label => 'hits', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
