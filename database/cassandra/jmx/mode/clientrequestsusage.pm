@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'cr', type => 1, cb_prefix_output => 'prefix_cr_output', skipped_code => { -10 => 1 } },
+        { name => 'cr', type => 1, cb_prefix_output => 'prefix_cr_output', message_multiple => 'All client requests are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{cr} = [
@@ -121,6 +121,9 @@ sub manage_selection {
             $self->{cr}->{$scope}->{$name . '_' . $_} = $result->{$mbean}->{$_};
         }
     }
+    
+    use Data::Dumper;
+    print Data::Dumper::Dumper($self->{cr});
     
     if (scalar(keys %{$self->{cr}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No client request found.");
