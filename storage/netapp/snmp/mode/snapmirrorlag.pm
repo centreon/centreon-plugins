@@ -114,7 +114,7 @@ sub run {
     $self->{snmp}->load(oids => [$oid_snapmirrorState, $oid_snapmirrorLag], instances => $self->{snapmirrors_id_selected});
     my $result = $self->{snmp}->get_leef(nothing_quit => 1);
 
-    my $destinations = 0;
+    my $targets = 0;
     foreach my $instance (sort @{$self->{snapmirrors_id_selected}}) {
         my $name = $self->{result_names}->{$oid_snapmirrorSrc . '.' . $instance};
         my $state = $result->{$oid_snapmirrorState . '.' . $instance};
@@ -123,7 +123,7 @@ sub run {
         if (${$states{$state}}[0] eq "source") {
             next;
         }
-        $destinations++ ;
+        $targets++ ;
         
         my $exit = $self->{perfdata}->threshold_check(value => $lag, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
@@ -144,12 +144,12 @@ sub run {
     }
 
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        if ($destinations) {
+        if ($targets) {
             $self->{output}->output_add(severity => 'OK',
-                                        short_msg => 'All $destinations snapmirrors lags are ok.');
+                                        short_msg => 'All $targets snapmirrors lags are ok.');
         } else {
             $self->{output}->output_add(severity => 'OK',
-                                        short_msg => 'No destination-snapmirrors found.');
+                                        short_msg => 'No target-snapmirrors found.');
         }
     }
 
