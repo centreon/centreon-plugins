@@ -121,8 +121,8 @@ sub manage_selection {
         my $name = $1;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $name . "': no matching filter.", debug => 1);
+            $scope !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $scope . "': no matching filter.", debug => 1);
             next;
         }
         
