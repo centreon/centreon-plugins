@@ -104,7 +104,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "warning-status:s"  => { name => 'warning_status', default => '' },
-                                    "critical-status:s" => { name => 'critical_status', default => '%{sync_status} !~ /synchronized/' },
+                                    "critical-status:s" => { name => 'critical_status', default => '%{sync_status} =~ /not synchronized/' },
                                     "one-node-status:s" => { name => 'one_node_status' }, # not used, use --opt-exit instead
                                 });
 
