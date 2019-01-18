@@ -55,11 +55,12 @@ sub new {
                         "proxyurl:s"        => { name => 'proxyurl' },
                         "timeout:s"         => { name => 'timeout' },
                         "ssl-opt:s@"        => { name => 'ssl_opt' },
+                        "header:s@"         => { name => 'header' },
                         "timeframe:s"       => { name => 'timeframe' },
                         "step:s"            => { name => 'step' },
                     });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'RESTAPI OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
@@ -99,10 +100,6 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api/v1';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
-    $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{credentials} = (defined($self->{option_results}->{credentials})) ? 1 : undef;
     $self->{basic} = (defined($self->{option_results}->{basic})) ? 1 : undef;
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
@@ -123,11 +120,9 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
+    $self->{option_results}->{url_path} = $self->{url_path};
     $self->{option_results}->{credentials} = $self->{credentials};
     $self->{option_results}->{basic} = $self->{basic};
-    $self->{option_results}->{username} = $self->{username};
-    $self->{option_results}->{password} = $self->{password};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
 }
@@ -251,13 +246,15 @@ __END__
 
 =head1 NAME
 
-Prometheus REST API
+Prometheus Rest API
 
 =head1 SYNOPSIS
 
 Prometheus Rest API custom mode
 
 =head1 REST API OPTIONS
+
+Prometheus Rest API
 
 =over 8
 
@@ -315,7 +312,13 @@ Set HTTP timeout
 
 =item B<--ssl-opt>
 
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+Set SSL option (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
+
+=item B<--header>
+
+Set HTTP header (Can be multiple, example: --header='Authorization:Bearer ABCD')
+
+Useful to access Prometheus API hosted in a specific environment.
 
 =back
 
