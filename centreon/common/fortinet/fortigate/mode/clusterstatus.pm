@@ -145,17 +145,19 @@ sub manage_selection {
     $self->{nodes} = {};
 
     my $mode = $self->{snmp}->get_leef(oids => [ $oid_fgHaSystemMode ], nothing_quit => 1);
-
+    
     if ($map_ha_mode{$mode->{$oid_fgHaSystemMode}} =~ /standalone/) {
         $self->{output}->add_option_msg(short_msg => "No cluster configuration (standalone mode)");
         $self->{output}->option_exit();
     }
 
+    $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode{$mode->{$oid_fgHaSystemMode}});
+
     $self->{results} = $options{snmp}->get_table(oid => $oid_fgHaStatsEntry,
                                                  nothing_quit => 1);
 
     foreach my $oid (keys %{$self->{results}}) {
-        next if($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
         my $instance = $1;
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
@@ -164,7 +166,7 @@ sub manage_selection {
             serial => $result->{fgHaStatsSerial},
             hostname => $result->{fgHaStatsHostname},
             sync_status => $result->{fgHaStatsSyncStatus},
-            role => ($result->{fgHaStatsMasterSerial} eq '') ? "master" : "slave",
+            role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? "master" : "slave",
         };
     }
 
