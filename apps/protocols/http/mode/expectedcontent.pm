@@ -130,7 +130,7 @@ sub run {
                                                           threshold => [ { label => 'critical-extracted', exit_litteral => 'critical' }, { label => 'warning-extracted', exit_litteral => 'warning' } ]);
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Extracted value : %s", $extracted));
-            $self->{output}->perfdata_add(label => "extracted",
+            $self->{output}->perfdata_add(label => "value",
                                           value => $extracted,
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-extracted'),
                                           critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-extracted'));
