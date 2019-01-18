@@ -70,12 +70,19 @@ sub run {
         my $resource_group = '-';
         $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
         $resource_group = $1 if (defined($resource->{id}) && $resource->{id} =~ /resourceGroups\/(.*)\/providers/);
-        $self->{output}->output_add(long_msg => sprintf("[name = %s][resourcegroup = %s][location = %s][id = %s][type = %s]",
+        
+        my @tags;
+        foreach my $tag (keys %{$resource->{tags}}) {
+            push @tags, $tag . ':' . $resource->{tags}->{$tag};
+        }
+
+        $self->{output}->output_add(long_msg => sprintf("[name = %s][resourcegroup = %s][location = %s][id = %s][type = %s][tags = %s]",
             $resource->{name},
             $resource_group,
             $resource->{location},
             $resource->{id},
-            $resource->{type}
+            $resource->{type},
+            join(',', @tags),
         ));
     }
     
@@ -88,7 +95,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'resourcegroup', 'location', 'id', 'type']);
+    $self->{output}->add_disco_format(elements => ['name', 'resourcegroup', 'location', 'id', 'type', 'tags']);
 }
 
 sub disco_show {
@@ -99,12 +106,19 @@ sub disco_show {
         my $resource_group = '-';
         $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
         $resource_group = $1 if (defined($resource->{id}) && $resource->{id} =~ /resourceGroups\/(.*)\/providers/);
+        
+        my @tags;
+        foreach my $tag (keys %{$resource->{tags}}) {
+            push @tags, $tag . ':' . $resource->{tags}->{$tag};
+        }
+
         $self->{output}->add_disco_entry(
             name => $resource->{name},
             resourcegroup => $resource_group,
             location => $resource->{location},
             id => $resource->{id},
             type => $resource->{type},
+            tags => join(',', @tags),
         );
     }
 }
