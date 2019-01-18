@@ -43,10 +43,10 @@ sub set_counters {
         },
         { label => 'recv-frame', set => {
                 key_values => [ { name => 'RecvFrameRateAverage' } ],
-                output_template => 'Receiver Frame Rate: %.2f%%',
+                output_template => 'Receiver Frame Rate: %.2f/s',
                 perfdatas => [
                     { label => 'rcv_frame_rate_avg', value => 'RecvFrameRateAverage_absolute',
-                      template => '%.2f', unit => '%', min => 0, max => 100 },
+                      template => '%.2f', unit => 'frames/s', min => 0 },
                 ],
             }
         },
