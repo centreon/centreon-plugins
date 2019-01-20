@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'ccache', type => 1, cb_prefix_output => 'prefix_ccache_output', skipped_code => { -10 => 1 } },
+        { name => 'ccache', type => 1, cb_prefix_output => 'prefix_ccache_output', message_multiple => 'All caches are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{ccache} = [
@@ -41,16 +41,17 @@ sub set_counters {
                 threshold_use => 'prct_used',
                 perfdatas => [
                     { label => 'used', value => 'prct_used', template => '%.2f', 
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'hits', set => {
                 key_values => [ { name => 'Requests_Count', diff => 1 }, { name => 'Hits_Count', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_hits_calc'),
-                output_template => 'Hits = %.2f %%', output_use => 'hits_prct', threshold_use => 'prct_used',
+                output_template => 'Hits = %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
                 perfdatas => [
-                    { label => 'hits', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'hits', value => 'hits_prct', template => '%.2f', min => 0, max => 100, 
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -87,7 +88,7 @@ sub custom_usage_calc {
 sub custom_hits_calc {
     my ($self, %options) = @_;
 
-    my $label = $options{extra_options}->{label_ref};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     my $delta_value = $options{new_datas}->{$self->{instance} . '_Hits_Count'} - $options{old_datas}->{$self->{instance} . '_Hits_Count'};
     my $delta_total = $options{new_datas}->{$self->{instance} . '_Requests_Count'} - $options{old_datas}->{$self->{instance} . '_Requests_Count'};
 
