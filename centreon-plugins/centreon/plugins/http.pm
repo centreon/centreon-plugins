@@ -238,8 +238,8 @@ sub request {
     }
 
     my $uri = URI->new($url);
-    if (defined($request_options->{get_params})) {
-        $uri->query_form($request_options->{get_params});
+    if (defined($self->{get_params})) {
+        $uri->query_form($self->{get_params});
     }
     $req = HTTP::Request->new($request_options->{method}, $uri);
 
