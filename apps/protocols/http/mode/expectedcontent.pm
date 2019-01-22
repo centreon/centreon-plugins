@@ -129,7 +129,7 @@ sub run {
             my $exit = $self->{perfdata}->threshold_check(value => $extracted,
                                                           threshold => [ { label => 'critical-extracted', exit_litteral => 'critical' }, { label => 'warning-extracted', exit_litteral => 'warning' } ]);
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Extracted value : %s", $extracted));
+                                        short_msg => sprintf("'%s' is present in content, value : %s", $self->{option_results}->{expected_string}, $extracted));
             $self->{output}->perfdata_add(label => "value",
                                           value => $extracted,
                                           warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-extracted'),
