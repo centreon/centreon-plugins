@@ -105,10 +105,10 @@ sub run {
         "to=$self->{option_results}->{to}",
         "from=$self->{option_results}->{from}",
         "message=$self->{option_results}->{message}",
-        "class=$self->{option_results}->{class}",
-        "noStop=$self->{option_results}->{nostop}",
+        "class=" . (defined($self->{option_results}->{class}) ? $self->{option_results}->{class} : ''),
+        "noStop=" . (defined($self->{option_results}->{nostop}) ? $self->{option_results}->{nostop} : ''),
         "contentType=application/json",
-        "smsCoding=$self->{option_results}->{smsCoding}",
+        "smsCoding=" . (defined($self->{option_results}->{smsCoding}) ? $self->{option_results}->{smsCoding} : ''),
     ];
     my $response = $self->{http}->request(method => 'GET', get_param => $sms_param);
 
