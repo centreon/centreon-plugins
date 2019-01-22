@@ -35,6 +35,7 @@ sub new {
                                 { 
                                   "warning:s"       => { name => 'warning', default => 300 },
                                   "critical:s"      => { name => 'critical', default => 600 },
+                                  "poller:s"	    => { name => 'poller', default => 'all'},
                                 });
 
     return $self;
@@ -60,14 +61,32 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-    $self->{sql}->query(query => q{
-        SELECT instance_id,name,last_alive,running FROM centreon_storage.instances WHERE deleted = '0';
-    });
+
+    if ($self->{option_results}->{poller} eq "all"){
+    	$self->{sql}->query(query => q{
+        	SELECT instance_id,name,last_alive,running FROM centreon_storage.instances WHERE deleted = '0';
+    	});
+    } else {
+        $self->{sql}->query(query => qq{
+                SELECT instance_id,name,last_alive,running FROM centreon_storage.instances WHERE deleted = '0' and name = '$self->{option_results}->{poller}';
+        });
+
+    }
+
     my $result = $self->{sql}->fetchall_arrayref();
     
     my $timestamp = time();
-    $self->{output}->output_add(severity => 'OK',
+
+    if ($self->{option_results}->{poller} eq "all"){
+	
+        $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("All poller delay for last update are ok"));
+    } else {
+        $self->{output}->output_add(severity => 'OK',
+				short_msg => sprintf("Poller delay for last update is ok"));
+			}
+
+
     foreach my $row (@{$result}) {
     	if ($$row[3] == 0) {
             $self->{output}->output_add(severity => 'CRITICAL',
@@ -110,6 +129,10 @@ Threshold warning in seconds.
 =item B<--critical>
 
 Threshold critical in seconds.
+
+=item B<--poller>
+
+Name of Centreon poller.
 
 =back
 
