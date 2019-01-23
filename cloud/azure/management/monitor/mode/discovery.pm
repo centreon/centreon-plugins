@@ -34,6 +34,10 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                    "namespace:s"           => { name => 'namespace' },
+                                    "type:s"                => { name => 'type' },
+                                    "resource-group:s"      => { name => 'resource_group' },
+                                    "location:s"            => { name => 'location' },
                                 });
 
     return $self;
@@ -44,12 +48,6 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub manage_selection {
-    my ($self, %options) = @_;
-
-    $self->{resources} = $options{custom}->azure_list_resources();
-}
-
 sub run {
     my ($self, %options) = @_;
 
@@ -58,12 +56,17 @@ sub run {
 
     $disco_stats->{start_time} = time();
 
-    $self->manage_selection(%options);
+    my $resources = $options{custom}->azure_list_resources(
+        namespace => $self->{option_results}->{namespace},
+        resource_type => $self->{option_results}->{type},
+        location => $self->{option_results}->{location},
+        resource_group => $self->{option_results}->{resource_group}
+    );
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
 
-    foreach my $resource (@{$self->{resources}}) {
+    foreach my $resource (@{$resources}) {
         my $resource_group = '';
         $resource_group = $resource->{resourceGroup} if (defined($resource->{resourceGroup}));
         $resource_group = $1 if ($resource_group eq '' && defined($resource->{id}) && $resource->{id} =~ /resourceGroups\/(.*)\/providers/);
