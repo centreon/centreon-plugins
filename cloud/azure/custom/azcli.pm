@@ -192,7 +192,9 @@ sub azure_list_resources_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
-    my $cmd_options = "resource list --namespace '$options{namespace}' --resource-type '$options{resource_type}' --output json";
+    my $cmd_options = "resource list --output json";
+    $cmd_options .= " --namespace '$options{namespace}'" if (defined($options{namespace}) && $options{namespace} ne '');
+    $cmd_options .= " --resource-type '$options{resource_type}'" if (defined($options{resource_type}) && $options{resource_type} ne '');
     $cmd_options .= " --location '$options{location}'" if (defined($options{location}) && $options{location} ne '');
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
