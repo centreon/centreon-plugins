@@ -718,6 +718,15 @@ sub is_verbose {
     return 0;
 }
 
+sub is_debug {
+    my ($self) = @_;
+
+    if (defined($self->{option_results}->{debug})) {
+        return 1;
+    }
+    return 0;
+}
+
 sub parse_pfdata_scale {
     my ($self, %options) = @_;
     
