@@ -536,6 +536,47 @@ sub azure_list_backup_items {
     return $raw_results;
 }
 
+sub azure_list_expressroute_circuits_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+        
+    my $cmd_options = "network express-route list --output json";
+    $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
+    
+    return $cmd_options; 
+}
+
+sub azure_list_expressroute_circuits {
+    my ($self, %options) = @_;
+    
+    my $results = {};
+
+    my $cmd_options = $self->azure_list_expressroute_circuits_set_cmd(%options);
+    
+    my ($response) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $cmd_options);
+
+    my $raw_results;
+    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
+    
+    eval {
+        $raw_results = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    
+    return $raw_results;
+}
+
 1;
 
 __END__
