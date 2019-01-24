@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('status: %s [duration: %s] [last modified: %s]', $self->{result_values}->{status},
+    my $msg = sprintf("Status '%s' [Duration: %s] [Last modified: %s]", $self->{result_values}->{status},
         $self->{result_values}->{duration},
         $self->{result_values}->{last_modified});
     return $msg;
@@ -39,7 +39,7 @@ sub custom_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{duration} = $options{new_datas}->{$self->{instance} . '_duration'};
+    $self->{result_values}->{duration} = centreon::plugins::misc::change_seconds(value => $options{new_datas}->{$self->{instance} . '_duration'});
     $self->{result_values}->{last_modified} = $options{new_datas}->{$self->{instance} . '_last_modified'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -105,6 +105,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource-group:s"      => { name => 'resource_group' },
+                                    "filter-counters:s"     => { name => 'filter_counters' },
                                     "warning-status:s"      => { name => 'warning_status', default => '' },
                                     "critical-status:s"     => { name => 'critical_status', default => '%{status} ne "Succeeded"' },
                                 });
@@ -133,11 +134,13 @@ sub manage_selection {
     $self->{deployments} = {};
     my $deployments = $options{custom}->azure_list_deployments(resource_group => $self->{option_results}->{resource_group});
     foreach my $deployment (@{$deployments}) {
+        my $duration = $options{custom}->convert_duration(time_string => $deployment->{properties}->{duration});
+        
         $self->{deployments}->{$deployment->{id}} = { 
             display => $deployment->{name}, 
             status => $deployment->{properties}->{provisioningState},
-            duration => $deployment->{properties}->{duration},
-            last_modified => $deployment->{properties}->{timestamp},
+            duration => $duration,
+            last_modified => ($deployment->{properties}->{timestamp} =~ /^(.*)\..*$/) ? $1 : '',
         };
 
         foreach my $status (keys %{$self->{global}}) {
@@ -167,7 +170,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::resource::plugin --c
 
 =item B<--resource-group>
 
-Set resource group (Requied).
+Set resource group (Required).
 
 =item B<--filter-counters>
 
