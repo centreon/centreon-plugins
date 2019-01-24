@@ -474,6 +474,26 @@ sub azure_list_backup_items {
     return $response->{value};
 }
 
+sub azure_list_expressroute_circuits_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
+    $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $url .= "/providers/Microsoft.Network/expressRouteCircuits?api-version=" . $self->{api_version};
+    
+    return $url; 
+}
+
+sub azure_list_expressroute_circuits {
+    my ($self, %options) = @_;
+    
+    my $results = {};
+    my $full_url = $self->azure_list_expressroute_circuits_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response->{value};
+}
+
 1;
 
 __END__
