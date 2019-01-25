@@ -110,6 +110,32 @@ sub check_options {
     return 0;
 }
 
+sub execute {
+    my ($self, %options) = @_;
+
+    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $options{cmd_options} . "'", debug => 1);
+    
+    my ($response) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $options{cmd_options});
+
+    my $raw_results;
+
+    eval {
+        $raw_results = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $raw_results; 
+}
+
 sub convert_duration {
     my ($self, %options) = @_;
 
@@ -153,31 +179,13 @@ sub azure_get_metrics {
     my $end_time = DateTime->now->iso8601.'Z';
 
     my $cmd_options = $self->azure_get_metrics_set_cmd(%options, start_time => $start_time, end_time => $end_time);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     foreach my $metric (@{$raw_results->{value}}) {
         my $metric_name = lc($metric->{name}->{value});
         $metric_name =~ s/ /_/g;
 
-        $results->{$metric_name} = { points => 0 };
+        $results->{$metric_name} = { points => 0, name => $metric->{name}->{localizedValue} };
         foreach my $timeserie (@{$metric->{timeseries}}) {
             foreach my $point (@{$timeserie->{data}}) {
                 if (defined($point->{average})) {
@@ -205,8 +213,8 @@ sub azure_get_metrics {
             $results->{$metric_name}->{average} /= $results->{$metric_name}->{points};
         }
     }
-    
-    return $results, $raw_results, $command_line;
+
+    return $results, $raw_results;
 }
 
 sub azure_list_resources_set_cmd {
@@ -226,29 +234,9 @@ sub azure_list_resources_set_cmd {
 
 sub azure_list_resources {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_resources_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -266,29 +254,9 @@ sub azure_list_vm_sizes_set_cmd {
 
 sub azure_list_vm_sizes {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_vm_sizes_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -308,29 +276,9 @@ sub azure_list_vms_set_cmd {
 
 sub azure_list_vms {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_vms_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -348,29 +296,9 @@ sub azure_list_groups_set_cmd {
 
 sub azure_list_groups {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_groups_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -379,7 +307,7 @@ sub azure_list_deployments_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-    
+
     my $cmd_options = "group deployment list --resource-group '$options{resource_group}' --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -388,29 +316,9 @@ sub azure_list_deployments_set_cmd {
 
 sub azure_list_deployments {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_deployments_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -419,7 +327,7 @@ sub azure_list_vaults_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-    
+
     my $cmd_options = "backup vault list --output json";
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
@@ -429,29 +337,9 @@ sub azure_list_vaults_set_cmd {
 
 sub azure_list_vaults {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_vaults_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -460,7 +348,7 @@ sub azure_list_backup_jobs_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-        
+
     my $cmd_options = "backup job list --resource-group '$options{resource_group}' --vault-name '$options{vault_name}' --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -469,29 +357,9 @@ sub azure_list_backup_jobs_set_cmd {
 
 sub azure_list_backup_jobs {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_backup_jobs_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -500,7 +368,7 @@ sub azure_list_backup_items_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-        
+
     my $cmd_options = "backup item list --resource-group '$options{resource_group}' --vault-name '$options{vault_name}' --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -509,29 +377,9 @@ sub azure_list_backup_items_set_cmd {
 
 sub azure_list_backup_items {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_backup_items_set_cmd(%options);
-    
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
-
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
-    
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
@@ -540,7 +388,7 @@ sub azure_list_expressroute_circuits_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-        
+
     my $cmd_options = "network express-route list --output json";
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
@@ -550,29 +398,29 @@ sub azure_list_expressroute_circuits_set_cmd {
 
 sub azure_list_expressroute_circuits {
     my ($self, %options) = @_;
-    
-    my $results = {};
 
     my $cmd_options = $self->azure_list_expressroute_circuits_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
-    my ($response) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $cmd_options);
+    return $raw_results;
+}
 
-    my $raw_results;
-    my $command_line = $self->{option_results}->{command} . " " . $cmd_options;
+sub azure_list_vpn_gateways_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "network vnet-gateway list --resource-group '$options{resource_group}' --output json";
+    $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
-    eval {
-        $raw_results = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    return $cmd_options; 
+}
+
+sub azure_list_vpn_gateways {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->azure_list_vpn_gateways_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
 }
