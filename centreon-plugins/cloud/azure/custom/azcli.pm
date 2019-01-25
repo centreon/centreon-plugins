@@ -425,6 +425,47 @@ sub azure_list_vpn_gateways {
     return $raw_results;
 }
 
+sub azure_list_virtualnetworks_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "network vnet list --output json";
+    $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
+    $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
+    
+    return $cmd_options; 
+}
+
+sub azure_list_virtualnetworks {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->azure_list_virtualnetworks_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results;
+}
+
+sub azure_list_vnet_peerings_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "network vnet peering list --resource-group '$options{resource_group}' --vnet-name '$options{vnet_name}' --output json";
+    $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
+    
+    return $cmd_options; 
+}
+
+sub azure_list_vnet_peerings {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->azure_list_vnet_peerings_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results;
+}
+
 1;
 
 __END__
