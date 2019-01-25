@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::azure::network::expressroute::mode::listcircuits;
+package cloud::azure::network::virtualnetwork::mode::listvirtualnetworks;
 
 use base qw(centreon::plugins::mode);
 
@@ -49,7 +49,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{circuits} = $options{custom}->azure_list_expressroute_circuits(
+    $self->{networks} = $options{custom}->azure_list_virtualnetworks(
         resource_group => $self->{option_results}->{resource_group}
     );
 }
@@ -58,31 +58,32 @@ sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $circuit (@{$self->{circuits}}) {
+    foreach my $network (@{$self->{networks}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $circuit->{name} !~ /$self->{option_results}->{filter_name}/);
+            && $network->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{location}) && $self->{option_results}->{location} ne ''
-            && $circuit->{location} !~ /$self->{option_results}->{location}/);
+            && $network->{location} !~ /$self->{option_results}->{location}/);
         my $resource_group = '-';
-        $resource_group = $circuit->{resourceGroup} if (defined($circuit->{resourceGroup}));
-        $resource_group = $1 if ($resource_group eq '-' && defined($circuit->{id}) && $circuit->{id} =~ /resourceGroups\/(.*)\/providers/);
+        $resource_group = $network->{resourceGroup} if (defined($network->{resourceGroup}));
+        $resource_group = $1 if ($resource_group eq '-' && defined($network->{id}) && $network->{id} =~ /resourceGroups\/(.*)\/providers/);
         
         my @tags;
-        foreach my $tag (keys %{$circuit->{tags}}) {
-            push @tags, $tag . ':' . $circuit->{tags}->{$tag};
+        foreach my $tag (keys %{$network->{tags}}) {
+            push @tags, $tag . ':' . $network->{tags}->{$tag};
         }
-
-        $self->{output}->output_add(long_msg => sprintf("[name = %s][resourcegroup = %s][location = %s][id = %s][tags = %s]",
-            $circuit->{name},
+        
+        $self->{output}->output_add(long_msg => sprintf("[name = %s][resourcegroup = %s][location = %s][id = %s][address_space = %s][tags = %s]",
+            $network->{name},
             $resource_group,
-            $circuit->{location},
-            $circuit->{id},
+            $network->{location},
+            $network->{id},
+            ($network->{addressSpace}->{addressPrefixes}) ? join(',', @{$network->{addressSpace}->{addressPrefixes}}) : join(',', @{$network->{properties}->{addressSpace}->{addressPrefixes}}),
             join(',', @tags),
         ));
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List ExpressRoute circuits:');
+                                short_msg => 'List virtual networks:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -90,28 +91,29 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'resourcegroup', 'location', 'id', 'tags']);
+    $self->{output}->add_disco_format(elements => ['name', 'resourcegroup', 'location', 'id', 'address_space', 'tags']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $circuit (@{$self->{circuits}}) {
+    foreach my $network (@{$self->{networks}}) {
         my $resource_group = '-';
-        $resource_group = $circuit->{resourceGroup} if (defined($circuit->{resourceGroup}));
-        $resource_group = $1 if ($resource_group eq '-' && defined($circuit->{id}) && $circuit->{id} =~ /resourceGroups\/(.*)\/providers/);
+        $resource_group = $network->{resourceGroup} if (defined($network->{resourceGroup}));
+        $resource_group = $1 if ($resource_group eq '-' && defined($network->{id}) && $network->{id} =~ /resourceGroups\/(.*)\/providers/);
         
         my @tags;
-        foreach my $tag (keys %{$circuit->{tags}}) {
-            push @tags, $tag . ':' . $circuit->{tags}->{$tag};
+        foreach my $tag (keys %{$network->{tags}}) {
+            push @tags, $tag . ':' . $network->{tags}->{$tag};
         }
 
         $self->{output}->add_disco_entry(
-            name => $circuit->{name},
+            name => $network->{name},
             resourcegroup => $resource_group,
-            location => $circuit->{location},
-            id => $circuit->{id},
+            location => $network->{location},
+            id => $network->{id},
+            address_space => ($network->{addressSpace}->{addressPrefixes}) ? join(',', @{$network->{addressSpace}->{addressPrefixes}}) : join(',', @{$network->{properties}->{addressSpace}->{addressPrefixes}}),
             tags => join(',', @tags),
         );
     }
@@ -123,7 +125,7 @@ __END__
 
 =head1 MODE
 
-List ExpressRoute circuits.
+List virtual networks.
 
 =over 8
 
