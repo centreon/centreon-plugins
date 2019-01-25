@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'vpn-gateway-status'        => 'cloud::azure::network::vpngateway::mode::vpngatewaystatus',
+        'site-traffic'              => 'cloud::azure::network::vpngateway::mode::sitetraffic',
         'tunnel-traffic'            => 'cloud::azure::network::vpngateway::mode::tunneltraffic',
+        'vpn-gateway-status'        => 'cloud::azure::network::vpngateway::mode::vpngatewaystatus',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
