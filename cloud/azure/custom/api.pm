@@ -219,6 +219,8 @@ sub request_api {
 
     $self->settings();
 
+    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
+
     my $content = $self->{http}->request(%options);
     
     my $decoded;
@@ -290,7 +292,7 @@ sub azure_get_metrics {
         my $metric_name = lc($metric->{name}->{value});
         $metric_name =~ s/ /_/g;
 
-        $results->{$metric_name} = { points => 0 };
+        $results->{$metric_name} = { points => 0, name => $metric->{name}->{localizedValue} };
         foreach my $timeserie (@{$metric->{timeseries}}) {
             foreach my $point (@{$timeserie->{data}}) {
                 if (defined($point->{average})) {
@@ -349,8 +351,7 @@ sub azure_list_resources_set_url {
 
 sub azure_list_resources {
     my ($self, %options) = @_;
-    
-    my $results = {};    
+        
     my $full_url = $self->azure_list_resources_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -370,7 +371,6 @@ sub azure_list_vms_set_url {
 sub azure_list_vms {
     my ($self, %options) = @_;
     
-    my $results = {};
     my $full_url = $self->azure_list_vms_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -388,7 +388,6 @@ sub azure_list_groups_set_url {
 sub azure_list_groups {
     my ($self, %options) = @_;
     
-    my $results = {};
     my $full_url = $self->azure_list_groups_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -407,7 +406,6 @@ sub azure_list_deployments_set_url {
 sub azure_list_deployments {
     my ($self, %options) = @_;
     
-    my $results = {};
     my $full_url = $self->azure_list_deployments_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -427,7 +425,6 @@ sub azure_list_vaults_set_url {
 sub azure_list_vaults {
     my ($self, %options) = @_;
     
-    my $results = {};
     my $full_url = $self->azure_list_vaults_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -447,7 +444,6 @@ sub azure_list_backup_jobs_set_url {
 sub azure_list_backup_jobs {
     my ($self, %options) = @_;
     
-    my $results = {};
     my $full_url = $self->azure_list_backup_jobs_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -467,7 +463,6 @@ sub azure_list_backup_items_set_url {
 sub azure_list_backup_items {
     my ($self, %options) = @_;
     
-    my $results = {};
     my $full_url = $self->azure_list_backup_items_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -487,8 +482,25 @@ sub azure_list_expressroute_circuits_set_url {
 sub azure_list_expressroute_circuits {
     my ($self, %options) = @_;
     
-    my $results = {};
     my $full_url = $self->azure_list_expressroute_circuits_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response->{value};
+}
+
+sub azure_list_vpn_gateways_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
+        $options{resource_group} . "/providers/Microsoft.Network/virtualNetworkGateways?api-version=" . $self->{api_version};
+    
+    return $url; 
+}
+
+sub azure_list_vpn_gateways {
+    my ($self, %options) = @_;
+    
+    my $full_url = $self->azure_list_vpn_gateways_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
     return $response->{value};
