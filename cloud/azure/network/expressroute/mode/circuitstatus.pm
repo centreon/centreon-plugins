@@ -106,7 +106,7 @@ sub manage_selection {
     my $circuits = $options{custom}->azure_list_expressroute_circuits(resource_group => $self->{option_results}->{resource_group});
     foreach my $circuit (@{$circuits}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $circuit->{properties}->{entityFriendlyName} !~ /$self->{option_results}->{filter_name}/);
+            && $circuit->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{location}) && $self->{option_results}->{location} ne ''
             && $circuit->{location} !~ /$self->{option_results}->{location}/);
         
