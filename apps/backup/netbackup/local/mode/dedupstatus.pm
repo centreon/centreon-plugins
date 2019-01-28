@@ -88,19 +88,20 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "hostname:s"         => { name => 'hostname' },
-                                  "remote"             => { name => 'remote' },
-                                  "ssh-option:s@"      => { name => 'ssh_option' },
-                                  "ssh-path:s"         => { name => 'ssh_path' },
-                                  "ssh-command:s"      => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"          => { name => 'timeout', default => 30 },
-                                  "sudo"               => { name => 'sudo' },
-                                  "command:s"          => { name => 'command', default => 'nbdevquery' },
-                                  "command-path:s"     => { name => 'command_path' },
-                                  "command-options:s"  => { name => 'command_options', default => '-listdp -U' },
-                                  "command2:s"         => { name => 'command2', default => 'nbdevquery' },
-                                  "command2-path:s"    => { name => 'command2_path' },
-                                  "command2-options:s" => { name => 'command2_options', default => '-listdv -U -stype PureDisk' },
+                                  "hostname:s"              => { name => 'hostname' },
+                                  "remote"                  => { name => 'remote' },
+                                  "ssh-option:s@"           => { name => 'ssh_option' },
+                                  "ssh-path:s"              => { name => 'ssh_path' },
+                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
+                                  "timeout:s"               => { name => 'timeout', default => 30 },
+                                  "sudo"                    => { name => 'sudo' },
+                                  "command:s"               => { name => 'command', default => 'nbdevquery' },
+                                  "command-path:s"          => { name => 'command_path' },
+                                  "command-options:s"       => { name => 'command_options', default => '-listdp -U' },
+                                  "command2:s"              => { name => 'command2', default => 'nbdevquery' },
+                                  "command2-path:s"         => { name => 'command2_path' },
+                                  "command2-options:s"      => { name => 'command2_options', default => '-listdv -U -stype PureDisk' },
+                                  "exec-only"               => { name => 'exec_only' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /up/i' },
@@ -131,7 +132,13 @@ sub manage_selection {
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
                                                     command_options => $self->{option_results}->{command_options});
-    
+
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    }
+
     #Disk Pool Name   : NBU-MASTER-DP
     #Disk Pool Id     : NBU-MASTER-DP
     #Disk Type        : PureDisk
@@ -159,6 +166,14 @@ sub manage_selection {
                                                     command => $self->{option_results}->{command2},
                                                     command_path => $self->{option_results}->{command2_path},
                                                     command_options => $self->{option_results}->{command2_options});
+
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
+    }
+
     $self->{volume} = {};
     #Disk Pool Name      : NBU-MASTER-DP
     #Disk Type           : PureDisk
@@ -259,6 +274,10 @@ Command path (Default: none).
 =item B<--command2-options>
 
 Command options (Default: '-listdv -U -stype PureDisk').
+
+=item B<--exec-only>
+
+Print command output
 
 =item B<--filter-name>
 
