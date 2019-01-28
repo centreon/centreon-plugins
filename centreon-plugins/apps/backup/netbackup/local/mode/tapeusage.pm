@@ -148,7 +148,15 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+                                                    command_options => $self->{option_results}->{command_options});
+
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
+    }
+
     $self->{global} = { total => 0, used => 0 };
     #media   optical media                       barcode           robot         robot  robot  robot  side/  volume                                                   prev                    # of     max       # of            create          assigned       first mount        last mount        expiration                                             off sent        off return     off     off                                     
     #ID      partner type      barcode           partner           host          type       #   slot  face   group                      pool                  pool #  pool                  mounts  mounts  cleanings          datetime          datetime          datetime          datetime          datetime  status  offsite location                   datetime          datetime    slot  ses id   version  description              
@@ -228,6 +236,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-a -w').
+
+=item B<--exec-only>
+
+Print command output
 
 =item B<--filter-scratch>
 
