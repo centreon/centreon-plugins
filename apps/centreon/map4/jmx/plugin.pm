@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::map::jmx::plugin;
+package apps::centreon::map4::jmx::plugin;
 
 use strict;
 use warnings;
@@ -30,11 +30,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'broker-stats'      => 'apps::centreon::map::jmx::mode::brokerstats',
-                            'events'            => 'apps::centreon::map::jmx::mode::events',
-                            'engine-stats'      => 'apps::centreon::map::jmx::mode::enginestats',
-                            'open-views'        => 'apps::centreon::map::jmx::mode::openviews',
-                            'sessions'          => 'apps::centreon::map::jmx::mode::sessions',
+                         'gates'            => 'apps::centreon::map4::jmx::mode::gates',
+                         'elements'         => 'apps::centreon::map4::jmx::mode::elements',
+                         'sessions'         => 'apps::centreon::map4::jmx::mode::sessions',
+                         'event-queue'      => 'apps::centreon::map4::jmx::mode::eventqueue',
+                         'event-statistics' => 'apps::centreon::map4::jmx::mode::eventstatistics',
                          );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check statistic counters of Centreon Map >= 18.10 (Needs Jolokia).
+Check Centreon Map 4 informations. Need Jolokia agent and Map >= 4.0.
 
 =cut
