@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::map::jmx::mode::eventstatistics;
+package apps::centreon::map4::jmx::mode::eventstatistics;
 
 use base qw(centreon::plugins::mode);
 
