@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::map::jmx::mode::sessions;
+package apps::centreon::map::jmx::mode::openviews;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -32,21 +32,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'active-session', set => {
-                key_values => [ { name => 'SessionCount' } ],
-                output_template => 'Active Sessions: %d',
+        { label => 'open-views', set => {
+                key_values => [ { name => 'OpenContextCount' } ],
+                output_template => 'Open Views: %d',
                 perfdatas => [
-                    { label => 'active_sessions', value => 'SessionCount_absolute', template => '%d',
-                      min => 0, unit => 'sessions' },
-                ],
-            }
-        },
-        { label => 'queue-size', set => {
-                key_values => [ { name => 'AverageEventQueueSize' } ],
-                output_template => 'Average Event Queue Size: %d',
-                perfdatas => [
-                    { label => 'queue_size', value => 'AverageEventQueueSize_absolute', template => '%d',
-                      min => 0 },
+                    { label => 'open_views', value => 'OpenContextCount_absolute', template => '%d',
+                      min => 0, unit => 'views' },
                 ],
             }
         },
@@ -61,7 +52,6 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-counters:s"     => { name => 'filter_counters', default => '' },
                                 });
     return $self;
 }
@@ -71,13 +61,13 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my $mbean_session = "com.centreon.studio.map:type=session,name=statistics";
+my $mbean_context = "com.centreon.studio.map:type=context,name=statistics";
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{request} = [
-        { mbean => $mbean_session }
+        { mbean => $mbean_context }
     ];
 
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 0);
@@ -85,8 +75,7 @@ sub manage_selection {
     $self->{global} = {};
 
     $self->{global} = {
-        SessionCount => $result->{$mbean_session}->{SessionCount},
-        AverageEventQueueSize => $result->{$mbean_session}->{AverageEventQueueSize},
+        OpenContextCount => $result->{$mbean_context}->{OpenContextCount},
     };
 }
 
@@ -96,29 +85,24 @@ __END__
 
 =head1 MODE
 
-Check active sessions count and the number of whatsup events by user session (queue size).
+Check open views count.
 
 Example:
 
 perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=jolokia
---url=http://10.30.2.22:8080/jolokia-war --mode=sessions
+--url=http://10.30.2.22:8080/jolokia-war --mode=open-views
 
 =over 8
-
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-(Example: --filter-counters='session')
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-session', 'queue-size'.
+Can be: 'open-views'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-session', 'queue-size'.
+Can be: 'open-views'.
 
 =back
 

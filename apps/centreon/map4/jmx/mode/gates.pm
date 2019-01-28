@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-package apps::centreon::map::jmx::mode::gates;
+package apps::centreon::map4::jmx::mode::gates;
 
 use base qw(centreon::plugins::mode);
 
