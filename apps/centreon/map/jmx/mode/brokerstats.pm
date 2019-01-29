@@ -121,8 +121,8 @@ sub manage_selection {
     $self->{global} = {};
 
     $self->{global} = {
-        ReceivedPackets => $result->{$mbean_broker}->{ReceivedPackets}->{andIncrement},
-        ProcessedPackets => $result->{$mbean_broker}->{ProcessedPackets}->{andIncrement},
+        ReceivedPackets => $result->{$mbean_broker}->{ReceivedPackets},
+        ProcessedPackets => $result->{$mbean_broker}->{ProcessedPackets},
     };
 }
 

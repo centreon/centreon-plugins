@@ -91,13 +91,11 @@ sub manage_selection {
     ];
 
     my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 0);
-    my $event_counters = $1 if ($result->{$mbean_event}->{EventCounter} =~ /\{(.*?)\}/);
-
+    
     $self->{global} = {};
 
-    foreach my $counter (split(',', $event_counters)) {
-        next if ($counter !~ /(\w+)\=(\d+)/);
-        $self->{global}->{$1} = $2;
+    foreach my $counter (keys %{$result->{$mbean_event}->{EventCounter}}) {
+        $self->{global}->{$counter} = $result->{$mbean_event}->{EventCounter}->{$counter};
     }
 }
 
