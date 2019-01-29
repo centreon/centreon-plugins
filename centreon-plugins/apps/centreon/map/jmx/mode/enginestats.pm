@@ -111,9 +111,9 @@ sub manage_selection {
 
     $self->{global} = {
         DrilldownCandidatesQueue => $result->{$mbean_engine}->{DrilldownCandidatesQueue},
-        Cutbackcomputation => $result->{$mbean_engine}->{Cutbackcomputation}->{andIncrement},
-        Recursivecomputation => $result->{$mbean_engine}->{Recursivecomputation}->{andIncrement},
-        Minimalcomputation => $result->{$mbean_engine}->{Minimalcomputation}->{andIncrement},
+        Cutbackcomputation => $result->{$mbean_engine}->{Cutbackcomputation},
+        Recursivecomputation => $result->{$mbean_engine}->{Recursivecomputation},
+        Minimalcomputation => $result->{$mbean_engine}->{Minimalcomputation},
     };
 }
 
