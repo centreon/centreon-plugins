@@ -91,6 +91,7 @@ sub run {
             name => $entity_view->{name},
             connection_state => $entity_view->{'runtime.connectionState'}->val, 
             power_state => $entity_view->{'runtime.powerState'}->val,
+            'config.annotation' => defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : undef,
         };
         
         next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
@@ -104,7 +105,6 @@ sub run {
         $data->{$entity_value}->{'cpu.usagemhz.average'} = $total_cpu_mhz_average;
         $data->{$entity_value}->{'cpu_ready'} = $total_cpu_ready;
         $data->{$entity_value}->{'interval_min'} = $interval_min;
-        $data->{$entity_value}->{'config.annotation'} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : undef;
         $data->{$entity_value}->{'cpu'} = {};
         
         foreach my $id (sort { my ($cida, $cia) = split /:/, $a;

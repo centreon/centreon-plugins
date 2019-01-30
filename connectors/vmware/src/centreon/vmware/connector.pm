@@ -21,7 +21,7 @@ package centreon::vmware::connector;
 use strict;
 use VMware::VIRuntime;
 use VMware::VILib;
-use JSON;
+use JSON::XS;
 use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use File::Basename;
@@ -167,7 +167,7 @@ sub reqclient {
 
     my $result;
     eval {
-        $result = JSON->new->utf8->decode($options{data});
+        $result = JSON::XS->new->utf8->decode($options{data});
     };
     if ($@) {
         $self->{logger}->writeLogError("Cannot decode JSON: $@ (options{data}");

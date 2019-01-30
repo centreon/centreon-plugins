@@ -23,7 +23,6 @@ use base qw(centreon::vmware::cmdbase);
 use strict;
 use warnings;
 use centreon::vmware::common;
-use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -39,16 +38,6 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     return 0;
-}
-
-sub initArgs {
-    my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
 }
 
 sub run {
@@ -147,17 +136,8 @@ sub run {
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
     $disco_stats->{discovered_items} = @disco_data;
     $disco_stats->{results} = \@disco_data;
-
-    my $encoded_data;
-    eval {
-        $encoded_data = encode_json($disco_stats);
-    };
-    if ($@) {
-        $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
-    }
     
-    $self->{manager}->{output}->output_add(short_msg => $encoded_data);
-    $self->{manager}->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
+    centreon::vmware::common::set_response(data => $disco_stats);
 }
 
 1;

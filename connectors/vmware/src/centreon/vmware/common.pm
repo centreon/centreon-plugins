@@ -25,7 +25,7 @@ use VMware::VIRuntime;
 use VMware::VILib;
 use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
-use JSON;
+use JSON::XS;;
 
 my $manager_display = {};
 my $manager_response = {};
@@ -63,7 +63,7 @@ sub response {
         $response_str = $options{force_response};
     } else {
         eval {
-            $response_str = JSON->new->utf8->encode($manager_response);
+            $response_str = JSON::XS->new->utf8->encode($manager_response);
         };
         if ($@) {
             $response_str = '{ "code": -1, "short_message": "Cannot encode result" }';

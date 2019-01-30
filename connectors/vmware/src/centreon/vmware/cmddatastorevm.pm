@@ -90,6 +90,7 @@ sub run {
             name => $entity_view->{name},
             connection_state => $entity_view->{'runtime.connectionState'}->val, 
             power_state => $entity_view->{'runtime.powerState'}->val,
+            'config.annotation' => defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : undef,
             datastore => {},
         };
         next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
@@ -148,7 +149,6 @@ sub run {
         
         next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0 &&
                  centreon::vmware::common::is_running(power => $entity_view->{'runtime.powerState'}->val) == 0);
-        $data->{$entity_value}->{'config.annotation'} = defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : undef;
         
         my %datastore_lun = ();
         foreach (keys %{$values->{$entity_value}}) {
