@@ -20,6 +20,7 @@ package centreon::vmware::cmdbase;
 
 use strict;
 use warnings;
+use centreon::vmware::common;
 
 my %handlers = (ALRM => {});
 
@@ -65,6 +66,15 @@ sub set_connector {
     $self->{connector} = $options{connector};
     $self->set_signal_handlers();
     alarm(300);
+}
+
+sub initArgs {
+    my ($self, %options) = @_;
+    
+    foreach (keys %{$options{arguments}}) {
+        $self->{$_} = $options{arguments}->{$_};
+    }
+    centreon::vmware::common::init_response(identity => $options{arguments}->{identity});
 }
 
 sub build_filter {

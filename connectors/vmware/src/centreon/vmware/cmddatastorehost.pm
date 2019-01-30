@@ -39,62 +39,29 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: esx hostname cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: esx hostname cannot be null");
         return 1;
     }
     if (defined($options{arguments}->{datastore_name}) && $options{arguments}->{datastore_name} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: datastore name cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: datastore name cannot be null");
         return 1;
     }
-    if (defined($options{arguments}->{disconnect_status}) && 
-        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
-        return 1;
-    }
-    foreach my $label (('warning', 'critical')) {
-        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
-            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
-            return 1;
-        }
-    }
-    return 0;
-}
 
-sub initArgs {
-    my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-    foreach my $label (('warning', 'critical')) {
-        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
-    }
+    return 0;
 }
 
 sub run {
     my $self = shift;
 
     if (!($self->{connector}->{perfcounter_speriod} > 0)) {
-        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Can't retrieve perf counters");
+        centreon::vmware::common::set_response(code => -1, short_message => "Can't retrieve perf counters");
         return ;
     }
 
-    my $multiple = 0;
     my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
     my @properties = ('name', 'config.fileSystemVolume.mountInfo', 'runtime.connectionState');
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
-    
-    if (scalar(@$result) > 1) {
-        $multiple = 1;
-    }
     
     my %uuid_list = ();
     #my %disk_name = ();
@@ -108,12 +75,11 @@ sub run {
         $ds_regexp = qr/$self->{datastore_name}/;
     }
     
+    my $data = {};
     foreach my $entity_view (@$result) {
-        next if (centreon::vmware::common::host_state(connector => $self->{connector},
-                                                    hostname => $entity_view->{name}, 
-                                                    state => $entity_view->{'runtime.connectionState'}->val,
-                                                    status => $self->{disconnect_status},
-                                                    multiple => $multiple) == 0);
+        my $entity_value = $entity_view->{mo_ref}->{value};
+        $data->{$entity_value} = { name => $entity_view->{name}, state => $entity_view->{'runtime.connectionState'}->val, datastore => {} };
+        next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
                                                  
         my $instances = [];
         foreach (@{$entity_view->{'config.fileSystemVolume.mountInfo'}}) {
@@ -147,8 +113,7 @@ sub run {
     }
     
     if (scalar(@$query_perfs) == 0) {
-        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Can't get a single datastore.");
+        centreon::vmware::common::set_response(code => 100, short_message => "Can't get a single datastore.");
         return ;
     }
 
@@ -162,8 +127,6 @@ sub run {
                         skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
 
-    $self->{manager}->{output}->output_add(severity => 'OK',
-                                           short_msg => sprintf("All Datastore latencies are ok"));
     foreach my $entity_view (@$result) {
         next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
         my $entity_value = $entity_view->{mo_ref}->{value};
@@ -177,37 +140,14 @@ sub run {
             my $read_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.totalReadLatency.average'}->{'key'} . ":" . $uuid}));
             my $write_counter = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'datastore.totalWriteLatency.average'}->{'key'} . ":" . $uuid}));
             
-            my $exit = $self->{manager}->{perfdata}->threshold_check(value => $read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' read on '%s' is %s ms", 
-                                                   $entity_view->{name}, $uuid_list{$uuid}, $read_counter));
-            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                 $self->{manager}->{output}->output_add(severity => $exit,
-                                                        short_msg => sprintf("'%s' read on '%s' is %s ms", 
-                                                   $entity_view->{name}, $uuid_list{$uuid}, $read_counter));
-            }
-            $exit = $self->{manager}->{perfdata}->threshold_check(value => $write_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' write on '%s' is %s ms", 
-                                                   $entity_view->{name}, $uuid_list{$uuid}, $write_counter));
-            if (!$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                 $self->{manager}->{output}->output_add(severity => $exit,
-                                                        short_msg => sprintf("'%s' write on '%s' is %s ms", 
-                                                   $entity_view->{name}, $uuid_list{$uuid}, $write_counter));
-            }
-            
-            my $extra_label = '';
-            $extra_label = '_' . $entity_view->{name} if ($multiple == 1);
-            $self->{manager}->{output}->perfdata_add(label => 'trl' . $extra_label . '_' . $uuid_list{$uuid}, unit => 'ms',
-                                                     value => $read_counter,
-                                                     warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                                     critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                                     min => 0);
-            $self->{manager}->{output}->perfdata_add(label => 'twl' . $extra_label . '_' . $uuid_list{$uuid}, unit => 'ms',
-                                                     value => $write_counter,
-                                                     warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                                     critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                                     min => 0);
+            $data->{$entity_value}->{datastore}->{$uuid_list{$uuid}} = {
+                'datastore.totalReadLatency.average' => $read_counter,
+                'datastore.totalWriteLatency.average' => $write_counter,
+            };
         }
     }
+    
+    centreon::vmware::common::set_response(data => $data);
 }
 
 1;

@@ -38,72 +38,34 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{datastore_name}) && $options{arguments}->{datastore_name} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: datastore name cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: datastore name cannot be null");
         return 1;
     }
-    if (defined($options{arguments}->{disconnect_status}) && 
-        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
-        return 1;
-    }
-    foreach my $label (('warning', 'critical')) {
-        if (($options{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label})) == 0) {
-            $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                    short_msg => "Argument error: wrong value for $label value '" . $options{arguments}->{$label} . "'.");
-            return 1;
-        }
-    }
-    return 0;
-}
-
-sub initArgs {
-    my ($self, %options) = @_;
     
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-    foreach my $label (('warning', 'critical')) {
-        $self->{manager}->{perfdata}->threshold_validate(label => $label, value => $options{arguments}->{$label});
-    }
+    return 0;
 }
 
 sub run {
     my $self = shift;
 
     if (!($self->{connector}->{perfcounter_speriod} > 0)) {
-        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "Can't retrieve perf counters");
+        centreon::vmware::common::set_response(code => -1, short_message => "Can't retrieve perf counters");
         return ;
     }
 
-    my $multiple = 0;
     my $filters = $self->build_filter(label => 'name', search_option => 'datastore_name', is_regexp => 'filter');
     my @properties = ('summary.accessible', 'summary.name', 'vm', 'info');
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => $filters);
     return if (!defined($result));
     
-    if (scalar(@$result) > 1) {
-        $multiple = 1;
-    }
-    if ($multiple == 1) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => sprintf("All Datastore IOPS counters are ok"));
-    }
-    
+    my $data = {};
     #my %uuid_list = ();
     my %disk_name = ();
     my %datastore_lun = ();
     my $ds_checked = 0;
     foreach (@$result) {
-        next if (centreon::vmware::common::datastore_state(connector => $self->{connector},
-                                                         name => $_->{'summary.name'}, 
-                                                         state => $_->{'summary.accessible'},
-                                                         status => $self->{disconnect_status},
-                                                         multiple => $multiple) == 0);
+        $data->{$_->{'summary.name'}} = { name => $_->{'summary.name'}, state => $_->{'summary.accessible'} };
+        next if (centreon::vmware::common::is_accessible(accessible => $_->{'summary.accessible'}) == 0);
     
         if ($_->info->isa('VmfsDatastoreInfo')) {
             #$uuid_list{$_->volume->uuid} = $_->volume->name;
@@ -122,8 +84,7 @@ sub run {
     }
     
     if ($ds_checked == 0) {
-        $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => "No Vmfs datastore(s) checked. Cannot get iops from Nas datastore(s)");
+        centreon::vmware::common::set_response(code => 100, short_message => "No Vmfs datastore(s) checked. Cannot get iops from Nas datastore(s)");
         return ;
     }
     
@@ -140,8 +101,7 @@ sub run {
     }
     
     if (scalar(@vm_array) == 0) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => "No virtual machines on the datastore");
+        centreon::vmware::common::set_response(code => 200, short_message => "No virtual machines on the datastore");
         return ;
     }
 
@@ -160,9 +120,8 @@ sub run {
         $ref_ids_vm{${$result2}[$i]->{mo_ref}->{value}} = ${$result2}[$i]->{name};
     }
     
-    if ($multiple == 0 && scalar(@{$result2}) == 0) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => "No active virtual machines on the datastore");
+    if (scalar(@{$result2}) == 0) {
+        centreon::vmware::common::set_response(code => 200, short_message => "No active virtual machines on the datastore");
         return ;
     }
 
@@ -200,64 +159,35 @@ sub run {
         my $total_read_counter = $datastore_lun{$_}{'disk.numberRead.summation'};
         my $total_write_counter = $datastore_lun{$_}{'disk.numberWrite.summation'};
         
-        my $exit = $self->{manager}->{perfdata}->threshold_check(value => $total_read_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' read iops on '%s'", 
-                                               $total_read_counter, $_));
-        if ($multiple == 0 ||
-            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-             $self->{manager}->{output}->output_add(severity => $exit,
-                                                    short_msg => sprintf("'%s' read iops on '%s'", 
-                                               $total_read_counter, $_));
-             $self->vm_iops_details(label => 'disk.numberRead.summation', 
-                                    type => 'read',
-                                    detail => $datastore_lun{$_}, 
-                                    ref_vm => \%ref_ids_vm);
-        }
-        $exit = $self->{manager}->{perfdata}->threshold_check(value => $total_write_counter, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' write iops on '%s'", 
-                                               $total_write_counter, $_));
-        if ($multiple == 0 ||
-            !$self->{manager}->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-             $self->{manager}->{output}->output_add(severity => $exit,
-                                                    short_msg => sprintf("'%s' write iops on '%s'", 
-                                               $total_write_counter, $_));
-             $self->vm_iops_details(label => 'disk.numberWrite.summation',
-                                    type => 'write',
-                                    detail => $datastore_lun{$_}, 
-                                    ref_vm => \%ref_ids_vm)
-        }
+        $data->{$_}->{'disk.numberRead.summation'} = $total_read_counter;
+        $data->{$_}->{'disk.numberWrite.summation'} = $total_write_counter;
+        $data->{$_}->{vm} = {};
         
-        my $extra_label = '';
-        $extra_label = '_' . $_ if ($multiple == 1);
-        $self->{manager}->{output}->perfdata_add(label => 'riops' . $extra_label, unit => 'iops',
-                                                 value => $total_read_counter,
-                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                                 min => 0);
-        $self->{manager}->{output}->perfdata_add(label => 'wiops' . $extra_label, unit => 'iops',
-                                                 value => $total_write_counter,
-                                                 warning => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                                 critical => $self->{manager}->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                                 min => 0);
+        $self->vm_iops_details(label => 'disk.numberRead.summation', 
+                               type => 'read',
+                               detail => $datastore_lun{$_}, 
+                               ref_vm => \%ref_ids_vm,
+                               data => $data);
+        $self->vm_iops_details(label => 'disk.numberWrite.summation', 
+                               type => 'write',
+                               detail => $datastore_lun{$_}, 
+                               ref_vm => \%ref_ids_vm,
+                               data_vm => $data->{$_}->{vm});
     }
+    
+    centreon::vmware::common::set_response(data => $data);
 }
 
 sub vm_iops_details {
     my ($self, %options) = @_;
     
-    $self->{manager}->{output}->output_add(long_msg => sprintf("  VM IOPs details: "));
-    my $num = 0;
     foreach my $value (keys %{$options{detail}}) {
         # display only for high iops
         if ($value =~ /^vm.*?$options{label}$/ && $options{detail}->{$value} >= $self->{detail_iops_min}) {
             my ($vm_id) = split(/_/, $value);
-            $num++;
-            $self->{manager}->{output}->output_add(long_msg => sprintf("    '%s' %s iops", $options{ref_vm}->{$vm_id}, $options{detail}->{$value})); 
+            $options{data_vm}->{$options{ref_vm}->{$vm_id}} = {} if (!defined($options{data_vm}->{$options{ref_vm}->{$vm_id}}));
+            $options{data_vm}->{$options{ref_vm}->{$vm_id}}->{$options{label}} = $options{detail}->{$value};
         }
-    }
-    
-    if ($num == 0) {
-        $self->{manager}->{output}->output_add(long_msg => sprintf("    no vm with iops >= %s", $self->{detail_iops_min}));
     }
 }
 

@@ -25,36 +25,49 @@ use VMware::VIRuntime;
 use VMware::VILib;
 use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
-use centreon::plugins::options;
-use centreon::plugins::output;
-use centreon::plugins::perfdata;
+use JSON;
 
 my $manager_display = {};
+my $manager_response = {};
 my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
 
-sub init_response {
-    $manager_display->{options} = centreon::plugins::options->new();
-    $manager_display->{output} = centreon::plugins::output->new(options => $manager_display->{options});
-    $manager_display->{perfdata} = centreon::plugins::perfdata->new(output => $manager_display->{output});
+sub set_response {
+    my (%options) = @_;
     
-    return $manager_display;
+    $manager_response->{code} = $options{code} if (defined($options{code}));
+    $manager_response->{short_message} = $options{short_message} if (defined($options{short_message}));
+    $manager_response->{extra_message} = $options{extra_message} if (defined($options{extra_message}));
+    $manager_response->{identity} = $options{identity} if (defined($options{identity}));
+    $manager_response->{data} = $options{data} if (defined($options{data}));
+}
+
+sub init_response {
+    my (%options) = @_;
+    
+    $manager_response->{code} = 0;
+    $manager_response->{short_message} = 'OK';
+    $manager_response->{extra_message} = '';
+    $manager_response->{identity} = $options{identity} if (defined($options{identity}));
+    $manager_response->{data} = {};
 }
 
 sub free_response {
-    $manager_display = {};
+    $manager_response = {};
 }
 
 sub response {
     my (%options) = @_;
 
-    my $stdout = '';
-    if (!defined($options{stdout})) {
-        local *STDOUT;
-        $manager_display->{output}->{option_results}->{output_json} = 1;
-        open STDOUT, '>', \$stdout;
-        $manager_display->{output}->display(force_long_output => 1, nolabel => 1);
+    my $response_str = '';
+    if (defined($options{force_response})) {
+        $response_str = $options{force_response};
     } else {
-        $stdout = $options{stdout};
+        eval {
+            $response_str = JSON->new->utf8->encode($manager_response);
+        };
+        if ($@) {
+            $response_str = '{ "code": -1, "short_message": "Cannot encode result" }';
+        }
     }
     
     if (defined($options{reinit})) {
@@ -70,7 +83,7 @@ sub response {
         zmq_msg_send($msg, $options{endpoint}, $flag);
         zmq_msg_close($msg);
     }
-    my $msg = zmq_msg_init_data($options{token} . " " . $stdout);
+    my $msg = zmq_msg_init_data($options{token} . " " . $response_str);
     zmq_msg_send($msg, $options{endpoint}, ZMQ_NOBLOCK);
     zmq_msg_close($msg);
 }
@@ -78,14 +91,12 @@ sub response {
 sub vmware_error {
     my ($obj_vmware, $lerror) = @_;
 
-    $manager_display->{output}->output_add(long_msg => $lerror);
+    set_response(extra_message => $lerror);
     $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $lerror");
     if ($lerror =~ /NoPermissionFault/i) {
-        $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => 'VMWare error: not enought permissions');
+        set_response(code => -1, short_message => 'VMWare error: not enought permissions');
     } else {
-        $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => 'VMWare error (verbose mode for more details)');
+        set_response(code => -1, short_message => 'VMWare error (verbose mode for more details)');
     }
     return undef;
 }
@@ -220,11 +231,11 @@ sub get_perf_metric_ids {
     foreach (@{$options{metrics}}) {
         if (defined($options{connector}->{perfcounter_cache}->{$_->{label}})) {
             if ($options{interval} != 20 && $options{connector}->{perfcounter_cache}->{$_->{label}}{level} > $options{connector}->{sampling_periods}->{$options{interval}}->{level}) {
-                $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                       short_msg => sprintf("Cannot get counter '%s' for the sampling period '%s' (counter level: %s, sampling level: %s)",
-                                                                    $_->{label}, $options{interval}, 
-                                                                    $options{connector}->{perfcounter_cache}->{$_->{label}}{level},
-                                                                    $options{connector}->{sampling_periods}->{$options{interval}}->{level}));
+                set_response(code => -1,
+                             short_message => sprintf("Cannot get counter '%s' for the sampling period '%s' (counter level: %s, sampling level: %s)",
+                                $_->{label}, $options{interval}, 
+                                $options{connector}->{perfcounter_cache}->{$_->{label}}{level},
+                                $options{connector}->{sampling_periods}->{$options{interval}}->{level}));
                 return undef;
             }
             foreach my $instance (@{$_->{instances}}) {    
@@ -234,8 +245,7 @@ sub get_perf_metric_ids {
             }
         } else {
             $options{connector}->{logger}->writeLogError("Metric '" . $_->{label} . "' unavailable.");
-            $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Counter doesn't exist. VMware version can be too old.");
+            set_response(code => -1, short_message => "Counter doesn't exist. VMware version can be too old.");
             return undef;
         }
     }
@@ -337,13 +347,11 @@ sub generic_performance_values_historic {
     }
     # check sampling period exist (period 20 is not listed)
     if ($interval != 20 && !defined($obj_vmware->{sampling_periods}->{$interval})) {
-        $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => sprintf("Sampling period '%s' not managed.", $interval));
+        set_response(code => -1, short_message => sprintf("Sampling period '%s' not managed.", $interval));
         return undef;
     }
     if ($interval != 20 && $obj_vmware->{sampling_periods}->{$interval}->{enabled} != 1) {
-        $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                               short_msg => sprintf("Sampling period '%s' collection data no enabled.", $interval));
+        set_response(code => -1, short_message => sprintf("Sampling period '%s' collection data no enabled.", $interval));
         return undef;
     }
     eval {
@@ -362,8 +370,7 @@ sub generic_performance_values_historic {
         return undef if (!defined($perfdata));
 
         if (!$$perfdata[0] || !defined($$perfdata[0]->value)) {
-            $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode),...)');
+            set_response(code => -1, short_message => 'Cannot get value for counters (Maybe, object(s) cannot be reached: disconnected, not running, time not synced (see time-host mode),...)');
             return undef;
         }
         foreach my $val (@$perfdata) {
@@ -372,8 +379,7 @@ sub generic_performance_values_historic {
                     $results{$_->id->counterId . ":" . (defined($_->id->instance) ? $_->id->instance : "")} = undef;
                     next;
                 } elsif (!defined($_->value)) {
-                    $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                           short_msg => 'Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also)');
+                    set_response(code => -1, short_message => 'Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also)');
                     return undef;
                 }
                 
@@ -400,9 +406,8 @@ sub generic_performance_values_historic {
     };
     if ($@) {
         if ($@ =~ /querySpec.interval.*InvalidArgumentFault/msi) {
-            $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => sprintf("Interval '%s' is surely not supported for the managed entity (caller: %s)",
-                                                                        $interval, join('--', caller)));
+            set_response(code => -1, short_message => sprintf("Interval '%s' is surely not supported for the managed entity (caller: %s)",
+                                                              $interval, join('--', caller)));
         } else {
             $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $@");
         }
@@ -463,8 +468,7 @@ sub search_entities {
                 }
                 
                 if (scalar(@$temp_views) == 0) {
-                    $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                           short_msg => "Cannot find '$$scope[1]' object");
+                    set_response(code => 1, short_message => "Cannot find '$$scope[1]' object");
                     return undef;
                 }
                 push @$begin_views, @$temp_views;
@@ -487,8 +491,7 @@ sub search_entities {
             push @$results, @$views;
         }
         if (scalar(@$results) == 0) {
-            $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Cannot find '$options{view_type}' object");
+            set_response(code => 1, short_message => "Cannot find '$options{view_type}' object");
             return undef;
         }
         return $results;
@@ -526,8 +529,7 @@ sub find_entity_views {
     if (!defined($entity_views) || scalar(@$entity_views) == 0) {
         my $status = 0;
         if (!defined($options{output_message}) || $options{output_message} != 0) {
-            $manager_display->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Cannot find '$options{view_type}' object");
+            set_response(code => 1, short_message => "Cannot find '$options{view_type}' object");
         }
         return (0, undef);
     }
@@ -684,18 +686,11 @@ sub strip_cr {
 sub stats_info {
     my (%options) = @_;
 
-    my $total = 0;
+    my $data = {};
     foreach my $container (keys %{$options{counters}}) {
-        $total += $options{counters}->{$container};
-        $options{manager}->{output}->perfdata_add(label => 'c[requests_' . $container . ']',
-                                                  value => $options{counters}->{$container},
-                                                  min => 0);
+        $data->{$container} = { requests => $options{counters}->{$container} };
     }
-    $options{manager}->{output}->perfdata_add(label => 'c[requests]',
-                                              value => $total,
-                                              min => 0);  
-    $options{manager}->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("'%s' total requests", $total));
+    set_response(data => $data);
 }
 
 1;

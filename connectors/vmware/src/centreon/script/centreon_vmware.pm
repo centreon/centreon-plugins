@@ -331,8 +331,7 @@ sub waiting_ready {
     }
     
     if ($self->{centreon_vmware_config}->{vsphere_server}->{$options{container}}->{ready} == 0) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "connector still not ready.");
+        centreon::vmware::common::set_response(code => -1, short_message => "connector still not ready.");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return 0;
     }
@@ -345,8 +344,7 @@ sub request_dynamic {
 
     if (!defined($options{result}->{vsphere_username}) || $options{result}->{vsphere_username} eq '' ||
         !defined($options{result}->{vsphere_password}) || $options{result}->{vsphere_password} eq '') {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Please set vsphere username or password");
+        centreon::vmware::common::set_response(code => -1, short_message => "Please set vsphere username or password");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
@@ -386,20 +384,17 @@ sub request {
         $result = JSON->new->utf8->decode($options{data});
     };
     if ($@) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Cannot decode json result: $@");
+        centreon::vmware::common::set_response(code => 1, short_message => "Cannot decode json result: $@");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
     if ($result->{command} eq 'stats') {
-        centreon::vmware::common::stats_info(manager => $options{manager},
-                                           counters => $self->{counter_stats});
+        centreon::vmware::common::stats_info(counters => $self->{counter_stats});
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
     if (!defined($self->{modules_registry}->{$result->{command}})) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Unknown method name '$result->{command}'");
+        centreon::vmware::common::set_response(code => 1, short_message => "Unknown method name '$result->{command}'");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
@@ -416,8 +411,7 @@ sub request {
     }
     
     if (!defined($self->{centreon_vmware_config}->{vsphere_server}->{$result->{container}})) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                       short_msg => "Unknown container name '$result->{container}'");
+        centreon::vmware::common::set_response(code => 1, short_message => "Unknown container name '$result->{container}'");
         centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $options{identity});
         return ;
     }
@@ -448,12 +442,12 @@ sub repserver {
         $self->{logger}->writeLogError("Cannot decode JSON: $@ (options{data}");
         return ;
     }
-    
-    $result->{plugin}->{name} =~ /^client-(.*)$/;
+
+    $result->{identity} =~ /^client-(.*)$/;
     my $identity = 'client-' . pack('H*', $1);
     
     centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, 
-                                     identity => $identity, stdout => $options{data});
+        identity => $identity, force_response => $options{data});
 }
 
 sub router_event {
@@ -469,16 +463,15 @@ sub router_event {
         my $data = zmq_msg_data($msg);
         zmq_msg_close($msg);
         
-        my $manager = centreon::vmware::common::init_response();
+        centreon::vmware::common::init_response();
         if ($centreon_vmware->{stop} != 0) {
             # We quit so we say we're leaving ;)
-            $manager->{output}->output_add(severity => 'UNKNOWN',
-                                           short_msg => 'Daemon is restarting/stopping...');
+            centreon::vmware::common::set_response(code => -1, short_message => 'Daemon is restarting/stopping...');
             centreon::vmware::common::response(token => 'RESPSERVER', endpoint => $frontend, identity => $identity);
         } elsif ($data =~ /^REQCLIENT\s+(.*)$/msi) {
-            $centreon_vmware->request(identity => $identity, data => $1, manager => $manager);
+            $centreon_vmware->request(identity => $identity, data => $1);
         } elsif ($data =~ /^RESPSERVER2\s+(.*)$/msi) {
-            $centreon_vmware->repserver(data => $1, manager => $manager);
+            $centreon_vmware->repserver(data => $1);
         } elsif ($data =~ /^READY/msi) {
             $identity =~ /server-(.*)/;
             $centreon_vmware->{centreon_vmware_config}->{vsphere_server}->{$1}->{ready} = 1;

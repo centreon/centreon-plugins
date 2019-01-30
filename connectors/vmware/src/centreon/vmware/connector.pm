@@ -125,10 +125,8 @@ sub handle_CHLD {
 sub response_router {
     my ($self, %options) = @_;
     
-    my $manager = centreon::vmware::common::init_response();
-    $manager->{output}->output_add(severity => $options{severity},
-                                   short_msg => $options{msg});
-    $manager->{output}->{plugin} = $options{identity};
+    centreon::vmware::common::init_response(identity => $options{identity});
+    centreon::vmware::common::set_response(code => $options{code}, short_message => $options{msg});
     centreon::vmware::common::response(token => 'RESPSERVER2', endpoint => $backend);
     centreon::vmware::common::free_response();
 }
@@ -144,7 +142,7 @@ sub verify_child {
             delete $self->{return_child}->{$self->{child_proc}->{$_}->{pid}};
             delete $self->{child_proc}->{$_};
         } elsif (time() - $self->{child_proc}->{$_}->{ctime} > $self->{config_child_timeout}) {
-            $self->response_router(severity => 'UNKNOWN', msg => 'Timeout process',
+            $self->response_router(code => -1, msg => 'Timeout process',
                                    identity => $_);
             kill('INT', $self->{child_proc}->{$_}->{pid});
             delete $self->{child_proc}->{$_};
@@ -191,7 +189,7 @@ sub reqclient {
             exit(0);
         }
     } else {
-        $self->response_router(severity => 'UNKNOWN', msg => 'Container connection problem',
+        $self->response_router(code => -1, msg => 'Container connection problem',
                                identity => $result->{identity});
     }
 }
@@ -228,7 +226,7 @@ sub run {
     zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $connector->{whoaim});
     zmq_setsockopt($backend, ZMQ_LINGER, 0); # we discard  
     zmq_connect($backend, 'ipc:///tmp/centreon_vmware/routing.ipc');
-    centreon::vmware::common::response(token => 'READY', endpoint => $backend, stdout => '');
+    centreon::vmware::common::response(token => 'READY', endpoint => $backend, force_response => '');
     
     # Initialize poll set
     my @poll = (
