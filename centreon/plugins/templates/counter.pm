@@ -106,7 +106,6 @@ sub new {
             $_->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
                                                        output => $self->{output}, perfdata => $self->{perfdata},
                                                        label => $_->{label});
-            $_->{obj}->{instance_mode} = $self;
             $_->{obj}->set(%{$_->{set}});
         }
     }
@@ -131,6 +130,7 @@ sub check_options {
     }
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
+            $_->{obj}->{instance_mode} = $self;
             $_->{obj}->init(option_results => $self->{option_results});
         }
     }
@@ -364,7 +364,7 @@ sub run_group {
             if (defined($options{config}->{cb_prefix_output}));
             $prefix_output = '' if (!defined($prefix_output));
             
-            if ($multiple == 0) {
+            if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
                 $self->{output}->output_add(severity => $self->{most_critical_instance},
                                             short_msg => $prefix_output . $self->{problems} . " problem(s) detected");
             }

@@ -47,12 +47,19 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->set_discovery();
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'listdatacenters');
-    $self->{connector}->run();
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'listdatacenters');
+    foreach (keys %{$response->{data}}) {
+        $self->{output}->output_add(long_msg => '  ' . $response->{data}->{$_}->{name});
+    }
+
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List datacenter(s):');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
+
+    $self->{connector} = $options{custom};
 }
 
 sub disco_format {
@@ -63,11 +70,12 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
-
-    # We ask to use XML output from the connector
-    $self->{connector}->add_params(params => { disco_show => 1 });
-    $self->run(custom => $self->{connector});
+    
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'listdatacenters');
+    foreach (keys %{$response->{data}}) {
+        $self->{output}->add_disco_entry(name => $response->{data}->{$_}->{name});
+    }
 }
 
 1;
