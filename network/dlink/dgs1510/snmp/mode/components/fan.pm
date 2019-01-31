@@ -56,7 +56,7 @@ sub check {
         $self->{components}->{fan}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("fan '%s' status is %s.",
-                                    $instance, $result->{swFanStatus}}
+                                    $instance, $result->{swFanStatus}
                                     ));
         my $exit = $self->get_severity(section => 'fan', value => $result->{swFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
