@@ -70,12 +70,14 @@ sub new {
             "critical-numeric:s"      => { name => 'critical_numeric' },
             "warning-string:s"        => { name => 'warning_string' },
             "critical-string:s"       => { name => 'critical_string' },
+            "unknown-string:s"        => { name => 'unknown_string' },
             "warning-time:s"          => { name => 'warning_time' },
             "critical-time:s"         => { name => 'critical_time' },
             "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
             "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
             "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
             "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
+            "format-unknown:s"       => { name => 'format_unknown', default => '%{count} element(s) found' },
             "values-separator:s"      => { name => 'values_separator', default => ', ' },
             });
     $self->{count} = 0;
@@ -85,9 +87,11 @@ sub new {
     $self->{values_ok} = [];
     $self->{values_warning} = [];
     $self->{values_critical} = [];
+    $self->{values_unknown} = [];
     $self->{values_string_ok} = [];
     $self->{values_string_warning} = [];
     $self->{values_string_critical} = [];
+    $self->{values_string_unknown} = [];
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
@@ -148,7 +152,7 @@ sub load_request {
 sub display_output {
     my ($self, %options) = @_;
 
-    foreach my $severity (('ok', 'warning', 'critical')) {
+    foreach my $severity (('ok', 'warning', 'critical', 'unknown')) {
         next if (scalar(@{$self->{'values_' . $severity}}) == 0 && scalar(@{$self->{'values_string_' . $severity}}) == 0);
         my $format = $self->{option_results}->{'format_' . $severity};
         while ($format =~ /%\{(.*?)\}/g) {
@@ -231,7 +235,11 @@ sub lookup {
             } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' &&
                      $value =~ /$self->{option_results}->{warning_string}/) {
                 push @{$self->{values_string_warning}}, $value;
-            } else {
+            } elsif (defined($self->{option_results}->{unknown_string}) && $self->{option_results}->{unknown_string} ne '' &&
+                       $value =~ /$self->{option_results}->{unknown_string}/) {
+                  push @{$self->{values_string_unknown}}, $value;
+            }
+            else {
                 push @{$self->{values_string_ok}}, $value;
             }
         }
@@ -320,6 +328,10 @@ Output warning format (Default: %{count} element(s) found')
 
 Output critical format (Default: %{count} element(s) found')
 
+=item B<--format-unknown>
+
+Output unknown format (Default: %{count} element(s) found')
+
 =item B<--values-separator>
 
 Separator used for values in format option (Default: ', ')
@@ -350,6 +362,10 @@ Threshold warning if the string match
 =item B<--critical-string>
 
 Threshold critical if the string match
+
+=item B<--unknown-string>
+
+Threshold unknown if the string match
 
 =item B<--warning-time>
 
