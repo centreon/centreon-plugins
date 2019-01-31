@@ -38,21 +38,10 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: esx hostname cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: esx hostname cannot be null");
         return 1;
     }
     return 0;
-}
-
-sub initArgs {
-    my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
 }
 
 sub run {
@@ -63,12 +52,16 @@ sub run {
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
 
-    $self->{manager}->{output}->output_add(severity => 'OK',
-                                           short_msg => sprintf("List ESX host(s):"));
-    
+    my $data = {};
     foreach my $entity_view (@$result) {
-        $self->{manager}->{output}->output_add(long_msg => sprintf("  %s [v%s] %s", $entity_view->name, $entity_view->{'config.product.version'}, 
-                                                                   defined($self->{vm_no}) ? '' : ':'));
+        my $entity_value = $entity_view->{mo_ref}->{value};
+        
+        $data->{$entity_value} = {
+            name => $entity_view->{name},
+            version => $entity_view->{'config.product.version'},
+            vm => {}
+        };
+
         next if (defined($self->{vm_no}));
         
         my @vm_array = ();
@@ -80,16 +73,15 @@ sub run {
         my $result2 = centreon::vmware::common::get_views($self->{connector}, \@vm_array, \@properties);
         return if (!defined($result2));
         
-        my %vms = ();
         foreach my $vm (@$result2) {
-            $vms{$vm->name} = $vm->{'summary.runtime.powerState'}->val;
-        }
-        
-        foreach (sort keys %vms) {
-            $self->{manager}->{output}->output_add(long_msg => sprintf("      %s [%s]", 
-                                                                       $_, $vms{$_}));
+            $data->{$entity_value}->{vm}->{$vm->{mo_ref}->{value}} = {
+                name => $vm->name,
+                power_state => $vm->{'summary.runtime.powerState'}->val,
+            };
         }
     }
+    
+    centreon::vmware::common::set_response(data => $data);
 }
 
 1;

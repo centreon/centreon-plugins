@@ -28,7 +28,7 @@ use ZMQ::Constants qw(:all);
 use File::Basename;
 use Digest::MD5 qw(md5_hex);
 use POSIX ":sys_wait_h";
-use JSON;
+use JSON::XS;
 use centreon::script;
 use centreon::vmware::common;
 use centreon::vmware::connector;
@@ -99,6 +99,7 @@ my @load_modules = (
 sub new {
     my $class = shift;
     my $self = $class->SUPER::new("centreon_vmware",
+        # we keep it if we use centreon common library
         centreon_db_conn => 0,
         centstorage_db_conn => 0,
         noconfig => 1
@@ -119,10 +120,6 @@ sub new {
             dynamic_timeout_kill => 86400,
             refresh_keeper_session => 15,
             port => 5700,
-            datastore_state_error => 'UNKNOWN',
-            vm_state_error => 'UNKNOWN',
-            host_state_error => 'UNKNOWN',
-            retention_dir => '/var/lib/centreon/centplugins',
             case_insensitive => 0,
             vsphere_server => {
                 #'default' => {'url' => 'https://XXXXXX/sdk',
@@ -139,7 +136,6 @@ sub new {
     $self->{childs_vpshere_pid} = {};
     $self->{counter_stats} = {};
     $self->{whoaim} = undef; # to know which vsphere to connect
-    $self->{module_date_parse_loaded} = 0;
     $self->{modules_registry} = {};
     
     return $self;
@@ -192,12 +188,6 @@ sub init {
             }
             $self->{centreon_vmware_config}->{vsphere_server}->{$_}->{password} = $lpassword;
         }
-    }
-    
-    eval 'require Date::Parse';
-    if (!$@) {
-        $self->{module_date_parse_loaded} = 1;
-        require Date::Parse;
     }
 
     $self->set_signal_handlers;
@@ -381,7 +371,7 @@ sub request {
     # Decode json
     my $result;
     eval {
-        $result = JSON->new->utf8->decode($options{data});
+        $result = JSON::XS->new->utf8->decode($options{data});
     };
     if ($@) {
         centreon::vmware::common::set_response(code => 1, short_message => "Cannot decode json result: $@");
@@ -436,7 +426,7 @@ sub repserver {
     # Decode json
     my $result;
     eval {
-        $result = JSON->new->utf8->decode($options{data});
+        $result = JSON::XS->new->utf8->decode($options{data});
     };
     if ($@) {
         $self->{logger}->writeLogError("Cannot decode JSON: $@ (options{data}");
@@ -513,7 +503,6 @@ sub create_vsphere_child {
     if ($child_vpshere_pid == 0) {
         my $connector = centreon::vmware::connector->new(name => $self->{whoaim},
                                                          modules_registry => $self->{modules_registry},
-                                                         module_date_parse_loaded => $self->{module_date_parse_loaded},
                                                          config => $self->{centreon_vmware_config},
                                                          logger => $self->{logger});
         $connector->run();

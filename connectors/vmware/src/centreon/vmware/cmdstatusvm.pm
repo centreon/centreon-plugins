@@ -38,82 +38,44 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{vm_hostname}) && $options{arguments}->{vm_hostname} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: vm hostname cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: vm hostname cannot be null");
         return 1;
     }
-    if (defined($options{arguments}->{disconnect_status}) && 
-        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
-        return 1;
-    }
-    return 0;
-}
 
-sub initArgs {
-    my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    return 0;
 }
 
 sub run {
     my $self = shift;
 
-    my $multiple = 0;
     my $filters = $self->build_filter(label => 'name', search_option => 'vm_hostname', is_regexp => 'filter');
     if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
         $filters->{'config.annotation'} = qr/$self->{filter_description}/;
     }
-    my @properties = ('name', 'summary.overallStatus', 'runtime.connectionState');
+    my @properties = ('name', 'summary.overallStatus', 'runtime.connectionState', 'runtime.powerState');
     if (defined($self->{display_description})) {
         push @properties, 'config.annotation';
     }
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'VirtualMachine', properties => \@properties, filter => $filters);
     return if (!defined($result));
 
-    if (scalar(@$result) > 1) {
-        $multiple = 1;
-    }
-    my %overallStatus = (
-        'gray'      => 'status is unknown',
-        'green'     => 'is OK',
-        'red'       => 'has a problem',
-        'yellow'    => 'might have a problem',
-    );
-    my %overallStatusReturn = (
-        'gray'      => 'UNKNOWN',
-        'green'     => 'OK',
-        'red'       => 'CRITICAL',
-        'yellow'    => 'WARNING'
-    );
+    my $data = {};
+    foreach my $entity_view (@$result) {
+        my $entity_value = $entity_view->{mo_ref}->{value};
 
-    if ($multiple == 1) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => sprintf("All virtual machines are ok"));
+        $data->{$entity_value} = {
+            name => $entity_view->{name},
+            connection_state => $entity_view->{'runtime.connectionState'}->val, 
+            power_state => $entity_view->{'runtime.powerState'}->val,
+            'config.annotation' => defined($entity_view->{'config.annotation'}) ? $entity_view->{'config.annotation'} : undef,
+        };
+        
+        next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
+        
+        $data->{$entity_value}->{overall_status} = $entity_view->{'summary.overallStatus'}->val;
     }
     
-    foreach my $entity_view (@$result) {
-        next if (centreon::vmware::common::vm_state(connector => $self->{connector},
-                                                  hostname => $entity_view->{name}, 
-                                                  state => $entity_view->{'runtime.connectionState'}->val,
-                                                  status => $self->{disconnect_status},
-                                                  nocheck_ps => 1,
-                                                  multiple => $multiple) == 0);
-        
-        my $status_vm = $entity_view->{'summary.overallStatus'}->val;
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' %s", $entity_view->{name}, $overallStatus{$status_vm}));
-        
-        if ($multiple == 0 || 
-            !$self->{manager}->{output}->is_status(value => $overallStatusReturn{$status_vm}, compare => 'ok', litteral => 1)) {
-            $self->{manager}->{output}->output_add(severity => $overallStatusReturn{$status_vm},
-                                                   short_msg => sprintf("'%s' %s", $entity_view->{name}, $overallStatus{$status_vm}));
-        }
-    }
+    centreon::vmware::common::set_response(data => $data);
 }
 
 1;

@@ -38,21 +38,10 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (!defined($options{arguments}->{esx_hostname}) || $options{arguments}->{esx_hostname} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: esx hostname need to be set");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: esx hostname need to be set");
         return 1;
     }
     return 0;
-}
-
-sub initArgs {
-     my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
 }
 
 sub run {
@@ -82,11 +71,6 @@ sub run {
             }
         }
     }
-
-    if (!defined($self->{disco_show})) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => 'List nic host:');
-    }
     
     my %nics = ();
     foreach (@{$$result[0]->{'config.network.pnic'}}) {
@@ -99,33 +83,16 @@ sub run {
             $nics{$_->device}{down} = 1;
         }
     }
-    
+
+    my $data = {};
     foreach my $nic_name (sort keys %nics) {
         my $status = defined($nics{$nic_name}{up}) ? 'up' : 'down';
         my $vswitch = defined($nics{$nic_name}{vswitch}) ? 1 : 0;
         
-        if (defined($self->{disco_show})) {
-            $self->{manager}->{output}->add_disco_entry(name => $nic_name,
-                                                        status => $status,
-                                                        vswitch => $vswitch);
-        } else {
-            $self->{manager}->{output}->output_add(long_msg => sprintf('%s [status: %s] [vswitch: %s]', 
-                                                                       $nic_name, $status, $vswitch));
-        }
+        $data->{$nic_name} = { name => $nic_name, status => $status, vswitch => $vswitch };
     }
-    
-    if (defined($self->{disco_show})) {
-        my $stdout;
-        {
-            local *STDOUT;
-            $self->{manager}->{output}->{option_results}->{output_xml} = 1;
-            open STDOUT, '>', \$stdout;
-            $self->{manager}->{output}->display_disco_show();
-            delete $self->{manager}->{output}->{option_results}->{output_xml};
-            $self->{manager}->{output}->output_add(severity => 'OK',
-                                                   short_msg => $stdout);
-        }
-    }
+
+    centreon::vmware::common::set_response(data => $data);
 }
 
 1;

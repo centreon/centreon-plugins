@@ -45,15 +45,6 @@ sub checkArgs {
     return 0;
 }
 
-sub initArgs {
-    my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    centreon::vmware::common::init_response(identity => $options{arguments}->{identity});
-}
-
 sub run {
     my $self = shift;
 

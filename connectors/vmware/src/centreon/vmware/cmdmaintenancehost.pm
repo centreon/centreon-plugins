@@ -38,74 +38,32 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: esx hostname cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: esx hostname cannot be null");
         return 1;
     }
-    if (defined($options{arguments}->{disconnect_status}) && 
-        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
-        return 1;
-    }
-    if (defined($options{arguments}->{maintenance_status}) && 
-        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{maintenance_status}) == 0) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: wrong value for maintenance status '" . $options{arguments}->{maintenance_status} . "'");
-        return 1;
-    }
+    
     return 0;
-}
-
-sub initArgs {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
 }
 
 sub run {
     my $self = shift;
 
-    my $multiple = 0;
     my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
     
     my @properties = ('name', 'runtime.inMaintenanceMode', 'runtime.connectionState');
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
 
-    if (scalar(@$result) > 1) {
-        $multiple = 1;
-    }
-    if ($multiple == 1) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => sprintf("All ESX maintenance mode are ok"));
-    }
-
+    my $data = {};
     foreach my $entity_view (@$result) {
-        next if (centreon::vmware::common::host_state(connector => $self->{connector},
-                                                    hostname => $entity_view->{name}, 
-                                                    state => $entity_view->{'runtime.connectionState'}->val,
-                                                    status => $self->{disconnect_status},
-                                                    multiple => $multiple) == 0);
-    
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' maintenance mode is %s", 
-                                                                   $entity_view->{name}, $entity_view->{'runtime.inMaintenanceMode'}));
+        my $entity_value = $entity_view->{mo_ref}->{value};
+        $data->{$entity_value} = { name => $entity_view->{name}, state => $entity_view->{'runtime.connectionState'}->val };
+        next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
         
-        if ($entity_view->{'runtime.inMaintenanceMode'} =~ /$self->{maintenance_alert}/ && 
-            !$self->{manager}->{output}->is_status(value => $self->{maintenance_status}, compare => 'ok', litteral => 1)) {
-            $self->{manager}->{output}->output_add(severity => $self->{maintenance_status},
-                                                   short_msg => sprintf("'%s' maintenance mode is %s", 
-                                                                        $entity_view->{name}, $entity_view->{'runtime.inMaintenanceMode'}))
-        } elsif ($multiple == 0) {
-            $self->{manager}->{output}->output_add(severity => 'OK',
-                                                   short_msg => sprintf("'%s' maintenance mode is %s", 
-                                                                        $entity_view->{name}, $entity_view->{'runtime.inMaintenanceMode'}))
-        }
+        $data->{$entity_value}->{inMaintenanceMode} = $entity_view->{'runtime.inMaintenanceMode'};
     }
+    
+    centreon::vmware::common::set_response(data => $data);
 }
 
 1;

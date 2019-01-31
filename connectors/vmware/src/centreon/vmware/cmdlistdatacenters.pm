@@ -38,58 +38,27 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{datacenter}) && $options{arguments}->{datacenter} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: datacenter cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: datacenter cannot be null");
         return 1;
     }
     return 0;
 }
 
-sub initArgs {
-     my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
-}
-
 sub run {
     my $self = shift;
 
-    my $multiple = 0;
     my $filters = $self->build_filter(label => 'name', search_option => 'datacenter', is_regexp => 'filter');
     my @properties = ('name');
 
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datacenter', properties => \@properties, filter => $filters);
     return if (!defined($result));
 
-    if (!defined($self->{disco_show})) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => 'List datacenter(s):');
-    }
+    my $data = {};
     foreach my $datacenter (@$result) {
-        if (defined($self->{disco_show})) {
-            $self->{manager}->{output}->add_disco_entry(name => $datacenter->name);
-        } else {
-            $self->{manager}->{output}->output_add(long_msg => sprintf("  %s", 
-                                                                        $datacenter->name));
-        }
+        $data->{$datacenter->{mo_ref}->{value}} = { name => $datacenter->{name} };
     }
     
-    if (defined($self->{disco_show})) {
-        my $stdout;
-        {
-            local *STDOUT;
-            $self->{manager}->{output}->{option_results}->{output_xml} = 1;
-            open STDOUT, '>', \$stdout;
-            $self->{manager}->{output}->display_disco_show();
-            delete $self->{manager}->{output}->{option_results}->{output_xml};
-            $self->{manager}->{output}->output_add(severity => 'OK',
-                                                   short_msg => $stdout);
-        }
-    }
+    centreon::vmware::common::set_response(data => $data);
 }
 
 1;

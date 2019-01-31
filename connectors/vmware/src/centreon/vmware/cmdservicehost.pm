@@ -38,33 +38,16 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: esx hostname cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: esx hostname cannot be null");
         return 1;
     }
-    if (defined($options{arguments}->{disconnect_status}) && 
-        $options{manager}->{output}->is_litteral_status(status => $options{arguments}->{disconnect_status}) == 0) {
-        $options{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                short_msg => "Argument error: wrong value for disconnect status '" . $options{arguments}->{disconnect_status} . "'");
-        return 1;
-    }
-    return 0;
-}
 
-sub initArgs {
-    my ($self, %options) = @_;
-    
-    foreach (keys %{$options{arguments}}) {
-        $self->{$_} = $options{arguments}->{$_};
-    }
-    $self->{manager} = centreon::vmware::common::init_response();
-    $self->{manager}->{output}->{plugin} = $options{arguments}->{identity};
+    return 0;
 }
 
 sub run {
     my $self = shift;
 
-    my $multiple = 0;
     my $filters = $self->build_filter(label => 'name', search_option => 'esx_hostname', is_regexp => 'filter');
     my @properties = ('name', 'runtime.connectionState', 'runtime.inMaintenanceMode', 'configManager.serviceSystem');
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
@@ -72,64 +55,43 @@ sub run {
 
     my %host_names = ();
     my @host_array = ();
+    my $data = {};
     foreach my $entity_view (@$result) {
-        next if (centreon::vmware::common::host_state(connector => $self->{connector},
-                                                      hostname => $entity_view->{name}, 
-                                                      state => $entity_view->{'runtime.connectionState'}->val,
-                                                      status => $self->{disconnect_status},
-                                                      multiple => $multiple) == 0);
-        next if (centreon::vmware::common::host_maintenance(connector => $self->{connector},
-                                                            hostname => $entity_view->{name}, 
-                                                            maintenance => $entity_view->{'runtime.inMaintenanceMode'},
-                                                            multiple => $multiple) == 0);
+        my $entity_value = $entity_view->{mo_ref}->{value};                          
+        
+        $data->{$entity_value} = { name => $entity_view->{name}, 
+            state => $entity_view->{'runtime.connectionState'}->val, 
+            inMaintenanceMode => $entity_view->{'runtime.inMaintenanceMode'},
+            services => [],
+        };
+
+        next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
+        next if (centreon::vmware::common::is_maintenance(maintenance => $entity_view->{'runtime.inMaintenanceMode'}) == 0);
+
         if (defined($entity_view->{'configManager.serviceSystem'})) {
             push @host_array, $entity_view->{'configManager.serviceSystem'};
             $host_names{$entity_view->{'configManager.serviceSystem'}->{value}} = $entity_view->{name}; 
         }
     }
     
-    return if (scalar(@host_array) == 0);
+    if (scalar(@host_array) == 0) {
+        centreon::vmware::common::set_response(data => $data);
+        return ;
+    }
     
     @properties = ('serviceInfo');
     my $result2 = centreon::vmware::common::get_views($self->{connector}, \@host_array, \@properties);
     return if (!defined($result2));
     
-    if (scalar(@$result) > 1) {
-        $multiple = 1;
-    }
-
-    if ($multiple == 1) {
-        $self->{manager}->{output}->output_add(severity => 'OK',
-                                               short_msg => sprintf("All ESX services are ok"));
-    }
-    
     foreach my $entity (@$result2) {
         my $hostname = $host_names{$entity->{mo_ref}->{value}};
-        
-        my @services_ok = ();
-        my @services_problem = ();
+    
         foreach my $service (@{$entity->{serviceInfo}->{service}}) {
-            next if (defined($self->{filter_services}) && $self->{filter_services} ne '' &&
-                     $service->{key} !~ /$self->{filter_services}/);
-            
-            if ($service->{policy} =~ /^on|automatic/i && !$service->{running}) {
-                push @services_problem, $service->{key};
-            } else {
-                push @services_ok, $service->{key};
-            }
-        }
-        
-        $self->{manager}->{output}->output_add(long_msg => sprintf("'%s' services [ ok : %s ] [ nok : %s ]", $hostname, 
-                                                                   join(', ', @services_ok), join(', ', @services_problem)));
-        my $status = 'OK';
-        $status = 'CRITICAL' if (scalar(@services_problem) > 0);
-        if ($multiple == 0 || 
-            !$self->{manager}->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $self->{manager}->{output}->output_add(severity => $status,
-                                                   short_msg => sprintf("'%s' services [ ok : %s ] [ nok : %s ]", $hostname, 
-                                                                        join(', ', @services_ok), join(', ', @services_problem)));
+            push @{$data->{$entity->{mo_ref}->{value}}->{services}}, { label => $service->{label}, policy => $service->{policy}, running => $service->{running} };
         }
     }
+    
+    centreon::vmware::common::set_response(data => $data);
 }
 
 1;

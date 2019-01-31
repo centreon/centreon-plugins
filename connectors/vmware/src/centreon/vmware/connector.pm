@@ -55,7 +55,6 @@ sub new {
     $connector->{modules_registry} = $options{modules_registry};
     $connector->{logger} = $options{logger};
     $connector->{whoaim} = $options{name};
-    $connector->{module_date_parse_loaded} = $options{module_date_parse_loaded};
     $connector->{config_child_timeout} = $options{config}->{timeout};
     $connector->{config_stop_child_timeout} = $options{config}->{timeout_kill};
     $connector->{config_vsphere_session_heartbeat} = $options{config}->{refresh_keeper_session};
@@ -63,10 +62,6 @@ sub new {
     $connector->{config_vsphere_url} = $options{config}->{vsphere_server}->{$options{name}}->{url};
     $connector->{config_vsphere_user} = $options{config}->{vsphere_server}->{$options{name}}->{username};
     $connector->{config_vsphere_pass} = $options{config}->{vsphere_server}->{$options{name}}->{password};
-    $connector->{retention_dir} = $options{config}->{retention_dir};
-    $connector->{datastore_state_error} = $options{config}->{datastore_state_error};
-    $connector->{vm_state_error} = $options{config}->{vm_state_error};
-    $connector->{host_state_error} = $options{config}->{host_state_error};
     
     return $connector;
 }

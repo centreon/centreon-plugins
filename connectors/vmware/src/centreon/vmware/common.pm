@@ -590,80 +590,12 @@ sub is_running {
     return 1;
 }
 
-sub datastore_state {
-    my (%options) = @_;
-    my $status = defined($options{status}) ? $options{status} : $options{connector}->{datastore_state_error};
-    
-    if ($options{state} !~ /^true|1$/) {
-        my $output = "Datastore '" . $options{name} . "' not accessible. Current connection state: '$options{state}'.";
-        if ($options{multiple} == 0 || 
-            !$manager_display->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $manager_display->{output}->output_add(severity => $status,
-                                                   short_msg => $output);
-        }
-        return 0;
-    }
-    
-    return 1;
-}
-
-sub vm_state {
-    my (%options) = @_;
-    my $status = defined($options{status}) ? $options{status} : $options{connector}->{host_state_error};
-    my $power_status = defined($options{powerstatus}) ? $options{powerstatus} : $options{connector}->{vm_state_error};
-    
-    if ($options{state} !~ /^connected$/i) {
-        my $output = "VM '" . $options{hostname} . "' not connected. Current Connection State: '$options{state}'.";
-        if ($options{multiple} == 0 || 
-            !$manager_display->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $manager_display->{output}->output_add(severity => $status,
-                                                   short_msg => $output);
-        }
-        return 0;
-    }
-    
-    if (!defined($options{nocheck_ps}) && $options{power} !~ /^poweredOn$/i) {
-        my $output = "VM '" . $options{hostname} . "' not running. Current Power State: '$options{power}'.";
-        if ($options{multiple} == 0 || 
-            !$manager_display->{output}->is_status(value => $power_status, compare => 'ok', litteral => 1)) {
-            $manager_display->{output}->output_add(severity => $power_status,
-                                                   short_msg => $output);
-        }
-        return 0;
-    }
-    
-    return 1;
-}
-
-sub host_state {
-    my (%options) = @_;
-    my $status = defined($options{status}) ? $options{status} : $options{connector}->{host_state_error};
-    
-    if ($options{state} !~ /^connected$/i) {
-        my $output = "Host '" . $options{hostname} . "' not connected. Current Connection State: '$options{state}'.";
-        if ($options{multiple} == 0 || 
-            !$manager_display->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-            $manager_display->{output}->output_add(severity => $status,
-                                                   short_msg => $output);
-        }
-        return 0;
-    }
-    
-    return 1;
-}
-
-sub host_maintenance {
+sub is_maintenance {
     my (%options) = @_;
     
     if ($options{maintenance} =~ /^true|1$/) {
-        my $output = "Host '" . $options{hostname} . "' is in maintenance mode.";
-        if ($options{multiple} == 0) {
-            $manager_display->{output}->output_add(severity => 'OK',
-                                                   short_msg => $output);
-        }
         return 0;
     }
-    
     return 1;
 }
 
