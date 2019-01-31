@@ -16,14 +16,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-package centreon::script;
+package centreon::vmware::script;
 
 use strict;
 use warnings;
 use FindBin;
 use Getopt::Long;
 use Pod::Usage;
-use centreon::common::logger;
+use centreon::vmware::logger;
 
 $SIG{__DIE__} = sub {
     return unless defined $^S and $^S == 0; # Ignore errors in eval
@@ -44,7 +44,7 @@ sub new {
 
     bless $self, $class;
     $self->{name} = $name;
-    $self->{logger} = centreon::common::logger->new();
+    $self->{logger} = centreon::vmware::logger->new();
     $self->{options} = {
         "logfile=s" => \$self->{log_file},
         "severity=s" => \$self->{severity},

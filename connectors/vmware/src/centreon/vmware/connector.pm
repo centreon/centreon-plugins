@@ -26,7 +26,6 @@ use ZMQ::LibZMQ4;
 use ZMQ::Constants qw(:all);
 use File::Basename;
 use POSIX ":sys_wait_h";
-use centreon::script;
 use centreon::vmware::common;
 
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});

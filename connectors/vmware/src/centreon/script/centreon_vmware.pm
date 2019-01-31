@@ -29,7 +29,7 @@ use File::Basename;
 use Digest::MD5 qw(md5_hex);
 use POSIX ":sys_wait_h";
 use JSON::XS;
-use centreon::script;
+use centreon::vmware::script;
 use centreon::vmware::common;
 use centreon::vmware::connector;
 
@@ -51,7 +51,7 @@ BEGIN {
     };
 }
 
-use base qw(centreon::script);
+use base qw(centreon::vmware::script);
 use vars qw(%centreon_vmware_config);
 
 my $VERSION = "3.0.0";
@@ -98,12 +98,7 @@ my @load_modules = (
 
 sub new {
     my $class = shift;
-    my $self = $class->SUPER::new("centreon_vmware",
-        # we keep it if we use centreon common library
-        centreon_db_conn => 0,
-        centstorage_db_conn => 0,
-        noconfig => 1
-    );
+    my $self = $class->SUPER::new("centreon_vmware");
 
     bless $self, $class;
     $self->add_options(
