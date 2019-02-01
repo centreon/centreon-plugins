@@ -186,15 +186,10 @@ sub perfdata {
         if (defined($perf->{threshold_total})) {
             $th_total = ($perf->{threshold_total} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{threshold_total}} : $perf->{threshold_total};
         }
-
-        if (defined($perf->{label_multi_instances}) && $perf->{label_multi_instances} == 1 && (defined($options{level}) && $options{level} == 2 && defined($options{extra_instance}) && $options{extra_instance} == 1)) {
-            if (defined($perf->{multi_use})) {
-                $extra_label .= '_' . $self->{result_values}->{$perf->{multi_use}};
-            }
-        }
         
-        if (defined($perf->{label_extra_instance}) && $perf->{label_extra_instance} == 1 && (defined($options{level}) && $options{level} == 1 && defined($options{extra_instance}) && $options{extra_instance} == 1) ||
-            (defined($options{level}) && $options{level} == 2 && defined($options{extra_instance_lvl2}) && $options{extra_instance_lvl2} == 1)) {
+        if (defined($perf->{label_extra_instance}) && $perf->{label_extra_instance} == 1 && 
+           (!defined($options{extra_instance}) || $options{extra_instance} != 0)) {
+          
             if (defined($perf->{instance_use})) {
                 $extra_label .= '_' . $self->{result_values}->{$perf->{instance_use}};
             } else {
