@@ -68,7 +68,8 @@ sub run {
 
     my $data = {};
     foreach my $entity_view (@$result) {
-        $data->{$entity_view->{name}} = { state => $entity_view->{'runtime.connectionState'}->val };
+        my $entity_value = $entity_view->{mo_ref}->{value};
+        $data->{$entity_value} = { name => $entity_view->{name}, state => $entity_view->{'runtime.connectionState'}->val };        
         next if (centreon::vmware::common::is_connected(state => $entity_view->{'runtime.connectionState'}->val) == 0);
         
         my %vm_states = (poweredon => 0, poweredoff => 0, suspended => 0);
@@ -84,7 +85,7 @@ sub run {
             }
         }
         
-        $data->{$entity_view->{name}} = { %{$data->{$entity_view->{name}}}, %vm_states };
+        $data->{$entity_value} = { %{$data->{$entity_value}}, %vm_states };
     }
     
     centreon::vmware::common::set_response(data => $data);
