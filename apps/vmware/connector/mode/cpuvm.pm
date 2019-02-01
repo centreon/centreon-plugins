@@ -259,12 +259,12 @@ Can used special variables like: %{status}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
+Can be: 'total-cpu', 'total-cpu-mhz', 'cpu-ready', 'cpu'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
+Can be: 'total-cpu', 'total-cpu-mhz', 'cpu-ready', 'cpu'.
 
 =back
 
