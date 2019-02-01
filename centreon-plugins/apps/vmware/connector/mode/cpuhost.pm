@@ -47,9 +47,9 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', message_multiple => 'All hosts are ok', 
             group => [
-                { name => 'global', type => 0, skipped_code => { -11 => 1 } },
-                { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -11 => 1 } },
-                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output',  message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -11 => 1 } },
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output',  message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -147,7 +147,6 @@ sub check_options {
     
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
-
 
 sub manage_selection {
     my ($self, %options) = @_;
