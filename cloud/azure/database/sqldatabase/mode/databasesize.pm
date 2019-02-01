@@ -190,8 +190,8 @@ Filter metrics (Can be: 'storage_percent') (Can be a regexp).
 
 =item B<--warning-$metric$-$aggregation$>
 
-Thresholds warning ($metric$ can be: 'cpu-credits-remaining', 'cpu-credits-consumed', 
-'percentage-cpu', $aggregation$ can be: 'minimum', 'maximum', 'average').
+Thresholds warning ($metric$ can be: 'storage-percent',
+$aggregation$ can be: 'minimum', 'maximum', 'average').
 
 =item B<--critical-$metric$-$aggregation$>
 
