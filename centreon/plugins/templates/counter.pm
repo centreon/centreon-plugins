@@ -437,7 +437,7 @@ sub run_multiple_instances {
             );
         }
         
-        if ($self->{multiple} == 0) {
+        if ($self->{multiple} == 0 && $multiple_parent == 0) {
             $self->run_multiple_prefix_output(severity => 'ok', short_msg => "${prefix_output}${long_msg}${suffix_output}");            
         }
     }
