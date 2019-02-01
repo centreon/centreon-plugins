@@ -112,17 +112,24 @@ sub set_counters {
 sub prefix_vm_output {
     my ($self, %options) = @_;
 
-    return "Virtual machine '" . $options{instance_value}->{display} . "' : ";
+    my $msg = "Virtual machine '" . $options{instance_value}->{display} . "'";
+    if (defined($options{instance_value}->{config_annotation})) {
+        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
+    }
+    $msg .= ' : ';
+    
+    return $msg;
 }
 
 sub vm_long_output {
     my ($self, %options) = @_;
 
-    if (!defined($options{instance_value}->{display})) {
-        use Data::Dumper;
-        print Data::Dumper::Dumper($options{instance_value});
+    my $msg = "checking virtual machine '" . $options{instance_value}->{display} . "'";
+    if (defined($options{instance_value}->{config_annotation})) {
+        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
     }
-    return "checking virtual machine '" . $options{instance_value}->{display} . "'";
+    
+    return $msg;
 }
 
 sub prefix_global_cpu_output {
@@ -151,7 +158,7 @@ sub new {
         "scope-host:s"          => { name => 'scope_host' },
         "display-description"   => { name => 'display_description' },
         "filter-description:s"  => { name => 'filter_description' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/ and %{power_state}  !~ /^poweredOn$/i' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/ or %{power_state}  !~ /^poweredOn$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
     });
@@ -189,8 +196,8 @@ sub manage_selection {
             },
         };
         
-        if (defined($self->{options_results}->{display_description})) {
-            $self->{vm}->{$vm_name}->{config_annotation} = $response->{data}->{$vm_id}->{'config.annotation'};
+        if (defined($self->{option_results}->{display_description})) {
+            $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
         }
         
         foreach my $cpu_id (sort keys %{$response->{data}->{$vm_id}->{cpu}}) {
@@ -236,7 +243,7 @@ Search in following host(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/ and %{power_state}  !~ /^poweredOn$/i').
+Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/ or %{power_state}  !~ /^poweredOn$/i').
 Can used special variables like: %{status}
 
 =item B<--warning-status>

@@ -224,6 +224,15 @@ sub get_id {
     return $self->{connector_hostname} . '.' . $self->{connector_port} . '.' .  $self->{container};
 }
 
+sub strip_cr {
+     my ($self, %options) = @_;
+    
+    $options{value} =~ s/^\s+.*\s+$//mg;
+    $options{value} =~ s/\r//mg;
+    $options{value} =~ s/\n/ -- /mg;
+    return $options{value};
+}
+
 sub execute {
     my ($self, %options) = @_;
     
