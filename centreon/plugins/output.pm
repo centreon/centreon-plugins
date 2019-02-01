@@ -154,7 +154,7 @@ sub output_add {
                 separator => ' - ',
                 debug => 0,
                 short_msg => undef,
-                long_msg => undef
+                long_msg => undef,
                 );
     my $options = {%args, %params};
     
