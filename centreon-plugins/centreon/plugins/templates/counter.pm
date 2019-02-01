@@ -477,10 +477,8 @@ sub run_multiple {
         
         $self->{prefix_multiple_output} = '';
         $self->{prefix_multiple_output_done} = { ok => 0, warning => 0, critical => 0, unknown => 0 };
-        if ($multiple == 0) {
-            $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$instance})
-                if (defined($options{config}->{cb_prefix_output}));
-        }
+        $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$instance})
+             if (defined($options{config}->{cb_prefix_output}));
         
         foreach my $group (@{$options{config}->{group}}) {
             $self->{$group->{name}} = $self->{$options{config}->{name}}->{$instance}->{$group->{name}};
