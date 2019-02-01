@@ -134,7 +134,7 @@ sub new {
         "filter"                => { name => 'filter' },
         "scope-datacenter:s"    => { name => 'scope_datacenter' },
         "scope-cluster:s"       => { name => 'scope_cluster' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
     });
@@ -204,7 +204,7 @@ Search in following cluster(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} !~ /^connected$/').
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
 Can used special variables like: %{status}
 
 =item B<--warning-status>

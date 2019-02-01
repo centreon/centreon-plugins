@@ -158,7 +158,7 @@ sub new {
         "scope-host:s"          => { name => 'scope_host' },
         "display-description"   => { name => 'display_description' },
         "filter-description:s"  => { name => 'filter_description' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/ or %{power_state}  !~ /^poweredOn$/i' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
     });
@@ -243,7 +243,7 @@ Search in following host(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/ or %{power_state}  !~ /^poweredOn$/i').
+Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
 Can used special variables like: %{status}
 
 =item B<--warning-status>
