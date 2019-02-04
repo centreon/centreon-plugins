@@ -238,20 +238,35 @@ Display virtual machine description.
 
 Check disk limits (since vsphere 5.0).
 
-=item B<--unknown-status>
-
-Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i').
-Can used special variables like: %{status}
-
-=item B<--warning-status>
+=item B<--warning-disk-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Can used special variables like: %{connection_state}, %{power_state}, %{limit}
 
-=item B<--critical-status>
+=item B<--critical-disk-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+
+=item B<--warning-cpu-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+
+=item B<--critical-cpu-status>
+
+Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+
+=item B<--warning-memory-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{connection_state}, %{power_state}, %{limit}
+
+=item B<--critical-memory-status>
+
+Set critical threshold for status (Default: '%{connection_state} !~ /^connected$/i || %{limit} != -1').
+Can used special variables like: %{connection_state}, %{power_state}, %{limit}
 
 =back
 
