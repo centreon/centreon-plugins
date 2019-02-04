@@ -83,7 +83,7 @@ sub run {
         
         foreach my $dev (@{$entity_view->{'config.hardware.device'}}) {
             if (ref($dev) =~ /$self->{device}/) {
-                if ($dev->connectable->connected == 1) {
+                if (defined($dev->connectable) && $dev->connectable->connected == 1) {
                     $data->{$entity_value}->{total_device_connected}++;
                 }
             }

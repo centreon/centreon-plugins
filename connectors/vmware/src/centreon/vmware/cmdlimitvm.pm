@@ -92,8 +92,6 @@ sub run {
         
         # Disk
         if (defined($self->{check_disk_limit})) {
-            use Data::Dumper;
-            print Data::Dumper::Dumper($entity_view->{'config.hardware.device'});
             foreach my $device (@{$entity_view->{'config.hardware.device'}}) {
                 if ($device->isa('VirtualDisk')) {
                     if (defined($device->storageIOAllocation->limit) && $device->storageIOAllocation->limit != -1) {
