@@ -179,8 +179,6 @@ sub manage_selection {
     $self->{vm} = {};
     my $response = $options{custom}->execute(params => $self->{option_results},
         command => 'cpuvm');
-    use Data::Dumper;
-    print Data::Dumper::Dumper($response);
 
     foreach my $vm_id (keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
@@ -189,7 +187,7 @@ sub manage_selection {
             cpu => {}, 
             global => {
                 connection_state => $response->{data}->{$vm_id}->{connection_state},
-                power_state => $response->{data}->{$vm_id}->{power_state},    
+                power_state => $response->{data}->{$vm_id}->{power_state},
             },
             global_cpu => {
                 cpu_average => $response->{data}->{$vm_id}->{'cpu.usage.average'},
