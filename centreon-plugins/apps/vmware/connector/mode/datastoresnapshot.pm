@@ -114,9 +114,9 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
-        "datastore-name:s"        => { name => 'datastore_name' },
-        "filter"                  => { name => 'filter' },
-        "scope-datacenter:s"      => { name => 'scope_datacenter' },
+        "datastore-name:s"      => { name => 'datastore_name' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
         "unknown-status:s"      => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
