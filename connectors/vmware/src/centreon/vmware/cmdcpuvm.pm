@@ -113,9 +113,9 @@ sub run {
                                $cib = -1 if (!defined($cib) || $cib eq "");
                    $cia <=> $cib} keys %{$values->{$entity_value}}) {
             my ($counter_id, $instance) = split /:/, $id;
-            next if ($self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{key} == $counter_id);
+            next if ($self->{connector}->{perfcounter_cache}->{'cpu.usagemhz.average'}->{key} != $counter_id);
             if ($instance ne "") {
-                $data->{$entity_value}->{cpu}->{$instance} = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$id} * 0.01));
+                $data->{$entity_value}->{cpu}->{$instance} = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$id}));
             }
         }
     }
