@@ -153,7 +153,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = { poweredon => 0, poweredoff => 0, suspended => 0 };
+    $self->{global} = { poweredon => 0, poweredoff => 0, suspended => 0, total => 0 };
     $self->{host} = {};
     my $response = $options{custom}->execute(params => $self->{option_results},
         command => 'countvmhost');
@@ -172,6 +172,8 @@ sub manage_selection {
         $self->{global}->{poweredoff} += $response->{data}->{$host_id}->{poweredoff} if (defined($response->{data}->{$host_id}->{poweredoff}));
         $self->{global}->{suspended} += $response->{data}->{$host_id}->{suspended} if (defined($response->{data}->{$host_id}->{suspended}));
     }
+    
+    $self->{global}->{total} = $self->{global}->{poweredon} + $self->{global}->{poweredoff} + $self->{global}->{suspended};
 }
 
 1;

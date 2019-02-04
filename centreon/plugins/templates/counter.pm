@@ -195,7 +195,7 @@ sub run_global {
     $suffix_output = '' if (!defined($suffix_output));
     
     if ($called_multiple == 1) {
-        $self->{output}->output_add(long_msg => "${prefix_output}${long_msg}${suffix_output}");
+        $self->{output}->output_add(long_msg => "$options{indent_long_output}${prefix_output}${long_msg}${suffix_output}");
     }
     
     my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
@@ -368,13 +368,14 @@ sub run_multiple_instances {
     
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
+    my $indent_long_output = defined($options{indent_long_output}) ? $options{indent_long_output} : '';
     
-    $self->{multiple} = 1;
+    my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
-        $self->{multiple} = 0;
+        $multiple = 0;
     }
     
-    if ($self->{multiple} == 1 && $multiple_parent == 0) {
+    if ($multiple == 1 && $multiple_parent == 0) {
         $self->{output}->output_add(short_msg => $options{config}->{message_multiple});
     }
     
@@ -390,8 +391,10 @@ sub run_multiple_instances {
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
             my $instance = $id;
-            if ($multiple_parent == 1) {
+            if ($multiple_parent == 1 && $multiple == 1) {
                 $instance = $options{instance_parent} . "_" . $id;
+            } elsif ($multiple_parent == 1 && $multiple == 0) {
+                $instance = $options{instance_parent};
             }
             $obj->set(instance => $instance);
         
@@ -415,7 +418,11 @@ sub run_multiple_instances {
                 $short_msg_append = $message_separator;
             }
             
-            $obj->perfdata(extra_instance => $self->{multiple});
+            if ($multiple_parent == 1 && $multiple == 0) {
+                $obj->perfdata(extra_instance => 1);
+            } else {
+                $obj->perfdata(extra_instance => $multiple);
+            }
         }
 
         my ($prefix_output, $suffix_output);
@@ -428,7 +435,7 @@ sub run_multiple_instances {
         $suffix_output = '' if (!defined($suffix_output));
 
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);        
-        $self->{output}->output_add(long_msg => "${prefix_output}${long_msg}${suffix_output}")
+        $self->{output}->output_add(long_msg => "${indent_long_output}${prefix_output}${long_msg}${suffix_output}")
             if (!defined($options{config}->{display_long}) || $options{config}->{display_long} != 0);
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
@@ -437,7 +444,7 @@ sub run_multiple_instances {
             );
         }
         
-        if ($self->{multiple} == 0 && $multiple_parent == 0) {
+        if ($multiple == 0 && $multiple_parent == 0) {
             $self->run_multiple_prefix_output(severity => 'ok', short_msg => "${prefix_output}${long_msg}${suffix_output}");            
         }
     }
@@ -479,14 +486,17 @@ sub run_multiple {
         $self->{prefix_multiple_output_done} = { ok => 0, warning => 0, critical => 0, unknown => 0 };
         $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$instance})
              if (defined($options{config}->{cb_prefix_output}));
+        my $indent_long_output = '';
+        $indent_long_output = $options{config}->{indent_long_output}
+            if (defined($options{config}->{indent_long_output}));
         
         foreach my $group (@{$options{config}->{group}}) {
             $self->{$group->{name}} = $self->{$options{config}->{name}}->{$instance}->{$group->{name}};
             
             if ($group->{type} == 1) {
-                $self->run_multiple_instances(config => $group, multiple_parent => $multiple, instance_parent => $instance);
+                $self->run_multiple_instances(config => $group, multiple_parent => $multiple, instance_parent => $instance, indent_long_output => $indent_long_output);
             } elsif ($group->{type} == 0) {
-                $self->run_global(config => $group, multiple_parent => $multiple, called_multiple => 1, force_instance => $instance);
+                $self->run_global(config => $group, multiple_parent => $multiple, called_multiple => 1, force_instance => $instance, indent_long_output => $indent_long_output);
             }
         }
     }

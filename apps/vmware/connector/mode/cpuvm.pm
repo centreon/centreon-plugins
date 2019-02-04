@@ -46,7 +46,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 3, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', message_multiple => 'All virtual machines are ok', 
+        { name => 'vm', type => 3, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', indent_long_output => '    ', message_multiple => 'All virtual machines are ok', 
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
@@ -99,7 +99,7 @@ sub set_counters {
     $self->{maps_counters}->{cpu} = [
         { label => 'cpu', set => {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
-                output_template => 'usage : %s',
+                output_template => 'usage : %s %%',
                 perfdatas => [
                     { label => 'cpu', value => 'cpu_usage_absolute', template => '%s', unit => '%', 
                       min => 0, max => 100, label_extra_instance => 1 },
