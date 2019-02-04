@@ -64,7 +64,7 @@ sub run {
     my %datastore_lun = ();
     my $ds_checked = 0;
     foreach (@$result) {
-        $data->{$_->{'summary.name'}} = { name => $_->{'summary.name'}, state => $_->{'summary.accessible'} };
+        $data->{$_->{'summary.name'}} = { name => $_->{'summary.name'}, accessible => $_->{'summary.accessible'} };
         next if (centreon::vmware::common::is_accessible(accessible => $_->{'summary.accessible'}) == 0);
     
         if ($_->info->isa('VmfsDatastoreInfo')) {

@@ -59,7 +59,7 @@ sub run {
     foreach my $entity_view (@$result) {
         my $entity_value = $entity_view->{mo_ref}->{value};
         
-        $data->{$entity_value} = { name => $entity_view->summary->name, state => $entity_view->summary->accessible };
+        $data->{$entity_value} = { name => $entity_view->summary->name, accessible => $entity_view->summary->accessible };
         next if (centreon::vmware::common::is_accessible(accessible => $entity_view->summary->accessible) == 0);
         
         # capacity 0...

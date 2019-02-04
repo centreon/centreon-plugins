@@ -59,7 +59,7 @@ sub run {
         my $entity_value = $entity_view->{mo_ref}->{value};
         $data->{$entity_value} = {
             name => $entity_view->{'summary.name'},
-            state => $entity_view->{'summary.accessible'},
+            accessible => $entity_view->{'summary.accessible'},
             error_message => '',
             snapshost => [],
         };
