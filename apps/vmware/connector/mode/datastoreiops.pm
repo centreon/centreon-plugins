@@ -233,14 +233,12 @@ Can used special variables like: %{status}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-on', 'total-off', 'total-suspended', 
-'on', 'off', 'suspended'.
+Can be: 'read', 'write', 'read-vm', 'write-vm'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-on', 'total-off', 'total-suspended', 
-'on', 'off', 'suspended'.
+Can be: 'read', 'write', 'read-vm', 'write-vm'.
 
 =back
 
