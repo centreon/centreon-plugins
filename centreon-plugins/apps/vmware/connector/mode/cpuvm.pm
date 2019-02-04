@@ -99,10 +99,10 @@ sub set_counters {
     $self->{maps_counters}->{cpu} = [
         { label => 'cpu', set => {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
-                output_template => 'usage : %s %%',
+                output_template => 'usage : %s MHz',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_usage_absolute', template => '%s', unit => '%', 
-                      min => 0, max => 100, label_extra_instance => 1 },
+                    { label => 'cpu', value => 'cpu_usage_absolute', template => '%s', unit => 'MHz', 
+                      min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -179,6 +179,8 @@ sub manage_selection {
     $self->{vm} = {};
     my $response = $options{custom}->execute(params => $self->{option_results},
         command => 'cpuvm');
+    use Data::Dumper;
+    print Data::Dumper::Dumper($response);
 
     foreach my $vm_id (keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
