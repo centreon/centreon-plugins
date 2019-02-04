@@ -108,7 +108,7 @@ sub check_options {
     }
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
+    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "5m";
 }
 
 sub manage_selection {
@@ -120,11 +120,11 @@ sub manage_selection {
                                                                 'cpu="total",' .
                                                                 $self->{option_results}->{container} . ',' .
                                                                 $self->{option_results}->{pod} .
-                                                                $self->{extra_filter} . '}[1m])) * 100, "__name__", "usage", "", "")',
+                                                                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "usage", "", "")',
                                                              'label_replace((irate({__name__=~"' . $self->{metrics}->{throttled} . '",' .
                                                                 $self->{option_results}->{container} . ',' .
                                                                 $self->{option_results}->{pod} .
-                                                                $self->{extra_filter} . '}[1m])) * 100, "__name__", "throttled", "", "")' ],
+                                                                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "throttled", "", "")' ],
                                                 timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
 
     foreach my $result (@{$results}) {

@@ -154,7 +154,7 @@ sub check_options {
     
     $self->{metrics} = {
         'total'     => "^node_memory_MemTotal.*",
-        'available' => "^node_memory_MemAvailable.*",
+        'available' => "^node_memory_MemFree.*",
         'cached'    => "^node_memory_Cached.*",
         'buffer'    => "^node_memory_Buffers.*",
     };
@@ -248,6 +248,9 @@ Example : --extra-filter='name=~".*pretty.*"'
 Overload default metrics name (Can be multiple, metric can be 'total', 'available', 'cached', 'buffer')
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+By default, 'node_memory_MemFree' node's metric will be used for 'available' metric as it is
+more commonly used for now. The best being to use 'node_memory_MemAvailable' in the future.
 
 =back
 

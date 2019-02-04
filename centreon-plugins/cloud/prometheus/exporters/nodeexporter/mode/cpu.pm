@@ -131,7 +131,7 @@ sub check_options {
     }
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
+    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "5m";
 }
 
 sub manage_selection {
@@ -143,7 +143,7 @@ sub manage_selection {
                                                             'mode="idle",' .
                                                             $self->{option_results}->{instance} . ',' .
                                                             $self->{option_results}->{cpu} .
-                                                            $self->{extra_filter} . '}[1m])) * 100' ],
+                                                            $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100' ],
                                                 timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
 
     foreach my $result (@{$results}) {
