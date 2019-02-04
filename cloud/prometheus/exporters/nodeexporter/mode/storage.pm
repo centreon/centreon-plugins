@@ -153,7 +153,7 @@ sub new {
                                 {
                                   "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
                                   "mountpoint:s"            => { name => 'mountpoint', default => 'mountpoint=~".*"' },
-                                  "fstype:s"                => { name => 'fstype', default => 'fstype=~"overlay"' },
+                                  "fstype:s"                => { name => 'fstype', default => 'fstype!~"linuxfs|rootfs|tmpfs"' },
                                   "units:s"                 => { name => 'units', default => '%' },
                                   "free"                    => { name => 'free' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
@@ -241,7 +241,7 @@ Filter on a specific mountpoint (Must be a PromQL filter, Default: 'mountpoint=~
 
 =item B<--fstype>
 
-Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype=~"overlay"')
+Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype!~"linuxfs|rootfs|tmpfs"')
 
 =item B<--units>
 
