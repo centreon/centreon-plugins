@@ -310,6 +310,7 @@ sub run_group {
     my ($self, %options) = @_;
 
     my $multiple = 1;
+    return if (scalar(keys %{$self->{$options{config}->{name}}}) <= 0);
     if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
         $multiple = 0;
     }
@@ -318,6 +319,8 @@ sub run_group {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $options{config}->{message_multiple});
     }
+    
+    my $format_output = defined($options{config}->{format_output}) ? $options{config}->{format_output} : '%s problem(s) detected';
     
     my ($global_exit, $total_problems) = ([], 0);
     foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
@@ -343,7 +346,7 @@ sub run_group {
             
             if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
                 $self->{output}->output_add(severity => $self->{most_critical_instance},
-                                            short_msg => "${prefix_output}$self->{lproblems} problem(s) detected");
+                                            short_msg => sprintf("${prefix_output}" . $format_output, $self->{lproblems}));
             }
         }
     }
@@ -352,7 +355,7 @@ sub run_group {
         my $exit = $self->{output}->get_most_critical(status => [ @{$global_exit} ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "$total_problems problem(s) detected");
+                                        short_msg => sprintf($format_output, $total_problems));
         }
     }
     
