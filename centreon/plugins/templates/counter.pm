@@ -194,27 +194,26 @@ sub run_global {
         if (defined($options{config}->{cb_suffix_output}));
     $suffix_output = '' if (!defined($suffix_output));
     
-    if ($called_multiple == 1) {
-        $self->{output}->output_add(long_msg => "$options{indent_long_output}${prefix_output}${long_msg}${suffix_output}");
+    if ($called_multiple == 1 && $long_msg ne '') {
+        $self->{output}->output_add(long_msg => $options{indent_long_output} . $prefix_output. $long_msg . $suffix_output);
     }
     
     my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
     if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
         if ($called_multiple == 0) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "${prefix_output}${short_msg}${suffix_output}"
-                                        );
+                                        short_msg => $prefix_output . $short_msg . $suffix_output);
         } else {
             $self->run_multiple_prefix_output(severity => $exit,
-                                              short_msg => "${prefix_output}${short_msg}${suffix_output}");
+                                              short_msg => $prefix_output . $short_msg . $suffix_output);
         }
     } else {
         if ($long_msg ne '' && $multiple_parent == 0) {
             if ($called_multiple == 0) {
-                $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}") ;
+                $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output) ;
             } else {
                 $self->run_multiple_prefix_output(severity => 'ok',
-                                                  short_msg => "${prefix_output}${long_msg}${suffix_output}");
+                                                  short_msg => $prefix_output . $long_msg . $suffix_output);
             }
         }
     }
@@ -226,6 +225,7 @@ sub run_instances {
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $display_status_lo = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
+    my $no_message_multiple = 1;
     
     $self->{lproblems} = 0;
     $self->{multiple} = 1;
@@ -233,13 +233,9 @@ sub run_instances {
         $self->{multiple} = 0;
     }
     
-    if ($self->{multiple} == 1 && $resume == 0) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $options{config}->{message_multiple});
-    }
-    
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
+
     foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
@@ -249,6 +245,7 @@ sub run_instances {
             next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
+            $no_message_multiple = 0;
             $obj->set(instance => $id);
         
             my ($value_check) = $obj->execute(new_datas => $self->{new_datas},
@@ -288,7 +285,9 @@ sub run_instances {
         # in mode grouped, we don't display 'ok'
         my $debug = 0;
         $debug = 1 if ($display_status_lo == 1 && $self->{output}->is_status(value => $exit, compare => 'OK', litteral => 1));
-        $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . "${prefix_output}${long_msg}${suffix_output}", debug => $debug);
+        if (scalar @{$self->{maps_counters}->{$options{config}->{name}}} > 0 && $long_msg ne '') {
+            $self->{output}->output_add(long_msg => ($display_status_lo == 1 ? lc($exit) . ': ' : '') . $prefix_output . $long_msg . $suffix_output, debug => $debug);
+        }
         if ($resume == 1) {
             $self->{most_critical_instance} = $self->{output}->get_most_critical(status => [ $self->{most_critical_instance},  $exit ]);  
             next;
@@ -296,13 +295,16 @@ sub run_instances {
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => "${prefix_output}${short_msg}${suffix_output}"
-                                        );
+                                        short_msg => $prefix_output . $long_msg . $suffix_output);
         }
         
-        if ($self->{multiple} == 0) {
-            $self->{output}->output_add(short_msg => "${prefix_output}${long_msg}${suffix_output}");
+        if ($self->{multiple} == 0)  {
+            $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output);
         }
+    }
+    
+    if ($no_message_multiple == 0 && $self->{multiple} == 1 && $resume == 0) {
+        $self->{output}->output_add(short_msg => $options{config}->{message_multiple});
     }
 }
 
@@ -372,18 +374,16 @@ sub run_multiple_instances {
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
     my $indent_long_output = defined($options{indent_long_output}) ? $options{indent_long_output} : '';
+    my $no_message_multiple = 1;
     
     my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
         $multiple = 0;
     }
     
-    if ($multiple == 1 && $multiple_parent == 0) {
-        $self->{output}->output_add(short_msg => $options{config}->{message_multiple});
-    }
-    
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
+
     foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
@@ -399,6 +399,8 @@ sub run_multiple_instances {
             } elsif ($multiple_parent == 1 && $multiple == 0) {
                 $instance = $options{instance_parent};
             }
+            
+            $no_message_multiple = 0;
             $obj->set(instance => $instance);
         
             my ($value_check) = $obj->execute(new_datas => $self->{new_datas},
@@ -437,19 +439,24 @@ sub run_multiple_instances {
         if (defined($options{config}->{cb_suffix_output}));
         $suffix_output = '' if (!defined($suffix_output));
 
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);        
-        $self->{output}->output_add(long_msg => "${indent_long_output}${prefix_output}${long_msg}${suffix_output}")
-            if (!defined($options{config}->{display_long}) || $options{config}->{display_long} != 0);
+        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
+        if (scalar @{$self->{maps_counters}->{$options{config}->{name}}} > 0 && $long_msg ne '') {
+            $self->{output}->output_add(long_msg => $indent_long_output . $prefix_output . $long_msg . $suffix_output)
+                if (!defined($options{config}->{display_long}) || $options{config}->{display_long} != 0);
+        }
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->run_multiple_prefix_output(severity => $exit,
-                short_msg => "${prefix_output}${short_msg}${suffix_output}"
-            );
+                short_msg => $prefix_output . $short_msg . $suffix_output);
         }
         
         if ($multiple == 0 && $multiple_parent == 0) {
-            $self->run_multiple_prefix_output(severity => 'ok', short_msg => "${prefix_output}${long_msg}${suffix_output}");            
+            $self->run_multiple_prefix_output(severity => 'ok', short_msg => $prefix_output . $long_msg . $suffix_output);            
         }
+    }
+    
+    if ($no_message_multiple == 0 && $multiple == 1 && $multiple_parent == 0) {
+        $self->{output}->output_add(short_msg => $options{config}->{message_multiple});
     }
 }
 
@@ -503,7 +510,7 @@ sub run_multiple {
                 $self->run_global(config => $group, multiple_parent => $multiple, called_multiple => 1, force_instance => $instance, indent_long_output => $indent_long_output);
             }
         }
-    }    
+    }
 }
 
 sub run {
