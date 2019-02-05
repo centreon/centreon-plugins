@@ -77,8 +77,9 @@ sub new {
             "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
             "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
             "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
-            "format-unknown:s"       => { name => 'format_unknown', default => '%{count} element(s) found' },
+            "format-unknown:s"        => { name => 'format_unknown', default => '%{count} element(s) found' },
             "values-separator:s"      => { name => 'values_separator', default => ', ' },
+            "lookup-perfdatas:s"      => { name => 'lookup_perfdatas'},
             });
     $self->{count} = 0;
     $self->{count_ok} = 0;
@@ -245,6 +246,40 @@ sub lookup {
         }
     }
 
+    if (defined($self->{option_results}->{lookup_perfdatas}) && $self->{option_results}->{lookup_perfdatas} ne '') {
+        my (@perfdata_strings);
+        my $xpath_find = $self->{option_results}->{lookup_perfdatas};
+        eval {
+            my $jpath = JSON::Path->new($xpath_find);
+            @perfdata_strings = $jpath->values($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot lookup perfdatas: $@");
+            $self->{output}->option_exit();
+        }
+
+        $self->{output}->output_add(long_msg => "Lookup perfdatas XPath $xpath_find:");
+
+        foreach my $perfdata_string (@perfdata_strings) {
+            my @metrics = split(/ /, $perfdata_string);
+            # Parse each metric line
+            foreach my $single_metric (@metrics) {
+                # Cut each metric into parts
+                my ($label, $perfdatas) = split(/=/, $single_metric);
+                my ($value_w_unit, $warn, $crit, $min, $max) = split(/;/, $perfdatas);
+                # separate the value from the unit
+                my ($value, $unit) = $value_w_unit =~ /(^[0-9]+\.*\,*[0-9]*)(.*)/g;
+                # Adding perfdata to the list
+                $self->{output}->perfdata_add(label => $label, unit => $unit,
+                                              value => $value,
+                                              warning => $warn,
+                                              critical => $crit,
+                                              min => $min,
+                                              max => $max);
+            }
+        }
+    }
+
     $self->display_output();
 }
 
@@ -305,6 +340,12 @@ Set file with JSON request
 
 What to lookup in JSON response (JSON XPath string) (can be multiple)
 See: http://goessner.net/articles/JsonPath/
+
+=item B<--lookup-perfdatas>
+
+Take perfdatas from the JSON response (JSON XPath string)
+Chain must be formated in Nagios format.
+Ex : "rta=10.752ms;50.000;100.000;0; pl=0%;20;40;; rtmax=10.802ms;;;;"
 
 =back
 
