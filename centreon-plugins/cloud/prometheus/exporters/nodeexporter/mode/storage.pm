@@ -267,9 +267,14 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'free', 'size')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - free: ^node_filesystem_free.*
+    - size: ^node_filesystem_size.*
 
 =back
 

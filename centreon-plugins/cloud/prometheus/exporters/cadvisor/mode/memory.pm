@@ -175,6 +175,7 @@ sub new {
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "units:s"                 => { name => 'units', default => '%' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
+                                  "filter-counters:s"       => { name => 'filter_counters' },
                                 });
    
     return $self;
@@ -298,10 +299,23 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'limits',
-'usage', 'working', 'cache', 'rss', 'swap'.)
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - limits: ^container_spec_memory_limit_bytes.*
+    - usage: ^container_memory_usage_bytes.*
+    - working: ^container_memory_working_set_bytes.*
+    - cache: ^container_memory_cache.*
+    - rss: ^container_memory_rss.*
+    - swap: ^container_memory_swap.*
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='usage'
 
 =back
 
