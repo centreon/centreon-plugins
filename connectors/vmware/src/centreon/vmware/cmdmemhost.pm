@@ -97,7 +97,8 @@ sub run {
         $data->{$entity_value}->{mem_size} = $memory_size;
         $data->{$entity_value}->{'mem.consumed.average'} = $mem_used;
         $data->{$entity_value}->{'mem.overhead.average'} = $mem_overhead;
-        $data->{$entity_value}->{mem_state} = defined($mem_state) ? $mapping_state{$mem_state} : undef;
+        $data->{$entity_value}->{mem_state_str} = defined($mem_state) ? $mapping_state{$mem_state} : undef;
+        $data->{$entity_value}->{mem_state} = defined($mem_state) ? $mem_state : undef;
     }
     
     centreon::vmware::common::set_response(data => $data);
