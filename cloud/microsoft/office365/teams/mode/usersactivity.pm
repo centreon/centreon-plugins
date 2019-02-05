@@ -25,6 +25,60 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my $instance_mode;
+
+sub custom_active_perfdata {
+    my ($self, %options) = @_;
+
+    my %total_options = ();
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => 'active_users',
+                                  value => $self->{result_values}->{active},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  unit => 'users', min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_active_threshold {
+    my ($self, %options) = @_;
+
+    my $threshold_value = $self->{result_values}->{active};
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_active};
+    }
+    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+
+}
+
+sub custom_active_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Active users on %s : %d/%d (%.2f%%)",
+                        $self->{result_values}->{report_date},
+                        $self->{result_values}->{active},
+                        $self->{result_values}->{total},
+                        $self->{result_values}->{prct_active});
+    return $msg;
+}
+
+sub custom_active_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{active} = $options{new_datas}->{$self->{instance} . '_active'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{report_date} = $options{new_datas}->{$self->{instance} . '_report_date'};
+    $self->{result_values}->{prct_active} = ($self->{result_values}->{total} != 0) ? $self->{result_values}->{active} * 100 / $self->{result_values}->{total} : 0;
+
+    return 0;
+}
+
 sub prefix_global_output {
     my ($self, %options) = @_;
     
@@ -41,10 +95,21 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'active', type => 0 },
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'users', type => 1, cb_prefix_output => 'prefix_user_output', message_multiple => 'All users activity are ok' },
     ];
     
+    $self->{maps_counters}->{active} = [
+        { label => 'active-users', set => {
+                key_values => [ { name => 'active' }, { name => 'total' }, { name => 'report_date' } ],
+                closure_custom_calc => $self->can('custom_active_calc'),
+                closure_custom_output => $self->can('custom_active_output'),
+                closure_custom_threshold_check => $self->can('custom_active_threshold'),
+                closure_custom_perfdata => $self->can('custom_active_perfdata')
+            }
+        },
+    ];
     $self->{maps_counters}->{global} = [
         { label => 'total-team-chat', set => {
                 key_values => [ { name => 'team_chat' } ],
@@ -87,42 +152,21 @@ sub set_counters {
         { label => 'team-chat', set => {
                 key_values => [ { name => 'team_chat' }, { name => 'name' } ],
                 output_template => 'Team Chat Message Count: %d',
-                perfdatas => [
-                    { label => 'team_chat', value => 'team_chat_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
-                ],
             }
         },
         { label => 'private-chat', set => {
                 key_values => [ { name => 'private_chat' }, { name => 'name' } ],
                 output_template => 'Private Chat Message Count: %d',
-                perfdatas => [
-                    { label => 'private_chat', value => 'private_chat_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
-                ],
             }
         },
         { label => 'call', set => {
                 key_values => [ { name => 'call' }, { name => 'name' } ],
                 output_template => 'Call Count: %d',
-                perfdatas => [
-                    { label => 'call', value => 'call_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
-                ],
             }
         },
         { label => 'meeting', set => {
                 key_values => [ { name => 'meeting' }, { name => 'name' } ],
                 output_template => 'Meeting Count: %d',
-                perfdatas => [
-                    { label => 'meeting', value => 'meeting_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
-                ],
-            }
-        },
-        { label => 'last-activity', threshold => 0, set => {
-                key_values => [ { name => 'last_activity_date' }, { name => 'name' } ],
-                output_template => 'Last Activity: %s',
             }
         },
     ];
@@ -136,9 +180,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-counters:s" => { name => 'filter_counters' },
-                                    "filter-user:s"     => { name => 'filter_user' },
-                                    "active-only"       => { name => 'active_only' },
+                                    "units:s"           => { name => 'units', default => '%' },
+                                    "filter-counters:s" => { name => 'filter_counters' }, 
                                 });
     
     return $self;
@@ -147,27 +190,35 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
     
+    $self->{active} = { active => 0, total => 0, report_date => '' };
+    $self->{global} = { team_chat => 0, private_chat => 0, call => 0, meeting => 0 };
     $self->{users} = {};
 
     my $results = $options{custom}->office_get_teams_activity();
 
-    $self->{global} = { team_chat => 0, private_chat => 0, call => 0, meeting => 0 };
+    $self->{active}->{total} = scalar(@{$results});
 
     foreach my $user (@{$results}) {
-        if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
-            $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
-            next;
-        }
-        if ($self->{option_results}->{active_only} && defined($user->{'Last Activity Date'}) && $user->{'Last Activity Date'} eq '') {
+        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
+            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
         }
+
+        $self->{active}->{report_date} = $user->{'Report Refresh Date'};
+        $self->{active}->{active}++;
+
+        $self->{global}->{team_chat} += $user->{'Team Chat Message Count'};
+        $self->{global}->{private_chat} += $user->{'Private Chat Message Count'};
+        $self->{global}->{call} += $user->{'Call Count'};
+        $self->{global}->{meeting} += $user->{'Meeting Count'};
 
         $self->{users}->{$user->{'User Principal Name'}}->{name} = $user->{'User Principal Name'};
         $self->{users}->{$user->{'User Principal Name'}}->{team_chat} = $user->{'Team Chat Message Count'};
@@ -175,16 +226,6 @@ sub manage_selection {
         $self->{users}->{$user->{'User Principal Name'}}->{call} = $user->{'Call Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{meeting} = $user->{'Meeting Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{last_activity_date} = $user->{'Last Activity Date'};
-
-        $self->{global}->{team_chat} += $user->{'Team Chat Message Count'};
-        $self->{global}->{private_chat} += $user->{'Private Chat Message Count'};
-        $self->{global}->{call} += $user->{'Call Count'};
-        $self->{global}->{meeting} += $user->{'Meeting Count'};
-    }
-    
-    if (scalar(keys %{$self->{users}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
-        $self->{output}->option_exit();
     }
 }
 
@@ -201,30 +242,28 @@ https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-team
 
 =over 8
 
-=item B<--filter-user>
-
-Filter users.
-
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total-team-chat', 'total-private-chat', 'total-call',
-'total-meeting', 'team-chat', 'private-chat', 'call', 'meeting'.
+Can be: 'active-users', 'total-team-chat' (count), 'total-private-chat' (count),
+'total-call' (count), 'total-meeting' (count), 'team-chat' (count),
+'private-chat' (count), 'call' (count), 'meeting' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total-team-chat', 'total-private-chat', 'total-call',
-'total-meeting', 'team-chat', 'private-chat', 'call', 'meeting'.
-
-=item B<--active-only>
-
-Filter only active entries ('Last Activity' set).
+Can be: 'active-users', 'total-team-chat' (count), 'total-private-chat' (count),
+'total-call' (count), 'total-meeting' (count), 'team-chat' (count),
+'private-chat' (count), 'call' (count), 'meeting' (count).
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='total'
+
+=item B<--units>
+
+Unit of thresholds (Default: '%') ('%', 'count').
 
 =back
 
