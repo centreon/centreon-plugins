@@ -120,7 +120,6 @@ sub custom_provisioned_output {
     return $msg;
 }
 
-
 sub custom_provisioned_calc {
     my ($self, %options) = @_;
 

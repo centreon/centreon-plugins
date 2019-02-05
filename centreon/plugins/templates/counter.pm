@@ -494,6 +494,7 @@ sub run_multiple {
             if (defined($options{config}->{indent_long_output}));
         
         foreach my $group (@{$options{config}->{group}}) {
+            next if (!defined($self->{$options{config}->{name}}->{$instance}->{$group->{name}}));
             $self->{$group->{name}} = $self->{$options{config}->{name}}->{$instance}->{$group->{name}};
             
             if ($group->{type} == 1) {
@@ -502,7 +503,7 @@ sub run_multiple {
                 $self->run_global(config => $group, multiple_parent => $multiple, called_multiple => 1, force_instance => $instance, indent_long_output => $indent_long_output);
             }
         }
-    }
+    }    
 }
 
 sub run {
