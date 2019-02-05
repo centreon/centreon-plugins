@@ -71,7 +71,6 @@ Pré-requis
 
 Les dépendances suivantes sont nécessaires pour le fonctionnement de « centreon_vmware »:
 
-* « perl-centreon-base »:  module depuis Centreon 2.5
 * « centreon-plugins-base »: le client et des dépendances
 * « zeromq » et son module Perl
 
@@ -126,14 +125,6 @@ Activer le daemon « centreon-vmware » au démarrage:
 ::
   
   # update-rc.d centreon_vmware defaults
-
-Installer la dépendance « perl-centreon-base »:
-::
-
-  # git clone -b 2.6.x --single-branch https://github.com/centreon/centreon.git centreon
-  # cd centreon
-  # cp lib/perl/centreon/script.pm /usr/share/perl5/centreon/
-  # cp -R lib/perl/centreon/common /usr/share/perl5/centreon/
   
 Installer le client et les dépendances:
 ::
@@ -177,7 +168,6 @@ Pré-requis
 
 Les dépendances suivantes sont nécessaires pour le fonctionnement de « centreon_vmware »:
 
-* « perl-centreon-base »: module depuis Centreon 2.5 (dépôt ces standard)
 * « centreon-plugins-base »: dépôt ces standard
 * « zeromq » and Perl binding: dépôt ces standard ou EPEL
 
@@ -191,12 +181,12 @@ Installation de centreon-vmware par rpm
 Installer le connecteur:
 ::
 
-  # yum install ces-plugins-Virtualization-VMWare-daemon
+  # yum install centreon-plugin-Virtualization-VMWare-daemon
 
 Installer le client:
 ::
 
-  # yum install ces-plugins-Virtualization-VMWare-client
+  # yum install centreon-plugin-Virtualization-Vmware2-Connector-Plugin
 
 Installation de centreon-vmware par les sources
 ```````````````````````````````````````````````
@@ -224,21 +214,12 @@ Activer le daemon « centreon-vmware » au démarrage:
 ::
   
   # chkconfig --level 2345 centreon_vmware on
-
-Installer la dépendance « perl-centreon-base »:
-::
-
-  # git clone -b 2.6.x --single-branch https://github.com/centreon/centreon.git centreon
-  # cd centreon
-  # cp lib/perl/centreon/script.pm /usr/lib/perl5/vendor_perl/5.8.8/centreon/
-  # cp -R lib/perl/centreon/common /usr/lib/perl5/vendor_perl/5.8.8/centreon/
   
 Installer le client et les dépendances:
 ::
 
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
-  # cp -R centreon/plugins /usr/lib/perl5/vendor_perl/5.8.8/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
   # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
@@ -323,22 +304,13 @@ Activer le daemon « centreon-vmware » au démarrage:
   
   # chkconfig --level 2345 centreon_vmware on
   
-Installer la dépendance « perl-centreon-base »:
-::
-
-  # git clone -b 2.6.x --single-branch https://github.com/centreon/centreon.git centreon
-  # cd centreon
-  # cp lib/perl/centreon/script.pm /usr/share/perl5/vendor_perl/centreon/
-  # cp -R lib/perl/centreon/common /usr/share/perl5/vendor_perl/centreon/
-  
 Installer le client et les dépendances:
 ::
 
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
-  # cp -R centreon/plugins /usr/share/perl5/vendor_perl/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
-  # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
+  # cp -R centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
   # cp -R apps/vmware/* /usr/lib/nagios/plugins/apps/vmware/
   # cp centreon_plugins.pl /usr/lib/nagios/plugins/

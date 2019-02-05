@@ -126,21 +126,12 @@ Configure "centreon-vmware" daemon to start at boot:
 ::
   
   # update-rc.d centreon_vmware defaults
-
-Install « perl-centreon-base » dependency:
-::
-
-  # git clone -b 2.6.x --single-branch https://github.com/centreon/centreon.git centreon
-  # cd centreon
-  # cp lib/perl/centreon/script.pm /usr/share/perl5/centreon/
-  # cp -R lib/perl/centreon/common /usr/share/perl5/centreon/
   
 Install the client and dependency:
 ::
 
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
-  # cp -R centreon/plugins /usr/share/perl5/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
   # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
@@ -177,7 +168,6 @@ Requirements
 
 Following prerequisites are mandatory for « centreon_vmware »:
 
-* « perl-centreon-base »:  module since Centreon 2.5 (repository ces standard)
 * « centreon-plugins-base »: in repository ces standard
 * « zeromq » and Perl binding: in repository ces standard or EPEL
 
@@ -204,8 +194,8 @@ centreon-vmware Installation with source
 Download « centreon-vmware » archive, then install:
 ::
   
-  # tar zxvf centreon-vmware-2.0.0.tar.gz
-  # cd centreon-vmware-2.0.0
+  # tar zxvf centreon-vmware-3.0.0.tar.gz
+  # cd centreon-vmware-3.0.0
   # cp centreon_vmware.pl /usr/bin/
   
   # mkdir -p /etc/centreon
@@ -222,21 +212,12 @@ Configure "centreon-vmware" daemon to start at boot:
 ::
   
   # chkconfig --level 2345 centreon_vmware on
-
-Install « perl-centreon-base » dependency:
-::
-
-  # git clone -b 2.6.x --single-branch https://github.com/centreon/centreon.git centreon
-  # cd centreon
-  # cp lib/perl/centreon/script.pm /usr/lib/perl5/vendor_perl/5.8.8/centreon/
-  # cp -R lib/perl/centreon/common /usr/lib/perl5/vendor_perl/5.8.8/centreon/
   
 Install the client and dependency:
 ::
 
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
-  # cp -R centreon/plugins /usr/lib/perl5/vendor_perl/5.8.8/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
   # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
@@ -292,7 +273,7 @@ Install the connector:
 Install the client:
 ::
 
-  # yum install centreon-plugin-Virtualization-VMWare-client
+  # yum install centreon-plugin-Virtualization-Vmware2-Connector-Plugin
   
 centreon-vmware Installation with source
 ````````````````````````````````````````
@@ -300,8 +281,8 @@ centreon-vmware Installation with source
 Download « centreon-vmware » archive, then install:
 ::
   
-  # tar zxvf centreon-vmware-2.0.0.tar.gz
-  # cd centreon-vmware-2.0.0
+  # tar zxvf centreon-vmware-3.0.0.tar.gz
+  # cd centreon-vmware-3.0.0
   # cp centreon_vmware.pl /usr/bin/
   
   # mkdir -p /etc/centreon
@@ -318,21 +299,12 @@ Configure "centreon-vmware" daemon to start at boot:
 ::
   
   # chkconfig --level 2345 centreon_vmware on
-
-Install « perl-centreon-base » dependency:
-::
-
-  # git clone -b 2.6.x --single-branch https://github.com/centreon/centreon.git centreon
-  # cd centreon
-  # cp lib/perl/centreon/script.pm /usr/share/perl5/vendor_perl/centreon/
-  # cp -R lib/perl/centreon/common /usr/share/perl5/vendor_perl/centreon/
   
 Install the client and dependency:
 ::
 
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
-  # cp -R centreon/plugins /usr/share/perl5/vendor_perl/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
   # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
