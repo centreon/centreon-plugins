@@ -70,7 +70,7 @@ sub run {
 
         if (defined($entity_view->{'configManager.serviceSystem'})) {
             push @host_array, $entity_view->{'configManager.serviceSystem'};
-            $host_names{$entity_view->{'configManager.serviceSystem'}->{value}} = $entity_view->{name}; 
+            $host_names{$entity_view->{'configManager.serviceSystem'}->{value}} = $entity_value; 
         }
     }
     
@@ -84,10 +84,10 @@ sub run {
     return if (!defined($result2));
     
     foreach my $entity (@$result2) {
-        my $hostname = $host_names{$entity->{mo_ref}->{value}};
+        my $host_id = $host_names{$entity->{mo_ref}->{value}};
     
         foreach my $service (@{$entity->{serviceInfo}->{service}}) {
-            push @{$data->{$entity->{mo_ref}->{value}}->{services}}, { key => $service->{key}, label => $service->{label}, policy => $service->{policy}, running => $service->{running} };
+            push @{$data->{$host_id}->{services}}, { key => $service->{key}, label => $service->{label}, policy => $service->{policy}, running => $service->{running} };
         }
     }
     
