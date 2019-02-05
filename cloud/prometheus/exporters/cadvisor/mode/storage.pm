@@ -270,9 +270,14 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'used', 'limit')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - used: ^container_fs_usage_bytes.*
+    - limit: ^container_fs_limit_bytes.*
 
 =back
 

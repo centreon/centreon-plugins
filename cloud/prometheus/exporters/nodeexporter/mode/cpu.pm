@@ -99,6 +99,7 @@ sub new {
                                   "cpu:s"                   => { name => 'cpu', default => 'cpu=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
+                                  "filter-counters:s"       => { name => 'filter_counters' },
                                 });
    
     return $self;
@@ -200,9 +201,18 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'cpu')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - cpu: ^node_cpu.*
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='node'
 
 =back
 
