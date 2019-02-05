@@ -295,7 +295,7 @@ sub run_instances {
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => $prefix_output . $long_msg . $suffix_output);
+                                        short_msg => $prefix_output . $short_msg . $suffix_output);
         }
         
         if ($self->{multiple} == 0)  {
