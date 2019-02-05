@@ -152,21 +152,37 @@ sub set_counters {
         { label => 'team-chat', set => {
                 key_values => [ { name => 'team_chat' }, { name => 'name' } ],
                 output_template => 'Team Chat Message Count: %d',
+                perfdatas => [
+                    { label => 'team_chat', value => 'team_chat_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                ],
             }
         },
         { label => 'private-chat', set => {
                 key_values => [ { name => 'private_chat' }, { name => 'name' } ],
                 output_template => 'Private Chat Message Count: %d',
+                perfdatas => [
+                    { label => 'private_chat', value => 'private_chat_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                ],
             }
         },
         { label => 'call', set => {
                 key_values => [ { name => 'call' }, { name => 'name' } ],
                 output_template => 'Call Count: %d',
+                perfdatas => [
+                    { label => 'call', value => 'call_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                ],
             }
         },
         { label => 'meeting', set => {
                 key_values => [ { name => 'meeting' }, { name => 'name' } ],
                 output_template => 'Meeting Count: %d',
+                perfdatas => [
+                    { label => 'meeting', value => 'meeting_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                ],
             }
         },
     ];
@@ -181,7 +197,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "units:s"           => { name => 'units', default => '%' },
-                                    "filter-counters:s" => { name => 'filter_counters' }, 
+                                    "filter-counters:s" => { name => 'filter_counters', default => 'active|total' }, 
                                 });
     
     return $self;
@@ -260,6 +276,7 @@ Can be: 'active-users', 'total-team-chat' (count), 'total-private-chat' (count),
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='total'
+(Default: 'active|total')
 
 =item B<--units>
 
