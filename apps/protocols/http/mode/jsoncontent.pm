@@ -262,14 +262,12 @@ sub lookup {
 
         foreach my $perfdata_string (@perfdata_strings) {
             my @metrics = split(/ /, $perfdata_string);
-            # Parse each metric line
             foreach my $single_metric (@metrics) {
-                # Cut each metric into parts
                 my ($label, $perfdatas) = split(/=/, $single_metric);
                 my ($value_w_unit, $warn, $crit, $min, $max) = split(/;/, $perfdatas);
                 # separate the value from the unit
                 my ($value, $unit) = $value_w_unit =~ /(^[0-9]+\.*\,*[0-9]*)(.*)/g;
-                # Adding perfdata to the list
+
                 $self->{output}->perfdata_add(label => $label, unit => $unit,
                                               value => $value,
                                               warning => $warn,
