@@ -218,6 +218,24 @@ sub connector_response_status {
     }
 }
 
+sub host_is_connected {
+    my ($self, %options) = @_;
+     
+    if ($options{state} !~ /^connected$/i) {
+        return 0;
+    }
+    return 1;
+}
+
+sub vm_is_running {
+    my ($self, %options) = @_;
+    
+    if ($options{power} !~ /^poweredOn$/i) {
+        return 0;
+    }
+    return 1;
+}
+
 sub get_id {
     my ($self, %options) = @_;
     
