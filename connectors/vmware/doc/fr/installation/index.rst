@@ -19,7 +19,7 @@ Perl                     5.8
 centreon-vmware          2.0.0
 perl-centreon-base       2.5.0
 centreon-plugins-base    1.10
-ZeroMQ                   3.x
+ZeroMQ                   4.x
 Perl Date::Parse         1.x
 Perl ZMQ::LibZMQ4        0.01
 Perl ZMQ::Constants      1.04
@@ -46,23 +46,23 @@ Le connecteur « centreon-vmware » utilise le SDK Perl VMWare pour son foncti
 ========================== ===================== ======================
 Dependency                  Version               Repository
 ========================== ===================== ======================
-libwww-perl                   6.04                wheezy
-libxml-libxml-perl            2.0001              wheezy
-libclass-methodmaker-perl     2.18                wheezy
-libcrypt-ssleay-perl          0.58                wheezy
-libsoap-lite-perl             0.714               wheezy
-libuuid-perl                  0.02                wheezy
+libwww-perl                   6.15                stretch
+libxml-libxml-perl            2.0128              stretch
+libclass-methodmaker-perl     2.24                stretch
+libcrypt-ssleay-perl          0.73                stretch
+libsoap-lite-perl             1.20                stretch
+libuuid-perl                  0.27                stretch
 ========================== ===================== ======================
 
 Installer les dépendances suivantes:
 ::
 
-  # aptitude install make libxml-libxml-perl libwww-perl libclass-methodmaker-perl libcrypt-ssleay-perl libsoap-lite-perl libuuid-perl
-
+  # apt-get install make libxml-libxml-perl libwww-perl libclass-methodmaker-perl libcrypt-ssleay-perl libsoap-lite-perl libuuid-perl libtext-template-perl
+  
 Télécharger et installer le Perl SDK VMWare:
 ::
 
-  # tar zxf VMware-vSphere-Perl-SDK-6.0.0-2503617.x86_64.tar.gz && cd vmware-vsphere-cli-distrib
+  # tar zxf VMware-vSphere-Perl-SDK-6.7.0-8156551.x86_64.tar.gz && cd vmware-vsphere-cli-distrib
   # perl Makefile.PL
   # make && make install
 
@@ -71,12 +71,7 @@ Pré-requis
 
 Les dépendances suivantes sont nécessaires pour le fonctionnement de « centreon_vmware »:
 
-* « centreon-plugins-base »: le client et des dépendances
 * « zeromq » et son module Perl
-
-Les dépendances suivantes sont optionnelles pour le fonctionnement de « centreon_vmware »:
-
-*  « libtimedate-perl »
 
 Installation de centreon-vmware par les sources
 ```````````````````````````````````````````````
@@ -84,17 +79,12 @@ Installation de centreon-vmware par les sources
 Installer le paquet suivant:
 ::
 
-  # aptitude install libtimedate-perl
+  # apt-get install libzmq5
 
-Ajouter la ligne suivante dans le fichier  « /etc/apt/sources.list »:
+Installer le perl binding « zeromq » (nécessite l'application du patch: https://rt.cpan.org/Public/Bug/Display.html?id=122932):
 ::
 
-  deb http://http.debian.net/debian wheezy-backports main
-
-Installer la dépendance « zeromq »:
-::
-
-  # aptitude install libzmq4-dev gcc
+  # apt-get install gcc libmodule-install-perl libzmq3-dev
   # wget https://github.com/lestrrat/p5-ZMQ/archive/master.zip
   # unzip master.zip
   # cd p5-ZMQ-master/ZMQ-LibZMQ4/
@@ -107,15 +97,16 @@ Installer la dépendance « zeromq »:
 Télécharger l'archive de « centreon-vmware » et installer le connecteur:
 ::
 
-  # tar zxvf centreon-vmware-2.0.0.tar.gz
-  # cd centreon-vmware-2.0.0
+  # tar zxvf centreon-vmware-3.0.0.tar.gz
+  # cd centreon-vmware-3.0.0
   # cp centreon_vmware.pl /usr/bin/
   
-  # mkdir -p /etc/centreon
+  # mkdir -p /etc/centreon /var/log/centreon
+  # useradd centreon
+  # chown centreon:centreon /var/log/centreon
   # cp contrib/config/centreon_vmware-conf.pm /etc/centreon/centreon_vmware.pm
-  # cp contrib/debian/centreon_vmware-init /etc/init.d/centreon_vmware
-  # cp contrib/debian/centreon_vmware-default /etc/default/centreon_vmware
-  # chmod 775 /etc/init.d/centreon_vmware /usr/bin/centreon_vmware.pl
+  # cp contrib/debian/centreon_vmware-systemd /lib/systemd/system/centreon_vmware.service
+  # chmod 664 /lib/systemd/system/centreon_vmware.service
   
   # mkdir -p /usr/share/perl5/centreon/vmware/ /usr/share/perl5/centreon/script/
   # cp centreon/vmware/* /usr/share/perl5/centreon/vmware/
@@ -124,14 +115,14 @@ Télécharger l'archive de « centreon-vmware » et installer le connecteur:
 Activer le daemon « centreon-vmware » au démarrage:
 ::
   
-  # update-rc.d centreon_vmware defaults
+  # systemctl enable centreon_vmware.service
   
 Installer le client et les dépendances:
 ::
 
+  # apt-get install libtimedate-perl
   # git clone http://git.centreon.com/centreon-plugins.git
   # cd centreon-plugins
-  # cp -R centreon/plugins /usr/share/perl5/centreon/
   # mkdir -p /usr/lib/nagios/plugins/centreon/plugins/
   # cp centreon/plugins/* /usr/lib/nagios/plugins/centreon/plugins/
   # mkdir -p /usr/lib/nagios/plugins/apps/vmware/
