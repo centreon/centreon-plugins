@@ -438,6 +438,15 @@ sub convert_bytes {
     return $value;
 }
 
+sub expand_exponential {
+    my (%options) = @_;
+    
+    return $options{value} unless ($options{value} =~ /^(.*)e([-+]?)(.*)$/);
+    my ($num, $sign, $exp) = ($1, $2, $3);
+    my $sig = $sign eq '-' ? "." . ($exp - 1 + length $num) : '';
+    return sprintf("%${sig}f", $options{value});
+}
+
 sub parse_threshold {
     my (%options) = @_;
 
