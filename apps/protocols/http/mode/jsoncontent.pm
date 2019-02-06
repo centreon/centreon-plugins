@@ -80,6 +80,7 @@ sub new {
             "format-unknown:s"        => { name => 'format_unknown', default => '%{count} element(s) found' },
             "values-separator:s"      => { name => 'values_separator', default => ', ' },
             "lookup-perfdatas:s"      => { name => 'lookup_perfdatas'},
+            "lookup-format:s"        => { name => 'lookup_format'},
             });
     $self->{count} = 0;
     $self->{count_ok} = 0;
@@ -154,8 +155,14 @@ sub display_output {
     my ($self, %options) = @_;
 
     foreach my $severity (('ok', 'warning', 'critical', 'unknown')) {
+        my $format = '';
         next if (scalar(@{$self->{'values_' . $severity}}) == 0 && scalar(@{$self->{'values_string_' . $severity}}) == 0);
-        my $format = $self->{option_results}->{'format_' . $severity};
+        if(defined($self->{option_results}->{lookup_format})) {
+            $format = $self->{format_from_json};
+        }
+        else {
+            $format = $self->{option_results}->{'format_' . $severity};
+        }
         while ($format =~ /%\{(.*?)\}/g) {
             my $replace = '';
             if (ref($self->{$1}) eq 'ARRAY') {
@@ -278,6 +285,19 @@ sub lookup {
         }
     }
 
+    if (defined($self->{option_results}->{lookup_format}) && $self->{option_results}->{lookup_format} ne '') {
+        my $xpath_find = $self->{option_results}->{lookup_format};
+        eval {
+            my $jpath = JSON::Path->new($xpath_find);
+            $self->{format_from_json} = $jpath->value($content);
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot lookup output message: $@");
+            $self->{output}->option_exit();
+        }
+
+        $self->{output}->output_add(long_msg => "Lookup perfdatas XPath $xpath_find:");
+    }
     $self->display_output();
 }
 
@@ -370,6 +390,11 @@ Output critical format (Default: %{count} element(s) found')
 =item B<--format-unknown>
 
 Output unknown format (Default: %{count} element(s) found')
+
+=item B<--lookup-format>
+
+Take the output message from the JSON response (JSON XPath string)
+Override all the format options but sustitute are still applied.
 
 =item B<--values-separator>
 
