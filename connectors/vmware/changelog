@@ -2,6 +2,8 @@
  * Enhancement: checking intelligence is moved in centreon-plugins
  * Enhancement: autonomous daemon - remove dependency with centreon-plugins-base and perl centreon base library
  * Enhancement: update debian doc
+ * Enhancement: Can filter on guest os virtual machine (option --filter-os in centreon-plugins)
+ * Enhancement: Can choose case insensitive searching (option --case-insensitive in centreon-plugins)
 
 2017-05-31 Quentin Garnier <qgarnier@centreon.com> - 2.4.0
  * Enhance: Use ZMQ4 library
