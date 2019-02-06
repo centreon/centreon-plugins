@@ -235,7 +235,7 @@ sub manage_selection {
     $self->{active} = { active => 0, total => 0, report_date => '' };
     $self->{global} = { storage_used_active => 0, storage_used_inactive => 0, synced_file_count => 0,
                         viewed_edited_file_count => 0, shared_int_file_count => 0, shared_ext_file_count => 0,
-                        visited_file_count => 0 };
+                        visited_page_count => 0 };
     $self->{users} = {};
 
     my $results = $options{custom}->office_get_sharepoint_activity();
