@@ -196,6 +196,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                    "filter-user:s"     => { name => 'filter_user' },
                                     "units:s"           => { name => 'units', default => '%' },
                                     "filter-counters:s" => { name => 'filter_counters', default => 'active|total' }, 
                                 });
@@ -219,9 +220,15 @@ sub manage_selection {
 
     my $results = $options{custom}->office_get_teams_activity();
 
-    $self->{active}->{total} = scalar(@{$results});
-
     foreach my $user (@{$results}) {
+        if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
+            $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
+            next;
+        }
+    
+        $self->{active}->{total}++;
+
         if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
             ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
@@ -257,6 +264,10 @@ Check users activity (reporting period over the last 7 days).
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-teams-user-activity?view=o365-worldwide)
 
 =over 8
+
+=item B<--filter-user>
+
+Filter users.
 
 =item B<--warning-*>
 
