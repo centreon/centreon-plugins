@@ -260,7 +260,6 @@ sub new {
         "filter"                => { name => 'filter' },
         "scope-datacenter:s"    => { name => 'scope_datacenter' },
         "scope-cluster:s"       => { name => 'scope_cluster' },
-        "filter-nic"            => { name => 'filter_nic' },
         "no-proxyswitch"        => { name => 'no_proxyswitch' },
         "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
@@ -303,6 +302,8 @@ sub manage_selection {
         
         foreach my $pnic_name (sort keys %{$response->{data}->{$host_id}->{pnic}}) {
             $self->{host}->{$host_name}->{pnic} = {} if (!defined($self->{host}->{$host_name}->{pnic}));
+            next if (defined($self->{option_results}->{nic_name}) && $self->{option_results}->{nic_name} ne '' &&
+                $pnic_name !~ /$self->{option_results}->{nic_name}/);
             
             $self->{host}->{$host_name}->{pnic}->{$pnic_name} = { 
                 display     => $pnic_name, 
@@ -371,10 +372,6 @@ Search in following cluster(s) (can be a regexp).
 
 ESX nic to check.
 If not set, we check all nics.
-
-=item B<--filter-nic>
-
-Nic name is a regexp.
 
 =item B<--unknown-status>
 
