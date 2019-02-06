@@ -180,7 +180,7 @@ sub connector_response_status {
         $self->{output}->option_exit();
     }
     if (!defined($self->{result}->{code})) {
-        $self->{output}->add_option_msg(short_msg => "response format incorrect");
+        $self->{output}->add_option_msg(short_msg => "response format incorrect - need connector vmware version >= 3.x.x");
         $self->{output}->option_exit();
     }
     
