@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'device-usage'                  => 'cloud::microsoft::office365::teams::mode::deviceusage',
+        'devices-usage'                 => 'cloud::microsoft::office365::teams::mode::devicesusage',
         'users-activity'                => 'cloud::microsoft::office365::teams::mode::usersactivity',
     );
 
