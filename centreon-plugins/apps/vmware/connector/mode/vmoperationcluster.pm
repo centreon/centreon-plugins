@@ -20,54 +20,91 @@
 
 package apps::vmware::connector::mode::vmoperationcluster;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All virtual machine operations are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{cluster} = [
+        { label => 'svmotion', set => {
+                key_values => [ { name => 'numSVMotion', diff => 1  }, { name => 'display' } ],
+                output_template => 'SVMotion %s',
+                perfdatas => [
+                    { label => 'svmotion', value => 'numSVMotion_absolute', template => '%s',
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'vmotion', set => {
+                key_values => [ { name => 'numVMotion', diff => 1  }, { name => 'display' } ],
+                output_template => 'VMotion %s',
+                perfdatas => [
+                    { label => 'vmotion', value => 'numVMotion_absolute', template => '%s',
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'clone', set => {
+                key_values => [ { name => 'numClone', diff => 1  }, { name => 'display' } ],
+                output_template => 'Clone %s',
+                perfdatas => [
+                    { label => 'clone', value => 'numClone_absolute', template => '%s',
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_cluster_output {
+    my ($self, %options) = @_;
+
+    return "Cluster '" . $options{instance_value}->{display} . "' vm operations: ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "cluster:s"               => { name => 'cluster' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "warning-svmotion:s"      => { name => 'warning_svmotion' },
-                                  "critical-svmotion:s"     => { name => 'critical_svmotion' },
-                                  "warning-vmotion:s"       => { name => 'warning_vmotion' },
-                                  "critical-vmotion:s"      => { name => 'critical_vmotion' },
-                                  "warning-clone:s"         => { name => 'warning_clone' },
-                                  "critical-clone:s"        => { name => 'critical_clone' },
-                                });
+    $options{options}->add_options(arguments => {
+        "cluster:s"               => { name => 'cluster' },
+        "filter"                  => { name => 'filter' },
+        "scope-datacenter:s"      => { name => 'scope_datacenter' },
+    });
+    
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+
+    $self->{cluster} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'vmoperationcluster');
     
-    foreach my $label (('warning_svmotion', 'critical_svmotion', 'warning_vmotion', 'critical_vmotion', 
-                        'warning_clone', 'critical_clone')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
+    foreach my $cluster_id (keys %{$response->{data}}) {
+        my $cluster_name = $response->{data}->{$cluster_id}->{name};        
+        $self->{cluster}->{$cluster_name} = { 
+            display => $cluster_name, 
+            numVMotion => $response->{data}->{$cluster_id}->{'vmop.numVMotion.latest'},
+            numClone => $response->{data}->{$cluster_id}->{'vmop.numClone.latest'},
+            numSVMotion => $response->{data}->{$cluster_id}->{'vmop.numSVMotion.latest'},
+        };
     }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
-
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'vmoperationcluster');
-    $self->{connector}->run();
+    
+    $self->{cache_name} = "cache_vmware_" . $options{custom}->get_id() . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{cluster}) ? md5_hex($self->{option_results}->{cluster}) : md5_hex('all'));
 }
 
 1;

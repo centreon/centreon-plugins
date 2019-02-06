@@ -231,9 +231,19 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'status')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - desired: ^kube_daemonset_status_desired_number_scheduled$
+    - current: ^kube_daemonset_status_current_number_scheduled$
+    - available: ^kube_daemonset_status_number_available$
+    - unavailable: ^kube_daemonset_status_number_unavailable$
+    - up_to_date: ^kube_daemonset_updated_number_scheduled$
+    - ready: ^kube_daemonset_status_number_ready$
+    - misscheduled: ^kube_daemonset_status_number_misscheduled$
 
 =back
 

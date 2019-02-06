@@ -214,9 +214,17 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'status')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - desired: ^kube_deployment_spec_replicas$
+    - current: ^kube_deployment_status_replicas$
+    - available: ^kube_deployment_status_replicas_available$
+    - unavailable: ^kube_deployment_status_replicas_unavailable$
+    - up_to_date: ^kube_deployment_status_replicas_updated$
 
 =back
 

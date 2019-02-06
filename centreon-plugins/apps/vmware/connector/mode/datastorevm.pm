@@ -20,10 +20,114 @@
 
 package apps::vmware::connector::mode::datastorevm;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{connection_state} = $options{new_datas}->{$self->{instance} . '_connection_state'};
+    $self->{result_values}->{power_state} = $options{new_datas}->{$self->{instance} . '_power_state'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'vm', type => 3, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', indent_long_output => '    ', message_multiple => 'All virtual machines are ok', 
+            group => [
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_vm', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'datastore', cb_prefix_output => 'prefix_datastore_output',  message_multiple => 'All datastores are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{global_vm} = [
+        { label => 'max-total-latency', set => {
+                key_values => [ { name => 'total_latency' } ],
+                output_template => 'max total latency is %s ms',
+                perfdatas => [
+                    { label => 'max_total_latency', value => 'total_latency_absolute', template => '%s', unit => 'ms', 
+                      min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{datastore} = [
+        { label => 'read', set => {
+                key_values => [ { name => 'read' } ],
+                output_template => '%s read iops',
+                perfdatas => [
+                    { label => 'riops', value => 'read_absolute', template => '%s', unit => 'iops', 
+                      min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'write', set => {
+                key_values => [ { name => 'write' } ],
+                output_template => '%s write iops',
+                perfdatas => [
+                    { label => 'wiops', value => 'write_absolute', template => '%s', unit => 'iops', 
+                      min => 0, max => 'write_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    my $msg = "Virtual machine '" . $options{instance_value}->{display} . "'";
+    if (defined($options{instance_value}->{config_annotation})) {
+        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
+    }
+    $msg .= ' : ';
+    
+    return $msg;
+}
+
+sub vm_long_output {
+    my ($self, %options) = @_;
+
+    my $msg = "checking virtual machine '" . $options{instance_value}->{display} . "'";
+    if (defined($options{instance_value}->{config_annotation})) {
+        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
+    }
+    
+    return $msg;
+}
+
+sub prefix_datastore_output {
+    my ($self, %options) = @_;
+
+    return "datastore '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,57 +135,64 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "vm-hostname:s"           => { name => 'vm_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "scope-host:s"            => { name => 'scope_host' },
-                                  "filter-description:s"    => { name => 'filter_description' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "nopoweredon-status:s"    => { name => 'nopoweredon_status', default => 'unknown' },
-                                  "display-description"     => { name => 'display_description' },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "warning-max-total-latency:s"     => { name => 'warning_max_total_latency' },
-                                  "critical-max-total-latency:s"    => { name => 'critical_max_total_latency' },
-                                  "datastore-name:s"                => { name => 'datastore_name' },
-                                  "filter-datastore:s"              => { name => 'filter_datastore' },
-                                });
+    $options{options}->add_options(arguments => {
+        "vm-hostname:s"         => { name => 'vm_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "scope-host:s"          => { name => 'scope_host' },
+        "filter-description:s"  => { name => 'filter_description' },
+        "filter-os:s"           => { name => 'filter_os' },
+        "display-description"   => { name => 'display_description' },
+        "datastore-name:s"      => { name => 'datastore_name' },
+        "filter-datastore:s"    => { name => 'filter_datastore' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach my $label (('warning', 'critical', 'warning_max_total_latency', 'critical_max_total_latency')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{nopoweredon_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong nopoweredon-status option '" . $self->{option_results}->{nopoweredon_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'datastorevm');
-    $self->{connector}->run();
+    $self->{vm} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'datastorevm');
+
+    foreach my $vm_id (keys %{$response->{data}}) {
+        my $vm_name = $response->{data}->{$vm_id}->{name};
+        
+        $self->{vm}->{$vm_name} = { display => $vm_name, 
+            datastore => {}, 
+            global => {
+                connection_state => $response->{data}->{$vm_id}->{connection_state},
+                power_state => $response->{data}->{$vm_id}->{power_state},    
+            },
+            global_vm => {
+                total_latency => $response->{data}->{$vm_id}->{'disk.maxTotalLatency.latest'},
+            },
+        };
+        
+        if (defined($self->{option_results}->{display_description})) {
+            $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
+        }
+        
+        foreach my $ds_name (sort keys %{$response->{data}->{$vm_id}->{datastore}}) {
+            $self->{vm}->{$vm_name}->{datastore}->{$ds_name} = { display => $ds_name, 
+                read => $response->{data}->{$vm_id}->{datastore}->{$ds_name}->{'disk.numberRead.summation'},
+                write => $response->{data}->{$vm_id}->{datastore}->{$ds_name}->{'disk.numberWrite.summation'},
+            };
+        }
+    }
 }
 
 1;
@@ -107,6 +218,10 @@ VM hostname is a regexp.
 
 Filter also virtual machines description (can be a regexp).
 
+=item B<--filter-os>
+
+Filter also virtual machines OS name (can be a regexp).
+
 =item B<--scope-datacenter>
 
 Search in following datacenter(s) (can be a regexp).
@@ -128,33 +243,34 @@ If not set, we check all datastores.
 
 Datastore name is a regexp.
 
-=item B<--disconnect-status>
-
-Status if VM disconnected (default: 'unknown').
-
-=item B<--nopoweredon-status>
-
-Status if VM is not poweredOn (default: 'unknown').
-
 =item B<--display-description>
 
 Display virtual machine description.
 
-=item B<--warning>
+=item B<--unknown-status>
 
-Threshold warning in IOPs.
+Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
+Can used special variables like: %{connection_state}, %{power_state}
 
-=item B<--critical>
+=item B<--warning-status>
 
-Threshold critical in IOPs.
+Set warning threshold for status (Default: '').
+Can used special variables like:  %{connection_state}, %{power_state}
 
-=item B<--warning-max-total-latency>
+=item B<--critical-status>
 
-Threshold warning in ms.
+Set critical threshold for status (Default: '').
+Can used special variables like:  %{connection_state}, %{power_state}
 
-=item B<--critical-max-total-latency>
+=item B<--warning-*>
 
-Threshold critical in ms.
+Threshold warning.
+Can be: 'max-total-latency', 'read', 'write'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'max-total-latency', 'read', 'write'.
 
 =back
 

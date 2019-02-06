@@ -20,10 +20,86 @@
 
 package apps::vmware::connector::mode::devicevm;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{connection_state} = $options{new_datas}->{$self->{instance} . '_connection_state'};
+    $self->{result_values}->{power_state} = $options{new_datas}->{$self->{instance} . '_power_state'};
+    return 0;
+}
+
+sub custom_device_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("%s %s device connected",  $self->{result_values}->{device_connected_absolute}, $self->{instance_mode}->{option_results}->{device});
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total-device-connected', set => {
+                key_values => [ { name => 'device_connected' } ],
+                closure_custom_output => $self->can('custom_device_output'),
+                perfdatas => [
+                    { label => 'total_device_connected', value => 'device_connected_absolute', template => '%s',
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{vm} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'device-connected', set => {
+                key_values => [ { name => 'device_connected' }, { name => 'display' } ],
+                oclosure_custom_output => $self->can('custom_device_output'),
+                perfdatas => [
+                    { label => 'device_connected', value => 'device_connected_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    my $msg = "Virtual machine '" . $options{instance_value}->{display} . "'";
+    if (defined($options{instance_value}->{config_annotation})) {
+        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
+    }
+    $msg .= ' : ';
+    
+    return $msg;
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,58 +107,58 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "vm-hostname:s"           => { name => 'vm_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "scope-host:s"            => { name => 'scope_host' },
-                                  "filter-description:s"    => { name => 'filter_description' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "nopoweredon-status:s"    => { name => 'nopoweredon_status', default => 'unknown' },
-                                  "display-description"     => { name => 'display_description' },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "device:s"                => { name => 'device' },
-                                });
+    $options{options}->add_options(arguments => {
+        "vm-hostname:s"         => { name => 'vm_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "scope-host:s"          => { name => 'scope_host' },
+        "filter-description:s"  => { name => 'filter_description' },
+        "filter-os:s"           => { name => 'filter_os' },
+        "display-description"   => { name => 'display_description' },
+        "device:s"              => { name => 'device' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach my $label (('warning', 'critical')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
     if (!defined($self->{option_results}->{device}) || $self->{option_results}->{device} eq '') {
         $self->{output}->add_option_msg(short_msg => "Please set device option.");
         $self->{output}->option_exit();
     }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{nopoweredon_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong nopoweredon-status option '" . $self->{option_results}->{nopoweredon_status} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'devicevm');
-    $self->{connector}->run();
+    $self->{global} = { device_connected => 0 };
+    $self->{vm} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'devicevm');
+
+    foreach my $vm_id (keys %{$response->{data}}) {
+        my $vm_name = $response->{data}->{$vm_id}->{name};
+        $self->{vm}->{$vm_name} = {
+            display => $vm_name, 
+            connection_state => $response->{data}->{$vm_id}->{connection_state},
+            power_state => $response->{data}->{$vm_id}->{power_state},
+            device_connected => $response->{data}->{$vm_id}->{total_device_connected},
+        };
+        
+        if (defined($self->{option_results}->{display_description})) {
+            $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
+        }
+        
+        $self->{global}->{device_connected} += $self->{vm}->{$vm_name}->{device_connected};
+    }
 }
 
 1;
@@ -108,6 +184,10 @@ VM hostname is a regexp.
 
 Filter also virtual machines description (can be a regexp).
 
+=item B<--filter-os>
+
+Filter also virtual machines OS name (can be a regexp).
+
 =item B<--scope-datacenter>
 
 Search in following datacenter(s) (can be a regexp).
@@ -120,29 +200,38 @@ Search in following cluster(s) (can be a regexp).
 
 Search in following host(s) (can be a regexp).
 
-=item B<--disconnect-status>
-
-Status if VM disconnected (default: 'unknown').
-
-=item B<--nopoweredon-status>
-
-Status if VM is not poweredOn (default: 'unknown').
-
 =item B<--display-description>
 
 Display virtual machine description.
 
-=item B<--warning>
-
-Threshold warning in bytes per seconds.
-
-=item B<--critical>
-
-Threshold critical in bytes per seconds.
-
 =item B<--device>
 
 Device to check (Required) (Example: --device='VirtualCdrom').
+
+=item B<--unknown-status>
+
+Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i').
+Can used special variables like: %{connection_state}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{connection_state}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{connection_state}
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'total-device-connected', 'device-connected'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'total-device-connected', 'device-connected'.
 
 =back
 

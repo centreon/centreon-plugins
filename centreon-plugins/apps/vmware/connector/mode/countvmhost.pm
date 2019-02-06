@@ -20,10 +20,108 @@
 
 package apps::vmware::connector::mode::countvmhost;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'host', type => 1, cb_prefix_output => 'prefix_host_output', message_multiple => 'All ESX Hosts are ok' },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total-on', set => {
+                key_values => [ { name => 'poweredon' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredon',
+                perfdatas => [
+                    { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
+                      min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+        { label => 'total-off', set => {
+                key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredoff',
+                perfdatas => [
+                    { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
+                      min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+         { label => 'total-suspended', set => {
+                key_values => [ { name => 'suspended' }, { name => 'total' } ],
+                output_template => '%s VM(s) suspended',
+                perfdatas => [
+                    { label => 'suspended', value => 'suspended_absolute', template => '%s',
+                      min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{host} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'on', set => {
+                key_values => [ { name => 'poweredon' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredon',
+                perfdatas => [
+                    { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'off', set => {
+                key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredoff',
+                perfdatas => [
+                    { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'suspended', set => {
+                key_values => [ { name => 'suspended' }, { name => 'total' } ],
+                output_template => '%s VM(s) suspended',
+                perfdatas => [
+                    { label => 'suspended', value => 'suspended_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_host_output {
+    my ($self, %options) = @_;
+
+    return "Host '" . $options{instance_value}->{display} . "' : ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,49 +129,50 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning-on:s"            => { name => 'warning_on' },
-                                  "critical-on:s"           => { name => 'critical_on' },
-                                  "warning-off:s"           => { name => 'warning_off' },
-                                  "critical-off:s"          => { name => 'critical_off' },
-                                  "warning-suspended:s"     => { name => 'warning_suspended' },
-                                  "critical-suspended:s"    => { name => 'critical_suspended' },
-                                });
+    $options{options}->add_options(arguments => {
+        "esx-hostname:s"        => { name => 'esx_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach my $label (('warning_on', 'critical_on', 'warning_off', 'critical_off', 'warning_suspended', 'critical_suspended')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'countvmhost');
-    $self->{connector}->run();
+    $self->{global} = { poweredon => 0, poweredoff => 0, suspended => 0, total => 0 };
+    $self->{host} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'countvmhost');
+
+    foreach my $host_id (keys %{$response->{data}}) {
+        my $host_name = $response->{data}->{$host_id}->{name};
+        $self->{host}->{$host_name} = {
+            display => $host_name, 
+            state => $response->{data}->{$host_id}->{state},
+            poweredon => $response->{data}->{$host_id}->{poweredon},
+            poweredoff => $response->{data}->{$host_id}->{poweredoff},
+            suspended => $response->{data}->{$host_id}->{suspended},
+            total => $response->{data}->{$host_id}->{poweredon} + $response->{data}->{$host_id}->{poweredoff} + $response->{data}->{$host_id}->{suspended},
+        };
+        $self->{global}->{poweredon} += $response->{data}->{$host_id}->{poweredon} if (defined($response->{data}->{$host_id}->{poweredon}));
+        $self->{global}->{poweredoff} += $response->{data}->{$host_id}->{poweredoff} if (defined($response->{data}->{$host_id}->{poweredoff}));
+        $self->{global}->{suspended} += $response->{data}->{$host_id}->{suspended} if (defined($response->{data}->{$host_id}->{suspended}));
+    }
+    
+    $self->{global}->{total} = $self->{global}->{poweredon} + $self->{global}->{poweredoff} + $self->{global}->{suspended};
 }
 
 1;
@@ -103,33 +202,32 @@ Search in following datacenter(s) (can be a regexp).
 
 Search in following cluster(s) (can be a regexp).
 
-=item B<--disconnect-status>
+=item B<--unknown-status>
 
-Status if ESX host disconnected (default: 'unknown').
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Can used special variables like: %{status}
 
-=item B<--warning-on>
+=item B<--warning-status>
 
-Threshold warning for 'poweredOn' vms.
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
 
-=item B<--critical-on>
+=item B<--critical-status>
 
-Threshold critical for 'poweredOn' vms.
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
 
-=item B<--warning-off>
+=item B<--warning-*>
 
-Threshold warning for 'poweredOff' vms.
+Threshold warning.
+Can be: 'total-on', 'total-off', 'total-suspended', 
+'on', 'off', 'suspended'.
 
-=item B<--critical-off>
+=item B<--critical-*>
 
-Threshold critical for 'poweredOff' vms.
-
-=item B<--warning-suspended>
-
-Threshold warning for 'suspended' vms.
-
-=item B<--critical-suspended>
-
-Threshold critical for 'suspended' vms.
+Threshold critical.
+Can be: 'total-on', 'total-off', 'total-suspended', 
+'on', 'off', 'suspended'.
 
 =back
 

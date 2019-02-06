@@ -30,15 +30,14 @@ my $instance_mode;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
+    my $extra_label = '';
+    $extra_label = '_' . $self->{result_values}->{label} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
     if (defined($instance_mode->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{multi} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-    $extra_label .= '_' . $self->{result_values}->{display} if (!defined($options{extra_instance_lvl2}) || $options{extra_instance_lvl2} != 0);
     my %total_options = ();
     if ($instance_mode->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
@@ -82,8 +81,8 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{label} = $self->{instance};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{multi} = $options{new_datas}->{$self->{instance} . '_multi'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_size'};    
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
     $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
@@ -104,32 +103,44 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes storages usage are ok',
-          counters => [ { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages usage are ok' } ] },
+        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_node_output', cb_long_output => 'node_long_output',
+          message_multiple => 'All nodes storages usage are ok', indent_long_output => '    ',
+            group => [
+                { name => 'storage', display_long => 1, cb_prefix_output => 'prefix_storage_output',
+                  message_multiple => 'All storages usage are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'free' }, { name => 'size' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'free' }, { name => 'size' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                label_extra_instance => 1, instance_use => 'display'
             }
         },
     ];
 }
 
-sub prefix_nodes_output {
+sub prefix_node_output {
     my ($self, %options) = @_;
 
-    return "Node '" . $options{instance_value}->{display} . "'";
+    return "Node '" . $options{instance_value}->{display} . "' ";
+}
+
+sub node_long_output {
+    my ($self, %options) = @_;
+
+    return "Checking node '" . $options{instance_value}->{display} . "'";
 }
 
 sub prefix_storage_output {
     my ($self, %options) = @_;
 
-    return "Node '" . $options{instance_value}->{multi} . "' Storage '" . $options{instance_value}->{display} . "' ";
+    return "Storage '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -142,7 +153,7 @@ sub new {
                                 {
                                   "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
                                   "mountpoint:s"            => { name => 'mountpoint', default => 'mountpoint=~".*"' },
-                                  "fstype:s"                => { name => 'fstype', default => 'fstype=~"overlay"' },
+                                  "fstype:s"                => { name => 'fstype', default => 'fstype!~"linuxfs|rootfs|tmpfs"' },
                                   "units:s"                 => { name => 'units', default => '%' },
                                   "free"                    => { name => 'free' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
@@ -200,7 +211,6 @@ sub manage_selection {
 
     foreach my $result (@{$results}) {
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{multi} = $result->{metric}->{$self->{labels}->{instance}};
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{display} = $result->{metric}->{$self->{labels}->{mountpoint}};
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{storage}->{$result->{metric}->{mountpoint}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
@@ -231,7 +241,7 @@ Filter on a specific mountpoint (Must be a PromQL filter, Default: 'mountpoint=~
 
 =item B<--fstype>
 
-Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype=~"overlay"')
+Filter on a specific fstype (Must be a PromQL filter, Default: 'fstype!~"linuxfs|rootfs|tmpfs"')
 
 =item B<--units>
 
@@ -257,9 +267,14 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'free', 'size')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - free: ^node_filesystem_free.*
+    - size: ^node_filesystem_size.*
 
 =back
 

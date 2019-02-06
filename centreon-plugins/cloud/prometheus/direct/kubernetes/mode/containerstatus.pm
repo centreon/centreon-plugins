@@ -100,6 +100,7 @@ sub new {
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /running/ || %{state} !~ /ready/' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
+                                  "filter-counters:s"       => { name => 'filter_counters' },
                                 });
    
     return $self;
@@ -236,9 +237,24 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'status')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - ready: ^kube_pod_container_status_ready$
+    - running: ^kube_pod_container_status_running$
+    - terminated: ^kube_pod_container_status_terminated$
+    - terminated_reason: ^kube_pod_container_status_terminated_reason$
+    - waiting: ^kube_pod_container_status_waiting$
+    - waiting_reason: ^kube_pod_container_status_waiting_reason$
+    - restarts: ^kube_pod_container_status_restarts_total$
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='status'
 
 =back
 

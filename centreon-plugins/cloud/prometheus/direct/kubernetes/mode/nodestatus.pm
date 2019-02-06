@@ -258,9 +258,21 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'status')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - status: ^kube_node_status_condition$
+    - unschedulable: ^kube_node_spec_unschedulable$
+    - capacity: ^kube_node_status_capacity_pods$
+    - allocatable: ^kube_node_status_allocatable_pods$
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='status'
 
 =back
 
