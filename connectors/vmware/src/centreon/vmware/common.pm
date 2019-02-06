@@ -45,6 +45,7 @@ sub init_response {
     my (%options) = @_;
     
     $manager_response->{code} = 0;
+    $manager_response->{vmware_connector_version} = '3.0.0';
     $manager_response->{short_message} = 'OK';
     $manager_response->{extra_message} = '';
     $manager_response->{identity} = $options{identity} if (defined($options{identity}));
