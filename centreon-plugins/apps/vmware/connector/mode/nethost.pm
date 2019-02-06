@@ -126,7 +126,7 @@ sub set_counters {
         { label => 'host-traffic-in', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'host traffic in : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'host_traffic_in', value => 'traffic_in_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
@@ -136,7 +136,7 @@ sub set_counters {
         { label => 'host-traffic-out', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'host traffic out : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'host_traffic_out', value => 'traffic_out_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
@@ -149,7 +149,7 @@ sub set_counters {
         { label => 'vswitch-traffic-in', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'traffic in : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'vswitch_traffic_in', value => 'traffic_in_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
@@ -159,7 +159,7 @@ sub set_counters {
         { label => 'vswitch-traffic-out', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'traffic out : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'vswitch_traffic_out', value => 'traffic_out_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
