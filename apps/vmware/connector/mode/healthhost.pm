@@ -211,20 +211,22 @@ sub manage_selection {
         my $i = 0;
         foreach (('memory_info', 'cpu_info', 'sensor_info', 'storage_info')) {
             if (defined($response->{data}->{$host_id}->{$_})) {
-                 $self->{host}->{$host_name}->{global_problems}->{ok} += $response->{data}->{$host_id}->{$_}->{ok};
-                 $self->{host}->{$host_name}->{global_problems}->{red} += $response->{data}->{$host_id}->{$_}->{red};
-                 $self->{host}->{$host_name}->{global_problems}->{yellow} += $response->{data}->{$host_id}->{$_}->{yellow};
-                 $self->{host}->{$host_name}->{global_problems}->{total_problems} += 
-                    $self->{host}->{$host_name}->{global_problems}->{red} + $self->{host}->{$host_name}->{global_problems}->{yellow};
-                 $self->{host}->{$host_name}->{global_problems}->{total} += 
-                    $response->{data}->{$host_id}->{$_}->{ok} + $response->{data}->{$host_id}->{$_}->{red} + $response->{data}->{$host_id}->{$_}->{yellow};
-                foreach (@{$response->{data}->{$host_id}->{$_}->{summary_yellow}}, @{$response->{data}->{$host_id}->{$_}->{summary_red}}) {
-                    $self->{host}->{$host_name}->{global_summary}->{$i} = {
-                        type => defined($_->{type}) ? $_->{type} : '',
-                        name => $_->{name},
-                        summary => $_->{summary},
-                    };
+                foreach my $entry (@{$response->{data}->{$host_id}->{$_}}) {
+                    my $status = 'ok';
+                    $status = lc($1) if ($entry->{status} =~ /(yellow|red)/i);
+                    $self->{host}->{$host_name}->{global_problems}->{$status}++;
+                    $self->{host}->{$host_name}->{global_problems}->{total}++;
+                    if ($status eq 'ok') {
+                        $self->{host}->{$host_name}->{global_problems}->{total_problems}++ 
+                    } else {
+                        $self->{host}->{$host_name}->{global_summary}->{$i} = {
+                            type => defined($entry->{type}) ? $entry->{type} : '',
+                            name => $entry->{name},
+                            summary => $entry->{summary},
+                        };
+                    }
                 }
+
                 $i++;
             }
         }
