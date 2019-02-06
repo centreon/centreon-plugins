@@ -59,7 +59,7 @@ sub set_counters {
         { label => 'swap-in', set => {
                 key_values => [ { name => 'swap_in' }, { name => 'display' } ],
                 output_template => 'Swap In: %s %s/s',
-                output_change_bytes => 2,
+                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'swap_in', value => 'swap_in_absolute', template => '%s',
                       unit => 'B/s', min => 0, label_extra_instance => 1 },
@@ -69,7 +69,7 @@ sub set_counters {
         { label => 'swap-out', set => {
                 key_values => [ { name => 'swap_out' }, { name => 'display' } ],
                 output_template => 'Swap Out: %s %s/s',
-                output_change_bytes => 2,
+                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'swap_out', value => 'swap_out_absolute', template => '%s',
                       unit => 'B/s', min => 0, label_extra_instance => 1 },
