@@ -54,9 +54,8 @@ sub run {
     }
 
     my $filters = $self->build_filter(label => 'name', search_option => 'vm_hostname', is_regexp => 'filter');    
-    if (defined($self->{filter_description}) && $self->{filter_description} ne '') {
-        $filters->{'config.annotation'} = qr/$self->{filter_description}/;
-    }
+    $self->add_filter(filters => $filters, label => 'config.annotation', search_option => 'filter_description');
+    $self->add_filter(filters => $filters, label => 'config.guestFullName', search_option => 'filter_os');
     
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     if (defined($self->{display_description})) {

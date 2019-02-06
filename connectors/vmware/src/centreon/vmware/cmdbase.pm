@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
     
     $self->{logger} = $options{logger};
-    $self->{case_insensitive} = defined($options{case_insensitive}) ? $options{case_insensitive} : 0;
+    $self->{global_case_insensitive} = defined($options{case_insensitive}) ? $options{case_insensitive} : 0;
     
     return $self;
 }
@@ -75,6 +75,10 @@ sub initArgs {
         $self->{$_} = $options{arguments}->{$_};
     }
     centreon::vmware::common::init_response(identity => $options{arguments}->{identity});
+    
+    if ($self->{global_case_insensitive} == 0 && defined($self->{case_insensitive})) {
+        $self->{global_case_insensitive} = 1;
+    }
 }
 
 sub build_filter {
@@ -82,7 +86,7 @@ sub build_filter {
     
     my $filters = {};
     if (defined($self->{$options{search_option}}) && !defined($self->{$options{is_regexp}})) {
-        if ($self->{case_insensitive} == 1) {
+        if ($self->{global_case_insensitive} == 1) {
             $filters->{name} = qr/^\Q$self->{$options{search_option}}\E$/i;
         } else {
             $filters->{name} = qr/^\Q$self->{$options{search_option}}\E$/;
@@ -98,6 +102,18 @@ sub build_filter {
     }
     
     return $filters;
+}
+
+sub add_filter {
+    my ($self, %options) = @_;
+    
+    if (defined($self->{$options{search_option}}) && $self->{$options{search_option}} ne '') {
+        if ($self->{global_case_insensitive} == 1) {
+            $options{filters}->{$options{label}} = qr/$self->{$options{search_option}}/i;
+        } else {
+            $options{filters}->{$options{label}} = qr/$self->{$options{search_option}}/;
+        }
+    }
 }
 
 1;
