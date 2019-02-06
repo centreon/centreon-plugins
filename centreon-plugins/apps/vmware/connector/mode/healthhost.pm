@@ -43,8 +43,6 @@ sub custom_status_calc {
 sub custom_summary_output {
     my ($self, %options) = @_;
 
-    use Data::Dumper;
-    print Data::Dumper::Dumper($self->{result_values});
     my $msg;
     if ($self->{result_values}->{type_absolute} ne '') {
         $msg = $self->{result_values}->{type_absolute} . " sensor " . $self->{result_values}->{name_absolute} . ": ". $self->{result_values}->{summary_absolute};
