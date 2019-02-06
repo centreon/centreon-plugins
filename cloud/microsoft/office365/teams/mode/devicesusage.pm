@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::microsoft::office365::teams::mode::deviceusage;
+package cloud::microsoft::office365::teams::mode::devicesusage;
 
 use base qw(centreon::plugins::templates::counter);
 
