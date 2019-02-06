@@ -157,7 +157,7 @@ sub manage_selection {
         }
         
         $self->{global}->{device_connected} += $self->{vm}->{$vm_name}->{device_connected};
-    }    
+    }
 }
 
 1;
@@ -206,17 +206,17 @@ Device to check (Required) (Example: --device='VirtualCdrom').
 =item B<--unknown-status>
 
 Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i').
-Can used special variables like: %{status}
+Can used special variables like: %{connection_state}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Can used special variables like: %{connection_state}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{status}
+Can used special variables like: %{connection_state}
 
 =item B<--warning-*>
 
