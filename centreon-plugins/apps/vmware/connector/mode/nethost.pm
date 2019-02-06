@@ -265,6 +265,7 @@ sub new {
         "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
+        "unknown-link-status:s"     => { name => 'unknown_link_status', default => '' },
         "warning-link-status:s"     => { name => 'warning_link_status', default => '' },
         "critical-link-status:s"    => { name => 'critical_link_status', default => '%{link_status} !~ /up/' },
     });
@@ -277,7 +278,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status',
-        'warning_link_status', 'critical_link_status']);
+        'unknown_link_status', 'warning_link_status', 'critical_link_status']);
 }
 
 sub manage_selection {
@@ -390,15 +391,20 @@ Can used special variables like: %{status}
 Set critical threshold for status (Default: '').
 Can used special variables like: %{status}
 
+=item B<--unknown-link-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{link_status}
+
 =item B<--warning-link-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Can used special variables like: %{link_status}
 
 =item B<--critical-link-status>
 
 Set critical threshold for status (Default: '%{link_status} !~ /up/').
-Can used special variables like: %{status}
+Can used special variables like: %{link_status}
 
 =item B<--warning-*>
 
