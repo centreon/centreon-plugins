@@ -57,6 +57,7 @@ sub new {
                       "timeout:s@"               => { name => 'timeout' },
                       "sampling-period:s@"       => { name => 'sampling_period' },
                       "time-shift:s@"            => { name => 'time_shift' },
+                      "case-insensitive"         => { name => 'case_insensitive' },
                       "unknown-connector-status:s"  => { name => 'unknown_connector_status' },
                       "warning-connector-status:s"  => { name => 'warning_connector_status' },
                       "critical-connector-status:s" => { name => 'critical_connector_status' },
@@ -116,6 +117,7 @@ sub check_options {
     $self->{unknown_connector_status} = (defined($self->{option_results}->{unknown_connector_status})) ? $self->{option_results}->{unknown_connector_status} : '%{code} < 0 || (%{code} > 0 && %{code} < 200)';
     $self->{warning_connector_status} = (defined($self->{option_results}->{warning_connector_status})) ? $self->{option_results}->{warning_connector_status} : '';
     $self->{critical_connector_status} = (defined($self->{option_results}->{critical_connector_status})) ? $self->{option_results}->{critical_connector_status} : '';
+    $self->{case_insensitive} = (defined($self->{option_results}->{case_insensitive})) ? $self->{option_results}->{case_insensitive} : undef;
     
     $self->{connector_port} = 5700 if ($self->{connector_port} eq '');
     $self->{container} = 'default' if ($self->{container} eq '');
@@ -356,6 +358,10 @@ Should be not different than 300 or 20.
 =item B<--time-shift>
 
 Can shift the time. We the following option you can average X counters values (default: 0).
+
+=item B<--case-insensitive>
+
+Searchs are case insensitive.
 
 =item B<--unknown-connector-status>
 

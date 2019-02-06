@@ -138,6 +138,7 @@ sub new {
         "vm-hostname:s"         => { name => 'vm_hostname' },
         "filter"                => { name => 'filter' },
         "filter-description:s"  => { name => 'filter_description' },
+        "filter-os:s"           => { name => 'filter_os' },
         "display-description"   => { name => 'display_description' },
         "check-disk-limit"      => { name => 'check_disk_limit' },
         "warning-disk-status:s"     => { name => 'warning_disk_status', default => '' },
@@ -229,6 +230,10 @@ VM hostname is a regexp.
 =item B<--filter-description>
 
 Filter also virtual machines description (can be a regexp).
+
+=item B<--filter-os>
+
+Filter also virtual machines OS name (can be a regexp).
 
 =item B<--display-description>
 
