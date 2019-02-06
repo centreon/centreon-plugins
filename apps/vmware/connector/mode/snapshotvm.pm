@@ -125,9 +125,13 @@ sub run {
                 $response->{data}->{$vm_id}->{'config.annotation'} ne '') {
                 $prefix_msg .= ' [' . $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'}) . ']';
             }
+            my $suffix_msg = '';
+            if (defined($_->{description}) && $_->{description} ne '') {
+                $suffix_msg = ' [' . $options{custom}->strip_cr(value => $_->{description}) . ']';
+            }
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
                 $vm_errors{$exit}->{$vm_name} = 1;
-                $self->{output}->output_add(long_msg => "$prefix_msg snapshot create time: " . $_->{create_time});
+                $self->{output}->output_add(long_msg => "$prefix_msg snapshot create time: " . $_->{create_time} . $suffix_msg);
             }
         }
     }
