@@ -218,7 +218,7 @@ sub connector_response_status {
     }
 }
 
-sub host_is_connected {
+sub entity_is_connected {
     my ($self, %options) = @_;
      
     if ($options{state} !~ /^connected$/i) {

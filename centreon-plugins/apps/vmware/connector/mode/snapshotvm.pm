@@ -91,7 +91,7 @@ sub run {
     foreach my $vm_id (sort keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
         
-        if ($options{custom}->host_is_connected(state => $response->{data}->{$vm_id}->{connection_state}) == 0) {
+        if ($options{custom}->entity_is_connected(state => $response->{data}->{$vm_id}->{connection_state}) == 0) {
             my $output = "VM '" . $vm_name . "' not connected. Current Connection State: '$response->{data}->{$vm_id}->{connection_state}'.";
             if ($multiple == 0 ||  
                 !$self->{output}->is_status(value => $self->{option_results}->{disconnect_status}, compare => 'ok', litteral => 1)) {
