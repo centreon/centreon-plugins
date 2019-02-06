@@ -27,6 +27,58 @@ use warnings;
 
 my $instance_mode;
 
+sub custom_active_perfdata {
+    my ($self, %options) = @_;
+
+    my %total_options = ();
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => 'active_mailboxes',
+                                  value => $self->{result_values}->{active},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  unit => 'mailboxes', min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_active_threshold {
+    my ($self, %options) = @_;
+
+    my $threshold_value = $self->{result_values}->{active};
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_active};
+    }
+    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+
+}
+
+sub custom_active_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Active mailboxes on %s : %d/%d (%.2f%%)",
+                        $self->{result_values}->{report_date},
+                        $self->{result_values}->{active},
+                        $self->{result_values}->{total},
+                        $self->{result_values}->{prct_active});
+    return $msg;
+}
+
+sub custom_active_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{active} = $options{new_datas}->{$self->{instance} . '_active'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{report_date} = $options{new_datas}->{$self->{instance} . '_report_date'};
+    $self->{result_values}->{prct_active} = ($self->{result_values}->{total} != 0) ? $self->{result_values}->{active} * 100 / $self->{result_values}->{total} : 0;
+
+    return 0;
+}
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -90,6 +142,12 @@ sub custom_status_calc {
     return 0;
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Total ";
+}
+
 sub prefix_mailbox_output {
     my ($self, %options) = @_;
     
@@ -100,9 +158,43 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'active', type => 0 },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'mailboxes', type => 1, cb_prefix_output => 'prefix_mailbox_output', message_multiple => 'All mailboxes usage are ok' },
     ];
     
+    $self->{maps_counters}->{active} = [
+        { label => 'active-mailboxes', set => {
+                key_values => [ { name => 'active' }, { name => 'total' }, { name => 'report_date' } ],
+                closure_custom_calc => $self->can('custom_active_calc'),
+                closure_custom_output => $self->can('custom_active_output'),
+                closure_custom_threshold_check => $self->can('custom_active_threshold'),
+                closure_custom_perfdata => $self->can('custom_active_perfdata')
+            }
+        },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'total-usage-active', set => {
+                key_values => [ { name => 'storage_used_active' } ],
+                output_template => 'Usage (active mailboxes): %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'storage_used_active', value => 'storage_used_active_absolute', template => '%d',
+                      min => 0, unit => 'B' },
+                ],
+            }
+        },
+        { label => 'total-usage-inactive', set => {
+                key_values => [ { name => 'storage_used_inactive' } ],
+                output_template => 'Usage (inactive mailboxes): %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'storage_used_inactive', value => 'storage_used_inactive_absolute', template => '%d',
+                      min => 0, unit => 'B' },
+                ],
+            }
+        },
+    ];
     $self->{maps_counters}->{mailboxes} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'storage_used' }, { name => 'issue_warning_quota' },
@@ -113,9 +205,13 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'last-activity', threshold => 0, set => {
-                key_values => [ { name => 'last_activity_date' }, { name => 'name' } ],
-                output_template => 'Last Activity: %s',
+        { label => 'items', set => {
+                key_values => [ { name => 'items' } ],
+                output_template => 'Items: %d',
+                perfdatas => [
+                    { label => 'items', value => 'items_absolute', template => '%d',
+                      min => 0 },
+                ],
             }
         },
     ];
@@ -129,10 +225,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-mailbox:s"          => { name => 'filter_mailbox' },
-                                    "warning-status:s"          => { name => 'warning_status', default => '%{used} > %{issue_warning_quota}' },
-                                    "critical-status:s"         => { name => 'critical_status', default => '%{used} > %{prohibit_send_quota}' },
-                                    "active-only"               => { name => 'active_only' },
+                                    "filter-mailbox:s"      => { name => 'filter_mailbox' },
+                                    "warning-status:s"      => { name => 'warning_status', default => '%{used} > %{issue_warning_quota}' },
+                                    "critical-status:s"     => { name => 'critical_status', default => '%{used} > %{prohibit_send_quota}' },
+                                    "units:s"               => { name => 'units', default => '%' },
+                                    "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
                                 });
     
     return $self;
@@ -159,6 +256,8 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
+    $self->{active} = { active => 0, total => 0, report_date => '' };
+    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0 };
     $self->{mailboxes} = {};
 
     my $results = $options{custom}->office_get_exchange_mailbox_usage();
@@ -169,22 +268,27 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $mailbox->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
-        if ($self->{option_results}->{active_only} && defined($mailbox->{'Last Activity Date'}) && $mailbox->{'Last Activity Date'} eq '') {
-            $self->{output}->output_add(long_msg => "skipping  '" . $mailbox->{'User Principal Name'} . "': no activity.", debug => 1);
+    
+        $self->{active}->{total}++;
+
+        if (!defined($mailbox->{'Last Activity Date'}) || $mailbox->{'Last Activity Date'} eq '' ||
+            ($mailbox->{'Last Activity Date'} ne $mailbox->{'Report Refresh Date'})) {
+            $self->{global}->{storage_used_inactive} += ($mailbox->{'Storage Used (Byte)'} ne '') ? $mailbox->{'Storage Used (Byte)'} : 0;
+            $self->{output}->output_add(long_msg => "skipping '" . $mailbox->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
         }
+
+        $self->{active}->{report_date} = $mailbox->{'Report Refresh Date'};
+        $self->{active}->{active}++;
+        
+        $self->{global}->{storage_used_active} += ($mailbox->{'Storage Used (Byte)'} ne '') ? $mailbox->{'Storage Used (Byte)'} : 0;
 
         $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{name} = $mailbox->{'User Principal Name'};
         $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{storage_used} = ($mailbox->{'Storage Used (Byte)'} ne '') ? $mailbox->{'Storage Used (Byte)'} : 0;
         $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{issue_warning_quota} = $mailbox->{'Issue Warning Quota (Byte)'};
         $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{prohibit_send_quota} = $mailbox->{'Prohibit Send Quota (Byte)'};
         $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{prohibit_send_receive_quota} = $mailbox->{'Prohibit Send/Receive Quota (Byte)'};
-        $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{last_activity_date} = $mailbox->{'Last Activity Date'};
-    }
-    
-    if (scalar(keys %{$self->{mailboxes}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
-        $self->{output}->option_exit();
+        $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{items} = ($mailbox->{'Item Count'} ne '') ? $mailbox->{'Item Count'} : 0;
     }
 }
 
@@ -205,19 +309,39 @@ https://docs.microsoft.com/en-us/office365/admin/activity-reports/mailbox-usage?
 
 Filter mailboxes.
 
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'active-mailboxes', 'total-usage-active' (count),
+'total-usage-inactive' (count).
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'active-mailboxes', 'total-usage-active' (count),
+'total-usage-inactive' (count).
+
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{used} > %{issue_warning_quota}').
-Can used special variables like: %{used}, %{issue_warning_quota}, %{prohibit_send_quota}, %{prohibit_send_receive_quota}
+Can used special variables like: %{used}, %{issue_warning_quota},
+%{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{used} > %{prohibit_send_quota}').
-Can used special variables like: %{used}, %{issue_warning_quota}, %{prohibit_send_quota}, %{prohibit_send_receive_quota}
+Can used special variables like: %{used}, %{issue_warning_quota},
+%{prohibit_send_quota}, %{prohibit_send_receive_quota}
 
-=item B<--active-only>
+=item B<--filter-counters>
 
-Filter only active entries ('Last Activity' set).
+Only display some counters (regexp can be used).
+Example to hide per user counters: --filter-counters='active|total'
+(Default: 'active|total')
+
+=item B<--units>
+
+Unit of thresholds (Default: '%') ('%', 'count').
 
 =back
 

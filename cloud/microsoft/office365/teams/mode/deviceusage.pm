@@ -25,19 +25,84 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my $instance_mode;
+
+sub custom_active_perfdata {
+    my ($self, %options) = @_;
+
+    my %total_options = ();
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => 'active_users',
+                                  value => $self->{result_values}->{active},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  unit => 'users', min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_active_threshold {
+    my ($self, %options) = @_;
+
+    my $threshold_value = $self->{result_values}->{active};
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_active};
+    }
+    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+
+}
+
+sub custom_active_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Active users on %s : %d/%d (%.2f%%)",
+                        $self->{result_values}->{report_date},
+                        $self->{result_values}->{active},
+                        $self->{result_values}->{total},
+                        $self->{result_values}->{prct_active});
+    return $msg;
+}
+
+sub custom_active_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{active} = $options{new_datas}->{$self->{instance} . '_active'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{report_date} = $options{new_datas}->{$self->{instance} . '_report_date'};
+    $self->{result_values}->{prct_active} = ($self->{result_values}->{total} != 0) ? $self->{result_values}->{active} * 100 / $self->{result_values}->{total} : 0;
+
+    return 0;
+}
+
 sub prefix_global_output {
     my ($self, %options) = @_;
     
-    return "Users Count By Device Type : ";
+    return "Users count by device type : ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'active', type => 0 },
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
     ];
     
+    $self->{maps_counters}->{active} = [
+        { label => 'active-users', set => {
+                key_values => [ { name => 'active' }, { name => 'total' }, { name => 'report_date' } ],
+                closure_custom_calc => $self->can('custom_active_calc'),
+                closure_custom_output => $self->can('custom_active_output'),
+                closure_custom_threshold_check => $self->can('custom_active_threshold'),
+                closure_custom_perfdata => $self->can('custom_active_perfdata')
+            }
+        },
+    ];
     $self->{maps_counters}->{global} = [
         { label => 'windows', set => {
                 key_values => [ { name => 'windows' } ],
@@ -104,8 +169,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                    "units:s"           => { name => 'units', default => '%' },
                                     "filter-counters:s" => { name => 'filter_counters' },
-                                    "active-only"       => { name => 'active_only' },
                                 });
     
     return $self;
@@ -114,20 +179,29 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    $instance_mode = $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->office_get_teams_device_usage();
-
+    $self->{active} = { active => 0, total => 0, report_date => '' };
     $self->{global} = { windows => 0, mac => 0, web => 0, ios => 0, android_phone => 0, windows_phone => 0 };
 
+    my $results = $options{custom}->office_get_teams_device_usage();
+
+    $self->{active}->{total} = scalar(@{$results});
+
     foreach my $user (@{$results}) {
-        if ($self->{option_results}->{active_only} && defined($user->{'Last Activity Date'}) && $user->{'Last Activity Date'} eq '') {
+        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
+            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
         }
+
+        $self->{active}->{report_date} = $user->{'Report Refresh Date'};
+        $self->{active}->{active}++;
 
         $self->{global}->{windows}++ if ($user->{'Used Windows'} =~ /Yes/);
         $self->{global}->{mac}++ if ($user->{'Used Mac'} =~ /Yes/);
@@ -154,21 +228,25 @@ https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-team
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'windows', 'mac', 'web', 'ios', 'android-phone', 'windows-phone'.
+Can be: 'active-users', 'windows' (count), 'mac' (count),
+'web' (count), 'ios' (count), 'android-phone' (count),
+'windows-phone' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'windows', 'mac', 'web', 'ios', 'android-phone', 'windows-phone'.
-
-=item B<--active-only>
-
-Filter only active entries ('Last Activity' set).
+Can be: 'active-users', 'windows' (count), 'mac' (count),
+'web' (count), 'ios' (count), 'android-phone' (count),
+'windows-phone' (count).
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example to hide per user counters: --filter-counters='windows'
+
+=item B<--units>
+
+Unit of thresholds (Default: '%') ('%', 'count').
 
 =back
 
