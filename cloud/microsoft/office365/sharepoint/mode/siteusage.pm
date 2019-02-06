@@ -378,7 +378,8 @@ Can be: 'url', 'id' (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-sites', 'total-usage' (count), 'total-file-count' (count),
+Can be: 'active-sites', 'total-usage-active' (count),
+'total-usage-inactive' (count), 'total-file-count' (count),
 'total-active-file-count' (count), 'total-visited-page-count' (count),
 'total-page-view-count' (count), 'usage' (count), 'file-count' (count), 'active-file-count' (count),
 'visited-page-count' (count), 'page-view-count' (count).
