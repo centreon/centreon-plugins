@@ -254,11 +254,11 @@ sub lookup {
     }
 
     if (defined($self->{option_results}->{lookup_perfdatas}) && $self->{option_results}->{lookup_perfdatas} ne '') {
-        my (@perfdata_strings);
+        my $perfdata_string;
         my $xpath_find = $self->{option_results}->{lookup_perfdatas};
         eval {
             my $jpath = JSON::Path->new($xpath_find);
-            @perfdata_strings = $jpath->values($content);
+            $perfdata_string = $jpath->value($content);
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot lookup perfdatas: $@");
@@ -267,21 +267,19 @@ sub lookup {
 
         $self->{output}->output_add(long_msg => "Lookup perfdatas XPath $xpath_find:");
 
-        foreach my $perfdata_string (@perfdata_strings) {
-            my @metrics = split(/ /, $perfdata_string);
-            foreach my $single_metric (@metrics) {
-                my ($label, $perfdatas) = split(/=/, $single_metric);
-                my ($value_w_unit, $warn, $crit, $min, $max) = split(/;/, $perfdatas);
-                # separate the value from the unit
-                my ($value, $unit) = $value_w_unit =~ /(^[0-9]+\.*\,*[0-9]*)(.*)/g;
+        my @metrics = split(/ /, $perfdata_string);
+        foreach my $single_metric (@metrics) {
+            my ($label, $perfdatas) = split(/=/, $single_metric);
+            my ($value_w_unit, $warn, $crit, $min, $max) = split(/;/, $perfdatas);
+            # separate the value from the unit
+            my ($value, $unit) = $value_w_unit =~ /(^[0-9]+\.*\,*[0-9]*)(.*)/g;
 
-                $self->{output}->perfdata_add(label => $label, unit => $unit,
-                                              value => $value,
-                                              warning => $warn,
-                                              critical => $crit,
-                                              min => $min,
-                                              max => $max);
-            }
+            $self->{output}->perfdata_add(label => $label, unit => $unit,
+                                          value => $value,
+                                          warning => $warn,
+                                          critical => $crit,
+                                          min => $min,
+                                          max => $max);
         }
     }
 
@@ -394,7 +392,7 @@ Output unknown format (Default: %{count} element(s) found')
 =item B<--lookup-format>
 
 Take the output message from the JSON response (JSON XPath string)
-Override all the format options but sustitute are still applied.
+Override all the format options but substitute are still applied.
 
 =item B<--values-separator>
 
