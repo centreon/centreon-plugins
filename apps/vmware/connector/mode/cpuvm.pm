@@ -20,10 +20,128 @@
 
 package apps::vmware::connector::mode::cpuvm;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{connection_state} = $options{new_datas}->{$self->{instance} . '_connection_state'};
+    $self->{result_values}->{power_state} = $options{new_datas}->{$self->{instance} . '_power_state'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'vm', type => 3, cb_prefix_output => 'prefix_vm_output', cb_long_output => 'vm_long_output', indent_long_output => '    ', message_multiple => 'All virtual machines are ok', 
+            group => [
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output',  message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{global_cpu} = [
+        { label => 'total-cpu', set => {
+                key_values => [ { name => 'cpu_average' } ],
+                output_template => '%s %%',
+                perfdatas => [
+                    { label => 'cpu_total', value => 'cpu_average_absolute', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'total-cpu-mhz', set => {
+                key_values => [ { name => 'cpu_average_mhz' } ],
+                output_template => '%s MHz',
+                perfdatas => [
+                    { label => 'cpu_total_MHz', value => 'cpu_average_mhz_absolute', template => '%s', unit => 'MHz', 
+                      min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'cpu-ready', set => {
+                key_values => [ { name => 'cpu_ready' } ],
+                output_template => 'ready %s %%',
+                perfdatas => [
+                    { label => 'cpu_ready', value => 'cpu_ready_absolute', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{cpu} = [
+        { label => 'cpu', set => {
+                key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
+                output_template => 'usage : %s MHz',
+                perfdatas => [
+                    { label => 'cpu', value => 'cpu_usage_absolute', template => '%s', unit => 'MHz', 
+                      min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_vm_output {
+    my ($self, %options) = @_;
+
+    my $msg = "Virtual machine '" . $options{instance_value}->{display} . "'";
+    if (defined($options{instance_value}->{config_annotation})) {
+        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
+    }
+    $msg .= ' : ';
+    
+    return $msg;
+}
+
+sub vm_long_output {
+    my ($self, %options) = @_;
+
+    my $msg = "checking virtual machine '" . $options{instance_value}->{display} . "'";
+    if (defined($options{instance_value}->{config_annotation})) {
+        $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
+    }
+    
+    return $msg;
+}
+
+sub prefix_global_cpu_output {
+    my ($self, %options) = @_;
+
+    return "cpu total average : ";
+}
+
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return "cpu '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,57 +149,61 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "vm-hostname:s"           => { name => 'vm_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "scope-host:s"            => { name => 'scope_host' },
-                                  "filter-description:s"    => { name => 'filter_description' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "nopoweredon-status:s"    => { name => 'nopoweredon_status', default => 'unknown' },
-                                  "display-description"     => { name => 'display_description' },
-                                  "warning-usagemhz:s"      => { name => 'warning_usagemhz' },
-                                  "critical-usagemhz:s"     => { name => 'critical_usagemhz' },
-                                  "warning-usage:s"         => { name => 'warning_usage' },
-                                  "critical-usage:s"        => { name => 'critical_usage' },
-                                  "warning-ready:s"         => { name => 'warning_ready' },
-                                  "critical-ready:s"        => { name => 'critical_ready' },
-                                });
+    $options{options}->add_options(arguments => {
+        "vm-hostname:s"         => { name => 'vm_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "scope-host:s"          => { name => 'scope_host' },
+        "display-description"   => { name => 'display_description' },
+        "filter-description:s"  => { name => 'filter_description' },
+        "filter-os:s"           => { name => 'filter_os' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach my $label (('warning_usagemhz', 'critical_usagemhz', 'warning_usage', 'critical_usage', 'warning_ready', 'critical_ready')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{nopoweredon_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong nopoweredon-status option '" . $self->{option_results}->{nopoweredon_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'cpuvm');
-    $self->{connector}->run();
+    $self->{vm} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'cpuvm');
+
+    foreach my $vm_id (keys %{$response->{data}}) {
+        my $vm_name = $response->{data}->{$vm_id}->{name};
+        
+        $self->{vm}->{$vm_name} = { display => $vm_name, 
+            cpu => {}, 
+            global => {
+                connection_state => $response->{data}->{$vm_id}->{connection_state},
+                power_state => $response->{data}->{$vm_id}->{power_state},
+            },
+            global_cpu => {
+                cpu_average => $response->{data}->{$vm_id}->{'cpu.usage.average'},
+                cpu_average_mhz => $response->{data}->{$vm_id}->{'cpu.usagemhz.average'},
+                cpu_ready => $response->{data}->{$vm_id}->{'cpu_ready'},
+            },
+        };
+        
+        if (defined($self->{option_results}->{display_description})) {
+            $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
+        }
+        
+        foreach my $cpu_id (sort keys %{$response->{data}->{$vm_id}->{cpu}}) {
+            $self->{vm}->{$vm_name}->{cpu}->{$cpu_id} = { display => $cpu_id, cpu_usage => $response->{data}->{$vm_id}->{cpu}->{$cpu_id} };
+        }
+    }
 }
 
 1;
@@ -107,6 +229,10 @@ VM hostname is a regexp.
 
 Filter also virtual machines description (can be a regexp).
 
+=item B<--filter-os>
+
+Filter also virtual machines OS name (can be a regexp).
+
 =item B<--scope-datacenter>
 
 Search in following datacenter(s) (can be a regexp).
@@ -119,41 +245,30 @@ Search in following cluster(s) (can be a regexp).
 
 Search in following host(s) (can be a regexp).
 
-=item B<--disconnect-status>
+=item B<--unknown-status>
 
-Status if VM disconnected (default: 'unknown').
+Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i').
+Can used special variables like: %{connection_state}, %{power_state}
 
-=item B<--nopoweredon-status>
+=item B<--warning-status>
 
-Status if VM is not poweredOn (default: 'unknown').
+Set warning threshold for status (Default: '').
+Can used special variables like: %{connection_state}, %{power_state}
 
-=item B<--display-description>
+=item B<--critical-status>
 
-Display virtual machine description.
+Set critical threshold for status (Default: '').
+Can used special variables like: %{connection_state}, %{power_state}
 
-=item B<--warning-usagemhz>
+=item B<--warning-*>
 
-Threshold warning in mhz.
+Threshold warning.
+Can be: 'total-cpu', 'total-cpu-mhz', 'cpu-ready', 'cpu'.
 
-=item B<--critical-usagemhz>
+=item B<--critical-*>
 
-Threshold critical in mhz.
-
-=item B<--warning-usage>
-
-Threshold warning in percent.
-
-=item B<--critical-usage>
-
-Threshold critical in percent.
-
-=item B<--warning-ready>
-
-Threshold warning in percent.
-
-=item B<--critical-ready>
-
-Threshold critical in percent.
+Threshold critical.
+Can be: 'total-cpu', 'total-cpu-mhz', 'cpu-ready', 'cpu'.
 
 =back
 

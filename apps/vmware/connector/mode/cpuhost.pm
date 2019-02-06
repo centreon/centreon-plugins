@@ -20,10 +20,107 @@
 
 package apps::vmware::connector::mode::cpuhost;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', indent_long_output => '    ', message_multiple => 'All ESX hosts are ok', 
+            group => [
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output',  message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{global_cpu} = [
+        { label => 'total-cpu', set => {
+                key_values => [ { name => 'cpu_average' } ],
+                output_template => '%s %%',
+                perfdatas => [
+                    { label => 'cpu_total', value => 'cpu_average_absolute', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'total-cpu-mhz', set => {
+                key_values => [ { name => 'cpu_average_mhz' }, { name => 'cpu_average_mhz_max' } ],
+                output_template => '%s MHz',
+                perfdatas => [
+                    { label => 'cpu_total_MHz', value => 'cpu_average_mhz_absolute', template => '%s', unit => 'MHz', 
+                      min => 0, max => 'cpu_average_mhz_max_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{cpu} = [
+        { label => 'cpu', set => {
+                key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
+                output_template => 'usage : %s',
+                perfdatas => [
+                    { label => 'cpu', value => 'cpu_usage_absolute', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_host_output {
+    my ($self, %options) = @_;
+
+    return "Host '" . $options{instance_value}->{display} . "' : ";
+}
+
+sub host_long_output {
+    my ($self, %options) = @_;
+
+    return "checking host '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_global_cpu_output {
+    my ($self, %options) = @_;
+
+    return "cpu total average : ";
+}
+
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return "cpu '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,44 +128,50 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "esx-hostname:s"        => { name => 'esx_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'cpuhost');
-    $self->{connector}->run();
+    $self->{host} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'cpuhost');
+
+    foreach my $host_id (keys %{$response->{data}}) {
+        my $host_name = $response->{data}->{$host_id}->{name};
+        $self->{host}->{$host_name} = { display => $host_name, 
+            cpu => {}, 
+            global => {
+                state => $response->{data}->{$host_id}->{state},    
+            },
+            global_cpu => {
+                cpu_average => $response->{data}->{$host_id}->{'cpu.usage.average'},
+                cpu_average_mhz => $response->{data}->{$host_id}->{'cpu.usagemhz.average'},
+                cpu_average_mhz_max => $response->{data}->{$host_id}->{numCpuCores} * $response->{data}->{$host_id}->{cpuMhz},
+            }, 
+        };
+        
+        foreach my $cpu_id (sort keys %{$response->{data}->{$host_id}->{cpu}}) {
+            $self->{host}->{$host_name}->{cpu}->{$cpu_id} = { display => $cpu_id, cpu_usage => $response->{data}->{$host_id}->{cpu}->{$cpu_id} };
+        }
+    }
 }
 
 1;
@@ -98,17 +201,30 @@ Search in following datacenter(s) (can be a regexp).
 
 Search in following cluster(s) (can be a regexp).
 
-=item B<--disconnect-status>
+=item B<--unknown-status>
 
-Status if ESX host disconnected (default: 'unknown').
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Can used special variables like: %{status}
 
-=item B<--warning>
+=item B<--warning-status>
 
-Threshold warning in percent.
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
 
-=item B<--critical>
+=item B<--critical-status>
 
-Threshold critical in percent.
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'total-cpu', 'total-cpu-mhz', 'cpu'.
 
 =back
 

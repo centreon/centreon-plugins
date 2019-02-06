@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::microsoft::office365::sharepoint::mode::usersactivity;
+package cloud::microsoft::office365::teams::mode::usersactivity;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -82,7 +82,7 @@ sub custom_active_calc {
 sub prefix_global_output {
     my ($self, %options) = @_;
     
-    return "Total (active sites) ";
+    return "Total ";
 }
 
 sub prefix_user_output {
@@ -111,94 +111,76 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-viewed-edited-file-count', set => {
-                key_values => [ { name => 'viewed_edited_file_count' } ],
-                output_template => 'Viewed or Edited File Count: %d',
+        { label => 'total-team-chat', set => {
+                key_values => [ { name => 'team_chat' } ],
+                output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'total_viewed_edited_file_count', value => 'viewed_edited_file_count_absolute', template => '%d',
+                    { label => 'total_team_chat', value => 'team_chat_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
-        { label => 'total-synced-file-count', set => {
-                key_values => [ { name => 'synced_file_count' } ],
-                output_template => 'Synced File Count: %d',
+        { label => 'total-private-chat', set => {
+                key_values => [ { name => 'private_chat' } ],
+                output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'total_synced_file_count', value => 'synced_file_count_absolute', template => '%d',
+                    { label => 'total_private_chat', value => 'private_chat_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
-        { label => 'total-shared-int-file-count', set => {
-                key_values => [ { name => 'shared_int_file_count' } ],
-                output_template => 'Shared Internally File Count: %d',
+        { label => 'total-call', set => {
+                key_values => [ { name => 'call' } ],
+                output_template => 'Call Count: %d',
                 perfdatas => [
-                    { label => 'total_shared_int_file_count', value => 'shared_int_file_count_absolute', template => '%d',
+                    { label => 'total_call', value => 'call_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
-        { label => 'total-shared-ext-file-count', set => {
-                key_values => [ { name => 'shared_ext_file_count' } ],
-                output_template => 'Shared Externally File Count: %d',
+        { label => 'total-meeting', set => {
+                key_values => [ { name => 'meeting' } ],
+                output_template => 'Meeting Count: %d',
                 perfdatas => [
-                    { label => 'total_shared_ext_file_count', value => 'shared_ext_file_count_absolute', template => '%d',
-                      min => 0 },
-                ],
-            }
-        },
-        { label => 'total-visited-page-count', set => {
-                key_values => [ { name => 'visited_page_count' } ],
-                output_template => 'Visited Page Count (active sites): %d',
-                perfdatas => [
-                    { label => 'total_visited_page_count', value => 'visited_page_count_absolute', template => '%d',
+                    { label => 'total_meeting', value => 'meeting_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
     ];
     $self->{maps_counters}->{users} = [
-        { label => 'viewed-edited-file-count', set => {
-                key_values => [ { name => 'viewed_edited_file_count' }, { name => 'name' } ],
-                output_template => 'Viewed or Edited File Count: %d',
+        { label => 'team-chat', set => {
+                key_values => [ { name => 'team_chat' }, { name => 'name' } ],
+                output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'viewed_edited_file_count', value => 'viewed_edited_file_count_absolute', template => '%d',
+                    { label => 'team_chat', value => 'team_chat_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
         },
-        { label => 'synced-file-count', set => {
-                key_values => [ { name => 'synced_file_count' }, { name => 'name' } ],
-                output_template => 'Synced File Count: %d',
+        { label => 'private-chat', set => {
+                key_values => [ { name => 'private_chat' }, { name => 'name' } ],
+                output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'synced_file_count', value => 'synced_file_count_absolute', template => '%d',
+                    { label => 'private_chat', value => 'private_chat_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
         },
-        { label => 'shared-int-file-count', set => {
-                key_values => [ { name => 'shared_int_file_count' }, { name => 'name' } ],
-                output_template => 'Shared Internally File Count: %d',
+        { label => 'call', set => {
+                key_values => [ { name => 'call' }, { name => 'name' } ],
+                output_template => 'Call Count: %d',
                 perfdatas => [
-                    { label => 'shared_int_file_count', value => 'shared_int_file_count_absolute', template => '%d',
+                    { label => 'call', value => 'call_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
         },
-        { label => 'shared-ext-file-count', set => {
-                key_values => [ { name => 'shared_ext_file_count' }, { name => 'name' } ],
-                output_template => 'Shared Externally File Count: %d',
+        { label => 'meeting', set => {
+                key_values => [ { name => 'meeting' }, { name => 'name' } ],
+                output_template => 'Meeting Count: %d',
                 perfdatas => [
-                    { label => 'shared_ext_file_count', value => 'shared_ext_file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
-                ],
-            }
-        },
-        { label => 'visited-page-count', set => {
-                key_values => [ { name => 'visited_page_count' }, { name => 'name' } ],
-                output_template => 'Visited Page Count: %d',
-                perfdatas => [
-                    { label => 'visited_page_count', value => 'visited_page_count_absolute', template => '%d',
+                    { label => 'meeting', value => 'meeting_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
                 ],
             }
@@ -214,9 +196,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-user:s"         => { name => 'filter_user' },
-                                    "units:s"               => { name => 'units', default => '%' },
-                                    "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
+                                    "filter-user:s"     => { name => 'filter_user' },
+                                    "units:s"           => { name => 'units', default => '%' },
+                                    "filter-counters:s" => { name => 'filter_counters', default => 'active|total' }, 
                                 });
     
     return $self;
@@ -233,12 +215,10 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{active} = { active => 0, total => 0, report_date => '' };
-    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0, synced_file_count => 0,
-                        viewed_edited_file_count => 0, shared_int_file_count => 0, shared_ext_file_count => 0,
-                        visited_page_count => 0 };
+    $self->{global} = { team_chat => 0, private_chat => 0, call => 0, meeting => 0 };
     $self->{users} = {};
 
-    my $results = $options{custom}->office_get_sharepoint_activity();
+    my $results = $options{custom}->office_get_teams_activity();
 
     foreach my $user (@{$results}) {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
@@ -254,22 +234,21 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
         }
-    
+
         $self->{active}->{report_date} = $user->{'Report Refresh Date'};
         $self->{active}->{active}++;
 
-        $self->{global}->{viewed_edited_file_count} += ($user->{'Viewed Or Edited File Count'} ne '') ? $user->{'Viewed Or Edited File Count'} : 0;
-        $self->{global}->{synced_file_count} += ($user->{'Synced File Count'} ne '') ? $user->{'Synced File Count'} : 0;
-        $self->{global}->{shared_int_file_count} += ($user->{'Shared Internally File Count'} ne '') ? $user->{'Shared Internally File Count'} : 0;
-        $self->{global}->{shared_ext_file_count} += ($user->{'Shared Externally File Count'} ne '') ? $user->{'Shared Externally File Count'} : 0;
-        $self->{global}->{visited_page_count} += ($user->{'Visited Page Count'} ne '') ? $user->{'Visited Page Count'} : 0;
+        $self->{global}->{team_chat} += $user->{'Team Chat Message Count'};
+        $self->{global}->{private_chat} += $user->{'Private Chat Message Count'};
+        $self->{global}->{call} += $user->{'Call Count'};
+        $self->{global}->{meeting} += $user->{'Meeting Count'};
 
         $self->{users}->{$user->{'User Principal Name'}}->{name} = $user->{'User Principal Name'};
-        $self->{users}->{$user->{'User Principal Name'}}->{viewed_edited_file_count} = $user->{'Viewed Or Edited File Count'};
-        $self->{users}->{$user->{'User Principal Name'}}->{synced_file_count} = $user->{'Synced File Count'};
-        $self->{users}->{$user->{'User Principal Name'}}->{shared_int_file_count} = $user->{'Shared Internally File Count'};
-        $self->{users}->{$user->{'User Principal Name'}}->{shared_ext_file_count} = $user->{'Shared Externally File Count'};
-        $self->{users}->{$user->{'User Principal Name'}}->{visited_page_count} = $user->{'Visited Page Count'};
+        $self->{users}->{$user->{'User Principal Name'}}->{team_chat} = $user->{'Team Chat Message Count'};
+        $self->{users}->{$user->{'User Principal Name'}}->{private_chat} = $user->{'Private Chat Message Count'};
+        $self->{users}->{$user->{'User Principal Name'}}->{call} = $user->{'Call Count'};
+        $self->{users}->{$user->{'User Principal Name'}}->{meeting} = $user->{'Meeting Count'};
+        $self->{users}->{$user->{'User Principal Name'}}->{last_activity_date} = $user->{'Last Activity Date'};
     }
 }
 
@@ -282,7 +261,7 @@ __END__
 Check users activity (reporting period over the last 7 days).
 
 (See link for details about metrics :
-https://docs.microsoft.com/en-us/office365/admin/activity-reports/sharepoint-activity?view=o365-worldwide)
+https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-teams-user-activity?view=o365-worldwide)
 
 =over 8
 
@@ -293,25 +272,21 @@ Filter users.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-users', 'total-viewed-edited-file-count' (count),
-'total-synced-file-count' (count), 'total-shared-int-file-count' (count),
-'total-shared-ext-file-count' (count), 'total-visited-page-count' (count),
-'viewed-edited-file-count' (count), 'synced-file-count' (count), 'shared-int-file-count' (count),
-'shared-ext-file-count' (count), 'visited-page-count' (count).
+Can be: 'active-users', 'total-team-chat' (count), 'total-private-chat' (count),
+'total-call' (count), 'total-meeting' (count), 'team-chat' (count),
+'private-chat' (count), 'call' (count), 'meeting' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-users', 'total-viewed-edited-file-count' (count),
-'total-synced-file-count' (count), 'total-shared-int-file-count' (count),
-'total-shared-ext-file-count' (count), 'total-visited-page-count' (count),
-'viewed-edited-file-count' (count), 'synced-file-count' (count), 'shared-int-file-count' (count),
-'shared-ext-file-count' (count), 'visited-page-count' (count).
+Can be: 'active-users', 'total-team-chat' (count), 'total-private-chat' (count),
+'total-call' (count), 'total-meeting' (count), 'team-chat' (count),
+'private-chat' (count), 'call' (count), 'meeting' (count).
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example to hide per user counters: --filter-counters='active|total'
+Example to hide per user counters: --filter-counters='total'
 (Default: 'active|total')
 
 =item B<--units>

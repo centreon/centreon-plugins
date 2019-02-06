@@ -27,6 +27,58 @@ use warnings;
 
 my $instance_mode;
 
+sub custom_active_perfdata {
+    my ($self, %options) = @_;
+
+    my %total_options = ();
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => 'active_sites',
+                                  value => $self->{result_values}->{active},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  unit => 'sites', min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_active_threshold {
+    my ($self, %options) = @_;
+
+    my $threshold_value = $self->{result_values}->{active};
+    if ($instance_mode->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_active};
+    }
+    my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+
+}
+
+sub custom_active_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Active sites on %s : %d/%d (%.2f%%)",
+                        $self->{result_values}->{report_date},
+                        $self->{result_values}->{active},
+                        $self->{result_values}->{total},
+                        $self->{result_values}->{prct_active});
+    return $msg;
+}
+
+sub custom_active_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{active} = $options{new_datas}->{$self->{instance} . '_active'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{report_date} = $options{new_datas}->{$self->{instance} . '_report_date'};
+    $self->{result_values}->{prct_active} = ($self->{result_values}->{total} != 0) ? $self->{result_values}->{active} * 100 / $self->{result_values}->{total} : 0;
+
+    return 0;
+}
+
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -91,6 +143,12 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Total ";
+}
+
 sub prefix_site_output {
     my ($self, %options) = @_;
     
@@ -101,9 +159,79 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'active', type => 0 },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'sites', type => 1, cb_prefix_output => 'prefix_site_output', message_multiple => 'All sites usage are ok' },
     ];
     
+    $self->{maps_counters}->{active} = [
+        { label => 'active-sites', set => {
+                key_values => [ { name => 'active' }, { name => 'total' }, { name => 'report_date' } ],
+                closure_custom_calc => $self->can('custom_active_calc'),
+                closure_custom_output => $self->can('custom_active_output'),
+                closure_custom_threshold_check => $self->can('custom_active_threshold'),
+                closure_custom_perfdata => $self->can('custom_active_perfdata')
+            }
+        },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'total-usage-active', set => {
+                key_values => [ { name => 'storage_used_active' } ],
+                output_template => 'Usage (active sites): %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'storage_used_active', value => 'storage_used_active_absolute', template => '%d',
+                      min => 0, unit => 'B' },
+                ],
+            }
+        },
+        { label => 'total-usage-inactive', set => {
+                key_values => [ { name => 'storage_used_inactive' } ],
+                output_template => 'Usage (inactive sites): %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'storage_used_inactive', value => 'storage_used_inactive_absolute', template => '%d',
+                      min => 0, unit => 'B' },
+                ],
+            }
+        },
+        { label => 'total-file-count', set => {
+                key_values => [ { name => 'file_count' } ],
+                output_template => 'File Count (active sites): %d',
+                perfdatas => [
+                    { label => 'total_file_count', value => 'file_count_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-active-file-count', set => {
+                key_values => [ { name => 'active_file_count' } ],
+                output_template => 'Active File Count (active sites): %d',
+                perfdatas => [
+                    { label => 'total_active_file_count', value => 'active_file_count_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-visited-page-count', set => {
+                key_values => [ { name => 'visited_page_count' } ],
+                output_template => 'Visited Page Count (active sites): %d',
+                perfdatas => [
+                    { label => 'total_visited_page_count', value => 'visited_page_count_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-page-view-count', set => {
+                key_values => [ { name => 'page_view_count' } ],
+                output_template => 'Page View Count (active sites): %d',
+                perfdatas => [
+                    { label => 'total_page_view_count', value => 'page_view_count_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+    ];
     $self->{maps_counters}->{sites} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'storage_used' }, { name => 'storage_allocated' }, { name => 'url' }, { name => 'id' } ],
@@ -131,11 +259,11 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'visited-file-count', set => {
-                key_values => [ { name => 'visited_file_count' }, { name => 'url' }, { name => 'id' } ],
-                output_template => 'Visited File Count: %d',
+        { label => 'visited-page-count', set => {
+                key_values => [ { name => 'visited_page_count' }, { name => 'url' }, { name => 'id' } ],
+                output_template => 'Visited Page Count: %d',
                 perfdatas => [
-                    { label => 'visited_file_count', value => 'visited_file_count_absolute', template => '%d',
+                    { label => 'visited_page_count', value => 'visited_page_count_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'id_absolute' },
                 ],
             }
@@ -149,11 +277,6 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'last-activity', threshold => 0, set => {
-                key_values => [ { name => 'last_activity_date' }, { name => 'url' }, { name => 'id' } ],
-                output_template => 'Last Activity: %s',
-            }
-        },
     ];
 }
 
@@ -165,11 +288,11 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-url:s"      => { name => 'filter_url' },
-                                    "filter-id:s"       => { name => 'filter_id' },
-                                    "units:s"           => { name => 'units', default => '%' },
-                                    "free"              => { name => 'free' },
-                                    "active-only"       => { name => 'active_only' },
+                                    "filter-url:s"          => { name => 'filter_url' },
+                                    "filter-id:s"           => { name => 'filter_id' },
+                                    "units:s"               => { name => 'units', default => '%' },
+                                    "free"                  => { name => 'free' },
+                                    "filter-counters:s"     => { name => 'filter_counters', default => 'active-sites|total' }, 
                                 });
     
     return $self;
@@ -185,6 +308,9 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
+    $self->{active} = { active => 0, total => 0, report_date => '' };
+    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0, file_count => 0,
+                        active_file_count => 0 , visited_file_count => 0 , page_view_count => 0 };
     $self->{sites} = {};
 
     my $results = $options{custom}->office_get_sharepoint_site_usage();
@@ -200,25 +326,34 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site Id'} . "': no matching filter name.", debug => 1);
             next;
         }
-        if ($self->{option_results}->{active_only} && defined($site->{'Last Activity Date'}) && $site->{'Last Activity Date'} eq '') {
-            $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no activity.", debug => 1);
+
+        $self->{active}->{total}++;
+
+        if (!defined($site->{'Last Activity Date'}) || $site->{'Last Activity Date'} eq '' ||
+            ($site->{'Last Activity Date'} ne $site->{'Report Refresh Date'})) {
+            $self->{global}->{storage_used_inactive} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
+            $self->{output}->output_add(long_msg => "skipping '" . $site->{'Site URL'} . "': no activity.", debug => 1);
             next;
         }
+    
+        $self->{active}->{report_date} = $site->{'Report Refresh Date'};
+        $self->{active}->{active}++;
+
+        $self->{global}->{storage_used_active} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
+        $self->{global}->{file_count} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
+        $self->{global}->{active_file_count} += ($site->{'Active File Count'} ne '') ? $site->{'Active File Count'} : 0;
+        $self->{global}->{visited_page_count} += ($site->{'Visited Page Count'} ne '') ? $site->{'Visited Page Count'} : 0;
+        $self->{global}->{page_view_count} += ($site->{'Page View Count'} ne '') ? $site->{'Page View Count'} : 0;
         
         $self->{sites}->{$site->{'Site Id'}}->{id} = $site->{'Site Id'};
         $self->{sites}->{$site->{'Site Id'}}->{url} = $site->{'Site URL'};
         $self->{sites}->{$site->{'Site Id'}}->{file_count} = $site->{'File Count'};
         $self->{sites}->{$site->{'Site Id'}}->{active_file_count} = $site->{'Active File Count'};
-        $self->{sites}->{$site->{'Site Id'}}->{visited_file_count} = $site->{'Visited Page Count'};
+        $self->{sites}->{$site->{'Site Id'}}->{visited_page_count} = $site->{'Visited Page Count'};
         $self->{sites}->{$site->{'Site Id'}}->{page_view_count} = $site->{'Page View Count'};
         $self->{sites}->{$site->{'Site Id'}}->{storage_used} = $site->{'Storage Used (Byte)'};
         $self->{sites}->{$site->{'Site Id'}}->{storage_allocated} = $site->{'Storage Allocated (Byte)'};
         $self->{sites}->{$site->{'Site Id'}}->{last_activity_date} = $site->{'Last Activity Date'};
-    }
-    
-    if (scalar(keys %{$self->{sites}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
-        $self->{output}->option_exit();
     }
 }
 
@@ -243,18 +378,29 @@ Can be: 'url', 'id' (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'usage', 'file-count', 'active-file-count',
-'visited-file-count', 'page-view-count'.
+Can be: 'active-sites', 'total-usage-active' (count),
+'total-usage-inactive' (count), 'total-file-count' (count),
+'total-active-file-count' (count), 'total-visited-page-count' (count),
+'total-page-view-count' (count), 'usage' (count), 'file-count' (count), 'active-file-count' (count),
+'visited-page-count' (count), 'page-view-count' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'usage', 'file-count', 'active-file-count',
-'visited-file-count', 'page-view-count'.
+Can be: 'active-sites', 'total-usage' (count), 'total-file-count' (count),
+'total-active-file-count' (count), 'total-visited-page-count' (count),
+'total-page-view-count' (count), 'usage' (count), 'file-count' (count), 'active-file-count' (count),
+'visited-page-count' (count), 'page-view-count' (count).
 
-=item B<--active-only>
+=item B<--filter-counters>
 
-Filter only active entries ('Last Activity' set).
+Only display some counters (regexp can be used).
+Example to hide per user counters: --filter-counters='active-sites|total'
+(Default: 'active-sites|total')
+
+=item B<--units>
+
+Unit of thresholds (Default: '%') ('%', 'count').
 
 =back
 

@@ -228,23 +228,23 @@ __END__
 
 =head1 MODE
 
-Check VPN gateway tunnels traffic metrics.
+Check VPN gateway site traffic metrics.
 
 Example:
 
 Using resource name :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=tunnel-traffic
---resource=MyResource --resource-group=MYRGROUP --aggregation='total' --critical-tunnelingressbytes-total='10'
+perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
+--resource=MyResource --resource-group=MYRGROUP --aggregation='average' --critical-averagebandwidth-average='10'
 --verbose
 
 Using resource id :
 
-perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=tunnel-traffic
+perl centreon_plugins.pl --plugin=cloud::azure::network::vpngateway::plugin --custommode=azcli --mode=site-traffic
 --resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Network/virtualNetworkGateways/xxx'
---aggregation='total' --critical-tunnelingressbytes-total='10' --verbose
+--aggregation='average' --critical-averagebandwidth-average='10' --verbose
 
-Default aggregation: 'total' / All aggregations are valid.
+Default aggregation: 'average', 'maximum' / All aggregations are valid.
 
 =over 8
 
@@ -258,25 +258,18 @@ Set resource group (Required if resource's name is used).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'TunnelIngressBytes', 'TunnelEgressBytes', 'TunnelIngressPackets',
-'TunnelEgressPackets', 'TunnelIngressPacketDropTSMismatch', 'TunnelEgressPacketDropTSMismatch')
+Filter metrics (Can be: 'AverageBandwidth', 'P2SBandwidth', 'P2SConnectionCount')
 (Can be a regexp).
 
 =item B<--warning-$metric$-$aggregation$>
 
-Thresholds warning ($metric$ can be: 'tunnelingressbytes', 'tunnelegressbytes',
-'tunnelingresspackets', 'tunnelegresspackets', 'tunnelingresspacketdroptsmismatch',
-'tunnelegresspacketdroptsmismatch', $aggregation$ can be: 'total', 'minimum', 'maximum', 'average').
+Thresholds warning ($metric$ can be: 'averagebandwidth', 'p2sbandwidth',
+'p2sconnectioncount', $aggregation$ can be: 'total', 'minimum', 'maximum', 'average').
 
 =item B<--critical-$metric$-$aggregation$>
 
-Thresholds critical ($metric$ can be: 'tunnelingressbytes', 'tunnelegressbytes',
-'tunnelingresspackets', 'tunnelegresspackets', 'tunnelingresspacketdroptsmismatch',
-'tunnelegresspacketdroptsmismatch', $aggregation$ can be: 'total', 'minimum', 'maximum', 'average').
-
-=item B<--per-sec>
-
-Change the data to be unit/sec.
+Thresholds critical ($metric$ can be: 'averagebandwidth', 'p2sbandwidth',
+'p2sconnectioncount', $aggregation$ can be: 'total', 'minimum', 'maximum', 'average').
 
 =back
 

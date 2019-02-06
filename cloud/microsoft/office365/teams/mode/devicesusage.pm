@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::microsoft::office365::exchange::mode::emailactivity;
+package cloud::microsoft::office365::teams::mode::devicesusage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -36,11 +36,11 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_mailboxes',
+    $self->{output}->perfdata_add(label => 'active_users',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'mailboxes', min => 0, max => $self->{result_values}->{total});
+                                  unit => 'users', min => 0, max => $self->{result_values}->{total});
 }
 
 sub custom_active_threshold {
@@ -60,7 +60,7 @@ sub custom_active_threshold {
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active mailboxes on %s : %d/%d (%.2f%%)",
+    my $msg = sprintf("Active users on %s : %d/%d (%.2f%%)",
                         $self->{result_values}->{report_date},
                         $self->{result_values}->{active},
                         $self->{result_values}->{total},
@@ -82,13 +82,7 @@ sub custom_active_calc {
 sub prefix_global_output {
     my ($self, %options) = @_;
     
-    return "Total (active mailboxes) ";
-}
-
-sub prefix_mailbox_output {
-    my ($self, %options) = @_;
-    
-    return "Mailbox '" . $options{instance_value}->{name} . "' ";
+    return "Users count by device type : ";
 }
 
 sub set_counters {
@@ -97,11 +91,10 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'active', type => 0 },
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'mailboxes', type => 1, cb_prefix_output => 'prefix_mailbox_output', message_multiple => 'All email activity are ok' },
     ];
     
     $self->{maps_counters}->{active} = [
-        { label => 'active-mailboxes', set => {
+        { label => 'active-users', set => {
                 key_values => [ { name => 'active' }, { name => 'total' }, { name => 'report_date' } ],
                 closure_custom_calc => $self->can('custom_active_calc'),
                 closure_custom_output => $self->can('custom_active_output'),
@@ -111,59 +104,57 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-send-count', set => {
-                key_values => [ { name => 'send_count' } ],
-                output_template => 'Send Count: %d',
+        { label => 'windows', set => {
+                key_values => [ { name => 'windows' } ],
+                output_template => 'Windows: %d',
                 perfdatas => [
-                    { label => 'total_send_count', value => 'send_count_absolute', template => '%d',
+                    { label => 'windows', value => 'windows_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
-        { label => 'total-receive-count', set => {
-                key_values => [ { name => 'receive_count' } ],
-                output_template => 'Receive Count: %d',
+        { label => 'mac', set => {
+                key_values => [ { name => 'mac' } ],
+                output_template => 'Mac: %d',
                 perfdatas => [
-                    { label => 'total_receive_count', value => 'receive_count_absolute', template => '%d',
+                    { label => 'mac', value => 'mac_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
-        { label => 'total-read-count', set => {
-                key_values => [ { name => 'read_count' } ],
-                output_template => 'Read Count: %d',
+        { label => 'web', set => {
+                key_values => [ { name => 'web' } ],
+                output_template => 'Web: %d',
                 perfdatas => [
-                    { label => 'total_read_count', value => 'read_count_absolute', template => '%d',
+                    { label => 'web', value => 'web_absolute', template => '%d',
                       min => 0 },
                 ],
             }
         },
-    ];
-    $self->{maps_counters}->{mailboxes} = [
-        { label => 'send-count', set => {
-                key_values => [ { name => 'send_count' }, { name => 'name' } ],
-                output_template => 'Send Count: %d',
+        { label => 'ios', set => {
+                key_values => [ { name => 'ios' } ],
+                output_template => 'iOS: %d',
                 perfdatas => [
-                    { label => 'send_count', value => 'send_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'ios', value => 'ios_absolute', template => '%d',
+                      min => 0 },
                 ],
             }
         },
-        { label => 'receive-count', set => {
-                key_values => [ { name => 'receive_count' }, { name => 'name' } ],
-                output_template => 'Receive Count: %d',
+        { label => 'android-phone', set => {
+                key_values => [ { name => 'android_phone' } ],
+                output_template => 'Android Phone: %d',
                 perfdatas => [
-                    { label => 'receive_count', value => 'receive_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'android_phone', value => 'android_phone_absolute', template => '%d',
+                      min => 0 },
                 ],
             }
         },
-        { label => 'read-count', set => {
-                key_values => [ { name => 'read_count' }, { name => 'name' } ],
-                output_template => 'Read Count: %d',
+        { label => 'windows-phone', set => {
+                key_values => [ { name => 'windows_phone' } ],
+                output_template => 'Windows Phone: %d',
                 perfdatas => [
-                    { label => 'read_count', value => 'read_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'windows_phone', value => 'windows_phone_absolute', template => '%d',
+                      min => 0 },
                 ],
             }
         },
@@ -178,9 +169,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
-                                    "filter-mailbox:s"      => { name => 'filter_mailbox' },
-                                    "units:s"               => { name => 'units', default => '%' },
-                                    "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
+                                    "filter-user:s"     => { name => 'filter_user' },
+                                    "units:s"           => { name => 'units', default => '%' },
+                                    "filter-counters:s" => { name => 'filter_counters' },
                                 });
     
     return $self;
@@ -195,39 +186,36 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     $self->{active} = { active => 0, total => 0, report_date => '' };
-    $self->{global} = { send_count => 0, receive_count => 0 , read_count => 0 };
-    $self->{mailboxes} = {};
+    $self->{global} = { windows => 0, mac => 0, web => 0, ios => 0, android_phone => 0, windows_phone => 0 };
 
-    my $results = $options{custom}->office_get_exchange_activity();
+    my $results = $options{custom}->office_get_teams_device_usage();
 
-    foreach my $mailbox (@{$results}) {
-        if (defined($self->{option_results}->{filter_mailbox}) && $self->{option_results}->{filter_mailbox} ne '' &&
-            $mailbox->{'User Principal Name'} !~ /$self->{option_results}->{filter_mailbox}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $mailbox->{'User Principal Name'} . "': no matching filter name.", debug => 1);
+    foreach my $user (@{$results}) {
+        if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
+            $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
     
         $self->{active}->{total}++;
 
-        if (!defined($mailbox->{'Last Activity Date'}) || $mailbox->{'Last Activity Date'} eq '' ||
-            ($mailbox->{'Last Activity Date'} ne $mailbox->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $mailbox->{'User Principal Name'} . "': no activity.", debug => 1);
+        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
+            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
+            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
         }
 
-        $self->{active}->{report_date} = $mailbox->{'Report Refresh Date'};
+        $self->{active}->{report_date} = $user->{'Report Refresh Date'};
         $self->{active}->{active}++;
 
-        $self->{global}->{send_count} += $mailbox->{'Send Count'};
-        $self->{global}->{receive_count} += $mailbox->{'Receive Count'};
-        $self->{global}->{read_count} += $mailbox->{'Read Count'};
-
-        $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{name} = $mailbox->{'User Principal Name'};
-        $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{send_count} = $mailbox->{'Send Count'};
-        $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{receive_count} = $mailbox->{'Receive Count'};
-        $self->{mailboxes}->{$mailbox->{'User Principal Name'}}->{read_count} = $mailbox->{'Read Count'};
+        $self->{global}->{windows}++ if ($user->{'Used Windows'} =~ /Yes/);
+        $self->{global}->{mac}++ if ($user->{'Used Mac'} =~ /Yes/);
+        $self->{global}->{web}++ if ($user->{'Used Web'} =~ /Yes/);
+        $self->{global}->{ios}++ if ($user->{'Used iOS'} =~ /Yes/);
+        $self->{global}->{android_phone}++ if ($user->{'Used Android Phone'} =~ /Yes/);
+        $self->{global}->{windows_phone}++ if ($user->{'Used Windows Phone'} =~ /Yes/);
     }
 }
 
@@ -237,36 +225,35 @@ __END__
 
 =head1 MODE
 
-Check email activity (reporting period over the last 7 days).
+Check devices usage (reporting period over the last 7 days).
 
 (See link for details about metrics :
-https://docs.microsoft.com/en-us/office365/admin/activity-reports/email-activity?view=o365-worldwide)
+https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-teams-device-usage?view=o365-worldwide)
 
 =over 8
 
-=item B<--filter-mailbox>
+=item B<--filter-user>
 
-Filter mailboxes.
+Filter users.
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-mailboxes', 'total-send-count' (count),
-'total-receive-count' (count), 'total-read-count' (count),
-'send-count' (count), 'receive-count' (count), 'read-count' (count).
+Can be: 'active-users', 'windows' (count), 'mac' (count),
+'web' (count), 'ios' (count), 'android-phone' (count),
+'windows-phone' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-mailboxes', 'total-send-count' (count),
-'total-receive-count' (count), 'total-read-count' (count),
-'send-count' (count), 'receive-count' (count), 'read-count' (count).
+Can be: 'active-users', 'windows' (count), 'mac' (count),
+'web' (count), 'ios' (count), 'android-phone' (count),
+'windows-phone' (count).
 
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example to hide per user counters: --filter-counters='active|total'
-(Default: 'active|total')
+Example to hide per user counters: --filter-counters='windows'
 
 =item B<--units>
 

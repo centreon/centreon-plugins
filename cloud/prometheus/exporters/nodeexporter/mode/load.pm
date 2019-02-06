@@ -83,6 +83,7 @@ sub new {
                                   "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
+                                  "filter-counters:s"       => { name => 'filter_counters' },
                                 });
    
     return $self;
@@ -175,9 +176,20 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'load1', 'load5', 'load15')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - load1: ^node_load1$
+    - load5: ^node_load5$
+    - load15: ^node_load15$
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='load15'
 
 =back
 

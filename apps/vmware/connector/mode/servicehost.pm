@@ -20,10 +20,96 @@
 
 package apps::vmware::connector::mode::servicehost;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status ' . $self->{result_values}->{status} . ', maintenance mode is ' . $self->{result_values}->{maintenance};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
+    $self->{result_values}->{maintenance} = $options{new_datas}->{$self->{instance} . '_maintenance'};
+    return 0;
+}
+
+sub custom_service_output {
+    my ($self, %options) = @_;
+
+    my $msg = '[policy ' . $self->{result_values}->{policy} . '][running ' . $self->{result_values}->{running} . ']';
+    return $msg;
+}
+
+sub custom_service_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{policy} = $options{new_datas}->{$self->{instance} . '_policy'};
+    $self->{result_values}->{running} = $options{new_datas}->{$self->{instance} . '_running'};
+    $self->{result_values}->{key} = $options{new_datas}->{$self->{instance} . '_key'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', indent_long_output => '    ', message_multiple => 'All ESX hosts are ok', 
+            group => [
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'service', cb_prefix_output => 'prefix_service_output',  message_multiple => 'All services are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' }, { name => 'maintenance' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{service} = [
+        { label => 'service-status', threshold => 0, set => {
+                key_values => [ { name => 'display' }, { name => 'policy' }, { name => 'running' }, { name => 'key' } ],
+                closure_custom_calc => $self->can('custom_service_calc'),
+                closure_custom_output => $self->can('custom_service_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+}
+
+sub prefix_host_output {
+    my ($self, %options) = @_;
+
+    return "Host '" . $options{instance_value}->{display} . "' : ";
+}
+
+sub host_long_output {
+    my ($self, %options) = @_;
+
+    return "checking host '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_service_output {
+    my ($self, %options) = @_;
+
+    return "service '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,35 +117,54 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "filter-services:s"       => { name => 'filter_services' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "esx-hostname:s"            => { name => 'esx_hostname' },
+        "filter"                    => { name => 'filter' },
+        "scope-datacenter:s"        => { name => 'scope_datacenter' },
+        "scope-cluster:s"           => { name => 'scope_cluster' },
+        "filter-services:s"         => { name => 'filter_services' },
+        "unknown-status:s"          => { name => 'unknown_status', default => '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i' },
+        "warning-status:s"          => { name => 'warning_status', default => '' },
+        "critical-status:s"         => { name => 'critical_status', default => '' },
+        "warning-service-status:s"  => { name => 'warning_service_status', default => '' },
+        "critical-service-status:s" => { name => 'critical_service_status', default => '%{policy} =~ /^on|automatic/i && !%{running}' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
+    
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status',
+        'warning_service_status', 'critical_service_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'servicehost');
-    $self->{connector}->run();
+    $self->{host} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'servicehost');
+        
+    foreach my $host_id (keys %{$response->{data}}) {
+        my $host_name = $response->{data}->{$host_id}->{name};
+        $self->{host}->{$host_name} = { display => $host_name, 
+            global => {
+                state => $response->{data}->{$host_id}->{state},
+                maintenance => $response->{data}->{$host_id}->{inMaintenanceMode},
+            },
+        };
+        
+        foreach (@{$response->{data}->{$host_id}->{services}}) {
+            next if (defined($self->{option_results}->{filter_services}) && $self->{option_results}->{filter_services} ne '' &&
+                     $_->{key} !~ /$self->{option_results}->{filter_services}/);
+            
+            $self->{host}->{$host_name}->{service} = {} if (!defined($self->{host}->{$host_name}->{service}));
+            $self->{host}->{$host_name}->{service}->{$_->{label}} = { display => $_->{label}, policy => $_->{policy}, running => $_->{running}, key => $_->{key} };
+        }
+    }
 }
 
 1;
@@ -89,13 +194,34 @@ Search in following datacenter(s) (can be a regexp).
 
 Search in following cluster(s) (can be a regexp).
 
-=item B<--disconnect-status>
-
-Status if ESX host disconnected (default: 'unknown').
-
 =item B<--filter-services>
 
 Filter services you want to check (can be a regexp).
+
+=item B<--unknown-status>
+
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i && %{maintenance} =~ /false/i').
+Can used special variables like: %{status}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--warning-service-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{running}, %{label}, %{policy}
+
+=item B<--critical-service-status>
+
+Set critical threshold for status (Default: '%{policy} =~ /^on|automatic/i && !%{running}').
+Can used special variables like: %{running}, %{label}, %{policy}
 
 =back
 

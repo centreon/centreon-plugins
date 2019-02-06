@@ -20,10 +20,109 @@
 
 package apps::vmware::connector::mode::datastorecountvm;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'accessible ' . $self->{result_values}->{accessible};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{accessible} = $options{new_datas}->{$self->{instance} . '_accessible'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'datastore', type => 1, cb_prefix_output => 'prefix_datastore_output', message_multiple => 'All Datastores are ok' },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total-on', set => {
+                key_values => [ { name => 'poweredon' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredon',
+                perfdatas => [
+                    { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
+                      min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+        { label => 'total-off', set => {
+                key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredoff',
+                perfdatas => [
+                    { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
+                      min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+        { label => 'total-suspended', set => {
+                key_values => [ { name => 'suspended' }, { name => 'total' } ],
+                output_template => '%s VM(s) suspended',
+                perfdatas => [
+                    { label => 'suspended', value => 'suspended_absolute', template => '%s',
+                      min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{datastore} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'accessible' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'on', set => {
+                key_values => [ { name => 'poweredon' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredon',
+                perfdatas => [
+                    { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'off', set => {
+                key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
+                output_template => '%s VM(s) poweredoff',
+                perfdatas => [
+                    { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'suspended', set => {
+                key_values => [ { name => 'suspended' }, { name => 'total' } ],
+                output_template => '%s VM(s) suspended',
+                perfdatas => [
+                    { label => 'suspended', value => 'suspended_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_datastore_output {
+    my ($self, %options) = @_;
+
+    return "Datastore '" . $options{instance_value}->{display} . "' : ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,48 +130,49 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "datastore-name:s"        => { name => 'datastore_name' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning-on:s"            => { name => 'warning_on' },
-                                  "critical-on:s"           => { name => 'critical_on' },
-                                  "warning-off:s"           => { name => 'warning_off' },
-                                  "critical-off:s"          => { name => 'critical_off' },
-                                  "warning-suspended:s"     => { name => 'warning_suspended' },
-                                  "critical-suspended:s"    => { name => 'critical_suspended' },
-                                });
+    $options{options}->add_options(arguments => {
+        "datastore-name:s"      => { name => 'datastore_name' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach my $label (('warning_on', 'critical_on', 'warning_off', 'critical_off', 'warning_suspended', 'critical_suspended')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'datastorecountvm');
-    $self->{connector}->run();
+    $self->{global} = { poweredon => 0, poweredoff => 0, suspended => 0, total => 0 };
+    $self->{datastore} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'datastorecountvm');
+
+    foreach my $ds_id (keys %{$response->{data}}) {
+        my $ds_name = $response->{data}->{$ds_id}->{name};
+        $self->{datastore}->{$ds_name} = {
+            display => $ds_name, 
+            accessible => $response->{data}->{$ds_id}->{accessible},
+            poweredon => $response->{data}->{$ds_id}->{poweredon},
+            poweredoff => $response->{data}->{$ds_id}->{poweredoff},
+            suspended => $response->{data}->{$ds_id}->{suspended},
+            total => $response->{data}->{$ds_id}->{poweredon} + $response->{data}->{$ds_id}->{poweredoff} + $response->{data}->{$ds_id}->{suspended},
+        };
+        $self->{global}->{poweredon} += $response->{data}->{$ds_id}->{poweredon} if (defined($response->{data}->{$ds_id}->{poweredon}));
+        $self->{global}->{poweredoff} += $response->{data}->{$ds_id}->{poweredoff} if (defined($response->{data}->{$ds_id}->{poweredoff}));
+        $self->{global}->{suspended} += $response->{data}->{$ds_id}->{suspended} if (defined($response->{data}->{$ds_id}->{suspended}));
+    }
+    
+    $self->{global}->{total} = $self->{global}->{poweredon} + $self->{global}->{poweredoff} + $self->{global}->{suspended};
 }
 
 1;
@@ -97,33 +197,32 @@ Datastore name is a regexp.
 
 Search in following datacenter(s) (can be a regexp).
 
-=item B<--disconnect-status>
+=item B<--unknown-status>
 
-Status if datastore disconnected (default: 'unknown').
+Set warning threshold for status (Default: '%{accessible} !~ /^true|1$/i').
+Can used special variables like: %{accessible}
 
-=item B<--warning-on>
+=item B<--warning-status>
 
-Threshold warning for 'poweredOn' vms.
+Set warning threshold for status (Default: '').
+Can used special variables like: %{accessible}
 
-=item B<--critical-on>
+=item B<--critical-status>
 
-Threshold critical for 'poweredOn' vms.
+Set critical threshold for status (Default: '').
+Can used special variables like: %{accessible}
 
-=item B<--warning-off>
+=item B<--warning-*>
 
-Threshold warning for 'poweredOff' vms.
+Threshold warning.
+Can be: 'total-on', 'total-off', 'total-suspended', 
+'on', 'off', 'suspended'.
 
-=item B<--critical-off>
+=item B<--critical-*>
 
-Threshold critical for 'poweredOff' vms.
-
-=item B<--warning-suspended>
-
-Threshold warning for 'suspended' vms.
-
-=item B<--critical-suspended>
-
-Threshold critical for 'suspended' vms.
+Threshold critical.
+Can be: 'total-on', 'total-off', 'total-suspended', 
+'on', 'off', 'suspended'.
 
 =back
 

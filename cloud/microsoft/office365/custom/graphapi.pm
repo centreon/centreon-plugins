@@ -195,6 +195,8 @@ sub request_api_json {
 
     $self->settings();
 
+    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
+
     my $content = $self->{http}->request(%options);
     
     my $decoded;
@@ -223,6 +225,8 @@ sub request_api_csv {
     }
 
     $self->settings();
+
+    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
 
     my $content = $self->{http}->request(%options);
     my $response = $self->{http}->get_response();
@@ -358,6 +362,40 @@ sub office_get_exchange_mailbox_usage {
     return $response;
 }
 
+sub office_get_teams_activity_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsUserActivityUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_teams_activity {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_teams_activity_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
+sub office_get_teams_device_usage_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsDeviceUsageUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_teams_device_usage {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_teams_device_usage_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
 1;
 
 __END__
@@ -372,7 +410,7 @@ Microsoft Office 365 Graph API
 
 To connect to the Office 365 Graph API, you must register an application.
 
-# Follow the 'How-to guide' in https://docs.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0
+Follow the 'How-to guide' in https://docs.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'.
 
