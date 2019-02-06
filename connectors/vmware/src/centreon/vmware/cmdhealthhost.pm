@@ -67,65 +67,39 @@ sub run {
         
         # CPU
         if (defined($cpuStatusInfo)) {
-            $data->{$entity_value}->{cpu_info} = { ok => 0, yellow => 0, red => 0, summary_red => [], summary_yellow => [] };
+            $data->{$entity_value}->{cpu_info} = [];
             foreach (@$cpuStatusInfo) {
-                if ($_->status->key =~ /^red$/i) {
-                    push @{$data->{$entity_value}->{cpu_info}->{summary_red}}, { name => $_->name, summary => $_->status->summary };
-                    $data->{$entity_value}->{cpu_info}->{red}++;
-                } elsif ($_->status->key =~ /^yellow$/i) {
-                    push @{$data->{$entity_value}->{cpu_info}->{summary_yellow}}, { name => $_->name, summary => $_->status->summary };
-                    $data->{$entity_value}->{cpu_info}->{yellow}++;
-                } else {
-                    $data->{$entity_value}->{cpu_info}->{ok}++;
-                }
+                push @{$data->{$entity_value}->{cpu_info}}, { status => $_->status->key, name => $_->name, summary => $_->status->summary };
             }
         }
         
         # Memory
         if (defined($memoryStatusInfo)) {
-            $data->{$entity_value}->{memory_info} = { ok => 0, yellow => 0, red => 0, summary_red => [], summary_yellow => [] };
+            $data->{$entity_value}->{memory_info} = [];
             foreach (@$memoryStatusInfo) {
-                if ($_->status->key =~ /^red$/i) {
-                    push @{$data->{$entity_value}->{memory_info}->{summary_red}}, { name => $_->name, summary => $_->status->summary };
-                    $data->{$entity_value}->{memory_info}->{red}++;
-                } elsif ($_->status->key =~ /^yellow$/i) {
-                    push @{$data->{$entity_value}->{memory_info}->{summary_yellow}}, { name => $_->name, summary => $_->status->summary };
-                    $data->{$entity_value}->{memory_info}->{yellow}++;
-                } else {
-                    $data->{$entity_value}->{memory_info}->{ok}++;
-                }
+                push @{$data->{$entity_value}->{memory_info}}, { status => $_->status->key, name => $_->name, summary => $_->status->summary };
             }
         }
         
         # Storage
         if (defined($self->{storage_status}) && defined($storageStatusInfo)) {
-            $data->{$entity_value}->{storage_info} = { ok => 0, yellow => 0, red => 0, summary_red => [], summary_yellow => [] };
+            $data->{$entity_value}->{storage_info} = [];
             foreach (@$storageStatusInfo) {
-                if ($_->status->key =~ /^red$/i) {
-                    push @{$data->{$entity_value}->{storage_info}->{summary_red}}, { name => $_->name, summary => $_->status->summary };
-                    $data->{$entity_value}->{storage_info}->{red}++;
-                } elsif ($_->status->key =~ /^yellow$/i) {
-                    push @{$data->{$entity_value}->{storage_info}->{summary_yellow}}, { name => $_->name, summary => $_->status->summary };
-                    $data->{$entity_value}->{storage_info}->{yellow}++;
-                } else {
-                    $data->{$entity_value}->{storage_info}->{ok}++;
-                }
+                push @{$data->{$entity_value}->{storage_info}}, { status => $_->status->key, name => $_->name, summary => $_->status->summary };
             }
         }
         
         # Sensor
         if (defined($numericSensorInfo)) {
-            $data->{$entity_value}->{sensor_info} = { ok => 0, yellow => 0, red => 0, summary_red => [], summary_yellow => [] };
+            $data->{$entity_value}->{sensor_info} = [];
             foreach (@$numericSensorInfo) {
-                if ($_->healthState->key =~ /^red$/i) {
-                    push @{$data->{$entity_value}->{sensor_info}->{summary_red}}, { type => $_->sensorType, name => $_->name, summary => $_->healthState->summary };
-                    $data->{$entity_value}->{sensor_info}->{red}++;
-                } elsif ($_->healthState->key =~ /^yellow$/i) {
-                    push @{$data->{$entity_value}->{sensor_info}->{summary_yellow}}, { type => $_->sensorType, name => $_->name, summary => $_->healthState->summary };
-                    $data->{$entity_value}->{sensor_info}->{yellow}++;
-                } else {
-                    $data->{$entity_value}->{sensor_info}->{ok}++;
-                }
+                push @{$data->{$entity_value}->{sensor_info}}, {
+                    status => $_->healthState->key, 
+                    type => $_->sensorType, name => $_->name, summary => $_->healthState->summary,
+                    current_reading =>  $_->currentReading,
+                    power10 => $_->unitModifier,
+                    unit => $_->baseUnits
+                };
             }
         }
     }
