@@ -40,6 +40,7 @@ sub new {
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "change-perfdata:s@"      => { name => 'change_perfdata' },
                                   "extend-perfdata:s@"      => { name => 'extend_perfdata' },
+                                  "change-short-output:s@"  => { name => 'change_short_output' },
                                   "filter-uom:s"            => { name => 'filter_uom' },
                                   "verbose"                 => { name => 'verbose' },
                                   "debug"                   => { name => 'debug' },
@@ -350,15 +351,9 @@ sub output_xml {
     print $self->{xml_output}->toString(1);
 }
 
-sub output_txt {
+sub output_txt_short_display {
     my ($self, %options) = @_;
-    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
-    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
-
-    if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
-        $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
-    }
-
+    
     if (defined($self->{global_short_concat_outputs}->{CRITICAL})) {
         print (($options{nolabel} == 0 ? 'CRITICAL: ' : '') . $self->{global_short_concat_outputs}->{CRITICAL} . " ");
     }
@@ -371,6 +366,44 @@ sub output_txt {
     if (uc($options{exit_litteral}) eq 'OK') {
         print (($options{nolabel} == 0 ? 'OK: ' : '') . (defined($self->{global_short_concat_outputs}->{OK}) ? $self->{global_short_concat_outputs}->{OK} : '') . " ");
     }
+}
+
+sub output_txt_short {
+    my ($self, %options) = @_;
+    
+    if (!defined($self->{option_results}->{change_short_output})) {
+        $self->output_txt_short_display(%options);
+        return ;
+    }
+    
+    my $stdout = '';
+    {
+        local *STDOUT;
+        open STDOUT, '>', \$stdout;
+        $self->output_txt_short_display(%options);
+    }
+    
+    foreach (@{$self->{option_results}->{change_short_output}}) {
+         my ($pattern, $replace, $modifier) = split /~/;
+         next if (!defined($pattern));
+         $replace = '' if (!defined($replace));
+         $modifier = '' if (!defined($modifier));
+         eval "\$stdout =~ s{$pattern}{$replace}$modifier";
+    }
+    
+    print $stdout;
+}
+
+sub output_txt {
+    my ($self, %options) = @_;
+    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
+
+    if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
+        $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
+    }
+
+    $self->output_txt_short(%options);
 
     if ($force_ignore_perfdata == 1) {
         print "\n";
@@ -1048,6 +1081,10 @@ Scale traffic values in Mbps: --change-perfdata=traffic_in,,scale(Mbps),mbps
 Change traffic values in percent: --change-perfdata=traffic_in,,percent()
 
 =back
+
+=item B<--change-short-output>
+
+Change short output display. --change-short-output=pattern~replace~modifier
 
 =item B<--range-perfdata>
 
