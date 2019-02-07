@@ -135,6 +135,8 @@ sub manage_selection {
 
     my ($i, $current_time) = (1, time());
     while ((my @row = $self->{sql}->fetchrow_array())) {
+        # can be: 1541985283,999999999999999999999999999996
+        $row[1] =~ s/,/./;
         my @values = localtime($row[1]);
         my $dt = DateTime->new(
             year       => $values[5] + 1900,
