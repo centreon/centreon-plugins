@@ -1060,7 +1060,9 @@ Filter UOM that match the regexp.
 
 =item B<--opt-exit>
 
-Exit code for an option error, usage (default: unknown).
+Optional exit code for an execution error (i.e. wrong option provided,
+SSH connection refused, timeout, etc)
+(Default: unknown).
 
 =item B<--output-xml>
 
