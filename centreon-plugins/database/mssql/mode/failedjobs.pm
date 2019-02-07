@@ -138,7 +138,8 @@ sub run {
                                             short_msg => sprintf("Job '%s' duration : %d minutes", $job_name, $run_duration));
             }
         }
-        $self->{output}->output_add(long_msg => sprintf("Job '%s' status %s [Runtime : %s %s] [Duration : %d minutes]", $job_name, $states{$run_status}, $run_date, $run_time, $run_duration));
+        $self->{output}->output_add(long_msg => sprintf("Job '%s' status %s [Runtime : %s %s] [Duration : %d minutes]", 
+            $job_name, $states{$run_status}, defined($year) ? $year . '-' . $month . '-' . $day : '', $run_time, $run_duration));
     }
 
     my $exit_code2 = $self->{perfdata}->threshold_check(value => $count_failed, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
