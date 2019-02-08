@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::peplink::balance::snmp::plugin;
+package network::peplink::snmp::plugin;
 
 use strict;
 use warnings;
@@ -28,14 +28,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '0.1';
+
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'cpu'               => 'network::peplink::balance::snmp::mode::cpu',
-                            'interfaces'        => 'snmp_standard::mode::interfaces',
-                            'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                            'memory'            => 'network::peplink::balance::snmp::mode::memory',
-                         );
+        'cpu'              => 'network::peplink::snmp::mode::cpu',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::peplink::snmp::mode::memory',
+        'wan-usage'        => 'network::peplink::snmp::mode::wanusage',
+    );
 
     return $self;
 }
@@ -46,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Peplink loadbalancer in SNMP.
+Check Peplink equipments in SNMP.
 
 =cut
