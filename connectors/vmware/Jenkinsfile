@@ -21,7 +21,7 @@ try {
     parallel 'centos7': {
       node {
         sh 'setup_centreon_build.sh'
-        sh './centreon-build/jobs/vmware/vmware-package.sh'
+        sh './centreon-build/jobs/vmware/vmware-package.sh centos7'
       }
     }
     if ((currentBuild.result ?: 'SUCCESS') != 'SUCCESS') {
