@@ -57,7 +57,7 @@ sub custom_storage_perfdata {
                                   min => 0, max => $self->{result_values}->{total});
 }
 
-sub custom_disc_threshold {
+sub custom_storage_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
