@@ -190,6 +190,7 @@ sub new {
         "scope-cluster:s"       => { name => 'scope_cluster' },
         "units:s"               => { name => 'units', default => '%' },
         "free"                  => { name => 'free' },
+        "no-memory-state"       => { name => 'no_memory_state' },
         "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
