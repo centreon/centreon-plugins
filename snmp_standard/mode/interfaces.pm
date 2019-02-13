@@ -537,9 +537,10 @@ sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
-        'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
-        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
+        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
+        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
+        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value', },
+        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index', },
     };
 }
 
@@ -608,7 +609,7 @@ sub check_oids_label {
     
     foreach (('oid_filter', 'oid_display')) {
         $self->{option_results}->{$_} = lc($self->{option_results}->{$_}) if (defined($self->{option_results}->{$_}));
-        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}})) {
+        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}}->{oid})) {
             my $label = $_;
             $label =~ s/_/-/g;
             $self->{output}->add_option_msg(short_msg => "Unsupported oid in --" . $label . " option.");
@@ -618,7 +619,7 @@ sub check_oids_label {
     
     if (defined($self->{option_results}->{oid_extra_display})) {
         $self->{option_results}->{oid_extra_display} = lc($self->{option_results}->{oid_extra_display});
-        if (!defined($self->{oids_label}->{$self->{option_results}->{oid_extra_display}})) {
+        if (!defined($self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid})) {
             $self->{output}->add_option_msg(short_msg => "Unsupported oid in --oid-extra-display option.");
             $self->{output}->option_exit();
         }
@@ -989,6 +990,32 @@ sub check_oids_options_change {
     return 0;
 }
 
+sub reload_cache_index_value {
+    my ($self, %options) = @_;
+    
+    my $store_index = defined($options{store_index}) && $options{store_index} == 1 ? 1 : 0;
+    foreach ($self->{snmp}->oid_lex_sort(keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }})) {
+        /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
+        push @{$options{datas}->{all_ids}}, $1 if ($store_index == 1);
+        $options{datas}->{$options{name} . "_" . $1} = $self->{output}->to_utf8($options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_});
+    }
+}
+
+sub reload_cache_values_index {
+    my ($self, %options) = @_;
+    
+    my $store_index = defined($options{store_index}) && $options{store_index} == 1 ? 1 : 0;
+    foreach ($self->{snmp}->oid_lex_sort(keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }})) {
+        /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
+        push @{$options{datas}->{all_ids}}, $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_} if ($store_index == 1);
+        if (defined($options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}})) {
+            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} .= ', ' . $1;
+        } else {
+            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} = $1;
+        }
+    }
+}
+
 sub reload_cache {
     my ($self) = @_;
     my $datas = {};
@@ -1000,22 +1027,20 @@ sub reload_cache {
     $datas->{all_ids} = [];
     
     my $snmp_get = [
-        { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}} },
+        { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}}->{oid} },
     ];
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}} };
+        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}}->{oid} };
     }
     if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}} };
+        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid} };
     }    
     
     my $result = $self->{snmp}->get_multiple_table(oids => $snmp_get);
-    foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_filter}}}})) {
-        /^$self->{oids_label}->{$self->{option_results}->{oid_filter}}\.(.*)$/;
-        push @{$datas->{all_ids}}, $1;
-        $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_filter}}}->{$_});
-    }
+    
+    my $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_filter}}->{cache});
+    $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_filter}, store_index => 1);
 
     if (scalar(@{$datas->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
@@ -1023,17 +1048,13 @@ sub reload_cache {
     }
 
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-       foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}})) {
-            /^$self->{oids_label}->{$self->{option_results}->{oid_display}}\.(.*)$/;
-            $datas->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}->{$_});
-       }
+        $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_display}}->{cache});
+        $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_display});
     }
     if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
-        foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}})) {
-            /^$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}\.(.*)$/;
-            $datas->{$self->{option_results}->{oid_extra_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}->{$_});
-       }
+        $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{cache});
+        $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_extra_display});
     }
     
     $self->{statefile_cache}->write(data => $datas);
@@ -1454,11 +1475,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 

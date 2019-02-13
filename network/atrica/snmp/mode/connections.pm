@@ -29,8 +29,8 @@ sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'atrconncepgendescr'    => '.1.3.6.1.4.1.6110.2.7.5.1.1',
-        'atrconningdescr'       => '.1.3.6.1.4.1.6110.2.2.1.1.2',
+        'atrconncepgendescr'    => { oid => '.1.3.6.1.4.1.6110.2.7.5.1.1', cache => 'reload_cache_index_value' },
+        'atrconningdescr'       => { oid => '.1.3.6.1.4.1.6110.2.2.1.1.2', cache => 'reload_cache_index_value' },
     };
 }
 
