@@ -786,7 +786,10 @@ sub check_options {
         }
         
         # unauthenticated and unencrypted
-        if (!defined($options{option_results}->{snmp_auth_passphrase}) && !defined($options{option_results}->{snmp_priv_passphrase})) {
+        if (!defined($options{option_results}->{snmp_auth_passphrase})
+            && !defined($options{option_results}->{snmp_priv_passphrase})
+            && $options{option_results}->{snmp_auth_passphrase} ne ""
+            && $options{option_results}->{snmp_priv_passphrase} ne "" ) {
             $self->{snmp_params}->{SecLevel} = 'noAuthNoPriv';
             return ;
         }
@@ -810,7 +813,7 @@ sub check_options {
             $self->{output}->option_exit();
         }
         
-        if (defined($options{option_results}->{snmp_priv_protocol})) {
+        if (defined($options{option_results}->{snmp_priv_protocol}) && $options{option_results}->{snmp_priv_protocol} ne "") {
             $options{option_results}->{snmp_priv_protocol} = uc($options{option_results}->{snmp_priv_protocol});
             if ($options{option_results}->{snmp_priv_protocol} ne 'DES' && $options{option_results}->{snmp_priv_protocol} ne 'AES') {
                 $self->{output}->add_option_msg(short_msg => "Wrong privacy protocol. Must be DES or AES.");
