@@ -786,10 +786,10 @@ sub check_options {
         }
         
         # unauthenticated and unencrypted
-        if (!defined($options{option_results}->{snmp_auth_passphrase})
-            && !defined($options{option_results}->{snmp_priv_passphrase})
-            && $options{option_results}->{snmp_auth_passphrase} ne ""
-            && $options{option_results}->{snmp_priv_passphrase} ne "" ) {
+        if ((!defined($options{option_results}->{snmp_auth_passphrase})
+            && !defined($options{option_results}->{snmp_priv_passphrase}))
+            || ($options{option_results}->{snmp_auth_passphrase} ne ""
+            && $options{option_results}->{snmp_priv_passphrase} ne "" )) {
             $self->{snmp_params}->{SecLevel} = 'noAuthNoPriv';
             return ;
         }
