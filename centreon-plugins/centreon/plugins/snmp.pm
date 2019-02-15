@@ -780,7 +780,7 @@ sub check_options {
         }
         
 
-        if (!defined($options{option_results}->{snmp_security_name})) {
+        if (!defined($options{option_results}->{snmp_security_name}) || $options{option_results}->{snmp_security_name} eq '') {
             $self->{output}->add_option_msg(short_msg => "Missing parameter Security Name.");
             $self->{output}->option_exit();
         }
