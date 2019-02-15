@@ -787,10 +787,7 @@ sub check_options {
         
         # unauthenticated and unencrypted
         $self->{snmp_params}->{SecLevel} = 'noAuthNoPriv';
-        if (!defined($options{option_results}->{snmp_auth_passphrase}) && !defined($options{option_results}->{snmp_priv_passphrase})) {
-            return ;
-        }
-
+        
         my $user_activate = 0;
         if (defined($options{option_results}->{snmp_auth_passphrase}) && $options{option_results}->{snmp_auth_passphrase} ne '') {
             if (!defined($options{option_results}->{snmp_auth_protocol})) {
