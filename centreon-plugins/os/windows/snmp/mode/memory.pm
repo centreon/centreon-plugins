@@ -108,7 +108,7 @@ sub set_counters {
 sub prefix_memory_output {
     my ($self, %options) = @_;
 
-    return "RAM ";
+    return "Ram ";
 }
 
 sub new {
