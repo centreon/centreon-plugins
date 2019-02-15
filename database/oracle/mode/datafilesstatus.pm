@@ -102,7 +102,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_online_status', 'critical_online_status')]);
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_online_status', 'critical_online_status']);
 }
 
 sub prefix_df_output {
