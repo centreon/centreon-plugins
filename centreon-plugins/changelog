@@ -1,3 +1,24 @@
+2019-xx-xx Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Lenovo XCC SNMP
+ * Plugin added: Peplink SNMP
+ * Plugin added: Adder AIM SNMP
+ * Plugin added: Kafka JMX
+ * Plugin added: Cassandra JMX
+ * Plugin added: Skype 2015 MSSQL
+ * Mode added: [snmp_standard] 'listspanningtrees'
+ * Mode added: [quantum dxi] 'dedupvtl'
+ * Enhancement: Compatibility centreon vmware plugin with vmware connector 3.x
+ * Enhancement: Add password management system
+ * Enhancement: Many improvements in Azure modes
+ * Enhancement: Add catalog template method
+ * Enhancement: [snmp_standard] spanningtree mode
+ * Enhancement: [centreon sql] pollerdelay mode
+ * Enhancement: [mssql] 'failed-jobs' (#1365)
+ * Enhancement: [core/snmp] Change snmpv3 management parameters
+ * Enhancement: [snmp_standard] 'interfaces' (#553)
+ * Fix: [core/http] fix get-param option (#1355)
+ * Fix: [ilo xmlapi] fix nic management (#1358 #1213) 
+
 2019-01-11 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: Office 365 (PR #1288)
  * Plugin added: IBM Cloud SoftLayer (PR #1224, #1226, #1241, #1273)
