@@ -79,8 +79,8 @@ sub new {
             "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
             "format-unknown:s"        => { name => 'format_unknown', default => '%{count} element(s) found' },
             "values-separator:s"      => { name => 'values_separator', default => ', ' },
-            "lookup-perfdatas:s"      => { name => 'lookup_perfdatas'},
-            "lookup-format:s"        => { name => 'lookup_format'},
+            "lookup-perfdatas-nagios:s"      => { name => 'lookup_perfdatas_nagios'},
+            "lookup-format:s"         => { name => 'lookup_format'},
             });
     $self->{count} = 0;
     $self->{count_ok} = 0;
@@ -253,9 +253,9 @@ sub lookup {
         }
     }
 
-    if (defined($self->{option_results}->{lookup_perfdatas}) && $self->{option_results}->{lookup_perfdatas} ne '') {
+    if (defined($self->{option_results}->{lookup_perfdatas_nagios}) && $self->{option_results}->{lookup_perfdatas_nagios} ne '') {
         my $perfdata_string;
-        my $xpath_find = $self->{option_results}->{lookup_perfdatas};
+        my $xpath_find = $self->{option_results}->{lookup_perfdatas_nagios};
         eval {
             my $jpath = JSON::Path->new($xpath_find);
             $perfdata_string = $jpath->value($content);
@@ -357,7 +357,7 @@ Set file with JSON request
 What to lookup in JSON response (JSON XPath string) (can be multiple)
 See: http://goessner.net/articles/JsonPath/
 
-=item B<--lookup-perfdatas>
+=item B<--lookup-perfdatas-nagios>
 
 Take perfdatas from the JSON response (JSON XPath string)
 Chain must be formated in Nagios format.
