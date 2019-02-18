@@ -177,10 +177,6 @@ Datastore name is a regexp.
 
 Search in following datacenter(s) (can be a regexp).
 
-=item B<--disconnect-status>
-
-Status if datastore disconnected (default: 'unknown').
-
 =item B<--unknown-status>
 
 Set warning threshold for status (Default: '%{accessible} !~ /^true|1$/i').
