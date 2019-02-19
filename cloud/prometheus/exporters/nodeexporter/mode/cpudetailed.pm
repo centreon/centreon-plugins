@@ -237,7 +237,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->{metrics} = {
-        'cpu' => "^node_cpu.*",
+        'cpu' => "^node_cpu_seconds_total.*",
     };
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
@@ -347,7 +347,7 @@ Example : --metric-overload='metric,^my_metric_name$'
 
 Default :
 
-    - cpu: ^node_cpu.*
+    - cpu: ^node_cpu_seconds_total.*
 
 =item B<--filter-counters>
 

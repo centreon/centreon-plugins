@@ -115,7 +115,7 @@ sub set_counters {
 
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'used' }, { name => 'limit' }, { name => 'container' }, { name => 'pod' } ],
+                key_values => [ { name => 'used' }, { name => 'limit' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -128,7 +128,7 @@ sub set_counters {
 sub prefix_container_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{display} . "' ";
+    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
 }
 
 sub long_output {
@@ -212,9 +212,9 @@ sub manage_selection {
     foreach my $result (@{$results}) {
         next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{display} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{device} = $result->{metric}->{$self->{labels}->{device}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{display} = $result->{metric}->{$self->{labels}->{device}};
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
