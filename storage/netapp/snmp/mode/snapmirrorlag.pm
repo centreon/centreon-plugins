@@ -75,12 +75,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "unknown-status:s"        => { name => 'unknown_status', default => '' },
-                                "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /quiesced/i' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /unknown|brokenOff|uninitialized/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-status:s"   => { name => 'filter_status' },
+        "unknown-status:s"  => { name => 'unknown_status', default => '' },
+        "warning-status:s"  => { name => 'warning_status', default => '%{status} =~ /quiesced/i' },
+        "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /unknown|brokenOff|uninitialized/i' },
+    });
 
     return $self;
 }
@@ -149,11 +149,22 @@ sub manage_selection {
     
     foreach (@{$id_selected}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
+            $result->{snapmirrorState} !~ /$self->{option_results}->{filter_status}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $snmp_result_name->{$oid_snapmirrorSrc . '.' . $_} . "': no matching filter.", debug => 1);
+            next;
+        }
+        
         $self->{snapmirror}->{$_} = {
             display => $snmp_result_name->{$oid_snapmirrorSrc . '.' . $_},
             status => $result->{snapmirrorState},
             lag => int($result->{snapmirrorLag} / 100),
         };
+    }
+    
+    if (scalar(keys %{$self->{snapmirror}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No snapmirrors found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -175,6 +186,10 @@ Set the snapmirror name.
 
 Allows to use regexp to filter snampmirror name (with option --name).
 
+=item B<--filter-status>
+
+Filter on status (can be a regexp).
+
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
@@ -195,15 +210,13 @@ Can used special variables like: %{status}, %{display}
 Set critical threshold for status (Default: '%{status} =~ /unknown|brokenOff|uninitialized/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-lag>
 
 Threshold warning.
-Can be: 'lag'.
 
-=item B<--critical-*>
+=item B<--critical-lag>
 
 Threshold critical.
-Can be: 'lag'.
 
 =back
 
