@@ -174,9 +174,11 @@ sub run_global {
         push @exits, $exit2;
 
         my $output = $obj->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = $message_separator;
-        
+        if (!defined($_->{display_ok}) || $_->{display_ok} != 0 ) {
+            $long_msg .= $long_msg_append . $output;
+            $long_msg_append = $message_separator;
+        }
+
         if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
             $short_msg .= $short_msg_append . $output;
             $short_msg_append = $message_separator;
