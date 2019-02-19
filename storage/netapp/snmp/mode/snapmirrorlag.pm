@@ -164,7 +164,7 @@ __END__
 
 =head1 MODE
 
-Check snapmirrors lag.
+Check snapmirrors status and lag.
 
 =over 8
 
@@ -183,18 +183,18 @@ Example: --filter-counters='^status$'
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: none).
-Can used special variables like: %{state}
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{status} =~ /quiesced/i').
-Can used special variables like: %{status}
+Can used special variables like: %{status}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{status} =~ /unknown|brokenOff|uninitialized/i').
-Can used special variables like: %{status}
+Can used special variables like: %{status}, %{display}
 
 =item B<--warning-*>
 
