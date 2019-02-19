@@ -146,12 +146,11 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     
     $self->{snapmirror} = {};
-    foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{snapmirrorLag}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        $self->{snapmirror}->{$instance} = {
-            display => $snmp_result_name->{$oid_snapmirrorSrc . '.' . $instance},
+    
+    foreach (@{$id_selected}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        $self->{snapmirror}->{$_} = {
+            display => $snmp_result_name->{$oid_snapmirrorSrc . '.' . $_},
             status => $result->{snapmirrorState},
             lag => int($result->{snapmirrorLag} / 100),
         };
