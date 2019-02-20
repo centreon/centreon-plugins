@@ -45,20 +45,19 @@ sub new {
         $options{output}->option_exit();
     }
     if (!defined($options{noptions})) {
-        $options{options}->add_options(
-                                       arguments => {
-                                                    "sqlplus-cmd:s"     => { name => 'sqlplus_cmd'},
-                                                    "oracle-home:s"     => { name => 'oracle_home' },
-                                                    "tnsadmin-home:s"   => { name => 'tnsadmin_home' },
-                                                    "tnsnames-sid:s"    => { name => 'tnsnames_sid'},
-                                                    "username:s"        => { name => 'username' },
-                                                    "password:s"        => { name => 'password' },
-                                                    "local-connexion"   => { name => 'local_connexion', default=>0 }, 
-                                                    "sysdba"            => { name => 'sysdba', default=>0 }, 
-                                                    "sql-errors-exit:s" => { name => 'sql_errors_exit', default => 'unknown' },
-                                                    "tempdir:s"         => { name => 'tempdir', default => '/tmp' },
-                                                    }
-                                        );
+        $options{options}->add_options(arguments => {
+                "sqlplus-cmd:s"     => { name => 'sqlplus_cmd'},
+                "oracle-home:s"     => { name => 'oracle_home' },
+                "tnsadmin-home:s"   => { name => 'tnsadmin_home' },
+                "tnsnames-sid:s"    => { name => 'tnsnames_sid'},
+                "username:s"        => { name => 'username' },
+                "password:s"        => { name => 'password' },
+                "local-connexion"   => { name => 'local_connexion', default => 0 }, 
+                "sysdba"            => { name => 'sysdba', default => 0 }, 
+                "sql-errors-exit:s" => { name => 'sql_errors_exit', default => 'unknown' },
+                "tempdir:s"         => { name => 'tempdir', default => '/tmp' },
+            }
+        );
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'sqlpluscmd OPTIONS', once => 1);
 
@@ -314,7 +313,7 @@ sub fetchrow_array {
     my @array_result = ();
     
     if($self->{stdout} eq '') {
-        $self->{output}->output_add("fetchrow_array: no data returned (no rows selected)", debug => 1);
+        $self->{output}->output_add(long_msg => "fetchrow_array: no data returned (no rows selected)", debug => 1);
         return @array_result;
     }
     
