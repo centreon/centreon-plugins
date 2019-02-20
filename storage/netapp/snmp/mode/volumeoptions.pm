@@ -56,7 +56,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok' },
+        { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok', skipped_code => { -10 => 1 } },
         { name => 'global', type => 0 },
     ];
 
@@ -123,6 +123,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    $self->{test_option} = 0;
+    foreach ('warning', 'unknown', 'critical') {
+        $self->{test_option} = 1 if (defined($self->{option_results}->{$_ . '_options'}) && $self->{option_results}->{$_ . '_options'} ne '');
+    }
     $self->change_macros(macros => ['warning_options', 'critical_options', 'unknown_options',
         'warning_status', 'critical_status', 'unknown_status']);
 }
@@ -155,7 +159,9 @@ sub manage_selection {
         volOptions   => { oid => '.1.3.6.1.4.1.789.1.5.8.1.7' },
     };
     
-    $options{snmp}->load(oids => [$mapping->{volState}->{oid}, $mapping->{volOptions}->{oid}], instances => $id_selected);
+    my $load_oids = [$mapping->{volState}->{oid}];
+    push @$load_oids, $mapping->{volOptions}->{oid} if ($self->{test_option} == 1);
+    $options{snmp}->load(oids => $load_oids, instances => $id_selected);
     my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     
     $self->{global} = { failed => 0 };
