@@ -20,12 +20,47 @@
 
 package apps::protocols::http::mode::expectedcontent;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::http;
 use Time::HiRes qw(gettimeofday tv_interval);
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'size', display_ok => 0, set => {
+                key_values => [ { name => 'size' } ],
+                output_template => 'Content size : %s',
+                perfdatas => [
+                    { label => 'size', value => 'size_absolute', template => '%s', min => 0, unit => 'B' },
+                ],
+            }
+        },
+        { label => 'time', display_ok => 0, set => {
+                key_values => [ { name => 'time' } ],
+                output_template => 'Response time : %.3fs',
+                perfdatas => [
+                    { label => 'time', value => 'time_absolute', template => '%.3f', min => 0, unit => 's' },
+                ],
+            }
+        },
+        { label => 'extracted', display_ok => 0, set => {
+                key_values => [ { name => 'extracted' } ],
+                output_template => 'Extracted value : %s',
+                perfdatas => [
+                    { label => 'value', value => 'extracted_absolute', template => '%s' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -33,81 +68,63 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.2';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"            => { name => 'hostname' },
-            "http-peer-addr:s"      => { name => 'http_peer_addr' },
-            "port:s"                => { name => 'port', },
-            "method:s"              => { name => 'method' },
-            "proto:s"               => { name => 'proto' },
-            "urlpath:s"             => { name => 'url_path' },
-            "credentials"           => { name => 'credentials' },
-            "basic"                 => { name => 'basic' },
-            "ntlm"                  => { name => 'ntlm' }, # Deprecated
-            "ntlmv2"                => { name => 'ntlmv2' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "proxypac:s"            => { name => 'proxypac' },
-            "expected-string:s"     => { name => 'expected_string' },
-            "timeout:s"             => { name => 'timeout' },
-            "no-follow"             => { name => 'no_follow', },
-            "ssl:s"                 => { name => 'ssl', },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            "cert-file:s"           => { name => 'cert_file' },
-            "key-file:s"            => { name => 'key_file' },
-            "cacert-file:s"         => { name => 'cacert_file' },
-            "cert-pwd:s"            => { name => 'cert_pwd' },
-            "cert-pkcs12"           => { name => 'cert_pkcs12' },
-            "header:s@"             => { name => 'header' },
-            "get-param:s@"          => { name => 'get_param' },
-            "post-param:s@"         => { name => 'post_param' },
-            "cookies-file:s"        => { name => 'cookies_file' },
-            "unknown-status:s"      => { name => 'unknown_status' },
-            "warning-status:s"      => { name => 'warning_status' },
-            "critical-status:s"     => { name => 'critical_status' },
-            "warning:s"             => { name => 'warning' },
-            "critical:s"            => { name => 'critical' },
-            "warning-size:s"        => { name => 'warning_size' },
-            "critical-size:s"       => { name => 'critical_size' },
-            });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname' },
+        "http-peer-addr:s"      => { name => 'http_peer_addr' },
+        "port:s"                => { name => 'port', },
+        "method:s"              => { name => 'method' },
+        "proto:s"               => { name => 'proto' },
+        "urlpath:s"             => { name => 'url_path' },
+        "credentials"           => { name => 'credentials' },
+        "basic"                 => { name => 'basic' },
+        "ntlm"                  => { name => 'ntlm' }, # Deprecated
+        "ntlmv2"                => { name => 'ntlmv2' },
+        "username:s"            => { name => 'username' },
+        "password:s"            => { name => 'password' },
+        "proxyurl:s"            => { name => 'proxyurl' },
+        "proxypac:s"            => { name => 'proxypac' },
+        "expected-string:s"     => { name => 'expected_string' },
+        "timeout:s"             => { name => 'timeout' },
+        "no-follow"             => { name => 'no_follow', },
+        "ssl:s"                 => { name => 'ssl', },
+        "ssl-opt:s@"            => { name => 'ssl_opt' },
+        "cert-file:s"           => { name => 'cert_file' },
+        "key-file:s"            => { name => 'key_file' },
+        "cacert-file:s"         => { name => 'cacert_file' },
+        "cert-pwd:s"            => { name => 'cert_pwd' },
+        "cert-pkcs12"           => { name => 'cert_pkcs12' },
+        "header:s@"             => { name => 'header' },
+        "get-param:s@"          => { name => 'get_param' },
+        "post-param:s@"         => { name => 'post_param' },
+        "cookies-file:s"        => { name => 'cookies_file' },
+        "unknown-status:s"      => { name => 'unknown_status' },
+        "warning-status:s"      => { name => 'warning_status' },
+        "critical-status:s"     => { name => 'critical_status' },
+    });
+    
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{expected_string})) {
         $self->{output}->add_option_msg(short_msg => "You need to specify --expected-string option.");
         $self->{output}->option_exit();
     }
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-size', value => $self->{option_results}->{warning_size})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-size threshold '" . $self->{option_results}->{warning_size} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-size', value => $self->{option_results}->{critical_size})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-size threshold '" . $self->{option_results}->{critical_size} . "'.");
-        $self->{output}->option_exit();
-    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request();
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
+    
+    $self->{global} = { time => $timeelapsed };
     
     $self->{output}->output_add(long_msg => $webcontent);
 
@@ -119,38 +136,19 @@ sub run {
                                     short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
     }
     
-    # Time check
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Response time : %.3fs", $timeelapsed));
+    my $extracted = $1;
+    if (defined($extracted) && $extracted =~ /(\d+([\.,]\d+)?)/) {
+        $extracted = $1;
+        $extracted =~ s/,/\./;
+        $self->{global}->{extracted} = $extracted;
     }
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+
     # Size check
     {
         require bytes;
 
-        my $content_size = bytes::length($webcontent);
-        $exit = $self->{perfdata}->threshold_check(value => $content_size,
-                                                   threshold => [ { label => 'critical-size', exit_litteral => 'critical' }, { label => 'warning-size', exit_litteral => 'warning' } ]);
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Content size : %s", $content_size));
-        }
-        $self->{output}->perfdata_add(label => "size", unit => 'B',
-                                      value => $content_size,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-size'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-size'),
-                                      min => 0);
+        $self->{global}->{size} = bytes::length($webcontent);
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -279,11 +277,11 @@ Threshold warning for http response code
 
 Threshold critical for http response code 
 
-=item B<--warning>
+=item B<--warning-time>
 
 Threshold warning in seconds (Webpage response time)
 
-=item B<--critical>
+=item B<--critical-time>
 
 Threshold critical in seconds (Webpage response time)
 
@@ -294,6 +292,14 @@ Threshold warning for content size
 =item B<--critical-size>
 
 Threshold critical for content size
+
+=item B<--warning-extracted>
+
+Threshold warning for extracted value
+
+=item B<--critical-extracted>
+
+Threshold critical for extracted value
 
 =item B<--expected-string>
 
