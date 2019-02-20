@@ -56,11 +56,11 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volume options are ok' },
+        { name => 'volumes', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volume options are ok' },
         { name => 'global', type => 0 },
     ];
 
-    $self->{maps_counters}->{volume} = [
+    $self->{maps_counters}->{volumes} = [
          { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 output_template => "status is '%s'",
