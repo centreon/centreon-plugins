@@ -43,27 +43,27 @@ sub new {
         $options{output}->option_exit();
     }
 
-    $options{options}->add_options(arguments => 
-                { "hostname|host:s"           => { name => 'host' },
-                  "snmp-community:s"          => { name => 'snmp_community', default => 'public' },
-                  "snmp-version:s"            => { name => 'snmp_version', default => 1 },
-                  "snmp-port:s"               => { name => 'snmp_port', default => 161 },
-                  "snmp-timeout:s"            => { name => 'snmp_timeout', default => 1 },
-                  "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
-                  "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
-                  "subsetleef:s"              => { name => 'subsetleef', default => 50 },
-                  "subsettable:s"             => { name => 'subsettable', default => 100 },
-                  "snmp-autoreduce:s"         => { name => 'snmp_autoreduce' },
-                  "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
-                  "snmp-username:s"           => { name => 'snmp_security_name' },
-                  "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
-                  "authprotocol:s"            => { name => 'snmp_auth_protocol' },
-                  "privpassphrase:s"          => { name => 'snmp_priv_passphrase' },
-                  "privprotocol:s"            => { name => 'snmp_priv_protocol' },
-                  "contextname:s"             => { name => 'snmp_context_name' },
-                  "contextengineid:s"         => { name => 'snmp_context_engine_id' },
-                  "securityengineid:s"        => { name => 'snmp_security_engine_id' },
-                  "snmp-errors-exit:s"        => { name => 'snmp_errors_exit', default => 'unknown' },
+    $options{options}->add_options(arguments => {
+        "hostname|host:s"           => { name => 'host' },
+        "snmp-community:s"          => { name => 'snmp_community', default => 'public' },
+        "snmp-version:s"            => { name => 'snmp_version', default => 1 },
+        "snmp-port:s"               => { name => 'snmp_port', default => 161 },
+        "snmp-timeout:s"            => { name => 'snmp_timeout', default => 1 },
+        "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
+        "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
+        "subsetleef:s"              => { name => 'subsetleef', default => 50 },
+        "subsettable:s"             => { name => 'subsettable', default => 100 },
+        "snmp-autoreduce:s"         => { name => 'snmp_autoreduce' },
+        "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
+        "snmp-username:s"           => { name => 'snmp_security_name' },
+        "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
+        "authprotocol:s"            => { name => 'snmp_auth_protocol' },
+        "privpassphrase:s"          => { name => 'snmp_priv_passphrase' },
+        "privprotocol:s"            => { name => 'snmp_priv_protocol' },
+        "contextname:s"             => { name => 'snmp_context_name' },
+        "contextengineid:s"         => { name => 'snmp_context_engine_id' },
+        "securityengineid:s"        => { name => 'snmp_security_engine_id' },
+        "snmp-errors-exit:s"        => { name => 'snmp_errors_exit', default => 'unknown' },
     });
     $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
 
@@ -825,6 +825,22 @@ sub check_options {
             $self->{snmp_params}->{PrivPass} = $options{option_results}->{snmp_priv_passphrase};
             $self->{snmp_params}->{PrivProto} = $options{option_results}->{snmp_priv_protocol};
         }
+    }
+}
+
+sub set_snmp_connect_params {
+    my ($self, %options) = @_;
+    
+    foreach (keys %options) {
+        $self->{snmp_params}->{$_} = $options{$_};
+    }
+}
+
+sub set_snmp_params {
+    my ($self, %options) = @_;
+    
+    foreach (keys %options) {
+        $self->{$_} = $options{$_};
     }
 }
 
