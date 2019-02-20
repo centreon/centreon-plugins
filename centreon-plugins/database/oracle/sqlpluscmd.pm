@@ -115,8 +115,8 @@ sub check_options {
     $self->{local_connexion} = $self->{option_results}->{local_connexion};
     $self->{sqlplus_cmd} = $self->{option_results}->{sqlplus_cmd};
         
-    $self->{output}->output_add(long_msg=>"*** DEBUG MODE****\n");
-    $self->{output}->output_add(long_msg=>Dumper($self->{option_results}));;
+    $self->{output}->output_add(long_msg => "*** DEBUG MODE****\n", debug => 1);
+    $self->{output}->output_add(long_msg => Data::Dumper::Dumper($self->{option_results}), debug => 1);
  
     # check the SID prerequisite option
     if (!defined($self->{sid}) || $self->{sid} eq '') {
@@ -142,31 +142,31 @@ sub check_options {
     
     $self->{args} = ['-L', '-S'];
     my $connection_string = "";
-    if($self->{option_results}->{sysdba} == 1) {
-        $self->{output}->output_add(long_msg=>"*** SYDBA MODE****\n");
+    if ($self->{option_results}->{sysdba} == 1) {
+        $self->{output}->output_add(long_msg => "*** SYDBA MODE****", debug => 1);
         $connection_string="/ as sysdba";
         $self->{local_connexion} = 1;
-    } elsif(defined($self->{option_results}->{username}) && defined($self->{option_results}->{password})) {
-        $connection_string=$self->{option_results}->{username}."/".$self->{option_results}->{password};
+    } elsif (defined($self->{option_results}->{username}) && defined($self->{option_results}->{password})) {
+        $connection_string=$self->{option_results}->{username} . "/" . $self->{option_results}->{password};
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify username/password arguments or sysdba option.");
         $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
 
-    if($self->{local_connexion} == 0) {
-        if(defined($self->{option_results}->{hostname})) {
+    if ($self->{local_connexion} == 0) {
+        if (defined($self->{option_results}->{hostname})) {
             my $port = defined($self->{option_results}->{port}) ? $self->{option_results}->{port}[0] : 1521;
-            $connection_string .= "\@//".$self->{option_results}->{hostname}[0].":".$port."/".$self->{sid};
+            $connection_string .= "\@//" . $self->{option_results}->{hostname}[0] . ":" . $port . "/" . $self->{sid};
         } else {
-            $connection_string .= "\@".$self->{sid};
+            $connection_string .= "\@" . $self->{sid};
         }
     } else {
-        $self->{output}->output_add(long_msg=>"*** LOCAL CONNEXION MODE****\n");
+        $self->{output}->output_add(long_msg => "*** LOCAL CONNEXION MODE****", debug => 1);
         $ENV{ORACLE_SID} = $self->{sid};
     }
     
     # register a false data_source to be compliant with tnsping mode
-    $self->{data_source}="sid=".$self->{sid};
+    $self->{data_source} = "sid=" . $self->{sid};
     
     push @{$self->{args}}, $connection_string;
     
@@ -222,7 +222,7 @@ sub quote {
 sub command_execution {
     my ($self, %options) = @_;
     
-    my ($fh, $tempfile) = tempfile( DIR => $self->{option_results}->{tempdir}, SUFFIX => ".sql", UNLINK => 1 );
+    my ($fh, $tempfile) = tempfile(DIR => $self->{option_results}->{tempdir}, SUFFIX => ".sql", UNLINK => 1);
     print $fh "set echo off
 -- set heading off
 set feedback off
@@ -233,8 +233,8 @@ set numwidth 15
 $options{request};
 exit;";
     
-    $self->{output}->output_add(long_msg=>"*** COMMAND: ".$self->{sqlplus_cmd}.' '.join(' ',(@{$self->{args}},'@', $tempfile))."\n");
-    $self->{output}->output_add(long_msg=>"*** REQUEST: ".$options{request}."\n");
+    $self->{output}->output_add(long_msg => "*** COMMAND: " . $self->{sqlplus_cmd} . ' ' . join(' ', (@{$self->{args}}, '@', $tempfile)), debug => 1);
+    $self->{output}->output_add(long_msg => "*** REQUEST: " . $options{request}, debug => 1);
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
                                                  command => $self->{sqlplus_cmd},
                                                  arguments =>  [@{$self->{args}}, '@', $tempfile],
@@ -242,8 +242,8 @@ exit;";
                                                  wait_exit => 1,
                                                  redirect_stderr => 1
                                                  );
-    $self->{output}->output_add(long_msg=>"REQ. STDOUT: '$stdout'\n");
-    $self->{output}->output_add(long_msg=>"REQ. EXIT_CODE: $exit_code\n");
+    $self->{output}->output_add(long_msg => "REQ. STDOUT: '$stdout'", debug => 1);
+    $self->{output}->output_add(long_msg => "REQ. EXIT_CODE: $exit_code", debug => 1);
     
     # search oracle error lines
     $exit_code = -1 if($stdout =~ /^(ORA\-\d+|TNS\-\d+|SP\d\-\d+)/);
@@ -276,7 +276,7 @@ sub connect {
     
     $self->{version} = $self->fetchrow_array();
     
-    $self->{output}->output_add(long_msg=>"VERSION: ".$self->{version}."\n");
+    $self->{output}->output_add(long_msg => "VERSION: " . $self->{version}, debug => 1);
     return 0;
 }
 
@@ -285,14 +285,14 @@ sub fetchall_arrayref {
     my $array_ref = [];
     
     if($self->{stdout} eq '') {
-        $self->{output}->output_add(long_msg=>"fetchall_arrayref: no data returned (no rows selected)\n");
+        $self->{output}->output_add(long_msg => "fetchall_arrayref: no data returned (no rows selected)", debug => 1);
         return $array_ref;
     }
     
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
         my $line = $1;
-        $self->{output}->output_add(long_msg=>"fetchall_arrayref COLUMNS: $line\n") if(defined($line));
+        $self->{output}->output_add(long_msg => "fetchall_arrayref COLUMNS: $line", debug => 1) if(defined($line));
         @{$self->{columns}} = split(/#&!#/, $line);
         map { s/^\s+|\s+$//g; } @{$self->{columns}};
         $self->{stdout} =~ s/[\-#&!]+(\n|$)//;
@@ -303,7 +303,7 @@ sub fetchall_arrayref {
         $line =~ s/#&!#\s+/#&!#/g;
         $line =~ s/\s+#&!#/#&!#/g;
         
-        $self->{output}->output_add(long_msg=>"fetchall_arrayref VALUE: ".$line."\n");
+        $self->{output}->output_add(long_msg => "fetchall_arrayref VALUE: " . $line, debug => 1);
         push @$array_ref, [map({ s/\\n/\x{0a}/g; s/\\t/\x{09}/g; s/\\/\x{5c}/g; $_; } split(/#&!#/, $line))];
     }
     return $array_ref;
@@ -314,29 +314,29 @@ sub fetchrow_array {
     my @array_result = ();
     
     if($self->{stdout} eq '') {
-        $self->{output}->output_add("fetchrow_array: no data returned (no rows selected)\n");
+        $self->{output}->output_add("fetchrow_array: no data returned (no rows selected)", debug => 1);
         return @array_result;
     }
     
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
         my $line = $1;
-        $self->{output}->output_add(long_msg=>"fetchrow_array COLUMNS: $line\n");
+        $self->{output}->output_add(long_msg => "fetchrow_array COLUMNS: $line", debug => 1);
         @{$self->{columns}} = split(/#&!#/, $line);
         map { s/^\s+|\s+$//g; } @{$self->{columns}};
         $self->{stdout} =~ s/[\-#&!]+(\n|$)//;
     }
-    $self->{output}->output_add(long_msg=>"fetchrow_array STDOUT: '".$self->{stdout}."'\n");
+    $self->{output}->output_add(long_msg => "fetchrow_array STDOUT: '" . $self->{stdout} . "'", debug => 1);
     if (($self->{stdout} =~ s/^(.*?)(\n|$)//)) {
         my $line = $1;
-        $self->{output}->output_add(long_msg=>"fetchrow_array VALUE: '".$line."'\n");
+        $self->{output}->output_add(long_msg => "fetchrow_array VALUE: '" . $line . "'", debug => 1);
         push @array_result, map({ s/\\n/\x{0a}/g; s/\\t/\x{09}/g; s/\\/\x{5c}/g; $_; } split(/#&!#/, $line));
         map { s/^\s+|\s+$//g; } @array_result;
-        $self->{output}->output_add(long_msg=>"ARRAY: ".Dumper(@array_result)."\n");
+        $self->{output}->output_add(long_msg => "ARRAY: " . Data::Dumper::Dumper(@array_result), debug => 1);
     }
     
-    $self->{output}->output_add(long_msg=>"RETURN: ".Dumper(@array_result)."\n");
-    return scalar(@array_result) == 1 ? $array_result[0] : @array_result    ;
+    $self->{output}->output_add(long_msg => "RETURN: " . Data::Dumper::Dumper(@array_result), debug => 1);
+    return scalar(@array_result) == 1 ? $array_result[0] : @array_result;
 }
 
 sub fetchrow_hashref {
@@ -344,21 +344,21 @@ sub fetchrow_hashref {
     my $array_result = undef;
     
     if($self->{stdout} eq '') {
-        $self->{output}->output_add(long_msg=>"fetchrow_hashref: no data returned (no rows selected)\n");
+        $self->{output}->output_add(long_msg => "fetchrow_hashref: no data returned (no rows selected)", debug => 1);
         return $array_result;
     }
     
     if (!defined($self->{columns})) {
         $self->{stdout} =~ s/^\s*\n(.*?)(\n|$)//;
         my $line = $1;
-        $self->{output}->output_add(long_msg=>"fetchrow_hashref COLUMNS: $line\n");
+        $self->{output}->output_add(long_msg => "fetchrow_hashref COLUMNS: $line", debug => 1);
         @{$self->{columns}} = split(/#&!#/, $line);
         map { s/^\s+|\s+$//g; } @{$self->{columns}};
         $self->{stdout} =~ s/[\-#&!]+(\n|$)//;
     }
     if ($self->{stdout} ne '' && $self->{stdout} =~ s/^(.*?)(\n|$)//) {
         my $line = $1;
-        $self->{output}->output_add(long_msg=>"fetchrow_hashref VALUE: ".$line."\n");
+        $self->{output}->output_add(long_msg => "fetchrow_hashref VALUE: " . $line, debug => 1);
         $array_result = {};
         my @values = split(/#&!#/, $line);
         for (my $i = 0; $i < scalar(@values); $i++) {
@@ -367,7 +367,7 @@ sub fetchrow_hashref {
             $value =~ s/\\n/\x{0a}/g;
             $value =~ s/\\t/\x{09}/g;
             $value =~ s/\\/\x{5c}/g;
-            $self->{output}->output_add(long_msg=>"fetchrow_hashref RES: '".$self->{columns}[$i]."' = '$value'\n");
+            $self->{output}->output_add(long_msg => "fetchrow_hashref RES: '" . $self->{columns}[$i] . "' = '$value'", debug => 1);
             $array_result->{$self->{columns}[$i]} = $value;
         }
     }
@@ -381,7 +381,7 @@ sub query {
     $self->{columns} = undef;
     (my $exit_code, $self->{stdout}) = $self->command_execution(request => $options{query});
     if ($exit_code != 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot execute query:\nQuery:".$options{query}."\nOutput: ". $self->{stdout});
+        $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{stdout});
         $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
 }
@@ -442,6 +442,6 @@ Exit code for DB Errors (default: unknown)
 
 =head1 DESCRIPTION
 
-B<snmp>.
+B<sql>.
 
 =cut
