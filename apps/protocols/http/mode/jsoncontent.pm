@@ -176,24 +176,29 @@ sub display_output {
     }
 }
 
-sub lookup {
+sub decode_json_response {
     my ($self, %options) = @_;
-    my ($xpath, @values);
-
+    
+    return if (defined($self->{json_response_decoded}));
     my $json = JSON->new;
-    my $content;
     eval {
-        $content = $json->decode($self->{json_response});
+        $self->{json_response_decoded} = $json->decode($self->{json_response});
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
+}
 
+sub lookup {
+    my ($self, %options) = @_;
+    my ($xpath, @values);
+
+    $self->decode_json_response();
     foreach my $xpath_find (@{$self->{option_results}->{lookup}}) {
         eval {
             my $jpath = JSON::Path->new($xpath_find);
-            @values = $jpath->values($content);
+            @values = $jpath->values($self->{json_response_decoded});
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot lookup: $@");
@@ -256,7 +261,7 @@ sub lookup {
         my $xpath_find = $self->{option_results}->{format_lookup};
         eval {
             my $jpath = JSON::Path->new($xpath_find);
-            $self->{format_from_json} = $jpath->value($content);
+            $self->{format_from_json} = $jpath->value($self->{json_response_decoded});
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot lookup output message: $@");
@@ -274,11 +279,13 @@ sub lookup_perfdata_nagios {
 
     return if (!defined($self->{option_results}->{lookup_perfdatas_nagios}) || $self->{option_results}->{lookup_perfdatas_nagios} eq '');
 
+    $self->decode_json_response();
+
     my $perfdata_string;
     my $xpath_find = $self->{option_results}->{lookup_perfdatas_nagios};
     eval {
         my $jpath = JSON::Path->new($xpath_find);
-        $perfdata_string = $jpath->value($content);
+        $perfdata_string = $jpath->value($self->{json_response_decoded});
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot lookup perfdatas: $@");
