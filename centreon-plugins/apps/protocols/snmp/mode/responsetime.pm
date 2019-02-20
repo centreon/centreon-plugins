@@ -36,9 +36,9 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'rt', set => {
                 key_values => [ { name => 'rt' } ],
-                output_template => 'rt %.3fms',
+                output_template => 'rt %.3fs',
                 perfdatas => [
-                    { label => 'rt', value => 'rt_absolute', template => '%.3f', min => 0, unit => 'ms' },
+                    { label => 'rt', value => 'rt_absolute', template => '%.3f', min => 0, unit => 's' },
                 ],
             }
         },
