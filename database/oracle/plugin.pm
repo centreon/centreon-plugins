@@ -23,7 +23,6 @@ package database::oracle::plugin;
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_sql);
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,28 +32,28 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'asm-diskgroup-usage'      => 'database::oracle::mode::asmdiskgroupusage',
-                         'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'connected-users'          => 'database::oracle::mode::connectedusers',
-                         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
-                         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
-                         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
-                         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
-                         'invalid-object'           => 'database::oracle::mode::invalidobject',
-                         'long-queries'             => 'database::oracle::mode::longqueries',
-                         'process-usage'            => 'database::oracle::mode::processusage',
-                         'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
-                         'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
-                         'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
-                         'rollback-segment-usage'   => 'database::oracle::mode::rollbacksegmentusage',
-                         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-                         'temp-usage'               => 'database::oracle::mode::temptablespace',
-                         'undo-usage'               => 'database::oracle::mode::undotablespace',
-                         'session-usage'            => 'database::oracle::mode::sessionusage',
-                         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
-                         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
-                         'tnsping'                  => 'database::oracle::mode::tnsping',
-                         );
+        'asm-diskgroup-usage'      => 'database::oracle::mode::asmdiskgroupusage',
+        'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
+        'connected-users'          => 'database::oracle::mode::connectedusers',
+        'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
+        'data-files-status'        => 'database::oracle::mode::datafilesstatus',
+        'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
+        'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+        'invalid-object'           => 'database::oracle::mode::invalidobject',
+        'long-queries'             => 'database::oracle::mode::longqueries',
+        'process-usage'            => 'database::oracle::mode::processusage',
+        'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
+        'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
+        'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
+        'rollback-segment-usage'   => 'database::oracle::mode::rollbacksegmentusage',
+        'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
+        'temp-usage'               => 'database::oracle::mode::temptablespace',
+        'undo-usage'               => 'database::oracle::mode::undotablespace',
+        'session-usage'            => 'database::oracle::mode::sessionusage',
+        'sql'                      => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
+        'tnsping'                  => 'database::oracle::mode::tnsping',
+    );
 
 	$self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
 						 
