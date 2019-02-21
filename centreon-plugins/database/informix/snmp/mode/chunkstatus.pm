@@ -74,7 +74,7 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-name:s"       => { name => 'filter_name' },
+        "filter-name:s"     => { name => 'filter_name' },
         "unknown-status:s"  => { name => 'unknown_status' },
         "warning-status:s"  => { name => 'warning_status' },
         "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /inconsistent/' },
@@ -148,7 +148,7 @@ __END__
 
 =head1 MODE
 
-Check chunck status.
+Check chunk status.
 
 =over 8
 
