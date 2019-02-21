@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::logfilesusage;
+package database::informix::sql::mode::sessions;
 
 use base qw(centreon::plugins::mode);
 
@@ -52,6 +52,7 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
        $self->{output}->option_exit();
     }
+    
 }
 
 sub run {
@@ -60,47 +61,26 @@ sub run {
     $self->{sql} = $options{sql};
 
     $self->{sql}->connect();
-
-    my $query = q{
-SELECT uniqid, size, used FROM syslogs WHERE uniqid >=
-          (SELECT min(tx_loguniq)
-           FROM systrans
-           WHERE tx_loguniq > 0)
-};
     
-    $self->{sql}->query(query => $query);
-
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All logfiles usage are ok');    
-    my $count = 0;
-    while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        my $id = $row->{uniqid};
-
-        my $prct_used = $row->{used} * 100 / $row->{size};
-        
-        $count++;
-        $self->{output}->output_add(long_msg => sprintf("Logfile '%s': Used: %.2f%% Free: %.2f%%",
-                                                         $id, $prct_used, 100 - $prct_used));
-        my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Logfile '%s': Used: %.2f%% Free: %.2f%%",
-                                                             $id, $prct_used, 100 - $prct_used));
-        }
-        
-        $self->{output}->perfdata_add(label => 'used_' . $id, unit => '%',
-                                      value => sprintf("%.2f", $prct_used),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+    $self->{sql}->query(query => q{SELECT COUNT(*) FROM sysmaster:syssessions WHERE NOT (username = 'informix' OR pid = 0) });
+    my ($result) = $self->{sql}->fetchrow_array();
+    if (!defined($result)) {
+        $self->{output}->add_option_msg(short_msg => "Cannot get number of sessions.");
+        $self->{output}->option_exit();
     }
-
-    if ($count == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Cannot find a logfile.");
-    }
+ 
+    my $value = $result;
     
+    my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    $self->{output}->output_add(severity => $exit_code,
+                                short_msg => sprintf("%d client sessions", $value)
+                                );
+    $self->{output}->perfdata_add(label => 'sessions',
+                                  value => $value,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+                                  min => 0);
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -111,17 +91,17 @@ __END__
 
 =head1 MODE
 
-Check usage for log files.
+Check number of open sessions ('informix' user is not counted).
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in percent.
+Threshold warning.
 
 =item B<--critical>
 
-Threshold critical in percent.
+Threshold critical.
 
 =back
 

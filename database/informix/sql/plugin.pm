@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::plugin;
+package database::informix::sql::plugin;
 
 use strict;
 use warnings;
@@ -33,19 +33,19 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'archivelevel0'    => 'database::informix::mode::archivelevel0',
-                         'checkpoints'      => 'database::informix::mode::checkpoints',
-                         'chunkstates'      => 'database::informix::mode::chunkstates',
+                         'archivelevel0'    => 'database::informix::sql::mode::archivelevel0',
+                         'checkpoints'      => 'database::informix::sql::mode::checkpoints',
+                         'chunkstates'      => 'database::informix::sql::mode::chunkstates',
                          'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'global-cache'     => 'database::informix::mode::globalcache',
-                         'list-dbspaces'    => 'database::informix::mode::listdbspaces',
-                         'list-databases'   => 'database::informix::mode::listdatabases',
-                         'lockoverflow'     => 'database::informix::mode::lockoverflow',
-                         'longtxs'          => 'database::informix::mode::longtxs',
-                         'dbspace-usage'    => 'database::informix::mode::dbspacesusage',
-                         'logfile-usage'    => 'database::informix::mode::logfilesusage',
-                         'sessions'         => 'database::informix::mode::sessions',
-                         'table-locks'      => 'database::informix::mode::tablelocks',
+                         'global-cache'     => 'database::informix::sql::mode::globalcache',
+                         'list-dbspaces'    => 'database::informix::sql::mode::listdbspaces',
+                         'list-databases'   => 'database::informix::sql::mode::listdatabases',
+                         'lockoverflow'     => 'database::informix::sql::mode::lockoverflow',
+                         'longtxs'          => 'database::informix::sql::mode::longtxs',
+                         'dbspace-usage'    => 'database::informix::sql::mode::dbspacesusage',
+                         'logfile-usage'    => 'database::informix::sql::mode::logfilesusage',
+                         'sessions'         => 'database::informix::sql::mode::sessions',
+                         'table-locks'      => 'database::informix::sql::mode::tablelocks',
                          'sql'              => 'centreon::common::protocols::sql::mode::sql',
                          );
 

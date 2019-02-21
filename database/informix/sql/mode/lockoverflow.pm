@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::lockoverflow;
+package database::informix::sql::mode::lockoverflow;
 
 use base qw(centreon::plugins::mode);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::archivelevel0;
+package database::informix::sql::mode::dbspacesusage;
 
 use base qw(centreon::plugins::mode);
 
@@ -65,48 +65,54 @@ sub run {
     $self->{sql}->connect();
 
     my $query = q{
-SELECT name, level0 FROM sysdbstab
+SELECT  name dbspace,              
+        sum(chksize) pages_size,    -- sum of all chunks size pages
+        sum(nfree) pages_free       -- sum of all chunks free pages
+FROM    sysdbspaces d, syschunks c
+WHERE   d.dbsnum = c.dbsnum
+GROUP BY d.name
+ORDER BY d.name
 };
     
     $self->{sql}->query(query => $query);
 
     if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All archive level0 backups are ok');
+                                    short_msg => 'All dbspaces usage are ok');
     }
     
     my $count = 0;
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        my $name = centreon::plugins::misc::trim($row->{name});
+        my $name = centreon::plugins::misc::trim($row->{dbspace});
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && $name ne $self->{option_results}->{name});
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && $name !~ /$self->{option_results}->{name}/);
-        
-        $count++;
-        if ($row->{level0} == 0) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Dbspace '%s' archive level0 had never been executed", $name));
-            next;
+
+        my $prct_used;
+        if ($row->{pages_free} == 0) {
+            $prct_used = 100;
+        } else {
+            $prct_used = ($row->{pages_size} - $row->{pages_free}) * 100 / $row->{pages_size};
         }
         
-        my $diff_time = time() - $row->{level0};
-        $self->{output}->output_add(long_msg => sprintf("Dbspace '%s' archive level0 last execution date %s",
-                                                         $name, localtime($row->{level0})));
-        my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        $count++;
+        $self->{output}->output_add(long_msg => sprintf("Dbspace '%s': Used: %.2f%% Free: %.2f%%",
+                                                         $name, $prct_used, 100 - $prct_used));
+        my $exit_code = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         
         if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1) || 
             (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
             $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Dbspace '%s' archive level0 last execution date %s",
-                                                             $name, localtime($row->{level0})));
+                                        short_msg => sprintf("Dbspace '%s': Used: %.2f%% Free: %.2f%%",
+                                                             $name, $prct_used, 100 - $prct_used));
         }
         
         my $extra_label = '';
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'seconds' . $extra_label,
-                                      value => $diff_time,
+        $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => '%',
+                                      value => sprintf("%.2f", $prct_used),
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+                                      min => 0, max => 100);
     }
 
     if ($count == 0) {
@@ -124,17 +130,17 @@ __END__
 
 =head1 MODE
 
-Check archive level0 backup last execution.
+Check usage for one or more dbspaces.
 
 =over 8
 
 =item B<--warning>
 
-Threshold warning in seconds since last execution.
+Threshold warning in percent.
 
 =item B<--critical>
 
-Threshold critical in seconds since last execution.
+Threshold critical in percent.
 
 =item B<--name>
 

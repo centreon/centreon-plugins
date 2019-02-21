@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::globalcache;
+package database::informix::sql::mode::globalcache;
 
 use base qw(centreon::plugins::mode);
 
