@@ -62,9 +62,6 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "filter-name:s"     => { name => 'filter_name' },
-        "unknown-status:s"  => { name => 'unknown_status' },
-        "warning-status:s"  => { name => 'warning_status' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /inconsistent/' },
         "timezone:s"        => { name => 'timezone' },
     });
     
@@ -75,7 +72,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
     $self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
 }
 
@@ -145,20 +141,13 @@ Check last full backup.
 
 Filter dbspace name (can be a regexp).
 
-=item B<--unknown-status>
+=item B<--warning-time>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
+Threshold warning in seconds.
 
-=item B<--warning-status>
+=item B<--critical-time>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{status}, %{display}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{status} =~ /inconsistent/').
-Can used special variables like: %{status}, %{display}
+Threshold critical in seconds.
 
 =back
 
