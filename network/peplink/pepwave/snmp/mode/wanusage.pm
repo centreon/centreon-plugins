@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::peplink::snmp::mode::wanusage;
+package network::peplink::pepwave::snmp::mode::wanusage;
 
 use base qw(centreon::plugins::templates::counter);
 

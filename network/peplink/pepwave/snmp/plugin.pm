@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::peplink::snmp::plugin;
+package network::peplink::pepwave::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu'              => 'network::peplink::snmp::mode::cpu',
+        'cpu'              => 'network::peplink::pepwave::snmp::mode::cpu',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'memory'           => 'network::peplink::snmp::mode::memory',
-        'wan-usage'        => 'network::peplink::snmp::mode::wanusage',
+        'memory'           => 'network::peplink::pepwave::snmp::mode::memory',
+        'wan-usage'        => 'network::peplink::pepwave::snmp::mode::wanusage',
     );
 
     return $self;
@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Peplink equipments in SNMP.
+Check Peplink Pepwave equipments in SNMP.
 
 =cut
