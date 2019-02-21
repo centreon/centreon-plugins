@@ -32,40 +32,40 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 1, cb_prefix_output => 'prefix_instances_output', message_multiple => 'All instances are ok' }
     ];
-        
+
     $self->{maps_counters}->{global} = [
-        { label => 'deadlks', set => {
+        { label => 'lock-dead', set => {
                 key_values => [ { name => 'onServerDeadLocks', diff => 1 }, { name => 'display' } ],
                 output_template => 'Deadlocks %d',
                 perfdatas => [
-                    { label => 'deadlks', value => 'onServerDeadLocks_absolute', template => '%s', min => 0,
+                    { label => 'lock_dead', value => 'onServerDeadLocks_absolute', template => '%s', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        { label => 'lockwts', set => {
+        { label => 'lock-wait', set => {
                 key_values => [ { name => 'onServerLockWaits', diff => 1 }, { name => 'display' } ],
                 output_template => 'Lock Waits %d',
                 perfdatas => [
-                    { label => 'lockwts', value => 'onServerLockWaits_absolute', template => '%s', min => 0,
+                    { label => 'lock_wait', value => 'onServerLockWaits_absolute', template => '%s', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        { label => 'lockreqs', set => {
+        { label => 'lock-request', set => {
                 key_values => [ { name => 'onServerLockRequests', diff => 1 }, { name => 'display' } ],
                 output_template => 'Lock Requests %d',
                 perfdatas => [
-                    { label => 'lockreqs', value => 'onServerLockRequests_absolute', template => '%s', min => 0,
+                    { label => 'lock_request', value => 'onServerLockRequests_absolute', template => '%s', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        { label => 'lktouts', set => {
+        { label => 'lock-timeout', set => {
                 key_values => [ { name => 'onServerLockTimeouts', diff => 1 }, { name => 'display' } ],
                 output_template => 'Lock Timeouts %d',
                 perfdatas => [
-                    { label => 'lktouts', value => 'onServerLockTimeouts_absolute', template => '%s', min => 0,
+                    { label => 'lock_timeout', value => 'onServerLockTimeouts_absolute', template => '%s', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -144,12 +144,12 @@ Check instance locks.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'deadlks', 'lockwts', 'lockreqs', 'lktouts'.
+Can be: 'lock-dead', 'lock-wait', 'lock-request', 'lock-timeout'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'deadlks', 'lockwts', 'lockreqs', 'lktouts'.
+Can be: 'lock-dead', 'lock-wait', 'lock-request', 'lock-timeout'.
 
 =back
 
