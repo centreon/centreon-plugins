@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::longtxs;
+package database::informix::sql::mode::longtxs;
 
 use base qw(centreon::plugins::mode);
 

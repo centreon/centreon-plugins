@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::listdatabases;
+package database::informix::sql::mode::listdbspaces;
 
 use base qw(centreon::plugins::mode);
 
@@ -51,15 +51,15 @@ sub manage_selection {
     $self->{sql}->connect();
 
     $self->{sql}->query(query => q{
-SELECT name FROM sysdatabases ORDER BY name
+SELECT name FROM sysdbspaces ORDER BY name
 });
-    $self->{list_databases} = [];
+    $self->{list_dbspaces} = [];
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (defined($self->{option_results}->{exclude}) && $row->{name} !~ /$self->{option_results}->{exclude}/) {
-            $self->{output}->output_add(long_msg => "Skipping database '" . centreon::plugins::misc::trim($row->{name}) . "': no matching filter name");
+            $self->{output}->output_add(long_msg => "Skipping dbspace '" . centreon::plugins::misc::trim($row->{name}) . "': no matching filter name");
             next;
         }
-        push @{$self->{list_databases}}, centreon::plugins::misc::trim($row->{name});
+        push @{$self->{list_dbspaces}}, centreon::plugins::misc::trim($row->{name});
     }
 }
 
@@ -70,11 +70,11 @@ sub run {
 
     $self->manage_selection();
     
-    foreach my $name (sort @{$self->{list_databases}}) {
+    foreach my $name (sort @{$self->{list_dbspaces}}) {
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => "List of databases:");
+                                short_msg => "List of dbspaces:");
 
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -91,7 +91,7 @@ sub disco_show {
     $self->{sql} = $options{sql};
 
     $self->manage_selection();
-    foreach (sort @{$self->{list_databases}}) {
+    foreach (sort @{$self->{list_dbspaces}}) {
         $self->{output}->add_disco_entry(name => $_);
     }
 }
@@ -102,13 +102,13 @@ __END__
 
 =head1 MODE
 
-Display databases.
+Display dbspaces
 
 =over 8
 
 =item B<--exclude>
 
-Filter databases.
+Filter dbspaces.
 
 =back
 

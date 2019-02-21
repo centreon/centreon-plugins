@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::chunkstates;
+package database::informix::sql::mode::chunkstates;
 
 use base qw(centreon::plugins::mode);
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::checkpoints;
+package database::informix::sql::mode::checkpoints;
 
 use base qw(centreon::plugins::mode);
 

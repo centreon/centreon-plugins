@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package database::informix::mode::tablelocks;
+package database::informix::sql::mode::tablelocks;
 
 use base qw(centreon::plugins::mode);
 
