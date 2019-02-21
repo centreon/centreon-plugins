@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use DateTime;
 
 sub custom_status_output {
     my ($self, %options) = @_;
