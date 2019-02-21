@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::peplink::snmp::mode::memory;
+package network::peplink::pepwave::snmp::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 
