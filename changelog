@@ -1,23 +1,46 @@
-2019-xx-xx Quentin Garnier <qgarnier@centreon.com>
+2019-02-21 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Microsoft Azure Recovery and Backup
+ * Plugin added: Microsoft Azure ExpressRoute
+ * Plugin added: Microsoft Azure VPN Gateway
+ * Plugin added: Microsoft Azure Virtual Network
+ * Plugin added: Microsoft Azure SQL Server and Database
+ * Plugin added: Squid SNMP
+ * Plugin added: Informix Database SNMP
  * Plugin added: Lenovo XCC SNMP
- * Plugin added: Peplink SNMP
+ * Plugin added: Peplink Pepwave SNMP
+ * Plugin added: Centreon MAP JMX (>= 18.10)
  * Plugin added: Adder AIM SNMP
  * Plugin added: Kafka JMX
  * Plugin added: Cassandra JMX
+ * Plugin added: Office 365 Teams
+ * Plugin added: Office 365 Skype for Business
  * Plugin added: Skype 2015 MSSQL
+ * Plugin added: HP Standard SNMP
+ * Plugin added: Mac OS SNMP
+ * Plugin added: Protocols SNMP
  * Mode added: [snmp_standard] 'listspanningtrees'
  * Mode added: [quantum dxi] 'dedupvtl'
- * Enhancement: Compatibility centreon vmware plugin with vmware connector 3.x
- * Enhancement: Add password management system
- * Enhancement: Many improvements in Azure modes
- * Enhancement: Add catalog template method
+ * Enhancement: [vmware/connector] compatibility with VMware connector 3.x with enhancement
+ * Enhancement: [azure] many improvements in Azure plugins (tags, dates format)
+ * Enhancement: [office] change metrics behaviour, more global
+ * Enhancement: [core] add password management system
+ * Enhancement: [core/template] add catalog template method
+ * Enhancement: [core/template] enhance counter type 3
+ * Enhancement: [core/snmp] change snmpv3 management parameters
+ * Enhancement: [core/exec] change exit behaviour in case of failure
+ * Enhancement: [protocols/http] refacto expected-content mode, add possibility to extract data
+ * Enhancement: [database/oracle] add sqlpluscmd connection method
  * Enhancement: [snmp_standard] spanningtree mode
- * Enhancement: [centreon sql] pollerdelay mode
+ * Enhancement: [centreon/sql] pollerdelay mode
  * Enhancement: [mssql] 'failed-jobs' (#1365)
- * Enhancement: [core/snmp] Change snmpv3 management parameters
  * Enhancement: [snmp_standard] 'interfaces' (#553)
+ * Enhancement: [prometheus/api] add headers handling
+ * Enhancement: [centreon/sql] add filter for broker stats
+ * Fix: [fortinet/fortigate] enhance cluster status mode
  * Fix: [core/http] fix get-param option (#1355)
- * Fix: [ilo xmlapi] fix nic management (#1358 #1213) 
+ * Fix: [ilo xmlapi] fix nic management (#1358 #1213)
+ * Break: [informix/sql] change informix sql plugin path
+ * Break: [vmware/connector] several options changement
 
 2019-01-11 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: Office 365 (PR #1288)
