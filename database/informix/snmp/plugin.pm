@@ -37,9 +37,9 @@ sub new {
         'global-cache'      => 'database::informix::snmp::mode::globalcache',
         'list-dbspaces'     => 'database::informix::snmp::mode::listdbspaces',
         'list-instances'    => 'database::informix::snmp::mode::listinstances',
+        'lock-stats'        => 'database::informix::snmp::mode::lockstats',
         'logfile-usage'     => 'database::informix::snmp::mode::logfileusage',
         'sessions'          => 'database::informix::snmp::mode::sessions',
-        'lock-stats'        => 'database::informix::snmp::mode::lockstats',
     );
 
     return $self;
