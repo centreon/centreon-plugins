@@ -141,15 +141,15 @@ sub convert_duration {
 
     my $duration;
     if ($options{time_string} =~ /^P.*S$/) {
-        centreon::plugins::misc::mymodule_load(module => 'DateTime::Format::Duration::ISO8601',
-                                            error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'.");
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
+                                               error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'.");
 
         my $format = DateTime::Format::Duration::ISO8601->new;
         my $d = $format->parse_duration($options{time_string});
         $duration = $d->minutes * 60 + $d->seconds;
     } elsif ($options{time_string} =~ /^(\d+):(\d+):(\d+)\.\d+$/) {
-        centreon::plugins::misc::mymodule_load(module => 'DateTime::Duration',
-                                            error_msg => "Cannot load module 'DateTime::Format::Duration'.");
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Duration',
+                                               error_msg => "Cannot load module 'DateTime::Format::Duration'.");
 
         my $d = DateTime::Duration->new(hours => $1, minutes => $2, seconds => $3);
         $duration = $d->minutes * 60 + $d->seconds;
