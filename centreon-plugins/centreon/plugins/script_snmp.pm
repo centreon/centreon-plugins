@@ -126,7 +126,7 @@ sub init {
     
     $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
     $self->{snmp}->check_options(option_results => $self->{option_results});
-    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default}, snmp => $self->{snmp});
 }
 
 sub load_password_mgr {

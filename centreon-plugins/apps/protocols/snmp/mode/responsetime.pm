@@ -34,11 +34,25 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'rt', set => {
-                key_values => [ { name => 'rt' } ],
-                output_template => 'rt %.3fs',
+        { label => 'rta', set => {
+                key_values => [ { name => 'rta' } ],
+                output_template => 'rta %.3fms',
                 perfdatas => [
-                    { label => 'rt', value => 'rt_absolute', template => '%.3f', min => 0, unit => 's' },
+                    { label => 'rta', value => 'rta_absolute', template => '%.3f', min => 0, unit => 'ms' },
+                ],
+            }
+        },
+        { label => 'rtmax', display_ok => 0, set => {
+                key_values => [ { name => 'rtmax' } ],
+                perfdatas => [
+                    { label => 'rtmax', value => 'rtmax_absolute', template => '%.3f', min => 0, unit => 'ms' },
+                ],
+            }
+        },
+        { label => 'rtmin', display_ok => 0, set => {
+                key_values => [ { name => 'rtmin' } ],
+                perfdatas => [
+                    { label => 'rtmin', value => 'rtmin_absolute', template => '%.3f', min => 0, unit => 'ms' },
                 ],
             }
         },
@@ -85,29 +99,37 @@ sub check_options {
     if (defined($self->{option_results}->{packets}) && $self->{option_results}->{packets} =~ /(\d+)/) {
         $self->{option_packets} = $1;
     }
+    
+    $options{snmp}->set_snmp_connect_params(Timeout => $self->{option_timeout} * (10**6));
+    $options{snmp}->set_snmp_connect_params(Retries => 0);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    $options{snmp}->set_snmp_connect_params(Timeout => $self->{option_timeout} * (10**6));
-    $options{snmp}->set_snmp_connect_params(Retries => 0);
-    $options{snmp}->connect();
     
     my $sysDescr = ".1.3.6.1.2.1.1.1.0";
     my $total_time_elapsed = 0;
+    my $max_time_elapsed = 0;
+    my $min_time_elapsed = 0;
     my $total_packet_lost = 0;
     for (my $i = 0; $i < $self->{option_packets}; $i++) {
         my $timing0 = [gettimeofday];
         my $return = $options{snmp}->get_leef(oids => [$sysDescr], nothing_quit => 0, dont_quit => 1);
         my $timeelapsed = tv_interval($timing0, [gettimeofday]);
         
-        $total_time_elapsed += $timeelapsed;
-        $total_packet_lost++ if (!defined($return));
+        if (!defined($return)) {
+            $total_packet_lost++;
+        } else {
+            $total_time_elapsed += $timeelapsed;
+            $max_time_elapsed = $timeelapsed if ($timeelapsed > $max_time_elapsed);
+            $min_time_elapsed = $timeelapsed if ($timeelapsed < $min_time_elapsed || $min_time_elapsed == 0);
+        }
     }
 
     $self->{global} = {
-        rt => $total_time_elapsed / $self->{option_packets},
+        rta => $total_time_elapsed * 1000 / $self->{option_packets},
+        rtmax => $max_time_elapsed * 1000,
+        rtmin => $min_time_elapsed * 1000,
         pl => int($total_packet_lost * 100 / $self->{option_packets}),
     };
 }
@@ -125,7 +147,7 @@ Check SNMP agent response time.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example : --filter-counters='rt'
+Example : --filter-counters='rta'
 
 =item B<--timeout>
 
@@ -135,11 +157,11 @@ Set timeout in seconds (Default: 5).
 
 Number of packets to send (Default: 5).
 
-=item B<--warning-rt>
+=item B<--warning-rta>
 
 Response time threshold warning in milliseconds
 
-=item B<--critical-rt>
+=item B<--critical-rta>
 
 Response time threshold critical in milliseconds
 
