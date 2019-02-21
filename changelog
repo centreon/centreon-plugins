@@ -17,9 +17,9 @@
  * Plugin added: Skype 2015 MSSQL
  * Plugin added: HP Standard SNMP
  * Plugin added: Mac OS SNMP
- * Plugin added: Protocols SNMP
  * Mode added: [snmp_standard] 'listspanningtrees'
  * Mode added: [quantum dxi] 'dedupvtl'
+ * Mode added: [protocols/snmp] 'response-time'
  * Enhancement: [vmware/connector] compatibility with VMware connector 3.x with enhancement
  * Enhancement: [azure] many improvements in Azure plugins (tags, dates format)
  * Enhancement: [office] change metrics behaviour, more global
