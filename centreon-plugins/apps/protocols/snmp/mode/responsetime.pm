@@ -102,6 +102,7 @@ sub check_options {
     
     $options{snmp}->set_snmp_connect_params(Timeout => $self->{option_timeout} * (10**6));
     $options{snmp}->set_snmp_connect_params(Retries => 0);
+    $options{snmp}->set_snmp_params(subsetleef => 1);
 }
 
 sub manage_selection {
