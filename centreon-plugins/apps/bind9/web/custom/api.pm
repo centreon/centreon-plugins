@@ -192,7 +192,7 @@ sub get_api_version_xml {
     my ($self, %options) = @_;
     
     eval {
-        my $nodesets = $self->{xpath_response}->find('/statistics/@version');
+        my $nodesets = $self->{xpath_response}->find('//statistics/@version');
         my $node = $nodesets->get_node(1);
         $self->{api_version} = $node->getNodeValue();
     };
@@ -207,17 +207,26 @@ sub load_memory_xml_v3 {
     
     my $memory = {};
     
-    my $nodesets = $self->{xpath_response}->find('//memory//TotalUse');
-    my $node = $nodesets->get_node(1);
-    return $memory if (!defined($node));
-    $memory->{total_use} = $node->string_value;
-    
-    $nodesets = $self->{xpath_response}->find('//memory//InUse');
-    $node = $nodesets->get_node(1);
-    return $memory if (!defined($node));
-    $memory->{in_use} = $node->string_value;
+    my $nodesets = $self->{xpath_response}->find('//memory/summary');
+    my $node_memory = $nodesets->get_node(1);
+    foreach my $node ($node_memory->getChildNodes()) {
+        my $name = $node->getLocalName();
+        next if (!defined($name));
+        if ($name eq 'TotalUse') {
+            $memory->{total_use} = $node->string_value;
+        }
+        if ($name eq 'InUse') {
+            $memory->{in_use} = $node->string_value;
+        }
+    }
     
     return $memory;
+}
+
+sub load_memory_xml_v2 {
+    my ($self, %options) = @_;
+    
+    return $self->load_memory_xml_v3();
 }
 
 sub load_zones_xml_v3 {
@@ -242,6 +251,35 @@ sub load_zones_xml_v3 {
     return $zones;
 }
 
+sub load_zones_xml_v2 {
+    my ($self, %options) = @_;
+    
+    my $zones = {};
+    my $nodesets = $self->{xpath_response}->find('//views//zones/zone');
+    foreach my $node ($nodesets->get_nodelist()) {
+        my $name;
+        my $counters = {};
+        foreach my $subnode ($node->getChildNodes()) {
+            my $tag_name = $subnode->getLocalName();
+            $name = $subnode->string_value
+                if ($tag_name eq 'name');
+            if ($tag_name eq 'counters') {
+                foreach my $counter_node ($subnode->getChildNodes()) {
+                    $tag_name = $counter_node->getLocalName();
+                    next if (!defined($tag_name));
+                    $counters->{$tag_name} = $counter_node->string_value;
+                }
+            }
+        }
+        
+        if (defined($name)) {
+            $zones->{$name}->{counters}->{rcode} = $counters;
+        }
+    }
+
+    return $zones;
+}
+
 sub load_server_xml_v3 {
     my ($self, %options) = @_;
     
@@ -255,6 +293,62 @@ sub load_server_xml_v3 {
             $server->{counters}->{$type} = {}
                 if (!defined($server->{counters}->{$type}));
             $server->{counters}->{$type}->{$counter_name} = $counter_node->string_value;
+        }
+    }
+    
+    return $server;
+}
+
+sub load_server_xml_v2 {
+    my ($self, %options) = @_;
+    
+    my $server = { counters => { opcode => {}, nsstat => {}, qtype => {} } };
+    
+    my $nodesets = $self->{xpath_response}->find('//server//opcode');
+    foreach my $node ($nodesets->get_nodelist()) {
+        my ($name, $value);
+        foreach my $counter_node ($node->getChildNodes()) {
+            my $tag_name = $counter_node->getLocalName();
+            next if (!defined($tag_name));
+            
+            $name = $counter_node->string_value if ($tag_name eq 'name');
+            $value = $counter_node->string_value if ($tag_name eq 'counter');
+        }
+        
+        if (defined($name) && defined($value)) {
+            $server->{counters}->{opcode}->{$name} = $value;
+        }
+    }
+    
+    $nodesets = $self->{xpath_response}->find('//server//rdtype');
+    foreach my $node ($nodesets->get_nodelist()) {
+        my ($name, $value);
+        foreach my $counter_node ($node->getChildNodes()) {
+            my $tag_name = $counter_node->getLocalName();
+            next if (!defined($tag_name));
+            
+            $name = $counter_node->string_value if ($tag_name eq 'name');
+            $value = $counter_node->string_value if ($tag_name eq 'counter');
+        }
+        
+        if (defined($name) && defined($value)) {
+            $server->{counters}->{qtype}->{$name} = $value;
+        }
+    }
+    
+    $nodesets = $self->{xpath_response}->find('//server//nsstat');
+    foreach my $node ($nodesets->get_nodelist()) {
+        my ($name, $value);
+        foreach my $counter_node ($node->getChildNodes()) {
+            my $tag_name = $counter_node->getLocalName();
+            next if (!defined($tag_name));
+            
+            $name = $counter_node->string_value if ($tag_name eq 'name');
+            $value = $counter_node->string_value if ($tag_name eq 'counter');
+        }
+        
+        if (defined($name) && defined($value)) {
+            $server->{counters}->{nsstat}->{$name} = $value;
         }
     }
     
