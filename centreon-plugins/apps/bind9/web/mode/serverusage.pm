@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'server', type => 0, skipped_code => { -10 => 1, 11 => -1 } }
+        { name => 'server', type => 0, skipped_code => { -1 => 1, -10 => 1, 11 => -1 } }
     ];
     
     $self->{maps_counters}->{server} = [];
