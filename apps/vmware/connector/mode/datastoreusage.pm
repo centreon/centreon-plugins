@@ -278,12 +278,12 @@ Can used special variables like: %{accessible}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'total', 'snapshot'.
+Can be: 'usage', 'provisioned'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'total', 'snapshot'.
+Can be: 'usage', 'provisioned'.
 
 =back
 
