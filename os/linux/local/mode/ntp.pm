@@ -90,6 +90,34 @@ sub custom_status_calc {
     return 0;
 }
 
+sub custom_offset_perfdata {
+    my ($self, %options) = @_;
+
+    my $extra_label = '';
+    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+
+    if ($self->{result_values}->{state_absolute} ne '*') {
+        $self->{output}->perfdata_add(label => 'offset' . $extra_label, unit => 'ms',
+                                      value => $self->{result_values}->{offset_absolute},
+                                      min => 0);
+    } else {
+        $self->{output}->perfdata_add(label => 'offset' . $extra_label, unit => 'ms',
+                                      value => $self->{result_values}->{offset_absolute},
+                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
+                                      min => 0);
+    }
+}
+
+sub custom_offset_threshold {
+    my ($self, %options) = @_;
+
+    if ($self->{result_values}->{state_absolute} ne '*') {
+        return 'ok';
+    }
+    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{offset_absolute}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -120,8 +148,10 @@ sub set_counters {
             }
         },
         { label => 'offset', display_ok => 0, set => {
-                key_values => [ { name => 'offset' }, { name => 'display' } ],
+                key_values => [ { name => 'offset' }, { name => 'state' }, { name => 'display' } ],
                 output_template => 'Offset : %s ms',
+                closure_custom_threshold_check => $self->can('custom_offset_threshold'),
+                closure_custom_perfdata => $self->can('custom_offset_perfdata'),
                 perfdatas => [
                     { label => 'offset', value => 'offset_absolute', template => '%s',
                       min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -164,6 +194,7 @@ sub new {
         "command-path:s"    => { name => 'command_path' },
         "command-options:s" => { name => 'command_options', default => '' },
         "filter-name:s"     => { name => 'filter_name' },
+        "filter-state:s"    => { name => 'filter_state' },
         "unknown-status:s"  => { name => 'unknown_status', default => '' },
         "warning-status:s"  => { name => 'warning_status', default => '' },
         "critical-status:s" => { name => 'critical_status', default => '' },
@@ -213,20 +244,27 @@ sub manage_selection {
         }
         next if ($line !~ /$self->{regex}/);
         
-        my $remote_peer = centreon::plugins::misc::trim($2);
-        $remote_peer = $3
-            if ($self->{option_results}->{command} eq 'chronyc');
+        my ($remote_peer, $peer_fate) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1));
+        if ($self->{option_results}->{command} eq 'chronyc') {
+            $remote_peer = $3;
+            $peer_fate = $2;
+        }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $remote_peer !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $remote_peer . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $remote_peer . "': no matching filter peer name.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
+            $peer_fate !~ /$self->{option_results}->{filter_state}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $remote_peer . "': no matching filter peer state.", debug => 1);
             next;
         }
         
         if ($self->{option_results}->{command} eq 'ntpq') {
-            my ($peer_fate, $refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($1, $3, $4, $5, $6, $7, $8, $9, $10, $11);
+            my ($refid, $stratum, $type, $last_time, $polling_intervall, $reach, $delay, $offset, $jitter) = ($3, $4, $5, $6, $7, $8, $9, $10, $11);
             $self->{peers}->{$remote_peer} = {
                 display => $remote_peer,
-                state   => centreon::plugins::misc::trim($peer_fate),
+                state   => $peer_fate,
                 stratum => centreon::plugins::misc::trim($stratum),
                 type    => centreon::plugins::misc::trim($type),
                 reach   => centreon::plugins::misc::trim($reach),
@@ -234,7 +272,7 @@ sub manage_selection {
             };
         } elsif ($self->{option_results}->{command} eq 'chronyc') {
             #^,+,212.83.187.62,2,10,377,312,0.008750526,0.008750526,0.039808452
-            my ($type, $peer_fate, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $2, $4, $5, $6, $7, $10);
+            my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $10);
 
             $self->{peers}->{$remote_peer} = {
                 display     => $remote_peer,
@@ -300,6 +338,10 @@ Command path (Default: none).
 =item B<--filter-name>
 
 Filter peer name (can be a regexp).
+
+=item B<--filter-name>
+
+Filter peer state (can be a regexp).
 
 =item B<--warning-peers>
 
