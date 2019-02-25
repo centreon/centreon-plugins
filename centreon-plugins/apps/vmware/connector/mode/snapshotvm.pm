@@ -145,12 +145,12 @@ sub run {
                                   min => 0);
     if (scalar(keys %{$vm_errors{warning}}) > 0) {
         $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{warning} / 86400), 
+                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{option_results}->{warning} / 86400), 
                                                          join('] [', sort keys %{$vm_errors{warning}})));
     }
     if (scalar(keys %{$vm_errors{critical}}) > 0) {
         $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{critical} / 86400), 
+                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{option_results}->{critical} / 86400), 
                                                          join('] [', sort keys %{$vm_errors{critical}})));
     }
     if (scalar(keys %vm_consolidate) > 0) {
