@@ -82,6 +82,8 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{rawtype} = $options{new_datas}->{$self->{instance} . '_type'};
+    $self->{result_values}->{rawstate} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{type} = $type_map_chronyc{$options{new_datas}->{$self->{instance} . '_type'}};
     $self->{result_values}->{reach} = $options{new_datas}->{$self->{instance} . '_reach'};
     $self->{result_values}->{state} = $state_map_chronyc{$options{new_datas}->{$self->{instance} . '_state'}};
