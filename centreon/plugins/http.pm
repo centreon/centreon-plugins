@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -121,7 +121,7 @@ sub check_options {
             $options{request}->{$_} =~ s/%\{http_code\}/\$response->code/g;
         }
     }
-    
+
     $self->{ssl_context} = '';
     if (!defined($options{request}->{ssl_opt})) {
         $options{request}->{ssl_opt} = [];

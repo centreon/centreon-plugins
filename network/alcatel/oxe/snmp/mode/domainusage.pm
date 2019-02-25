@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -211,7 +211,7 @@ sub run {
                 $short_msg_append = ', ';
             }
             
-            $obj->perfdata(extra_instance => $multiple);
+            $obj->perfdata(level => 1, extra_instance => $multiple);
         }
 
         $self->{output}->output_add(long_msg => "Domain '$self->{domain}->{$id}->{display}' $long_msg");

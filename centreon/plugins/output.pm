@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,6 +39,8 @@ sub new {
                                   "range-perfdata:s"        => { name => 'range_perfdata' },
                                   "filter-perfdata:s"       => { name => 'filter_perfdata' },
                                   "change-perfdata:s@"      => { name => 'change_perfdata' },
+                                  "extend-perfdata:s@"      => { name => 'extend_perfdata' },
+                                  "change-short-output:s@"  => { name => 'change_short_output' },
                                   "filter-uom:s"            => { name => 'filter_uom' },
                                   "verbose"                 => { name => 'verbose' },
                                   "debug"                   => { name => 'debug' },
@@ -123,15 +125,7 @@ sub check_options {
         }
     }
     
-    if (defined($self->{option_results}->{change_perfdata})) {
-        foreach (@{$self->{option_results}->{change_perfdata}}) {
-            if (! /^(.+?),(.+)$/) {
-                $self->add_option_msg(short_msg => "Wrong change-perfdata option '" . $_ . "' (syntax: match,substitute)");
-                $self->option_exit();
-            }
-            $self->{change_perfdata}->{$1} = $2;
-        }
-    }
+    $self->load_perfdata_extend_args();
 }
 
 sub add_option_msg {
@@ -161,7 +155,7 @@ sub output_add {
                 separator => ' - ',
                 debug => 0,
                 short_msg => undef,
-                long_msg => undef
+                long_msg => undef,
                 );
     my $options = {%args, %params};
     
@@ -192,36 +186,6 @@ sub perfdata_add {
     }
     $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
-}
-
-sub change_perfdatas {
-    my ($self, %options) = @_;
-    
-    if ($self->{option_results}->{change_perfdata}) {
-        foreach (@{$self->{perfdatas}}) {
-            foreach my $filter (keys %{$self->{change_perfdata}}) {
-                if ($_->{label} =~ /$filter/) {
-                    eval "\$_->{label} =~ s{$filter}{$self->{change_perfdata}->{$filter}}";
-                    last;
-                }
-            }
-        }
-    }
-    
-    return if ($self->{explode_perfdata_total} == 0);
-    foreach (@{$self->{perfdatas}}) {
-        next if ($_->{max} eq '');
-        if ($self->{explode_perfdata_total} == 2) {
-            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
-            next;
-        }
-        foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
-            if ($_->{label} =~ /$regexp/) {
-                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
-                last;
-            }
-        }
-    }
 }
 
 sub range_perfdata {
@@ -275,7 +239,7 @@ sub output_json {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
-        $self->change_perfdatas();
+        $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -365,7 +329,7 @@ sub output_xml {
     }
 
     if ($options{force_ignore_perfdata} == 0) {
-        $self->change_perfdatas();
+        $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -387,15 +351,9 @@ sub output_xml {
     print $self->{xml_output}->toString(1);
 }
 
-sub output_txt {
+sub output_txt_short_display {
     my ($self, %options) = @_;
-    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
-    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
-
-    if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
-        $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
-    }
-
+    
     if (defined($self->{global_short_concat_outputs}->{CRITICAL})) {
         print (($options{nolabel} == 0 ? 'CRITICAL: ' : '') . $self->{global_short_concat_outputs}->{CRITICAL} . " ");
     }
@@ -408,12 +366,50 @@ sub output_txt {
     if (uc($options{exit_litteral}) eq 'OK') {
         print (($options{nolabel} == 0 ? 'OK: ' : '') . (defined($self->{global_short_concat_outputs}->{OK}) ? $self->{global_short_concat_outputs}->{OK} : '') . " ");
     }
+}
+
+sub output_txt_short {
+    my ($self, %options) = @_;
+    
+    if (!defined($self->{option_results}->{change_short_output})) {
+        $self->output_txt_short_display(%options);
+        return ;
+    }
+    
+    my $stdout = '';
+    {
+        local *STDOUT;
+        open STDOUT, '>', \$stdout;
+        $self->output_txt_short_display(%options);
+    }
+    
+    foreach (@{$self->{option_results}->{change_short_output}}) {
+         my ($pattern, $replace, $modifier) = split /~/;
+         next if (!defined($pattern));
+         $replace = '' if (!defined($replace));
+         $modifier = '' if (!defined($modifier));
+         eval "\$stdout =~ s{$pattern}{$replace}$modifier";
+    }
+    
+    print $stdout;
+}
+
+sub output_txt {
+    my ($self, %options) = @_;
+    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
+
+    if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
+        $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
+    }
+
+    $self->output_txt_short(%options);
 
     if ($force_ignore_perfdata == 1) {
         print "\n";
     } else {
         print "|";
-        $self->change_perfdatas();
+        $self->change_perfdata();
         foreach my $perf (@{$self->{perfdatas}}) {
             next if (defined($self->{option_results}->{filter_perfdata}) &&
                      $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -746,6 +742,292 @@ sub is_disco_show {
     return 0;
 }
 
+sub is_verbose {
+    my ($self) = @_;
+
+    if (defined($self->{option_results}->{verbose})) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_debug {
+    my ($self) = @_;
+
+    if (defined($self->{option_results}->{debug})) {
+        return 1;
+    }
+    return 0;
+}
+
+sub parse_pfdata_scale {
+    my ($self, %options) = @_;
+    
+    # --extend-perfdata=traffic_in,,scale(Mbps),mbps
+    my $args = { unit => 'auto' };
+    if ($options{args} =~ /^([KMGTPEkmgtpe])?(B|b|bps|Bps|b\/s|auto)$/) {
+        $args->{quantity} = defined($1) ? $1 : '';
+        $args->{unit} = $2;
+    } elsif ($options{args} ne '') {
+        return 1;
+    }
+    
+    return (0, $args);
+}
+
+sub parse_pfdata_math {
+    my ($self, %options) = @_;
+
+    # --extend-perfdata=perfx,,math(current + 10 - 100, 1)
+    my $args = { math => undef, apply_threshold => 0 };
+    my ($math, $apply_threshold) = split /\|/, $options{args};
+    if ($math =~ /^((?:[\s\.\-\+\*\/0-9\(\)]|current)+)$/) {
+        $args->{math} = $1;
+    } elsif ($options{args} ne '') {
+        return 1;
+    }
+    
+    if (defined($apply_threshold) && $apply_threshold =~ /^\s*(0|1)\s*$/ ) {
+        $args->{apply_threshold} = $1;
+    }
+    
+    return (0, $args);
+}
+
+sub apply_pfdata_scale {
+    my ($self, %options) = @_;
+    
+    return if (${$options{perf}}->{unit} !~ /^([KMGTPEkmgtpe])?(B|b|bps|Bps|b\/s)$/);
+    
+    my ($src_quantity, $src_unit) = ($1, $2);
+    my ($value, $dst_quantity, $dst_unit) = centreon::plugins::misc::scale_bytesbit(value => ${$options{perf}}->{value},
+        src_quantity => $src_quantity, src_unit => $src_unit, dst_quantity => $options{args}->{quantity}, dst_unit => $options{args}->{unit});
+    ${$options{perf}}->{value} = sprintf("%.2f", $value);
+    if (defined($dst_unit)) {
+       ${$options{perf}}->{unit} = $dst_quantity . $dst_unit;
+    } else {
+        ${$options{perf}}->{unit} = $options{args}->{quantity} . $options{args}->{unit};
+    }
+    
+    if (defined(${$options{perf}}->{max}) && ${$options{perf}}->{max} ne '') {
+        ($value) = centreon::plugins::misc::scale_bytesbit(value => ${$options{perf}}->{max},
+            src_quantity => $src_quantity, src_unit => $src_unit, 
+            dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity}, 
+            dst_unit => defined($dst_unit) ? $dst_unit : $options{args}->{unit});
+        ${$options{perf}}->{max} = sprintf("%.2f", $value);
+    }
+    
+    foreach my $threshold ('warning', 'critical') {
+        next if (${$options{perf}}->{$threshold} eq '');
+        my ($status, $result) = centreon::plugins::misc::parse_threshold(threshold => ${$options{perf}}->{$threshold});
+        next if ($status == 0);
+
+        if ($result->{start} ne '' && $result->{infinite_neg} == 0) {
+            ($result->{start}) = centreon::plugins::misc::scale_bytesbit(value => $result->{start},
+                src_quantity => $src_quantity, src_unit => $src_unit, 
+                dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity}, 
+                dst_unit => defined($dst_unit) ? $dst_unit : $options{args}->{unit});
+        }
+        if ($result->{end} ne '' && $result->{infinite_pos} == 0) {
+            ($result->{end}) = centreon::plugins::misc::scale_bytesbit(value => $result->{end},
+                src_quantity => $src_quantity, src_unit => $src_unit, 
+                dst_quantity => defined($dst_unit) ? $dst_quantity : $options{args}->{quantity}, 
+                dst_unit => defined($dst_unit) ? $dst_unit : $options{args}->{unit});
+        }
+        
+        ${$options{perf}}->{$threshold} = centreon::plugins::misc::get_threshold_litteral(%$result);
+    }
+}
+
+sub apply_pfdata_invert {
+    my ($self, %options) = @_;
+    
+    return if (!defined(${$options{perf}}->{max}) || ${$options{perf}}->{max} eq '');
+    
+    ${$options{perf}}->{value} = ${$options{perf}}->{max} - ${$options{perf}}->{value};
+    foreach my $threshold ('warning', 'critical') {
+        next if (${$options{perf}}->{$threshold} eq '');
+        my ($status, $result) = centreon::plugins::misc::parse_threshold(threshold => ${$options{perf}}->{$threshold});
+        next if ($status == 0);
+        
+        my $tmp = { arobase => $result->{arobase}, infinite_pos => 0, infinite_neg => 0, start => $result->{start}, end => $result->{end} };
+        $tmp->{infinite_neg} = 1 if ($result->{infinite_pos} == 1);
+        $tmp->{infinite_pos} = 1 if ($result->{infinite_neg} == 1);
+
+        if ($result->{start} ne '' && $result->{infinite_neg} == 0) {
+            $tmp->{end} = ${$options{perf}}->{max} - $result->{start};
+        }
+        if ($result->{end} ne '' && $result->{infinite_pos} == 0) {
+            $tmp->{start} = ${$options{perf}}->{max} - $result->{end};
+        }
+        
+        ${$options{perf}}->{$threshold} = centreon::plugins::misc::get_threshold_litteral(%$tmp);
+    }
+}
+
+sub apply_pfdata_percent {
+    my ($self, %options) = @_;
+
+    return if (!defined(${$options{perf}}->{max}) || ${$options{perf}}->{max} eq '');
+    
+    ${$options{perf}}->{value} = sprintf("%.2f", ${$options{perf}}->{value} * 100 / ${$options{perf}}->{max});
+    ${$options{perf}}->{unit} = '%';
+    foreach my $threshold ('warning', 'critical') {
+        next if (${$options{perf}}->{$threshold} eq '');
+        my ($status, $result) = centreon::plugins::misc::parse_threshold(threshold => ${$options{perf}}->{$threshold});
+        next if ($status == 0);
+
+        if ($result->{start} ne '' && $result->{infinite_neg} == 0) {
+            $result->{start} = sprintf("%.2f", $result->{start} * 100 / ${$options{perf}}->{max});
+        }
+        if ($result->{end} ne '' && $result->{infinite_pos} == 0) {
+            $result->{end} = sprintf("%.2f", $result->{end} * 100 / ${$options{perf}}->{max});
+        }
+        
+        ${$options{perf}}->{$threshold} = centreon::plugins::misc::get_threshold_litteral(%$result);
+    }
+    
+    ${$options{perf}}->{max} = 100; 
+}
+
+sub apply_pfdata_math {
+    my ($self, %options) = @_;
+    
+    my $math = $options{args}->{math};
+    $math =~ s/current/\$value/g;
+    
+    my $value = ${$options{perf}}->{value};
+    eval "\${\$options{perf}}->{value} = $math";
+    
+    return if ($options{args}->{apply_threshold} == 0);
+    
+    foreach my $threshold ('warning', 'critical') {
+        next if (${$options{perf}}->{$threshold} eq '');
+        my ($status, $result) = centreon::plugins::misc::parse_threshold(threshold => ${$options{perf}}->{$threshold});
+        next if ($status == 0);
+
+        if ($result->{start} ne '' && $result->{infinite_neg} == 0) {
+            $value = $result->{start};
+            eval "\$result->{start} = $math";
+        }
+        if ($result->{end} ne '' && $result->{infinite_pos} == 0) {
+            $value = $result->{end};
+            eval "\$result->{end} = $math";
+        }
+        
+        ${$options{perf}}->{$threshold} = centreon::plugins::misc::get_threshold_litteral(%$result);
+    }
+    
+    ${$options{perf}}->{max} = 100; 
+}
+
+sub load_perfdata_extend_args {
+    my ($self, %options) = @_;
+    
+    foreach ([$self->{option_results}->{change_perfdata}, 1], [$self->{option_results}->{extend_perfdata}, 2]) {
+        next if (!defined($_->[0]));
+        foreach my $arg (@{$_->[0]}) {
+            $self->parse_perfdata_extend_args(arg => $arg, type => $_->[1]);
+        }
+    }
+}
+
+sub parse_perfdata_extend_args {
+    my ($self, %options) = @_;
+    
+    # --extend-perfdata=searchlabel,newlabel,method[,newuom]
+    my ($pfdata_match, $pfdata_substitute, $method, $uom_substitute) = split /,/, $options{arg};
+    return if (!defined($pfdata_match) || $pfdata_match eq '');
+    
+    $self->{pfdata_extends} = [] if (!defined($self->{pfdata_extends}));
+    my $pfdata_extends = {
+        pfdata_match => defined($pfdata_match) && $pfdata_match ne '' ? $pfdata_match : undef,
+        pfdata_substitute => defined($pfdata_substitute) && $pfdata_substitute ne '' ? $pfdata_substitute : undef,
+        uom_substitute => defined($uom_substitute) && $uom_substitute ne '' ? $uom_substitute : undef,
+        type => $options{type}
+    };
+
+    if (defined($method) && $method ne '') {
+        if ($method !~ /^\s*(invert|percent|scale|math)\s*\(\s*(.*?)\s*\)\s*$/) {
+            $self->output_add(long_msg => "method in argument '$options{arg}' is unknown", debug => 1);
+            return ;
+        }
+        
+        $pfdata_extends->{method_name} = $1;
+        my $args = $2;
+        if (my $func = $self->can('parse_pfdata_' . $pfdata_extends->{method_name})) {
+            (my $status, $pfdata_extends->{method_args}) = $func->($self, args => $args);
+            if ($status == 1) {
+                $self->output_add(long_msg => "argument in method '$options{arg}' is unknown", debug => 1);
+                return ;
+            }
+        }
+    }
+    
+    push  @{$self->{pfdata_extends}}, $pfdata_extends;
+}
+
+sub apply_perfdata_explode {
+    my ($self, %options) = @_;
+    
+    return if ($self->{explode_perfdata_total} == 0);
+    foreach (@{$self->{perfdatas}}) {
+        next if ($_->{max} eq '');
+        if ($self->{explode_perfdata_total} == 2) {
+            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
+            next;
+        }
+        foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
+            if ($_->{label} =~ /$regexp/) {
+                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
+                last;
+            }
+        }
+    }
+}
+
+sub apply_perfdata_extend {
+    my ($self, %options) = @_;
+
+    foreach my $extend (@{$self->{pfdata_extends}}) {
+        my $new_pfdata = [];
+        
+        for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
+            next if ($self->{perfdatas}->[$i]->{label} !~ /$extend->{pfdata_match}/);
+            
+            my $new_perf = { %{$self->{perfdatas}->[$i]} };
+            
+            if (defined($extend->{pfdata_substitute})) {
+                eval "\$new_perf->{label} =~ s{$extend->{pfdata_match}}{$extend->{pfdata_substitute}}";
+            }
+
+            if (defined($extend->{method_name})) {
+                my $func = $self->can('apply_pfdata_' . $extend->{method_name});
+                $func->($self, perf => \$new_perf, args => $extend->{method_args});
+            }
+            
+            if (defined($extend->{uom_substitute})) {
+                $new_perf->{unit} = $extend->{uom_substitute};
+            }
+            
+            if ($extend->{type} == 1) {
+                $self->{perfdatas}->[$i] = $new_perf;
+            } else {
+                push @$new_pfdata, $new_perf;
+            }
+        }
+        
+        push @{$self->{perfdatas}}, @$new_pfdata;
+    }
+}
+
+sub change_perfdata {
+    my ($self, %options) = @_;
+    
+    $self->apply_perfdata_extend();
+    $self->apply_perfdata_explode();
+}
+
 1;
 
 __END__
@@ -779,10 +1061,30 @@ Filter perfdata that match the regexp.
 Put max perfdata (if it exist) in a specific perfdata 
 (without values: same with '_max' suffix) (Multiple options)
 
-=item B<--change-perfdata>
+=item B<--change-perfdata> B<--extend-perfdata> 
 
-Change perfdata name (Multiple option)
-Syntax: regexp_matching,regexp_substitute
+Change or extend perfdata. 
+Syntax: --extend-perfdata=searchlabel,newlabel,target[,newuom]
+
+Common examples:
+
+=over 4
+
+Change storage free perfdata in used: --change-perfdata=free,used,invert()
+
+Change storage free perfdata in used: --change-perfdata=used,free,invert()
+
+Scale traffic values automaticaly: --change-perfdata=traffic,,scale(auto)
+
+Scale traffic values in Mbps: --change-perfdata=traffic_in,,scale(Mbps),mbps
+
+Change traffic values in percent: --change-perfdata=traffic_in,,percent()
+
+=back
+
+=item B<--change-short-output>
+
+Change short output display. --change-short-output=pattern~replace~modifier
 
 =item B<--range-perfdata>
 
@@ -795,7 +1097,9 @@ Filter UOM that match the regexp.
 
 =item B<--opt-exit>
 
-Exit code for an option error, usage (default: unknown).
+Optional exit code for an execution error (i.e. wrong option provided,
+SSH connection refused, timeout, etc)
+(Default: unknown).
 
 =item B<--output-xml>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,7 +108,7 @@ sub set_counters {
 sub prefix_memory_output {
     my ($self, %options) = @_;
 
-    return "RAM ";
+    return "Ram ";
 }
 
 sub new {
@@ -145,7 +145,7 @@ sub manage_selection {
     foreach my $key (keys %$result) {
         next if ($key !~ /\.([0-9]+)$/);
         my $oid = $1;
-        if ($result->{$key} =~ /^Physical memory$/i) {
+        if ($result->{$key} =~ /^Physical (memory|RAM)$/i) {
             $self->{physical_memory_id} = $oid;
         }
     }

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -19,7 +19,7 @@
 #
 
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -115,18 +115,18 @@ sub manage_selection {
 
     # STEELHEAD-MIB
     my $oids = {
-        cpuUtil1  => '.1.3.6.1.4.1.17163.1.1.5.1.1.0',
-        cpuLoad1  => '.1.3.6.1.4.1.17163.1.1.5.1.2.0',
-        cpuLoad5  => '.1.3.6.1.4.1.17163.1.1.5.1.3.0',
-        cpuLoad15 => '.1.3.6.1.4.1.17163.1.1.5.1.4.0',
+        cpuLoad1  => '.1.3.6.1.4.1.17163.1.1.5.1.1.0',
+        cpuLoad5  => '.1.3.6.1.4.1.17163.1.1.5.1.2.0',
+        cpuLoad15 => '.1.3.6.1.4.1.17163.1.1.5.1.3.0',
+        cpuUtil1  => '.1.3.6.1.4.1.17163.1.1.5.1.4.0',
     };
 
     # STEELHEAD-EX-MIB
     my $oids_ex = {
-        cpuUtil1  => '.1.3.6.1.4.1.17163.1.51.5.1.1.0',
-        cpuLoad1  => '.1.3.6.1.4.1.17163.1.51.5.1.2.0',
-        cpuLoad5  => '.1.3.6.1.4.1.17163.1.51.5.1.3.0',
-        cpuLoad15 => '.1.3.6.1.4.1.17163.1.51.5.1.4.0',
+        cpuLoad1  => '.1.3.6.1.4.1.17163.1.51.5.1.1.0',
+        cpuLoad5  => '.1.3.6.1.4.1.17163.1.51.5.1.2.0',
+        cpuLoad15 => '.1.3.6.1.4.1.17163.1.51.5.1.3.0',
+        cpuUtil1  => '.1.3.6.1.4.1.17163.1.51.5.1.4.0',
     };
 
     my $snmp_result = $options{snmp}->get_leef(oids => [ values %{$oids}, values %{$oids_ex} ], nothing_quit => 1);

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -132,9 +132,9 @@ sub host_message {
     my ($self, %options) = @_;
     
     my $url_host = $self->{option_results}->{host_name};
+    $self->{payload_attachment}->{fallback} = "Host " . $self->{option_results}->{host_name};
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $url_host = '<' . $self->{option_results}->{link_url} . '|' . $self->{option_results}->{host_name} . '>';
-        $self->{payload_attachment}->{fallback} = "Host " . $self->{option_results}->{host_name};
     }
     $self->{payload_attachment}->{text} = "Host " . $url_host;
     
@@ -165,6 +165,7 @@ sub service_message {
     my ($self, %options) = @_;
     
     my $url_service = "Host: " . $self->{option_results}->{host_name} . " | Service " . $self->{option_results}->{service_description};
+    $self->{payload_attachment}->{fallback} = $url_service;
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $url_service = '<' . $self->{option_results}->{link_url} . '|' . $self->{option_results}->{host_name} . '/' . $self->{option_results}->{service_description} . '>';
         $self->{payload_attachment}->{fallback} = "Service " . $self->{option_results}->{host_name} . '/' . $self->{option_results}->{service_description};

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,37 +26,18 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::windows::pendingreboot;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'Reboot Pending : ' . $self->{result_values}->{RebootPending};
+    my $msg = sprintf('Reboot Pending: %s [Windows Update: %s][Component Based Servicing: %s][SCCM Client: %s][File Rename Operations: %s][Computer Name Change: %s]',
+                        $self->{result_values}->{RebootPending},
+                        $self->{result_values}->{WindowsUpdate},
+                        $self->{result_values}->{CBServicing},
+                        $self->{result_values}->{CCMClientSDK},
+                        $self->{result_values}->{PendFileRename},
+                        $self->{result_values}->{PendComputerRename});
     return $msg;
 }
 
@@ -67,6 +48,8 @@ sub custom_status_calc {
     $self->{result_values}->{RebootPending} = $options{new_datas}->{$self->{instance} . '_RebootPending'};
     $self->{result_values}->{WindowsUpdate} = $options{new_datas}->{$self->{instance} . '_WindowsUpdate'};
     $self->{result_values}->{CCMClientSDK} = $options{new_datas}->{$self->{instance} . '_CCMClientSDK'};
+    $self->{result_values}->{PendComputerRename} = $options{new_datas}->{$self->{instance} . '_PendComputerRename'};
+    $self->{result_values}->{PendFileRename} = $options{new_datas}->{$self->{instance} . '_PendFileRename'};
     return 0;
 }
 
@@ -79,11 +62,11 @@ sub set_counters {
     $self->{maps_counters}->{pendingreboot} = [
         { label => 'status', , threshold => 0, set => {
                 key_values => [ { name => 'CBServicing' }, { name => 'RebootPending' }, { name => 'WindowsUpdate' }, 
-                    { name => 'CCMClientSDK' } ],
+                    { name => 'CCMClientSDK' }, { name => 'PendComputerRename' }, { name => 'PendFileRename' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -113,18 +96,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -191,12 +163,14 @@ Print powershell output.
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{RebootPending} =~ /true/i').
-Can used special variables like: %{RebootPending}, %{CBServicing}, %{WindowsUpdate}, %{CCMClientSDK}.
+Can used special variables like: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
+%{PendFileRename}, %{PendComputerRename}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '').
-Can used special variables like: %{RebootPending}, %{CBServicing}, %{WindowsUpdate}, %{CCMClientSDK}.
+Can used special variables like: %{RebootPending}, %{WindowsUpdate}, %{CBServicing}, %{CCMClientSDK},
+%{PendFileRename}, %{PendComputerRename}.
 
 =back
 

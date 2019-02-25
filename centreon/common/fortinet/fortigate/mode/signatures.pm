@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -135,12 +135,12 @@ Example: --filter-counters='^av$'
 
 =item B<--warning-*>
 
-Threshold warning (in hours).
+Threshold warning (in seconds).
 Can be: 'av', 'ips'
 
 =item B<--critical-*>
 
-Threshold critical (in hours).
+Threshold critical (in seconds).
 Can be: 'av', 'ips'
 
 =back

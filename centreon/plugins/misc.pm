@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -51,19 +51,15 @@ sub windows_execute {
     
     $| = 1;
     pipe FROM_CHILD, TO_PARENT or do {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Internal error: can't create pipe from child to parent: $!");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Internal error: can't create pipe from child to parent: $!");
+        $options{output}->option_exit();
     };
     my $job = Win32::Job->new;
     if (!($pid = $job->spawn(undef, $cmd,
                        { stdout => \*TO_PARENT,
                          stderr => \*TO_PARENT }))) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                     short_msg => "Internal error: execution issue: $^E");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Internal error: execution issue: $^E");
+        $options{output}->option_exit();
     }
     close TO_PARENT;
 
@@ -97,10 +93,8 @@ sub windows_execute {
     close FROM_CHILD;    
     
     if ($ended == 0) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command too long to execute (timeout)...");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command too long to execute (timeout)...");
+        $options{output}->option_exit();
     }
     chomp $stdout;
     
@@ -110,10 +104,8 @@ sub windows_execute {
     
     if ($result->{$pid}->{exitcode} != 0) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $stdout");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->option_exit();
     }
     
     return ($stdout, $result->{$pid}->{exitcode});
@@ -190,10 +182,8 @@ sub unix_execute {
     
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                     short_msg => $stdout);
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => $stdout);
+        $options{output}->option_exit();
     }
     
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
@@ -202,10 +192,8 @@ sub unix_execute {
     
     if ($exit_code != 0 && (!defined($options{no_errors}) || !defined($options{no_errors}->{$exit_code}))) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $stdout");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->option_exit();
     }
     
     return $stdout;
@@ -389,17 +377,123 @@ sub change_seconds {
     return $str;
 }
 
+sub scale_bytesbit {
+    my (%options) = @_;
+    
+    my $base = 1024;
+    if (defined($options{dst_unit}) && defined($options{src_unit})) {
+        $options{value} *= 8 if ($options{dst_unit} =~ /b/ && $options{src_unit} =~ /B/);
+        $options{value} /= 8 if ($options{dst_unit} =~ /B/ && $options{src_unit} =~ /b/);
+        if ($options{dst_unit} =~ /b/) {
+            $base = 1000;
+        }
+    }
+        
+    my %expo = ('' => 0, k => 1, m => 2, g => 3, t => 4, p => 5, e => 6);
+    my ($src_expo, $dst_expo) = (0, 0);
+    $src_expo = $expo{lc($options{src_quantity})} if (defined($options{src_quantity}) && $options{src_quantity} =~ /[kmgtpe]/i);
+    if ($options{dst_unit} eq 'auto') {
+        my @auto = ('', 'k', 'm', 'g', 't', 'p', 'e');
+        my $i = defined($options{src_quantity}) ? $expo{$options{src_quantity}} : 0;
+        for (; $i < scalar(@auto); $i++) {
+            last if ($options{value} < $base);
+            $options{value} = $options{value} / $base;
+        }
+
+        return ($options{value}, $auto[$i], $options{src_unit});
+    } elsif (defined($options{dst_quantity}) && ($options{dst_quantity} eq '' || $options{dst_quantity} =~ /[kmgtpe]/i )) {
+        my $dst_expo = $expo{lc($options{dst_quantity})};
+        if ($dst_expo - $src_expo > 0) {
+            $options{value} = $options{value} / ($base ** ($dst_expo - $src_expo));
+        } elsif ($dst_expo - $src_expo < 0) {
+            $options{value} = $options{value} * ($base ** (($dst_expo - $src_expo) * -1));
+        }
+    }
+    
+    return $options{value};
+}
+
 sub convert_bytes {
     my (%options) = @_;
-    my %expo = (k => 1, m => 2, g => 3, t => 4);
+
+    my %expo = (k => 1, m => 2, g => 3, t => 4, p => 5);
     my $value = $options{value};
-    my $base = defined($options{network}) ? 1000 : 1024;
-    
+    my $base = defined($options{network}) ? 1000 : 1024;    
     if ($options{unit} =~ /([kmgt])b/i) {
         $value = $value * ($base ** $expo{lc($1)});
     }
 
     return $value;
+}
+
+sub expand_exponential {
+    my (%options) = @_;
+    
+    return $options{value} unless ($options{value} =~ /^(.*)e([-+]?)(.*)$/);
+    my ($num, $sign, $exp) = ($1, $2, $3);
+    my $sig = $sign eq '-' ? "." . ($exp - 1 + length $num) : '';
+    return sprintf("%${sig}f", $options{value});
+}
+
+sub parse_threshold {
+    my (%options) = @_;
+
+    my $perf = trim($options{threshold});
+    my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => "", end => "" };
+
+    my $global_status = 1;    
+    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
+        $perf_result->{start} = $2 if (defined($2));
+        $perf_result->{end} = $3 if (defined($3));
+        $perf_result->{arobase} = 1 if (defined($1) && $1 eq '@');
+        $perf_result->{start} =~ s/[\+:]//g;
+        $perf_result->{end} =~ s/\+//;
+        if ($perf_result->{end} eq '') {
+            $perf_result->{end} = 1e500;
+            $perf_result->{infinite_pos} = 1;
+        }
+        $perf_result->{start} = 0 if ($perf_result->{start} eq '');      
+        $perf_result->{start} =~ s/,/\./;
+        $perf_result->{end} =~ s/,/\./;
+        
+        if ($perf_result->{start} eq '~') {
+            $perf_result->{start} = -1e500;
+            $perf_result->{infinite_neg} = 1;
+        }
+    } else {
+        $global_status = 0;
+    }
+
+    return ($global_status, $perf_result);
+}
+
+sub get_threshold_litteral {
+    my (%options) = @_;
+    
+    my $perf_output = ($options{arobase} == 1 ? "@" : "") . 
+                      (($options{infinite_neg} == 0) ? $options{start} : "~") . 
+                      ":" . 
+                      (($options{infinite_pos} == 0) ? $options{end} : "");
+    return $perf_output;
+}
+
+sub set_timezone {
+    my (%options) = @_;
+    
+    return {} if (!defined($options{name}) || $options{name} eq '');
+     
+    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'DateTime::TimeZone',
+                                           error_msg => "Cannot load module 'DateTime::TimeZone'.");
+    if (DateTime::TimeZone->is_valid_name($options{name})) {
+        return { time_zone => DateTime::TimeZone->new(name => $options{name}) };
+    }
+    
+    # try to manage syntax (:Pacific/Noumea for example)
+    if ($options{name} =~ /^:(.*)$/ && DateTime::TimeZone->is_valid_name($1)) {
+        return { time_zone => DateTime::TimeZone->new(name => $1) };
+    }
+
+    return {};
 }
 
 1;

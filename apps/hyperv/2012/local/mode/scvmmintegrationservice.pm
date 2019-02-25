@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,34 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::scvmmintegrationservice;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -107,7 +80,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'osshutdown-status', threshold => 0, set => {
@@ -116,7 +89,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Operating System Shutdown', name_status => 'operatingsystemshutdownenabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'timesync-status', threshold => 0, set => {
@@ -125,7 +98,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Time Synchronization', name_status => 'timesynchronizationenabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'dataexchange-status', threshold => 0, set => {
@@ -134,7 +107,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Data Exchange', name_status => 'dataexchangeenabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'heartbeat-status', threshold => 0, set => {
@@ -143,7 +116,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Heartbeat', name_status => 'heartbeatenabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'backup-status', threshold => 0, set => {
@@ -152,7 +125,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Backup', name_status => 'backupenabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -215,20 +188,9 @@ sub check_options {
         }
     }    
     
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status', 'warning_osshutdown_status', 'critical_osshutdown_status',
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_osshutdown_status', 'critical_osshutdown_status',
         'warning_timesync_status', 'critical_timesync_status', 'warning_dataexchange_status', 'critical_dataexchange_status',
-        'warning_heartbeat_status', 'critical_heartbeat_status', 'warning_backup_status', 'critical_backup_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+        'warning_heartbeat_status', 'critical_heartbeat_status', 'warning_backup_status', 'critical_backup_status']);
 }
 
 sub manage_selection {

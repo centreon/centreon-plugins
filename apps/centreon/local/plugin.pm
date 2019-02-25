@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,6 +34,7 @@ sub new {
                          'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
                          'centreon-plugins-version' => 'apps::centreon::local::mode::centreonpluginsversion',
                          'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
+                         'dummy'                    => 'apps::centreon::local::mode::dummy',
                          'metaservice'              => 'apps::centreon::local::mode::metaservice',
                          'retention-broker'         => 'apps::centreon::local::mode::retentionbroker',
                          );

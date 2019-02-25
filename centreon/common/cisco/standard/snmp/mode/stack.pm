@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,30 +20,161 @@
 
 package centreon::common::cisco::standard::snmp::mode::stack;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my %map_role = (
-    1 => 'master',
-    2 => 'member',
-    3 => 'notMember',
-    4 => 'standby'
-);
-my %states = (
-    1 => ['waiting', 'WARNING'], 
-    2 => ['progressing', 'WARNING'], 
-    3 => ['added', 'WARNING'], 
-    4 => ['ready', 'OK'],
-    5 => ['sdmMismatch', 'CRITICAL'],
-    6 => ['verMismatch', 'CRITICAL'],
-    7 => ['featureMismatch', 'CRITICAL'],
-    8 => ['newMasterInit', 'WARNING'],
-    9 => ['provisioned', 'OK'],
-    10 => ['invalid', 'WARNING'],
-    11 => ['removed', 'WARNING'],
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("State is '%s', Role is '%s'", $self->{result_values}->{state}, $self->{result_values}->{role});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
+    $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_role'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Number of members ";
+}
+
+sub prefix_status_output {
+    my ($self, %options) = @_;
+    
+    return "Member '" . $options{instance_value}->{id} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'members', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All stack members status are ok' },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'waiting', set => {
+                key_values => [ { name => 'waiting' } ],
+                output_template => 'Waiting: %d',
+                perfdatas => [
+                    { label => 'waiting', value => 'waiting_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'progressing', set => {
+                key_values => [ { name => 'progressing' } ],
+                output_template => 'Progressing: %d',
+                perfdatas => [
+                    { label => 'progressing', value => 'progressing_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'added', set => {
+                key_values => [ { name => 'added' } ],
+                output_template => 'Added: %d',
+                perfdatas => [
+                    { label => 'added', value => 'added_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'ready', set => {
+                key_values => [ { name => 'ready' } ],
+                output_template => 'Ready: %d',
+                perfdatas => [
+                    { label => 'ready', value => 'ready_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'sdm-mismatch', set => {
+                key_values => [ { name => 'sdmMismatch' } ],
+                output_template => 'SDM Mismatch: %d',
+                perfdatas => [
+                    { label => 'sdm_mismatch', value => 'sdmMismatch_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'version-mismatch', set => {
+                key_values => [ { name => 'verMismatch' } ],
+                output_template => 'Version Mismatch: %d',
+                perfdatas => [
+                    { label => 'version_mismatch', value => 'verMismatch_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'feature-mismatch', set => {
+                key_values => [ { name => 'featureMismatch' } ],
+                output_template => 'Feature Mismatch: %d',
+                perfdatas => [
+                    { label => 'feature_mismatch', value => 'featureMismatch_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'new-master-init', set => {
+                key_values => [ { name => 'newMasterInit' } ],
+                output_template => 'New Master Init: %d',
+                perfdatas => [
+                    { label => 'new_master_init', value => 'newMasterInit_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'provisioned', set => {
+                key_values => [ { name => 'provisioned' } ],
+                output_template => 'Provisioned: %d',
+                perfdatas => [
+                    { label => 'provisioned', value => 'provisioned_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'invalid', set => {
+                key_values => [ { name => 'invalid' } ],
+                output_template => 'Invalid: %d',
+                perfdatas => [
+                    { label => 'invalid', value => 'invalid_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'removed', set => {
+                key_values => [ { name => 'removed' } ],
+                output_template => 'Removed: %d',
+                perfdatas => [
+                    { label => 'removed', value => 'removed_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{members} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'id' }, { name => 'role' }, { name => 'state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -53,6 +184,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "warning-status:s"  => { name => 'warning_status', default => '' },
+                                  "critical-status:s" => { name => 'critical_status', default => '%{state} !~ /ready/ && %{state} !~ /provisioned/' },
                                 });
 
     return $self;
@@ -60,49 +193,78 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
+    
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-sub run {
+my %map_role = (
+    1 => 'master',
+    2 => 'member',
+    3 => 'notMember',
+    4 => 'standby'
+);
+my %map_state = (
+    1 => 'waiting',
+    2 => 'progressing',
+    3 => 'added',
+    4 => 'ready',
+    5 => 'sdmMismatch',
+    6 => 'verMismatch',
+    7 => 'featureMismatch',
+    8 => 'newMasterInit',
+    9 => 'provisioned',
+    10 => 'invalid',
+    11 => 'removed',
+);
+
+my $mapping = {
+    cswSwitchRole => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.3', map => \%map_role },
+    cswSwitchState => { oid => '.1.3.6.1.4.1.9.9.500.1.2.1.1.6', map => \%map_state },
+};
+my $oid_cswSwitchInfoEntry = '.1.3.6.1.4.1.9.9.500.1.2.1.1';
+
+my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3.0';
+
+sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3';
-    my $oid_cswSwitchRole = '.1.3.6.1.4.1.9.9.500.1.2.1.1.3';
-    my $oid_cswSwitchState = '.1.3.6.1.4.1.9.9.500.1.2.1.1.6';
-    my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_cswRingRedundant },
-                                                            { oid => $oid_cswSwitchState },
-                                                            { oid => $oid_cswSwitchRole }
-                                                            ],
-                                                   nothing_quit => 1);    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Stack ring is redundant');
-    if ($results->{$oid_cswRingRedundant}->{$oid_cswRingRedundant . '.0'} != 1) {
-        $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => 'Stack ring is not redundant');
-    }
-    
-    foreach my $oid (keys %{$results->{$oid_cswSwitchState}}) {
-        $oid =~ /\.([0-9]+)$/;
-        my $instance = $1;
+    $self->{global} = { waiting => 0, progressing => 0, added => 0, ready => 0, sdmMismatch => 0, 
+        verMismatch => 0, featureMismatch => 0, newMasterInit => 0, provisioned => 0, 
+        invalid => 0, removed => 0 };
+    $self->{members} = {};
 
-        my $state = $results->{$oid_cswSwitchState}->{$oid};
-        my $role = defined($results->{$oid_cswSwitchRole}->{$oid_cswSwitchRole . '.' . $instance}) ? $results->{$oid_cswSwitchRole}->{$oid_cswSwitchRole . '.' . $instance} : 'unknown';
-        # .1001, .2001 the instance.
-        my $number = int(($instance - 1) / 1000);
-        
-        $self->{output}->output_add(long_msg => sprintf("Member '%s' state is %s [Role is '%s']", $number,
-                                            ${$states{$state}}[0], $map_role{$role}));
-        if (${$states{$state}}[1] ne 'OK') {
-             $self->{output}->output_add(severity => ${$states{$state}}[1],
-                                        short_msg => sprintf("Member '%s' state is %s", $number,
-                                                             ${$states{$state}}[0]));
-        }
+    my $redundant = $self->{snmp}->get_leef(oids => [ $oid_cswRingRedundant ], nothing_quit => 1);
+
+    if ($redundant->{$oid_cswRingRedundant} != 1) {
+        $self->{output}->add_option_msg(short_msg => "Stack ring is not redundant");
+        $self->{output}->option_exit();
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+
+    $self->{results} = $options{snmp}->get_table(oid => $oid_cswSwitchInfoEntry,
+                                                 nothing_quit => 1);
+
+    foreach my $oid (keys %{$self->{results}}) {
+        next if($oid !~ /^$mapping->{cswSwitchRole}->{oid}\.(.*)$/);
+        my $instance = $1;
+        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+
+        # .1001, .2001 the instance.
+        my $id = int(($instance - 1) / 1000);
+        $self->{members}->{$id} = {
+            id => $id,
+            role => $result->{cswSwitchRole},
+            state => $result->{cswSwitchState},
+        };
+        $self->{global}->{$result->{cswSwitchState}}++;
+    }
+
+    if (scalar(keys %{$self->{members}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No stack members found');
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -114,6 +276,34 @@ __END__
 Check Cisco Stack (CISCO-STACKWISE-MIB).
 
 =over 8
+
+=item B<--warning-*>
+
+Set warning threshold on members count for each states.
+(Can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
+'feature-mismatch', 'new-master-init', 'provisioned', 'invalid', 'removed')
+
+=item B<--critical-*>
+
+Set warning threshold on members count for each states.
+(Can be: 'waiting', 'progressing', 'added', 'ready', 'sdm-mismatch', 'version-mismatch',
+'feature-mismatch', 'new-master-init', 'provisioned', 'invalid', 'removed')
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{id}, %{role}, %{state}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{state} !~ /ready/ && %{state} !~ /provisioned/').
+Can used special variables like: %{id}, %{role}, %{state}
+
+Role can be: 'master', 'member', 'notMember', 'standby'.
+
+State can be: 'waiting', 'progressing', 'added',
+'ready', 'sdmMismatch', 'verMismatch', 'featureMismatch',
+'newMasterInit', 'provisioned', 'invalid', 'removed'.
 
 =back
 

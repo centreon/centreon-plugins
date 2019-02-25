@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -394,13 +394,19 @@ sub manage_selection {
             $used = $size - $free;
         }
 
-        $self->{tablespace}->{$name} = { used => $used,
-                                         free => $free,
-                                         total => $size,
-                                         prct_used => $percent_used,
-                                         display => lc $name };
+        $self->{tablespace}->{$name} = { 
+            used => $used,
+            free => $free,
+            total => $size,
+            prct_used => $percent_used,
+            display => lc($name)
+        };
     }
 
+    if (scalar(keys %{$self->{tablespace}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No tablespaces found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;

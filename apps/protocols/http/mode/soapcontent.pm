@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -147,14 +147,14 @@ sub display_output {
     foreach my $severity (('ok', 'warning', 'critical')) {
         next if (scalar(@{$self->{'values_' . $severity}}) == 0 && scalar(@{$self->{'values_string_' . $severity}}) == 0);
         my $format = $self->{option_results}->{'format_' . $severity};
-        while ($format =~ /%{(.*?)}/g) {
+        while ($format =~ /%\{(.*?)\}/g) {
             my $replace = '';
             if (ref($self->{$1}) eq 'ARRAY') {
                 $replace = join($self->{option_results}->{values_separator}, @{$self->{$1}});
             } else {
                 $replace = defined($self->{$1}) ? $self->{$1} : '';
             }
-            $format =~ s/%{$1}/$replace/g;
+            $format =~ s/%\{$1\}/$replace/g;
         }
         $self->{output}->output_add(severity => $severity,
                                     short_msg => $format);

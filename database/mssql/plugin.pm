@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,6 +40,7 @@ sub new {
                          'dead-locks'           => 'database::mssql::mode::deadlocks',
                          'databases-size'       => 'database::mssql::mode::databasessize',
                          'failed-jobs'          => 'database::mssql::mode::failedjobs',
+                         'list-databases'       => 'database::mssql::mode::listdatabases',
                          'locks-waits'          => 'database::mssql::mode::lockswaits',
                          'logs-size'            => 'database::mssql::mode::logssize',
                          'sql'                  => 'centreon::common::protocols::sql::mode::sql',
@@ -47,6 +48,7 @@ sub new {
                          'transactions'         => 'database::mssql::mode::transactions',
                          );
 
+    $self->{sql_modes}{dbi} = 'database::mssql::dbi';
     return $self;
 }
 
