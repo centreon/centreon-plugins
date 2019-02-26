@@ -92,8 +92,11 @@ sub custom_dropped_calc {
     $self->{result_values}->{dropped} = $options{new_datas}->{$self->{instance} . '_dropped_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{packets} = $options{new_datas}->{$self->{instance} . '_packets_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{label_ref} = $options{extra_options}->{label_ref};
-    $self->{result_values}->{dropped_prct} = $self->{result_values}->{dropped} * 100 / $self->{result_values}->{packets};
-
+    $self->{result_values}->{dropped_prct} = 0;
+    if ($self->{result_values}->{packets} > 0) {
+        $self->{result_values}->{dropped_prct} = $self->{result_values}->{dropped} * 100 / $self->{result_values}->{packets};
+    }
+    
     return 0;
 }
 
