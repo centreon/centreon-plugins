@@ -75,7 +75,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status');
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my %map_status = (
