@@ -78,9 +78,8 @@ sub check_overload {
     if (defined($old_uptime) && $options{timeticks} < $old_uptime) {
         my $diff_time = $current_time - $last_time;
         # Time window (5s here) must surround or be after the limit (4294967296), and new uptime must be inside this window
-        if ((($old_uptime + $diff_time - 250) <  4294967296) || ($options{timeticks} >= (($old_uptime + $diff_time - 250) % 4294967296)) &&
-            (($old_uptime + $diff_time + 250) >= 4294967296) && ($options{timeticks} <= (($old_uptime + $diff_time + 250) % 4294967296))) {
-            $overload++;
+        if (((($old_uptime + $diff_time - 250) <  4294967296) || ($options{timeticks} >= (($old_uptime + $diff_time - 250) % 4294967296))) &&
+            ((($old_uptime + $diff_time + 250) >= 4294967296) && ($options{timeticks} <= (($old_uptime + $diff_time + 250) % 4294967296)))) {            $overload++;
         } else {
             $overload = 0;
         }
