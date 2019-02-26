@@ -94,7 +94,7 @@ sub custom_offset_perfdata {
     my ($self, %options) = @_;
 
     my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    $extra_label = '_' . $self->{result_values}->{display_absolute} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
 
     if ($self->{result_values}->{state_absolute} ne '*') {
         $self->{output}->perfdata_add(label => 'offset' . $extra_label, unit => 'ms',
@@ -211,8 +211,8 @@ sub check_options {
         $self->{regex} = '^(\+|\*|\.|\-|\#|x|\<sp\>|o)(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)';
         $self->{option_results}->{command_options} = '-p -n 2>&1';
     } elsif ($self->{option_results}->{command} eq 'chronyc') {
-        $self->{regex} = '^(.),(\+|\*|\.|\-|\#|x|\<sp\>),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*?),(.*)\s*$';
-        $self->{option_results}->{command_options} = '-n -c sources 2>&1';
+        $self->{regex} = '^(.)(\+|\*|\.|\-|\#|x|\<sp\>)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*?)(\d+)(\w+)$';
+        $self->{option_results}->{command_options} = '-n sources 2>&1';
     } else {
         $self->{output}->add_option_msg(short_msg => "command '" . $self->{option_results}->{command} . "' not implemented" );
         $self->{output}->option_exit();
@@ -246,8 +246,8 @@ sub manage_selection {
         
         my ($remote_peer, $peer_fate) = (centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($1));
         if ($self->{option_results}->{command} eq 'chronyc') {
-            $remote_peer = $3;
-            $peer_fate = $2;
+            $remote_peer = centreon::plugins::misc::trim($3);
+            $peer_fate = centreon::plugins::misc::trim($2);
         }
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $remote_peer !~ /$self->{option_results}->{filter_name}/) {
@@ -271,16 +271,20 @@ sub manage_selection {
                 offset  => centreon::plugins::misc::trim($offset)
             };
         } elsif ($self->{option_results}->{command} eq 'chronyc') {
-            #^,+,212.83.187.62,2,10,377,312,0.008750526,0.008750526,0.039808452
-            my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $10);
+            #210 Number of sources = 4
+            #MS Name/IP address         Stratum Poll Reach LastRx Last sample               
+            #===============================================================================
+            #^+ 212.83.187.62                 2   9   377   179   -715us[ -731us] +/-   50ms
+            #^- 129.250.35.251                2   8   377    15    -82us[  -99us] +/-   96ms
 
+            my ($type, $stratum, $poll, $reach, $lastRX, $offset) = ($1, $4, $5, $6, $7, $9);
             $self->{peers}->{$remote_peer} = {
                 display     => $remote_peer,
                 state       => $peer_fate,
-                stratum     => $stratum,
-                type        => $type,
-                reach       => $reach,
-                offset      => $offset * 100,
+                stratum     => centreon::plugins::misc::trim($stratum),
+                type        => centreon::plugins::misc::trim($type),
+                reach       => centreon::plugins::misc::trim($reach),
+                offset      => centreon::plugins::misc::trim($offset) * $unit_map_chronyc{centreon::plugins::misc::trim($10)},
             };
         }
         
