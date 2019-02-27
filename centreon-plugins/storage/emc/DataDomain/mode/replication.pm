@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use storage::emc::DataDomain::lib::functions;
 
 sub custom_status_calc {
     my ($self, %options) = @_;
