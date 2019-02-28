@@ -124,17 +124,17 @@ sub manage_selection {
         my $value = unpack('S', $result->{$_});
         
         $self->{printer}->{$instance} = { display => $instance, errors => {} };
-        if ($result->{$_} == 0) {
-            $self->{printer}->{$instance}->{errors}->{0} = { status => 'ok' };
-            next;
-        }
-        
         my $i = 0;
         foreach my $key (keys %errors_printer) {        
             if (($value & (1 << $key))) {
                 $self->{printer}->{$instance}->{errors}->{$i} = { status => $errors_printer{$key} };
                 $i++;
             }
+        }
+        
+        if ($i == 0) {
+            $self->{printer}->{$instance}->{errors}->{0} = { status => 'ok' };
+            next;
         }
     }
 }
