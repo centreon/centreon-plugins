@@ -386,7 +386,7 @@ sub run_multiple_instances {
     }
     
     my $message_separator = defined($options{config}->{message_separator}) ? 
-        $options{config}->{message_separator}: ', ';
+        $options{config}->{message_separator} : ', ';
 
     foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');

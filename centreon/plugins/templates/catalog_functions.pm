@@ -38,7 +38,10 @@ sub catalog_status_threshold {
 
         my $label = $self->{label};
         $label =~ s/-/_/g;
-        if (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
+        if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{ok_status}") {
+            $status = 'ok';
+        } elsif (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
             eval "$self->{instance_mode}->{option_results}->{'critical_' . $label}") {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
