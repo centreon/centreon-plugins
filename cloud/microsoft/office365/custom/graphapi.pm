@@ -186,7 +186,7 @@ sub get_access_token {
     return $access_token;
 }
 
-sub request_api_json {
+sub request_api_json { #so lame for now
     my ($self, %options) = @_;
 
     if (!defined($self->{access_token})) {
@@ -195,24 +195,40 @@ sub request_api_json {
 
     $self->settings();
 
-    my $content = $self->{http}->request(%options);
-    
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
-    };
-    if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-    if (defined($decoded->{error})) {
-        $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
-        $self->{output}->option_exit();
+    my @results;
+    my %local_options = %options;
+
+    while (1) {
+        $self->{output}->output_add(long_msg => "URL: '" . $local_options{full_url} . "'", debug => 1);
+
+        my $content = $self->{http}->request(%local_options);
+        my $response = $self->{http}->get_response();
+
+        if ($response->code() == 429) {
+            last;
+        }
+        
+        my $decoded;
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
+        if ($@) {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+            $self->{output}->option_exit();
+        }
+        if (defined($decoded->{error})) {
+            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Graph endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
+            $self->{output}->option_exit();
+        }
+        push @results, @{$decoded->{value}};
+        
+        last if (!defined($decoded->{'@odata.nextLink'}));
+        $local_options{full_url} = $decoded->{'@odata.nextLink'};
     }
 
-    return $decoded;
+    return @results;
 }
 
 sub request_api_csv {
@@ -223,6 +239,8 @@ sub request_api_csv {
     }
 
     $self->settings();
+
+    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
 
     my $content = $self->{http}->request(%options);
     my $response = $self->{http}->get_response();
@@ -358,6 +376,74 @@ sub office_get_exchange_mailbox_usage {
     return $response;
 }
 
+sub office_get_teams_activity_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsUserActivityUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_teams_activity {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_teams_activity_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
+sub office_get_teams_device_usage_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getTeamsDeviceUsageUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_teams_device_usage {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_teams_device_usage_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
+sub office_get_skype_activity_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessActivityUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_skype_activity {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_skype_activity_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
+sub office_get_skype_device_usage_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{graph_endpoint} . "/v1.0/reports/getSkypeForBusinessDeviceUsageUserDetail(period='D7')";
+
+    return $url;
+}
+
+sub office_get_skype_device_usage {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->office_get_skype_device_usage_set_url(%options);
+    my $response = $self->request_api_csv(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
 1;
 
 __END__
@@ -372,7 +458,7 @@ Microsoft Office 365 Graph API
 
 To connect to the Office 365 Graph API, you must register an application.
 
-# Follow the 'How-to guide' in https://docs.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0
+Follow the 'How-to guide' in https://docs.microsoft.com/en-us/graph/auth-register-app-v2?view=graph-rest-1.0
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'.
 

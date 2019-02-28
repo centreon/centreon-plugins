@@ -207,56 +207,64 @@ my $mapping2 = {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $oids = [
-        { oid => $mapping->{dfType}->{oid} },
-        { oid => $mapping2->{dfFileSys}->{oid} },
-        { oid => $mapping2->{dfKBytesTotal}->{oid} },
-        { oid => $mapping2->{dfKBytesUsed}->{oid} },
-        { oid => $mapping2->{dfPerCentInodeCapacity}->{oid} },
-        { oid => $mapping2->{dfCompressSavedPercent}->{oid} },
-        { oid => $mapping2->{dfDedupeSavedPercent}->{oid} },
-    ];
+    my @oids = (
+        $mapping2->{dfKBytesTotal}->{oid},
+        $mapping2->{dfKBytesUsed}->{oid},
+        $mapping2->{dfPerCentInodeCapacity}->{oid},
+        $mapping2->{dfCompressSavedPercent}->{oid},
+        $mapping2->{dfDedupeSavedPercent}->{oid},
+    );
     if (!$options{snmp}->is_snmpv1()) {
-        push @{$oids}, { oid => $mapping2->{df64TotalKBytes}->{oid} }, { oid => $mapping2->{df64UsedKBytes}->{oid} };
+        push @oids, $mapping2->{df64TotalKBytes}->{oid};
+        push @oids, $mapping2->{df64UsedKBytes}->{oid};
+
     }
-    
-    my $results = $options{snmp}->get_multiple_table(oids => $oids, return_type => 1, nothing_quit => 1);
-    $self->{fs} = {};
+
+    my $results;
+    if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '') {
+        $results = $options{snmp}->get_multiple_table(oids => [{oid => $mapping->{dfType}->{oid}}, {oid => $mapping2->{dfFileSys}->{oid}}], return_type => 1, nothing_quit => 1);
+    } else {
+        $results = $options{snmp}->get_table(oid => $mapping2->{dfFileSys}->{oid}, nothing_quit => 1);
+    }
+    my @fs_selected;
     foreach my $oid (keys %{$results}) {
         next if ($oid !~ /^$mapping2->{dfFileSys}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
-        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $results, instance => $instance);
-        
-        my $name = $result2->{dfFileSys};
+        my $name = $results->{$oid};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $result->{dfType} !~ /$self->{option_results}->{filter_type}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{dfType} . "': no matching filter type.", debug => 1);
+            $map_types{$results->{$mapping->{dfType}->{oid} . '.' . $instance}} !~ /$self->{option_results}->{filter_type}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter type.", debug => 1);
             next;
         }
-    
-        $self->{fs}->{$instance} = { display => $name };
-        $self->{fs}->{$instance}->{total} = $result2->{dfKBytesTotal} * 1024;
-        $self->{fs}->{$instance}->{used} = $result2->{dfKBytesUsed} * 1024;
-        if (defined($result2->{df64TotalKBytes}) && $result2->{df64TotalKBytes} > 0) {
-            $self->{fs}->{$instance}->{total} = $result2->{df64TotalKBytes} * 1024;
-            $self->{fs}->{$instance}->{used} = $result2->{df64UsedKBytes} * 1024;
-        }
-        $self->{fs}->{$instance}->{dfCompressSavedPercent} = $result2->{dfCompressSavedPercent};
-        $self->{fs}->{$instance}->{dfDedupeSavedPercent} = $result2->{dfDedupeSavedPercent};
-        if ($self->{fs}->{$instance}->{total} > 0) {
-            $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{dfPerCentInodeCapacity};
-        }
+        push @fs_selected, $instance;
     }
-    
-    if (scalar(keys %{$self->{fs}}) <= 0) {
+
+    if (scalar(@fs_selected) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
+    }
+
+    $self->{fs} = {};
+    $options{snmp}->load(oids => \@oids, instances => \@fs_selected);
+    my $result2 = $options{snmp}->get_leef(nothing_quit => 1);
+    foreach my $instance (sort @fs_selected) {
+        $self->{fs}->{$instance} = { display => $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance}};
+        $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{dfKBytesTotal}->{oid} . '.' . $instance} * 1024;
+        $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{dfKBytesUsed}->{oid} . '.' . $instance} * 1024;
+        if (defined($result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance}) && $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} > 0) {
+            $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} * 1024;
+            $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{df64UsedKBytes}->{oid} . '.' . $instance} * 1024;
+        }
+        $self->{fs}->{$instance}->{dfCompressSavedPercent} = $result2->{$mapping2->{dfCompressSavedPercent}->{oid} . '.' . $instance};
+        $self->{fs}->{$instance}->{dfDedupeSavedPercent} = $result2->{$mapping2->{dfDedupeSavedPercent}->{oid} . '.' . $instance};
+        if ($self->{fs}->{$instance}->{total} > 0) {
+            $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{$mapping2->{dfPerCentInodeCapacity}->{oid} . '.' . $instance};
+        }
     }
 }
 

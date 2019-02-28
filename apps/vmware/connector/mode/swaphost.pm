@@ -20,10 +20,70 @@
 
 package apps::vmware::connector::mode::swaphost;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status : ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'host', type => 1, cb_prefix_output => 'prefix_host_output', message_multiple => 'All hosts are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{host} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'swap-in', set => {
+                key_values => [ { name => 'swap_in' }, { name => 'display' } ],
+                output_template => 'Swap In: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'swap_in', value => 'swap_in_absolute', template => '%s',
+                      unit => 'B/s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'swap-out', set => {
+                key_values => [ { name => 'swap_out' }, { name => 'display' } ],
+                output_template => 'Swap Out: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'swap_out', value => 'swap_out_absolute', template => '%s',
+                      unit => 'B/s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_host_output {
+    my ($self, %options) = @_;
+
+    return "Host '" . $options{instance_value}->{display} . "' : ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,44 +91,42 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "esx-hostname:s"        => { name => 'esx_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'swaphost');
-    $self->{connector}->run();
+    $self->{host} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'swaphost');
+    
+    foreach my $host_id (keys %{$response->{data}}) {
+        my $host_name = $response->{data}->{$host_id}->{name};
+        $self->{host}->{$host_name} = { 
+            display => $host_name, 
+            state => $response->{data}->{$host_id}->{state},
+            swap_in => $response->{data}->{$host_id}->{'mem.swapinRate.average'},
+            swap_out => $response->{data}->{$host_id}->{'mem.swapoutRate.average'},
+        };        
+    }    
 }
 
 1;
@@ -98,17 +156,30 @@ Search in following datacenter(s) (can be a regexp).
 
 Search in following cluster(s) (can be a regexp).
 
-=item B<--disconnect-status>
+=item B<--unknown-status>
 
-Status if ESX host disconnected (default: 'unknown').
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Can used special variables like: %{status}
 
-=item B<--warning>
+=item B<--warning-status>
 
-Threshold warning in bytes per seconds.
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
 
-=item B<--critical>
+=item B<--critical-status>
 
-Threshold critical in bytes per seconds.
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'swap-in', 'swap-out'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'swap-in', 'swap-out'.
 
 =back
 

@@ -22,6 +22,7 @@ package centreon::common::cisco::standard::snmp::mode::components::sensor;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 my %map_sensor_status = (
     1 => 'ok',
@@ -140,8 +141,9 @@ sub get_default_warning_threshold {
     }
     
     my $th = '';
-    $th = $low_th . ':' if (defined($low_th));
-    $th .= $high_th if (defined($high_th));
+    $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
+    $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
+    
     return $th;
 }
 
@@ -168,8 +170,9 @@ sub get_default_critical_threshold {
     }
     
     my $th = '';
-    $th = $low_th . ':' if (defined($low_th));
-    $th .= $high_th if (defined($high_th));
+    $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
+    $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
+    
     return $th;
 }
 

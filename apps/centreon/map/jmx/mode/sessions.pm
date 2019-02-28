@@ -19,66 +19,75 @@
 
 package apps::centreon::map::jmx::mode::sessions;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'active-session', set => {
+                key_values => [ { name => 'SessionCount' } ],
+                output_template => 'Active Sessions: %d',
+                perfdatas => [
+                    { label => 'active_sessions', value => 'SessionCount_absolute', template => '%d',
+                      min => 0, unit => 'sessions' },
+                ],
+            }
+        },
+        { label => 'queue-size', set => {
+                key_values => [ { name => 'AverageEventQueueSize' } ],
+                output_template => 'Average Event Queue Size: %d',
+                perfdatas => [
+                    { label => 'queue_size', value => 'AverageEventQueueSize_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"      => { name => 'warning', },
-                                  "critical:s"     => { name => 'critical', },
+                                {
+                                    "filter-counters:s"     => { name => 'filter_counters', default => '' },
                                 });
-
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
-sub run {
+my $mbean_session = "com.centreon.studio.map:type=session,name=statistics";
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
     $self->{request} = [
-         { mbean => "com.centreon.studio:name=statistics,type=session" }
+        { mbean => $mbean_session }
     ];
 
-    my $result = $self->{connector}->get_attributes(request => $self->{request}, nothing_quit => 0);
-  
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{"com.centreon.studio:name=statistics,type=session"}->{SessionCount},
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning'} ]);
+    my $result = $options{custom}->get_attributes(request => $self->{request}, nothing_quit => 0);
 
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Current sessions : %d",
-                                                      $result->{"com.centreon.studio:name=statistics,type=session"}->{SessionCount}));
+    $self->{global} = {};
 
-    $self->{output}->perfdata_add(label => 'sessions',
-                                  value => $result->{"com.centreon.studio:name=statistics,type=session"}->{SessionCount},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{global} = {
+        SessionCount => $result->{$mbean_session}->{SessionCount},
+        AverageEventQueueSize => $result->{$mbean_session}->{AverageEventQueueSize},
+    };
 }
 
 1;
@@ -87,21 +96,29 @@ __END__
 
 =head1 MODE
 
-Check Centreon Map Number of sessions
+Check active sessions count and the number of whatsup events by user session (queue size).
 
 Example:
 
-perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin  --custommode=jolokia --url=http://10.30.2.22:8080/jolokia-war --mode=sessions
+perl centreon_plugins.pl --plugin=apps::centreon::map::jmx::plugin --custommode=jolokia
+--url=http://10.30.2.22:8080/jolokia-war --mode=sessions
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-counters>
 
-Set this threshold if you want a warning if current session number match condition
+Only display some counters (regexp can be used).
+(Example: --filter-counters='session')
 
-=item B<--critical>
+=item B<--warning-*>
 
-Set this threshold if you want a warning if current session number match condition
+Threshold warning.
+Can be: 'active-session', 'queue-size'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'active-session', 'queue-size'.
 
 =back
 

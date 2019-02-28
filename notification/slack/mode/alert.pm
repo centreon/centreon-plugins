@@ -132,9 +132,9 @@ sub host_message {
     my ($self, %options) = @_;
     
     my $url_host = $self->{option_results}->{host_name};
+    $self->{payload_attachment}->{fallback} = "Host " . $self->{option_results}->{host_name};
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $url_host = '<' . $self->{option_results}->{link_url} . '|' . $self->{option_results}->{host_name} . '>';
-        $self->{payload_attachment}->{fallback} = "Host " . $self->{option_results}->{host_name};
     }
     $self->{payload_attachment}->{text} = "Host " . $url_host;
     

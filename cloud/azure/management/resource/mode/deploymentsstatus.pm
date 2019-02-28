@@ -24,39 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf('status: %s [duration: %s] [last modified: %s]', $self->{result_values}->{status},
+    my $msg = sprintf("Status '%s' [Duration: %s] [Last modified: %s]", $self->{result_values}->{status},
         $self->{result_values}->{duration},
         $self->{result_values}->{last_modified});
     return $msg;
@@ -66,7 +39,7 @@ sub custom_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{duration} = $options{new_datas}->{$self->{instance} . '_duration'};
+    $self->{result_values}->{duration} = centreon::plugins::misc::change_seconds(value => $options{new_datas}->{$self->{instance} . '_duration'});
     $self->{result_values}->{last_modified} = $options{new_datas}->{$self->{instance} . '_last_modified'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -117,7 +90,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -132,6 +105,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "resource-group:s"      => { name => 'resource_group' },
+                                    "filter-counters:s"     => { name => 'filter_counters' },
                                     "warning-status:s"      => { name => 'warning_status', default => '' },
                                     "critical-status:s"     => { name => 'critical_status', default => '%{status} ne "Succeeded"' },
                                 });
@@ -148,18 +122,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -171,11 +134,13 @@ sub manage_selection {
     $self->{deployments} = {};
     my $deployments = $options{custom}->azure_list_deployments(resource_group => $self->{option_results}->{resource_group});
     foreach my $deployment (@{$deployments}) {
+        my $duration = $options{custom}->convert_duration(time_string => $deployment->{properties}->{duration});
+        
         $self->{deployments}->{$deployment->{id}} = { 
             display => $deployment->{name}, 
             status => $deployment->{properties}->{provisioningState},
-            duration => $deployment->{properties}->{duration},
-            last_modified => $deployment->{properties}->{timestamp},
+            duration => $duration,
+            last_modified => ($deployment->{properties}->{timestamp} =~ /^(.*)\..*$/) ? $1 : '',
         };
 
         foreach my $status (keys %{$self->{global}}) {
@@ -205,7 +170,7 @@ perl centreon_plugins.pl --plugin=cloud::azure::management::resource::plugin --c
 
 =item B<--resource-group>
 
-Set resource group (Requied).
+Set resource group (Required).
 
 =item B<--filter-counters>
 

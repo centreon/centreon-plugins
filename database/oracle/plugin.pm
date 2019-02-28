@@ -32,29 +32,31 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'asm-diskgroup-usage'      => 'database::oracle::mode::asmdiskgroupusage',
-                         'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'connected-users'          => 'database::oracle::mode::connectedusers',
-                         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
-                         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
-                         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
-                         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
-                         'invalid-object'           => 'database::oracle::mode::invalidobject',
-                         'long-queries'             => 'database::oracle::mode::longqueries',
-                         'process-usage'            => 'database::oracle::mode::processusage',
-                         'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
-                         'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
-                         'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
-                         'rollback-segment-usage'   => 'database::oracle::mode::rollbacksegmentusage',
-                         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-                         'temp-usage'               => 'database::oracle::mode::temptablespace',
-                         'undo-usage'               => 'database::oracle::mode::undotablespace',
-                         'session-usage'            => 'database::oracle::mode::sessionusage',
-                         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
-                         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
-                         'tnsping'                  => 'database::oracle::mode::tnsping',
-                         );
+        'asm-diskgroup-usage'      => 'database::oracle::mode::asmdiskgroupusage',
+        'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
+        'connected-users'          => 'database::oracle::mode::connectedusers',
+        'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
+        'data-files-status'        => 'database::oracle::mode::datafilesstatus',
+        'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
+        'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+        'invalid-object'           => 'database::oracle::mode::invalidobject',
+        'long-queries'             => 'database::oracle::mode::longqueries',
+        'process-usage'            => 'database::oracle::mode::processusage',
+        'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
+        'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
+        'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
+        'rollback-segment-usage'   => 'database::oracle::mode::rollbacksegmentusage',
+        'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
+        'temp-usage'               => 'database::oracle::mode::temptablespace',
+        'undo-usage'               => 'database::oracle::mode::undotablespace',
+        'session-usage'            => 'database::oracle::mode::sessionusage',
+        'sql'                      => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
+        'tnsping'                  => 'database::oracle::mode::tnsping',
+    );
 
+	$self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+						 
     return $self;
 }
 
@@ -74,13 +76,17 @@ sub init {
 
     if (defined($options_result->{hostname})) {
         @{$self->{sqldefault}->{dbi}} = ();
+        @{$self->{sqldefault}->{sqlpluscmd}} = ();
         for (my $i = 0; $i < scalar(@{$options_result->{hostname}}); $i++) {
             $self->{sqldefault}->{dbi}[$i] = { data_source => 'Oracle:host=' . $options_result->{hostname}[$i] };
+            $self->{sqldefault}->{sqlpluscmd}[$i] = { hostname => $options_result->{hostname}[$i] };
             if (defined($options_result->{port}[$i])) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{port}[$i];
+                $self->{sqldefault}->{sqlpluscmd}[$i]->{port} = $options_result->{port}[$i];
             }
             if ((defined($options_result->{sid})) && ($options_result->{sid} ne '')) {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';sid=' . $options_result->{sid};
+	            $self->{sqldefault}->{sqlpluscmd}[$i]->{sid} = $options_result->{sid};
             }
         }
     }

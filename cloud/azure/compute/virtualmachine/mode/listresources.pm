@@ -67,8 +67,14 @@ sub run {
         my $resource_group = '-';
         $resource_group = $vm->{resourceGroup} if (defined($vm->{resourceGroup}));
         $resource_group = $1 if (defined($vm->{id}) && $vm->{id} =~ /resourceGroups\/(.*)\/providers/);
+        
+        my @tags;
+        foreach my $tag (keys %{$vm->{tags}}) {
+            push @tags, $tag . ':' . $vm->{tags}->{$tag};
+        }
+
         $self->{output}->output_add(long_msg => sprintf("[name = %s][computername = %s][resourcegroup = %s]" .
-            "[location = %s][vmid = %s][vmsize = %s][os = %s][state = %s]",
+            "[location = %s][vmid = %s][vmsize = %s][os = %s][state = %s][tags = %s]",
             $vm->{name},
             $computer_name,
             $resource_group,
@@ -77,6 +83,7 @@ sub run {
             (defined($vm->{properties}->{hardwareProfile}->{vmSize})) ? $vm->{properties}->{hardwareProfile}->{vmSize} : $vm->{hardwareProfile}->{vmSize},
             (defined($vm->{properties}->{storageProfile}->{osDisk}->{osType})) ? $vm->{properties}->{storageProfile}->{osDisk}->{osType} : $vm->{storageProfile}->{osDisk}->{osType},
             (defined($vm->{powerState})) ? $vm->{powerState} : "-",
+            join(',', @tags),
         ));
     }
 
@@ -89,7 +96,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'computername', 'resourcegroup', 'location', 'vmid', 'vmsize', 'os', 'state']);
+    $self->{output}->add_disco_format(elements => ['name', 'computername', 'resourcegroup', 'location', 'vmid', 'vmsize', 'os', 'state', 'tags']);
 }
 
 sub disco_show {
@@ -103,6 +110,12 @@ sub disco_show {
         my $resource_group = '-';
         $resource_group = $vm->{resourceGroup} if (defined($vm->{resourceGroup}));
         $resource_group = $1 if (defined($vm->{id}) && $vm->{id} =~ /resourceGroups\/(.*)\/providers/);
+        
+        my @tags;
+        foreach my $tag (keys %{$vm->{tags}}) {
+            push @tags, $tag . ':' . $vm->{tags}->{$tag};
+        }
+        
         $self->{output}->add_disco_entry(
             name => $vm->{name},
             computername => $computer_name,
@@ -112,6 +125,7 @@ sub disco_show {
             vmsize => (defined($vm->{properties}->{hardwareProfile}->{vmSize})) ? $vm->{properties}->{hardwareProfile}->{vmSize} : $vm->{hardwareProfile}->{vmSize},
             os => (defined($vm->{properties}->{storageProfile}->{osDisk}->{osType})) ? $vm->{properties}->{storageProfile}->{osDisk}->{osType} : $vm->{storageProfile}->{osDisk}->{osType},
             state => (defined($vm->{powerState})) ? $vm->{powerState} : "-",
+            tags => join(',', @tags),
         );
     }
 }

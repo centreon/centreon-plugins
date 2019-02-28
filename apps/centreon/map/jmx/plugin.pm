@@ -30,11 +30,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'gates'            => 'apps::centreon::map::jmx::mode::gates',
-                         'elements'         => 'apps::centreon::map::jmx::mode::elements',
-                         'sessions'         => 'apps::centreon::map::jmx::mode::sessions',
-                         'event-queue'      => 'apps::centreon::map::jmx::mode::eventqueue',
-                         'event-statistics' => 'apps::centreon::map::jmx::mode::eventstatistics',
+                            'broker-stats'      => 'apps::centreon::map::jmx::mode::brokerstats',
+                            'events'            => 'apps::centreon::map::jmx::mode::events',
+                            'engine-stats'      => 'apps::centreon::map::jmx::mode::enginestats',
+                            'open-views'        => 'apps::centreon::map::jmx::mode::openviews',
+                            'sessions'          => 'apps::centreon::map::jmx::mode::sessions',
                          );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
@@ -47,6 +47,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Centreon Map informations. Need Jolokia agent and Map >= 4.0.
+Check statistic counters of Centreon Map >= 18.10 (Needs Jolokia).
 
 =cut

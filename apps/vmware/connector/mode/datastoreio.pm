@@ -20,10 +20,94 @@
 
 package apps::vmware::connector::mode::datastoreio;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'accessible ' . $self->{result_values}->{accessible};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{accessible} = $options{new_datas}->{$self->{instance} . '_accessible'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'datastore', type => 1, cb_prefix_output => 'prefix_datastore_output', message_multiple => 'All Datastores are ok' },
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total-read', set => {
+                key_values => [ { name => 'read' } ],
+                output_template => 'Total rate of reading data: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'total_read_rate', value => 'read_absolute', template => '%s',
+                      unit => 'B/s', min => 0 },
+                ],
+            }
+        },
+        { label => 'total-write', set => {
+                key_values => [ { name => 'write' } ],
+                output_template => 'Total rate of writing data: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'total_write_rate', value => 'write_absolute', template => '%s',
+                      min => 0 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{datastore} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'accessible' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'read', set => {
+                key_values => [ { name => 'read' } ],
+                output_template => 'rate of reading data: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'read_rate', value => 'read_absolute', template => '%s',
+                      unit => 'B/s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'write', set => {
+                key_values => [ { name => 'write' } ],
+                output_template => 'rate of writing data: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'write_rate', value => 'write_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_datastore_output {
+    my ($self, %options) = @_;
+
+    return "Datastore '" . $options{instance_value}->{display} . "' : ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,43 +115,44 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "datastore-name:s"        => { name => 'datastore_name' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => {
+        "datastore-name:s"      => { name => 'datastore_name' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'datastoreio');
-    $self->{connector}->run();
+    $self->{global} = { read => 0, write => 0 };
+    $self->{datastore} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'datastoreio');
+
+    foreach my $ds_id (keys %{$response->{data}}) {
+        my $ds_name = $response->{data}->{$ds_id}->{name};
+        $self->{datastore}->{$ds_name} = {
+            display => $ds_name, 
+            accessible => $response->{data}->{$ds_id}->{accessible},
+            read => $response->{data}->{$ds_id}->{'datastore.write.average'},
+            write => $response->{data}->{$ds_id}->{'datastore.read.average'},
+        };
+        $self->{global}->{read} += $response->{data}->{$ds_id}->{'datastore.write.average'} if (defined($response->{data}->{$ds_id}->{'datastore.write.average'}));
+        $self->{global}->{write} += $response->{data}->{$ds_id}->{'datastore.write.average'} if (defined($response->{data}->{$ds_id}->{'datastore.write.average'}));
+    }    
 }
 
 1;
@@ -92,17 +177,30 @@ Datastore name is a regexp.
 
 Search in following datacenter(s) (can be a regexp).
 
-=item B<--disconnect-status>
+=item B<--unknown-status>
 
-Status if datastore disconnected (default: 'unknown').
+Set warning threshold for status (Default: '%{accessible} !~ /^true|1$/i').
+Can used special variables like: %{accessible}
 
-=item B<--warning>
+=item B<--warning-status>
 
-Threshold warning in bytes per seconds.
+Set warning threshold for status (Default: '').
+Can used special variables like: %{accessible}
 
-=item B<--critical>
+=item B<--critical-status>
 
-Threshold critical in bytes per seconds.
+Set critical threshold for status (Default: '').
+Can used special variables like: %{accessible}
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'total-read', 'total-write', 'read', 'write'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'total-read', 'total-write', 'read', 'write'.
 
 =back
 

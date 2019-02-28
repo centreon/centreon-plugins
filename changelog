@@ -1,4 +1,99 @@
-2018-31-10 Colin Gagnaire <cgagnaire@centreon.com>
+2019-02-21 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Microsoft Azure Recovery and Backup
+ * Plugin added: Microsoft Azure ExpressRoute
+ * Plugin added: Microsoft Azure VPN Gateway
+ * Plugin added: Microsoft Azure Virtual Network
+ * Plugin added: Microsoft Azure SQL Server and Database
+ * Plugin added: Squid SNMP
+ * Plugin added: Informix Database SNMP
+ * Plugin added: Lenovo XCC SNMP
+ * Plugin added: Peplink Pepwave SNMP
+ * Plugin added: Centreon MAP JMX (>= 18.10)
+ * Plugin added: Adder AIM SNMP
+ * Plugin added: Kafka JMX
+ * Plugin added: Cassandra JMX
+ * Plugin added: Office 365 Teams
+ * Plugin added: Office 365 Skype for Business
+ * Plugin added: Skype 2015 MSSQL
+ * Plugin added: HP Standard SNMP
+ * Plugin added: Mac OS SNMP
+ * Mode added: [snmp_standard] 'listspanningtrees'
+ * Mode added: [quantum dxi] 'dedupvtl'
+ * Mode added: [protocols/snmp] 'response-time'
+ * Enhancement: [vmware/connector] compatibility with VMware connector 3.x with enhancement
+ * Enhancement: [azure] many improvements in Azure plugins (tags, dates format)
+ * Enhancement: [office] change metrics behaviour, more global
+ * Enhancement: [core] add password management system
+ * Enhancement: [core/template] add catalog template method
+ * Enhancement: [core/template] enhance counter type 3
+ * Enhancement: [core/snmp] change snmpv3 management parameters
+ * Enhancement: [core/exec] change exit behaviour in case of failure
+ * Enhancement: [protocols/http] refacto expected-content mode, add possibility to extract data
+ * Enhancement: [database/oracle] add sqlpluscmd connection method
+ * Enhancement: [snmp_standard] spanningtree mode
+ * Enhancement: [centreon/sql] pollerdelay mode
+ * Enhancement: [mssql] 'failed-jobs' (#1365)
+ * Enhancement: [snmp_standard] 'interfaces' (#553)
+ * Enhancement: [prometheus/api] add headers handling
+ * Enhancement: [centreon/sql] add filter for broker stats
+ * Fix: [fortinet/fortigate] enhance cluster status mode
+ * Fix: [core/http] fix get-param option (#1355)
+ * Fix: [ilo xmlapi] fix nic management (#1358 #1213)
+ * Break: [informix/sql] change informix sql plugin path
+ * Break: [vmware/connector] several options changement
+
+2019-01-11 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: Office 365 (PR #1288)
+ * Plugin added: IBM Cloud SoftLayer (PR #1224, #1226, #1241, #1273)
+ * Plugin added: PVX API (PR #1246)
+ * Plugin added: Quantum DXI SSH (PR #1280, #1322)
+ * Plugin added: Proxmox VE API (PR #1269, #1270)
+ * Plugin added: cAdvisor API (PR #1299, #1300)
+ * Plugin added: McAfee Web Gateway SNMP (PR #1304)
+ * Plugin added: Netgear ReadyNAS SNMP (PR #1174)
+ * Plugin added: Cisco CMS (PR #1309)
+ * Plugin added: Cisco ISE (PR #1312)
+ * Plugin added: Cisco VCS (PR #1317)
+ * Plugin added: OpenVPN OMI
+ * Plugin added: Avid ISIS SNMP (PR #1174)
+ * Plugin added: MRV OptiSwitch SNMP (PR #1215)
+ * Plugin added: Mikrotik SNMP (PR #1077)
+ * Plugin added: OHV SMS notification (PR #1263)
+ * Plugin added: Telegram notification (PR #1266)
+ * Mode added: [azure] API custom mode (PR #1248, #1276)
+ * Mode added: [fortigate] virtual domains modes (PR #1293)
+ * Mode added: [juniper/mseries] 'ldpsessionstatus', 'lspstatus', 'rsvpsessionstatus' (PR #1297)
+ * Mode added: [purestorage] 'pgroup-replication' (PR #1221)
+ * Mode added: [cisco standard] 'configuration' (#1102, PR #1236)
+ * Mode added: [centreon] 'dummy' (PR #1258)
+ * Mode added: [protocols/x509] 'certificate' (replace 'validity' mode) (PR #1306)
+ * Enhancement: [core/snmp] add requests size autoreducing (PR #1301)
+ * Enhancement: [core/snmp] harden snmp request (#880, PR #1325)
+ * Enhancement: [core] perfdata extension system (PR #1313)
+ * Enhancement: [aws] add proxy and endpoint URL handling (PR #1249)
+ * Enhancement: [windows/snmp] pending reboot output (PR #1222)
+ * Enhancement: [cisco standard] refactor stack mode (PR #1227)
+ * Enhancement: [snmp_standard] refactor diskusage mode (PR #1233)
+ * Enhancement: [fortigate] refactor clusterstatus mode (#343, PR #1238)
+ * Enhancement: [prometheus/cadvisor] allow using % for working memory (PR #1240)
+ * Enhancement: [juniper/mseries] add cache to improve performances (PR #1298)
+ * Enhancement: [cisco standard] enhance cisco environment sensor filter (PR #1303)
+ * Enhancement: [idrac] add SMART alert for disk s
+ * Fix: [core/snmp] fix snmp lib start/end checkup function (PR #1292) 
+ * Fix: [core/counter] fix template counter short output handling (PR #1295, #1305) 
+ * Fix: [cisco cm/phoneusage] fix typo in long outputs (PR #1230, #1231)
+ * Fix: [storeonce/clusterusage] handling multiple API versions (#1162, PR #1237)
+ * Fix: [silverpeak/loadaverage] wrong OIDs (#1256, PR #1272)
+ * Fix: [mssql] fix MSSQL version bug (#1038)
+ * Fix: [windows/memory] fix real SWAP bug
+ * Fix: [apc/devicestatus] fix empty values bug (#1127)
+ * Fix: [protocols/smtp] better error handling (#1172)
+ * Fix: [huawei/ibmc] fix huawei ibmc raidcontroller bug (#1244, PR #1315)
+ * Fix: [silverpeak] fix alarms mode
+ * Break: [snmp_standard/diskusage] refactoring of diskusage mode breaks thresholds (PR #1233)
+ * Break: [cisco standard] enhance cisco environment sensor filter (PR #1303)
+
+2018-10-31 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: Prometheus for cAdvisor (PR #1199)
  * Plugin added: Axis Video SNMP (PR #1196)
  * Mode added: [prometheus] 'expression' (PR #1205)
@@ -12,7 +107,7 @@
  * Fix: [hyperv2012/nodesnapshot] fix negative timestamp (PR #1192)
  * Break: [masterclock/ntp] change masterclock plugin path (PR #1191)
 
-2018-19-10 Colin Gagnaire <cgagnaire@centreon.com>
+2018-10-19 Colin Gagnaire <cgagnaire@centreon.com>
  * Plugin added: Prometheus (PR #1168, #1169)
  * Plugin added: Prometheus for Node Exporter (PR #1168, #1169, #1179)
  * Plugin added: Prometheus for Kubernetes (PR #1181)

@@ -20,10 +20,36 @@
 
 package apps::centreon::sql::mode::pollerdelay;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'poller', type => 1, cb_prefix_output => 'prefix_poller_output', message_multiple => 'All poller delay for last update are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{poller} = [
+        { label => 'delay', set => {
+                key_values => [ { name => 'delay' }, { name => 'display' } ],
+                output_template => 'delay for last update is %d seconds',
+                perfdatas => [
+                    { label => 'delay', value => 'delay_absolute', template => '%s',
+                      unit => 's', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_poller_output {
+    my ($self, %options) = @_;
+
+    return "Poller '" . $options{instance_value}->{display} . "' : ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,65 +57,42 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"       => { name => 'warning', default => 300 },
-                                  "critical:s"      => { name => 'critical', default => 600 },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-name:s" => { name => 'filter_name' },
+    });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical}. "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{
-        SELECT instance_id,name,last_alive,running FROM centreon_storage.instances WHERE deleted = '0';
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
+        SELECT instance_id, name, last_alive, running FROM centreon_storage.instances WHERE deleted = '0';
     });
-    my $result = $self->{sql}->fetchall_arrayref();
-    
-    my $timestamp = time();
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All poller delay for last update are ok"));
+
+    my $result = $options{sql}->fetchall_arrayref();
+    $self->{poller} = {};
     foreach my $row (@{$result}) {
+         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $$row[1] !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping poller '" . $$row[1] . "': no matching filter.", debug => 1);
+            next;
+        }
+        
     	if ($$row[3] == 0) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("%s is not running", $$row[1]));
             next;
         }
-        my $delay = $timestamp - $$row[2];
-        my $exit_code = $self->{perfdata}->threshold_check(value => abs($delay), threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(long_msg => sprintf("Delay for last update of %s is %d seconds", $$row[1], $delay));
-        if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("Delay for last update of %s is %d seconds", $$row[1], $delay));
-        }
-        $self->{output}->perfdata_add(label => sprintf("delay_%s", $$row[1]), unit => 's',
-                                      value => $delay,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        
+        my $delay = time() - $$row[2];
+        $self->{poller}->{$$row[1]} = {
+            display => $$row[1],
+            delay => abs($delay),
+        };
     }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -103,11 +106,15 @@ The mode should be used with mysql plugin and dyn-mode option.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-name>
+
+Filter by poller name (can be a regexp).
+
+=item B<--warning-delay>
 
 Threshold warning in seconds.
 
-=item B<--critical>
+=item B<--critical-delay>
 
 Threshold critical in seconds.
 

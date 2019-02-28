@@ -80,6 +80,8 @@ sub init {
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
+    
+    $self->load_password_mgr();
 
     # WSMAN
     $self->{wsman} = centreon::plugins::wsman->new(options => $self->{options}, output => $self->{output});
@@ -115,9 +117,22 @@ sub init {
     
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
+    $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
 
     $self->{wsman}->check_options(option_results => $self->{option_results});
     $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+}
+
+sub load_password_mgr {
+    my ($self, %options) = @_;
+    
+    return if (!defined($self->{option_results}->{pass_manager}) || $self->{option_results}->{pass_manager} eq '');
+
+    (undef, my $pass_mgr_name) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager}, 
+        error_msg => "Cannot load module 'centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager} . "'"
+    );
+    $self->{pass_mgr} = $pass_mgr_name->new(options => $self->{options}, output => $self->{output});
 }
 
 sub run {

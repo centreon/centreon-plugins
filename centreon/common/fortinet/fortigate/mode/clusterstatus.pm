@@ -24,8 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_threshold {
     my ($self, %options) = @_; 
@@ -36,11 +35,11 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -77,13 +76,39 @@ sub prefix_status_output {
     return "Node '" . $options{instance_value}->{serial} . "' ";
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Nodes ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' },
     ];
-        
+    $self->{maps_counters}->{global} = [
+        { label => 'synchronized', set => {
+                key_values => [ { name => 'synchronized' } ],
+                output_template => 'Synchronized: %d',
+                perfdatas => [
+                    { label => 'synchronized_nodes', value => 'synchronized_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'not-synchronized', set => {
+                key_values => [ { name => 'not_synchronized' } ],
+                output_template => 'Not Synchronized: %d',
+                perfdatas => [
+                    { label => 'not_synchronized_nodes', value => 'not_synchronized_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+    ];        
     $self->{maps_counters}->{nodes} = [
         { label => 'node', threshold => 0, set => {
                 key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' } ],
@@ -105,7 +130,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                     "warning-status:s"  => { name => 'warning_status', default => '' },
-                                    "critical-status:s" => { name => 'critical_status', default => '%{sync_status} !~ /synchronized/' },
+                                    "critical-status:s" => { name => 'critical_status', default => '%{sync_status} =~ /not synchronized/' },
                                     "one-node-status:s" => { name => 'one_node_status' }, # not used, use --opt-exit instead
                                 });
 
@@ -116,18 +141,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my %map_ha_mode = (
@@ -157,17 +171,21 @@ sub manage_selection {
     $self->{nodes} = {};
 
     my $mode = $self->{snmp}->get_leef(oids => [ $oid_fgHaSystemMode ], nothing_quit => 1);
-
+    
     if ($map_ha_mode{$mode->{$oid_fgHaSystemMode}} =~ /standalone/) {
         $self->{output}->add_option_msg(short_msg => "No cluster configuration (standalone mode)");
         $self->{output}->option_exit();
     }
 
+    $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode{$mode->{$oid_fgHaSystemMode}});
+
     $self->{results} = $options{snmp}->get_table(oid => $oid_fgHaStatsEntry,
                                                  nothing_quit => 1);
 
+    $self->{global} = { synchronized => 0, not_synchronized => 0 };
+
     foreach my $oid (keys %{$self->{results}}) {
-        next if($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
         my $instance = $1;
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
@@ -176,8 +194,10 @@ sub manage_selection {
             serial => $result->{fgHaStatsSerial},
             hostname => $result->{fgHaStatsHostname},
             sync_status => $result->{fgHaStatsSyncStatus},
-            role => ($result->{fgHaStatsMasterSerial} eq '') ? "master" : "slave",
+            role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? "master" : "slave",
         };
+        $result->{fgHaStatsSyncStatus} =~ s/ /_/;
+        $self->{global}->{$result->{fgHaStatsSyncStatus}}++;
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -195,6 +215,16 @@ __END__
 Check cluster status (FORTINET-FORTIGATE-MIB).
 
 =over 8
+
+=item B<--warning-*>
+
+Set warning thresholds.
+Can be: 'synchronized', 'not-synchronized'
+
+=item B<--critical-*>
+
+Set critical thresholds.
+Can be: 'synchronized', 'not-synchronized'
 
 =item B<--warning-status>
 

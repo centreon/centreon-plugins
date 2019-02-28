@@ -101,6 +101,7 @@ sub run {
         $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
     }
     
+    my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
     my $dt = DateTime->new(
       year       => $remote_date[0],
       month      => $remote_date[1],
@@ -108,7 +109,7 @@ sub run {
       hour       => $remote_date[3],
       minute     => $remote_date[4],
       second     => $remote_date[5],
-      time_zone  => $timezone, 
+      %$tz
     );
     $distant_time = $dt->epoch;
     

@@ -20,10 +20,144 @@
 
 package apps::vmware::connector::mode::healthhost;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub custom_summary_output {
+    my ($self, %options) = @_;
+
+    my $msg;
+    if ($self->{result_values}->{type_absolute} ne '') {
+        $msg = $self->{result_values}->{type_absolute} . " sensor " . $self->{result_values}->{name_absolute} . ": ". $self->{result_values}->{summary_absolute};
+    } else {
+        $msg = $self->{result_values}->{name_absolute} . ": ". $self->{result_values}->{summary_absolute};
+    }
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', indent_long_output => '    ', message_multiple => 'All ESX hosts are ok', 
+            group => [
+                { name => 'global_host', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_problems', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_summary', type => 1 },
+            ]
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total-problems', set => {
+                key_values => [ { name => 'total_problems' }, { name => 'total' } ],
+                output_template => '%s total health issue(s) found',
+                perfdatas => [
+                    { label => 'total_problems', value => 'total_problems_absolute', template => '%s',
+                      min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{global_host} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{global_problems} = [
+        { label => 'ok', threshold => 0, set => {
+                key_values => [ { name => 'ok' } ],
+                output_template => '%s health checks are green',
+                closure_custom_perfdata => sub { return 0; },
+            }
+        },
+        { label => 'problems', set => {
+                key_values => [ { name => 'total_problems' }, { name => 'total' } ],
+                output_template => '%s total health issue(s) found',
+                perfdatas => [
+                    { label => 'problems', value => 'total_problems_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'problems-yellow', set => {
+                key_values => [ { name => 'yellow' }, { name => 'total' } ],
+                output_template => '%s yellow health issue(s) found',
+                perfdatas => [
+                    { label => 'problems_yellow', value => 'yellow_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'problems-red', set => {
+                key_values => [ { name => 'red' }, { name => 'total' } ],
+                output_template => '%s red health issue(s) found',
+                perfdatas => [
+                    { label => 'problems_red', value => 'red_absolute', template => '%s',
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{global_summary} = [
+        { label => 'global-summary', threshold => 0, set => {
+                key_values => [ { name => 'type' }, { name => 'name' }, { name => 'summary' } ],
+                closure_custom_output => $self->can('custom_summary_output'),
+                closure_custom_perfdata => sub { return 0; },
+            }
+        },
+    ];
+}
+
+sub prefix_host_output {
+    my ($self, %options) = @_;
+
+    return "Host '" . $options{instance_value}->{display} . "' : ";
+}
+
+sub host_long_output {
+    my ($self, %options) = @_;
+
+    return "checking host '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_global_cpu_output {
+    my ($self, %options) = @_;
+
+    return "cpu total average : ";
+}
+
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return "cpu '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,35 +165,73 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "storage-status"          => { name => 'storage_status' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                });
+    $options{options}->add_options(arguments => {
+        "esx-hostname:s"        => { name => 'esx_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "storage-status"        => { name => 'storage_status' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'healthhost');
-    $self->{connector}->run();
+    $self->{global} = { total_problems => 0, total => 0 };
+    $self->{host} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'healthhost');
+
+    foreach my $host_id (keys %{$response->{data}}) {
+        my $host_name = $response->{data}->{$host_id}->{name};
+        $self->{host}->{$host_name} = { display => $host_name, 
+            global_host => {
+                state => $response->{data}->{$host_id}->{state},    
+            },
+            global_summary => {},
+            global_problems => {
+                ok => 0, total_problems => 0, red => 0, yellow => 0, total => 0,
+            }, 
+        };
+        
+        my $i = 0;
+        foreach (('memory_info', 'cpu_info', 'sensor_info', 'storage_info')) {
+            if (defined($response->{data}->{$host_id}->{$_})) {
+                foreach my $entry (@{$response->{data}->{$host_id}->{$_}}) {
+                    my $status = 'ok';
+                    $status = lc($1) if ($entry->{status} =~ /(yellow|red)/i);
+                    $self->{host}->{$host_name}->{global_problems}->{$status}++;
+                    $self->{host}->{$host_name}->{global_problems}->{total}++;
+                    if ($status eq 'ok') {
+                        $self->{host}->{$host_name}->{global_problems}->{total_problems}++ 
+                    } else {
+                        $self->{host}->{$host_name}->{global_summary}->{$i} = {
+                            type => defined($entry->{type}) ? $entry->{type} : '',
+                            name => $entry->{name},
+                            summary => $entry->{summary},
+                        };
+                    }
+                }
+
+                $i++;
+            }
+        }
+        
+        $self->{global}->{total_problems} += $self->{host}->{$host_name}->{global_problems}->{red} + $self->{host}->{$host_name}->{global_problems}->{yellow};
+        $self->{global}->{total} +=  $self->{host}->{$host_name}->{global_problems}->{total};
+    }
 }
 
 1;
@@ -93,9 +265,30 @@ Search in following cluster(s) (can be a regexp).
 
 Check storage(s) status.
 
-=item B<--disconnect-status>
+=item B<--unknown-status>
 
-Status if ESX host disconnected (default: 'unknown').
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Can used special variables like: %{status}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be: 'total-problems', 'problems', 'problems-yellow', 'problems-red'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'total-problems', 'problems', 'problems-yellow', 'problems-red'.
 
 =back
 

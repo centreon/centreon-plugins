@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
                             'compaction'                => 'storage::quantum::dxi::ssh::mode::compaction',
                             'dedupnas'                  => 'storage::quantum::dxi::ssh::mode::dedupnas',
+                            'dedupvtl'                  => 'storage::quantum::dxi::ssh::mode::dedupvtl',
                             'disk-usage'                => 'storage::quantum::dxi::ssh::mode::diskusage',
                             'health'                    => 'storage::quantum::dxi::ssh::mode::health',
                             'hostbus-adapter-status'    => 'storage::quantum::dxi::ssh::mode::hostbusadapterstatus',

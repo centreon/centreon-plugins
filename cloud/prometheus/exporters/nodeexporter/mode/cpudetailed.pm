@@ -29,188 +29,188 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output',
-          message_multiple => 'All nodes CPU usage are ok', skipped_code => { -10 => 1 },
-          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output',
-            message_multiple => 'All CPU usage are ok', skipped_code => { -10 => 1 } } ] },
+        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_node_output', cb_long_output => 'node_long_output',
+          message_multiple => 'All nodes usage are ok', indent_long_output => '    ',
+            group => [
+                { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'cpu', display_long => 1, cb_prefix_output => 'prefix_cpu_output',
+                  message_multiple => 'All CPUs usage are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
-    $self->{maps_counters}->{nodes} = [
+    $self->{maps_counters}->{global_cpu} = [
         { label => 'node-wait', set => {
-                key_values => [ { name => 'iowait' }, { name => 'display' } ],
+                key_values => [ { name => 'iowait' } ],
                 output_template => 'Wait: %.2f %%',
                 perfdatas => [
                     { label => 'wait', value => 'iowait_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'node-user', set => {
-                key_values => [ { name => 'user' }, { name => 'display' } ],
+                key_values => [ { name => 'user' } ],
                 output_template => 'User: %.2f %%',
                 perfdatas => [
                     { label => 'user', value => 'user_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'node-softirq', set => {
-                key_values => [ { name => 'softirq' }, { name => 'display' } ],
+                key_values => [ { name => 'softirq' } ],
                 output_template => 'Soft Irq: %.2f %%',
                 perfdatas => [
                     { label => 'softirq', value => 'softirq_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'node-interrupt', set => {
-                key_values => [ { name => 'irq' }, { name => 'display' } ],
+                key_values => [ { name => 'irq' } ],
                 output_template => 'Interrupt: %.2f %%',
                 perfdatas => [
                     { label => 'interrupt', value => 'irq_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'node-idle', set => {
-                key_values => [ { name => 'idle' }, { name => 'display' } ],
+                key_values => [ { name => 'idle' } ],
                 output_template => 'Idle: %.2f %%',
                 perfdatas => [
                     { label => 'idle', value => 'idle_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'node-steal', set => {
-                key_values => [ { name => 'steal' }, { name => 'display' } ],
+                key_values => [ { name => 'steal' } ],
                 output_template => 'Steal: %.2f %%',
                 perfdatas => [
                     { label => 'steal', value => 'steal_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'node-system', set => {
-                key_values => [ { name => 'system' }, { name => 'display' } ],
+                key_values => [ { name => 'system' } ],
                 output_template => 'System: %.2f %%',
                 perfdatas => [
                     { label => 'system', value => 'system_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'node-nice', set => {
-                key_values => [ { name => 'nice' }, { name => 'display' } ],
+                key_values => [ { name => 'nice' } ],
                 output_template => 'Nice: %.2f %%',
                 perfdatas => [
                     { label => 'nice', value => 'nice_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
     ];
     $self->{maps_counters}->{cpu} = [
         { label => 'cpu-wait', set => {
-                key_values => [ { name => 'iowait' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'iowait' }, { name => 'display' } ],
                 output_template => 'Wait: %.2f %%',
                 perfdatas => [
                     { label => 'wait', value => 'iowait_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'cpu-user', set => {
-                key_values => [ { name => 'user' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'user' }, { name => 'display' } ],
                 output_template => 'User: %.2f %%',
                 perfdatas => [
                     { label => 'user', value => 'user_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'cpu-softirq', set => {
-                key_values => [ { name => 'softirq' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'softirq' }, { name => 'display' } ],
                 output_template => 'Soft Irq: %.2f %%',
                 perfdatas => [
                     { label => 'softirq', value => 'softirq_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'cpu-interrupt', set => {
-                key_values => [ { name => 'irq' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'irq' }, { name => 'display' } ],
                 output_template => 'Interrupt: %.2f %%',
                 perfdatas => [
                     { label => 'interrupt', value => 'irq_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'cpu-idle', set => {
-                key_values => [ { name => 'idle' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'idle' }, { name => 'display' } ],
                 output_template => 'Idle: %.2f %%',
                 perfdatas => [
                     { label => 'idle', value => 'idle_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'cpu-steal', set => {
-                key_values => [ { name => 'steal' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'steal' }, { name => 'display' } ],
                 output_template => 'Steal: %.2f %%',
                 perfdatas => [
                     { label => 'steal', value => 'steal_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'cpu-system', set => {
-                key_values => [ { name => 'system' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'system' }, { name => 'display' } ],
                 output_template => 'System: %.2f %%',
                 perfdatas => [
                     { label => 'system', value => 'system_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'cpu-nice', set => {
-                key_values => [ { name => 'nice' }, { name => 'multi' }, { name => 'display' } ],
+                key_values => [ { name => 'nice' }, { name => 'display' } ],
                 output_template => 'Nice: %.2f %%',
                 perfdatas => [
                     { label => 'nice', value => 'nice_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
     ];
 }
 
-sub prefix_nodes_output {
+sub prefix_node_output {
     my ($self, %options) = @_;
 
     return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
+sub node_long_output {
+    my ($self, %options) = @_;
+
+    return "Checking node '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_global_cpu_output {
+    my ($self, %options) = @_;
+
+    return "CPU Average ";
+}
+
 sub prefix_cpu_output {
     my ($self, %options) = @_;
 
-    return "Node '" . $options{instance_value}->{multi} . "' " . "Cpu '" . $options{instance_value}->{display} . "' ";
+    return "CPU '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -226,6 +226,7 @@ sub new {
                                   "type:s"                  => { name => 'type', default => 'mode=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
+                                  "filter-counters:s"       => { name => 'filter_counters' },
                                 });
    
     return $self;
@@ -236,7 +237,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->{metrics} = {
-        'cpu' => "^node_cpu.*",
+        'cpu' => "^node_cpu_seconds_total.*",
     };
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
@@ -258,7 +259,7 @@ sub check_options {
     }
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
+    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "5m";
 }
 
 sub manage_selection {
@@ -270,22 +271,21 @@ sub manage_selection {
                                                             $self->{option_results}->{instance} . ',' .
                                                             $self->{option_results}->{cpu} . ',' .
                                                             $self->{option_results}->{type} .
-                                                            $self->{extra_filter} . '}[1m])) * 100' ],
+                                                            $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100' ],
                                                 timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
 
     foreach my $result (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{$result->{metric}->{$self->{labels}->{type}}} += $average;
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{multi} = $result->{metric}->{$self->{labels}->{instance}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{global_cpu}->{$result->{metric}->{$self->{labels}->{type}}} += $average;
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{display} = $result->{metric}->{$self->{labels}->{cpu}};
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{$result->{metric}->{$self->{labels}->{type}}} = $average;
     }
     
     foreach my $node (keys %{$self->{nodes}}) {
-        foreach my $metric (keys %{$self->{nodes}->{$node}}) {
+        foreach my $metric (keys %{$self->{nodes}->{$node}->{global_cpu}}) {
             next if ($metric =~ /cpu|display/);
-            $self->{nodes}->{$node}->{$metric} /= scalar(keys %{$self->{nodes}->{$node}->{cpu}});
+            $self->{nodes}->{$node}->{global_cpu}->{$metric} /= scalar(keys %{$self->{nodes}->{$node}->{cpu}});
         }
     }
 
@@ -341,9 +341,18 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'cpu')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - cpu: ^node_cpu_seconds_total.*
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='wait'
 
 =back
 

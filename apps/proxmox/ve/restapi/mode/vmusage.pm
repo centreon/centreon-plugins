@@ -25,32 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_vm_status}) && $instance_mode->{option_results}->{critical_vm_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_vm_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_vm_status}) && $instance_mode->{option_results}->{warning_vm_status} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_vm_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -126,6 +101,54 @@ sub custom_memory_calc {
     return 0;
 }
 
+sub custom_swap_perfdata {
+    my ($self, %options) = @_;
+
+    my $extra_label = '';
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
+        $extra_label .= '_' . $self->{result_values}->{display};
+    }
+    $self->{output}->perfdata_add(label => 'swap_used' . $extra_label, unit => 'B',
+                                  value => $self->{result_values}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_swap_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
+                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_swap_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+
+    my $msg = sprintf("Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    return $msg;
+}
+
+sub custom_swap_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_swap_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_swap_usage'};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    return 0;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -140,7 +163,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'cpu', set => {
@@ -180,6 +203,14 @@ sub set_counters {
                     { label => 'write_iops', value => 'write_io_per_second', template => '%.2f',
                       unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
+            }
+        },
+        { label => 'swap', set => {
+                key_values => [ { name => 'swap_usage' }, { name => 'swap_total' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_swap_calc'),
+                closure_custom_output => $self->can('custom_swap_output'),
+                closure_custom_perfdata => $self->can('custom_swap_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_swap_threshold'),
             }
         },
     ];
@@ -231,8 +262,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_vm_status', 'critical_vm_status']);
     $self->{statefile_cache_vms}->check_options(%options);
 }
 
@@ -246,16 +276,6 @@ sub prefix_vms_output {
     my ($self, %options) = @_;
 
     return "VM '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_vm_status', 'critical_vm_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {
@@ -315,6 +335,8 @@ sub manage_selection {
 
 1;
 
+__END__
+
 =head1 MODE
 
 Check VM usage on Proxmox VE Cluster.
@@ -346,13 +368,13 @@ Example: --filter-counters='^vm-status$'
 
 Threshold warning.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
-'cpu' (%), 'memory' (%).
+'cpu' (%), 'memory' (%), 'swap' (%).
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'read-iops', 'write-iops', 'traffic-in', 'traffic-out',
-'cpu' (%), 'memory' (%).
+'cpu' (%), 'memory' (%), 'swap' (%).
 
 =item B<--warning-vm-status>
 

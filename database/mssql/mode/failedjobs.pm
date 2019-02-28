@@ -109,6 +109,9 @@ sub run {
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
     my @job_failed;
+    # run_date format = YYYYMMDD
+    # run_time format = HHMMSS. Can be: HMMSS
+    # run_duration format = HHMMSS
     foreach my $row (@$result) {
         next if (defined($self->{option_results}->{filter}) && $$row[0] !~ /$self->{option_results}->{filter}/);
         next if (defined($self->{option_results}->{lookback}) && $$row[5] > $self->{option_results}->{lookback});
@@ -119,10 +122,12 @@ sub run {
         my $run_date = $$row[3];
         my ($year,$month,$day) = $run_date =~ /(\d{4})(\d{2})(\d{2})/;
         my $run_time = $$row[4];
-        my ($hour,$minute,$second) = $run_time =~ /(\d{2})(\d{2})(\d{2})/;
+        my ($hour, $minute, $second) = $run_time =~ /(\d{1,2})(\d{2})(\d{2})$/;
 
         if (defined($$row[2])) {
-            $run_duration = $$row[2];
+            my $run_duration_padding = sprintf("%06d", $$row[2]);
+            my ($hour_duration, $minute_duration, $second_duration) = $run_duration_padding =~ /(\d{2})(\d{2})(\d{2})$/;
+            $run_duration = ($hour_duration * 3600 + $minute_duration * 60 + $second_duration) / 60;
         } else {
             my $start_time = timelocal($second,$minute,$hour,$day,$month-1,$year);
             $run_duration = (time() - $start_time) / 60;
@@ -138,7 +143,8 @@ sub run {
                                             short_msg => sprintf("Job '%s' duration : %d minutes", $job_name, $run_duration));
             }
         }
-        $self->{output}->output_add(long_msg => sprintf("Job '%s' status %s [Runtime : %s %s] [Duration : %d minutes]", $job_name, $states{$run_status}, $run_date, $run_time, $run_duration));
+        $self->{output}->output_add(long_msg => sprintf("Job '%s' status %s [Runtime : %s %s] [Duration : %d minutes]", 
+            $job_name, $states{$run_status}, defined($year) ? $year . '-' . $month . '-' . $day : '', $hour . ':' . $minute . ':' . $second, $run_duration));
     }
 
     my $exit_code2 = $self->{perfdata}->threshold_check(value => $count_failed, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);

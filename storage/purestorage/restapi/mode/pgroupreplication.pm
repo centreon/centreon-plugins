@@ -118,6 +118,7 @@ sub manage_selection {
     #    {"name": "prod:PROD-SQL-SERVER.6620", "created": "2018-10-15T13:05:06Z", "started": "2018-10-15T13:05:06Z", "completed": "2018-10-15T13:05:53Z", "physical_bytes_written": 4183179644, "source": "prod:PROD-SQL-SERVER", "progress": 1.0, "data_transferred": 4609709762}
     #    ...
     #]
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     foreach my $entry (@{$result}) {
         next if ($entry->{name} !~ /(.*)\.[0-9]+$/);
         my $pgroup_name = $1;
@@ -129,16 +130,14 @@ sub manage_selection {
         }
 
         $entry->{created} =~ /^(\d+)-(\d+)-(\d+)T(\d+)[:\/](\d+)[:\/](\d+)Z$/;
-        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                               time_zone => $self->{option_results}->{timezone});
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
         my $created_time = $dt->epoch;
         my $creation_seconds = time() - $created_time;
 
         next if (defined($self->{pgroup}->{$pgroup_name}->{creation_seconds}) && $creation_seconds > $self->{pgroup}->{$pgroup_name}->{creation_seconds});
 
         $entry->{completed} =~ /^(\d+)-(\d+)-(\d+)T(\d+)[:\/](\d+)[:\/](\d+)Z$/;
-        $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                            time_zone => $self->{option_results}->{timezone});
+        $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
         my $completed_time = $dt->epoch;
         
         $self->{pgroup}->{$pgroup_name} = {

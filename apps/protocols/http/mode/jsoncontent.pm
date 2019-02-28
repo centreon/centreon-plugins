@@ -35,49 +35,53 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.2';
-    $options{options}->add_options(arguments =>
-            {
-            "data:s"                => { name => 'data' },
-            "lookup:s@"             => { name => 'lookup' },
-            "hostname:s"            => { name => 'hostname' },
-            "http-peer-addr:s"      => { name => 'http_peer_addr' },
-            "vhost:s"               => { name => 'vhost' },
-            "port:s"                => { name => 'port', },
-            "proto:s"               => { name => 'proto' },
-            "urlpath:s"             => { name => 'url_path' },
-            "credentials"           => { name => 'credentials' },
-            "basic"                 => { name => 'basic' },
-            "ntlm"                  => { name => 'ntlm' }, # Deprecated
-            "ntlmv2"                => { name => 'ntlmv2' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "proxypac:s"            => { name => 'proxypac' },
-            "header:s@"             => { name => 'header' },
-            "get-param:s@"          => { name => 'get_param' },
-            "timeout:s"             => { name => 'timeout', default => 10 },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            "ssl:s"                 => { name => 'ssl', },
-            "cert-file:s"           => { name => 'cert_file' },
-            "key-file:s"            => { name => 'key_file' },
-            "cacert-file:s"         => { name => 'cacert_file' },
-            "cert-pwd:s"            => { name => 'cert_pwd' },
-            "cert-pkcs12"           => { name => 'cert_pkcs12' },
-            "unknown-status:s"      => { name => 'unknown_status' },
-            "warning-status:s"      => { name => 'warning_status' },
-            "critical-status:s"     => { name => 'critical_status' },
-            "warning-numeric:s"       => { name => 'warning_numeric' },
-            "critical-numeric:s"      => { name => 'critical_numeric' },
-            "warning-string:s"        => { name => 'warning_string' },
-            "critical-string:s"       => { name => 'critical_string' },
-            "warning-time:s"          => { name => 'warning_time' },
-            "critical-time:s"         => { name => 'critical_time' },
-            "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
-            "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
-            "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
-            "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
-            "values-separator:s"      => { name => 'values_separator', default => ', ' },
-            });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname' },
+        "http-peer-addr:s"      => { name => 'http_peer_addr' },
+        "vhost:s"               => { name => 'vhost' },
+        "port:s"                => { name => 'port', },
+        "proto:s"               => { name => 'proto' },
+        "urlpath:s"             => { name => 'url_path' },
+        "credentials"           => { name => 'credentials' },
+        "basic"                 => { name => 'basic' },
+        "ntlm"                  => { name => 'ntlm' }, # Deprecated
+        "ntlmv2"                => { name => 'ntlmv2' },
+        "username:s"            => { name => 'username' },
+        "password:s"            => { name => 'password' },
+        "proxyurl:s"            => { name => 'proxyurl' },
+        "proxypac:s"            => { name => 'proxypac' },
+        "header:s@"             => { name => 'header' },
+        "get-param:s@"          => { name => 'get_param' },
+        "timeout:s"             => { name => 'timeout', default => 10 },
+        "ssl-opt:s@"            => { name => 'ssl_opt' },
+        "ssl:s"                 => { name => 'ssl', },
+        "cert-file:s"           => { name => 'cert_file' },
+        "key-file:s"            => { name => 'key_file' },
+        "cacert-file:s"         => { name => 'cacert_file' },
+        "cert-pwd:s"            => { name => 'cert_pwd' },
+        "cert-pkcs12"           => { name => 'cert_pkcs12' },
+        "unknown-status:s"      => { name => 'unknown_status' },
+        "warning-status:s"      => { name => 'warning_status' },
+        "critical-status:s"     => { name => 'critical_status' },
+        "warning-numeric:s"       => { name => 'warning_numeric' },
+        "critical-numeric:s"      => { name => 'critical_numeric' },
+        "warning-string:s"        => { name => 'warning_string' },
+        "critical-string:s"       => { name => 'critical_string' },
+        "unknown-string:s"        => { name => 'unknown_string' },
+        "warning-time:s"          => { name => 'warning_time' },
+        "critical-time:s"         => { name => 'critical_time' },
+        "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
+        "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
+        "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
+        "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
+        "format-unknown:s"        => { name => 'format_unknown', default => '%{count} element(s) found' },
+        "format-lookup:s"         => { name => 'format_lookup'},
+        "values-separator:s"      => { name => 'values_separator', default => ', ' },
+        "lookup-perfdatas-nagios:s"  => { name => 'lookup_perfdatas_nagios'},
+        "data:s"                  => { name => 'data' },
+        "lookup:s@"               => { name => 'lookup' },
+    });
+    
     $self->{count} = 0;
     $self->{count_ok} = 0;
     $self->{count_warning} = 0;
@@ -85,9 +89,11 @@ sub new {
     $self->{values_ok} = [];
     $self->{values_warning} = [];
     $self->{values_critical} = [];
+    $self->{values_unknown} = [];
     $self->{values_string_ok} = [];
     $self->{values_string_warning} = [];
     $self->{values_string_critical} = [];
+    $self->{values_string_unknown} = [];
     $self->{http} = centreon::plugins::http->new(output => $self->{output});
     return $self;
 }
@@ -148,20 +154,39 @@ sub load_request {
 sub display_output {
     my ($self, %options) = @_;
 
-    foreach my $severity (('ok', 'warning', 'critical')) {
+    foreach my $severity (('ok', 'warning', 'critical', 'unknown')) {
         next if (scalar(@{$self->{'values_' . $severity}}) == 0 && scalar(@{$self->{'values_string_' . $severity}}) == 0);
-        my $format = $self->{option_results}->{'format_' . $severity};
-        while ($format =~ /%{(.*?)}/g) {
+        my $format = '';
+        if(defined($self->{option_results}->{format_lookup}) && $self->{option_results}->{format_lookup} ne '') {
+            $format = $self->{format_from_json};
+        } else {
+            $format = $self->{option_results}->{'format_' . $severity};
+        }
+        while ($format =~ /%\{(.*?)\}/g) {
             my $replace = '';
             if (ref($self->{$1}) eq 'ARRAY') {
                 $replace = join($self->{option_results}->{values_separator}, @{$self->{$1}});
             } else {
                 $replace = defined($self->{$1}) ? $self->{$1} : '';
             }
-            $format =~ s/%{$1}/$replace/g;
+            $format =~ s/%\{$1\}/$replace/g;
         }
         $self->{output}->output_add(severity => $severity,
                                     short_msg => $format);
+    }
+}
+
+sub decode_json_response {
+    my ($self, %options) = @_;
+    
+    return if (defined($self->{json_response_decoded}));
+    my $json = JSON->new;
+    eval {
+        $self->{json_response_decoded} = $json->decode($self->{json_response});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->option_exit();
     }
 }
 
@@ -169,20 +194,11 @@ sub lookup {
     my ($self, %options) = @_;
     my ($xpath, @values);
 
-    my $json = JSON->new;
-    my $content;
-    eval {
-        $content = $json->decode($self->{json_response});
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
-        $self->{output}->option_exit();
-    }
-
+    $self->decode_json_response();
     foreach my $xpath_find (@{$self->{option_results}->{lookup}}) {
         eval {
             my $jpath = JSON::Path->new($xpath_find);
-            @values = $jpath->values($content);
+            @values = $jpath->values($self->{json_response_decoded});
         };
         if ($@) {
             $self->{output}->add_option_msg(short_msg => "Cannot lookup: $@");
@@ -231,13 +247,67 @@ sub lookup {
             } elsif (defined($self->{option_results}->{warning_string}) && $self->{option_results}->{warning_string} ne '' &&
                      $value =~ /$self->{option_results}->{warning_string}/) {
                 push @{$self->{values_string_warning}}, $value;
-            } else {
+            } elsif (defined($self->{option_results}->{unknown_string}) && $self->{option_results}->{unknown_string} ne '' &&
+                       $value =~ /$self->{option_results}->{unknown_string}/) {
+                  push @{$self->{values_string_unknown}}, $value;
+            }
+            else {
                 push @{$self->{values_string_ok}}, $value;
             }
         }
     }
+    
+    if (defined($self->{option_results}->{format_lookup}) && $self->{option_results}->{format_lookup} ne '') {
+        my $xpath_find = $self->{option_results}->{format_lookup};
+        eval {
+            my $jpath = JSON::Path->new($xpath_find);
+            $self->{format_from_json} = $jpath->value($self->{json_response_decoded});
+        };
+        if ($@) {
+            $self->{output}->add_option_msg(short_msg => "Cannot lookup output message: $@");
+            $self->{output}->option_exit();
+        }
+
+        $self->{output}->output_add(long_msg => "Lookup perfdatas XPath $xpath_find:");
+    }
 
     $self->display_output();
+}
+
+sub lookup_perfdata_nagios {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{lookup_perfdatas_nagios}) || $self->{option_results}->{lookup_perfdatas_nagios} eq '');
+
+    $self->decode_json_response();
+
+    my $perfdata_string;
+    my $xpath_find = $self->{option_results}->{lookup_perfdatas_nagios};
+    eval {
+        my $jpath = JSON::Path->new($xpath_find);
+        $perfdata_string = $jpath->value($self->{json_response_decoded});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot lookup perfdatas: $@");
+        $self->{output}->option_exit();
+    }
+
+    $self->{output}->output_add(long_msg => "Lookup perfdatas XPath $xpath_find:");
+
+    my @metrics = split(/ /, $perfdata_string);
+    foreach my $single_metric (@metrics) {
+        my ($label, $perfdatas) = split(/=/, $single_metric);
+        my ($value_w_unit, $warn, $crit, $min, $max) = split(/;/, $perfdatas);
+        # separate the value from the unit
+        my ($value, $unit) = $value_w_unit =~ /(^[0-9]+\.*\,*[0-9]*)(.*)/g;
+
+        $self->{output}->perfdata_add(label => $label, unit => $unit,
+                                      value => $value,
+                                      warning => $warn,
+                                      critical => $crit,
+                                      min => $min,
+                                      max => $max);
+    }
 }
 
 sub run {
@@ -271,6 +341,8 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
                                   min => 0);
 
+    $self->lookup_perfdata_nagios();
+    
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -298,11 +370,22 @@ Set file with JSON request
 What to lookup in JSON response (JSON XPath string) (can be multiple)
 See: http://goessner.net/articles/JsonPath/
 
+=item B<--lookup-perfdatas-nagios>
+
+Take perfdatas from the JSON response (JSON XPath string)
+Chain must be formated in Nagios format.
+Ex : "rta=10.752ms;50.000;100.000;0; pl=0%;20;40;; rtmax=10.802ms;;;;"
+
 =back
 
 FORMAT OPTIONS:
 
 =over 8
+
+=item B<--format-lookup>
+
+Take the output message from the JSON response (JSON XPath string)
+Override all the format options but substitute are still applied.
 
 =item B<--format-ok>
 
@@ -319,6 +402,10 @@ Output warning format (Default: %{count} element(s) found')
 =item B<--format-critical>
 
 Output critical format (Default: %{count} element(s) found')
+
+=item B<--format-unknown>
+
+Output unknown format (Default: %{count} element(s) found')
 
 =item B<--values-separator>
 
@@ -350,6 +437,10 @@ Threshold warning if the string match
 =item B<--critical-string>
 
 Threshold critical if the string match
+
+=item B<--unknown-string>
+
+Threshold unknown if the string match
 
 =item B<--warning-time>
 

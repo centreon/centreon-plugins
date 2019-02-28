@@ -60,8 +60,14 @@ sub run {
             && $group->{name} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{location}) && $self->{option_results}->{location} ne ''
             && $group->{location} !~ /$self->{option_results}->{location}/);
-        $self->{output}->output_add(long_msg => sprintf("[name = %s][location = %s][id = %s]",
-            $group->{name}, $group->{location}, $group->{id}));
+        
+        my @tags;
+        foreach my $tag (keys %{$group->{tags}}) {
+            push @tags, $tag . ':' . $group->{tags}->{$tag};
+        }
+
+        $self->{output}->output_add(long_msg => sprintf("[name = %s][location = %s][id = %s][tags = %s]",
+            $group->{name}, $group->{location}, $group->{id}, join(',', @tags)));
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -73,7 +79,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'location', 'id']);
+    $self->{output}->add_disco_format(elements => ['name', 'location', 'id', 'tags']);
 }
 
 sub disco_show {
@@ -81,10 +87,16 @@ sub disco_show {
 
     $self->manage_selection(%options);
     foreach my $group (@{$self->{groups}}) {
+        my @tags;
+        foreach my $tag (keys %{$group->{tags}}) {
+            push @tags, $tag . ':' . $group->{tags}->{$tag};
+        }
+
         $self->{output}->add_disco_entry(
             name => $group->{name},
             location => $group->{location},
             id => $group->{id},
+            tags => join(',', @tags),
         );
     }
 }

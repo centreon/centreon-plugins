@@ -98,20 +98,19 @@ sub run {
     $self->{http}->add_header(key => 'Content-Type', value => 'text/plain');
     $self->{http}->add_header(key => 'Accept', value => 'text/plain');
 
-    my $sms_arg = {};
-
-    $sms_arg->{account} = $self->{option_results}->{account};
-    $sms_arg->{login} = $self->{option_results}->{login};
-    $sms_arg->{password} = $self->{option_results}->{password};
-    $sms_arg->{to} = $self->{option_results}->{to};
-    $sms_arg->{from} = $self->{option_results}->{from};
-    $sms_arg->{message} = $self->{option_results}->{message};
-    $sms_arg->{class} = $self->{option_results}->{class};
-    $sms_arg->{noStop} = $self->{option_results}->{nostop};
-    $sms_arg->{contentType} = 'application/json';
-    $sms_arg->{smsCoding} = $self->{option_results}->{smscoding};
-
-    my $response = $self->{http}->request(method => 'GET', get_params => $sms_arg);
+    my $sms_param = [
+        "account=$self->{option_results}->{account}",
+        "login=$self->{option_results}->{login}",
+        "password=$self->{option_results}->{password}",
+        "to=$self->{option_results}->{to}",
+        "from=$self->{option_results}->{from}",
+        "message=$self->{option_results}->{message}",
+        "class=" . (defined($self->{option_results}->{class}) ? $self->{option_results}->{class} : ''),
+        "noStop=" . (defined($self->{option_results}->{nostop}) ? $self->{option_results}->{nostop} : ''),
+        "contentType=application/json",
+        "smsCoding=" . (defined($self->{option_results}->{smsCoding}) ? $self->{option_results}->{smsCoding} : ''),
+    ];
+    my $response = $self->{http}->request(method => 'GET', get_param => $sms_param);
 
     my $decoded;
     eval {

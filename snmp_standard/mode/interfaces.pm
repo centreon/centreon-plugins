@@ -28,8 +28,6 @@ use centreon::plugins::values;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 #########################
 # Calc functions
 #########################
@@ -42,17 +40,17 @@ sub custom_threshold_output {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
             $status = 'warning';
         }
         
-        $instance_mode->{last_status} = 0;
-        if (eval "$instance_mode->{check_status}") {
-            $instance_mode->{last_status} = 1;
+        $self->{instance_mode}->{last_status} = 0;
+        if (eval "$self->{instance_mode}->{check_status}") {
+            $self->{instance_mode}->{last_status} = 1;
         }
     };
     if (defined($message)) {
@@ -81,7 +79,7 @@ sub custom_status_calc {
 sub custom_cast_calc {
     my ($self, %options) = @_;
 
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
@@ -92,7 +90,7 @@ sub custom_cast_calc {
                 + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref1}}) 
                 + ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{total_ref2}});
 
-    if ($total == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
+    if ($total == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
@@ -111,21 +109,21 @@ sub custom_traffic_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
+    if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{result_values}->{traffic_per_seconds} /= 8;
         $self->{result_values}->{speed} /= 8 if (defined($self->{result_values}->{speed}));
     }
     
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
     
-    if (defined($instance_mode->{option_results}->{nagvis_perfdata})) {
+    if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{output}->perfdata_add(label => $self->{result_values}->{label} . $extra_label,
                                       value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
                                       warning => $warning,
@@ -144,9 +142,9 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     }
     return $exit;
@@ -165,14 +163,14 @@ sub custom_traffic_output {
 sub custom_traffic_calc {
     my ($self, %options) = @_;
     
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_traffic'} ne $options{old_datas}->{$self->{instance} . '_mode_traffic'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
     }
   
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
-    if ($diff_traffic == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
+    if ($diff_traffic == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
@@ -198,7 +196,7 @@ sub custom_errors_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    if ($instance_mode->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
         $self->{output}->perfdata_add(label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1} . $extra_label, unit => '%',
                                   value => sprintf("%.2f", $self->{result_values}->{prct}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
@@ -217,7 +215,7 @@ sub custom_errors_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_errors} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     } else {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
@@ -237,7 +235,7 @@ sub custom_errors_output {
 sub custom_errors_calc {
     my ($self, %options) = @_;
 
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_cast'} ne $options{old_datas}->{$self->{instance} . '_mode_cast'}) {
         $self->{error_msg} = "buffer creation";
         return -2;
@@ -247,7 +245,7 @@ sub custom_errors_calc {
         $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref1} . $options{extra_options}->{label_ref2}});
     my $total = ($options{new_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'} - 
         $options{old_datas}->{$self->{instance} . '_total_' . $options{extra_options}->{label_ref1} . '_packets'});
-    if ($total == 0 && !defined($instance_mode->{option_results}->{no_skipped_counters})) {
+    if ($total == 0 && !defined($self->{instance_mode}->{option_results}->{no_skipped_counters})) {
         $self->{error_msg} = "skipped";
         return -2;
     }
@@ -535,19 +533,14 @@ sub set_key_values_out_traffic {
      return [ { name => 'out', diff => 1 }, { name => 'speed_out'}, { name => 'display' }, { name => 'mode_traffic' } ];
 }
 
-sub set_instance {
-    my ($self, %options) = @_;
-    
-    $instance_mode = $self;
-}
-
 sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
-        'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
-        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
+        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
+        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
+        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value', },
+        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index', },
     };
 }
 
@@ -616,7 +609,7 @@ sub check_oids_label {
     
     foreach (('oid_filter', 'oid_display')) {
         $self->{option_results}->{$_} = lc($self->{option_results}->{$_}) if (defined($self->{option_results}->{$_}));
-        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}})) {
+        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}}->{oid})) {
             my $label = $_;
             $label =~ s/_/-/g;
             $self->{output}->add_option_msg(short_msg => "Unsupported oid in --" . $label . " option.");
@@ -626,7 +619,7 @@ sub check_oids_label {
     
     if (defined($self->{option_results}->{oid_extra_display})) {
         $self->{option_results}->{oid_extra_display} = lc($self->{option_results}->{oid_extra_display});
-        if (!defined($self->{oids_label}->{$self->{option_results}->{oid_extra_display}})) {
+        if (!defined($self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid})) {
             $self->{output}->add_option_msg(short_msg => "Unsupported oid in --oid-extra-display option.");
             $self->{output}->option_exit();
         }
@@ -774,6 +767,7 @@ sub new {
                                                       output => $self->{output}, perfdata => $self->{perfdata},
                                                       label => $name);
             $self->{maps_counters}->{$key}->{$_}->{obj}->set(%{$self->{maps_counters}->{$key}->{$_}->{set}});
+            $self->{maps_counters}->{$key}->{$_}->{obj}->{instance_mode} = $self;
         }
     }
     
@@ -793,7 +787,6 @@ sub check_options {
     $self->set_oids_label();
     $self->check_oids_label();
     
-    $self->set_instance();
     $self->{statefile_cache}->check_options(%options);
     $self->{statefile_value}->check_options(%options);
     
@@ -997,6 +990,32 @@ sub check_oids_options_change {
     return 0;
 }
 
+sub reload_cache_index_value {
+    my ($self, %options) = @_;
+    
+    my $store_index = defined($options{store_index}) && $options{store_index} == 1 ? 1 : 0;
+    foreach ($self->{snmp}->oid_lex_sort(keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }})) {
+        /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
+        push @{$options{datas}->{all_ids}}, $1 if ($store_index == 1);
+        $options{datas}->{$options{name} . "_" . $1} = $self->{output}->to_utf8($options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_});
+    }
+}
+
+sub reload_cache_values_index {
+    my ($self, %options) = @_;
+    
+    my $store_index = defined($options{store_index}) && $options{store_index} == 1 ? 1 : 0;
+    foreach ($self->{snmp}->oid_lex_sort(keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }})) {
+        /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
+        push @{$options{datas}->{all_ids}}, $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_} if ($store_index == 1);
+        if (defined($options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}})) {
+            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} .= ', ' . $1;
+        } else {
+            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} = $1;
+        }
+    }
+}
+
 sub reload_cache {
     my ($self) = @_;
     my $datas = {};
@@ -1008,22 +1027,20 @@ sub reload_cache {
     $datas->{all_ids} = [];
     
     my $snmp_get = [
-        { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}} },
+        { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}}->{oid} },
     ];
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}} };
+        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}}->{oid} };
     }
     if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}} };
+        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid} };
     }    
     
     my $result = $self->{snmp}->get_multiple_table(oids => $snmp_get);
-    foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_filter}}}})) {
-        /^$self->{oids_label}->{$self->{option_results}->{oid_filter}}\.(.*)$/;
-        push @{$datas->{all_ids}}, $1;
-        $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_filter}}}->{$_});
-    }
+    
+    my $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_filter}}->{cache});
+    $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_filter}, store_index => 1);
 
     if (scalar(@{$datas->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
@@ -1031,17 +1048,13 @@ sub reload_cache {
     }
 
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-       foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}})) {
-            /^$self->{oids_label}->{$self->{option_results}->{oid_display}}\.(.*)$/;
-            $datas->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}->{$_});
-       }
+        $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_display}}->{cache});
+        $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_display});
     }
     if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
-        foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}})) {
-            /^$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}\.(.*)$/;
-            $datas->{$self->{option_results}->{oid_extra_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}->{$_});
-       }
+        $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{cache});
+        $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_extra_display});
     }
     
     $self->{statefile_cache}->write(data => $datas);
@@ -1462,11 +1475,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 

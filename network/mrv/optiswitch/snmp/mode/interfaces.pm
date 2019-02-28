@@ -25,8 +25,6 @@ use base qw(snmp_standard::mode::interfaces);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = 'Status : ' . $self->{result_values}->{linkstatus} . ' (oper: ' . $self->{result_values}->{opstatus} . ', ' . 'admin: ' . $self->{result_values}->{admstatus} . ')';
@@ -401,7 +399,6 @@ sub new {
                                 "global-link-down-rule:s"  => { name => 'global_link_down_rule', default => $self->default_global_link_down_rule() },
                                 });
     
-    $instance_mode = $self;
     return $self;
 }
 

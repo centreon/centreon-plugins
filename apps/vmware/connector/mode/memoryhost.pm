@@ -20,10 +20,162 @@
 
 package apps::vmware::connector::mode::memoryhost;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status : ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    my $label = 'used';
+    my $value_perf = $self->{result_values}->{used};
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        $label = 'free';
+        $value_perf = $self->{result_values}->{free};
+    }
+    my $extra_label = '';
+    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    my %total_options = ();
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
+                                  value => $value_perf,
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    my $msg = sprintf("Memory 'consumed' Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                   $total_size_value . " " . $total_size_unit,
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    
+    if ($self->{result_values}->{total} <= 0) {
+        $self->{error_msg} = 'size is 0';
+        return -20;
+    }
+    
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_consumed'};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+
+    return 0;
+}
+
+sub custom_overhead_output {
+    my ($self, %options) = @_;
+
+    my ($overhead_value, $overhead_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{overhead_absolute});
+    my $msg = sprintf("Memory Overhead: %s",
+                      $overhead_value . " " . $overhead_unit);
+    return $msg;
+}
+
+sub custom_memstate_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'Memory state is ' . $self->{result_values}->{mem_state_str_absolute};
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'host', type => 1, cb_prefix_output => 'prefix_host_output', message_multiple => 'All hosts are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{host} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'consumed-memory', set => {
+                key_values => [ { name => 'display' }, { name => 'consumed' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'overhead-memory', set => {
+                key_values => [ { name => 'overhead' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_overhead_output'),
+                perfdatas => [
+                    { label => 'overhead', value => 'overhead_absolute', template => '%s', unit => 'B', 
+                      min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'state-memory', set => {
+                key_values => [ { name => 'mem_state' }, { name => 'mem_state_str' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_memstate_output'),
+                perfdatas => [
+                    { label => 'state', value => 'mem_state_absolute', template => '%s', 
+                      min => 0, max => 3, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_host_output {
+    my ($self, %options) = @_;
+
+    return "Host '" . $options{instance_value}->{display} . "' : ";
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,47 +183,48 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "warning-state:s"         => { name => 'warning_state' },
-                                  "critical-state:s"        => { name => 'critical_state' },
-                                  "no-memory-state"         => { name => 'no_memory_state' },
-                                });
+    $options{options}->add_options(arguments => {
+        "esx-hostname:s"        => { name => 'esx_hostname' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "units:s"               => { name => 'units', default => '%' },
+        "free"                  => { name => 'free' },
+        "no-memory-state"       => { name => 'no_memory_state' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach my $label (('warning', 'critical', 'warning_state', 'critical_state')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'memhost');
-    $self->{connector}->run();
+    $self->{host} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'memhost');
+    
+    foreach my $host_id (keys %{$response->{data}}) {
+        my $host_name = $response->{data}->{$host_id}->{name};
+        $self->{host}->{$host_name} = { 
+            display => $host_name, 
+            state => $response->{data}->{$host_id}->{state},
+            consumed => $response->{data}->{$host_id}->{'mem.consumed.average'},
+            overhead => $response->{data}->{$host_id}->{'mem.overhead.average'},
+            mem_state => $response->{data}->{$host_id}->{mem_state},
+            mem_state_str => $response->{data}->{$host_id}->{mem_state_str},
+            total => $response->{data}->{$host_id}->{mem_size},
+        };        
+    }    
 }
 
 1;
@@ -101,23 +254,50 @@ Search in following datacenter(s) (can be a regexp).
 
 Search in following cluster(s) (can be a regexp).
 
-=item B<--disconnect-status>
+=item B<--units>
 
-Status if ESX host disconnected (default: 'unknown').
+Units of thresholds (Default: '%') ('%', 'B').
 
-=item B<--warning>
+=item B<--free>
 
-Threshold warning in percent.
+Thresholds are on free space left.
 
-=item B<--critical>
+=item B<--unknown-status>
 
-Threshold critical in percent.
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Can used special variables like: %{status}
 
-=item B<--warning-state>
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--warning-consumed-memory>
+
+Threshold warning (can use unit option).
+
+=item B<--critical-consumed-memory>
+
+Threshold critical (can use unit option).
+
+=item B<--warning-overhead-memory>
+
+Threshold overhead.
+
+=item B<--critical-overhead-memory>
+
+Threshold critical.
+
+=item B<--warning-state-memory>
 
 Threshold warning. For state != 'high': --warning-state=0
 
-=item B<--critical-state>
+=item B<--critical-state-memory>
 
 Threshold critical. For state != 'high': --warning-state=0
 

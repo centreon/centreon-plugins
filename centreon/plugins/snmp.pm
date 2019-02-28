@@ -43,27 +43,27 @@ sub new {
         $options{output}->option_exit();
     }
 
-    $options{options}->add_options(arguments => 
-                { "hostname|host:s"           => { name => 'host' },
-                  "snmp-community:s"          => { name => 'snmp_community', default => 'public' },
-                  "snmp-version:s"            => { name => 'snmp_version', default => 1 },
-                  "snmp-port:s"               => { name => 'snmp_port', default => 161 },
-                  "snmp-timeout:s"            => { name => 'snmp_timeout', default => 1 },
-                  "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
-                  "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
-                  "subsetleef:s"              => { name => 'subsetleef', default => 50 },
-                  "subsettable:s"             => { name => 'subsettable', default => 100 },
-                  "snmp-autoreduce:s"         => { name => 'snmp_autoreduce' },
-                  "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
-                  "snmp-username:s"           => { name => 'snmp_security_name' },
-                  "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
-                  "authprotocol:s"            => { name => 'snmp_auth_protocol' },
-                  "privpassphrase:s"          => { name => 'snmp_priv_passphrase' },
-                  "privprotocol:s"            => { name => 'snmp_priv_protocol' },
-                  "contextname:s"             => { name => 'snmp_context_name' },
-                  "contextengineid:s"         => { name => 'snmp_context_engine_id' },
-                  "securityengineid:s"        => { name => 'snmp_security_engine_id' },
-                  "snmp-errors-exit:s"        => { name => 'snmp_errors_exit', default => 'unknown' },
+    $options{options}->add_options(arguments => {
+        "hostname|host:s"           => { name => 'host' },
+        "snmp-community:s"          => { name => 'snmp_community', default => 'public' },
+        "snmp-version:s"            => { name => 'snmp_version', default => 1 },
+        "snmp-port:s"               => { name => 'snmp_port', default => 161 },
+        "snmp-timeout:s"            => { name => 'snmp_timeout', default => 1 },
+        "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
+        "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
+        "subsetleef:s"              => { name => 'subsetleef', default => 50 },
+        "subsettable:s"             => { name => 'subsettable', default => 100 },
+        "snmp-autoreduce:s"         => { name => 'snmp_autoreduce' },
+        "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
+        "snmp-username:s"           => { name => 'snmp_security_name' },
+        "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
+        "authprotocol:s"            => { name => 'snmp_auth_protocol' },
+        "privpassphrase:s"          => { name => 'snmp_priv_passphrase' },
+        "privprotocol:s"            => { name => 'snmp_priv_protocol' },
+        "contextname:s"             => { name => 'snmp_context_name' },
+        "contextengineid:s"         => { name => 'snmp_context_engine_id' },
+        "securityengineid:s"        => { name => 'snmp_security_engine_id' },
+        "snmp-errors-exit:s"        => { name => 'snmp_errors_exit', default => 'unknown' },
     });
     $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
 
@@ -326,7 +326,7 @@ sub get_leef {
         
         # Some equipments gives a partial response and no error.
         # We look the last value if it's empty or not
-        if (scalar(@$vb) && (scalar(@{@$vb[-1]}) < 3)) {
+        if ((scalar(@$vb) != scalar(@{$entry})) || (scalar(@{@$vb[-1]}) < 3)) {
             next if ($self->{snmp_autoreduce} == 1 && $self->autoreduce_leef(current => $entry) == 0);
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => "SNMP partial response. Please try --snmp-autoreduce option");
@@ -780,47 +780,67 @@ sub check_options {
         }
         
 
-        if (!defined($options{option_results}->{snmp_security_name})) {
+        if (!defined($options{option_results}->{snmp_security_name}) || $options{option_results}->{snmp_security_name} eq '') {
             $self->{output}->add_option_msg(short_msg => "Missing parameter Security Name.");
             $self->{output}->option_exit();
         }
         
         # unauthenticated and unencrypted
-        if (!defined($options{option_results}->{snmp_auth_passphrase}) && !defined($options{option_results}->{snmp_priv_passphrase})) {
-            $self->{snmp_params}->{SecLevel} = 'noAuthNoPriv';
-            return ;
-        }
-
-        if (defined($options{option_results}->{snmp_auth_passphrase}) && !defined($options{option_results}->{snmp_auth_protocol})) {
-            $self->{output}->add_option_msg(short_msg => "Missing parameter authenticate protocol.");
-            $self->{output}->option_exit();
-        }
-        $options{option_results}->{snmp_auth_protocol} = uc($options{option_results}->{snmp_auth_protocol});
-        if ($options{option_results}->{snmp_auth_protocol} ne "MD5" && $options{option_results}->{snmp_auth_protocol} ne "SHA") {
-            $self->{output}->add_option_msg(short_msg => "Wrong authentication protocol. Must be MD5 or SHA.");
-            $self->{output}->option_exit();
-        }
-
-        $self->{snmp_params}->{SecLevel} = 'authNoPriv';
-        $self->{snmp_params}->{AuthProto} = $options{option_results}->{snmp_auth_protocol};
-        $self->{snmp_params}->{AuthPass} = $options{option_results}->{snmp_auth_passphrase};
-
-        if (defined($options{option_results}->{snmp_priv_passphrase}) && !defined($options{option_results}->{snmp_priv_protocol})) {
-            $self->{output}->add_option_msg(short_msg => "Missing parameter privacy protocol.");
-            $self->{output}->option_exit();
-        }
+        $self->{snmp_params}->{SecLevel} = 'noAuthNoPriv';
         
-        if (defined($options{option_results}->{snmp_priv_protocol})) {
+        my $user_activate = 0;
+        if (defined($options{option_results}->{snmp_auth_passphrase}) && $options{option_results}->{snmp_auth_passphrase} ne '') {
+            if (!defined($options{option_results}->{snmp_auth_protocol})) {
+                $self->{output}->add_option_msg(short_msg => "Missing parameter authenticate protocol.");
+                $self->{output}->option_exit();
+            }
+            $options{option_results}->{snmp_auth_protocol} = uc($options{option_results}->{snmp_auth_protocol});
+            if ($options{option_results}->{snmp_auth_protocol} ne "MD5" && $options{option_results}->{snmp_auth_protocol} ne "SHA") {
+                $self->{output}->add_option_msg(short_msg => "Wrong authentication protocol. Must be MD5 or SHA.");
+                $self->{output}->option_exit();
+            }
+            
+            $self->{snmp_params}->{SecLevel} = 'authNoPriv';
+            $self->{snmp_params}->{AuthProto} = $options{option_results}->{snmp_auth_protocol};
+            $self->{snmp_params}->{AuthPass} = $options{option_results}->{snmp_auth_passphrase};
+            $user_activate = 1;
+        }
+
+        if (defined($options{option_results}->{snmp_priv_passphrase}) && $options{option_results}->{snmp_priv_passphrase} ne '') {
+            if (!defined($options{option_results}->{snmp_priv_protocol})) {
+                $self->{output}->add_option_msg(short_msg => "Missing parameter privacy protocol.");
+                $self->{output}->option_exit();
+            }
+            
             $options{option_results}->{snmp_priv_protocol} = uc($options{option_results}->{snmp_priv_protocol});
             if ($options{option_results}->{snmp_priv_protocol} ne 'DES' && $options{option_results}->{snmp_priv_protocol} ne 'AES') {
                 $self->{output}->add_option_msg(short_msg => "Wrong privacy protocol. Must be DES or AES.");
                 $self->{output}->option_exit();
             }
-            
+            if ($user_activate == 0) {
+                $self->{output}->add_option_msg(short_msg => "Cannot use snmp v3 privacy option without snmp v3 authentification options.");
+                $self->{output}->option_exit();
+            }
             $self->{snmp_params}->{SecLevel} = 'authPriv';
             $self->{snmp_params}->{PrivPass} = $options{option_results}->{snmp_priv_passphrase};
             $self->{snmp_params}->{PrivProto} = $options{option_results}->{snmp_priv_protocol};
         }
+    }
+}
+
+sub set_snmp_connect_params {
+    my ($self, %options) = @_;
+    
+    foreach (keys %options) {
+        $self->{snmp_params}->{$_} = $options{$_};
+    }
+}
+
+sub set_snmp_params {
+    my ($self, %options) = @_;
+    
+    foreach (keys %options) {
+        $self->{$_} = $options{$_};
     }
 }
 
