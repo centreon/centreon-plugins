@@ -162,6 +162,10 @@ Check nodes compliance.
 
 =over 8
 
+=item B<--filter-name>
+
+Filter node name (regexp can be used)
+
 =item B<--warning-node-compliance>
 
 Set warning threshold on node compliance.

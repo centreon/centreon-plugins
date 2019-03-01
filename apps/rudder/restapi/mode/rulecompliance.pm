@@ -168,6 +168,10 @@ Check rules compliance.
 
 =over 8
 
+=item B<--filter-name>
+
+Filter rule name (regexp can be used)
+
 =item B<--warning-rule-compliance>
 
 Set warning threshold on rule compliance.
