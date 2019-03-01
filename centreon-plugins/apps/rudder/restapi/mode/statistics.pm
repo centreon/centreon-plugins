@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'pending_nodes', set => {
+        { label => 'pending-nodes', set => {
                 key_values => [ { name => 'pending_nodes' } ],
                 output_template => 'Pending Nodes: %d',
                 perfdatas => [
