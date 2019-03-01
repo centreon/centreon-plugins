@@ -132,30 +132,21 @@ __END__
 
 =head1 MODE
 
-Check statistics.
+Check statistics (objects count).
 
 =over 8
 
-=item B<--warning-global-compliance>
+=item B<--warning-*>
 
-Set warning threshold on global compliance.
+Threshold warning.
+Can be: 'nodes', 'pending-nodes', 'rules',
+'directives', 'groups', 'techniques'.
 
-=item B<--critical-global-compliance>
+=item B<--critical-*>
 
-Set critical threshold on global compliance.
-
-=item B<--warning-status>
-
-Set warning threshold for status (Default: '').
-Can used special variables like: %{detail}, %{value}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '').
-Can used special variables like: %{detail}, %{value}
-
-Example :
-  --critical-status='%{detail} eq "error" && %{value} > 5'
+Threshold critical.
+Can be: 'nodes', 'pending-nodes', 'rules',
+'directives', 'groups', 'techniques'.
 
 =back
 
