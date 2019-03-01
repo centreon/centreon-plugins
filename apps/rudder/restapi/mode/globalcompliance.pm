@@ -60,7 +60,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'compliances', type => 1, cb_prefix_output => 'prefix_compliances_output',
-            message_multiple => 'All detailed compliances are ok' },
+            message_multiple => 'All compliance details are ok' },
     ];
 
     $self->{maps_counters}->{global} = [

@@ -31,8 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'global-compliance' => 'apps::rudder::restapi::mode::globalcompliance',
-        'list-nodes'        => 'apps::rudder::restapi::mode::listnodes',
+        'global-compliance'         => 'apps::rudder::restapi::mode::globalcompliance',
+        'list-nodes'                => 'apps::rudder::restapi::mode::listnodes',
+        'list-rules'                => 'apps::rudder::restapi::mode::listrules',
+        'node-compliance'           => 'apps::rudder::restapi::mode::nodecompliance',
+        'nodes-overall-compliance'  => 'apps::rudder::restapi::mode::nodesoverallcompliance',
+        'rule-compliance'           => 'apps::rudder::restapi::mode::rulecompliance',
+        'statistics'                => 'apps::rudder::restapi::mode::statistics',
     );
 
     $self->{custom_modes}{api} = 'apps::rudder::restapi::custom::api';
