@@ -121,8 +121,8 @@ sub run {
         my $run_duration;
         my $run_date = $$row[3];
         my ($year,$month,$day) = $run_date =~ /(\d{4})(\d{2})(\d{2})/;
-        my $run_time = $$row[4];
-        my ($hour, $minute, $second) = $run_time =~ /(\d{1,2})(\d{2})(\d{2})$/;
+        my $run_time = sprintf("%06d", $$row[4]);
+        my ($hour, $minute, $second) = $run_time =~ /(\d{2})(\d{2})(\d{2})$/;
 
         if (defined($$row[2])) {
             my $run_duration_padding = sprintf("%06d", $$row[2]);
