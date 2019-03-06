@@ -46,22 +46,20 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "tenant:s"                  => { name => 'tenant' },
-                        "client-id:s"               => { name => 'client_id' },
-                        "client-secret:s"           => { name => 'client_secret' },
-                        "login-endpoint:s"          => { name => 'login_endpoint' },
-                        "graph-endpoint:s"          => { name => 'graph_endpoint' },
-                        "timeout:s"                 => { name => 'timeout' },
-                        "proxyurl:s"                => { name => 'proxyurl' },
-                    });
+        $options{options}->add_options(arguments => {
+            "tenant:s"                  => { name => 'tenant' },
+            "client-id:s"               => { name => 'client_id' },
+            "client-secret:s"           => { name => 'client_secret' },
+            "login-endpoint:s"          => { name => 'login_endpoint' },
+            "graph-endpoint:s"          => { name => 'graph_endpoint' },
+            "timeout:s"                 => { name => 'timeout' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     
     return $self;
@@ -98,8 +96,6 @@ sub check_options {
     $self->{login_endpoint} = (defined($self->{option_results}->{login_endpoint})) ? $self->{option_results}->{login_endpoint} : 'https://login.microsoftonline.com';
     $self->{graph_endpoint} = (defined($self->{option_results}->{graph_endpoint})) ? $self->{option_results}->{graph_endpoint} : 'https://graph.microsoft.com';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
 
     if (!defined($self->{tenant}) || $self->{tenant} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --tenant option.");
@@ -123,8 +119,6 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '';
@@ -202,9 +196,8 @@ sub request_api_json { #so lame for now
         $self->{output}->output_add(long_msg => "URL: '" . $local_options{full_url} . "'", debug => 1);
 
         my $content = $self->{http}->request(%local_options);
-        my $response = $self->{http}->get_response();
 
-        if ($response->code() == 429) {
+        if ($self->{http}->get_code() == 429) {
             last;
         }
         
@@ -243,9 +236,8 @@ sub request_api_csv {
     $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
 
     my $content = $self->{http}->request(%options);
-    my $response = $self->{http}->get_response();
     
-    if ($response->code() != 200) {
+    if ($self->{http}->get_code() != 200) {
         my $decoded;
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
@@ -487,10 +479,6 @@ Set Office 365 graph endpoint URL (Default: 'https://graph.microsoft.com')
 =item B<--timeout>
 
 Set timeout in seconds (Default: 10).
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =back
 

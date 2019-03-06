@@ -41,22 +41,19 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "hostname:s@"         => { name => 'hostname' },
-                      "xtremio-username:s@" => { name => 'xtremio_username' },
-                      "xtremio-password:s@" => { name => 'xtremio_password' },
-                      "proxyurl:s@"         => { name => 'proxyurl' },
-                      "timeout:s@"          => { name => 'timeout' },
-                      "ssl-opt:s@"          => { name => 'ssl_opt' },
-                      "reload-cache-time:s" => { name => 'reload_cache_time' },
-                    });
+        $options{options}->add_options(arguments => {
+            "hostname:s@"         => { name => 'hostname' },
+            "xtremio-username:s@" => { name => 'xtremio_username' },
+            "xtremio-password:s@" => { name => 'xtremio_password' },
+            "timeout:s@"          => { name => 'timeout' },
+            "reload-cache-time:s" => { name => 'reload_cache_time' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{statefile_cache_cluster} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -92,7 +89,6 @@ sub check_options {
     $self->{xtremio_username} = (defined($self->{option_results}->{xtremio_username})) ? shift(@{$self->{option_results}->{xtremio_username}}) : '';
     $self->{xtremio_password} = (defined($self->{option_results}->{xtremio_password})) ? shift(@{$self->{option_results}->{xtremio_password}}) : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? shift(@{$self->{option_results}->{reload_cache_time}}) : 180;
  
     if (!defined($self->{hostname})) {
@@ -121,7 +117,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = 443;
     $self->{option_results}->{proto} = 'https';
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
 }
 
 sub settings {
@@ -277,17 +272,9 @@ Xtremio username.
 
 Xtremio password.
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--reload-cache-time>
 

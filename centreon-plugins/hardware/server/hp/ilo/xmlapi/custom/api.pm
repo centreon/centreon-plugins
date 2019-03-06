@@ -41,16 +41,15 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {                      
-                      "hostname:s"  => { name => 'hostname' },
-                      "timeout:s"   => { name => 'timeout', default => 30 },
-                      "port:s"      => { name => 'port', default => 443 },
-                      "username:s"  => { name => 'username' },
-                      "password:s"  => { name => 'password' },
-                      'ssl-opt:s%'  => { name => 'ssl_opt' },
-                      "force-ilo3"  => { name => 'force_ilo3' },
-                    });
+        $options{options}->add_options(arguments => {                      
+            "hostname:s"  => { name => 'hostname' },
+            "timeout:s"   => { name => 'timeout', default => 30 },
+            "port:s"      => { name => 'port', default => 443 },
+            "username:s"  => { name => 'username' },
+            "password:s"  => { name => 'password' },
+            'ssl-opt:s%'  => { name => 'ssl_opt' },
+            "force-ilo3"  => { name => 'force_ilo3' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XML API OPTIONS', once => 1);
 

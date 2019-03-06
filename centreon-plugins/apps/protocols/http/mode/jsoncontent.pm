@@ -37,24 +37,18 @@ sub new {
     $self->{version} = '1.2';
     $options{options}->add_options(arguments => {
         "hostname:s"            => { name => 'hostname' },
-        "http-peer-addr:s"      => { name => 'http_peer_addr' },
         "vhost:s"               => { name => 'vhost' },
         "port:s"                => { name => 'port', },
         "proto:s"               => { name => 'proto' },
         "urlpath:s"             => { name => 'url_path' },
         "credentials"           => { name => 'credentials' },
         "basic"                 => { name => 'basic' },
-        "ntlm"                  => { name => 'ntlm' }, # Deprecated
         "ntlmv2"                => { name => 'ntlmv2' },
         "username:s"            => { name => 'username' },
         "password:s"            => { name => 'password' },
-        "proxyurl:s"            => { name => 'proxyurl' },
-        "proxypac:s"            => { name => 'proxypac' },
         "header:s@"             => { name => 'header' },
         "get-param:s@"          => { name => 'get_param' },
         "timeout:s"             => { name => 'timeout', default => 10 },
-        "ssl-opt:s@"            => { name => 'ssl_opt' },
-        "ssl:s"                 => { name => 'ssl', },
         "cert-file:s"           => { name => 'cert_file' },
         "key-file:s"            => { name => 'key_file' },
         "cacert-file:s"         => { name => 'cacert_file' },
@@ -94,7 +88,7 @@ sub new {
     $self->{values_string_warning} = [];
     $self->{values_string_critical} = [];
     $self->{values_string_unknown} = [];
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -460,21 +454,9 @@ HTTP OPTIONS:
 
 IP Addr/FQDN of the Webserver host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used by Webserver
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
 
 =item B<--proto>
 
@@ -511,10 +493,6 @@ Specify this option if you access webpage over ntlmv2 authentication (Use with -
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 10)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--cert-file>
 

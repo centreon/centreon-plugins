@@ -48,16 +48,14 @@ sub new {
             "port:s"            => { name => 'port' },
             "proto:s"           => { name => 'proto' },
             "token:s"           => { name => 'token' },
-            "proxyurl:s"        => { name => 'proxyurl' },
             "timeout:s"         => { name => 'timeout' },
-            "ssl-opt:s@"        => { name => 'ssl_opt' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -167,9 +165,8 @@ sub request_api {
         $self->{url_path} . $options{url_path} . "'", debug => 1);
 
     my $content = $self->{http}->request(url_path => $self->{url_path} . $options{url_path});
-    my $response = $self->{http}->get_response();
 
-    if ($response->code() != 200) {
+    if ($self->{http}->get_code() != 200) {
         my $decoded;
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
@@ -185,7 +182,7 @@ sub request_api {
             $self->{output}->option_exit();
         } else {
             $self->{output}->output_add(long_msg => "Error message : " . $decoded, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "API return error code '" . $response->code() . "' (add --debug option for detailed message)");
+            $self->{output}->add_option_msg(short_msg => "API return error code '" . $self->{http}->get_code() . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
     }    
@@ -232,17 +229,9 @@ API port (Default: 443)
 
 Specify https if needed (Default: 'https')
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL option (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

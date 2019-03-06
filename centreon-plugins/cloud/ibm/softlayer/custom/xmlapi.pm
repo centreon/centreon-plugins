@@ -40,24 +40,21 @@ sub new {
     }
 
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>
-                    {
-                        "hostname:s"            => { name => 'hostname' },
-                        "url-path:s"            => { name => 'url_path' },
-                        "port:s"                => { name => 'port' },
-                        "proto:s"               => { name => 'proto' },
-                        "proxyurl:s"            => { name => 'proxyurl' },
-                        "timeout:s"             => { name => 'timeout' },
-                        "ssl-opt:s@"            => { name => 'ssl_opt' },
-                        "api-username:s"        => { name => 'api_username' },
-                        "api-key:s"             => { name => 'api_key' },
- 		    });
+        $options{options}->add_options(arguments => {
+            "hostname:s"            => { name => 'hostname' },
+            "url-path:s"            => { name => 'url_path' },
+            "port:s"                => { name => 'port' },
+            "proto:s"               => { name => 'proto' },
+            "timeout:s"             => { name => 'timeout' },
+            "api-username:s"        => { name => 'api_username' },
+            "api-key:s"             => { name => 'api_key' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XMLAPI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -92,8 +89,6 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/soap/v3';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
  
     if (!defined($self->{option_results}->{api_username}) || $self->{option_results}->{api_username} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-username option.");
@@ -114,7 +109,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
 }
@@ -238,17 +232,9 @@ Set API username
 
 Set API Key
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

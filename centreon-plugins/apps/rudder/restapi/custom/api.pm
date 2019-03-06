@@ -47,16 +47,14 @@ sub new {
             "port:s"            => { name => 'port' },
             "proto:s"           => { name => 'proto' },
             "api-token:s"       => { name => 'api_token' },
-            "proxyurl:s"        => { name => 'proxyurl' },
             "timeout:s"         => { name => 'timeout' },
-            "ssl-opt:s@"        => { name => 'ssl_opt' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -165,7 +163,6 @@ sub request_api {
         $self->{url_path} . $options{url_path} . "'", debug => 1);
 
     my $content = $self->{http}->request(url_path => $self->{url_path} . $options{url_path});
-    my $response = $self->{http}->get_response(); 
 
     my $decoded;
     eval {
@@ -218,17 +215,9 @@ Specify https if needed (Default: 'https')
 
 API URL path (Default: '/rudder/api/latest')
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL option (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 
