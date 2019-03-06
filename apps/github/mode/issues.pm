@@ -33,22 +33,19 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"        => { name => 'hostname', default => 'api.github.com' },
-            "port:s"            => { name => 'port', default => '443'},
-            "proto:s"           => { name => 'proto', default => 'https' },
-            "timeout:s"         => { name => 'timeout' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "ssl-opt:s@"        => { name => 'ssl_opt' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            "owner:s"           => { name => 'owner' },
-            "repository:s"      => { name => 'repository' },
-            "label:s"           => { name => 'label', default => '' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname', default => 'api.github.com' },
+        "port:s"            => { name => 'port', default => '443'},
+        "proto:s"           => { name => 'proto', default => 'https' },
+        "timeout:s"         => { name => 'timeout' },
+        "warning:s"         => { name => 'warning' },
+        "critical:s"        => { name => 'critical' },
+        "owner:s"           => { name => 'owner' },
+        "repository:s"      => { name => 'repository' },
+        "label:s"           => { name => 'label', default => '' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -147,17 +144,9 @@ Port used by GitHub's API (Default: '443')
 
 Specify https if needed (Default: 'https')
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning>
 

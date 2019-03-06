@@ -70,24 +70,18 @@ sub new {
     $self->{version} = '1.2';
     $options{options}->add_options(arguments => {
         "hostname:s"            => { name => 'hostname' },
-        "http-peer-addr:s"      => { name => 'http_peer_addr' },
         "port:s"                => { name => 'port', },
         "method:s"              => { name => 'method' },
         "proto:s"               => { name => 'proto' },
         "urlpath:s"             => { name => 'url_path' },
         "credentials"           => { name => 'credentials' },
         "basic"                 => { name => 'basic' },
-        "ntlm"                  => { name => 'ntlm' }, # Deprecated
         "ntlmv2"                => { name => 'ntlmv2' },
         "username:s"            => { name => 'username' },
         "password:s"            => { name => 'password' },
-        "proxyurl:s"            => { name => 'proxyurl' },
-        "proxypac:s"            => { name => 'proxypac' },
         "expected-string:s"     => { name => 'expected_string' },
         "timeout:s"             => { name => 'timeout' },
         "no-follow"             => { name => 'no_follow', },
-        "ssl:s"                 => { name => 'ssl', },
-        "ssl-opt:s@"            => { name => 'ssl_opt' },
         "cert-file:s"           => { name => 'cert_file' },
         "key-file:s"            => { name => 'key_file' },
         "cacert-file:s"         => { name => 'cacert_file' },
@@ -102,7 +96,7 @@ sub new {
         "critical-status:s"     => { name => 'critical_status' },
     });
     
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -165,21 +159,9 @@ Check Webpage content
 
 IP Addr/FQDN of the Webserver host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used by Webserver
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
 
 =item B<--method>
 
@@ -224,10 +206,6 @@ Threshold for HTTP timeout (Default: 5)
 =item B<--no-follow>
 
 Do not follow http redirect
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--cert-file>
 

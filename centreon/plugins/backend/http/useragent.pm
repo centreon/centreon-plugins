@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::plugins::useragent;
+package centreon::plugins::backend::http::useragent;
 
 use strict;
 use warnings;
@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self = LWP::UserAgent::new(@_);
-    $self->agent("centreon::plugins::useragent");
+    $self->agent("centreon::plugins::backend::http::useragent");
 
     $self->{credentials} = $options{credentials} if defined($options{credentials});
     $self->{username} = $options{username} if defined($options{username});

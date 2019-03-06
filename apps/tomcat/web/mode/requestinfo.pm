@@ -35,36 +35,33 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"                 => { name => 'hostname' },
-            "port:s"                     => { name => 'port', default => '8080' },
-            "proto:s"                    => { name => 'proto' },
-            "credentials"                => { name => 'credentials' },
-            "basic"                      => { name => 'basic' },
-            "username:s"                 => { name => 'username' },
-            "password:s"                 => { name => 'password' },
-            "proxyurl:s"                 => { name => 'proxyurl' },
-            "timeout:s"                  => { name => 'timeout' },
-            "ssl-opt:s@"                 => { name => 'ssl_opt' },
-            "urlpath:s"                  => { name => 'url_path', default => '/manager/status?XML=true' },
-            "name:s"                     => { name => 'name' },
-            "regexp"                     => { name => 'use_regexp' },
-            "regexp-isensitive"          => { name => 'use_regexpi' },
-            "warning-maxtime:s"          => { name => 'warning_maxtime' },
-            "critical-maxtime:s"         => { name => 'critical_maxtime' },
-            "warning-processingtime:s"   => { name => 'warning_processingtime' },
-            "critical-processingtime:s"  => { name => 'critical_processingtime' },
-            "warning-requestcount:s"     => { name => 'warning_requestcount' },
-            "critical-requestcount:s"    => { name => 'critical_requestcount' },
-            "warning-errorcount:s"       => { name => 'warning_errorcount' },
-            "critical-errorcount:s"      => { name => 'critical_errorcount' },
-            });
+    $options{options}->add_options(arguments => {
+        "hostname:s"                 => { name => 'hostname' },
+        "port:s"                     => { name => 'port', default => '8080' },
+        "proto:s"                    => { name => 'proto' },
+        "credentials"                => { name => 'credentials' },
+        "basic"                      => { name => 'basic' },
+        "username:s"                 => { name => 'username' },
+        "password:s"                 => { name => 'password' },
+        "timeout:s"                  => { name => 'timeout' },
+        "urlpath:s"                  => { name => 'url_path', default => '/manager/status?XML=true' },
+        "name:s"                     => { name => 'name' },
+        "regexp"                     => { name => 'use_regexp' },
+        "regexp-isensitive"          => { name => 'use_regexpi' },
+        "warning-maxtime:s"          => { name => 'warning_maxtime' },
+        "critical-maxtime:s"         => { name => 'critical_maxtime' },
+        "warning-processingtime:s"   => { name => 'warning_processingtime' },
+        "critical-processingtime:s"  => { name => 'critical_processingtime' },
+        "warning-requestcount:s"     => { name => 'warning_requestcount' },
+        "critical-requestcount:s"    => { name => 'critical_requestcount' },
+        "warning-errorcount:s"       => { name => 'warning_errorcount' },
+        "critical-errorcount:s"      => { name => 'critical_errorcount' },
+    });
 
     $self->{result} = {};
     $self->{hostname} = undef;
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -332,10 +329,6 @@ IP Address or FQDN of the Tomcat Application Server
 
 Port used by Tomcat
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Protocol used http or https
@@ -363,10 +356,6 @@ Specify this option if you access server-status page over hidden basic authentic
 =item B<--timeout>
 
 Threshold for HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--urlpath>
 

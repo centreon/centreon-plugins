@@ -42,20 +42,17 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"            => { name => 'hostname', default => 'api.checkmy.ws'},
-            "port:s"                => { name => 'port', },
-            "proto:s"               => { name => 'proto', default => "https" },
-            "urlpath:s"             => { name => 'url_path', default => "/api/status" },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "uid:s"                 => { name => 'uid' },
-            "timeout:s"             => { name => 'timeout' },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            "threshold-overload:s@" => { name => 'threshold_overload' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname', default => 'api.checkmy.ws'},
+        "port:s"                => { name => 'port', },
+        "proto:s"               => { name => 'proto', default => "https" },
+        "urlpath:s"             => { name => 'url_path', default => "/api/status" },
+        "uid:s"                 => { name => 'uid' },
+        "timeout:s"             => { name => 'timeout' },
+        "threshold-overload:s@" => { name => 'threshold_overload' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -194,10 +191,6 @@ Checkmyws api host (Default: 'api.checkmy.ws')
 
 Port used by checkmyws
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Specify https if needed (Default: 'https')
@@ -206,17 +199,9 @@ Specify https if needed (Default: 'https')
 
 Set path to get checkmyws information (Default: '/api/status')
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--uid>
 
