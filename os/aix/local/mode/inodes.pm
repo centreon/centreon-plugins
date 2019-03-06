@@ -58,24 +58,23 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "remote"              => { name => 'remote' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'df' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-i -v 2>&1' },
-                                  "filter-fs:s"         => { name => 'filter_fs', },
-                                  "name:s"              => { name => 'name' },
-                                  "regexp"              => { name => 'use_regexp' },
-                                  "regexp-isensitive"   => { name => 'use_regexpi' },
-                                });
-    $self->{result} = {};
+    $options{options}->add_options(arguments => {
+        "hostname:s"          => { name => 'hostname' },
+        "remote"              => { name => 'remote' },
+        "ssh-option:s@"       => { name => 'ssh_option' },
+        "ssh-path:s"          => { name => 'ssh_path' },
+        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"           => { name => 'timeout', default => 30 },
+        "sudo"                => { name => 'sudo' },
+        "command:s"           => { name => 'command', default => 'df' },
+        "command-path:s"      => { name => 'command_path' },
+        "command-options:s"   => { name => 'command_options', default => '-i -v 2>&1' },
+        "filter-fs:s"         => { name => 'filter_fs', },
+        "name:s"              => { name => 'name' },
+        "regexp"              => { name => 'use_regexp' },
+        "regexp-isensitive"   => { name => 'use_regexpi' },
+    });
+    
     return $self;
 }
 
@@ -109,7 +108,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $mount ne $self->{option_results}->{name});
         
-        next if ($ifree !~ m/^\d+$/ || $iused !~ m/^\d+$/);
+        next if ($iused !~ m/^\d+$/);
         
         $ipercent =~ s/%//g;
         $self->{inodes}->{$mount} = { display => $mount, used => $ipercent };
