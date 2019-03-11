@@ -244,6 +244,16 @@ sub get_header {
     return $self->{headers}->header($options{name});
 }
 
+sub get_first_header {
+    my ($self, %options) = @_;
+
+    my $first_response = $self->{response};
+    while (exists($first_response->{_previous})) {
+        $first_response = $first_response->{_previous};
+    }
+    return $first_response->{_headers}->header($options{name});
+}
+
 sub get_code {
     my ($self, %options) = @_;
 

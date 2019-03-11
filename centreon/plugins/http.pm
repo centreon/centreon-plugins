@@ -184,6 +184,12 @@ sub get_header {
     return $self->{'backend_' . $self->{http_backend}}->get_header(%options);
 }
 
+sub get_first_header {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_first_header(%options);
+}
+
 sub get_code {
     my ($self, %options) = @_;
 

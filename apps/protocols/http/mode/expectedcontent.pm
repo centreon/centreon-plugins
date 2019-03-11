@@ -69,33 +69,33 @@ sub new {
 
     $self->{version} = '1.2';
     $options{options}->add_options(arguments => {
-        "hostname:s"                    => { name => 'hostname' },
-        "port:s"                        => { name => 'port', },
-        "method:s"                      => { name => 'method' },
-        "proto:s"                       => { name => 'proto' },
-        "urlpath:s"                     => { name => 'url_path' },
-        "credentials"                   => { name => 'credentials' },
-        "basic"                         => { name => 'basic' },
-        "ntlmv2"                        => { name => 'ntlmv2' },
-        "username:s"                    => { name => 'username' },
-        "password:s"                    => { name => 'password' },
-        "expected-headers:s@"           => { name => 'expected_headers' },
-        "expected-first-headers:s@"     => { name => 'expected_first_headers' },
-        "expected-string:s"             => { name => 'expected_string' },
-        "timeout:s"                     => { name => 'timeout' },
-        "no-follow"                     => { name => 'no_follow', },
-        "cert-file:s"                   => { name => 'cert_file' },
-        "key-file:s"                    => { name => 'key_file' },
-        "cacert-file:s"                 => { name => 'cacert_file' },
-        "cert-pwd:s"                    => { name => 'cert_pwd' },
-        "cert-pkcs12"                   => { name => 'cert_pkcs12' },
-        "header:s@"                     => { name => 'header' },
-        "get-param:s@"                  => { name => 'get_param' },
-        "post-param:s@"                 => { name => 'post_param' },
-        "cookies-file:s"                => { name => 'cookies_file' },
-        "unknown-status:s"              => { name => 'unknown_status' },
-        "warning-status:s"              => { name => 'warning_status' },
-        "critical-status:s"             => { name => 'critical_status' },
+        "hostname:s"                   => { name => 'hostname' },
+        "port:s"                       => { name => 'port', },
+        "method:s"                     => { name => 'method' },
+        "proto:s"                      => { name => 'proto' },
+        "urlpath:s"                    => { name => 'url_path' },
+        "credentials"                  => { name => 'credentials' },
+        "basic"                        => { name => 'basic' },
+        "ntlmv2"                       => { name => 'ntlmv2' },
+        "username:s"                   => { name => 'username' },
+        "password:s"                   => { name => 'password' },
+        "expected-header:s@"           => { name => 'expected_header' },
+        "expected-first-header:s@"     => { name => 'expected_first_header' },
+        "expected-string:s"            => { name => 'expected_string' },
+        "timeout:s"                    => { name => 'timeout' },
+        "no-follow"                    => { name => 'no_follow', },
+        "cert-file:s"                  => { name => 'cert_file' },
+        "key-file:s"                   => { name => 'key_file' },
+        "cacert-file:s"                => { name => 'cacert_file' },
+        "cert-pwd:s"                   => { name => 'cert_pwd' },
+        "cert-pkcs12"                  => { name => 'cert_pkcs12' },
+        "header:s@"                    => { name => 'header' },
+        "get-param:s@"                 => { name => 'get_param' },
+        "post-param:s@"                => { name => 'post_param' },
+        "cookies-file:s"               => { name => 'cookies_file' },
+        "unknown-status:s"             => { name => 'unknown_status' },
+        "warning-status:s"             => { name => 'warning_status' },
+        "critical-status:s"            => { name => 'critical_status' },
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
@@ -125,31 +125,31 @@ sub manage_selection {
     $self->{output}->output_add(long_msg => $webcontent);
 
     # Expected first headers check
-    if (defined($self->{option_results}->{expected_first_headers})) {
-        my $headers = $self->{http}->get_first_headers();
-        $headers = join(', ', map("$_: $headers->{$_}", keys %$headers));
-        foreach my $expected (@{$self->{option_results}->{expected_first_headers}}) {
-            if ($headers =~ /$expected/i) {
+    if (defined($self->{option_results}->{expected_first_header})) {
+        foreach (@{$self->{option_results}->{expected_first_header}}) {
+            my @expected = split / *: */, $_;
+            my $header = $self->{http}->get_first_header(name => $expected[0]);
+            if (defined($header) && $header =~ /$expected[1]/i) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("'%s' is present in first headers.", $expected));
+                                            short_msg => sprintf("'%s: %s' is present in first headers.", $expected[0], $expected[1]));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("'%s' is not present in first headers.", $expected));
+                                            short_msg => sprintf("'%s: %s' is not present in first headers.", $expected[0], $expected[1]));
             }
         }
     }
 
     # Expected headers check
-    if (defined($self->{option_results}->{expected_headers})) {
-        my $headers = $self->{http}->get_headers();
-        $headers = join(', ', map("$_: $headers->{$_}", keys %$headers));
-        foreach my $expected (@{$self->{option_results}->{expected_headers}}) {
-            if ($headers =~ /$expected/i) {
+    if (defined($self->{option_results}->{expected_header})) {
+        foreach (@{$self->{option_results}->{expected_header}}) {
+            my @expected = split / *: */, $_;
+            my $header = $self->{http}->get_header(name => $expected[0]);
+            if (defined($header) && $header =~ /$expected[1]/i) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("'%s' is present in headers.", $expected));
+                                            short_msg => sprintf("'%s: %s' is present in headers.", $expected[0], $expected[1]));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("'%s' is not present in headers.", $expected));
+                                            short_msg => sprintf("'%s: %s' is not present in headers.", $expected[0], $expected[1]));
             }
         }
     }
@@ -304,11 +304,11 @@ Threshold warning for content size
 
 Threshold critical for content size
 
-=item B<--expected-headers>
+=item B<--expected-heades>
 
 Specify String to check on the final response headers (Multiple option)
 
-=item B<--expected-first-headers>
+=item B<--expected-first-header>
 
 Specify String to check on the first response headers (Multiple option)
 
