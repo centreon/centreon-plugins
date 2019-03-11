@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -18,33 +18,31 @@
 # limitations under the License.
 #
 
-package centreon::plugins::useragent;
+package apps::protocols::tftp::plugin;
 
 use strict;
 use warnings;
-use base 'LWP::UserAgent';
+use base qw(centreon::plugins::script_simple);
 
 sub new {
     my ($class, %options) = @_;
-    my $self  = {};
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self = LWP::UserAgent::new(@_);
-    $self->agent("centreon::plugins::useragent");
-
-    $self->{credentials} = $options{credentials} if defined($options{credentials});
-    $self->{username} = $options{username} if defined($options{username});
-    $self->{password} = $options{password} if defined($options{password});
-
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+        'commands'  => 'apps::protocols::tftp::mode::commands',
+    );
+    
     return $self;
 }
 
-sub get_basic_credentials {
-    my($self, $realm, $uri, $proxy) = @_;
-    return if $proxy;
-    return $self->{username}, $self->{password} if $self->{credentials} and wantarray;
-    return $self->{username}.":".$self->{password} if $self->{credentials};
-    return undef;
-}
-
 1;
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check an TFTP server.
+
+=cut

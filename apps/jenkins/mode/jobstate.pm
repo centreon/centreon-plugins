@@ -34,26 +34,23 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"           => { name => 'hostname' },
-            "port:s"               => { name => 'port' },
-            "proto:s"              => { name => 'proto' },
-            "urlpath:s"            => { name => 'url_path' },
-            "timeout:s"            => { name => 'timeout' },
-            "credentials"          => { name => 'credentials' },
-            "basic"                => { name => 'basic' },
-            "username:s"           => { name => 'username' },
-            "password:s"           => { name => 'password' },
-            "proxyurl:s"           => { name => 'proxyurl' },
-            "ssl-opt:s@"           => { name => 'ssl_opt' },
-            "jobname:s"            => { name => 'jobname' },
-            "warning:s"            => { name => 'warning' },
-            "critical:s"           => { name => 'critical' },
-            "checkstyle"           => { name => 'checkstyle' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"           => { name => 'hostname' },
+        "port:s"               => { name => 'port' },
+        "proto:s"              => { name => 'proto' },
+        "urlpath:s"            => { name => 'url_path' },
+        "timeout:s"            => { name => 'timeout' },
+        "credentials"          => { name => 'credentials' },
+        "basic"                => { name => 'basic' },
+        "username:s"           => { name => 'username' },
+        "password:s"           => { name => 'password' },
+        "jobname:s"            => { name => 'jobname' },
+        "warning:s"            => { name => 'warning' },
+        "critical:s"           => { name => 'critical' },
+        "checkstyle"           => { name => 'checkstyle' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -180,17 +177,9 @@ Specify username for API authentification
 
 Specify password for API authentification
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning>
 

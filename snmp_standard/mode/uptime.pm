@@ -35,13 +35,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"       => { name => 'warning' },
-                                  "critical:s"      => { name => 'critical' },
-                                  "force-oid:s"     => { name => 'force_oid' },
-                                  "check-overload"  => { name => 'check_overload' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning:s"         => { name => 'warning' },
+        "critical:s"        => { name => 'critical' },
+        "force-oid:s"       => { name => 'force_oid' },
+        "check-overload"    => { name => 'check_overload' },
+        "reboot-window:s"   => { name => 'reboot_window', default => 5000 },
+    });
     
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -69,25 +69,25 @@ sub check_overload {
     return $options{timeticks} if (!defined($self->{option_results}->{check_overload}));
     
     my $current_time = floor(time() * 100);
-    $self->{new_datas} = { last_time => $current_time, uptime => $options{timeticks}, overload => 0 };
+    $self->{new_datas} = { last_time => $current_time, uptime => $options{timeticks} };
     $self->{statefile_cache}->read(statefile => "cache_" . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
     my $old_uptime = $self->{statefile_cache}->get(name => 'uptime');
     my $last_time = $self->{statefile_cache}->get(name => 'last_time');
-    my $overload = $self->{statefile_cache}->get(name => 'overload');
+    $self->{new_datas}->{overload} = $self->{statefile_cache}->get(name => 'overload') || 0;
     
-    if (defined($old_uptime) && $old_uptime < $current_time) {
+    if (defined($old_uptime) && $options{timeticks} < $old_uptime) {
         my $diff_time = $current_time - $last_time;
         my $overflow = ($old_uptime + $diff_time) % 4294967296;
         my $division = ($old_uptime + $diff_time) / 4294967296;
         if ($division >= 1 && 
-            $overflow >= ($options{timeticks} - 5000) &&
-            $overflow <= ($options{timeticks} + 5000)) {
-            $overload++;
+            $overflow >= ($options{timeticks} - $self->{option_results}->{reboot_window}) &&
+            $overflow <= ($options{timeticks} + $self->{option_results}->{reboot_window})) {
+            $self->{new_datas}->{overload}++;
+        } else {
+            $self->{new_datas}->{overload} = 0;
         }
-        
-        $options{timeticks} += ($overload * 4294967296);
     }
-    $self->{new_datas}->{overload} = $overload if (defined($overload));
+    $options{timeticks} += ($self->{new_datas}->{overload} * 4294967296);
     
     $self->{statefile_cache}->write(data => $self->{new_datas});
     return $options{timeticks};
@@ -160,6 +160,11 @@ Can choose your oid (numeric format only).
 
 Uptime counter limit is 4294967296 and overflow.
 With that option, we manage the counter going back. But there is a few chance we can miss a reboot.
+
+=item B<--reboot-window>
+
+To be used with check-overload option. Time in milliseconds (Default: 5000)
+You increase the chance of not missing a reboot if you decrease that value.
 
 =back
 

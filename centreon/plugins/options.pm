@@ -46,6 +46,7 @@ sub new {
         Getopt::Long::Configure('no_auto_abbrev');
     } else {
         require centreon::plugins::alternative::Getopt;
+        $centreon::plugins::alternative::Getopt::warn_message = 0;
         centreon::plugins::alternative::Getopt->import();
     }
     

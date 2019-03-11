@@ -204,31 +204,30 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "remote"                  => { name => 'remote' },
-                                  "ssh-option:s@"           => { name => 'ssh_option' },
-                                  "ssh-path:s"              => { name => 'ssh_path' },
-                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "sudo"                    => { name => 'sudo' },
-                                  "command:s"               => { name => 'command', default => 'bpdbjobs' },
-                                  "command-path:s"          => { name => 'command_path' },
-                                  "command-options:s"       => { name => 'command_options', default => '-report -most_columns' },
-                                  "exec-only"               => { name => 'exec_only' },
-                                  "filter-policy-name:s"    => { name => 'filter_policy_name' },
-                                  "filter-type:s"           => { name => 'filter_type' },
-                                  "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
-                                  "filter-start-time:s"     => { name => 'filter_start_time' },
-                                  "ok-status:s"             => { name => 'ok_status', default => '%{status} == 0' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '%{status} == 1' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} > 1' },
-                                  "warning-long:s"          => { name => 'warning_long' },
-                                  "critical-long:s"         => { name => 'critical_long' },
-                                  "warning-frozen:s"        => { name => 'warning_frozen' },
-                                  "critical-frozen:s"       => { name => 'critical_frozen', default => '%{state} =~ /active|queue/ && %{kb} == 0' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"              => { name => 'hostname' },
+        "remote"                  => { name => 'remote' },
+        "ssh-option:s@"           => { name => 'ssh_option' },
+        "ssh-path:s"              => { name => 'ssh_path' },
+        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"               => { name => 'timeout', default => 30 },
+        "sudo"                    => { name => 'sudo' },
+        "command:s"               => { name => 'command', default => 'bpdbjobs' },
+        "command-path:s"          => { name => 'command_path' },
+        "command-options:s"       => { name => 'command_options', default => '-report -most_columns' },
+        "exec-only"               => { name => 'exec_only' },
+        "filter-policy-name:s"    => { name => 'filter_policy_name' },
+        "filter-type:s"           => { name => 'filter_type' },
+        "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
+        "filter-start-time:s"     => { name => 'filter_start_time' },
+        "ok-status:s"             => { name => 'ok_status', default => '%{status} == 0' },
+        "warning-status:s"        => { name => 'warning_status', default => '%{status} == 1' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{status} > 1' },
+        "warning-long:s"          => { name => 'warning_long' },
+        "critical-long:s"         => { name => 'critical_long' },
+        "warning-frozen:s"        => { name => 'warning_frozen' },
+        "critical-frozen:s"       => { name => 'critical_frozen', default => '%{state} =~ /active|queue/ && %{kb} == 0' },
+    });
     
     return $self;
 }
@@ -237,8 +236,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['ok_status', 'warning_status', 'critical_status', 'warning_long', 
-                                    'critical_long', 'warning_frozen', 'critical_frozen']);
+    $self->change_macros(macros => [
+        'ok_status', 'warning_status', 'critical_status', 'warning_long', 
+        'critical_long', 'warning_frozen', 'critical_frozen']
+    );
 }
 
 sub policy_long_output {

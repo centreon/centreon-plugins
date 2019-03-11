@@ -33,27 +33,24 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', },
-         "proto:s"      => { name => 'proto' },
-         "urlpath:s"    => { name => 'url_path', default => "/server-status/?auto" },
-         "credentials"  => { name => 'credentials' },
-         "basic"        => { name => 'basic' },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
-         "proxyurl:s"   => { name => 'proxyurl' },
-         "header:s@"    => { name => 'header' },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout' },
-         "ssl-opt:s@"   => { name => 'ssl_opt' },
-         "unknown-status:s"     => { name => 'unknown_status', default => '' },
-         "warning-status:s"     => { name => 'warning_status' },
-         "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-         });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $options{options}->add_options(arguments => {
+        "hostname:s"   => { name => 'hostname' },
+        "port:s"       => { name => 'port', },
+        "proto:s"      => { name => 'proto' },
+        "urlpath:s"    => { name => 'url_path', default => "/server-status/?auto" },
+        "credentials"  => { name => 'credentials' },
+        "basic"        => { name => 'basic' },
+        "username:s"   => { name => 'username' },
+        "password:s"   => { name => 'password' },
+        "header:s@"    => { name => 'header' },
+        "warning:s"    => { name => 'warning' },
+        "critical:s"   => { name => 'critical' },
+        "timeout:s"    => { name => 'timeout' },
+        "unknown-status:s"     => { name => 'unknown_status', default => '' },
+        "warning-status:s"     => { name => 'warning_status' },
+        "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+    });
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -142,17 +139,9 @@ Specify this option if you access server-status page over hidden basic authentic
 
 (Use with --credentials)
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Threshold for HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--header>
 

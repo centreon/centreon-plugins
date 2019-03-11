@@ -33,23 +33,19 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"      => { name => 'hostname' },
-                                  "port:s"          => { name => 'port', default => 443 },
-                                  "proto:s"         => { name => 'proto', default => 'https' },
-                                  "proxyurl:s"      => { name => 'proxyurl' },
-                                  "proxypac:s"      => { name => 'proxypac' },
-                                  "username:s"      => { name => 'username' },
-                                  "password:s"      => { name => 'password' },
-                                  "timeout:s"       => { name => 'timeout' },
-                                  "ssl-opt:s@"      => { name => 'ssl_opt' },
-                                  "phonenumber:s"   => { name => 'phonenumber' },
-                                  "message:s"       => { name => 'message' },
-                                  "sender:s"        => { name => 'sender', default => 'API_HIGHSMS' },
-                                });
+    $options{options}->add_options(arguments => {
+        "hostname:s"      => { name => 'hostname' },
+        "port:s"          => { name => 'port', default => 443 },
+        "proto:s"         => { name => 'proto', default => 'https' },
+        "username:s"      => { name => 'username' },
+        "password:s"      => { name => 'password' },
+        "timeout:s"       => { name => 'timeout' },
+        "phonenumber:s"   => { name => 'phonenumber' },
+        "message:s"       => { name => 'message' },
+        "sender:s"        => { name => 'sender', default => 'API_HIGHSMS' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -133,14 +129,6 @@ Port used by HighSMS API. (Default: 443)
 
 Specify http or https protocol. (Default: https)
 
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
 =item B<--username>
 
 Specify username for API authentification.
@@ -152,10 +140,6 @@ Specify password for API authentification.
 =item B<--timeout>
 
 Threshold for HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--phonenumber>
 

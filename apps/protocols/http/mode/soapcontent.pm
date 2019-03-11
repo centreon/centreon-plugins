@@ -34,49 +34,42 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.2';
-    $options{options}->add_options(arguments =>
-            {
-            "service-soap:s"        => { name => 'service_soap' },
-            "data:s"                => { name => 'data' },
-            "lookup:s@"             => { name => 'lookup' },
-            "hostname:s"            => { name => 'hostname' },
-            "http-peer-addr:s"      => { name => 'http_peer_addr' },
-            "vhost:s"               => { name => 'vhost' },
-            "port:s"                => { name => 'port', },
-            "proto:s"               => { name => 'proto' },
-            "urlpath:s"             => { name => 'url_path' },
-            "credentials"           => { name => 'credentials' },
-            "basic"                 => { name => 'basic' },
-            "ntlm"                  => { name => 'ntlm' }, # Deprecated
-            "ntlmv2"                => { name => 'ntlmv2' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "proxypac:s"            => { name => 'proxypac' },
-            "header:s@"             => { name => 'header' },
-            "timeout:s"             => { name => 'timeout', default => 10 },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            "ssl:s"					=> { name => 'ssl', },
-            "cert-file:s"           => { name => 'cert_file' },
-            "key-file:s"            => { name => 'key_file' },
-            "cacert-file:s"         => { name => 'cacert_file' },
-            "cert-pwd:s"            => { name => 'cert_pwd' },
-            "cert-pkcs12"           => { name => 'cert_pkcs12' },
-            "unknown-status:s"      => { name => 'unknown_status' },
-            "warning-status:s"      => { name => 'warning_status' },
-            "critical-status:s"     => { name => 'critical_status' },
-            "warning-numeric:s"       => { name => 'warning_numeric' },
-            "critical-numeric:s"      => { name => 'critical_numeric' },
-            "warning-string:s"        => { name => 'warning_string' },
-            "critical-string:s"       => { name => 'critical_string' },
-            "warning-time:s"          => { name => 'warning_time' },
-            "critical-time:s"         => { name => 'critical_time' },
-            "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
-            "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
-            "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
-            "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
-            "values-separator:s"      => { name => 'values_separator', default => ', ' },
-            });
+    $options{options}->add_options(arguments => {
+        "service-soap:s"        => { name => 'service_soap' },
+        "data:s"                => { name => 'data' },
+        "lookup:s@"             => { name => 'lookup' },
+        "hostname:s"            => { name => 'hostname' },
+        "vhost:s"               => { name => 'vhost' },
+        "port:s"                => { name => 'port', },
+        "proto:s"               => { name => 'proto' },
+        "urlpath:s"             => { name => 'url_path' },
+        "credentials"           => { name => 'credentials' },
+        "basic"                 => { name => 'basic' },
+        "ntlmv2"                => { name => 'ntlmv2' },
+        "username:s"            => { name => 'username' },
+        "password:s"            => { name => 'password' },
+        "header:s@"             => { name => 'header' },
+        "timeout:s"             => { name => 'timeout', default => 10 },
+        "cert-file:s"           => { name => 'cert_file' },
+        "key-file:s"            => { name => 'key_file' },
+        "cacert-file:s"         => { name => 'cacert_file' },
+        "cert-pwd:s"            => { name => 'cert_pwd' },
+        "cert-pkcs12"           => { name => 'cert_pkcs12' },
+        "unknown-status:s"      => { name => 'unknown_status' },
+        "warning-status:s"      => { name => 'warning_status' },
+        "critical-status:s"     => { name => 'critical_status' },
+        "warning-numeric:s"       => { name => 'warning_numeric' },
+        "critical-numeric:s"      => { name => 'critical_numeric' },
+        "warning-string:s"        => { name => 'warning_string' },
+        "critical-string:s"       => { name => 'critical_string' },
+        "warning-time:s"          => { name => 'warning_time' },
+        "critical-time:s"         => { name => 'critical_time' },
+        "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
+        "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
+        "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
+        "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
+        "values-separator:s"      => { name => 'values_separator', default => ', ' },
+    });
     $self->{count} = 0;
     $self->{count_ok} = 0;
     $self->{count_warning} = 0;
@@ -87,7 +80,7 @@ sub new {
     $self->{values_string_ok} = [];
     $self->{values_string_warning} = [];
     $self->{values_string_critical} = [];
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -165,8 +158,7 @@ sub check_encoding {
     my ($self, %options) = @_;
     
     my $charset;
-    my $headers = $self->{http}->get_headers();
-    my $content_type = $headers->header('Content-Type');
+    my ($content_type) = $self->{http}->get_header(name => 'Content-Type');
     if (defined($content_type) && $content_type =~ /charset\s*=\s*(\S+)/i) {
         $charset = $1;
     }
@@ -394,21 +386,9 @@ HTTP OPTIONS:
 
 IP Addr/FQDN of the Webserver host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used by Webserver
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
 
 =item B<--proto>
 
@@ -445,10 +425,6 @@ Specify this option if you access webpage over ntlmv2 authentication (Use with -
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 10)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--cert-file>
 

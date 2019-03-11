@@ -1255,7 +1255,7 @@ We suppose these options are defined :
 
 .. code-block:: perl
 
-  $self->{http} = centreon::plugins::http->new(output => $self->{output});
+  $self->{http} = centreon::plugins::http->new(output => $self->{output}, options => $self->{options});
   $self->{http}->set_options(%{$self->{option_results}});
   my $webcontent = $self->{http}->request();
   print $webcontent;

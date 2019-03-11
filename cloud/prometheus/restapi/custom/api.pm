@@ -42,29 +42,26 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "hostname:s"        => { name => 'hostname' },
-                        "url-path:s"        => { name => 'url_path' },
-                        "port:s"            => { name => 'port' },
-                        "proto:s"           => { name => 'proto' },
-                        "credentials"       => { name => 'credentials' },
-                        "basic"             => { name => 'basic' },
-                        "username:s"        => { name => 'username' },
-                        "password:s"        => { name => 'password' },
-                        "proxyurl:s"        => { name => 'proxyurl' },
-                        "timeout:s"         => { name => 'timeout' },
-                        "ssl-opt:s@"        => { name => 'ssl_opt' },
-                        "header:s@"         => { name => 'header' },
-                        "timeframe:s"       => { name => 'timeframe' },
-                        "step:s"            => { name => 'step' },
-                    });
+        $options{options}->add_options(arguments =>  {
+            "hostname:s"        => { name => 'hostname' },
+            "url-path:s"        => { name => 'url_path' },
+            "port:s"            => { name => 'port' },
+            "proto:s"           => { name => 'proto' },
+            "credentials"       => { name => 'credentials' },
+            "basic"             => { name => 'basic' },
+            "username:s"        => { name => 'username' },
+            "password:s"        => { name => 'password' },
+            "timeout:s"         => { name => 'timeout' },
+            "header:s@"         => { name => 'header' },
+            "timeframe:s"       => { name => 'timeframe' },
+            "step:s"            => { name => 'step' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
@@ -303,17 +300,9 @@ Specify this option if you access the API over hidden basic authentication or yo
 
 (Use with --credentials)
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL option (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--header>
 

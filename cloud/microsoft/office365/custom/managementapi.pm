@@ -44,22 +44,20 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "tenant:s"                  => { name => 'tenant' },
-                        "client-id:s"               => { name => 'client_id' },
-                        "client-secret:s"           => { name => 'client_secret' },
-                        "login-endpoint:s"          => { name => 'login_endpoint' },
-                        "management-endpoint:s"     => { name => 'management_endpoint' },
-                        "timeout:s"                 => { name => 'timeout' },
-                        "proxyurl:s"                => { name => 'proxyurl' },
-                    });
+        $options{options}->add_options(arguments => {
+            "tenant:s"                  => { name => 'tenant' },
+            "client-id:s"               => { name => 'client_id' },
+            "client-secret:s"           => { name => 'client_secret' },
+            "login-endpoint:s"          => { name => 'login_endpoint' },
+            "management-endpoint:s"     => { name => 'management_endpoint' },
+            "timeout:s"                 => { name => 'timeout' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     
     return $self;
@@ -96,8 +94,6 @@ sub check_options {
     $self->{login_endpoint} = (defined($self->{option_results}->{login_endpoint})) ? $self->{option_results}->{login_endpoint} : 'https://login.windows.net';
     $self->{management_endpoint} = (defined($self->{option_results}->{management_endpoint})) ? $self->{option_results}->{management_endpoint} : 'https://manage.office.com';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
 
     if (!defined($self->{tenant}) || $self->{tenant} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --tenant option.");
@@ -121,8 +117,6 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '';
@@ -290,10 +284,6 @@ Set Office 365 management endpoint URL (Default: 'https://manage.office.com')
 =item B<--timeout>
 
 Set timeout in seconds (Default: 10).
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =back
 
