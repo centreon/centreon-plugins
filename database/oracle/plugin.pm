@@ -63,13 +63,13 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(
-                                   arguments => {
-                                                'hostname:s@'   => { name => 'hostname' },
-                                                'port:s@'       => { name => 'port' },
-                                                'sid:s'         => { name => 'sid' },
-                                                }
-                                  );
+    $self->{options}->add_options(arguments => {
+            'hostname:s@'   => { name => 'hostname' },
+            'port:s@'       => { name => 'port' },
+            'sid:s'         => { name => 'sid' },
+            'servicename:s' => { name => 'servicename' },
+    });
+
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();
@@ -84,9 +84,13 @@ sub init {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{port}[$i];
                 $self->{sqldefault}->{sqlpluscmd}[$i]->{port} = $options_result->{port}[$i];
             }
-            if ((defined($options_result->{sid})) && ($options_result->{sid} ne '')) {
+            if (defined($options_result->{sid}) && $options_result->{sid} ne '') {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';sid=' . $options_result->{sid};
 	            $self->{sqldefault}->{sqlpluscmd}[$i]->{sid} = $options_result->{sid};
+            }
+            if (defined($options_result->{servicename}) && $options_result->{servicename} ne '') {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';service_name=' . $options_result->{servicename};
+	            $self->{sqldefault}->{sqlpluscmd}[$i]->{service_name} = $options_result->{servicename};
             }
         }
     }
@@ -113,7 +117,11 @@ Database Server Port.
 
 =item B<--sid>
 
-Database SID (SERVICE_NAME).
+Database SID.
+
+=item B<--servicename>
+
+Database Service Name.
 
 =back
 
