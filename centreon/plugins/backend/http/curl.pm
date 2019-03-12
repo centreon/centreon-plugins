@@ -238,12 +238,30 @@ sub set_extra_curl_opt {
     }
 }
 
+sub parse_header { 
+    my ($curl, $header, $headers) = @_;
+
+    my $nresponse = ((scalar keys $headers) - 1);
+    $nresponse = 0 if ($nresponse < 0);
+    if ($header =~ /^\r*\n*$/) {
+        $nresponse += 1;
+        $headers->{$nresponse} = [];
+    } else {
+        push @{$headers->{$nresponse}}, $header;
+    }
+    return length($header); 
+}
+
 sub parse_headers {
     my ($self, %options) = @_;
     
+    my $nresponse = ((scalar keys $self->{response_headers}) - 2);
+    $nresponse = 0 if ($nresponse < 0);
+    $nresponse = 0 if (defined($options{parse_first_headers}));
+
     $self->{response_headers_parse} = {};
     my ($header, $value);
-    foreach (split /\n/, $self->{response_headers}) {
+    foreach (@{$self->{response_headers}->{$nresponse}}) {
         s/\r//g;
         if (/^(\S(?:.*?))\s*:\s*(.*)/) {
             if (defined($value)) {
@@ -334,7 +352,8 @@ sub request {
     $self->set_extra_curl_opt(%options);
 
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FILE'), parameter => \$self->{response_body});
-    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERDATA'), parameter => \$self->{response_headers});
+    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERDATA'), parameter => \%{$self->{response_headers}});
+    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERFUNCTION'), parameter => \&parse_header);
 
     eval {
         $self->{curl_easy}->perform();
@@ -345,7 +364,6 @@ sub request {
     }
     
     $self->{response_code} = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_RESPONSE_CODE'));
-    $self->parse_headers();
     
     # Check response
     my $status = 'ok';
@@ -386,6 +404,18 @@ sub request {
 
 sub get_header {
     my ($self, %options) = @_;
+
+    $self->parse_headers();
+
+    return undef
+        if (!defined($self->{response_headers_parse}->{$options{name}}));
+    return wantarray ? @{$self->{response_headers_parse}->{$options{name}}} : $self->{response_headers_parse}->{$options{name}}->[0];
+}
+
+sub get_first_header {
+    my ($self, %options) = @_;
+
+    $self->parse_headers(parse_first_headers => 1);
 
     return undef
         if (!defined($self->{response_headers_parse}->{$options{name}}));
