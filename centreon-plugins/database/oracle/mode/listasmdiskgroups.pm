@@ -51,8 +51,12 @@ sub manage_selection {
 SELECT name, state, type FROM V$ASM_DISKGROUP
 });
     $self->{list_dg} = {};
-    while ((my $row = $self->{sql}->fetchrow_hashref())) {
-        $self->{list_dg}->{$row->{name}} = { %$row };
+    my $result = $self->{sql}->fetchall_arrayref();
+    foreach my $row (@$result) {
+        $self->{list_dg}->{$row->[0]} = {
+            state => $row->[1],
+            type => $row->[2],
+        };
     }
 }
 
