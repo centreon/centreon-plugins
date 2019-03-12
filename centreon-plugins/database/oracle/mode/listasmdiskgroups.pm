@@ -71,7 +71,6 @@ sub run {
             '[state = ' . $self->{list_dg}->{$name}->{state} . '] ' .
             '[type = ' . $self->{list_dg}->{$name}->{type} . '] '
         );
-        $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => "List of asm disk groups:");
