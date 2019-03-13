@@ -259,6 +259,7 @@ sub access_result {
         if (!defined($self->{option_results}->{add_access}));
     my $oid_hrFSAccess = '.1.3.6.1.2.1.25.3.8.1.5';
     my $relations = $self->{statefile_cache}->get(name => 'relation_storageindex_fsstorageindex');
+    return {} if (!defined($relations) || scalar(keys %$relations) <= 0);
     my @instances = [];
     foreach (@{$self->{storage_id_selected}}) {
         if (defined($relations->{$_})) {
