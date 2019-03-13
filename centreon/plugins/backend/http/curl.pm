@@ -269,7 +269,7 @@ sub parse_headers {
                     if (!defined($self->{response_headers_parse}->{$header}));
                 push @{$self->{response_headers_parse}->{$header}}, $value;
             }
-            $header = $1;
+            $header = lc($1);
             $value = $2;
         } elsif (/^\s+(.*)/) {
             $value .= ', ' . $1;
@@ -418,8 +418,8 @@ sub get_first_header {
     $self->parse_headers(parse_first_headers => 1);
 
     return undef
-        if (!defined($self->{response_headers_parse}->{$options{name}}));
-    return wantarray ? @{$self->{response_headers_parse}->{$options{name}}} : $self->{response_headers_parse}->{$options{name}}->[0];
+        if (!defined($self->{response_headers_parse}->{ lc($options{name}) }));
+    return wantarray ? @{$self->{response_headers_parse}->{ lc($options{name}) }} : $self->{response_headers_parse}->{ lc($options{name}) }->[0];
 }
 
 sub get_code {
