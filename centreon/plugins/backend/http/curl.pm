@@ -408,8 +408,8 @@ sub get_header {
     $self->parse_headers();
 
     return undef
-        if (!defined($self->{response_headers_parse}->{$options{name}}));
-    return wantarray ? @{$self->{response_headers_parse}->{$options{name}}} : $self->{response_headers_parse}->{$options{name}}->[0];
+        if (!defined($self->{response_headers_parse}->{ lc($options{name}) }));
+    return wantarray ? @{$self->{response_headers_parse}->{ lc($options{name}) }} : $self->{response_headers_parse}->{ lc($options{name}) }->[0];
 }
 
 sub get_first_header {
