@@ -63,6 +63,9 @@ sub custom_threshold_output {
 sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = 'Status : ' . $self->{result_values}->{opstatus} . ' (admin: ' . $self->{result_values}->{admstatus} . ')';
+    if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
+        $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
+    }
     
     return $msg;
 }
@@ -72,6 +75,7 @@ sub custom_status_calc {
     
     $self->{result_values}->{opstatus} = $options{new_datas}->{$self->{instance} . '_opstatus'};
     $self->{result_values}->{admstatus} = $options{new_datas}->{$self->{instance} . '_admstatus'};
+    $self->{result_values}->{duplexstatus} = $options{new_datas}->{$self->{instance} . '_duplexstatus'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -518,7 +522,7 @@ sub set_counters {
 sub set_key_values_status {
     my ($self, %options) = @_;
 
-    return [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ];
+    return [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'duplexstatus' }, { name => 'display' } ];
 }
 
 sub set_key_values_in_traffic {
@@ -554,6 +558,10 @@ sub set_oids_status {
     $self->{oid_opstatus} = '.1.3.6.1.2.1.2.2.1.8';
     $self->{oid_opstatus_mapping} = {
         1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown',
+    };
+    $self->{oid_duplexstatus} = '.1.3.6.1.2.1.10.7.2.1.19';
+    $self->{oid_duplexstatus_mapping} = {
+        1 => 'unknown', 2 => 'halfDuplex', 3 => 'fullDuplex',
     };
 }
 
@@ -694,30 +702,30 @@ sub new {
     }
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "add-global"              => { name => 'add_global' },
-                                "add-status"              => { name => 'add_status' },
-                                "warning-status:s"        => { name => 'warning_status', default => $self->default_warning_status() },
-                                "critical-status:s"       => { name => 'critical_status', default => $self->default_critical_status() },
-                                "global-admin-up-rule:s"    => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
-                                "global-oper-up-rule:s"     => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
-                                "global-admin-down-rule:s"  => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
-                                "global-oper-down-rule:s"   => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
-                                "interface:s"             => { name => 'interface' },
-                                "units-traffic:s"         => { name => 'units_traffic', default => '%' },
-                                "units-errors:s"          => { name => 'units_errors', default => '%' },
-                                "speed:s"                 => { name => 'speed' },
-                                "speed-in:s"              => { name => 'speed_in' },
-                                "speed-out:s"             => { name => 'speed_out' },
-                                "no-skipped-counters"     => { name => 'no_skipped_counters' },
-                                "display-transform-src:s" => { name => 'display_transform_src' },
-                                "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                "show-cache"              => { name => 'show_cache' },
-                                "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                "nagvis-perfdata"         => { name => 'nagvis_perfdata' },
-                                "force-counters32"        => { name => 'force_counters32' },
-                                });
+    $options{options}->add_options(arguments => {
+        "add-global"              => { name => 'add_global' },
+        "add-status"              => { name => 'add_status' },
+        "add-duplex-status"       => { name => 'add_duplex_status' },
+        "warning-status:s"        => { name => 'warning_status', default => $self->default_warning_status() },
+        "critical-status:s"       => { name => 'critical_status', default => $self->default_critical_status() },
+        "global-admin-up-rule:s"    => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
+        "global-oper-up-rule:s"     => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
+        "global-admin-down-rule:s"  => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
+        "global-oper-down-rule:s"   => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
+        "interface:s"             => { name => 'interface' },
+        "units-traffic:s"         => { name => 'units_traffic', default => '%' },
+        "units-errors:s"          => { name => 'units_errors', default => '%' },
+        "speed:s"                 => { name => 'speed' },
+        "speed-in:s"              => { name => 'speed_in' },
+        "speed-out:s"             => { name => 'speed_out' },
+        "no-skipped-counters"     => { name => 'no_skipped_counters' },
+        "display-transform-src:s" => { name => 'display_transform_src' },
+        "display-transform-dst:s" => { name => 'display_transform_dst' },
+        "show-cache"              => { name => 'show_cache' },
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+        "nagvis-perfdata"         => { name => 'nagvis_perfdata' },
+        "force-counters32"        => { name => 'force_counters32' },
+    });
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { "add-traffic" => { name => 'add_traffic' } });
     }
@@ -1120,7 +1128,12 @@ sub load_status {
     my ($self, %options) = @_;
     
     $self->set_oids_status();
-    $self->{snmp}->load(oids => [$self->{oid_adminstatus}, $self->{oid_opstatus}], instances => $self->{array_interface_selected});
+    my $oids = [$self->{oid_adminstatus}, $self->{oid_opstatus}];
+    if (defined($self->{option_results}->{add_duplex_status})) {
+        push @$oids, $self->{oid_duplexstatus};
+    }
+    
+    $self->{snmp}->load(oids => $oids, instances => $self->{array_interface_selected});
 }
 
 sub load_traffic {
@@ -1245,6 +1258,7 @@ sub add_result_status {
     
     $self->{interface_selected}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
     $self->{interface_selected}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
+    $self->{interface_selected}->{$options{instance}}->{duplexstatus} = defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
 }
 
 sub add_result_errors {
@@ -1383,6 +1397,10 @@ Check global port statistics (By default if no --add-* option is set).
 
 Check interface status.
 
+=item B<--add-duplex-status>
+
+Check duplex status (with --warning-status and --critical-status).
+
 =item B<--add-traffic>
 
 Check interface traffic.
@@ -1406,12 +1424,12 @@ Check interface data volume between two checks (not supposed to be graphed, usef
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*>
 
