@@ -147,11 +147,21 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub custom_access_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Access : %s", 
+        $self->{result_values}->{access_absolute} == 1 ? 'readWrite' : 'readOnly'
+    );
+
+    return $msg;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages are ok' },
+        { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages are ok', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{storage} = [
@@ -161,6 +171,15 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'access', set => {
+                key_values => [ { name => 'access' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_access_output'),
+                perfdatas => [
+                    { label => 'access', value => 'access_absolute', template => '%d', min => 1, max => 2, 
+                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             }
         },
     ];
@@ -184,23 +203,23 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "free"                    => { name => 'free' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                  "name"                    => { name => 'use_name' },
-                                  "storage:s"               => { name => 'storage' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "oid-filter:s"            => { name => 'oid_filter', default => 'hrStorageDescr'},
-                                  "oid-display:s"           => { name => 'oid_display', default => 'hrStorageDescr'},
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                  "show-cache"              => { name => 'show_cache' },
-                                  "space-reservation:s"     => { name => 'space_reservation' },
-                                  "filter-storage-type:s"   => { name => 'filter_storage_type', default => $self->default_storage_type() },
-                                });
+    $options{options}->add_options(arguments => { 
+        "units:s"                 => { name => 'units', default => '%' },
+        "free"                    => { name => 'free' },
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+        "name"                    => { name => 'use_name' },
+        "storage:s"               => { name => 'storage' },
+        "regexp"                  => { name => 'use_regexp' },
+        "regexp-isensitive"       => { name => 'use_regexpi' },
+        "oid-filter:s"            => { name => 'oid_filter', default => 'hrStorageDescr'},
+        "oid-display:s"           => { name => 'oid_display', default => 'hrStorageDescr'},
+        "display-transform-src:s" => { name => 'display_transform_src' },
+        "display-transform-dst:s" => { name => 'display_transform_dst' },
+        "show-cache"              => { name => 'show_cache' },
+        "space-reservation:s"     => { name => 'space_reservation' },
+        "filter-storage-type:s"   => { name => 'filter_storage_type', default => $self->default_storage_type() },
+        "add-access"              => { name => 'add_access' },
+    });
 
     $self->{storage_id_selected} = [];
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -233,6 +252,35 @@ sub check_options {
     $instance_mode = $self;
 }
 
+sub access_result {
+    my ($self, %options) = @_;
+    
+    return {}
+        if (!defined($self->{option_results}->{add_access}));
+    my $oid_hrFSAccess = '.1.3.6.1.2.1.25.3.8.1.5';
+    my $relations = $self->{statefile_cache}->get(name => 'relation_storageindex_fsstorageindex');
+    my @instances = [];
+    foreach (@{$self->{storage_id_selected}}) {
+        if (defined($relations->{$_})) {
+            push @instances, $relations->{$_};
+        }
+    }
+    
+    $self->{snmp}->load(
+        oids => [$oid_hrFSAccess], 
+        instances => \@instances, nothing_quit => 1
+    );
+    my $snmp_result = $self->{snmp}->get_leef();
+    my $result = {};
+    foreach (@{$self->{storage_id_selected}}) {
+        if (defined($snmp_result->{$oid_hrFSAccess . '.' . $relations->{$_}})) {
+            $result->{$_} = $snmp_result->{$oid_hrFSAccess . '.' . $relations->{$_}};
+        }
+    }
+    
+    return $result;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
     
@@ -243,10 +291,11 @@ sub manage_selection {
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
     my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
-
+    
     $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
                         instances => $self->{storage_id_selected}, nothing_quit => 1);
     my $result = $self->{snmp}->get_leef();
+    my $access_result = $self->access_result();
     
     $self->{storage} = {};
     foreach (sort @{$self->{storage_id_selected}}) {
@@ -271,6 +320,7 @@ sub manage_selection {
             allocation_units => $result->{$oid_hrStorageAllocationUnits . "." . $_},
             size => $result->{$oid_hrStorageSize . "." . $_},
             used => $result->{$oid_hrStorageUsed . "." . $_},
+            access => defined($access_result->{$_}) ? $access_result->{$_} : undef,
         };
     }
     
@@ -288,17 +338,25 @@ sub reload_cache {
     $datas->{oid_display} = $self->{option_results}->{oid_display};
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
+    $datas->{relation_storageindex_fsstorageindex} = {};
     
     my $request = [ { oid => $oids_hrStorageTable{hrstoragetype} } ];
     my $added = {};
+    my $build_relation = 0;
     foreach (($self->{option_results}->{oid_filter}, $self->{option_results}->{oid_display} )) {
         next if (defined($added->{$_}));
         $added->{$_} = 1;
         if (/hrFSMountPoint/i) {
             push @{$request}, ({ oid => $oids_hrStorageTable{hrfsmountpoint} }, { oid => $oids_hrStorageTable{hrfsstorageindex} });
+            $build_relation = 1;
         } else {
             push @{$request}, { oid => $oids_hrStorageTable{hrstoragedescr} };
         }
+    }
+    
+    if (defined($self->{option_results}->{add_access}) && !defined($added->{hrFSMountPoint})) {
+        push @{$request}, { oid => $oids_hrStorageTable{hrfsstorageindex} };
+        $build_relation = 1;
     }
 
     my $result = $self->{snmp}->get_multiple_table(oids => $request);
@@ -315,6 +373,13 @@ sub reload_cache {
             }
 
             $datas->{$$_[1] . "_" . $storage_index} = $self->{output}->to_utf8($result->{ $oids_hrStorageTable{$$_[1]} }->{$key});
+        }
+    }
+    
+    if ($build_relation == 1) {
+        foreach (keys %{$result->{ $oids_hrStorageTable{hrfsstorageindex} }}) {
+            /\.([0-9]+)$/;
+            $datas->{relation_storageindex_fsstorageindex}->{ $result->{ $oids_hrStorageTable{hrfsstorageindex} }->{$_} } = $1;
         }
     }
 
@@ -415,6 +480,19 @@ Threshold warning.
 =item B<--critical-usage>
 
 Threshold critical.
+
+=item B<--warning-access>
+
+Threshold warning. 
+
+=item B<--critical-access>
+
+Threshold critical.
+Check if storage is readOnly: --critical-access=@2:2
+
+=item B<--add-access>
+
+Check storage access (readOnly, readWrite).
 
 =item B<--units>
 
