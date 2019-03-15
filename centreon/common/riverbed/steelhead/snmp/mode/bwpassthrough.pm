@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::riverbed::steelhead::snmp::mode::bwpassthrough;
+package centreon::common::riverbed::steelhead::snmp::mode::bwpassthrough;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -37,20 +37,20 @@ sub set_counters {
         { label => 'traffic-in', set => {
                 key_values => [ { name => 'bwPassThroughIn', diff => 1 } ],
                 output_template => 'Traffic In (Wan2Lan): %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 1, per_second => 1,
                 perfdatas => [
                     { label => 'traffic_in', value => 'bwPassThroughIn_absolute',
-                    template => '%s', min => 0, unit => 'B/s' },
+                      template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
                 key_values => [ { name => 'bwPassThroughOut', diff => 1 } ],
                 output_template => 'Traffic Out (Lan2Wan): %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 1, per_second => 1,
                 perfdatas => [
                     { label => 'traffic_out', value => 'bwPassThroughOut_absolute',
-                    template => '%s', min => 0, unit => 'B/s' },
+                      template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
@@ -60,8 +60,24 @@ sub set_counters {
 sub prefix_output {
     my ($self, %options) = @_;
     
-    return "Passthrough: ";
+    return "Passthrough ";
 }
+
+my $mappings = {
+    common    => {
+        bwPassThroughIn => { oid => '.1.3.6.1.4.1.17163.1.1.5.3.3.1' },
+        bwPassThroughOut => { oid => '.1.3.6.1.4.1.17163.1.1.5.3.3.2' },
+    },
+    ex => {
+        bwPassThroughIn => { oid => '.1.3.6.1.4.1.17163.1.51.5.3.3.1' },
+        bwPassThroughOut => { oid => '.1.3.6.1.4.1.17163.1.51.5.3.3.2' },
+    },
+};
+
+my $oids = {
+    common => '.1.3.6.1.4.1.17163.1.1.5.3.3',
+    ex => '.1.3.6.1.4.1.17163.1.51.5.3.3',
+};
 
 sub new {
     my ($class, %options) = @_;
@@ -69,9 +85,8 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
 
     return $self;
 }
@@ -79,34 +94,28 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # STEELHEAD-MIB
-    my $oids = {
-        bwPassThroughIn => '.1.3.6.1.4.1.17163.1.1.5.3.3.1.0',
-        bwPassThroughOut => '.1.3.6.1.4.1.17163.1.1.5.3.3.2.0',
-    };
+    my $results = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oids->{common},
+              start => $mappings->{common}->{bwPassThroughIn}->{oid},
+              end => $mappings->{common}->{bwPassThroughOut}->{oid} },
+            { oid => $oids->{ex},
+              start => $mappings->{ex}->{bwPassThroughIn}->{oid},
+              end => $mappings->{ex}->{bwPassThroughOut}->{oid} }
+        ]
+    );
 
-    # STEELHEAD-EX-MIB
-    my $oids_ex = {
-        bwPassThroughIn => '.1.3.6.1.4.1.17163.1.51.5.3.3.1.0',
-        bwPassThroughOut => '.1.3.6.1.4.1.17163.1.51.5.3.3.2.0',
-    };
+    foreach my $equipment (keys %{$oids}) {
+        next if (!%{$results->{$oids->{$equipment}}});
 
-    my $result = $options{snmp}->get_leef(oids => [ values %{$oids}, values %{$oids_ex} ], nothing_quit => 1);
+        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
+            results => $results->{$oids->{$equipment}}, instance => 0);
 
-    $self->{cache_name} = "riverbed_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() .
-        '_' . $self->{mode} . '_' . md5_hex('all');
-        
-    $self->{global} = {};
-
-    if (defined($result->{$oids->{bwPassThroughIn}})) {
-        foreach (keys %{$oids}) {
-            $self->{global}->{$_} = $result->{$oids->{$_}};
-        }
-    } else {
-        foreach (keys %{$oids_ex}) {
-	        $self->{global}->{$_} = $result->{$oids_ex->{$_}};
-        }
+        $self->{global} = { %$result };
     }
+
+    $self->{cache_name} = "riverbed_steelhead_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() .
+        '_' . $self->{mode} . '_' . md5_hex('all');
 }
 
 1;
