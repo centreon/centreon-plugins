@@ -169,9 +169,9 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{results} = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid} },
-                                                            { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid} },
-                                                         ], nothing_quit => 1);
+        { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{StatusReason}->{oid} },
+        { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{StatusReason}->{oid} },
+    ], nothing_quit => 1);
     
     my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
     if (!defined($self->{results}->{$oid_ltmVsStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmVsStatusEntry}}) == 0)  {
