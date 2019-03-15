@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::riverbed::steelhead::snmp::mode::connections;
+package centreon::common::riverbed::steelhead::snmp::mode::connections;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -104,49 +104,58 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
     return $self;
 }
+
+my $mappings = {
+    common    => {
+        optimizedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.1' },
+        passthroughConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.2' },
+        halfOpenedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.3' },
+        halfClosedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.4' },
+        establishedConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.5' },
+        activeConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.6' },
+        totalConnections => { oid => '.1.3.6.1.4.1.17163.1.1.5.2.7' },
+    },
+    ex => {
+        optimizedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.1' },
+        passthroughConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.2' },
+        halfOpenedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.3' },
+        halfClosedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.4' },
+        establishedConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.5' },
+        activeConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.6' },
+        totalConnections => { oid => '.1.3.6.1.4.1.17163.1.51.5.2.7' },
+    },
+};
+
+my $oids = {
+    common => '.1.3.6.1.4.1.17163.1.1.5.2',
+    ex => '.1.3.6.1.4.1.17163.1.51.5.2',
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # STEELHEAD-MIB
-    my $oids = {
-        optimizedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.1.0',
-        passthroughConnections => '.1.3.6.1.4.1.17163.1.1.5.2.2.0',
-        halfOpenedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.3.0',
-        halfClosedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.4.0',
-        establishedConnections => '.1.3.6.1.4.1.17163.1.1.5.2.5.0',
-        activeConnections => '.1.3.6.1.4.1.17163.1.1.5.2.6.0',
-        totalConnections => '.1.3.6.1.4.1.17163.1.1.5.2.7.0',
-    };
+    my $results = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oids->{common},
+              start => $mappings->{common}->{optimizedConnections}->{oid},
+              end => $mappings->{common}->{totalConnections}->{oid} },
+            { oid => $oids->{ex},
+              start => $mappings->{ex}->{optimizedConnections}->{oid},
+              end => $mappings->{ex}->{totalConnections}->{oid} }
+        ]
+    );
 
-    # STEELHEAD-EX-MIB
-    my $oids_ex = {
-        optimizedConnections => '.1.3.6.1.4.1.17163.1.51.5.2.1.0',
-        passthroughConnections => '.1.3.6.1.4.1.17163.1.51.5.2.2.0',
-        halfOpenedConnections => '.1.3.6.1.4.1.17163.1.51.5.2.3.0',
-        halfClosedConnections => '.1.3.6.1.4.1.17163.1.51.5.2.4.0',
-        establishedConnections => '.1.3.6.1.4.1.17163.1.51.5.2.5.0',
-        activeConnections => '.1.3.6.1.4.1.17163.1.51.5.2.6.0',
-        totalConnections => '.1.3.6.1.4.1.17163.1.51.5.2.7.0',
-    };
+    foreach my $equipment (keys %{$oids}) {
+        next if (!%{$results->{$oids->{$equipment}}});
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ values %{$oids}, values %{$oids_ex} ], nothing_quit => 1);
-
-    $self->{global} = {};
-
-    if (defined($snmp_result->{$oids->{optimizedConnections}})) {
-        foreach (keys %{$oids}) {
-            $self->{global}->{$_} = $snmp_result->{$oids->{$_}};
-        }
-    } else {
-        foreach (keys %{$oids_ex}) {
-            $self->{global}->{$_} = $snmp_result->{$oids_ex->{$_}};
-        }	
+        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
+            results => $results->{$oids->{$equipment}}, instance => 0);
+        
+        $self->{global} = { %$result };
     }
 }
 

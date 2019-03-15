@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::riverbed::steelhead::snmp::plugin;
+package network::riverbed::interceptor::snmp::plugin;
 
 use strict;
 use warnings;
@@ -33,13 +33,10 @@ sub new {
     $self->{version} = '0.1';
 
     %{$self->{modes}} = (
-        'bandwidth-optimization'    => 'centreon::common::riverbed::steelhead::snmp::mode::bwoptimization',
-        'bandwidth-passthrough'     => 'centreon::common::riverbed::steelhead::snmp::mode::bwpassthrough',
-        'connections'               => 'centreon::common::riverbed::steelhead::snmp::mode::connections',
-        'disk-utilization'          => 'centreon::common::riverbed::steelhead::snmp::mode::diskutilization',
+        'interfaces'                => 'network::riverbed::interceptor::snmp::mode::interfaces',
+        'neighbor-connections'      => 'network::riverbed::interceptor::snmp::mode::neighborconnections',
         'load-average'              => 'centreon::common::riverbed::steelhead::snmp::mode::loadaverage',
         'status'                    => 'centreon::common::riverbed::steelhead::snmp::mode::status',
-        'temperature'               => 'centreon::common::riverbed::steelhead::snmp::mode::temperature',
     );
 
     return $self;
@@ -51,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Riverbed SteelHead WAN optimizer using SNMP.
+Check Riverbed SteelHead Interceptor using SNMP.
 
 =cut
