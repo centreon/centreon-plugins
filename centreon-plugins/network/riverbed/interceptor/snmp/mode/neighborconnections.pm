@@ -108,27 +108,17 @@ __END__
 
 =head1 MODE
 
-Current connections: total, established, active, optimized, passthrough,
-half opened and half closed ones (STEELHEAD-MIB and STEELHEAD-EX-MIB).
+Check neighbor optimized connections count.
 
 =over 8
 
-=item B<--filter-counters>
-
-Only display some counters (regexp can be used).
-Example: --filter-counters='^(total)$'
-
-=item B<--warning-*>
+=item B<--warning-connection>
 
 Threshold warning.
-Can be: 'total', 'established', 'active', 'optimized',
-'passthrough', 'half-opened', 'half-closed'.
 
-=item B<--critical-*>
+=item B<--critical-connection>
 
 Threshold critical.
-Can be: 'total', 'established', 'active', 'optimized',
-'passthrough', 'half-opened', 'half-closed'.
 
 =back
 

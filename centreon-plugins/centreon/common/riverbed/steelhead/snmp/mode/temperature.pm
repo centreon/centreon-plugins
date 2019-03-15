@@ -107,11 +107,11 @@ Check the temperature of the system in Celcius (STEELHEAD-MIB and STEELHEAD-EX-M
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-temperature>
 
 Threshold warning for temperature in Celsius.
 
-=item B<--critical>
+=item B<--critical-temperature>
 
 Threshold critical for temperature in Celsius.
 
