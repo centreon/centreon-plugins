@@ -127,7 +127,7 @@ sub get_default_warning_threshold {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_entSensorThresholdEntry}, instance => $options{instance} . '.' . $instance);
         next if ($result->{entSensorThresholdSeverity} ne 'minor');
-        
+
         my $value = $result->{entSensorThresholdValue} * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision})));
         if ($result->{entSensorThresholdRelation} eq 'greaterOrEqual') {
             $high_th = $value - (1 * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision}))));
@@ -140,6 +140,10 @@ sub get_default_warning_threshold {
         }
     }
     
+    # when it's the same value. Means no threshold.
+    if (defined($low_th) && defined($high_th) && $high_th < $low_th) {
+        return '';
+    }
     my $th = '';
     $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
     $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
@@ -168,7 +172,11 @@ sub get_default_critical_threshold {
             $low_th = $value;
         }
     }
-    
+
+    # when it's the same value. Means no threshold.
+    if (defined($low_th) && defined($high_th) && $high_th < $low_th) {
+        return '';
+    }
     my $th = '';
     $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
     $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
