@@ -29,11 +29,12 @@ use Digest::MD5 qw(md5_hex);
 sub custom_hitratio_calc {
     my ($self, %options) = @_;
 
-    my $delta_read = ($options{new_datas}->{$self->{instance} . '_physical_reads'} - $options{old_datas}->{$self->{instance} . '_physical_reads'}) - 
-        ($options{new_datas}->{$self->{instance} . '_physical_reads_direct'} - $options{old_datas}->{$self->{instance} . '_physical_reads_direct'}) - 
-        ($options{new_datas}->{$self->{instance} . '_physical_reads_direct_lob'} - $options{old_datas}->{$self->{instance} . '_physical_reads_direct_lob'});
-    my $delta_slr = $options{new_datas}->{$self->{instance} . '_session_logical_reads'} - $options{old_datas}->{$self->{instance} . '_session_logical_reads'};
-    $self->{result_values}->{hit_ratio} = ($delta_slr == 0) ? 0 : (100 - 100 * $delta_read / $delta_slr);
+    my $delta_phys = ($options{new_datas}->{$self->{instance} . '_physical_reads'} - $options{old_datas}->{$self->{instance} . '_physical_reads'});
+    my $delta_cache = 
+        ($options{new_datas}->{$self->{instance} . '_db_block_gets'} - $options{old_datas}->{$self->{instance} . '_db_block_gets'}) +
+        ($options{new_datas}->{$self->{instance} . '_consistent_gets'} - $options{old_datas}->{$self->{instance} . '_consistent_gets'});
+    $self->{result_values}->{hit_ratio} = ($delta_cache == 0) ? 0 : 
+        ((1 - ($delta_phys / $delta_cache)) * 100);
 
     return 0;
 }
@@ -47,8 +48,8 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'physical_reads', diff => 1 }, { name => 'physical_reads_direct', diff => 1 },
-                    { name => 'physical_reads_direct_lob', diff => 1 }, { name => 'session_logical_reads', diff => 1 } ],
+                key_values => [ { name => 'physical_reads', diff => 1 }, { name => 'db_block_gets', diff => 1 },
+                    { name => 'consistent_gets', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_hitratio_calc'),
                 output_template => 'Buffer cache hit ratio is %.2f%%',  output_error_template => 'Buffer cache hit ratio: %s', 
                 output_use => 'hit_ratio', threshold_use => 'hit_ratio',
@@ -77,9 +78,8 @@ sub manage_selection {
 
     my $query = q{
         SELECT SUM(DECODE(name, 'physical reads', value, 0)),
-            SUM(DECODE(name, 'physical reads direct', value, 0)),
-            SUM(DECODE(name, 'physical reads direct (lob)', value, 0)),
-            SUM(DECODE(name, 'session logical reads', value, 0))
+            SUM(DECODE(name, 'db block gets', value, 0)),
+            SUM(DECODE(name, 'consistent gets', value, 0)),
         FROM sys.v_$sysstat
     };
 
@@ -89,9 +89,8 @@ sub manage_selection {
     
     $self->{global} = {
         physical_reads => $result[0], 
-        physical_reads_direct => $result[1],
-        physical_reads_direct_lob => $result[2],
-        session_logical_reads => $result[3]
+        db_block_gets => $result[1],
+        consistent_gets => $result[2],
     };
 
     $self->{cache_name} = "oracle_" . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
