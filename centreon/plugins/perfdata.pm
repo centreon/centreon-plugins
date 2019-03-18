@@ -32,6 +32,8 @@ sub new {
     $self->{output} = $options{output};
     # Typical Nagios Perfdata 'with ~ @ ..'
     $self->{threshold_label} = {};
+    $self->{float_precision} = defined($self->{output}->{option_results}->{float_precision}) && $self->{output}->{option_results}->{float_precision} =~ /\d+/ ?  
+        int($self->{output}->{option_results}->{float_precision}) : 8;
 
     return $self;
 }
@@ -86,6 +88,17 @@ sub threshold_validate {
     ($status, my $result_perf) = 
         centreon::plugins::misc::parse_threshold(threshold => $options{value});
     $self->{threshold_label}->{$options{label}} = { %{$self->{threshold_label}->{$options{label}}}, %$result_perf };
+    
+    $self->{threshold_label}->{$options{label}}->{start_precision} = $self->{threshold_label}->{$options{label}}->{start};
+    if ($self->{threshold_label}->{$options{label}}->{start} =~ /[.,]/) {
+        $self->{threshold_label}->{$options{label}}->{start_precision} = sprintf("%.$self->{output}->{option_results}->{float_precision}f", $self->{threshold_label}->{$options{label}}->{start});
+    }
+    
+    $self->{threshold_label}->{$options{label}}->{end_precision} = $self->{threshold_label}->{$options{label}}->{end};
+    if ($self->{threshold_label}->{$options{label}}->{end} =~ /[.,]/) {
+        $self->{threshold_label}->{$options{label}}->{end_precision} = sprintf("%.$self->{output}->{option_results}->{float_precision}f", $self->{threshold_label}->{$options{label}}->{end});
+    }
+    
     return $status;
 }
 
@@ -94,12 +107,16 @@ sub threshold_check {
     # Can check multiple threshold. First match: out. Order is important
     # options{value}: value to compare
     # options{threshold}: ref to an array (example: [ {label => 'warning', exit_litteral => 'warning' }, {label => 'critical', exit_litteral => 'critical'} ]
+    if ($options{value} =~ /[.,]/) {
+        $options{value} = sprintf("%.$self->{output}->{option_results}->{float_precision}f", $options{value});
+    }
+    
     foreach (@{$options{threshold}}) {
         next if (!defined($self->{threshold_label}->{$_->{label}}));
         next if (!defined($self->{threshold_label}->{$_->{label}}->{value}) || $self->{threshold_label}->{$_->{label}}->{value} eq '');
-        if ($self->{threshold_label}->{$_->{label}}->{arobase} == 0 && ($options{value} < $self->{threshold_label}->{$_->{label}}->{start} || $options{value} > $self->{threshold_label}->{$_->{label}}->{end})) {
+        if ($self->{threshold_label}->{$_->{label}}->{arobase} == 0 && ($options{value} < $self->{threshold_label}->{$_->{label}}->{start_precision} || $options{value} > $self->{threshold_label}->{$_->{label}}->{end_precision})) {
             return $_->{exit_litteral};
-        } elsif ($self->{threshold_label}->{$_->{label}}->{arobase}  == 1 && ($options{value} >= $self->{threshold_label}->{$_->{label}}->{start} && $options{value} <= $self->{threshold_label}->{$_->{label}}->{end})) {
+        } elsif ($self->{threshold_label}->{$_->{label}}->{arobase}  == 1 && ($options{value} >= $self->{threshold_label}->{$_->{label}}->{start_precision} && $options{value} <= $self->{threshold_label}->{$_->{label}}->{end_precision})) {
             return $_->{exit_litteral};
         }
     }
