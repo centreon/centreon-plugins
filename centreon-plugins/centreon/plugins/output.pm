@@ -33,24 +33,25 @@ sub new {
         exit 3;
     }
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "explode-perfdata-max:s@" => { name => 'explode_perfdata_max' },
-                                  "range-perfdata:s"        => { name => 'range_perfdata' },
-                                  "filter-perfdata:s"       => { name => 'filter_perfdata' },
-                                  "change-perfdata:s@"      => { name => 'change_perfdata' },
-                                  "extend-perfdata:s@"      => { name => 'extend_perfdata' },
-                                  "change-short-output:s@"  => { name => 'change_short_output' },
-                                  "filter-uom:s"            => { name => 'filter_uom' },
-                                  "verbose"                 => { name => 'verbose' },
-                                  "debug"                   => { name => 'debug' },
-                                  "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
-                                  "output-xml"              => { name => 'output_xml' },
-                                  "output-json"             => { name => 'output_json' },
-                                  "output-file:s"           => { name => 'output_file' },
-                                  "disco-format"            => { name => 'disco_format' },
-                                  "disco-show"              => { name => 'disco_show' },
-                                });
+    $options{options}->add_options(arguments => {
+        "explode-perfdata-max:s@" => { name => 'explode_perfdata_max' },
+        "range-perfdata:s"        => { name => 'range_perfdata' },
+        "filter-perfdata:s"       => { name => 'filter_perfdata' },
+        "change-perfdata:s@"      => { name => 'change_perfdata' },
+        "extend-perfdata:s@"      => { name => 'extend_perfdata' },
+        "change-short-output:s@"  => { name => 'change_short_output' },
+        "filter-uom:s"            => { name => 'filter_uom' },
+        "verbose"                 => { name => 'verbose' },
+        "debug"                   => { name => 'debug' },
+        "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
+        "output-xml"              => { name => 'output_xml' },
+        "output-json"             => { name => 'output_json' },
+        "output-file:s"           => { name => 'output_file' },
+        "disco-format"            => { name => 'disco_format' },
+        "disco-show"              => { name => 'disco_show' },
+        "float-precision:s"       => { name => 'float_precision', default => 8 },
+    });
+    
     %{$self->{option_results}} = ();
 
     $self->{option_msg} = [];
@@ -1120,6 +1121,10 @@ Display discovery arguments (if the mode manages it).
 =item B<--disco-show>
 
 Display discovery values (if the mode manages it).
+
+=item B<--float-precision>
+
+Set the float precision for thresholds (Default: 8).
 
 =head1 DESCRIPTION
 

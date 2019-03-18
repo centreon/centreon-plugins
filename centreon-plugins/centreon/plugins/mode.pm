@@ -30,6 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
+    
     %{$self->{option_results}} = ();
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
