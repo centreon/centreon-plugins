@@ -27,6 +27,11 @@ use warnings;
 use centreon::plugins::values;
 use centreon::plugins::misc;
 
+my $sort_subs = {
+    num => sub { $a <=> $b },
+    cmp => sub { $a cmp $b },
+};
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -80,11 +85,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-counters:s" => { name => 'filter_counters' },
-                                "list-counters"     => { name => 'list_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-counters:s" => { name => 'filter_counters' },
+        "list-counters"     => { name => 'list_counters' },
+    });
     $self->{statefile_value} = undef;
     if (defined($options{statefile}) && $options{statefile}) {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'centreon::plugins::statefile',
@@ -238,7 +242,10 @@ sub run_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
 
-    foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
+    my $sort_method = 'cmp';
+    $sort_method = $options{config}->{sort_method}
+        if (defined($options{config}->{sort_method}));
+    foreach my $id (sort { $sort_subs->{$sort_method}->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
@@ -387,8 +394,10 @@ sub run_multiple_instances {
     
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator} : ', ';
-
-    foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
+    my $sort_method = 'cmp';
+    $sort_method = $options{config}->{sort_method}
+        if (defined($options{config}->{sort_method}));
+    foreach my $id (sort { $sort_subs->{$sort_method}->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
