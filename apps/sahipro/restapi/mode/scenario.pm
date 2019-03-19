@@ -341,7 +341,7 @@ sub check_scenario_status {
     }
     
     my $status = 'UNKNOWN';
-    $content = $1 if ($content =~ /(SUCCESS|FAILURE|ABORTED|SKIPPED|USER_ABORTED)/);
+    $status = $1 if ($content =~ /(SUCCESS|FAILURE|ABORTED|SKIPPED|USER_ABORTED)/);
     
     $self->{global}->{status} = $status;
 }
@@ -353,7 +353,7 @@ sub get_suite_report {
         proto => $self->{option_results}->{sahi_proto},
         port => $self->{option_results}->{sahi_port},
         hostname => $self->{option_results}->{sahi_hostname},
-        url_path => $self->{option_results}->{sahi_endpoint} . 'sahiEndPoint_suiteReport',
+        url_path => $self->{option_results}->{sahi_endpoint} . 'SahiEndPoint_suiteReport',
         timeout => $self->{option_results}->{sahi_http_timeout},
         unknown_status => '', warning_status => '', critical_status => '',
         get_param => [
@@ -363,15 +363,13 @@ sub get_suite_report {
     );
     
     if ($self->{http}->get_code() != 200) {
-        $self->{output}->add_option_msg(short_msg => "get suite report issue:" . $content);
-        $self->{output}->option_exit();
+        $self->cleanup_option_exit(short_msg => "get suite report issue:" . $content);
     }
     
     my $response = $self->decode_xml_response(response => $content, ForceArray => ['summary']);
     if (!defined($response->{suite}->{scriptSummaries}->{summary})) {
         $self->{output}->output_add(long_msg => $response, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "get suite report issue: unknown response format");
-        $self->{output}->option_exit();
+        $self->cleanup_option_exit(short_msg => "get suite report issue: unknown response format");
     }
     
     # in milliseconds
@@ -399,15 +397,13 @@ sub get_script_report {
     );
     
     if ($self->{http}->get_code() != 200) {
-        $self->{output}->add_option_msg(short_msg => "get suite report issue:" . $content);
-        $self->{output}->option_exit();
+        $self->cleanup_option_exit(short_msg => "get suite report issue:" . $content);
     }
     
     my $response = $self->decode_xml_response(response => $content, ForceArray => ['step']);
     if (!defined($response->{steps}->{step})) {
         $self->{output}->output_add(long_msg => $response, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "get script report issue: unknown response format");
-        $self->{output}->option_exit();
+        $self->cleanup_option_exit(short_msg => "get script report issue: unknown response format");
     }
     
     $self->{steps} = {};
@@ -430,6 +426,14 @@ sub get_script_report {
     }
 }
 
+sub cleanup_option_exit {
+    my ($self, %options) = @_;
+    
+    $self->cleanup_scenario();
+    $self->{output}->add_option_msg(short_msg => $options{short_msg});
+    $self->{output}->option_exit();
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -441,11 +445,7 @@ sub manage_selection {
         $self->get_suite_report();
         $self->get_script_report(id => $self->{script_reportid});
     }
-}
-
-sub DESTROY {
-    my ($self) = @_;
-
+    
     $self->cleanup_scenario();
 }
 
