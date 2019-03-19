@@ -281,9 +281,10 @@ sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
-        'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
-        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
+        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
+        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
+        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value', },
+        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index', },
     };
 }
 
@@ -393,11 +394,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_errors => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "global-link-up-rule:s"    => { name => 'global_link_up_rule', default => $self->default_global_link_up_rule() },
-                                "global-link-down-rule:s"  => { name => 'global_link_down_rule', default => $self->default_global_link_down_rule() },
-                                });
+    $options{options}->add_options(arguments => {
+        "global-link-up-rule:s"    => { name => 'global_link_up_rule', default => $self->default_global_link_up_rule() },
+        "global-link-down-rule:s"  => { name => 'global_link_down_rule', default => $self->default_global_link_down_rule() },
+    });
     
     return $self;
 }
