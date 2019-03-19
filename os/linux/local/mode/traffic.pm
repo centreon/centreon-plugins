@@ -173,7 +173,6 @@ sub new {
         "critical-status:s"     => { name => 'critical_status', default => '%{status} ne "RU"' },
     });
     
-    $self->{hostname} = undef;
     return $self;
 }
 
