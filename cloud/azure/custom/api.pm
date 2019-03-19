@@ -181,18 +181,23 @@ sub get_access_token {
                                              full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token',
                                              hostname => '');
 
+        if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
+            $self->{output}->add_option_msg(short_msg => "Login endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->option_exit();
+        }
+
         my $decoded;
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
             $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+            $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
             $self->{output}->option_exit();
         }
         if (defined($decoded->{error})) {
             $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error_description}, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Login endpoint API return error code '" . $decoded->{error} . "' (add --debug option for detailed message)");
+            $self->{output}->add_option_msg(short_msg => "Login endpoint API returns error code '" . $decoded->{error} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
 
@@ -217,18 +222,28 @@ sub request_api {
 
     my $content = $self->{http}->request(%options);
     
+    if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
+        $self->{output}->add_option_msg(short_msg => "Management endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->option_exit();
+    }
+    
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
         $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
     if (defined($decoded->{error})) {
         $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Management endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
+        $self->{output}->add_option_msg(short_msg => "Management endpoint API returns error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
+    if (defined($decoded->{code})) {
+        $self->{output}->output_add(long_msg => "Message : " . $decoded->{message}, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Management endpoint API returns code '" . $decoded->{code} . "' (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
 
