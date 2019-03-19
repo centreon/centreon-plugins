@@ -359,10 +359,10 @@ sub request {
             eval "$options{request}->{critical_status}") {
             $status = 'critical';
         } elsif (defined($options{request}->{warning_status}) && $options{request}->{warning_status} ne '' &&
-                 eval "$options{request}->{warning_status}") {
+            eval "$options{request}->{warning_status}") {
             $status = 'warning';
         } elsif (defined($options{request}->{unknown_status}) && $options{request}->{unknown_status} ne '' &&
-                 eval "$options{request}->{unknown_status}") {
+            eval "$options{request}->{unknown_status}") {
             $status = 'unknown';
         }
     };
@@ -398,8 +398,13 @@ sub get_code {
     return $self->{response_code};
 }
 
-1;
+sub get_message {
+    my ($self, %options) = @_;
+    
+    return $http_code_explained->{$self->{response_code}};
+}
 
+1;
 
 __END__
 
