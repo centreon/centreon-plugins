@@ -164,7 +164,7 @@ sub set_counters {
     
     $self->{maps_counters}->{ram} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'memTotalReal' }, { name => 'memAvailReal' },
+                key_values => [ { name => 'memTotalReal' }, { name => 'memAvailReal' }, { name => 'memTotalFree' },
                      { name => 'memBuffer' }, { name => 'memCached' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -243,6 +243,7 @@ my $mapping = {
     memAvailSwap => { oid => '.1.3.6.1.4.1.2021.4.4' },
     memTotalReal => { oid => '.1.3.6.1.4.1.2021.4.5' },
     memAvailReal => { oid => '.1.3.6.1.4.1.2021.4.6' },
+    memTotalFree => { oid => '.1.3.6.1.4.1.2021.4.11' },
     memShared => { oid => '.1.3.6.1.4.1.2021.4.13' },
     memBuffer => { oid => '.1.3.6.1.4.1.2021.4.14' },
     memCached => { oid => '.1.3.6.1.4.1.2021.4.15' },
@@ -260,6 +261,7 @@ sub manage_selection {
     $self->{ram} = {
         memTotalReal => $result->{memTotalReal} * 1024,
         memAvailReal => $result->{memAvailReal} * 1024,
+        memTotalFree => $result->{memTotalFree} * 1024,
         memShared => $result->{memShared} * 1024,
         memBuffer => $result->{memBuffer} * 1024,
         memCached => $result->{memCached} * 1024,
