@@ -211,7 +211,7 @@ sub check_options {
     }
     
     $self->change_macros(macros => ['warning_status', 'critical_status']);
-    $self->{http}->set_options(%{$self->{option_results}});
+    $self->{http}->set_options(port => $self->{option_results}->{sahi_port}, proto => $self->{option_results}->{sahi_proto});
 }
 
 sub decode_xml_response {

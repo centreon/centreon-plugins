@@ -104,7 +104,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    $options{request}->{port} = $self->get_port_request();
     $options{request}->{port_force} = $self->get_port();
 
     $options{request}->{headers} = {};
