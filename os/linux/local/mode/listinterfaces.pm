@@ -32,23 +32,23 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'ifconfig' },
-                                  "command-path:s"    => { name => 'command_path', default => '/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-a 2>&1' },
-                                  "filter-name:s"     => { name => 'filter_name', },
-                                  "filter-state:s"    => { name => 'filter_state', },
-                                  "no-loopback"       => { name => 'no_loopback', },
-                                  "skip-novalues"     => { name => 'skip_novalues', },
-                                });
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname' },
+        "remote"            => { name => 'remote' },
+        "ssh-option:s@"     => { name => 'ssh_option' },
+        "ssh-path:s"        => { name => 'ssh_path' },
+        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"         => { name => 'timeout', default => 30 },
+        "sudo"              => { name => 'sudo' },
+        "command:s"         => { name => 'command', default => 'ip' },
+        "command-path:s"    => { name => 'command_path', default => '/sbin' },
+        "command-options:s" => { name => 'command_options', default => '-s addr 2>&1' },
+        "filter-name:s"     => { name => 'filter_name' },
+        "filter-state:s"    => { name => 'filter_state' },
+        "no-loopback"       => { name => 'no_loopback' },
+        "skip-novalues"     => { name => 'skip_novalues' },
+    });
+    
     $self->{result} = {};
     return $self;
 }
@@ -61,17 +61,36 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    while ($stdout =~ /^(\S+)(.*?)(\n\n|\n$)/msg) {
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+    
+    my $mapping = {
+        ifconfig => {
+            get_interface => '^(\S+)(.*?)(\n\n|\n$)',
+            test => 'RX bytes:\S+.*?TX bytes:\S+',
+        },
+        iproute => {
+            get_interface => '^\d+:\s+(\S+)(.*?)(?=\n\d|\Z$)',
+            test => 'RX:\s+bytes.*?\d+',
+        },
+    };
+    
+    my $type = 'ifconfig';
+    if ($stdout =~ /^\d+:\s+\S+:\s+</ms) {
+        $type = 'iproute';
+    }
+    
+    while ($stdout =~ /$mapping->{$type}->{get_interface}/msg) {
         my ($interface_name, $values) = ($1, $2);
         $interface_name =~ s/:$//;
         my $states = '';
-        $states .= 'R' if ($values =~ /RUNNING/ms);
+        $states .= 'R' if ($values =~ /RUNNING|LOWER_UP/ms);
         $states .= 'U' if ($values =~ /UP/ms);
         
         if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms) {
@@ -89,12 +108,12 @@ sub manage_selection {
             next;
         }
         
-        $values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi;
-        if (defined($self->{option_results}->{skip_novalues}) && !defined($1)) {
+        if (defined($self->{option_results}->{skip_novalues}) && $values =~ /$mapping->{$type}->{test}/msi) {
             $self->{output}->output_add(long_msg => "Skipping interface '" . $interface_name . "': no values");
             next;
         }
-        $self->{result}->{$interface_name} = {state => $states};
+
+        $self->{result}->{$interface_name} = { state => $states };
     }    
 }
 
@@ -123,9 +142,10 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         state => $self->{result}->{$name}->{state}
-                                         );
+        $self->{output}->add_disco_entry(
+            name => $name,
+            state => $self->{result}->{$name}->{state}
+        );
     }
 }
 
@@ -169,7 +189,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'ifconfig').
+Command to get information (Default: 'ip').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -178,7 +198,7 @@ Command path (Default: '/sbin').
 
 =item B<--command-options>
 
-Command options (Default: '-a 2>&1').
+Command options (Default: '-s addr 2>&1').
 
 =item B<--filter-name>
 

@@ -164,16 +164,15 @@ sub new {
         "filter-state:s"    => { name => 'filter_state', },
         "units:s"           => { name => 'units', default => 'b/s' },
         "name:s"            => { name => 'name' },
-        "regexp"              => { name => 'use_regexp' },
-        "regexp-isensitive"   => { name => 'use_regexpi' },
-        "speed:s"             => { name => 'speed' },
-        "no-loopback"         => { name => 'no_loopback', },
-        "unknown-status:s"      => { name => 'unknown_status', default => '' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{status} ne "RU"' },
+        "regexp"            => { name => 'use_regexp' },
+        "regexp-isensitive" => { name => 'use_regexpi' },
+        "speed:s"           => { name => 'speed' },
+        "no-loopback"       => { name => 'no_loopback', },
+        "unknown-status:s"  => { name => 'unknown_status', default => '' },
+        "warning-status:s"  => { name => 'warning_status', default => '' },
+        "critical-status:s" => { name => 'critical_status', default => '%{status} ne "RU"' },
     });
     
-    $self->{hostname} = undef;
     return $self;
 }
 
@@ -212,12 +211,15 @@ sub do_selection {
     my ($self, %options) = @_;
 
     $self->{interface} = {};
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
     # ifconfig
     my $interface_pattern = '^(\S+)(.*?)(\n\n|\n$)';
     if ($stdout =~ /^\d+:\s+\S+:\s+</ms) {
