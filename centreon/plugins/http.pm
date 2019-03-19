@@ -190,6 +190,12 @@ sub get_code {
     return $self->{'backend_' . $self->{http_backend}}->get_code();
 }
 
+sub get_message {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_message();
+}
+
 1;
 
 __END__
