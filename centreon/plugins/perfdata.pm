@@ -134,17 +134,23 @@ sub trim {
 
 sub change_bytes {
     my ($self, %options) = @_;
+
+    my $value = $options{value};
     my $divide = defined($options{network}) ? 1000 : 1024;
     my @units = ('K', 'M', 'G', 'T');
     my $unit = '';
+    my $sign = '';
+
+    $sign = '-' if ($value != abs($value));
+    $value = abs($value);
     
     for (my $i = 0; $i < scalar(@units); $i++) {
-        last if (($options{value} / $divide) < 1);
+        last if (($value / $divide) < 1);
         $unit = $units[$i];
-        $options{value} = $options{value} / $divide;
+        $value = $value / $divide;
     }
 
-    return (sprintf("%.2f", $options{value}), $unit . (defined($options{network}) ? 'b' : 'B'));
+    return (sprintf("%.2f", $sign . $value), $unit . (defined($options{network}) ? 'b' : 'B'));
 }
 
 1;
