@@ -79,7 +79,7 @@ sub manage_selection {
     my $query = q{
         SELECT SUM(DECODE(name, 'physical reads', value, 0)),
             SUM(DECODE(name, 'db block gets', value, 0)),
-            SUM(DECODE(name, 'consistent gets', value, 0)),
+            SUM(DECODE(name, 'consistent gets', value, 0))
         FROM sys.v_$sysstat
     };
 
