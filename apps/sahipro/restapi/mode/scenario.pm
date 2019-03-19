@@ -254,6 +254,7 @@ sub killed_scenario {
     return if (!defined($self->{user_defined_id}));
     $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
+        port => $self->{option_results}->{sahi_port},
         hostname => $self->{option_results}->{sahi_hostname},
         url_path => $self->{option_results}->{sahi_endpoint} . 'SahiEndPoint_killAll',
         timeout => $self->{option_results}->{sahi_http_timeout},
@@ -268,6 +269,7 @@ sub cleanup_scenario {
     return if (!defined($self->{user_defined_id}));
     $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
+        port => $self->{option_results}->{sahi_port},
         hostname => $self->{option_results}->{sahi_hostname},
         url_path => $self->{option_results}->{sahi_endpoint} . 'SahiEndPoint_cleanup',
         timeout => $self->{option_results}->{sahi_http_timeout},
@@ -282,6 +284,7 @@ sub run_scenario {
     my $user_defined_id = $self->generate_user_defined_id();
     my ($content) = $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
+        port => $self->{option_results}->{sahi_port},
         hostname => $self->{option_results}->{sahi_hostname},
         url_path => $self->{option_results}->{sahi_endpoint} . 'SahiEndPoint_run',
         timeout => $self->{option_results}->{sahi_http_timeout},
@@ -314,6 +317,7 @@ sub check_scenario_status {
     while (1) {
         ($content) = $self->{http}->request(
             proto => $self->{option_results}->{sahi_proto},
+            port => $self->{option_results}->{sahi_port},
             hostname => $self->{option_results}->{sahi_hostname},
             url_path => $self->{option_results}->{sahi_endpoint} . 'SahiEndPoint_status',
             timeout => $self->{option_results}->{sahi_http_timeout},
@@ -347,6 +351,7 @@ sub get_suite_report {
     
     my ($content) = $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
+        port => $self->{option_results}->{sahi_port},
         hostname => $self->{option_results}->{sahi_hostname},
         url_path => $self->{option_results}->{sahi_endpoint} . 'sahiEndPoint_suiteReport',
         timeout => $self->{option_results}->{sahi_http_timeout},
@@ -382,6 +387,7 @@ sub get_script_report {
 
     my ($content) = $self->{http}->request(
         proto => $self->{option_results}->{sahi_proto},
+        port => $self->{option_results}->{sahi_port},
         hostname => $self->{option_results}->{sahi_hostname},
         url_path => $self->{option_results}->{sahi_endpoint} . 'SahiEndPoint_scriptReport',
         timeout => $self->{option_results}->{sahi_http_timeout},
