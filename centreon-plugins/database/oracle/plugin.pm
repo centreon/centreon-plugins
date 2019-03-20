@@ -42,6 +42,7 @@ sub new {
         'invalid-object'           => 'database::oracle::mode::invalidobject',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
         'long-queries'             => 'database::oracle::mode::longqueries',
+        'password-expiration'      => 'database::oracle::mode::passwordexpiration',
         'process-usage'            => 'database::oracle::mode::processusage',
         'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
         'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
