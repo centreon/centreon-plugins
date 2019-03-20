@@ -30,6 +30,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'cpu_avg', type => 0, cb_prefix_output => 'prefix_cpu_avg_output' },
+        { name => 'cpu_max', type => 0 },
         { name => 'cpu_core', type => 1, cb_prefix_output => 'prefix_cpu_core_output' }
     ];
 
@@ -39,6 +40,18 @@ sub set_counters {
                 output_template => '%.2f %%',
                 perfdatas => [
                     { label => 'total_cpu_avg', value => 'average_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{cpu_max} = [
+        { label => 'max', set => {
+                key_values => [ { name => 'max' } ],
+                output_template => '%.2f %%',
+                perfdatas => [
+                    { label => 'cpu_max', value => 'max_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -88,18 +101,21 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cpu_avg} = {};
+    $self->{cpu_max} = {};
     $self->{cpu_core} = {};
 
     my $oid_cputable = '.1.3.6.1.2.1.25.3.3.1.2';
     my $result = $options{snmp}->get_table(oid => $oid_cputable, nothing_quit => 1);
 
     my $cpu = 0;
+    my $max = 0;
     my $i = 0;
     foreach my $key ($options{snmp}->oid_lex_sort(keys %$result)) {
         $key =~ /\.([0-9]+)$/;
         my $cpu_num = $1;
 
         $cpu += $result->{$key};
+        $max = $result->{$key} if ($result->{$key} > $max);
         $self->{cpu_core}->{$i} = { display => $i,
                                     cpu => $result->{$key} };
 
@@ -109,6 +125,7 @@ sub manage_selection {
     my $avg_cpu = $cpu / $i;
     $self->{cpu_avg} = { average => $avg_cpu,
                          count => $i };
+    $self->{cpu_max} = { max => $max };
 
 }
 
