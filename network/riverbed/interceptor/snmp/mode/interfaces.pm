@@ -60,7 +60,7 @@ sub set_counters {
                 output_template => 'Packets Dropped (Software): %d packets/s',
                 per_second => 1,
                 perfdatas => [
-                    { label => 'packets_soft_dropped', value => 'interfaceSoftwareDrops', template => '%d', min => 0,
+                    { label => 'packets_soft_dropped', value => 'interfaceSoftwareDrops_absolute', template => '%d', min => 0,
                       unit => 'packets/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -70,7 +70,7 @@ sub set_counters {
                 output_template => 'XOFF Flow Control Packets Transmitted: %d packets/s',
                 per_second => 1,
                 perfdatas => [
-                    { label => 'packets_xoff', value => 'interfaceFlowCtrlPkts', template => '%d', min => 0,
+                    { label => 'packets_xoff', value => 'interfaceFlowCtrlPkts_absolute', template => '%d', min => 0,
                       unit => 'packets/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
