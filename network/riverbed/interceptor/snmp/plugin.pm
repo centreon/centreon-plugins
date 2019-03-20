@@ -33,10 +33,17 @@ sub new {
     $self->{version} = '0.1';
 
     %{$self->{modes}} = (
-        'interfaces'                => 'network::riverbed::interceptor::snmp::mode::interfaces',
+        'cpu'                       => 'snmp_standard::mode::cpu',
+        'cpu-detailed'              => 'snmp_standard::mode::cpudetailed',
+        'interfaces'                => 'snmp_standard::mode::interfaces',
+        'load'                      => 'snmp_standard::mode::loadaverage',
+        'list-interfaces'           => 'snmp_standard::mode::listinterfaces',
+        'list-storages'             => 'snmp_standard::mode::liststorages',
+        'memory'                    => 'snmp_standard::mode::memory',
         'neighbor-connections'      => 'network::riverbed::interceptor::snmp::mode::neighborconnections',
-        'load-average'              => 'centreon::common::riverbed::steelhead::snmp::mode::loadaverage',
         'status'                    => 'centreon::common::riverbed::steelhead::snmp::mode::status',
+        'storage'                   => 'snmp_standard::mode::storage',
+        'uptime'                    => 'snmp_standard::mode::uptime',
     );
 
     return $self;
