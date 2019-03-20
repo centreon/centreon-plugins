@@ -259,18 +259,18 @@ sub manage_selection {
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
     
     $self->{ram} = {
-        memTotalReal => $result->{memTotalReal} * 1024,
-        memAvailReal => $result->{memAvailReal} * 1024,
-        memTotalFree => $result->{memTotalFree} * 1024,
-        memShared => $result->{memShared} * 1024,
-        memBuffer => $result->{memBuffer} * 1024,
-        memCached => $result->{memCached} * 1024,
+        memTotalReal => ($result->{memTotalReal}) ? $result->{memTotalReal} * 1024 : 0,
+        memAvailReal => ($result->{memAvailReal}) ? $result->{memAvailReal} * 1024 : 0,
+        memTotalFree => ($result->{memTotalFree}) ? $result->{memTotalFree} * 1024 : 0,
+        memShared => ($result->{memShared}) ? $result->{memShared} * 1024 : 0,
+        memBuffer => ($result->{memBuffer}) ? $result->{memBuffer} * 1024 : 0,
+        memCached => ($result->{memCached}) ? $result->{memCached} * 1024 : 0,
     };
 
     if (defined($self->{option_results}->{check_swap})) {
         $self->{swap} = {
-            memTotalSwap => $result->{memTotalSwap} * 1024,
-            memAvailSwap => $result->{memAvailSwap} * 1024,
+            memTotalSwap => ($result->{memTotalSwap}) ? $result->{memTotalSwap} * 1024 : 0,
+            memAvailSwap => ($result->{memAvailSwap}) ? $result->{memAvailSwap} * 1024 : 0,
         };
     }
 }
