@@ -139,7 +139,7 @@ sub run {
     }
 
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result->{ $mapping->{$type}->{entry_module} }})) {
-        next if ($oid !~ /^$snmp_result->{$oid}->{healthModuleMemory1MinAvg}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{$type}->{module}->{healthModuleMemory1MinAvg}->{oid}\.(.*)$/);
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{module}, results => $snmp_result->{ $mapping->{$type}->{entry_module} }, instance => $1);
         
         $self->check_memory(
