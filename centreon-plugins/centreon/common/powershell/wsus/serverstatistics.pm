@@ -51,15 +51,19 @@ Try {
 
     $wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
-    $status = $wsus.GetStatus()
-    Write-Host "[ComputerTargetCount = "$status.ComputerTargetCount"]" -NoNewline
-    Write-Host "[CustomComputerTargetGroupCount = "$status.CustomComputerTargetGroupCount"]" -NoNewline
-    Write-Host "[UpdateCount = "$status.UpdateCount"]" -NoNewline
-    Write-Host "[ApprovedUpdateCount = "$status.ApprovedUpdateCount"]" -NoNewline
-    Write-Host "[DeclinedUpdateCount = "$status.DeclinedUpdateCount"]" -NoNewline
-    Write-Host "[NotApprovedUpdateCount = "$status.NotApprovedUpdateCount"]" -NoNewline
-    Write-Host "[UpdatesWithStaleUpdateApprovalsCount = "$status.UpdatesWithStaleUpdateApprovalsCount"]" -NoNewline
-    Write-Host "[ExpiredUpdateCount = "$status.ExpiredUpdateCount"]"
+    $wsusStatus = $wsusObject.GetStatus()
+    
+    $returnObject = New-Object -TypeName PSObject
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetCount" -Value $wsusStatus.ComputerTargetCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "CustomComputerTargetGroupCount" -Value $wsusStatus.CustomComputerTargetGroupCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdateCount" -Value $wsusStatus.UpdateCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ApprovedUpdateCount" -Value $wsusStatus.ApprovedUpdateCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "DeclinedUpdateCount" -Value $wsusStatus.DeclinedUpdateCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "NotApprovedUpdateCount" -Value $wsusStatus.NotApprovedUpdateCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesWithStaleUpdateApprovalsCount" -Value $wsusStatus.UpdatesWithStaleUpdateApprovalsCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ExpiredUpdateCount" -Value $wsusStatus.ExpiredUpdateCount
+        
+    $returnObject | ConvertTo-JSON-20
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

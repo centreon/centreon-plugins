@@ -32,7 +32,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
 
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $wsusServer = "' . $options{wsus_server} . '"
 $useSsl = ' . $options{secure_connection} . '
 $wsusPort = ' . $options{wsus_port} . '
@@ -49,18 +54,21 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
-    $wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
+    $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
-    $sync_status = $wsus.GetSubscription().GetSynchronizationStatus()
-    $sync_progress = $wsus.GetSubscription().GetSynchronizationProgress()
-    $last_sync = $wsus.GetSubscription().GetLastSynchronizationInfo()
-
-    Write-Host "[SynchronizationStatus = "$sync_status"]" -NoNewline
-    Write-Host "[TotalItems = "$sync_progress.TotalItems"]" -NoNewline
-    Write-Host "[ProcessedItems = "$sync_progress.ProcessedItems"]" -NoNewline
-    Write-Host "[LastSynchronizationResult = "$last_sync.Result"]" -NoNewline
-    Write-Host "[LastSynchronizationStartTime = "$last_sync.StartTime"]" -NoNewline
-    Write-Host "[LastSynchronizationEndTime = "$last_sync.EndTime"]"
+    $syncStatus = $wsusObject.GetSubscription().GetSynchronizationStatus()
+    $syncProgress = $wsusObject.GetSubscription().GetSynchronizationProgress()
+    $lastSync = $wsusObject.GetSubscription().GetLastSynchronizationInfo()
+        
+    $returnObject = New-Object -TypeName PSObject
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SynchronizationStatus" -Value $syncStatus.ToString()
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "TotalItems" -Value $syncProgress.TotalItems
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ProcessedItems" -Value $syncProgress.ProcessedItems
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationResult" -Value $lastSync.Result.ToString()
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationStartTime" -Value $lastSync.StartTime
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationEndTime" -Value $lastSync.EndTime
+    
+    $returnObject | ConvertTo-JSON-20
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

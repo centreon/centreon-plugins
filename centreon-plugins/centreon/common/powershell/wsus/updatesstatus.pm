@@ -22,6 +22,7 @@ package centreon::common::powershell::wsus::updatesstatus;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -32,7 +33,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
 
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $wsusServer = "' . $options{wsus_server} . '"
 $useSsl = ' . $options{secure_connection} . '
 $wsusPort = ' . $options{wsus_port} . '
@@ -49,14 +55,18 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
-    $wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
+    $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
-    $status = $wsus.GetStatus()
-    Write-Host "[UpdatesWithClientErrorsCount = "$status.UpdatesWithClientErrorsCount"]" -NoNewline
-    Write-Host "[UpdatesWithServerErrorsCount = "$status.UpdatesWithServerErrorsCount"]" -NoNewline
-    Write-Host "[UpdatesNeedingFilesCount = "$status.UpdatesNeedingFilesCount"]" -NoNewline
-    Write-Host "[UpdatesNeededByComputersCount = "$status.UpdatesNeededByComputersCount"]" -NoNewline
-    Write-Host "[UpdatesUpToDateCount = "$status.UpdatesUpToDateCount"]"
+    $wsusStatus = $wsusObject.GetStatus()
+
+    $returnObject = New-Object -TypeName PSObject
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesWithClientErrorsCount" -Value $wsusStatus.UpdatesWithClientErrorsCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesWithServerErrorsCount" -Value $wsusStatus.UpdatesWithServerErrorsCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesNeedingFilesCount" -Value $wsusStatus.UpdatesNeedingFilesCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesNeededByComputersCount" -Value $wsusStatus.UpdatesNeededByComputersCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesUpToDateCount" -Value $wsusStatus.UpdatesUpToDateCount
+    
+    $returnObject | ConvertTo-JSON-20
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

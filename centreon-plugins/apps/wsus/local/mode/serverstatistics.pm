@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use JSON::XS;
 use centreon::common::powershell::wsus::serverstatistics;
 
 sub set_counters {
@@ -162,19 +163,16 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[ComputerTargetCount =  0 ][CustomComputerTargetGroupCount =  1 ][UpdateCount =  109 ][ApprovedUpdateCount =  0 ][DeclinedUpdateCount =  0 ][NotApprovedUpdateCount =  109 ][UpdatesWithStaleUpdateApprovalsCount =  0 ][ExpiredUpdateCount =  0 ]
-    if ($stdout =~ /^\[ComputerTargetCount\s*=\s*(\d+)\s*\]\[CustomComputerTargetGroupCount\s*=\s*(\d+)\s*\]\[UpdateCount\s*=\s*(\d+)\s*\]\[ApprovedUpdateCount\s*=\s*(\d+)\s*\]\[DeclinedUpdateCount\s*=\s*(\d+)\s*\]\[NotApprovedUpdateCount\s*=\s*(\d+)\s*\]\[UpdatesWithStaleUpdateApprovalsCount\s*=\s*(\d+)\s*\]\[ExpiredUpdateCount\s*=\s*(\d+)\s*\]/i) {
-        $self->{global} = {
-            ComputerTargetCount => $1,
-            CustomComputerTargetGroupCount => $2,
-            UpdateCount => $3,
-            ApprovedUpdateCount => $4,
-            DeclinedUpdateCount => $5,
-            NotApprovedUpdateCount => $6,
-            UpdatesWithStaleUpdateApprovalsCount => $7,
-            ExpiredUpdateCount => $8,
-        };
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
     }
+
+    $self->{global} = { %$decoded };
 }
 
 1;

@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use JSON::XS;
 use centreon::common::powershell::wsus::updatesstatus;
 
 sub set_counters {
@@ -141,16 +142,16 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[UpdatesWithClientErrorsCount =  0 ][UpdatesWithServerErrorsCount =  0 ][UpdatesNeedingFilesCount =  0 ][UpdatesNeededByComputersCount =  0 ][UpdatesUpToDateCount =  0 ]
-    if ($stdout =~ /^\[UpdatesWithClientErrorsCount\s*=\s*(\d+)\s*\]\[UpdatesWithServerErrorsCount\s*=\s*(\d+)\s*\]\[UpdatesNeedingFilesCount\s*=\s*(\d+)\s*\]\[UpdatesNeededByComputersCount\s*=\s*(\d+)\s*\]\[UpdatesUpToDateCount\s*=\s*(\d+)\s*\]/i) {
-        $self->{global} = {
-            UpdatesWithClientErrorsCount => $1,
-            UpdatesWithServerErrorsCount => $2,
-            UpdatesNeedingFilesCount => $3,
-            UpdatesNeededByComputersCount => $4,
-            UpdatesUpToDateCount => $5,
-        };
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
     }
+
+    $self->{global} = { %$decoded };
 }
 
 1;
