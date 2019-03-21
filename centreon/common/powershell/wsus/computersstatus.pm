@@ -22,6 +22,7 @@ package centreon::common::powershell::wsus::computersstatus;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -32,9 +33,14 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
 
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $wsusServer = "' . $options{wsus_server} . '"
-$useSsl = ' . $options{secure_connection} . '
+$useSsl = ' . $options{use_ssl} . '
 $wsusPort = ' . $options{wsus_port} . '
 $notUpdatedSince = ' . $options{not_updated_since} . '
 
@@ -52,18 +58,22 @@ Try {
 
     $wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
+    $wsusStatus = $wsusObject.GetStatus()
+
     $notUpdatedSinceTimespan = new-object TimeSpan($notUpdatedSince, 0, 0, 0)
-    $computersNotContactedSinceCount = $wsus.GetComputersNotContactedSinceCount([DateTime]::UtcNow.Subtract($notUpdatedSinceTimespan))
+    $computersNotContactedSinceCount = $wsusObject.GetComputersNotContactedSinceCount([DateTime]::UtcNow.Subtract($notUpdatedSinceTimespan))
 
     $computerTargetScope = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
-    $unassignedComputersCount = $wsus.GetComputerTargetGroup([Microsoft.UpdateServices.Administration.ComputerTargetGroupId]::UnassignedComputers).GetComputerTargets().Count
-
-    $status = $wsus.GetStatus()
-    Write-Host "[ComputerTargetsNeedingUpdatesCount = "$status.ComputerTargetsNeedingUpdatesCount"]" -NoNewline
-    Write-Host "[ComputerTargetsWithUpdateErrorsCount = "$status.ComputerTargetsWithUpdateErrorsCount"]" -NoNewline
-    Write-Host "[ComputersUpToDateCount = "$status.ComputersUpToDateCount"]" -NoNewline
-    Write-Host "[ComputersNotContactedSinceCount = "$computersNotContactedSinceCount"]" -NoNewline
-    Write-Host "[UnassignedComputersCount = "$unassignedComputersCount"]"
+    $unassignedComputersCount = $wsusObject.GetComputerTargetGroup([Microsoft.UpdateServices.Administration.ComputerTargetGroupId]::UnassignedComputers).GetComputerTargets().Count
+    
+    $returnObject = New-Object -TypeName PSObject
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetsNeedingUpdatesCount" -Value $wsusStatus.ComputerTargetsNeedingUpdatesCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetsWithUpdateErrorsCount" -Value $wsusStatus.ComputerTargetsWithUpdateErrorsCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersUpToDateCount" -Value $wsusStatus.ComputersUpToDateCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersNotContactedSinceCount" -Value $computersNotContactedSinceCount
+    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UnassignedComputersCount" -Value $unassignedComputersCount
+        
+    $returnObject | ConvertTo-JSON-20
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

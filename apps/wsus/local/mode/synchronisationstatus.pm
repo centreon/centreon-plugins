@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use JSON::XS;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::common::powershell::wsus::synchronisationstatus;
 use DateTime;
@@ -130,11 +131,12 @@ sub custom_duration_calc {
     my $start_time = $options{new_datas}->{$self->{instance} . '_LastSynchronizationStartTime'};
     my $end_time = $options{new_datas}->{$self->{instance} . '_LastSynchronizationEndTime'};
     
+    # 2019-03-21T13:00:13
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
-    $start_time =~ /^(\d+)\/(\d+)\/(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+).*$/;
-    my $start_time_dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6, %$tz);
-    $end_time =~ /^(\d+)\/(\d+)\/(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+).*$/;
-    my $end_time_dt = DateTime->new(year => $3, month => $1, day => $2, hour => $4, minute => $5, second => $6, %$tz);
+    $start_time =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)$/;
+    my $start_time_dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
+    $end_time =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)$/;
+    my $end_time_dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
     
     $self->{result_values}->{duration} = $end_time_dt->epoch - $start_time_dt->epoch;
     return 0;
@@ -258,19 +260,25 @@ sub manage_selection {
         $self->{output}->exit();
     }
     
-    #[SynchronizationStatus =  NotProcessing][TotalItems =  0 ][ProcessedItems =  0 ][LastSynchronizationResult =  Succeeded ][LastSynchronizationStartTime =  3/21/2019 8:48:50 AM ][LastSynchronizationEndTime =  3/21/2019 10:21:23 AM ]
-    if ($stdout =~ /^\[SynchronizationStatus\s*=\s*(\w+)\s*\]\[TotalItems\s*=\s*(\d+)\s*\]\[ProcessedItems\s*=\s*(\d+)\s*\]\[LastSynchronizationResult\s*=\s*(\w+)\s*\]\[LastSynchronizationStartTime\s*=\s*(.*)\s*\]\[LastSynchronizationEndTime\s*=\s*(.*)\s*\]/i) {
-        $self->{current} = {
-            SynchronizationStatus => $1,
-            TotalItems => $2,
-            ProcessedItems => $3,
-        };
-        $self->{last} = {
-            LastSynchronizationResult => $4,
-            LastSynchronizationStartTime => $5,
-            LastSynchronizationEndTime => $6,
-        };
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
     }
+
+    $self->{current} = {
+        SynchronizationStatus => $decoded->{SynchronizationStatus},
+        TotalItems => $decoded->{TotalItems},
+        ProcessedItems => $decoded->{ProcessedItems},
+    };
+    $self->{last} = {
+        LastSynchronizationResult => $decoded->{LastSynchronizationResult},
+        LastSynchronizationStartTime => $decoded->{LastSynchronizationStartTime},
+        LastSynchronizationEndTime => $decoded->{LastSynchronizationEndTime},
+    };
 }
 
 1;
