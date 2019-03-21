@@ -80,8 +80,8 @@ sub check_overload {
         my $overflow = ($old_uptime + $diff_time) % 4294967296;
         my $division = ($old_uptime + $diff_time) / 4294967296;
         if ($division >= 1 && 
-            $overflow >= ($options{timeticks} - $self->{option_results}->{reboot_window}) &&
-            $overflow <= ($options{timeticks} + $self->{option_results}->{reboot_window})) {
+            $overflow >= ($options{timeticks} - ($self->{option_results}->{reboot_window} / 2)) &&
+            $overflow <= ($options{timeticks} + ($self->{option_results}->{reboot_window} / 2))) {
             $self->{new_datas}->{overload}++;
         } else {
             $self->{new_datas}->{overload} = 0;
