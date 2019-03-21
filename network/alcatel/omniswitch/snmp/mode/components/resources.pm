@@ -57,7 +57,7 @@ our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids $
     7 => 'unpowered',
     8 => 'master',
     9 => 'idle',
-    10 => 'unpoweredLicMismatch',
+    10 => 'pwrsave',
 );
 
 %phys_admin_status = (
@@ -70,29 +70,58 @@ our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids $
     7 => 'standby',
     8 => 'resetWithFabric',
     9 => 'takeoverWithFabrc',
+    10 => 'vcTakeover',
+    11 => 'resetVcAll',
 );
 
 %oids = (
-    entPhysicalDescr => '.1.3.6.1.2.1.47.1.1.1.1.2',
-    entPhysicalClass => '.1.3.6.1.2.1.47.1.1.1.1.5',
-    entPhysicalName => '.1.3.6.1.2.1.47.1.1.1.1.7',
-    chasEntPhysAdminStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.1',
-    chasEntPhysOperStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.2',
-    chasEntPhysPower => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.4',
+    common => {
+        entPhysicalDescr => '.1.3.6.1.2.1.47.1.1.1.1.2',
+        entPhysicalClass => '.1.3.6.1.2.1.47.1.1.1.1.5',
+        entPhysicalName => '.1.3.6.1.2.1.47.1.1.1.1.7',
+    },
+    aos6 => {
+        entreprise_alcatel_base => '.1.3.6.1.4.1.6486.800',
+        
+        chasEntPhysAdminStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.1',
+        chasEntPhysOperStatus => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.2',
+        chasEntPhysPower => '.1.3.6.1.4.1.6486.800.1.1.1.1.1.1.1.4',
     
-    chasHardwareBoardTemp => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.4',
-    chasTempThreshold => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.7',
-    chasDangerTempThreshold => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.8',
+        chasHardwareBoardTemp => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.4',
+        chasTempThreshold => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.7',
+        chasDangerTempThreshold => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.3.1.8',
     
-    alaChasEntPhysFanStatus => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.11.1.2',
+        alaChasEntPhysFanStatus => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.11.1.2',
+    },
+    aos7 => {
+        entreprise_alcatel_base => '.1.3.6.1.4.1.6486.801',
+        
+        chasEntPhysAdminStatus => '1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.1',
+        chasEntPhysOperStatus => '1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.2',
+        chasEntPhysPower => '1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.3',
+    
+        chasTempThreshold => '1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.5',
+        chasDangerTempThreshold => '1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.6',
+        
+        alaChasEntPhysFanStatus => '1.3.6.1.4.1.6486.801.1.1.1.3.1.1.11.1.2',
+    },
 );
 
 $mapping = {
-    entPhysicalDescr        => { oid => $oids{entPhysicalDescr} },
-    entPhysicalName         => { oid => $oids{entPhysicalName} },
-    chasEntPhysAdminStatus  => { oid => $oids{chasEntPhysAdminStatus}, map => \%phys_admin_status, default => 'unknown' },
-    chasEntPhysOperStatus   => { oid => $oids{chasEntPhysOperStatus}, map => \%phys_oper_status, default => 'unknown' },
-    chasEntPhysPower        => { oid => $oids{chasEntPhysPower}, default => -1 },
+    aos6 => {
+        entPhysicalDescr        => { oid => $oids{common}->{entPhysicalDescr} },
+        entPhysicalName         => { oid => $oids{common}->{entPhysicalName} },
+        chasEntPhysAdminStatus  => { oid => $oids{aos6}->{chasEntPhysAdminStatus}, map => \%phys_admin_status, default => 'unknown' },
+        chasEntPhysOperStatus   => { oid => $oids{aos6}->{chasEntPhysOperStatus}, map => \%phys_oper_status, default => 'unknown' },
+        chasEntPhysPower        => { oid => $oids{aos6}->{chasEntPhysPower}, default => -1 },
+    },
+    aos7 => {
+        entPhysicalDescr        => { oid => $oids{common}->{entPhysicalDescr} },
+        entPhysicalName         => { oid => $oids{common}->{entPhysicalName} },
+        chasEntPhysAdminStatus  => { oid => $oids{aos7}->{chasEntPhysAdminStatus}, map => \%phys_admin_status, default => 'unknown' },
+        chasEntPhysOperStatus   => { oid => $oids{aos7}->{chasEntPhysOperStatus}, map => \%phys_oper_status, default => 'unknown' },
+        chasEntPhysPower        => { oid => $oids{aos7}->{chasEntPhysPower}, default => -1 },
+    },
 };
 
 1;
