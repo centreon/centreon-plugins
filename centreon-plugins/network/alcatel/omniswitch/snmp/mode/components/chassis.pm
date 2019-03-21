@@ -34,17 +34,17 @@ sub check {
     return if ($self->check_filter(section => 'chassis'));
     
     my @instances = ();
-    foreach my $key (keys %{$self->{results}->{$oids{entPhysicalClass}}}) {
-        if ($self->{results}->{$oids{entPhysicalClass}}->{$key} == 3) {
-            next if ($key !~ /^$oids{entPhysicalClass}\.(.*)$/);
+    foreach my $key (keys %{$self->{results}->{$oids{common}->{entPhysicalClass}}}) {
+        if ($self->{results}->{$oids{common}->{entPhysicalClass}}->{$key} == 3) {
+            next if ($key !~ /^$oids{common}->{entPhysicalClass}\.(.*)$/);
             push @instances, $1;
         }
     }
     
     foreach my $instance (@instances) {
-        next if (!defined($self->{results}->{entity}->{$oids{chasEntPhysAdminStatus} . '.' . $instance}));
+        next if (!defined($self->{results}->{entity}->{$oids{$self->{type}}{chasEntPhysAdminStatus} . '.' . $instance}));
         
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{entity}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{type}}, results => $self->{results}->{entity}, instance => $instance);
         
         next if ($self->check_filter(section => 'chassis', instance => $instance));
         $self->{components}->{chassis}->{total}++;
