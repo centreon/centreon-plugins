@@ -123,7 +123,7 @@ sub run {
             },
         },
     };
-    
+
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
         { oid => $mapping->{aos6}->{entry_device}, start => $mapping->{aos6}->{device}->{healthDeviceCpu1MinAvg}->{oid}, end => $mapping->{aos6}->{device}->{healthDeviceCpu1HrAvg}->{oid} },
         { oid => $mapping->{aos6}->{entry_module}, start => $mapping->{aos6}->{module}->{healthModuleCpu1MinAvg}->{oid}, end => $mapping->{aos6}->{module}->{healthModuleCpu1HrAvg}->{oid} },
@@ -146,7 +146,7 @@ sub run {
     }
     
     foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result->{ $mapping->{$type}->{entry_module} }})) {
-        next if ($oid !~ /^$snmp_result->{$oid}->{healthModuleCpu1MinAvg}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{$type}->{module}->{healthModuleCpu1MinAvg}->{oid}\.(.*)$/);
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{module}, results => $snmp_result->{ $mapping->{$type}->{entry_module} }, instance => $1);
         
         $self->check_cpu(
