@@ -22,6 +22,7 @@ package centreon::common::powershell::wsus::synchronisationstatus;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
