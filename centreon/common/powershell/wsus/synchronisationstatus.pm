@@ -39,7 +39,7 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
 
     $ps .= '
 $wsusServer = "' . $options{wsus_server} . '"
-$useSsl = ' . $options{secure_connection} . '
+$useSsl = ' . $options{use_ssl} . '
 $wsusPort = ' . $options{wsus_port} . '
 
 Try {
@@ -68,7 +68,8 @@ Try {
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationStartTime" -Value $lastSync.StartTime
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationEndTime" -Value $lastSync.EndTime
     
-    $returnObject | ConvertTo-JSON-20
+    $jsonString = $returnObject | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

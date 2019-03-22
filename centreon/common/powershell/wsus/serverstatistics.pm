@@ -34,7 +34,7 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
 
 $wsusServer = "' . $options{wsus_server} . '"
-$useSsl = ' . $options{secure_connection} . '
+$useSsl = ' . $options{use_ssl} . '
 $wsusPort = ' . $options{wsus_port} . '
 
 Try {
@@ -49,7 +49,7 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
-    $wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
+    $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
     $wsusStatus = $wsusObject.GetStatus()
     
@@ -62,8 +62,9 @@ Try {
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "NotApprovedUpdateCount" -Value $wsusStatus.NotApprovedUpdateCount
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesWithStaleUpdateApprovalsCount" -Value $wsusStatus.UpdatesWithStaleUpdateApprovalsCount
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ExpiredUpdateCount" -Value $wsusStatus.ExpiredUpdateCount
-        
-    $returnObject | ConvertTo-JSON-20
+    
+    $jsonString = $returnObject | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

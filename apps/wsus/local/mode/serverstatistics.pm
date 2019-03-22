@@ -165,7 +165,7 @@ sub manage_selection {
     
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($stdout);
+        $decoded = JSON::XS->new->utf8->decode(centreon::plugins::misc::powershell_json_sanitizer(string => $stdout, output => $self->{output}));
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
