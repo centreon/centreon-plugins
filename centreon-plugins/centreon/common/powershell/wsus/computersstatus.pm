@@ -56,7 +56,7 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
-    $wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
+    $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
 
     $wsusStatus = $wsusObject.GetStatus()
 
@@ -72,8 +72,9 @@ Try {
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersUpToDateCount" -Value $wsusStatus.ComputersUpToDateCount
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersNotContactedSinceCount" -Value $computersNotContactedSinceCount
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UnassignedComputersCount" -Value $unassignedComputersCount
-        
-    $returnObject | ConvertTo-JSON-20
+    
+    $jsonString = $returnObject | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

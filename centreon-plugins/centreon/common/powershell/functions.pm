@@ -22,7 +22,6 @@ package centreon::common::powershell::functions;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub escape_jsonstring {
     my (%options) = @_;
@@ -77,7 +76,7 @@ function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
                     $jsonResult = ''
                     foreach($elem in $value){
                         #if ($elem -eq $null) {continue}
-                        if ($jsonResult.Length -gt 0) {$jsonResult +=', '}
+                        if ($jsonResult.Length -gt 0) {$jsonResult +=','}
                         $jsonResult += ($elem | ConvertTo-JSON-20 -maxDepth ($maxDepth -1))
                     }
                     return "[" + $jsonResult + "]"
@@ -85,10 +84,10 @@ function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
                 '(System\.)?Hashtable' { # hashtable
                     $jsonResult = ''
                     foreach($key in $value.Keys){
-                        if ($jsonResult.Length -gt 0) {$jsonResult +=', '}
+                        if ($jsonResult.Length -gt 0) {$jsonResult +=','}
                         $jsonResult += 
 @"
-"{0}": {1}
+"{0}":{1}
 "@ -f $key , ($value[$key] | ConvertTo-JSON-20 -maxDepth ($maxDepth -1) )
                     }
                     return "{" + $jsonResult + "}"
@@ -99,10 +98,10 @@ function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
                     return "{" +
                         (($value | Get-Member -MemberType *property | % { 
 @"
-"{0}": {1}
+"{0}":{1}
 "@ -f $_.Name , ($value.($_.Name) | ConvertTo-JSON-20 -maxDepth ($maxDepth -1) )
                     
-                    }) -join ', ') + "}"
+                    }) -join ',') + "}"
                 }
         }
     }
