@@ -22,6 +22,7 @@ package centreon::common::powershell::wsus::serverstatistics;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -32,7 +33,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
 
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $wsusServer = "' . $options{wsus_server} . '"
 $useSsl = ' . $options{use_ssl} . '
 $wsusPort = ' . $options{wsus_port} . '
