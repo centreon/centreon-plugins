@@ -106,8 +106,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{expected_string})) {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --expected-string option.");
+    if (!defined($self->{option_results}->{expected_string}) &&
+        !defined($self->{option_results}->{expected_first_header}) &&
+        !defined($self->{option_results}->{expected_header})) {
+        $self->{output}->add_option_msg(short_msg => "You need to specify one of the --expected-* options.");
         $self->{output}->option_exit();
     }
     $self->{http}->set_options(%{$self->{option_results}});
@@ -155,19 +157,20 @@ sub manage_selection {
     }
 
     # Expected string check
-    if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
-    } else {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
-    }
-    
-    my $extracted = $1;
-    if (defined($extracted) && $extracted =~ /(\d+([\.,]\d+)?)/) {
-        $extracted = $1;
-        $extracted =~ s/,/\./;
-        $self->{global}->{extracted} = $extracted;
+    if (defined($self->{option_results}->{expected_string})) {
+        if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
+            $self->{output}->output_add(severity => 'OK',
+                                        short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
+        } else {
+            $self->{output}->output_add(severity => 'CRITICAL',
+                                        short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
+        }
+        my $extracted = $1;
+        if (defined($extracted) && $extracted =~ /(\d+([\.,]\d+)?)/) {
+            $extracted = $1;
+            $extracted =~ s/,/\./;
+            $self->{global}->{extracted} = $extracted;
+        }
     }
 
     # Size check
