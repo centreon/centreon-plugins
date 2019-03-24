@@ -133,10 +133,10 @@ sub manage_selection {
             my $header = $self->{http}->get_first_header(name => $expected_header);
             if (defined($header) && $header =~ /$expected_value/i) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("'%s: %s' is present in first headers.", $expected_header, $expected_value));
+                                            short_msg => sprintf("'%s:%s' in first headers.", $expected_header, $expected_value));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("'%s: %s' is not present in first headers.", $expected_header, $expected_value));
+                                            short_msg => sprintf("'%s:%s' not in first headers.", $expected_header, $expected_value));
             }
         }
     }
@@ -148,10 +148,10 @@ sub manage_selection {
             my $header = $self->{http}->get_header(name => $expected_header);
             if (defined($header) && $header =~ /$expected_value/i) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("'%s: %s' is present in headers.", $expected_header, $expected_value));
+                                            short_msg => sprintf("'%s:%s' in headers.", $expected_header, $expected_value));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("'%s: %s' is not present in headers.", $expected_header, $expected_value));
+                                            short_msg => sprintf("'%s:%s' not in headers.", $expected_header, $expected_value));
             }
         }
     }
@@ -160,10 +160,10 @@ sub manage_selection {
     if (defined($self->{option_results}->{expected_string})) {
         if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
             $self->{output}->output_add(severity => 'OK',
-                                        short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
+                                        short_msg => sprintf("'%s' in content.", $self->{option_results}->{expected_string}));
         } else {
             $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
+                                        short_msg => sprintf("'%s' not in content.", $self->{option_results}->{expected_string}));
         }
         my $extracted = $1;
         if (defined($extracted) && $extracted =~ /(\d+([\.,]\d+)?)/) {
