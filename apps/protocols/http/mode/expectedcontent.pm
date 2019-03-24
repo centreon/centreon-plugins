@@ -82,6 +82,7 @@ sub new {
         "expected-header:s@"           => { name => 'expected_header' },
         "expected-first-header:s@"     => { name => 'expected_first_header' },
         "expected-string:s"            => { name => 'expected_string' },
+        "expected-warning"             => { name => 'expected_warning' },
         "timeout:s"                    => { name => 'timeout' },
         "no-follow"                    => { name => 'no_follow', },
         "cert-file:s"                  => { name => 'cert_file' },
@@ -135,7 +136,7 @@ sub manage_selection {
                 $self->{output}->output_add(severity => 'OK',
                                             short_msg => sprintf("'%s:%s' in first headers.", $expected_header, $expected_value));
             } else {
-                $self->{output}->output_add(severity => 'CRITICAL',
+                $self->{output}->output_add(severity => (defined($self->{option_results}->{expected_warning}) ? 'WARNING' : 'CRITICAL'),
                                             short_msg => sprintf("'%s:%s' not in first headers.", $expected_header, $expected_value));
             }
         }
@@ -150,7 +151,7 @@ sub manage_selection {
                 $self->{output}->output_add(severity => 'OK',
                                             short_msg => sprintf("'%s:%s' in headers.", $expected_header, $expected_value));
             } else {
-                $self->{output}->output_add(severity => 'CRITICAL',
+                $self->{output}->output_add(severity => (defined($self->{option_results}->{expected_warning}) ? 'WARNING' : 'CRITICAL'),
                                             short_msg => sprintf("'%s:%s' not in headers.", $expected_header, $expected_value));
             }
         }
@@ -162,7 +163,7 @@ sub manage_selection {
             $self->{output}->output_add(severity => 'OK',
                                         short_msg => sprintf("'%s' in content.", $self->{option_results}->{expected_string}));
         } else {
-            $self->{output}->output_add(severity => 'CRITICAL',
+            $self->{output}->output_add(severity => (defined($self->{option_results}->{expected_warning}) ? 'WARNING' : 'CRITICAL'),
                                         short_msg => sprintf("'%s' not in content.", $self->{option_results}->{expected_string}));
         }
         my $extracted = $1;
@@ -326,6 +327,10 @@ Threshold critical for extracted value
 =item B<--expected-string>
 
 Specify String to check on the Webpage
+
+=item B<--expected-warning>
+
+Set expected-* criticity to WARNING.
 
 =back
 
