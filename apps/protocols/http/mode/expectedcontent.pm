@@ -307,7 +307,7 @@ Threshold warning for content size
 
 Threshold critical for content size
 
-=item B<--expected-heades>
+=item B<--expected-header>
 
 Specify String to check on the final response headers (Multiple option)
 
