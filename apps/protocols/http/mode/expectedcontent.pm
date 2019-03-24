@@ -129,14 +129,14 @@ sub manage_selection {
     # Expected first headers check
     if (defined($self->{option_results}->{expected_first_header})) {
         foreach (@{$self->{option_results}->{expected_first_header}}) {
-            my @expected = split / *: */, $_;
-            my $header = $self->{http}->get_first_header(name => $expected[0]);
-            if (defined($header) && $header =~ /$expected[1]/i) {
+            my ($expected_header, $expected_value) = $_ =~ /([^:]*) *: *(.*)/;
+            my $header = $self->{http}->get_first_header(name => $expected_header);
+            if (defined($header) && $header =~ /$expected_value/i) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("'%s: %s' is present in first headers.", $expected[0], $expected[1]));
+                                            short_msg => sprintf("'%s: %s' is present in first headers.", $expected_header, $expected_value));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("'%s: %s' is not present in first headers.", $expected[0], $expected[1]));
+                                            short_msg => sprintf("'%s: %s' is not present in first headers.", $expected_header, $expected_value));
             }
         }
     }
@@ -144,14 +144,14 @@ sub manage_selection {
     # Expected headers check
     if (defined($self->{option_results}->{expected_header})) {
         foreach (@{$self->{option_results}->{expected_header}}) {
-            my @expected = split / *: */, $_;
-            my $header = $self->{http}->get_header(name => $expected[0]);
-            if (defined($header) && $header =~ /$expected[1]/i) {
+            my ($expected_header, $expected_value) = $_ =~ /([^:]*) *: *(.*)/;
+            my $header = $self->{http}->get_header(name => $expected_header);
+            if (defined($header) && $header =~ /$expected_value/i) {
                 $self->{output}->output_add(severity => 'OK',
-                                            short_msg => sprintf("'%s: %s' is present in headers.", $expected[0], $expected[1]));
+                                            short_msg => sprintf("'%s: %s' is present in headers.", $expected_header, $expected_value));
             } else {
                 $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("'%s: %s' is not present in headers.", $expected[0], $expected[1]));
+                                            short_msg => sprintf("'%s: %s' is not present in headers.", $expected_header, $expected_value));
             }
         }
     }
