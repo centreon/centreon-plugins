@@ -238,31 +238,26 @@ sub set_extra_curl_opt {
     }
 }
 
-sub parse_headers {
-    my ($self, %options) = @_;
-    
-    $self->{response_headers_parse} = {};
-    my ($header, $value);
-    foreach (split /\n/, $self->{response_headers}) {
-        s/\r//g;
-        if (/^(\S(?:.*?))\s*:\s*(.*)/) {
-            if (defined($value)) {
-                $self->{response_headers_parse}->{$header} = []
-                    if (!defined($self->{response_headers_parse}->{$header}));
-                push @{$self->{response_headers_parse}->{$header}}, $value;
-            }
-            $header = lc($1);
-            $value = $2;
-        } elsif (/^\s+(.*)/) {
-            $value .= ', ' . $1;
+sub cb_get_header {
+    my ($easy, $header, $uservar) = @_;
+
+    $header =~ s/[\r\n]//g;
+    if ($header =~ /^[\r\n]*$/) {
+        $uservar->{nheaders}++;
+    } else {
+        $uservar->{response_headers}->[$uservar->{nheaders}] = {}
+            if (!defined($uservar->{response_headers}->[$uservar->{nheaders}]));
+        if ($header =~  /^(\S(?:.*?))\s*:\s*(.*)/) {
+            my $header_name = lc($1);
+            $uservar->{response_headers}->[$uservar->{nheaders}]->{$header_name} = []
+                if (!defined($uservar->{response_headers}->[$uservar->{nheaders}]->{$header_name}));
+            push @{$uservar->{response_headers}->[$uservar->{nheaders}]->{$header_name}}, $2;
+        } else {
+           $uservar->{response_headers}->[$uservar->{nheaders}]->{response_line} = $header; 
         }
     }
     
-    if (defined($value)) {
-        $self->{response_headers_parse}->{$header} = []
-            if (!defined($self->{response_headers_parse}->{$header}));
-        push @{$self->{response_headers_parse}->{$header}}, $value;
-    }
+    return length($_[1]);
 }
 
 sub request {
@@ -334,8 +329,11 @@ sub request {
     $self->set_extra_curl_opt(%options);
 
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FILE'), parameter => \$self->{response_body});
-    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERDATA'), parameter => \$self->{response_headers});
-
+    $self->{nheaders} = 0;
+    $self->{response_headers} = [{}];
+    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERDATA'), parameter => $self);
+    $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERFUNCTION'), parameter => \&cb_get_header);
+        
     eval {
         $self->{curl_easy}->perform();
     };
@@ -345,7 +343,6 @@ sub request {
     }
     
     $self->{response_code} = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_RESPONSE_CODE'));
-    $self->parse_headers();
     
     # Check response
     my $status = 'ok';
@@ -384,12 +381,20 @@ sub request {
     return $self->{response_body};
 }
 
+sub get_first_header {
+    my ($self, %options) = @_;
+    
+    return undef
+        if (!defined($self->{response_headers}->[0]->{ lc($options{name}) }));
+    return wantarray ? @{$self->{response_headers}->[0]->{ lc($options{name}) }} : $self->{response_headers}->[0]->{ lc($options{name}) }->[0];
+}
+
 sub get_header {
     my ($self, %options) = @_;
 
     return undef
-        if (!defined($self->{response_headers_parse}->{ lc($options{name}) }));
-    return wantarray ? @{$self->{response_headers_parse}->{ lc($options{name}) }} : $self->{response_headers_parse}->{ lc($options{name}) }->[0];
+        if (!defined($self->{response_headers}->[-1]->{ lc($options{name}) }));
+    return wantarray ? @{$self->{response_headers}->[-1]->{ lc($options{name}) }} : $self->{response_headers}->[-1]->{ lc($options{name}) }->[0];
 }
 
 sub get_code {

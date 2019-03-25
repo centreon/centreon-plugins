@@ -161,6 +161,9 @@ sub manage_selection {
     my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request();
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
+
+    use Data::Dumper;
+    print Data::Dumper::Dumper($self->{http}->get_first_header(name => 'location'));
     
     $self->{global} = { time => $timeelapsed, content => $webcontent, code => $self->{http}->get_code() };
 
