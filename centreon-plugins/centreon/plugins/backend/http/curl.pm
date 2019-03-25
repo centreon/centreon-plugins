@@ -381,8 +381,26 @@ sub request {
     return $self->{response_body};
 }
 
+sub get_headers {
+    my ($self, %options) = @_;
+    
+    my $headers = '';
+    foreach (keys %{$self->{response_headers}->[$options{nheader}]}) {
+        next if (/response_line/);
+        foreach my $value (@{$self->{response_headers}->[$options{nheader}]->{$_}}) {
+            $headers .= "$_: " . $value . "\n";
+        }
+    }
+    
+    return $headers;
+}
+
 sub get_first_header {
     my ($self, %options) = @_;
+    
+    if (!defined($options{name})) {
+        return $self->get_headers(nheader => 0);
+    }
     
     return undef
         if (!defined($self->{response_headers}->[0]->{ lc($options{name}) }));
@@ -391,6 +409,10 @@ sub get_first_header {
 
 sub get_header {
     my ($self, %options) = @_;
+
+    if (!defined($options{name})) {
+        return $self->get_headers(nheader => -1);
+    }
 
     return undef
         if (!defined($self->{response_headers}->[-1]->{ lc($options{name}) }));
