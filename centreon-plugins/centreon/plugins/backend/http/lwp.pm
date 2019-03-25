@@ -238,6 +238,18 @@ sub request {
     return $self->{response}->content;
 }
 
+sub get_first_header {
+    my ($self, %options) = @_;
+
+    my @redirects = $self->{response}->redirects();
+
+    return
+        defined($redirects[0]) ? 
+        $redirects[0]->headers()->header($options{name}) :
+        $self->{headers}->header($options{name})
+    ;
+}
+
 sub get_header {
     my ($self, %options) = @_;
 

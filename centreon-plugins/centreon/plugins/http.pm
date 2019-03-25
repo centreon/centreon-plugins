@@ -177,6 +177,12 @@ sub request {
     return $self->{'backend_' . $self->{http_backend}}->request(request => $request_options);
 }
 
+sub get_first_header {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_first_header(%options);
+}
+
 sub get_header {
     my ($self, %options) = @_;
 
