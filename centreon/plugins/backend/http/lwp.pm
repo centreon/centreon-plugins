@@ -238,10 +238,24 @@ sub request {
     return $self->{response}->content;
 }
 
+sub get_headers {
+    my ($self, %options) = @_;
+    
+    my $headers = '';
+    foreach ($options{response}->header_field_names()) {
+        $headers .= "$_: " . $options{response}->header($_) . "\n";
+    }
+    
+    return $headers;
+}
+
 sub get_first_header {
     my ($self, %options) = @_;
 
     my @redirects = $self->{response}->redirects();
+    if (!defined($options{name})) {
+        return $self->get_headers(response => defined($redirects[0]) ? $redirects[0] : $self->{response});
+    }
 
     return
         defined($redirects[0]) ? 
@@ -253,6 +267,9 @@ sub get_first_header {
 sub get_header {
     my ($self, %options) = @_;
 
+    if (!defined($options{name})) {
+        return $self->get_headers(response => $self->{response});
+    }
     return $self->{headers}->header($options{name});
 }
 

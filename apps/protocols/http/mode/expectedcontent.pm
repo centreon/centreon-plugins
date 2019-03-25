@@ -54,6 +54,8 @@ sub custom_content_calc {
 
     $self->{result_values}->{content} = $options{new_datas}->{$self->{instance} . '_content'};
     $self->{result_values}->{code} = $options{new_datas}->{$self->{instance} . '_code'};
+    $self->{result_values}->{header} = $options{new_datas}->{$self->{instance} . '_header'};
+    $self->{result_values}->{first_header} = $options{new_datas}->{$self->{instance} . '_first_header'};
     return 0;
 }
 
@@ -66,7 +68,7 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'content', threshold => 0, set => {
-                key_values => [ { name => 'content' }, { name => 'code' } ],
+                key_values => [ { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' } ],
                 closure_custom_output => $self->can('custom_content_output'),
                 closure_custom_calc => $self->can('custom_content_calc'),
                 closure_custom_perfdata => sub { return 0; },
@@ -161,8 +163,14 @@ sub manage_selection {
     my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request();
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-    
-    $self->{global} = { time => $timeelapsed, content => $webcontent, code => $self->{http}->get_code() };
+        
+    $self->{global} = { 
+        time => $timeelapsed, 
+        content => $webcontent,
+        code => $self->{http}->get_code(),
+        header => $self->{http}->get_header(),
+        first_header => $self->{http}->get_first_header(),
+    };
 
     if (defined($self->{option_results}->{extracted_pattern}) && $self->{option_results}->{extracted_pattern} ne '' &&
         $webcontent =~ /$self->{option_results}->{extracted_pattern}/mi) {
@@ -324,17 +332,17 @@ Threshold critical for extracted value
 =item B<--unknown-content>
 
 Set warning threshold for content page (Default: '').
-Can used special variables like: %{content}, %{code}
+Can used special variables like: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--warning-content>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{content}, %{code}
+Can used special variables like: %{content}, %{header}, %{first_header}, %{code}
 
 =item B<--critical-content>
 
 Set critical threshold for content page (Default: '').
-Can used special variables like: %{content}, %{code}
+Can used special variables like: %{content}, %{header}, %{first_header}, %{code}
 
 =back
 
