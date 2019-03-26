@@ -101,7 +101,7 @@ sub manage_selection {
                                           nothing_quit => 1);
 
     if ($result->{$oid_haInstalled} < 1 or $result->{$oid_haStarted} eq "no") {
-        $self->{output}->output_add(severity => $self->{option_results}->{no_ha_state},
+        $self->{output}->output_add(severity => $self->{option_results}->{no_ha_status},
                                     short_msg => sprintf("Looks like HA is not started, or not installed .."),
                                     long_msg => sprintf("HA Installed : '%u' HA Started : '%s'",
                                                          $result->{$oid_haInstalled},  $result->{$oid_haStarted}),
