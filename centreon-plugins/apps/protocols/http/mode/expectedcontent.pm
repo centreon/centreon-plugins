@@ -39,11 +39,11 @@ sub custom_content_threshold {
 sub custom_content_output {
     my ($self, %options) = @_;
 
-    my $msg = 'content test';
+    my $msg = 'Content test';
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
         my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '_content'};
         $filter =~ s/\$self->\{result_values\}->/%/g;
-        $msg = sprintf("content test [filter: '%s']", $filter);
+        $msg = sprintf("Content test [filter: '%s']", $filter);
     }
     
     return $msg;
