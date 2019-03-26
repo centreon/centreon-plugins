@@ -46,22 +46,21 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "connector-hostname:s@"    => { name => 'connector_hostname' },
-                      "connector-port:s@"        => { name => 'connector_port' },
-                      "vsphere-address:s@"       => { name => 'vsphere_address' },
-                      "vsphere-username:s@"      => { name => 'vsphere_username' },
-                      "vsphere-password:s@"      => { name => 'vsphere_password' },
-                      "container:s@"             => { name => 'container' },
-                      "timeout:s@"               => { name => 'timeout' },
-                      "sampling-period:s@"       => { name => 'sampling_period' },
-                      "time-shift:s@"            => { name => 'time_shift' },
-                      "case-insensitive"         => { name => 'case_insensitive' },
-                      "unknown-connector-status:s"  => { name => 'unknown_connector_status' },
-                      "warning-connector-status:s"  => { name => 'warning_connector_status' },
-                      "critical-connector-status:s" => { name => 'critical_connector_status' },
-                    });
+        $options{options}->add_options(arguments => {
+            "connector-hostname:s@"    => { name => 'connector_hostname' },
+            "connector-port:s@"        => { name => 'connector_port' },
+            "vsphere-address:s@"       => { name => 'vsphere_address' },
+            "vsphere-username:s@"      => { name => 'vsphere_username' },
+            "vsphere-password:s@"      => { name => 'vsphere_password' },
+            "container:s@"             => { name => 'container' },
+            "timeout:s@"               => { name => 'timeout' },
+            "sampling-period:s@"       => { name => 'sampling_period' },
+            "time-shift:s@"            => { name => 'time_shift' },
+            "case-insensitive"         => { name => 'case_insensitive' },
+            "unknown-connector-status:s"  => { name => 'unknown_connector_status' },
+            "warning-connector-status:s"  => { name => 'warning_connector_status' },
+            "critical-connector-status:s" => { name => 'critical_connector_status' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CONNECTOR OPTIONS', once => 1);
 
@@ -162,8 +161,9 @@ sub connector_response {
         $self->{output}->option_exit();
     }
     
-    my $json = $1;    
+    my $json = $1;
     eval {
+        $self->{output}->output_add(long_msg => $json, debug => 1);
         $self->{result} = JSON->new->utf8->decode($json);
     };
     if ($@) {
