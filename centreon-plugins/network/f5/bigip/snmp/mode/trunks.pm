@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 my $thresholds = {
     trunk => [
         ['up', 'OK'],
@@ -42,7 +40,7 @@ my $thresholds = {
 sub custom_threshold_output {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'trunk', value => $self->{result_values}->{sysTrunkStatus});
+    return $self->{instance_mode}->get_severity(section => 'trunk', value => $self->{result_values}->{sysTrunkStatus});
 }
 
 sub custom_status_calc {
@@ -61,10 +59,10 @@ sub custom_traffic_perfdata {
     }
     
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{result_values}->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{result_values}->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-traffic-' . $self->{result_values}->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-traffic-' . $self->{result_values}->{label});
     }
@@ -82,9 +80,9 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed}) && $self->{result_values}->{speed} > 0) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-traffic-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-traffic-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-traffic-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-traffic-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     }
     return $exit;
@@ -110,7 +108,7 @@ sub custom_traffic_calc {
   
     my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
     
-    $self->{result_values}->{speed} = defined($instance_mode->{option_results}->{speed}) && $instance_mode->{option_results}->{speed} ne '' ? $instance_mode->{option_results}->{speed} : $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{speed}};
+    $self->{result_values}->{speed} = defined($self->{instance_mode}->{option_results}->{speed}) && $self->{instance_mode}->{option_results}->{speed} ne '' ? $self->{instance_mode}->{option_results}->{speed} : $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{speed}};
     $self->{result_values}->{speed} = $self->{result_values}->{speed} * 1000 * 1000; # bits
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic * 8 / $options{delta_time};
     $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $self->{result_values}->{speed} if ($self->{result_values}->{speed} > 0);
@@ -309,22 +307,19 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-name:s"             => { name => 'filter_name' },
-                                    "threshold-overload:s@"     => { name => 'threshold_overload' },
-                                    "units-traffic:s"           => { name => 'units_traffic', default => '%' },
-                                    "speed:s"                   => { name => 'speed' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-name:s"             => { name => 'filter_name' },
+        "threshold-overload:s@"     => { name => 'threshold_overload' },
+        "units-traffic:s"           => { name => 'units_traffic', default => '%' },
+        "speed:s"                   => { name => 'speed' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
 
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {

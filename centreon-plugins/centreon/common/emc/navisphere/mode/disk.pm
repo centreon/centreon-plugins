@@ -27,8 +27,6 @@ use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 my @states = (
     ['^enabled$'         , 'OK'],
     ['^binding$'         , 'OK'],
@@ -170,20 +168,12 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-raidgroupid:s"      => { name => 'filter_raidgroupid', },
-                                "filter-disk:s"             => { name => 'filter_disk', },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-raidgroupid:s"      => { name => 'filter_raidgroupid', },
+        "filter-disk:s"             => { name => 'filter_disk', },
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub manage_selection {

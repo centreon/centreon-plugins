@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_temperature_perfdata {
     my ($self, %options) = @_;
 
@@ -62,14 +60,14 @@ sub custom_sensor_threshold {
     my ($self, %options) = @_;
     
     my $warn_limit;
-    if (defined($instance_mode->{option_results}->{'warning-' . $self->{label}}) && $instance_mode->{option_results}->{'warning-' . $self->{label}} ne '') {
-        $warn_limit = $instance_mode->{option_results}->{'warning-' . $self->{label}};
+    if (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '') {
+        $warn_limit = $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}};
     }
     $self->{perfdata}->threshold_validate(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}, value => $warn_limit);
 
     my $crit_limit = $self->{result_values}->{limit_lo_absolute} . ':' . $self->{result_values}->{limit_hi_absolute};
-    if (defined($instance_mode->{option_results}->{'critical-' . $self->{label}}) && $instance_mode->{option_results}->{'critical-' . $self->{label}} ne '') {
-        $crit_limit = $instance_mode->{option_results}->{'critical-' . $self->{label}};
+    if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '') {
+        $crit_limit = $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}};
     }
     $self->{perfdata}->threshold_validate(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}, value => $crit_limit);
     
@@ -110,18 +108,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub prefix_channel_output {

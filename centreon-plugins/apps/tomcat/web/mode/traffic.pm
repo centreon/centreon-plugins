@@ -29,8 +29,6 @@ use Digest::MD5 qw(md5_hex);
 use XML::XPath;
 use URI::Escape;
 
-my $instance_mode;
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -69,10 +67,10 @@ sub custom_traffic_perfdata {
     }
 
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
@@ -88,9 +86,9 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     }
     return $exit;
@@ -119,9 +117,9 @@ sub custom_traffic_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     my $diff_traffic = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}} - $options{old_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
     $self->{result_values}->{traffic} = $diff_traffic / $options{delta_time};
-    if (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
-        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
-        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    if (defined($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
     return 0;
 }
@@ -168,7 +166,6 @@ sub check_options {
     }
     
     $self->{http}->set_options(%{$self->{option_results}});
-    $instance_mode = $self;
 }
 
 my %xpath_to_check = (
