@@ -2139,8 +2139,6 @@ The model can also be used to check strings (not only counters). So we want to c
   use strict;
   use warnings;
   
-  my $instance_mode;
-  
   sub set_counters {
     my ($self, %options) = @_;
     
@@ -2194,8 +2192,6 @@ The model can also be used to check strings (not only counters). So we want to c
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    # Sometimes, you'll need to have access of the current object in the callback
-    $instance_mode = $self;
   }
   
   sub manage_selection {
