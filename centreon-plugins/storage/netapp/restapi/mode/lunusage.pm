@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -46,10 +44,10 @@ sub custom_usage_threshold {
     
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
                                                threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
@@ -122,21 +120,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-name:s"     => { name => 'filter_name' },
-                                    "units:s"           => { name => 'units', default => '%' },
-                                    "free"              => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-name:s"     => { name => 'filter_name' },
+        "units:s"           => { name => 'units', default => '%' },
+        "free"              => { name => 'free' },
+    });
    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
 }
 
 sub manage_selection {

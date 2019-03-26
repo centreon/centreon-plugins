@@ -71,22 +71,20 @@ sub set_counters {
     ];
 }
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
     return if ($self->{result_values}->{total} <= 0);
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -104,10 +102,10 @@ sub custom_usage_threshold {
     return 'ok' if ($self->{result_values}->{total} <= 0);
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
@@ -166,21 +164,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "units:s"               => { name => 'units', default => '%' },
-                                  "free"                  => { name => 'free' },
-                                  "filter-name:s"         => { name => 'filter_name' },
-                                  "filter-type:s"         => { name => 'filter_type' },
-                                });
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+        "units:s"               => { name => 'units', default => '%' },
+        "free"                  => { name => 'free' },
+        "filter-name:s"         => { name => 'filter_name' },
+        "filter-type:s"         => { name => 'filter_type' },
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
+    return $self;
 }
 
 my %map_types = (
