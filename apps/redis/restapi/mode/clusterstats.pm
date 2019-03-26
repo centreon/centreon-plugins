@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
@@ -43,10 +41,10 @@ sub custom_usage_threshold {
     
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{result_values}->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
     return $exit;
@@ -224,26 +222,18 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "units:s"           => { name => 'units', default => '%' },
-                                    "free"              => { name => 'free' },
-                                });
-   
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+        "units:s"   => { name => 'units', default => '%' },
+        "free"      => { name => 'free' },
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
+    return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get(path => '/v1/cluster/stats/last?interval='.$options{custom}->get_interval());
+    my $result = $options{custom}->get(path => '/v1/cluster/stats/last?interval=' . $options{custom}->get_interval());
     my $result2 = $options{custom}->get(path => '/v1/cluster');
     my $result3 = $options{custom}->get(path => '/v1/nodes');
 

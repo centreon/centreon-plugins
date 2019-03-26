@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -113,10 +111,10 @@ sub custom_traffic_perfdata {
     }
     
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
@@ -132,9 +130,9 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
     }
     return $exit;
@@ -184,14 +182,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-source:s"       => { name => 'filter_source' },
-                                "oid-filter:s"          => { name => 'oid_filter', default => 'ifname' },
-                                "oid-display:s"         => { name => 'oid_display', default => 'ifname' },
-                                "units-traffic:s"       => { name => 'units_traffic', default => '%' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-source:s"       => { name => 'filter_source' },
+        "oid-filter:s"          => { name => 'oid_filter', default => 'ifname' },
+        "oid-display:s"         => { name => 'oid_display', default => 'ifname' },
+        "units-traffic:s"       => { name => 'units_traffic', default => '%' },
+    });
+
     return $self;
 }
 
@@ -205,7 +202,6 @@ sub check_options {
         'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
     };
     $self->check_oids_label();
-    $instance_mode = $self;
 }
 
 sub check_oids_label {
