@@ -1338,7 +1338,7 @@ sub add_result_cast {
         }
     }
     
-    foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'omcast')) {
+    foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'obcast')) {
         $self->{interface_selected}->{$options{instance}}->{$_} = 0 if (!defined($self->{interface_selected}->{$options{instance}}->{$_}));
     }
     
