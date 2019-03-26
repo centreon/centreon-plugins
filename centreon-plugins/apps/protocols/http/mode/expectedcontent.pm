@@ -150,7 +150,7 @@ sub check_options {
 
     # Legacy compat
     if (defined($self->{option_results}->{expected_string}) && $self->{option_results}->{expected_string} ne '') {
-        $self->{option_results}->{critical_content} = "%{content} =~ /$self->{option_results}->{expected_string}/mi";
+        $self->{option_results}->{critical_content} = "%{content} !~ /$self->{option_results}->{expected_string}/mi";
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
