@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my $instance_mode;
-
 sub custom_pod_status_output {
     my ($self, %options) = @_;
 
@@ -69,7 +67,7 @@ sub custom_ready_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = ();
-    if ($self->{result_values}->{total} > 0 && $instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{result_values}->{total} > 0 && $self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -86,7 +84,7 @@ sub custom_ready_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{ready};
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_ready};
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
@@ -222,9 +220,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => ['warning_pod_status', 'critical_pod_status',
-        'warning_container_status', 'critical_container_status']);
-    
-    $instance_mode = $self;
+        'warning_container_status', 'critical_container_status']);    
 }
 
 sub manage_selection {

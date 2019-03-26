@@ -25,13 +25,11 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_active_perfdata {
     my ($self, %options) = @_;
 
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -47,7 +45,7 @@ sub custom_active_threshold {
     my ($self, %options) = @_;
 
     my $threshold_value = $self->{result_values}->{active};
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
     my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
@@ -100,11 +98,11 @@ sub custom_status_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -223,34 +221,22 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-mailbox:s"      => { name => 'filter_mailbox' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '%{used} > %{issue_warning_quota}' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{used} > %{prohibit_send_quota}' },
-                                    "units:s"               => { name => 'units', default => '%' },
-                                    "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-mailbox:s"      => { name => 'filter_mailbox' },
+        "warning-status:s"      => { name => 'warning_status', default => '%{used} > %{issue_warning_quota}' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{used} > %{prohibit_send_quota}' },
+        "units:s"               => { name => 'units', default => '%' },
+        "filter-counters:s"     => { name => 'filter_counters', default => 'active|total' }, 
+    });
+
     return $self;
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
