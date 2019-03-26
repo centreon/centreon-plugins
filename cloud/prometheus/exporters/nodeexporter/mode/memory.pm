@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -35,7 +33,7 @@ sub custom_usage_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -52,7 +50,7 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
@@ -137,15 +135,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                  "filter-counters:s"       => { name => 'filter_counters' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
+        "units:s"                 => { name => 'units', default => '%' },
+        "extra-filter:s@"         => { name => 'extra_filter' },
+        "metric-overload:s@"      => { name => 'metric_overload' },
+    });
+
     return $self;
 }
 
@@ -176,9 +172,7 @@ sub check_options {
     $self->{extra_filter} = '';
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
         $self->{extra_filter} .= ',' . $filter;
-    }
-    
-    $instance_mode = $self;
+    }    
 }
 
 sub manage_selection {
