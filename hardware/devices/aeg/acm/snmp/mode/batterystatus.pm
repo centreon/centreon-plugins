@@ -137,11 +137,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /onBattery/i' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /disconnected/i || %{status} =~ /shutdown/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /onBattery/i' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /disconnected/i || %{status} =~ /shutdown/i' },
+    });
 
     return $self;
 }
