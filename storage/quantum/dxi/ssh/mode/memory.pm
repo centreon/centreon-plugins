@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
@@ -43,10 +41,10 @@ sub custom_usage_threshold {
     
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
                                                threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
@@ -71,8 +69,8 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{total} = $instance_mode->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_total'});
-    $self->{result_values}->{free} = $instance_mode->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_free'});
+    $self->{result_values}->{total} = $self->{instance_mode}->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_total'});
+    $self->{result_values}->{free} = $self->{instance_mode}->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_free'});
 
     if ($self->{result_values}->{total} != 0) {
         $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
@@ -129,20 +127,19 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'syscli' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '--getstatus systemmemory' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"          => { name => 'hostname' },
+        "ssh-option:s@"       => { name => 'ssh_option' },
+        "ssh-path:s"          => { name => 'ssh_path' },
+        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"           => { name => 'timeout', default => 30 },
+        "sudo"                => { name => 'sudo' },
+        "command:s"           => { name => 'command', default => 'syscli' },
+        "command-path:s"      => { name => 'command_path' },
+        "command-options:s"   => { name => 'command_options', default => '--getstatus systemmemory' },
+        "units:s"             => { name => 'units', default => '%' },
+        "free"                => { name => 'free' },
+    });
     
     return $self;
 }
@@ -153,9 +150,7 @@ sub check_options {
 
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         $self->{option_results}->{remote} = 1;
-    }
-    
-    $instance_mode = $self;
+    }    
 }
 
 sub manage_selection {

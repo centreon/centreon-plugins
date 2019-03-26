@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_client_perfdata {
     my ($self, %options) = @_;
     
@@ -41,7 +39,7 @@ sub custom_client_threshold {
     my ($self, %options) = @_;
 
     my ($exit, $threshold_value);
-    $threshold_value = defined($instance_mode->{option_results}->{percent}) ? $self->{result_values}->{prct_active} : $self->{result_values}->{active} ;
+    $threshold_value = defined($self->{instance_mode}->{option_results}->{percent}) ? $self->{result_values}->{prct_active} : $self->{result_values}->{active} ;
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
                                                threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
                                                               { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
@@ -129,18 +127,11 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "percent"               => { name => 'percent' },
-                                });
+    $options{options}->add_options(arguments => {
+        "percent"   => { name => 'percent' },
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 my $oid_ReadMegabytesPerSecond = '.1.3.6.1.4.1.526.20.3.2.0';
