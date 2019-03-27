@@ -999,14 +999,16 @@ sub apply_pfdata_sum {
 
     my $pattern_pf;
     eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
-    my $sum = 0;
+    my ($sum, $num) = (0, 0);
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
         next if ($self->{perfdatas}->[$i]->{value} !~ /\d+/);
         $sum += $self->{perfdatas}->[$i]->{value};
+        $num++;
     }
 
-    ${$options{perf}}->{value} = $sum;
+    ${$options{perf}}->{value} = $sum
+        if ($num > 0);
 }
 
 sub apply_pfdata_average {
@@ -1022,7 +1024,8 @@ sub apply_pfdata_average {
         $num++;
     }
 
-    ${$options{perf}}->{value} = ($num > 0) ? sprintf("%.2f", ($sum / $num)) : 0;
+    ${$options{perf}}->{value} = sprintf("%.2f", ($sum / $num))
+        if ($num > 0);
 }
 
 sub load_perfdata_extend_args {
@@ -1114,7 +1117,9 @@ sub apply_perfdata_extend {
                 $func->($self, perf => \$new_perf, args => $extend->{method_args});
             }
 
-            push @{$self->{perfdatas}}, $new_perf;
+            if (length($new_perf->{value})) {
+                push @{$self->{perfdatas}}, $new_perf;
+            }
             next;
         }
         
@@ -1145,8 +1150,10 @@ sub apply_perfdata_extend {
                 push @$new_pfdata, $new_perf;
             }
         }
-        
-        push @{$self->{perfdatas}}, @$new_pfdata;
+
+        if (length($new_pfdata->{value})) {
+            push @{$self->{perfdatas}}, @$new_pfdata;
+        }
     }
 }
 
