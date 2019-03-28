@@ -87,7 +87,7 @@ sub custom_usage_calc {
     if (defined($self->{instance_mode}->{option_results}->{space_reservation})) {
         $reserved_value = $self->{instance_mode}->{option_results}->{space_reservation} * $self->{result_values}->{total} / 100;
     }
-    
+
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used} - $reserved_value;
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / ($self->{result_values}->{total} - $reserved_value);
@@ -108,7 +108,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_init => 'skip_global' },
-        { name => 'diskpath', type => 1, cb_prefix_output => 'prefix_diskpath_output', message_multiple => 'All partitions are ok' },
+        { name => 'diskpath', type => 1, cb_prefix_output => 'prefix_diskpath_output', message_multiple => 'All partitions are ok', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{global} = [
@@ -128,6 +128,15 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'inodes', set => {
+                key_values => [ { name => 'inodes' }, { name => 'display' } ],
+                output_template => 'Inodes Used: %s %%',
+                perfdatas => [
+                    { label => 'inodes', value => 'inodes_absolute', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             }
         },
     ];
@@ -163,7 +172,6 @@ sub new {
         "display-transform-dst:s" => { name => 'display_transform_dst' },
         "show-cache"              => { name => 'show_cache' },
         "space-reservation:s"     => { name => 'space_reservation' },
-        "filter-counters:s"       => { name => 'filter_counters', default => 'usage' },
     });
 
     $self->{diskpath_id_selected} = [];
@@ -176,6 +184,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    # compatibility
+    if (!defined($self->{option_results}->{filter_counters})) {
+        $self->{option_results}->{filter_counters} = 'usage';
+    }
     if (defined($self->{option_results}->{space_reservation}) && 
         ($self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100)) {
         $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
@@ -195,9 +207,15 @@ sub manage_selection {
     my $oid_dskTotalHigh = '.1.3.6.1.4.1.2021.9.1.12'; # in kB
     my $oid_dskUsedLow = '.1.3.6.1.4.1.2021.9.1.15'; # in kB
     my $oid_dskUsedHigh = '.1.3.6.1.4.1.2021.9.1.16'; # in kB
+    my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
 
-    $self->{snmp}->load(oids => [$oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh], 
-                        instances => $self->{diskpath_id_selected}, nothing_quit => 1);
+    $self->{snmp}->load(
+        oids => [
+            $oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh, $oid_dskPercentNode
+        ], 
+        instances => $self->{diskpath_id_selected},
+        nothing_quit => 1
+    );
     my $result = $self->{snmp}->get_leef();
     
     $self->{global}->{count} = 0;
@@ -206,14 +224,14 @@ sub manage_selection {
         my $name_diskpath = $self->get_display_value(id => $_);
 
         if (!defined($result->{$oid_dskTotalHigh . "." . $_})) {
-            $self->{output}->add_option_msg(long_msg => sprintf("Skipping partition '%s': not found (need to reload the cache)", 
+            $self->{output}->add_option_msg(long_msg => sprintf("skipping partition '%s': not found (need to reload the cache)", 
                                                                 $name_diskpath));
             next;
         }
         
         my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
         if ($total_size == 0) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping partition '%s' (total size is 0)", $name_diskpath));
+            $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath));
             next;
         }
         my $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
@@ -222,6 +240,7 @@ sub manage_selection {
             display => $name_diskpath,
             size => $total_size,
             used => $total_used,
+            inodes => defined($result->{$oid_dskPercentNode . "." . $_}) ? $result->{$oid_dskPercentNode . "." . $_} : undef,
         };
         $self->{global}->{count}++;
     }
@@ -329,15 +348,15 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--filter-counters>
 
-Filter counters to be displayed (Default: 'usage', Can be: 'usage', 'count').
+Filter counters to be displayed (Default: 'usage', Can be: 'usage', 'count', 'inodes').
 
 =item B<--warning-*>
 
-Threshold warning (Can be: 'usage', 'count').
+Threshold warning (Can be: 'usage', 'inodes', 'count').
 
 =item B<--critical-*>
 
-Threshold warning (Can be: 'usage', 'count').
+Threshold warning (Can be: 'usage', 'inodes', 'count').
 
 =item B<--units>
 
