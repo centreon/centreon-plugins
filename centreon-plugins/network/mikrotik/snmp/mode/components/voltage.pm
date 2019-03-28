@@ -27,13 +27,7 @@ my $mapping = {
     mtxrHlVoltage => { oid => '.1.3.6.1.4.1.14988.1.1.3.8' },
 };
 
-my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
-
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_mtxrHealth };
-}
+sub load {}
 
 sub check {
     my ($self) = @_;
@@ -44,7 +38,7 @@ sub check {
     
     my $instance = 0;
     my ($exit, $warn, $crit, $checked);
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_mtxrHealth}, instance => $instance);
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
     
     if (defined($result->{mtxrHlVoltage}) && $result->{mtxrHlVoltage} =~ /[0-9]+/) {
         
