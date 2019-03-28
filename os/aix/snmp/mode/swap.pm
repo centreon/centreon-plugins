@@ -20,10 +20,97 @@
 
 package os::aix::snmp::mode::swap;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                   $total_size_value . " " . $total_size_unit,
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    return -10 if ($options{new_datas}->{$self->{instance} . '_total'} <= 0);
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, message_separator => ' - ', cb_init => 'skip_global', },
+        { name => 'swap', type => 1, cb_prefix_output => 'prefix_swap_output', message_multiple => 'All Page spaces are ok' },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'total-usage', set => {
+                key_values => [ { name => 'used' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                threshold_use => 'prct_used',
+                perfdatas => [
+                    { label => 'total_page_space', value => 'used', template => '%s', cast_int => 1,
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
+                ],
+            }
+        },
+        { label => 'total-active', display_ok => 0, set => {
+                key_values => [ { name => 'nactive' }, { name => 'ntotal' } ],
+                output_template => 'Total page space active : %s',
+                perfdatas => [
+                    { label => 'total_active', value => 'nactive_absolute', template => '%s',
+                      min => 0, max => 'ntotal' },
+                ],
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{swap} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'used' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                threshold_use => 'prct_used',
+                perfdatas => [
+                    { label => 'page_space', value => 'used', template => '%s', cast_int => 1,
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total',
+                      label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+    ];
+}
+
+
+sub prefix_swap_output {
+    my ($self, %options) = @_;
+
+    return "Page space '" . $options{instance_value}->{display} . "' ";
+}
+
+sub skip_global {
+    my ($self, %options) = @_;
+
+    scalar(keys %{$self->{swap}}) > 1 ? return(0) : return(1);
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,33 +118,15 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "paging-state-buggy"      => { name => 'paging_state_buggy' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "paging-state-buggy"      => { name => 'paging_state_buggy' },
+    });
     
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }    
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     # sysDescr values:
     # Aix 5.2: .*Base Operating System Runtime AIX version: 05.02.*
@@ -74,13 +143,15 @@ sub run {
     my $aix_swap_index      = ".1.3.6.1.4.1.2.6.191.2.4.2.1.8";
     
     my @indexes = ();
-    my $results = $self->{snmp}->get_multiple_table(oids => [ 
-                                                        { oid => $aix_swap_pool },
-                                                        { oid => $oid_sysDescr },
-                                                    ]);
+    my $results = $options{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $aix_swap_pool },
+            { oid => $oid_sysDescr },
+        ]
+    );
     
     foreach my $key (keys %{$results->{$aix_swap_pool}}) {
-        if ($key =~ /^$aix_swap_index\.(.*)/ ) {
+        if ($key =~ /^$aix_swap_name\.(.*)/ ) {
             push @indexes, $1;
         }
     }
@@ -106,50 +177,25 @@ sub run {
             $active_swap = 2;
         }
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All Page spaces are ok.');
-    my $nactive = 0;
-    foreach (@indexes) {
-       
-        if ($results->{$aix_swap_pool}->{$aix_swap_status . "." . $_} == $active_swap) {
-            $nactive = 1;
-            my $swap_name = $results->{$aix_swap_pool}->{$aix_swap_name . "." . $_};
-            my $swap_total = $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} * 1024 * 1024;
-            my $prct_used = $results->{$aix_swap_pool}->{$aix_swap_usage . "." . $_};
-            my $total_used = $prct_used * $swap_total  / 100;
 
-            my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $swap_total);
-            my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
-            my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $swap_total - $total_used);
-            my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $swap_name,
-                                                $total_size_value . " " . $total_size_unit,
-                                                $total_used_value . " " . $total_used_unit, $total_used * 100 / $swap_total,
-                                                $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $swap_total)));
-            }
+    $self->{global} = { nactive => 0, ntotal => 0, total => 0, used => 0 };
+    $self->{swap} = {};
+    foreach (@indexes) {
+        $self->{global}->{ntotal}++;
+        
+        if ($results->{$aix_swap_pool}->{$aix_swap_status . "." . $_} == $active_swap) {
+            $self->{global}->{nactive}++;
             
-            $self->{output}->output_add(long_msg => sprintf("Page space '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $swap_name,
-                                                $total_size_value . " " . $total_size_unit,
-                                                $total_used_value . " " . $total_used_unit, $total_used * 100 / $swap_total,
-                                                $total_free_value . " " . $total_free_unit, 100 - ($total_used * 100 / $swap_total)));
-            $self->{output}->perfdata_add(label => 'page_space_' . $swap_name, unit => 'B',
-                                          value => int($total_used),
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_used, cast_int => 1),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_used, cast_int => 1),
-                                          min => 0, max => $swap_total);
+            my $swap_name = $results->{$aix_swap_pool}->{$aix_swap_name . "." . $_};
+            $self->{swap}->{$swap_name} = {
+                display => $swap_name,
+                used => $results->{$aix_swap_pool}->{$aix_swap_usage . "." . $_},
+                total => $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} * 1024 * 1024,
+            };
+            $self->{global}->{used} += $self->{swap}->{$swap_name}->{used};
+            $self->{global}->{total} += $self->{swap}->{$swap_name}->{total};
         }
     }
-    
-    if ($nactive == 0) {
-        $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => 'No paging space active.');
-    }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -162,13 +208,29 @@ Check AIX swap memory.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical in percent.
+
+=item B<--warning-total-usage>
+
+Threshold warning in percent.
+
+=item B<--critical-total-usage>
+
+Threshold critical in percent.
+
+=item B<--warning-total-active>
+
+Threshold warning total page space active.
+
+=item B<--critical-total-active>
+
+Threshold critical total page space active.
 
 =item B<--paging-state-buggy>
 
