@@ -69,15 +69,15 @@ sub check {
     check_psu($self, value => $result->{mtxrHlBackupPowerSupplyState}, type => 'backup');
     
     if (defined($result->{mtxrHlPower}) && $result->{mtxrHlPower} =~ /[0-9]+/) {
-        $self->{output}->output_add(long_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower}));
+        $self->{output}->output_add(long_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower} / 10));
 
-        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu', instance => $instance, value => $result->{mtxrHlPower});
+        ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu', instance => $instance, value => $result->{mtxrHlPower} / 10);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower}));
+                                        short_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower} / 10));
         }
         $self->{output}->perfdata_add(label => 'power', unit => 'W', 
-                                      value => $result->{mtxrHlPower},
+                                      value => $result->{mtxrHlPower} / 10,
                                       warning => $warn,
                                       critical => $crit);
         $self->{components}->{psu}->{total}++;
