@@ -31,7 +31,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'event_count', type => 0 },
-        { name => 'event', type => 1, cb_prefix_output => 'prefix_event_output', message_multiple => 'All event waits are OK', skipped_code => { 11 => -1 }},
+        { name => 'event', type => 1, cb_prefix_output => 'prefix_event_output', message_multiple => 'All event waits are OK', skipped_code => { -11 => 1, -10 => 1 } },
     ];
 
 
@@ -86,12 +86,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s"     => { name => 'filter_name' },
-                                "wait-time-min:s"   => { name => 'wait_time_min', default => 1000 },
-                                "show-details"      => { name => 'show_details' }
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-name:s"     => { name => 'filter_name' },
+        "wait-time-min:s"   => { name => 'wait_time_min', default => 1000 },
+        "show-details"      => { name => 'show_details' }
+    });
+
     return $self;
 }
 
@@ -99,6 +99,46 @@ sub prefix_event_output {
     my ($self, %options) = @_;
 
     return "Event '" . $options{instance_value}->{display} . "' ";
+}
+
+sub event_count_and_details {
+    my ($self, %options) = @_;
+
+    my $query_count = "SELECT count(*) as NB
+        FROM v\$session
+        WHERE  WAIT_TIME_MICRO>" . $self->{option_results}->{wait_time_min} . "
+        AND status='ACTIVE' and WAIT_CLASS <>'Idle'";
+
+    $self->{sql}->query(query => $query_count);
+    my $result = $self->{sql}->fetchrow_hashref();
+
+    $self->{event_count}->{count} = $result->{NB};
+
+    if (defined($self->{option_results}->{show_details})) {
+        my $query_details = "SELECT
+                                 a.username USERNAME,
+                                 a.program PROGRAM,
+                                 a.event EVENT,
+                                 round(a.WAIT_TIME_MICRO/1000000,0) SEC_WAIT,
+                                 d.sql_text SQL_TEXT
+                             FROM
+                                 v\$session a,
+                                 v\$sqlstats d
+                             WHERE
+                                 a.sql_id = d.sql_id
+                                 and a.status='ACTIVE'
+                                 and a.wait_class <> 'Idle'
+                                 and WAIT_TIME_MICRO>" . $self->{option_results}->{wait_time_min} . "
+                                 and a.sid not in (SELECT SID FROM V\$SESSION WHERE audsid = userenv('SESSIONID'))
+                             ORDER BY
+                                a.WAIT_TIME_MICRO desc";
+                                
+        $self->{sql}->query(query => $query_details );
+        while (my $result = $self->{sql}->fetchrow_hashref()) {
+            $self->{output}->output_add(long_msg => sprintf("Username: '%s', Program: '%s' Event: '%s', Second wait: '%s's, Details: '%s'\n",
+                                                         $result->{USERNAME}, $result->{PROGRAM}, $result->{EVENT}, $result->{SEC_WAIT}, $result->{SQL_TEXT}));
+        }
+    }
 }
 
 sub manage_selection {
@@ -141,42 +181,10 @@ sub manage_selection {
         };
     }
 
-    my $query_count = "SELECT count(*) as NB
-                        FROM v\$session
-                        WHERE  WAIT_TIME_MICRO>" . $self->{option_results}->{wait_time_min} . "
-                        AND status='ACTIVE' and WAIT_CLASS <>'Idle'";
-
-    $self->{sql}->query(query => $query_count);
-    $result = $self->{sql}->fetchrow_hashref();
-
-    $self->{event_count}->{count} = $result->{NB};
-
-    if (defined($self->{option_results}->{show_details})) {
-        my $query_details = "SELECT
-                                 a.username USERNAME,
-                                 a.program PROGRAM,
-                                 a.event EVENT,
-                                 round(a.WAIT_TIME_MICRO/1000000,0) SEC_WAIT,
-                                 d.sql_text SQL_TEXT
-                             FROM
-                                 v\$session a,
-                                 v\$sqlstats d
-                             WHERE
-                                 a.sql_id = d.sql_id
-                                 and a.status='ACTIVE'
-                                 and a.wait_class <> 'Idle'
-                                 and WAIT_TIME_MICRO>" . $self->{option_results}->{wait_time_min} . "
-                                 and a.sid not in (SELECT SID FROM V\$SESSION WHERE audsid = userenv('SESSIONID'))
-                             ORDER BY
-                                a.WAIT_TIME_MICRO desc";
-                                
-        $self->{sql}->query(query => $query_details );
-        while (my $result = $self->{sql}->fetchrow_hashref()) {
-            $self->{output}->output_add(long_msg => sprintf("Username: '%s', Program: '%s' Event: '%s', Second wait: '%s's, Details: '%s'\n",
-                                                         $result->{USERNAME}, $result->{PROGRAM}, $result->{EVENT}, $result->{SEC_WAIT}, $result->{SQL_TEXT}));
-        }
+    if ($self->{sql}->is_version_minimum(version => '10')) {
+        $self->event_count_and_details();
     }
-
+    
     if (scalar(keys %{$self->{event}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No event found.");
         $self->{output}->option_exit();
