@@ -30,7 +30,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'df', type => 1, cb_prefix_output => 'prefix_df_output', message_multiple => 'All data files are ok' },
+        { name => 'df', type => 1, cb_prefix_output => 'prefix_df_output', message_multiple => 'All data files are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{df} = [
@@ -86,15 +86,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-tablespace:s"       => { name => 'filter_tablespace' },
-                                "filter-data-file:s"        => { name => 'filter_data_file' },
-                                "warning-status:s"          => { name => 'warning_status', default => '' },
-                                "critical-status:s"         => { name => 'critical_status', default => '' },
-                                "warning-online-status:s"   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
-                                "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-tablespace:s"       => { name => 'filter_tablespace' },
+        "filter-data-file:s"        => { name => 'filter_data_file' },
+        "warning-status:s"          => { name => 'warning_status', default => '' },
+        "critical-status:s"         => { name => 'critical_status', default => '' },
+        "warning-online-status:s"   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
+        "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' },
+    });
+    
     return $self;
 }
 
@@ -115,8 +115,12 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $options{sql}->connect();
-    $options{sql}->query(query => "SELECT file_name, tablespace_name, status, online_status
-                                  FROM dba_data_files");
+    
+    if ($options{sql}->is_version_minimum(version => '10')) {
+        $options{sql}->query(query => "SELECT file_name, tablespace_name, status, online_status FROM dba_data_files");
+    } else {
+        $options{sql}->query(query => "SELECT file_name, tablespace_name, status FROM dba_data_files");
+    }
     my $result = $options{sql}->fetchall_arrayref();
     
     $self->{df} = {};
@@ -131,7 +135,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $$row[1] . "': no matching filter.", debug => 1);
             next
         }
-        $self->{df}->{$$row[1] . '/' . $$row[0]} = { status => $$row[2], online_status => $$row[3], display => $$row[1] . '/' . $$row[0] };
+        $self->{df}->{$$row[1] . '/' . $$row[0]} = { 
+            status => $$row[2], 
+            online_status => defined($$row[3]) ? $$row[3] : undef, 
+            display => $$row[1] . '/' . $$row[0]
+        };
     }
 }
 
