@@ -1147,13 +1147,11 @@ sub apply_perfdata_extend {
             if ($extend->{type} == 1) {
                 $self->{perfdatas}->[$i] = $new_perf;
             } else {
-                push @$new_pfdata, $new_perf;
+                push @$new_pfdata, $new_perf if (length($new_perf->{value}));
             }
         }
 
-        if (length($new_pfdata->{value})) {
-            push @{$self->{perfdatas}}, @$new_pfdata;
-        }
+        push @{$self->{perfdatas}}, @$new_pfdata;
     }
 }
 
