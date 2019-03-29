@@ -20,22 +20,10 @@
 
 package storage::dell::equallogic::snmp::mode::poolusage;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $maps_counters = {
-    '000_used' => { set => {
-                        key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -84,152 +72,91 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All Pool usages are ok' }
+    ];
+
+    $self->{maps_counters}->{pool} = [
+        { label => 'used', set => {
+                key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_pool_output {
+    my ($self, %options) = @_;
+
+    return "Pool '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                });                         
-     
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
+    $options{options}->add_options(arguments => {
+        "filter-name:s" => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{pool_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All Pool usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{pool_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{pool_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(level => 1, extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Pool '" . $self->{pool_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Pool '" . $self->{pool_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Pool '" . $self->{pool_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
 my $mapping = {
-    eqlStoragePoolStatsSpace   => { oid => '.1.3.6.1.4.1.12740.16.1.2.1.1' }, # MB
+    eqlStoragePoolStatsSpace        => { oid => '.1.3.6.1.4.1.12740.16.1.2.1.1' }, # MB
     eqlStoragePoolStatsSpaceUsed    => { oid => '.1.3.6.1.4.1.12740.16.1.2.1.2' }, # MB
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $oid_eqlStoragePoolName = '.1.3.6.1.4.1.12740.16.1.1.1.3';
-    my $oid_eqlStoragePoolStatsEntry = '.1.3.6.1.4.1.12740.16.1.2.1';
     
-    if ($self->{snmp}->is_snmpv1()) {
+    if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
     
-    $self->{pool_selected} = {};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_eqlStoragePoolName },
-                                                            { oid => $oid_eqlStoragePoolStatsEntry, start => $mapping->{eqlStoragePoolStatsSpace}->{oid}, end =>  $mapping->{eqlStoragePoolStatsSpaceUsed}->{oid}},
-                                                         ],
-                                                         nothing_quit => 1);
+    my $oid_eqlStoragePoolName = '.1.3.6.1.4.1.12740.16.1.1.1.3';
     
-    foreach my $oid (keys %{$self->{results}->{$oid_eqlStoragePoolStatsEntry}}) {
-        next if ($oid !~ /^$mapping->{eqlStoragePoolStatsSpace}->{oid}\.(\d+\.\d+)/);
-        my $pool_instance = $1;        
-        next if (!defined($self->{results}->{$oid_eqlStoragePoolName}->{$oid_eqlStoragePoolName . '.' . $pool_instance}));
-        my $pool_name = $self->{results}->{$oid_eqlStoragePoolName}->{$oid_eqlStoragePoolName . '.' . $pool_instance};
-                
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlStoragePoolStatsEntry}, instance => $pool_instance);
+    $self->{pool} = {};
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_eqlStoragePoolName, nothing_quit => 1);
+    foreach my $oid (keys %{$snmp_result}) {
+        $oid =~ /^$oid_eqlStoragePoolName\.(.*)$/;
+        my $instance = $1;
+        my $name = $snmp_result->{$oid_eqlStoragePoolName . '.' . $instance};
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $pool_name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $pool_name . "': no matching filter.");
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping pool '" . $name . "'.", debug => 1);
             next;
         }
-        if ($result->{eqlStoragePoolStatsSpace} == 0) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $pool_name . "': total size is 0.");
-            next;
-        }
-        
-        $self->{pool_selected}->{$pool_name} = { display => $pool_name, 
-                                                 total => $result->{eqlStoragePoolStatsSpace} * 1024 * 1024, 
-                                                 used =>  $result->{eqlStoragePoolStatsSpaceUsed} * 1024 * 1024,
-                                                };
+
+        $self->{pool}->{$instance} = { display => $name };
     }
-    
-    if (scalar(keys %{$self->{pool_selected}}) <= 0) {
+
+    if (scalar(keys %{$self->{pool}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
+    }
+    
+    $options{snmp}->load(oids => [
+            $mapping->{eqlStoragePoolStatsSpace}->{oid}, $mapping->{eqlStoragePoolStatsSpaceUsed}->{oid},
+        ],
+        instances => [keys %{$self->{pool}}], instance_regexp => '^(.*)$');
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    foreach (keys %{$self->{pool}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+
+        $self->{pool}->{$_}->{total} = $result->{eqlStoragePoolStatsSpace} * 1024 * 1024;
+        $self->{pool}->{$_}->{used} = $result->{eqlStoragePoolStatsSpaceUsed} * 1024 * 1024;
     }
 }
 

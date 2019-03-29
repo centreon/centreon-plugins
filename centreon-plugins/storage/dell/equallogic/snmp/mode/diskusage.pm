@@ -20,231 +20,178 @@
 
 package storage::dell::equallogic::snmp::mode::diskusage;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use Digest::MD5 qw(md5_hex);
 
-my $maps_counters = {
-    '000_used' => { set => {
-                        key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
-    '001_snapshot'   => { set => {
-                        key_values => [ { name => 'snap' }, { name => 'display' } ],
-                        output_change_bytes => 1,
-                        output_template => 'Snapshot usage : %s %s',
-                        perfdatas => [
-                            { label => 'snapshost', value => 'snap_absolute', template => '%s',
-                              unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '002_replication'   => { set => {
-                        key_values => [ { name => 'repl' }, { name => 'display' } ],
-                        output_change_bytes => 1,
-                        output_template => 'Replication usage : %s %s',
-                        perfdatas => [
-                            { label => 'replication', value => 'repl_absolute', template => '%s',
-                              unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-};
-
-sub custom_usage_perfdata {
+sub custom_status_output { 
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
-}
 
-sub custom_usage_threshold {
-    my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    return $exit;
-}
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-    
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    my $msg = 'status : ' . $self->{result_values}->{status} . ' [smart health: ' . $self->{result_values}->{health} . ']';
     return $msg;
 }
 
-sub custom_usage_calc {
+sub custom_status_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_eqlDiskStatus'};
+    $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_eqlDiskHealth'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
-    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
-    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disk usages are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{disk} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'eqlDiskHealth' }, { name => 'eqlDiskStatus' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'read', set => {
+                key_values => [ { name => 'eqlDiskStatusBytesRead', diff => 1 }, { name => 'display' } ],
+                per_second => 1, output_change_bytes => 1,
+                output_template => 'read : %s %s/s',
+                perfdatas => [
+                    { label => 'read_iops',  template => '%.2f', value => 'eqlDiskStatusBytesRead_per_second',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'write', set => {
+                key_values => [ { name => 'eqlDiskStatusBytesWritten', diff => 1 }, { name => 'display' } ],
+                per_second => 1, output_change_bytes => 1,
+                output_template => 'write : %s %s/s',
+                perfdatas => [
+                    { label => 'write', template => '%.2f', value => 'eqlDiskStatusBytesWritten_per_second',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'busy-time', set => {
+                key_values => [ { name => 'eqlDiskStatusBusyTime', diff => 1 }, { name => 'display' } ],
+                output_template => 'time busy : %s sec',
+                perfdatas => [
+                    { label => 'busy_time', template => '%s', value => 'eqlDiskStatusBusyTime_absolute',
+                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_disk_output {
+    my ($self, %options) = @_;
+
+    return "Disk '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                });                         
-     
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
+    $options{options}->add_options(arguments => {
+        "filter-name:s"     => { name => 'filter_name' },
+        "unknown-status:s"  => { name => 'unknown_status', default => '' },
+        "warning-status:s"  => { name => 'warning_status', default => '' },
+        "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /on-line|spare|off-line/i' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+my $map_disk_status = {
+    1 => 'on-line', 2 => 'spare', 3 => 'failed', 4 => 'off-line',
+    5 => 'alt-sig', 6 => 'too-small', 7 => 'history-of-failures',
+    8 => 'unsupported-version', 9 => 'unhealthy', 10 => 'replacement',
+    11 => 'encrypted', 12 => 'notApproved', 13 => 'preempt-failed',
+};
 
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{member_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All disk usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{member_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{member_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(level => 1, extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Disk '" . $self->{member_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Disk '" . $self->{member_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Disk '" . $self->{member_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
+my $map_disk_health = {
+    0 => 'smart-status-not-available',
+    1 => 'smart-ok',
+    2 => 'smart-tripped',
+};
 
 my $mapping = {
-    eqlMemberTotalStorage   => { oid => '.1.3.6.1.4.1.12740.2.1.10.1.1' }, # MB
-    eqlMemberUsedStorage    => { oid => '.1.3.6.1.4.1.12740.2.1.10.1.2' }, # MB
-    eqlMemberSnapStorage    => { oid => '.1.3.6.1.4.1.12740.2.1.10.1.3' }, # MB
-    eqlMemberReplStorage    => { oid => '.1.3.6.1.4.1.12740.2.1.10.1.4' }, # MB
+    eqlDiskHealth               => { oid => '.1.3.6.1.4.1.12740.3.1.1.1.17', map => $map_disk_health }, 
+    eqlDiskStatusBytesRead      => { oid => '.1.3.6.1.4.1.12740.3.1.2.1.2' }, # MB
+    eqlDiskStatusBytesWritten   => { oid => '.1.3.6.1.4.1.12740.3.1.2.1.3' }, # MB
+    eqlDiskStatusBusyTime       => { oid => '.1.3.6.1.4.1.12740.3.1.2.1.4' }, # in seconds
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
-
-    my $oid_eqlMemberName = '.1.3.6.1.4.1.12740.2.1.1.1.9';
-    my $oid_eqlMemberStorageEntry = '.1.3.6.1.4.1.12740.2.1.10.1';
     
-    $self->{member_selected} = {};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_eqlMemberName },
-                                                            { oid => $oid_eqlMemberStorageEntry },
-                                                         ],
-                                                         nothing_quit => 1);
-    foreach my $oid (keys %{$self->{results}->{$oid_eqlMemberStorageEntry}}) {
-        next if ($oid !~ /^$mapping->{eqlMemberTotalStorage}->{oid}\.(\d+\.\d+)/);
-        my $member_instance = $1;
-        next if (!defined($self->{results}->{$oid_eqlMemberName}->{$oid_eqlMemberName . '.' . $member_instance}));
-        my $member_name = $self->{results}->{$oid_eqlMemberName}->{$oid_eqlMemberName . '.' . $member_instance};
-        
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_eqlMemberStorageEntry}, instance => $member_instance);
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $member_name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $member_name . "': no matching filter.");
-            next;
-        }
-        
-        $self->{member_selected}->{$member_name} = { display => $member_name, 
-                                                  total => $result->{eqlMemberTotalStorage} * 1024 * 1024, 
-                                                  used =>  $result->{eqlMemberUsedStorage} * 1024 * 1024,
-                                                  snap =>  $result->{eqlMemberSnapStorage} * 1024 * 1024,
-                                                  repl =>  $result->{eqlMemberReplStorage} * 1024 * 1024
-                                                };
+    if ($options{snmp}->is_snmpv1()) {
+        $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
+        $self->{output}->option_exit();
     }
     
-    if (scalar(keys %{$self->{member_selected}}) <= 0) {
+    my $oid_eqlMemberName = '.1.3.6.1.4.1.12740.2.1.1.1.9';
+    my $oid_eqlDiskStatus = '.1.3.6.1.4.1.12740.3.1.1.1.8';
+    
+    $self->{disk} = {};
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [{ oid => $oid_eqlMemberName }, { oid => $oid_eqlDiskStatus }], return_type => 1, nothing_quit => 1);
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$oid_eqlDiskStatus\.(\d+)\.(\d+)\.(\d+)$/);
+        my $instance = $1 . '.' . $2 . '.' . $3;
+        my $array_name = $snmp_result->{$oid_eqlMemberName . '.' . $1 . '.' . $2};
+        my $name = $array_name . '.' . $3;
+
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping disk '" . $name . "'.", debug => 1);
+            next;
+        }
+
+        $self->{disk}->{$instance} = { display => $name, eqlDiskStatus => $map_disk_status->{$snmp_result->{$oid}} };
+    }
+
+    if (scalar(keys %{$self->{disk}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }
+    
+    $options{snmp}->load(oids => [
+            map($_->{oid}, values(%$mapping)) 
+        ],
+        instances => [keys %{$self->{disk}}], instance_regexp => '^(.*)$');
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    foreach (keys %{$self->{disk}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+
+        $result->{eqlDiskStatusBytesRead} *= 1024 * 1024;
+        $result->{eqlDiskStatusBytesWritten} *= 1024 * 1024;
+        $result->{eqlDiskHealth} = 'n/a' if (!defined($result->{eqlDiskHealth}));
+        
+        $self->{disk}->{$_} = { %{$self->{disk}->{$_}}, %$result };
+    }
+    
+    $self->{cache_name} = "dell_equallogic_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
 
 1;
@@ -253,23 +200,38 @@ __END__
 
 =head1 MODE
 
-Check disk usages.
+Check disk usage.
 
 =over 8
-
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'used' (%), 'snapshot' (B), 'replication' (B).
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'used' (%), 'snapshot' (B), 'replication' (B).
 
 =item B<--filter-name>
 
 Filter disk name (can be a regexp).
+
+=item B<--unknown-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{health}, %{status}, %{display}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{health}, %{status}, %{display}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{status} !~ /on-line|spare|off-line/i').
+Can used special variables like: %{health}, %{status}, %{display}
+
+=item B<--warning-*>
+
+Threshold warning.
+Can be:  'busy-time' (s), 'read-iops' (iops), 'write-iops (iops).
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'busy-time' (s), 'read-iops' (iops), 'write-iops (iops).
 
 =back
 
