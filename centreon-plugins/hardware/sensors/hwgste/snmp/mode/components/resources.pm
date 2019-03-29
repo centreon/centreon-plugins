@@ -48,10 +48,22 @@ our @EXPORT_OK = qw($mapping);
 );
 
 $mapping = {
-    sensName  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.2' },
-    sensState => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.3', map => \%map_sens_state },
-    sensTemp  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.4' },
-    sensUnit  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.7', map => \%map_sens_unit },
+    branch_sensors => {
+        hwgste => '.1.3.6.1.4.1.21796.4.1.3',
+        hwgste2 => '.1.3.6.1.4.1.21796.4.9.3',
+    },
+    hwgste => {
+        sensName  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.2' },
+        sensState => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.3', map => \%map_sens_state },
+        sensValue => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.5' },
+        sensUnit  => { oid => '.1.3.6.1.4.1.21796.4.1.3.1.7', map => \%map_sens_unit },
+    },
+    hwgste2 => {
+        sensName  => { oid => '.1.3.6.1.4.1.21796.4.9.3.1.2' },
+        sensState => { oid => '.1.3.6.1.4.1.21796.4.9.3.1.3', map => \%map_sens_state },
+        sensValue => { oid => '.1.3.6.1.4.1.21796.4.9.3.1.5' },
+        sensUnit  => { oid => '.1.3.6.1.4.1.21796.4.9.3.1.7', map => \%map_sens_unit },
+    },
 };
 
 1;

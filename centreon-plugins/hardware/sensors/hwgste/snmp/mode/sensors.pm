@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
+use hardware::sensors::hwgste::snmp::mode::components::resources qw($mapping);
 
 sub set_system {
     my ($self, %options) = @_;
@@ -52,9 +53,13 @@ sub snmp_execute {
     my ($self, %options) = @_;
     
     $self->{snmp} = $options{snmp};
-    my $oid_sensEntry = '.1.3.6.1.4.1.21796.4.1.3.1';
-    push @{$self->{request}}, { oid => $oid_sensEntry };
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    $self->{results} = $self->{snmp}->get_multiple_table(
+        oids => [{ oid => $mapping->{branch_sensors}->{hwgste} }, { oid => $mapping->{branch_sensors}->{hwgste2} }]
+    );
+    $self->{branch} = 'hwgste';
+    if (defined($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) && scalar($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) > 0) {
+        $self->{branch} = 'hwgste2';
+    }
 }
 
 sub new {
@@ -63,9 +68,8 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }
