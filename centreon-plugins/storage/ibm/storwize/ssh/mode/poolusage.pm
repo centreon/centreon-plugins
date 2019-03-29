@@ -138,23 +138,22 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /degraded/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /offline/i' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+        "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /degraded/i' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /offline/i' },
+        "units:s"             => { name => 'units', default => '%' },
+        "free"                => { name => 'free' },
+        "hostname:s"          => { name => 'hostname' },
+        "ssh-option:s@"       => { name => 'ssh_option' },
+        "ssh-path:s"          => { name => 'ssh_path' },
+        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"           => { name => 'timeout', default => 30 },
+        "sudo"                => { name => 'sudo' },
+        "command:s"           => { name => 'command' },
+        "command-path:s"      => { name => 'command_path' },
+        "command-options:s"   => { name => 'command_options' },
+    });
     
     return $self;
 }
@@ -166,7 +165,6 @@ sub check_options {
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         $self->{option_results}->{remote} = 1;
     }
-    $instance_mode = $self;
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
