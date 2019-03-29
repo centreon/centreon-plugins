@@ -1,3 +1,34 @@
+2019-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Bind9 Web
+ * Plugin added: Rudder Rest API
+ * Plugin added: Kubernetes Rest API
+ * Plugin added: Protocol TFTP
+ * Plugin added: Rad Airmux SNMP
+ * Plugin added: Alvarion Breezeaccess SNMP
+ * Plugin added: Riverbed Interceptor SNMP
+ * Plugin added: WSUS
+ * Plugin added: Sahipro
+ * Mode added: [linux/local] 'ntp'
+ * Mode added: [macafee/webgateway] 'versions'
+ * Mode added: [ups/apc] 'input-lines'
+ * Mode added: [oracle] 'password-expiration'
+ * Mode added: [fortigate] 'ap-usage'
+ * Mode added: [centreon/local] 'bam-services'
+ * Enhancement: [core] add float-precision option
+ * Enhancement: [core] add --extend-perfdata-group option
+ * Enhancement: [core/http] add curl backend support
+ * Enhancement: [oracle] add servicename support
+ * Enhancement: [snmp_standard] 'storage' (#1042)
+ * Enhancement: [snmp_standard] 'interfaces' (#712)
+ * Enhancement: [snmp_standard] 'list-interfaces' (#713)
+ * Enhancement: [F5/BigIp] 'list-virtualservers' (#1252)
+ * Enhancement: [linux/local] 'traffic' 'packet-errors' (#916)
+ * Enhancement: [protocols/http] 'expected-content'
+ * Enhancement: [linux/local] 'process' (#1438)
+ * Enhancement: [cisco/snmp] 'interfaces' (#454)
+ * Enhancement: [hwgste/snmp] 'sensors' (#585) 
+ * Break: [dell/equallogic] modes refactoring
+
 2019-02-21 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Microsoft Azure Recovery and Backup
  * Plugin added: Microsoft Azure ExpressRoute
