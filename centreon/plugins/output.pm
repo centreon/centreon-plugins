@@ -1225,7 +1225,7 @@ Common examples:
 
 =over 4
 
-Sum wrong packets from all interfaces (with interface need  --units-errors=absolute): --extend-perfdata-group=',packets_wrong,sum(packet_(discard|error)_(in|out))'
+Sum wrong packets from all interfaces (with interface need  --units-errors=absolute): --extend-perfdata-group=',packets_wrong,sum(packets_(discard|error)_(in|out))'
 
 Sum traffic by interface: --extend-perfdata-group='traffic_in_(.*),traffic_$1,sum(traffic_(in|out)_$1)'
 
