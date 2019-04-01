@@ -55,14 +55,13 @@ sub new {
             "aggregation:s@"            => { name => 'aggregation' },
             "zeroed"                    => { name => 'zeroed' },
             "timeout:s"                 => { name => 'timeout' },
-            "proxyurl:s"                => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     
     return $self;
@@ -103,7 +102,6 @@ sub check_options {
     }
 
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
     $self->{key_file} = (defined($self->{option_results}->{key_file})) ? $self->{option_results}->{key_file} : undef;
@@ -128,7 +126,6 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '';
@@ -398,10 +395,6 @@ does not return value when not defined.
 =item B<--timeout>
 
 Set timeout in seconds (Default: 10).
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =back
 
