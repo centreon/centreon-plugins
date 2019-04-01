@@ -189,7 +189,7 @@ sub get_access_token {
                                              full_url => $self->{authorization_endpoint},
                                              hostname => '');
 
-        if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
+        if (!defined($content) || $content eq '') {
             $self->{output}->add_option_msg(short_msg => "Authorization endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
             $self->{output}->option_exit();
         }
@@ -255,7 +255,7 @@ sub request_api {
 
     my $content = $self->{http}->request(%options);
 
-    if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
+    if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "Monitoring endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
