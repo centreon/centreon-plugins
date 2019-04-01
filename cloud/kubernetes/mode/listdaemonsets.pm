@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::listdeployments;
+package cloud::kubernetes::mode::listdaemonsets;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -47,24 +47,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/apis/apps/v1/deployments');
+    my $results = $options{custom}->kubernetes_list_daemonsets();
     
-    foreach my $deployment (@{$results->{items}}) {
+    foreach my $daemonset (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $deployment->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter name.", debug => 1);
+            $daemonset->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $daemonset->{metadata}->{name} . "': no matching filter name.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
-            $deployment->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
+            $daemonset->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $daemonset->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
         }
 
-        $self->{deployments}->{$deployment->{metadata}->{uid}} = {
-            uid => $deployment->{metadata}->{uid},
-            name => $deployment->{metadata}->{name},
-            namespace => $deployment->{metadata}->{namespace},
+        $self->{daemonsets}->{$daemonset->{metadata}->{uid}} = {
+            uid => $daemonset->{metadata}->{uid},
+            name => $daemonset->{metadata}->{name},
+            namespace => $daemonset->{metadata}->{namespace},
         }            
     }
 }
@@ -73,15 +73,15 @@ sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach my $deployment (sort keys %{$self->{deployments}}) { 
+    foreach my $daemonset (sort keys %{$self->{daemonsets}}) { 
         $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s] [namespace = %s]",
-                                                         $self->{deployments}->{$deployment}->{uid},
-                                                         $self->{deployments}->{$deployment}->{name},
-                                                         $self->{deployments}->{$deployment}->{namespace}));
+                                                         $self->{daemonsets}->{$daemonset}->{uid},
+                                                         $self->{daemonsets}->{$daemonset}->{name},
+                                                         $self->{daemonsets}->{$daemonset}->{namespace}));
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List deployments:');
+                                short_msg => 'List daemonsets:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -96,11 +96,11 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $deployment (sort keys %{$self->{deployments}}) {             
+    foreach my $daemonset (sort keys %{$self->{daemonsets}}) {             
         $self->{output}->add_disco_entry(
-            uid => $self->{deployments}->{$deployment}->{uid},
-            name => $self->{deployments}->{$deployment}->{name},
-            namespace => $self->{deployments}->{$deployment}->{namespace},
+            uid => $self->{daemonsets}->{$daemonset}->{uid},
+            name => $self->{daemonsets}->{$daemonset}->{name},
+            namespace => $self->{daemonsets}->{$daemonset}->{namespace},
         );
     }
 }
@@ -111,17 +111,17 @@ __END__
 
 =head1 MODE
 
-List deployments.
+List daemonsets.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter deployment name (can be a regexp).
+Filter daemonset name (can be a regexp).
 
 =item B<--filter-namespace>
 
-Filter deployment namespace (can be a regexp).
+Filter daemonset namespace (can be a regexp).
 
 =back
 

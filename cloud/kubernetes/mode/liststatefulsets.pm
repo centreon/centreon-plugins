@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::listpods;
+package cloud::kubernetes::mode::liststatefulsets;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -47,27 +47,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/api/v1/pods');
+    my $results = $options{custom}->kubernetes_list_statefulsets();
     
-    foreach my $pod (@{$results->{items}}) {
+    foreach my $statefulset (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $pod->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $pod->{metadata}->{name} . "': no matching filter name.", debug => 1);
+            $statefulset->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $statefulset->{metadata}->{name} . "': no matching filter name.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
-            $pod->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $pod->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
+            $statefulset->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $statefulset->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
         }
 
-        $self->{pods}->{$pod->{metadata}->{uid}} = {
-            uid => $pod->{metadata}->{uid},
-            name => $pod->{metadata}->{name},
-            namespace => $pod->{metadata}->{namespace},
-            node => $pod->{spec}->{nodeName},
-            status => $pod->{status}->{phase},
-            ip => $pod->{status}->{podIP},
+        $self->{statefulsets}->{$statefulset->{metadata}->{uid}} = {
+            uid => $statefulset->{metadata}->{uid},
+            name => $statefulset->{metadata}->{name},
+            namespace => $statefulset->{metadata}->{namespace},
         }            
     }
 }
@@ -76,18 +73,15 @@ sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach my $pod (sort keys %{$self->{pods}}) { 
-        $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s] [namespace = %s] [node = %s] [status = %s] [ip = %s]",
-                                                         $self->{pods}->{$pod}->{uid},
-                                                         $self->{pods}->{$pod}->{name},
-                                                         $self->{pods}->{$pod}->{namespace},
-                                                         $self->{pods}->{$pod}->{node},
-                                                         $self->{pods}->{$pod}->{status},
-                                                         $self->{pods}->{$pod}->{ip}));
+    foreach my $statefulset (sort keys %{$self->{statefulsets}}) { 
+        $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s] [namespace = %s]",
+                                                         $self->{statefulsets}->{$statefulset}->{uid},
+                                                         $self->{statefulsets}->{$statefulset}->{name},
+                                                         $self->{statefulsets}->{$statefulset}->{namespace}));
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List pods:');
+                                short_msg => 'List statefulsets:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -95,21 +89,18 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;  
     
-    $self->{output}->add_disco_format(elements => ['uid', 'name', 'namespace', 'node', 'status', 'ip']);
+    $self->{output}->add_disco_format(elements => ['uid', 'name', 'namespace']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $pod (sort keys %{$self->{pods}}) {             
+    foreach my $statefulset (sort keys %{$self->{statefulsets}}) {             
         $self->{output}->add_disco_entry(
-            uid => $self->{pods}->{$pod}->{uid},
-            name => $self->{pods}->{$pod}->{name},
-            namespace => $self->{pods}->{$pod}->{namespace},
-            namespace => $self->{pods}->{$pod}->{node},
-            namespace => $self->{pods}->{$pod}->{status},
-            namespace => $self->{pods}->{$pod}->{ip},
+            uid => $self->{statefulsets}->{$statefulset}->{uid},
+            name => $self->{statefulsets}->{$statefulset}->{name},
+            namespace => $self->{statefulsets}->{$statefulset}->{namespace},
         );
     }
 }
@@ -120,17 +111,17 @@ __END__
 
 =head1 MODE
 
-List pods.
+List statefulsets.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter pod name (can be a regexp).
+Filter statefulset name (can be a regexp).
 
 =item B<--filter-namespace>
 
-Filter pod namespace (can be a regexp).
+Filter statefulset namespace (can be a regexp).
 
 =back
 

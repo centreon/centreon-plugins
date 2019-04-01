@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::plugin;
+package cloud::kubernetes::plugin;
 
 use strict;
 use warnings;
@@ -31,21 +31,23 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'daemonset-status'  => 'cloud::kubernetes::restapi::mode::daemonsetstatus',
-        'deployment-status' => 'cloud::kubernetes::restapi::mode::deploymentstatus',
-        'list-daemonsets'   => 'cloud::kubernetes::restapi::mode::listdaemonsets',
-        'list-deployments'  => 'cloud::kubernetes::restapi::mode::listdeployments',
-        'list-ingresses'    => 'cloud::kubernetes::restapi::mode::listingresses',
-        'list-namespaces'   => 'cloud::kubernetes::restapi::mode::listnamespaces',
-        'list-nodes'        => 'cloud::kubernetes::restapi::mode::listnodes',
-        'list-pods'         => 'cloud::kubernetes::restapi::mode::listpods',
-        'list-replicasets'  => 'cloud::kubernetes::restapi::mode::listreplicasets',
-        'list-services'     => 'cloud::kubernetes::restapi::mode::listservices',
-        'list-statefulsets' => 'cloud::kubernetes::restapi::mode::liststatefulsets',
-        'pod-status'        => 'cloud::kubernetes::restapi::mode::podstatus',
+        'daemonset-status'  => 'cloud::kubernetes::mode::daemonsetstatus',
+        'deployment-status' => 'cloud::kubernetes::mode::deploymentstatus',
+        'list-daemonsets'   => 'cloud::kubernetes::mode::listdaemonsets',
+        'list-deployments'  => 'cloud::kubernetes::mode::listdeployments',
+        'list-ingresses'    => 'cloud::kubernetes::mode::listingresses',
+        'list-namespaces'   => 'cloud::kubernetes::mode::listnamespaces',
+        'list-nodes'        => 'cloud::kubernetes::mode::listnodes',
+        'list-pods'         => 'cloud::kubernetes::mode::listpods',
+        'list-replicasets'  => 'cloud::kubernetes::mode::listreplicasets',
+        'list-services'     => 'cloud::kubernetes::mode::listservices',
+        'list-statefulsets' => 'cloud::kubernetes::mode::liststatefulsets',
+        'node-usage'        => 'cloud::kubernetes::mode::nodeusage',
+        'pod-status'        => 'cloud::kubernetes::mode::podstatus',
     );
 
-    $self->{custom_modes}{api} = 'cloud::kubernetes::restapi::custom::api';
+    $self->{custom_modes}{api} = 'cloud::kubernetes::custom::api';
+    $self->{custom_modes}{kubectl} = 'cloud::kubernetes::custom::kubectl';
     return $self;
 }
 
@@ -61,6 +63,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Kubernetes cluster using API.
+Check Kubernetes cluster using CLI (kubectl) or RestAPI.
 
 =cut

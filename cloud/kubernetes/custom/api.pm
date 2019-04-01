@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::custom::api;
+package cloud::kubernetes::custom::api;
 
 use strict;
 use warnings;
@@ -44,11 +44,11 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             "hostname:s"        => { name => 'hostname' },
-            "url-path:s"        => { name => 'url_path' },
             "port:s"            => { name => 'port' },
             "proto:s"           => { name => 'proto' },
             "token:s"           => { name => 'token' },
             "timeout:s"         => { name => 'timeout' },
+            "config-file:s"     => { name => 'config_file' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -88,7 +88,6 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{token} = (defined($self->{option_results}->{token})) ? $self->{option_results}->{token} : '';
  
@@ -111,7 +110,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{url_path} = $self->{url_path};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '';
@@ -122,66 +120,38 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    if (defined($self->{access_token})) {
-        $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
+    if (defined($self->{token})) {
+        $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{token});
     }
     $self->{http}->set_options(%{$self->{option_results}});
-}
-
-sub get_connection_info {
-    my ($self, %options) = @_;
-    
-    return $self->{hostname} . ":" . $self->{port};
-}
-
-sub get_hostname {
-    my ($self, %options) = @_;
-    
-    return $self->{hostname};
-}
-
-sub get_port {
-    my ($self, %options) = @_;
-    
-    return $self->{port};
-}
-
-sub get_token {
-    my ($self, %options) = @_;
-
-    return $self->{option_results}->{token};
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
-    if (!defined($self->{access_token})) {
-        $self->{access_token} = $self->get_token();
-    }
-
     $self->settings;
-    
-    $self->{output}->output_add(long_msg => "Query URL: '" . $self->{proto} . "://" . $self->{hostname} .
-        $self->{url_path} . $options{url_path} . "'", debug => 1);
 
-    my $content = $self->{http}->request(url_path => $self->{url_path} . $options{url_path});
+    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} .
+        ':' . $self->{port} . $options{url_path} . "'", debug => 1);
+
+    my $response = $self->{http}->request(url_path => $options{url_path});
 
     if ($self->{http}->get_code() != 200) {
         my $decoded;
         eval {
-            $decoded = JSON::XS->new->utf8->decode($content);
+            $decoded = JSON::XS->new->utf8->decode($response);
         };
         if ($@) {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+            $self->{output}->output_add(long_msg => $response, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $response");
             $self->{output}->option_exit();
         }
         if (defined($decoded->{code})) {
-            $self->{output}->output_add(long_msg => "Error message : " . $decoded->{message}, debug => 1);
+            $self->{output}->output_add(long_msg => "Error message: " . $decoded->{message}, debug => 1);
             $self->{output}->add_option_msg(short_msg => "API return error code '" . $decoded->{code} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         } else {
-            $self->{output}->output_add(long_msg => "Error message : " . $decoded, debug => 1);
+            $self->{output}->output_add(long_msg => "Error message: " . $decoded, debug => 1);
             $self->{output}->add_option_msg(short_msg => "API return error code '" . $self->{http}->get_code() . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
@@ -189,14 +159,87 @@ sub request_api {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
+        $decoded = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->output_add(long_msg => $response, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $response");
         $self->{output}->option_exit();
     }
     
     return $decoded;
+}
+
+sub kubernetes_list_daemonsets {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/apis/apps/v1/daemonsets');
+    
+    return $response;
+}
+
+sub kubernetes_list_deployments {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/apis/apps/v1/deployments');
+    
+    return $response;
+}
+
+sub kubernetes_list_ingresses {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/apis/extensions/v1beta1/ingresses');
+    
+    return $response;
+}
+
+sub kubernetes_list_namespaces {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/api/v1/namespaces');
+    
+    return $response;
+}
+
+sub kubernetes_list_nodes {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/api/v1/nodes');
+    
+    return $response;
+}
+
+sub kubernetes_list_replicasets {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/apis/apps/v1/replicasets');
+    
+    return $response;
+}
+
+sub kubernetes_list_services {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/apis/v1/services');
+    
+    return $response;
+}
+
+sub kubernetes_list_statefulsets {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/apis/apps/v1/statefulsets');
+    
+    return $response;
+}
+
+sub kubernetes_list_pods {
+    my ($self, %options) = @_;
+        
+    my $response = $self->request_api(method => 'GET', url_path => '/api/v1/pods');
+    
+    return $response;
 }
 
 1;

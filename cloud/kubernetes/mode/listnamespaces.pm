@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::listnodes;
+package cloud::kubernetes::mode::listnamespaces;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -46,18 +46,18 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/api/v1/nodes');
+    my $results = $options{custom}->kubernetes_list_namespaces();
     
-    foreach my $node (@{$results->{items}}) {
+    foreach my $namespace (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $node->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $node->{metadata}->{name} . "': no matching filter name.", debug => 1);
+            $namespace->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $namespace->{metadata}->{name} . "': no matching filter name.", debug => 1);
             next;
         }
 
-        $self->{nodes}->{$node->{metadata}->{uid}} = {
-            uid => $node->{metadata}->{uid},
-            name => $node->{metadata}->{name},
+        $self->{namespaces}->{$namespace->{metadata}->{uid}} = {
+            uid => $namespace->{metadata}->{uid},
+            name => $namespace->{metadata}->{name},
         }            
     }
 }
@@ -66,14 +66,14 @@ sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach my $node (sort keys %{$self->{nodes}}) { 
+    foreach my $namespace (sort keys %{$self->{namespaces}}) { 
         $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s]",
-                                                         $self->{nodes}->{$node}->{uid},
-                                                         $self->{nodes}->{$node}->{name}));
+                                                         $self->{namespaces}->{$namespace}->{uid},
+                                                         $self->{namespaces}->{$namespace}->{name}));
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List nodes:');
+                                short_msg => 'List namespaces:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -88,10 +88,10 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $node (sort keys %{$self->{nodes}}) {             
+    foreach my $namespace (sort keys %{$self->{namespaces}}) {             
         $self->{output}->add_disco_entry(
-            uid => $self->{nodes}->{$node}->{uid},
-            name => $self->{nodes}->{$node}->{name},
+            uid => $self->{namespaces}->{$namespace}->{uid},
+            name => $self->{namespaces}->{$namespace}->{name},
         );
     }
 }
@@ -102,13 +102,13 @@ __END__
 
 =head1 MODE
 
-List nodes.
+List namespaces.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter node name (can be a regexp).
+Filter namespace name (can be a regexp).
 
 =back
 
