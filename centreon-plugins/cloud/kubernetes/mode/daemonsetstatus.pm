@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::daemonsetstatus;
+package cloud::kubernetes::mode::daemonsetstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -129,7 +129,7 @@ sub manage_selection {
 
     $self->{daemonsets} = {};
 
-    my $results = $options{custom}->request_api(url_path => '/apis/apps/v1/daemonsets');
+    my $results = $options{custom}->kubernetes_list_daemonsets();
     
     foreach my $daemonset (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&

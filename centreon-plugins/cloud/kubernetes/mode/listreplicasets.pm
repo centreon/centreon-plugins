@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::listingresses;
+package cloud::kubernetes::mode::listreplicasets;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -47,24 +47,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/apis/extensions/v1beta1/ingresses');
+    my $results = $options{custom}->kubernetes_list_replicasets();
     
-    foreach my $ingress (@{$results->{items}}) {
+    foreach my $replicaset (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $ingress->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $ingress->{metadata}->{name} . "': no matching filter name.", debug => 1);
+            $replicaset->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $replicaset->{metadata}->{name} . "': no matching filter name.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
-            $ingress->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $ingress->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
+            $replicaset->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $replicaset->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
         }
 
-        $self->{ingresses}->{$ingress->{metadata}->{uid}} = {
-            uid => $ingress->{metadata}->{uid},
-            name => $ingress->{metadata}->{name},
-            namespace => $ingress->{metadata}->{namespace},
+        $self->{replicasets}->{$replicaset->{metadata}->{uid}} = {
+            uid => $replicaset->{metadata}->{uid},
+            name => $replicaset->{metadata}->{name},
+            namespace => $replicaset->{metadata}->{namespace},
         }            
     }
 }
@@ -73,15 +73,15 @@ sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach my $ingress (sort keys %{$self->{ingresses}}) { 
+    foreach my $replicaset (sort keys %{$self->{replicasets}}) { 
         $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s] [namespace = %s]",
-                                                         $self->{ingresses}->{$ingress}->{uid},
-                                                         $self->{ingresses}->{$ingress}->{name},
-                                                         $self->{ingresses}->{$ingress}->{namespace}));
+                                                         $self->{replicasets}->{$replicaset}->{uid},
+                                                         $self->{replicasets}->{$replicaset}->{name},
+                                                         $self->{replicasets}->{$replicaset}->{namespace}));
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List ingresses:');
+                                short_msg => 'List replicasets:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -96,11 +96,11 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $ingress (sort keys %{$self->{ingresses}}) {             
+    foreach my $replicaset (sort keys %{$self->{replicasets}}) {             
         $self->{output}->add_disco_entry(
-            uid => $self->{ingresses}->{$ingress}->{uid},
-            name => $self->{ingresses}->{$ingress}->{name},
-            namespace => $self->{ingresses}->{$ingress}->{namespace},
+            uid => $self->{replicasets}->{$replicaset}->{uid},
+            name => $self->{replicasets}->{$replicaset}->{name},
+            namespace => $self->{replicasets}->{$replicaset}->{namespace},
         );
     }
 }
@@ -111,17 +111,17 @@ __END__
 
 =head1 MODE
 
-List ingresses.
+List replicasets.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter ingress name (can be a regexp).
+Filter replicaset name (can be a regexp).
 
 =item B<--filter-namespace>
 
-Filter ingress namespace (can be a regexp).
+Filter replicaset namespace (can be a regexp).
 
 =back
 

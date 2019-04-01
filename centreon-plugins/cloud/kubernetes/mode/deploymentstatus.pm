@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::deploymentstatus;
+package cloud::kubernetes::mode::deploymentstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -125,7 +125,7 @@ sub manage_selection {
 
     $self->{deployments} = {};
 
-    my $results = $options{custom}->request_api(url_path => '/apis/apps/v1/deployments');
+    my $results = $options{custom}->kubernetes_list_deployments();
     
     foreach my $deployment (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&

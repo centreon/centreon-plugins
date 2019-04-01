@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::podstatus;
+package cloud::kubernetes::mode::podstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -205,6 +205,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "filter-name:s"                 => { name => 'filter_name' },
         "filter-namespace:s"            => { name => 'filter_namespace' },
+        "extra-filter:s@"               => { name => 'extra_filter' },
         "warning-pod-status:s"          => { name => 'warning_pod_status', default => '' },
         "critical-pod-status:s"         => { name => 'critical_pod_status', default => '%{status} !~ /running/i' },
         "warning-container-status:s"    => { name => 'warning_container_status', default => '' },
@@ -218,7 +219,13 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
+    
+    $self->{extra_filter} = {};
+    foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
+        next if ($filter !~ /(.*)=(.*)/);
+        $self->{extra_filter}->{$1} = $2;
+    }
+    
     $self->change_macros(macros => ['warning_pod_status', 'critical_pod_status',
         'warning_container_status', 'critical_container_status']);    
 }
@@ -228,7 +235,7 @@ sub manage_selection {
 
     $self->{pods} = {};
 
-    my $results = $options{custom}->request_api(url_path => '/api/v1/pods');
+    my $results = $options{custom}->kubernetes_list_pods();
     
     foreach my $pod (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -238,9 +245,18 @@ sub manage_selection {
         }
         if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
             $pod->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $pod->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $pod->{metadata}->{name} . "': no matching filter namespace.", debug => 1);
             next;
         }
+        my $next = 0;
+        foreach my $label (keys %{$self->{extra_filter}}) {
+            if (!defined($pod->{metadata}->{labels}->{$label}) || $pod->{metadata}->{labels}->{$label} !~ /$self->{extra_filter}->{$label}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $pod->{metadata}->{name} . "': no matching extra filter.", debug => 1);
+                $next = 1;
+                last;
+            }
+        }
+        next if ($next == 1);
 
         $self->{pods}->{$pod->{metadata}->{uid}}->{display} = $pod->{metadata}->{name};
         $self->{pods}->{$pod->{metadata}->{uid}}->{global} = {
@@ -279,6 +295,20 @@ __END__
 Check pod status.
 
 =over 8
+
+=item B<--filter-name>
+
+Filter pod name (can be a regexp).
+
+=item B<--filter-namespace>
+
+Filter pod namespace (can be a regexp).
+
+=item B<--extra-filter>
+
+Add an extra filter based on labels (Can be multiple)
+
+Example : --extra-filter='app=mynewapp'
 
 =item B<--warning-pod-status>
 

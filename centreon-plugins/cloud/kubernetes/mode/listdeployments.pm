@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::liststatefulsets;
+package cloud::kubernetes::mode::listdeployments;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -47,24 +47,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/apis/apps/v1/statefulsets');
+    my $results = $options{custom}->kubernetes_list_deployments();
     
-    foreach my $statefulset (@{$results->{items}}) {
+    foreach my $deployment (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $statefulset->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $statefulset->{metadata}->{name} . "': no matching filter name.", debug => 1);
+            $deployment->{metadata}->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{name} . "': no matching filter name.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_namespace}) && $self->{option_results}->{filter_namespace} ne '' &&
-            $statefulset->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $statefulset->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
+            $deployment->{metadata}->{namespace} !~ /$self->{option_results}->{filter_namespace}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $deployment->{metadata}->{namespace} . "': no matching filter namespace.", debug => 1);
             next;
         }
 
-        $self->{statefulsets}->{$statefulset->{metadata}->{uid}} = {
-            uid => $statefulset->{metadata}->{uid},
-            name => $statefulset->{metadata}->{name},
-            namespace => $statefulset->{metadata}->{namespace},
+        $self->{deployments}->{$deployment->{metadata}->{uid}} = {
+            uid => $deployment->{metadata}->{uid},
+            name => $deployment->{metadata}->{name},
+            namespace => $deployment->{metadata}->{namespace},
         }            
     }
 }
@@ -73,15 +73,15 @@ sub run {
     my ($self, %options) = @_;
   
     $self->manage_selection(%options);
-    foreach my $statefulset (sort keys %{$self->{statefulsets}}) { 
+    foreach my $deployment (sort keys %{$self->{deployments}}) { 
         $self->{output}->output_add(long_msg => sprintf("[uid = %s] [name = %s] [namespace = %s]",
-                                                         $self->{statefulsets}->{$statefulset}->{uid},
-                                                         $self->{statefulsets}->{$statefulset}->{name},
-                                                         $self->{statefulsets}->{$statefulset}->{namespace}));
+                                                         $self->{deployments}->{$deployment}->{uid},
+                                                         $self->{deployments}->{$deployment}->{name},
+                                                         $self->{deployments}->{$deployment}->{namespace}));
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List statefulsets:');
+                                short_msg => 'List deployments:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -96,11 +96,11 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $statefulset (sort keys %{$self->{statefulsets}}) {             
+    foreach my $deployment (sort keys %{$self->{deployments}}) {             
         $self->{output}->add_disco_entry(
-            uid => $self->{statefulsets}->{$statefulset}->{uid},
-            name => $self->{statefulsets}->{$statefulset}->{name},
-            namespace => $self->{statefulsets}->{$statefulset}->{namespace},
+            uid => $self->{deployments}->{$deployment}->{uid},
+            name => $self->{deployments}->{$deployment}->{name},
+            namespace => $self->{deployments}->{$deployment}->{namespace},
         );
     }
 }
@@ -111,17 +111,17 @@ __END__
 
 =head1 MODE
 
-List statefulsets.
+List deployments.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter statefulset name (can be a regexp).
+Filter deployment name (can be a regexp).
 
 =item B<--filter-namespace>
 
-Filter statefulset namespace (can be a regexp).
+Filter deployment namespace (can be a regexp).
 
 =back
 

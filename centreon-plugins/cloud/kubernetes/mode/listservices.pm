@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::kubernetes::restapi::mode::listservices;
+package cloud::kubernetes::mode::listservices;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -47,7 +47,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/api/v1/services');
+    my $results = $options{custom}->kubernetes_list_services();
     
     foreach my $service (@{$results->{items}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
