@@ -95,9 +95,18 @@ sub manage_selection {
     # Header not needed
     shift @lines;
     foreach my $line (@lines) {
-        next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/);
-        my ($fs, $size, $available, $percent, $iused, $ipercent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
+        # Can be very different.
+        #Filesystem    512-blocks      Used      Free %Used    Iused    Ifree %Iused Mounted on
+        #/dev/hd4         1048576    118408    930168   12%     3699   104325     4% /
+        #
+        #Filesystem 512-blocks Free   %Used   Iused  %Iused  Mounted on
+        #/dev/hd0    19368     9976    48%     4714    5%     /
         
+        next if ($line !~ /^(\S+)/);
+        my $fs = $1;
+        next if ($line !~ /(\d+)%\s+([^%]*?)$/);
+        my ($ipercent, $mount) = ($1, $2);
+                
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
                  $fs !~ /$self->{option_results}->{filter_fs}/);
         
@@ -108,9 +117,6 @@ sub manage_selection {
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $mount ne $self->{option_results}->{name});
         
-        next if ($iused !~ m/^\d+$/);
-        
-        $ipercent =~ s/%//g;
         $self->{inodes}->{$mount} = { display => $mount, used => $ipercent };
     }
     
