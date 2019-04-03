@@ -209,14 +209,15 @@ sub output_json {
     my ($self, %options) = @_;
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
-    my $json_content = {plugin => {
-                                   name => $self->{plugin},
-                                   mode => $self->{mode},
-                                   exit => $options{exit_litteral},
-                                   outputs => [],
-                                   perfdatas => []
-                                  }
-                        };    
+    my $json_content = {
+        plugin => {
+            name => $self->{plugin},
+            mode => $self->{mode},
+            exit => $options{exit_litteral},
+            outputs => [],
+            perfdatas => []
+        }
+    };    
 
     foreach my $code_litteral (keys %{$self->{global_short_outputs}}) {
         foreach (@{$self->{global_short_outputs}->{$code_litteral}}) {
