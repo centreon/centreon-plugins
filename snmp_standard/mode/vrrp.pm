@@ -83,6 +83,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                "use-keepalived-mib"      => { name => 'use_keepalived_mib' },
                                 "warning-status:s"        => { name => 'warning_status', default => '' },
                                 "critical-status:s"       => { name => 'critical_status', default => '%{adminState} eq "up" and %{operState} ne %{operStateLast}' },
                                 });
@@ -94,30 +95,43 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    my %map_oper_state = (1 => 'initialize', 2 => 'backup', 3 => 'master');
+    my %map_admin_state = (1 => 'up', 2 => 'down');
+    $self->{mapping} = {
+        vrrpOperState           => { oid => '.1.3.6.1.2.1.68.1.3.1.3', map => \%map_oper_state },
+        vrrpOperAdminState      => { oid => '.1.3.6.1.2.1.68.1.3.1.4', map => \%map_admin_state },
+        vrrpOperMasterIpAddr    => { oid => '.1.3.6.1.2.1.68.1.3.1.7' },
+    };
+    $self->{oid_vrrpOperEntry} = '.1.3.6.1.2.1.68.1.3.1';
+
+    if (defined($self->{option_results}->{use_keepalived_mib})) {
+        %map_oper_state = (0 => 'init', 1 => 'backup', 2 => 'master', 3 => 'fault', 4 => 'unknown');
+        %map_admin_state = (0 => 'init', 1 => 'backup', 2 => 'master', 3 => 'fault', 4 => 'unknown');
+        $self->{mapping} = {
+            vrrpOperState           => { oid => '.1.3.6.1.4.1.9586.100.5.2.3.1.4', map => \%map_oper_state },
+            vrrpOperAdminState      => { oid => '.1.3.6.1.4.1.9586.100.5.2.3.1.6', map => \%map_admin_state },
+            vrrpOperMasterIpAddr    => { oid => '.1.3.6.1.4.1.9586.100.5.2.3.1.10' },
+        };
+        $self->{oid_vrrpOperEntry} = '.1.3.6.1.4.1.9586.100.5.2.3.1';
+        if ($self->{option_results}->{critical_status} eq '%{adminState} eq "up" and %{operState} ne %{operStateLast}') {
+            $self->{option_results}->{critical_status} = '%{operState} ne %{adminState} or %{operState} ne %{operStateLast}';
+        }
+    }
+
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
-
-my %map_admin_state = (1 => 'up', 2 => 'down');
-my %map_oper_state = (1 => 'initialize', 2 => 'backup', 3 => 'master');
-my $mapping = {
-    vrrpOperState           => { oid => '.1.3.6.1.2.1.68.1.3.1.3', map => \%map_oper_state },
-    vrrpOperAdminState      => { oid => '.1.3.6.1.2.1.68.1.3.1.4', map => \%map_admin_state },
-    vrrpOperMasterIpAddr    => { oid => '.1.3.6.1.2.1.68.1.3.1.7' },
-};
-
-my $oid_vrrpOperEntry = '.1.3.6.1.2.1.68.1.3.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{vrrp} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_vrrpOperEntry, end => $mapping->{vrrpOperMasterIpAddr}->{oid},
+    my $snmp_result = $options{snmp}->get_table(oid => $self->{oid_vrrpOperEntry}, end => $self->{mapping}->{vrrpOperMasterIpAddr}->{oid},
                                                 nothing_quit => 1);
 
     foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{vrrpOperState}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$self->{mapping}->{vrrpOperState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $self->{mapping}, results => $snmp_result, instance => $instance);
         
         $self->{vrrp}->{$instance} = { 
             master_ip_addr => $result->{vrrpOperMasterIpAddr},
@@ -140,6 +154,10 @@ Check VRRP status (VRRP-MIB).
 
 =over 8
 
+=item B<--use-keepalived-mib>
+
+Some devices do not (fully) support VRRP MIB, use KEEPALIVED MIB instead.
+
 =item B<--warning-status>
 
 Set warning threshold for status.
@@ -147,7 +165,8 @@ Can used special variables like: %{adminState}, %{operStateLast}, %{operState}, 
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{adminState} eq "up" and %{operState} ne %{operStateLast}').
+Set critical threshold for status (Default: '%{adminState} eq "up" and %{operState} ne %{operStateLast}',
+with --use-keepalived-mib: '%{operState} ne %{adminState} or %{operState} ne %{operStateLast}').
 Can used special variables like: %{adminState}, %{operStateLast}, %{operState}, %{masterIpAddr}
 
 =back
