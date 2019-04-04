@@ -194,6 +194,39 @@ sub cloudwatch_get_metrics {
     return $metric_results;
 }
 
+sub discovery_set_cmd {
+    my ($self, %options) = @_;
+    
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    my $cmd_options = $options{service} . " " . $options{command} . " --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    return $cmd_options; 
+}
+
+sub discovery {
+    my ($self, %options) = @_;
+    
+    my $cmd_options = $self->discovery_set_cmd(%options);
+    my ($response) = centreon::plugins::misc::execute(
+            output => $self->{output},
+            options => $self->{option_results},
+            sudo => $self->{option_results}->{sudo},
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => $cmd_options
+    );
+    my $result;
+    eval {
+        $result = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $result;
+}
+
 sub cloudwatch_get_alarms_set_cmd {
     my ($self, %options) = @_;
     
