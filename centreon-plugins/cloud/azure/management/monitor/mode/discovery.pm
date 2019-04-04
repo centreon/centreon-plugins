@@ -32,13 +32,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "namespace:s"           => { name => 'namespace' },
-                                    "type:s"                => { name => 'type' },
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "location:s"            => { name => 'location' },
-                                });
+    $options{options}->add_options(arguments => {
+        "namespace:s"           => { name => 'namespace' },
+        "type:s"                => { name => 'type' },
+        "resource-group:s"      => { name => 'resource_group' },
+        "location:s"            => { name => 'location' },
+        "prettify"              => { name => 'prettify' },
+    });
 
     return $self;
 }
@@ -88,7 +88,11 @@ sub run {
 
     my $encoded_data;
     eval {
-        $encoded_data = encode_json($disco_stats);
+        if (defined($self->{option_results}->{prettify})) {
+            $encoded_data = JSON::XS->new->utf8->pretty->encode($disco_stats);
+        } else {
+            $encoded_data = JSON::XS->new->utf8->encode($disco_stats);
+        }
     };
     if ($@) {
         $encoded_data = '{"code":"encode_error","message":"Cannot encode discovered data into JSON format"}';
