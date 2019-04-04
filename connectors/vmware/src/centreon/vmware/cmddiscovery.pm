@@ -1,20 +1,22 @@
-# Copyright 2015 Centreon (http://www.centreon.com/)
 #
-# Centreon is a full-fledged industry-strength solution that meets 
-# the needs in IT infrastructure and application monitoring for 
+# Copyright 2019 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
 # service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0  
+#     http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
 
 package centreon::vmware::cmddiscovery;
 
@@ -36,6 +38,13 @@ sub new {
 
 sub checkArgs {
     my ($self, %options) = @_;
+    
+    if (defined($options{arguments}->{resource_type}) && $options{arguments}->{resource_type} !~ /^vm$|^esx$/) {
+        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: resource type must be 'vm' or 'esx'");
+        return 1;
+    }
+
+    $self->{resource_type} = $options{arguments}->{resource_type} if (defined($options{arguments}->{resource_type}));
 
     return 0;
 }
@@ -101,7 +110,8 @@ sub run {
                         }
                     }
                     
-                    push @disco_data, \%esx;
+                    push @disco_data, \%esx if ($self->{resource_type} eq 'esx');
+                    next if ($self->{resource_type} ne 'vm');
 
                     @properties = ('config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
                         'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState');
