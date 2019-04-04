@@ -33,7 +33,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "prettify"  => { name => 'prettify' },
+        "resource-type:s"   => { name => 'resource_type' },
+        "prettify"          => { name => 'prettify' },
     });
 
     return $self;
@@ -72,7 +73,7 @@ __END__
 
 =head1 MODE
 
-Discover resources.
+Resources discovery.
 
 =over 8
 
