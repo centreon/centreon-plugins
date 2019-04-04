@@ -98,7 +98,9 @@ sub discover_ec2 {
         service => 'ec2', command => 'describe-instances');
     foreach my $reservation (@{$instances->{Reservations}}) {
         foreach my $instance (@{$reservation->{Instances}}) {
-            next if (!defined($instance->{InstanceId}));
+            next if (!defined($instance->{InstanceId}));            
+            my %asg;
+            $asg{type} = "asg";
             my %ec2;
             $ec2{type} = "ec2";
             $ec2{id} = $instance->{InstanceId};
@@ -112,6 +114,7 @@ sub discover_ec2 {
             foreach my $tag (@{$instance->{Tags}}) {
                 if ($tag->{Key} eq "aws:autoscaling:groupName" && defined($tag->{Value})) {
                     $ec2{asg} = $tag->{Value};
+                    $asg{name} = $tag->{Value};
                 }
                 if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
                     $ec2{name} = $tag->{Value};
@@ -119,6 +122,7 @@ sub discover_ec2 {
                 push @{$ec2{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
             }
             push @disco_data, \%ec2;
+            push @disco_data, \%asg if (defined($asg{name}) && $asg{name} ne '');
         }
     }
     return @disco_data;
