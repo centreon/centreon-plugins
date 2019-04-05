@@ -148,15 +148,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{health} =~ /warning/' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{health} =~ /critical/' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+        "warning-status:s"    => { name => 'warning_status', default => '%{health} =~ /warning/' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{health} =~ /critical/' },
+        "units:s"             => { name => 'units', default => '%' },
+        "free"                => { name => 'free' },
+    });
+
     return $self;
 }
 
@@ -194,15 +193,16 @@ sub manage_selection {
                 next;
             }
 
-            my $total = (defined($entry->{properties}->{capacity})) ? $entry->{properties}->{capacity} * 1024 * 1024 * 1024 : $entry->{properties}->{localCapacityBytes};
-            my $used = $total - (defined($entry->{properties}->{freeSpace})) ? $entry->{properties}->{freeSpace} * 1024 * 1024 * 1024 : $entry->{properties}->{localFreeBytes};
+            my $total = defined($entry->{properties}->{capacity}) ? $entry->{properties}->{capacity} * 1024 * 1024 * 1024 : $entry->{properties}->{localCapacityBytes};
+            my $used = $total - (defined($entry->{properties}->{freeSpace}) ? $entry->{properties}->{freeSpace} * 1024 * 1024 * 1024 : $entry->{properties}->{localFreeBytes});
             
             $self->{cluster}->{$entry->{properties}->{serialNumber}} = { 
                 display => $entry->{properties}->{applianceName}, 
                 health => $mapping_health_level{$entry->{properties}->{healthLevel}},
                 total => $total,
                 used => $used,
-                dedup => $entry->{properties}->{dedupeRatio} };
+                dedup => $entry->{properties}->{dedupeRatio}
+            };
         }
     }
     

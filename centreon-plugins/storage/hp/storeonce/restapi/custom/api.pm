@@ -126,6 +126,7 @@ sub get {
     $self->settings();
     my $response = $self->{http}->request(url_path => '/storeonceservices' . $options{path},
                                           critical_status => '', warning_status => '');
+
     my $content;
     eval {
         $content = XMLin($response, ForceArray => $options{ForceArray}, KeyAttr => []);
