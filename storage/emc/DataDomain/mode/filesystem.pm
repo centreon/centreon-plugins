@@ -86,13 +86,12 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name"                    => { name => 'use_name' },
-                                  "filesystem:s"            => { name => 'filesystem' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },                                  
-                                });     
+    $options{options}->add_options(arguments => {
+        "name"                    => { name => 'use_name' },
+        "filesystem:s"            => { name => 'filesystem' },
+        "regexp"                  => { name => 'use_regexp' },
+        "regexp-isensitive"       => { name => 'use_regexpi' },                                  
+    });
     
     return $self;
 }
