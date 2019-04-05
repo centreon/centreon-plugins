@@ -151,15 +151,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{health} =~ /warning/' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{health} =~ /critical/' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+        "warning-status:s"    => { name => 'warning_status', default => '%{health} =~ /warning/' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{health} =~ /critical/' },
+        "units:s"             => { name => 'units', default => '%' },
+        "free"                => { name => 'free' },
+    });
+
     return $self;
 }
 
@@ -204,7 +203,8 @@ sub manage_selection {
                 replication_health => $mapping_health_level{$entry->{properties}->{repHealthLevel}},
                 total => $entry->{properties}->{capacityBytes}, 
                 used => $entry->{properties}->{capacityBytes} - $entry->{properties}->{freeBytes},
-                dedup => $entry->{properties}->{dedupeRatio} };
+                dedup => $entry->{properties}->{dedupeRatio}
+            };
         }
     }
     
