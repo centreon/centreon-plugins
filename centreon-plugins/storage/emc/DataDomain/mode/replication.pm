@@ -78,12 +78,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "unknown-status:s"        => { name => 'unknown_status', default => '' },
-                                "warning-status:s"        => { name => 'warning_status', default => '%{state} =~ /initializing|recovering/i' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /disabledNeedsResync|uninitialized/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "unknown-status:s"        => { name => 'unknown_status', default => '' },
+        "warning-status:s"        => { name => 'warning_status', default => '%{state} =~ /initializing|recovering/i' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /disabledNeedsResync|uninitialized/i' },
+    });
 
     return $self;
 }
