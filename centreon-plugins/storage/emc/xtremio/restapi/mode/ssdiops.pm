@@ -20,43 +20,79 @@
 
 package storage::emc::xtremio::restapi::mode::ssdiops;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {
-    ssd => {
-        '000_global'   => { set => {
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'ssd', type => 1, cb_prefix_output => 'prefix_ssd_output', message_multiple => 'All SSDs usages are ok' }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'total', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Total : %s iops',
+                perfdatas => [
+                    { label => 'total', value => 'total_absolute', template => '%s',
+                      min => 0, unit => 'iops' },
+                ],
+            }
+        },
+        { label => 'total-read', set => {
+                key_values => [ { name => 'total_read' } ],
+                output_template => 'Total read : %s iops',
+                perfdatas => [
+                    { label => 'total_read', value => 'total_read_absolute', template => '%s',
+                      min => 0, unit => 'iops' },
+                ],
+            }
+        },
+        { label => 'total-write', set => {
+                key_values => [ { name => 'total_write' } ],
+                output_template => 'Total write : %s iops',
+                perfdatas => [
+                    { label => 'total_write', value => 'total_write_absolute', template => '%s',
+                      min => 0, unit => 'iops' },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{ssd} = [
+        { label => 'global', set => {
                 key_values => [ { name => 'global_iops' }, { name => 'display' }, ],
-                output_template => 'Global IOPs : %s',
+                output_template => 'Global : %s iops',
                 perfdatas => [
-                    { label => 'global_iops', value => 'global_iops_absolute', template => '%s',
+                    { label => 'global', value => 'global_iops_absolute', template => '%s',
                       min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        '001_read'   => { set => {
+        { label => 'read', set => {
                 key_values => [ { name => 'read_iops' }, { name => 'display' }, ],
-                output_template => 'Read IOPs : %s',
+                output_template => 'Read : %s iops',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_absolute', template => '%s',
+                    { label => 'read', value => 'read_iops_absolute', template => '%s',
                       min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        '002_write'   => { set => {
+        { label => 'write', set => {
                 key_values => [ { name => 'write_iops' }, { name => 'display' }, ],
-                output_template => 'Write IOPs : %s',
+                output_template => 'Write : %s iopss',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_absolute', template => '%s',
+                    { label => 'write', value => 'write_iops_absolute', template => '%s',
                       min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-    },
-};
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -64,122 +100,52 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+    });
 
-    foreach my $key (('ssd')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
     return $self;
 }
 
-sub check_options {
+sub prefix_ssd_output {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
     
-    foreach my $key (('ssd')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }    
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{xtremio} = $options{custom};
-    
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{ssd}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All SSDs usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{ssd}}) {
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{ssd}}) {
-            my $obj = $maps_counters->{ssd}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{ssd}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(level => 1, extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "SSD '" . $self->{ssd}->{$id}->{display} . "' Usage $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "SSD '" . $self->{ssd}->{$id}->{display} . "' Usage $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "SSD '" . $self->{ssd}->{$id}->{display} . "' Usage $long_msg");
-        }
-    }
-     
-    $self->{output}->display();
-    $self->{output}->exit();
+    return "SSD '" . $options{instance_value}->{display} . "' Usage ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{ssd} = {};
     my $urlbase = '/api/json/types/';
-    my @items = $self->{xtremio}->get_items(url => $urlbase,
-                                            obj => 'ssds');
+    my @items = $options{custom}->get_items(
+        url => $urlbase,
+        obj => 'ssds'
+    );
+
+    $self->{ssd} = {};
+    $self->{global} = { total => 0, total_read => 0, total_write => 0 };
     foreach my $item (@items) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $item !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $item . "': no matching name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $item . "': no matching name.", debug => 1);
             next;
         }
         
-        my $details = $self->{xtremio}->get_details(url  => $urlbase,
-                                                    obj  => 'ssds',
-                                                    name => $item);
-        
-        $self->{ssd}->{$item} = { display => $item, global_iops => $details->{iops},
-                                  read_iops => $details->{'rd-iops'}, write_iops => $details->{'wr-iops'} };
+        my $details = $options{custom}->get_details(
+            url  => $urlbase,
+            obj  => 'ssds',
+            name => $item
+        );
+
+        $self->{global}->{total} += $details->{iops};
+        $self->{global}->{total_read} += $details->{'rd-iops'};
+        $self->{global}->{total_write} += $details->{'wr-iops'};
+        $self->{ssd}->{$item} = {
+            display => $item, 
+            global_iops => $details->{iops},
+            read_iops => $details->{'rd-iops'},
+            write_iops => $details->{'wr-iops'},
+        };
     }
     
     if (scalar(keys %{$self->{ssd}}) <= 0) {
@@ -194,18 +160,15 @@ __END__
 
 =head1 MODE
 
-Check IOPS (Global, Read, Write) on each SSDs.
+Check SSDs usage.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
 Threshold warning (number of iops)
-Can be: 'global', 'read', 'write'.
-
-=item B<--critical-*>
-Threshold critical (number of iops)
-Can be: 'global', 'read', 'write'.
+Can be: 'total', 'total-read', 'total-write',
+'global', 'read', 'write'.
 
 =item B<--filter-name>
 

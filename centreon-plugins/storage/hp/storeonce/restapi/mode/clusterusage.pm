@@ -138,7 +138,6 @@ sub set_counters {
                 ],
             }
         },
-
     ];
 }
 
