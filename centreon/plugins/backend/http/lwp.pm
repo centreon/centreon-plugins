@@ -124,6 +124,24 @@ sub request {
                                                        autosave => 1));
         }
     }
+    
+    if ($self->{output}->is_debug()) {
+        $self->{ua}->add_handler("request_send", sub {
+            my ($response, $ua, $handler) = @_;
+
+            $self->{output}->output_add(long_msg => "======> request send", debug => 1);
+            $self->{output}->output_add(long_msg => $response->as_string, debug => 1);
+            return ; 
+        });
+        $self->{ua}->add_handler("response_done", sub { 
+            my ($response, $ua, $handler) = @_;
+            
+            $self->{output}->output_add(long_msg => "======> response done", debug => 1);
+            $self->{output}->output_add(long_msg => $response->as_string, debug => 1);
+            return ;
+        });
+    }
+    
     if (defined($request_options->{no_follow})) {
         $self->{ua}->requests_redirectable(undef);
     } else {
