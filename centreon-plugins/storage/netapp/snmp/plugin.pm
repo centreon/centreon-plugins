@@ -39,6 +39,7 @@ sub new {
         'fan'              => 'storage::netapp::snmp::mode::fan',
         'filesys'          => 'storage::netapp::snmp::mode::filesys',
         'list-filesys'     => 'storage::netapp::snmp::mode::listfilesys',
+        'list-snapvault'   => 'storage::netapp::snmp::mode::listsnapvault',
         'global-status'    => 'storage::netapp::snmp::mode::globalstatus',
         'ndmpsessions'     => 'storage::netapp::snmp::mode::ndmpsessions',
         'nvram'            => 'storage::netapp::snmp::mode::nvram',
