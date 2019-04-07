@@ -124,8 +124,8 @@ sub build_options_for_httplib {
     $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{option_results}->{critical_status} = '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{option_results}->{unknown_status} = '';
 }
 
 sub settings {
