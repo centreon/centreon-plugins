@@ -51,7 +51,7 @@ sub check {
         next if ($self->check_filter(section => 'fan', instance => $instance));
         
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' [instance: %s] speed is '%s'.",
+        $self->{output}->output_add(long_msg => sprintf("fan '%s' [instance: %s] speed is '%s'.",
                                     $fan_descr, $instance, $fan_speed));
 
         if ($fan_speed =~ /([0-9]+)\s*rpm/i) {
