@@ -164,7 +164,7 @@ sub get_cookie {
             $self->{output}->option_exit();
         }
 
-        my $datas = { last_timestamp => time(), cookie => $cookie, expires_on => time() + 7200 };
+        my $datas = { last_timestamp => time(), cookie => $cookie, expires_on => time() + (3600 * 24) };
         $options{statefile}->write(data => $datas);
     }
 
