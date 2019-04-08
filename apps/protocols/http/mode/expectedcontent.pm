@@ -39,7 +39,7 @@ sub custom_content_threshold {
 sub custom_content_output {
     my ($self, %options) = @_;
 
-    my $msg = 'Content test';
+    my $msg = 'HTTP test(s)';
     if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
         my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '_content'};
         $filter =~ s/\$self->\{result_values\}->/%/g;
