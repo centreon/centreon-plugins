@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::3cx::restapi::custom::api;
+package apps::voip::3cx::restapi::custom::api;
 
 use base qw(centreon::plugins::mode);
 
