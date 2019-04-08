@@ -55,9 +55,12 @@ sub windows_execute {
         $options{output}->option_exit();
     };
     my $job = Win32::Job->new;
+    my $stderr = 'NUL';
+    $stderr = \*TO_PARENT if ($options{output}->is_debug());
     if (!($pid = $job->spawn(undef, $cmd,
-                       { stdout => \*TO_PARENT,
-                         stderr => \*TO_PARENT }))) {
+                       { stdin => 'NUL',
+                         stdout => \*TO_PARENT,
+                         stderr => $stderr }))) {
         $options{output}->add_option_msg(short_msg => "Internal error: execution issue: $^E");
         $options{output}->option_exit();
     }
