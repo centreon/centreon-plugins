@@ -93,6 +93,7 @@ sub discover_ec2 {
     my (%options) = @_;
 
     my @disco_data;
+    my %asgs;
 
     my $instances = $options{custom}->discovery(region => $options{region},
         service => 'ec2', command => 'describe-instances');
@@ -114,7 +115,9 @@ sub discover_ec2 {
             foreach my $tag (@{$instance->{Tags}}) {
                 if ($tag->{Key} eq "aws:autoscaling:groupName" && defined($tag->{Value})) {
                     $ec2{asg} = $tag->{Value};
+                    next if (defined($asgs{$tag->{Value}}));
                     $asg{name} = $tag->{Value};
+                    $asgs{$tag->{Value}} = 1;
                 }
                 if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
                     $ec2{name} = $tag->{Value};
