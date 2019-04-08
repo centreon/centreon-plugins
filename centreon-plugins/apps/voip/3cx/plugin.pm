@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::3cx::restapi::plugin;
+package apps::voip::3cx::restapi::plugin;
 
 use strict;
 use warnings;
@@ -32,10 +32,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'status'        => 'apps::3cx::restapi::mode::status',
+                            'status'        => 'apps::voip::3cx::restapi::mode::status',
                          );
 
-    $self->{custom_modes}{api} = 'apps::3cx::restapi::custom::api';
+    $self->{custom_modes}{api} = 'apps::voip::3cx::restapi::custom::api';
 
     return $self;
 }

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::3cx::restapi::mode::status;
+package apps::voip::3cx::restapi::mode::status;
 
 use base qw(centreon::plugins::mode);
 
