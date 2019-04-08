@@ -133,20 +133,22 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
-    if (defined($self->{cookie})) {
+    if (defined($self->{cookie}) && defined($self->{xsrf})) {
         $self->{http}->add_header(key => 'Cookie', value => '.AspNetCore.Cookies=' . $self->{cookie});
+        $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub get_cookie {
+sub authenticate {
     my ($self, %options) = @_;
 
     my $has_cache_file = $options{statefile}->read(statefile => '3cx_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $cookie = $options{statefile}->get(name => 'cookie');
+    my $xsrf = $options{statefile}->get(name => 'xsrf');
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     
-    if ($has_cache_file == 0 || !defined($cookie) || (($expires_on - time()) < 10)) {
+    if ($has_cache_file == 0 || !defined($cookie) || !defined($xsrf) || (($expires_on - time()) < 10)) {
         my $post_data = '{"Username":"' . $self->{api_username} . '",' .
             '"Password":"' . $self->{api_password} . '"}';
         
@@ -155,27 +157,35 @@ sub get_cookie {
         my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
                                              url_path => '/api/login');
 
-        $cookie = $self->{http}->get_header(name => 'Set-Cookie');
-        if (defined ($cookie) && $cookie =~ /^.AspNetCore.Cookies=([^;]+);.*/) {
+        my $header = $self->{http}->get_header(name => 'Set-Cookie');
+        if (defined ($header) && $header =~ /(?:^| ).AspNetCore.Cookies=([^;]+);.*/) {
             $cookie = $1;
         } else {
             $self->{output}->output_add(long_msg => $content, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Error retrieving cookie");
             $self->{output}->option_exit();
         }
+        if (defined ($header) && $header =~ /(?:^| )XSRF-TOKEN=([^;]+);.*/) {
+            $xsrf = $1;
+        } else {
+            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->add_option_msg(short_msg => "Error retrieving xsrf-token");
+            $self->{output}->option_exit();
+        }
 
-        my $datas = { last_timestamp => time(), cookie => $cookie, expires_on => time() + (3600 * 24) };
+        my $datas = { last_timestamp => time(), cookie => $cookie, xsrf => $xsrf, expires_on => time() + (3600 * 24) };
         $options{statefile}->write(data => $datas);
     }
 
-    return $cookie;
+    $self->{cookie} = $cookie;
+    $self->{xsrf} = $xsrf;
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
     if (!defined($self->{cookie})) {
-        $self->{cookie} = $self->get_cookie(statefile => $self->{cache});
+        $self->authenticate(statefile => $self->{cache});
     }
 
     $self->settings();
