@@ -55,14 +55,17 @@ sub run {
     $self->manage_selection(%options);
     foreach my $item (sort keys %{$self->{single}}) {
         $self->{output}->output_add(severity => $self->{single}->{$item} ? 'OK' : 'CRITICAL',
-                                    short_msg => $item . ': ' . ($self->{single}->{$item} ? 'OK' : 'NOK'));
+                                    short_msg => $item);
     }
     $self->{output}->output_add(severity => $self->{system}->{HasNotRunningServices} ? 'CRITICAL' : 'OK',
-                                short_msg => 'Services: ' . ($self->{system}->{HasNotRunningServices} ? 'NOK' : 'OK'));
+                                short_msg => 'Services');
     $self->{output}->output_add(severity => $self->{system}->{HasUnregisteredSystemExtensions} ? 'CRITICAL' : 'OK',
-                                short_msg => 'Extensions: ' . ($self->{system}->{HasUnregisteredSystemExtensions} ? 'NOK' : 'OK'));
+                                short_msg => 'Extensions');
 
-    $self->{output}->display(force_ignore_perfdata => 1);
+    $self->{output}->perfdata_add(label => "CallsActive", unit => '', value => $self->{system}->{CallsActive});
+    $self->{output}->perfdata_add(label => "ExtensionsRegistered", unit => '', value => $self->{system}->{ExtensionsRegistered});
+
+    $self->{output}->display();
     $self->{output}->exit();
 }
 
