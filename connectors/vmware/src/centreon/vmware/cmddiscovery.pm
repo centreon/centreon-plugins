@@ -124,6 +124,7 @@ sub run {
                         
                         $vm{type} = "vm";
                         $vm{name} = $vm->{'config.name'};
+                        $vm{uuid} = $vm->{'config.uuid'};
                         $vm{annotation} = $vm->{'config.annotation'};
                         $vm{os} = $vm->{'config.guestId'};
                         $vm{hardware} = $vm->{'config.version'};
