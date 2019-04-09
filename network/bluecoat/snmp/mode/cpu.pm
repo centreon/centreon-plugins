@@ -106,7 +106,7 @@ sub manage_selection {
 
         $self->{cpu}->{$i} = {
             display => $i,
-            idle => $result->{sgProxyCpuCoreBusyTime}, busy => $result->{sgProxyCpuCoreIdleTime}
+            idle => $result->{sgProxyCpuCoreIdleTime}, busy => $result->{sgProxyCpuCoreBusyTime}
         };
         $i++;
     }
