@@ -40,6 +40,7 @@ sub new {
         "scope-host:s"          => { name => 'scope_host' },
         "filter-description:s"  => { name => 'filter_description' },
         "filter-os:s"           => { name => 'filter_os' },
+        "filter-uuid:s"         => { name => 'filter_uuid' },
         "display-description"   => { name => 'display_description' },
         "check-consolidation"   => { name => 'check_consolidation' },
         "nopoweredon-skip"      => { name => 'nopoweredon_skip' },
