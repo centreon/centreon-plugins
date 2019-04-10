@@ -49,6 +49,25 @@ sub checkArgs {
     return 0;
 }
 
+sub get_folders {
+    my ($self, %options) = @_;
+
+    my $folder = $options{folder};
+    my $parent = $options{parent};
+    my $value = $options{value};
+    
+    $parent .= '/' . $folder->name;
+    $self->{paths}->{$value} = $parent;
+
+	my $children = $folder->childEntity || return;
+	for my $child (@{$children}) {
+		next if $child->type ne 'Folder';
+
+        $self->get_folders(folder => centreon::vmware::common::get_view($self->{connector}, $child), parent => $parent,
+            value => $child->value);
+	}
+}
+
 sub run {
     my $self = shift;
     
@@ -58,13 +77,17 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $filters = $self->build_filter(label => 'name', search_option => 'datacenter', is_regexp => 'filter');
-    my @properties = ('name', 'hostFolder');
+    my @properties = ('name', 'hostFolder', 'vmFolder');
 
-    my $datacenters = centreon::vmware::common::search_entities(command => $self, view_type => 'Datacenter', properties => \@properties, filter => $filters);
+    my $datacenters = centreon::vmware::common::search_entities(command => $self, view_type => 'Datacenter',
+        properties => \@properties, filter => $filters);
     return if (!defined($datacenters));
 
     foreach my $datacenter (@{$datacenters}) {
         my @properties = ('childType', 'childEntity');
+        
+        $self->get_folders(folder => centreon::vmware::common::get_view($self->{connector}, $datacenter->vmFolder),
+            parent => '', value => $datacenter->vmFolder->value);
 
         my @array;
         if (defined $datacenter->hostFolder) {
@@ -113,7 +136,7 @@ sub run {
                     push @disco_data, \%esx if ($self->{resource_type} eq 'esx');
                     next if ($self->{resource_type} ne 'vm');
 
-                    @properties = ('config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
+                    @properties = ('parent', 'config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
                         'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState');
 
                     my $vms = centreon::vmware::common::get_views($self->{connector}, \@{$esx->vm}, \@properties);
@@ -125,6 +148,7 @@ sub run {
                         $vm{type} = "vm";
                         $vm{name} = $vm->{'config.name'};
                         $vm{uuid} = $vm->{'config.uuid'};
+                        $vm{folder} = $self->{paths}->{$vm->parent->value} if ($vm->parent->type eq 'Folder');
                         $vm{annotation} = $vm->{'config.annotation'};
                         $vm{os} = $vm->{'config.guestId'};
                         $vm{hardware} = $vm->{'config.version'};
