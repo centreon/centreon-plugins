@@ -56,6 +56,7 @@ sub run {
     my $filters = $self->build_filter(label => 'name', search_option => 'vm_hostname', is_regexp => 'filter');    
     $self->add_filter(filters => $filters, label => 'config.annotation', search_option => 'filter_description');
     $self->add_filter(filters => $filters, label => 'config.guestFullName', search_option => 'filter_os');
+    $self->add_filter(filters => $filters, label => 'config.uuid', search_option => 'filter_uuid');
     
     my @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     if (defined($self->{display_description})) {
