@@ -139,6 +139,7 @@ sub new {
         "filter"                => { name => 'filter' },
         "filter-description:s"  => { name => 'filter_description' },
         "filter-os:s"           => { name => 'filter_os' },
+        "filter-uuid:s"         => { name => 'filter_uuid' },
         "display-description"   => { name => 'display_description' },
         "check-disk-limit"      => { name => 'check_disk_limit' },
         "warning-disk-status:s"     => { name => 'warning_disk_status', default => '' },
