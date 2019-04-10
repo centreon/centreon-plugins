@@ -31,7 +31,7 @@ sub set_version {
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
     return if (defined($self->{version}) && $self->{version} ne '');
     
-    return if ($self->query(query => q{select SERVERPROPERTY('productversion') as product_version}, continue_error => 1) == 1);
+    return if ($self->query(query => q{SELECT CAST(SERVERPROPERTY('productversion') AS VARCHAR) as product_version}, continue_error => 1) == 1);
     my $row = $self->fetchrow_hashref();
     $self->{version} = $row->{product_version};
 }
