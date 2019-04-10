@@ -97,7 +97,7 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $database (sort keys %{$self->{databases}}) {
         $self->{output}->add_disco_entry(
-            name => $self->{databases}->{$database}->{name},
+            name => $self->{databases}->{$database}->{display},
             total => $self->{databases}->{$database}->{total},
         );
     }
