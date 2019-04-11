@@ -98,6 +98,7 @@ my $lookup_type = [
     { type => 'windows', re => qr/windows/i },
     { type => 'macos', re => qr/Darwin/i },
     { type => 'hp-ux', re => qr/HP-UX/i },
+    { type => 'freebsd', re => qr/FreeBSD/i },
 ];
 
 sub define_type {
