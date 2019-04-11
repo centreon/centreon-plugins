@@ -143,6 +143,7 @@ sub run {
                     next if (!defined($vms));
                 
                     foreach my $vm (@{$vms}) {
+                        next if ($vm->{'config.template'} eq 'true');
                         my %vm;
                         
                         $vm{type} = "vm";
