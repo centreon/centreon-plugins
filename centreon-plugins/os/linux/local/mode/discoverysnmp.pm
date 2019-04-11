@@ -81,11 +81,34 @@ sub check_options {
     $self->{snmp}->set_snmp_params(snmp_errors_exit => 'unknown');
 }
 
+my $lookup_type = [
+    { type => 'cisco standard', re => qr/Cisco IOS Software/i },
+    { type => 'emc data domain', re => qr/Data Domain/i },
+    { type => 'sonicwall', re => qr/SonicWALL/i },
+    { type => 'silverpeak', re => qr/Silver Peak/i },
+    { type => 'stonesoft', re => qr/Forcepoint/i },
+    { type => 'redback', re => qr/Redback/i },
+    { type => 'palo alto', re => qr/Palo Alto/i },
+    { type => 'hp procurve', re => qr/HP ProCurve/i },
+    { type => 'hp standard', re => qr/HPE Comware/i },
+    { type => 'hp msl', re => qr/HP MSL/i },
+    { type => 'mrv optiswitch', re => qr/OptiSwitch/i },
+    { type => 'netapp', re => qr/Netapp/i },
+    { type => 'linux', re => qr/linux/i },
+    { type => 'windows', re => qr/windows/i },
+    { type => 'macos', re => qr/Darwin/i },
+    { type => 'hp-ux', re => qr/HP-UX/i },
+];
+
 sub define_type {
     my ($self, %options) = @_;
 
-    return "linux" if ($options{desc} =~ /linux/i);
-    return "windows" if ($options{desc} =~ /windows/i);
+    foreach (@$lookup_type) {
+        if ($options{desc} =~ /$_->{re}/) {
+            return $_->{type};
+        }
+    }
+
     return "unknown";
 }
 
