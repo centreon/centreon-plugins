@@ -65,7 +65,7 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'total_write_rate', value => 'write_absolute', template => '%s',
-                      min => 0 },
+                      unit => 'B/s', min => 0 },
                 ],
             }
         },
@@ -96,7 +96,7 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'write_rate', value => 'write_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1 },
+                      unit => 'B/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
