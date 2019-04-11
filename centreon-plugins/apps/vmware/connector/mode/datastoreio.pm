@@ -147,8 +147,8 @@ sub manage_selection {
         $self->{datastore}->{$ds_name} = {
             display => $ds_name, 
             accessible => $response->{data}->{$ds_id}->{accessible},
-            read => $response->{data}->{$ds_id}->{'datastore.write.average'},
-            write => $response->{data}->{$ds_id}->{'datastore.read.average'},
+            read => $response->{data}->{$ds_id}->{'datastore.read.average'},
+            write => $response->{data}->{$ds_id}->{'datastore.write.average'},
         };
         $self->{global}->{read} += $response->{data}->{$ds_id}->{'datastore.read.average'} if (defined($response->{data}->{$ds_id}->{'datastore.read.average'}));
         $self->{global}->{write} += $response->{data}->{$ds_id}->{'datastore.write.average'} if (defined($response->{data}->{$ds_id}->{'datastore.write.average'}));
