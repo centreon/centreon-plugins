@@ -1,9 +1,9 @@
-2019-XX-XX Quentin Garnier <qgarnier@centreon.com>
+2019-04-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Google Cloud Platform Compute Engine API
  * Plugin added: Prometheus NGINX Ingress Controller
  * Plugin added: Bind9 Web
  * Plugin added: Rudder Rest API
- * Plugin added: Kubernetes Rest API
+ * Plugin added: Kubernetes API
  * Plugin added: Protocol TFTP
  * Plugin added: Rad Airmux SNMP
  * Plugin added: Alvarion Breezeaccess SNMP
