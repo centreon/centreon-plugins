@@ -1,4 +1,6 @@
 2019-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Google Cloud Platform Compute Engine API
+ * Plugin added: Prometheus NGINX Ingress Controller
  * Plugin added: Bind9 Web
  * Plugin added: Rudder Rest API
  * Plugin added: Kubernetes Rest API
@@ -14,20 +16,28 @@
  * Mode added: [oracle] 'password-expiration'
  * Mode added: [fortigate] 'ap-usage'
  * Mode added: [centreon/local] 'bam-services'
+ * Mode added: [linux/local] 'discovery'
+ * Mode added: [aws] 'discovery'
+ * Mode added: [azure] 'discovery'
+ * Mode added: [vmware] 'discovery'
  * Enhancement: [core] add float-precision option
  * Enhancement: [core] add --extend-perfdata-group option
  * Enhancement: [core/http] add curl backend support
+ * Enhancement: [core/http] add debug for lwp backend
  * Enhancement: [oracle] add servicename support
  * Enhancement: [snmp_standard] 'storage' (#1042)
  * Enhancement: [snmp_standard] 'interfaces' (#712)
  * Enhancement: [snmp_standard] 'list-interfaces' (#713)
- * Enhancement: [F5/BigIp] 'list-virtualservers' (#1252)
+ * Enhancement: [f5/bigip] 'list-virtualservers' (#1252)
  * Enhancement: [linux/local] 'traffic' 'packet-errors' (#916)
  * Enhancement: [protocols/http] 'expected-content'
  * Enhancement: [linux/local] 'process' (#1438)
  * Enhancement: [cisco/snmp] 'interfaces' (#454)
- * Enhancement: [hwgste/snmp] 'sensors' (#585) 
+ * Enhancement: [hwgste/snmp] 'sensors' (#585)
+ * Enhancement: [azure] better apis responses handling
+ * Fix: Ctrl+F "Fix" on commits page
  * Break: [dell/equallogic] modes refactoring
+ * Break: [snmp_standard] mode memory refactoring changes thresholds
 
 2019-02-21 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Microsoft Azure Recovery and Backup
