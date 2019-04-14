@@ -54,6 +54,7 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $item (sort keys %{$self->{single}}) {
+        # As of 3CX 15.5 / 16, we have Firewall, Phones, Trunks
         $self->{output}->output_add(severity => $self->{single}->{$item} ? 'OK' : 'CRITICAL',
                                     short_msg => $item);
     }
