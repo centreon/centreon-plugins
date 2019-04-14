@@ -48,6 +48,7 @@ sub set_system {
         nic => [
             ['Ok', 'OK'],
             ['Unknown', 'OK'],
+            ['Disabled', 'OK'],
             ['.*', 'CRITICAL'],
         ],
     };
