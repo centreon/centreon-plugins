@@ -77,12 +77,15 @@ sub check {
             }
             my $perf_label = $result->{hardDiskDevicename};
             $perf_label =~ s/ /_/g;
-            $self->{output}->perfdata_add(label => 'temperature_' . $perf_label, unit => 'C', 
-                                          value => $result->{hardDiskTemperature},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temperature', unit => 'C',
+                nlabel => 'hardware.harddisk.temperature.celsius', 
+                instances => $perf_label,
+                value => $result->{hardDiskTemperature},
+                warning => $warn,
+                critical => $crit,
+                min => 0
+            );
         }
         
         $self->{output}->output_add(long_msg => sprintf("Hard disk '%s' status is '%s' [instance = %s]",
