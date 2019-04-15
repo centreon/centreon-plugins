@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'Status : ' . $self->{result_values}->{status};
+    my $msg = 'status : ' . $self->{result_values}->{status};
 
     return $msg;
 }
@@ -175,16 +175,16 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "filter-interface:s"      => { name => 'filter_interface' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /offline/' },
-                                  "speed-in:s"              => { name => 'speed_in' },
-                                  "speed-out:s"             => { name => 'speed_out' },
-                                  "units-traffic:s"         => { name => 'units_traffic', default => '%' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"           => { name => 'filter_name' },
+        "filter-interface:s"      => { name => 'filter_interface' },
+        "filter-network:s"        => { name => 'filter_network' },
+        "warning-status:s"        => { name => 'warning_status', default => '' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /offline/' },
+        "speed-in:s"              => { name => 'speed_in' },
+        "speed-out:s"             => { name => 'speed_out' },
+        "units-traffic:s"         => { name => 'units_traffic', default => '%' },
+    });
     
     return $self;
 }
@@ -199,7 +199,7 @@ sub check_options {
 sub prefix_device_output {
     my ($self, %options) = @_;
     
-    return "Device '" . $options{instance_value}->{display} . "' ";
+    return "Device '" . $options{instance_value}->{display} . "' [network: " . $options{instance_value}->{network} . "] ";
 }
 
 sub prefix_interface_output {
@@ -216,6 +216,7 @@ my $mapping = {
     devName         => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.2' },
     devStatus       => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.3', map => \%map_status },
     devClientCount  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.5' },
+    devNetworkName  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.11' },
 };
 my $mapping2 = {
     devInterfaceName        => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.3' },
@@ -230,17 +231,25 @@ sub manage_selection {
     $self->{interface} = {};
     $self->{global} = { total => 0 };
     
-     my $snmp_result = $options{snmp}->get_multiple_table(oids => 
-        [ { oid => $mapping->{devName}->{oid} },
-          { oid => $mapping2->{devInterfaceName}->{oid} },
-        ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+        { oid => $mapping->{devName}->{oid} },
+        { oid => $mapping2->{devInterfaceName}->{oid} },
+        { oid => $mapping->{devNetworkName}->{oid} }
+    ], nothing_quit => 1);
     
     foreach my $oid (keys %{$snmp_result->{ $mapping->{devName}->{oid} }}) {
         $oid =~ /^$mapping->{devName}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $dev_name = $snmp_result->{$mapping->{devName}->{oid}}->{$oid}; 
+        my $dev_name = $snmp_result->{$mapping->{devName}->{oid}}->{$oid};
+        my $network = defined($snmp_result->{$mapping->{devNetworkName}->{oid}}->{ $mapping->{devNetworkName}->{oid} . '.' . $instance })
+            ? $snmp_result->{$mapping->{devNetworkName}->{oid}}->{ $mapping->{devNetworkName}->{oid} . '.' . $instance } : 'n/a';
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $dev_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_network}) && $self->{option_results}->{filter_network} ne '' &&
+            $network !~ /$self->{option_results}->{filter_network}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
             next;
         }
@@ -260,7 +269,7 @@ sub manage_selection {
         }
         
         $self->{global}->{total}++;
-        $self->{device}->{$instance} = { display => $dev_name };
+        $self->{device}->{$instance} = { display => $dev_name, network => $network };
     }
 
     if (scalar(keys %{$self->{interface}}) > 0) {
@@ -311,6 +320,10 @@ Example: --filter-counters='^clients$'
 =item B<--filter-name>
 
 Filter device name (can be a regexp).
+
+=item B<--filter-network>
+
+Filter by network name (can be a regexp).
 
 =item B<--filter-interface>
 
