@@ -101,15 +101,27 @@ sub new {
     
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
+            my $label = $_->{label};
+            $label = $_->{nlabel} if ($self->{output}->use_new_perfdata() && defined($_->{nlabel}));
+            my $thlabel = $label;
+            $thlabel =~ s/\./-/g;
+            
             if (!defined($_->{threshold}) || $_->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
-                                                    'warning-' . $_->{label} . ':s'     => { name => 'warning-' . $_->{label} },
-                                                    'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label} },
-                                               });
+                    'warning-' . $thlabel . ':s'     => { name => 'warning-' . $thlabel },
+                    'critical-' . $thlabel . ':s'    => { name => 'critical-' . $thlabel },
+                });
+
+                if (defined($_->{nlabel})) {
+                    $options{options}->add_options(arguments => {
+                        'warning-' . $_->{label} . ':s'     => { name => 'warning-' . $_->{label}, redirect => 'warning-' . $thlabel },
+                        'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label}, redirect => 'critical-' . $thlabel },
+                    });
+                }
             }
             $_->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
                                                        output => $self->{output}, perfdata => $self->{perfdata},
-                                                       label => $_->{label});
+                                                       label => $label, thlabel => $thlabel);
             $_->{obj}->set(%{$_->{set}});
         }
     }
@@ -408,7 +420,7 @@ sub run_multiple_instances {
             
             my $instance = $id;
             if ($multiple_parent == 1 && $multiple == 1) {
-                $instance = $options{instance_parent} . "_" . $id;
+                $instance = $options{instance_parent} . ($self->{output}->get_instance_perfdata_separator()) . $id;
             } elsif ($multiple_parent == 1 && $multiple == 0) {
                 $instance = $options{instance_parent};
             }

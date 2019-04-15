@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'stdev-3phases', set => {
+        { label => 'stdev-3phases', nlabel => 'output.3phases.stdev.gauge', set => {
                 key_values => [ { name => 'stdev' } ],
                 output_template => 'Load Standard Deviation : %.2f',
                 perfdatas => [
@@ -45,38 +45,38 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{oline} = [
-        { label => 'load', set => {
+        { label => 'load', nlabel => 'line.output.load.percentage', set => {
                 key_values => [ { name => 'upsOutputPercentLoad' } ],
                 output_template => 'Load : %.2f %%',
                 perfdatas => [
-                    { label => 'load', value => 'upsOutputPercentLoad_absolute', template => '%.2f', 
+                    { value => 'upsOutputPercentLoad_absolute', template => '%.2f', 
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'current', set => {
+        { label => 'current', nlabel => 'line.output.current.ampere', set => {
                 key_values => [ { name => 'upsOutputCurrent' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { label => 'current', value => 'upsOutputCurrent_absolute', template => '%.2f', 
+                    { value => 'upsOutputCurrent_absolute', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'voltage', set => {
+        { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
                 key_values => [ { name => 'upsOutputVoltage' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { label => 'voltage', value => 'upsOutputVoltage_absolute', template => '%.2f', 
+                    { value => 'upsOutputVoltage_absolute', template => '%.2f', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'power', set => {
+        { label => 'power', nlabel => 'line.output.power.watt', set => {
                 key_values => [ { name => 'upsOutputPower' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { label => 'power', value => 'upsOutputPower_absolute', template => '%.2f', 
+                    { value => 'upsOutputPower_absolute', template => '%.2f', 
                       unit => 'W', label_extra_instance => 1 },
                 ],
             }

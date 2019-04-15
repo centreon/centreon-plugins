@@ -41,6 +41,7 @@ sub new {
         "extend-perfdata:s@"      => { name => 'extend_perfdata' },
         "extend-perfdata-group:s@"=> { name => 'extend_perfdata_group' },
         "change-short-output:s@"  => { name => 'change_short_output' },
+        "use-new-perfdata"        => { name => 'use_new_perfdata' },
         "filter-uom:s"            => { name => 'filter_uom' },
         "verbose"                 => { name => 'verbose' },
         "debug"                   => { name => 'debug' },
@@ -153,12 +154,12 @@ sub set_status {
 sub output_add {
     my ($self, %params) = @_;
     my %args = (
-                severity => 'OK',
-                separator => ' - ',
-                debug => 0,
-                short_msg => undef,
-                long_msg => undef,
-                );
+        severity => 'OK',
+        separator => ' - ',
+        debug => 0,
+        short_msg => undef,
+        long_msg => undef,
+    );
     my $options = {%args, %params};
     
     if (defined($options->{short_msg})) {
@@ -181,11 +182,27 @@ sub output_add {
 
 sub perfdata_add {
     my ($self, %options) = @_;
-    my $perfdata = {label => '', value => '', unit => '', warning => '', critical => '', min => '', max => ''}; 
+    my $perfdata = {
+        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => ''
+    };
     foreach (keys %options) {
         next if (!defined($options{$_}));
         $perfdata->{$_} = $options{$_};
     }
+    
+    if (defined($self->{option_results}->{use_new_perfdata}) && defined($options{nlabel})) {
+        $perfdata->{label} = $options{nlabel};
+    }
+    if (defined($options{instances})) {
+        $options{instances} = [$options{instances}] if (!ref($options{instances}));
+        my ($external_instance_separator, $internal_instance_separator) = ('#', '~');
+        if (defined($self->{option_results}->{use_new_perfdata})) {
+            $perfdata->{label} = join('~', @{$options{instances}}) . '#' . $perfdata->{label};
+        } else {
+            $perfdata->{label} .= '_' . join('_', @{$options{instances}});
+        }
+    }
+    
     $perfdata->{label} =~ s/'/''/g;
     push @{$self->{perfdatas}}, $perfdata;
 }
@@ -225,19 +242,19 @@ sub output_json {
             my $lcode_litteral = ($code_litteral eq 'UNQUALIFIED_YET' ? uc($options{exit_litteral}) : $code_litteral);
 
             push @{$json_content->{plugin}->{outputs}}, {
-                                                           type => 1,
-                                                           msg => ($options{nolabel} == 0 ? ($lcode_litteral . ': ') : '') . $_,
-                                                           exit => $lcode_litteral
-                                                        };
+                type => 1,
+                msg => ($options{nolabel} == 0 ? ($lcode_litteral . ': ') : '') . $_,
+                exit => $lcode_litteral
+            };
         }
     }
 
     if (defined($self->{option_results}->{verbose}) || $force_long_output == 1) {
         foreach (@{$self->{global_long_output}}) {
             push @{$json_content->{plugin}->{outputs}}, {
-                                                           type => 2,
-                                                           msg => $_,
-                                                        };
+                type => 2,
+                msg => $_,
+            };
         }
     }
 
@@ -256,8 +273,8 @@ sub output_json {
             }
             
             push @{$json_content->{plugin}->{perfdatas}}, {
-                                                           %values
-                                                        };
+                %values
+            };
         }
     }
 
@@ -761,6 +778,24 @@ sub is_debug {
         return 1;
     }
     return 0;
+}
+
+sub use_new_perfdata {
+    my ($self) = @_;
+
+    if (defined($self->{option_results}->{use_new_perfdata})) {
+        return 1;
+    }
+    return 0;
+}
+
+sub get_instance_perfdata_separator {
+    my ($self) = @_;
+
+    if (defined($self->{option_results}->{use_new_perfdata})) {
+        return '~';
+    }
+    return '_';
 }
 
 sub parse_pfdata_scale {
