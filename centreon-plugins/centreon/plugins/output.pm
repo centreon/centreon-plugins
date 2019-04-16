@@ -395,9 +395,8 @@ sub output_openmetrics {
         }
         $bucket .= '}';
         
-        print $label . $bucket . ' ' . $perf->{value};
+        print $label . $bucket . ' ' . $perf->{value} . "\n";
     }
-    print "\n";
 }
 
 sub output_txt_short_display {
