@@ -44,25 +44,30 @@ sub custom_status_calc {
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = $self->{label} . '_used';
+    my ($label, $nlabel) = ('used', $self->{label});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = $self->{label} . '_free';
+        ($label, $nlabel) = ('free', 'vm.memory.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
     my $extra_label = '';
-    $extra_label = '_' . $self->{instance} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    $extra_label = $self->{result_values}->{display}
+        if (!defined($options{extra_instance}) || $options{extra_instance} != 0 || $self->{output}->use_new_perfdata());
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        instances => $extra_label,
+        nlabel => $nlabel,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -75,7 +80,7 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -165,7 +170,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_consumed} = [
-        { label => 'consumed', set => {
+        { label => 'consumed', nlabel => 'vm.memory.usage.bytes', set => {
                 key_values => [ { name => 'consumed' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'consumed' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -175,7 +180,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global_active} = [
-        { label => 'active', set => {
+        { label => 'active', nlabel => 'vm.memory.active.bytes', set => {
                 key_values => [ { name => 'active' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'active' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -185,7 +190,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global_overhead} = [
-        { label => 'overhead', set => {
+        { label => 'overhead', nlabel => 'vm.memory.overhead.bytes', set => {
                 key_values => [ { name => 'overhead' } ],
                 closure_custom_output => $self->can('custom_overhead_output'),
                 perfdatas => [
@@ -196,7 +201,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global_vmmemctl} = [
-        { label => 'ballooning', set => {
+        { label => 'ballooning', nlabel => 'vm.memory.ballooning.bytes', set => {
                 key_values => [ { name => 'vmmemctl' } ],
                 closure_custom_output => $self->can('custom_ballooning_output'),
                 perfdatas => [
@@ -207,7 +212,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global_shared} = [
-        { label => 'shared', set => {
+        { label => 'shared', nlabel => 'vm.memory.shared.bytes', set => {
                 key_values => [ { name => 'shared' } ],
                 closure_custom_output => $self->can('custom_shared_output'),
                 perfdatas => [

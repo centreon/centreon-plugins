@@ -49,7 +49,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-read', set => {
+        { label => 'total-read', nlabel => 'datastore.read.usage.bytesperseconds', set => {
                 key_values => [ { name => 'read' } ],
                 output_template => 'Total rate of reading data: %s %s/s',
                 output_change_bytes => 1,
@@ -59,7 +59,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-write', set => {
+        { label => 'total-write', nlabel => 'datastore.write.usage.bytesperseconds', set => {
                 key_values => [ { name => 'write' } ],
                 output_template => 'Total rate of writing data: %s %s/s',
                 output_change_bytes => 1,
@@ -80,7 +80,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'read', set => {
+        { label => 'read', nlabel => 'datastore.read.usage.bytesperseconds', set => {
                 key_values => [ { name => 'read' } ],
                 output_template => 'rate of reading data: %s %s/s',
                 output_change_bytes => 1,
@@ -90,7 +90,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write', set => {
+        { label => 'write', nlabel => 'datastore.write.usage.bytesperseconds', set => {
                 key_values => [ { name => 'write' } ],
                 output_template => 'rate of writing data: %s %s/s',
                 output_change_bytes => 1,

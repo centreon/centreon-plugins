@@ -57,7 +57,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-device-connected', set => {
+        { label => 'total-device-connected', nlabel => 'vm.devices.connected.count', set => {
                 key_values => [ { name => 'device_connected' } ],
                 closure_custom_output => $self->can('custom_device_output'),
                 perfdatas => [
@@ -77,7 +77,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'device-connected', set => {
+        { label => 'device-connected', nlabel => 'vm.devices.connected.count', set => {
                 key_values => [ { name => 'device_connected' }, { name => 'display' } ],
                 oclosure_custom_output => $self->can('custom_device_output'),
                 perfdatas => [

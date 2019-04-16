@@ -67,7 +67,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_vm} = [
-        { label => 'max-total-latency', set => {
+        { label => 'max-total-latency', nlabel => 'vm.datastore.latency.max.milliseconds', set => {
                 key_values => [ { name => 'total_latency' } ],
                 output_template => 'max total latency is %s ms',
                 perfdatas => [
@@ -79,7 +79,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{datastore} = [
-        { label => 'read', set => {
+        { label => 'read', nlabel => 'vm.datastore.read.usage.iops', set => {
                 key_values => [ { name => 'read' } ],
                 output_template => '%s read iops',
                 perfdatas => [
@@ -88,7 +88,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write', set => {
+        { label => 'write', nlabel => 'vm.datastore.write.usage.iops', set => {
                 key_values => [ { name => 'write' } ],
                 output_template => '%s write iops',
                 perfdatas => [

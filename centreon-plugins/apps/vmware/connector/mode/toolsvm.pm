@@ -156,15 +156,24 @@ sub run {
     
     if ($multiple == 1) {
         my $total = scalar(keys %not_up2date) + scalar(keys %not_running) + scalar(keys %not_installed);
-        $self->{output}->perfdata_add(label => 'not_updated',
-                                      value => scalar(keys %not_up2date),
-                                      min => 0, max => $total);
-        $self->{output}->perfdata_add(label => 'not_running',
-                                      value => scalar(keys %not_running),
-                                      min => 0, max => $total);
-        $self->{output}->perfdata_add(label => 'not_installed',
-                                      value => scalar(keys %not_installed),
-                                      min => 0, max => $total);
+        $self->{output}->perfdata_add(
+            label => 'not_updated',
+            nlabel => 'vm.tools.notupdated.current.count',
+            value => scalar(keys %not_up2date),
+            min => 0, max => $total
+        );
+        $self->{output}->perfdata_add(
+            label => 'not_running',
+            nlabel => 'vm.tools.notrunning.current.count',
+            value => scalar(keys %not_running),
+            min => 0, max => $total
+        );
+        $self->{output}->perfdata_add(
+            label => 'not_installed',
+            nlabel => 'vm.tools.notinstalled.current.count',
+            value => scalar(keys %not_installed),
+            min => 0, max => $total
+        );
     }
     
     $self->{output}->display();

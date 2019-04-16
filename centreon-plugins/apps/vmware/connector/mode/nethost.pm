@@ -126,7 +126,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_host} = [
-        { label => 'host-traffic-in', set => {
+        { label => 'host-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'host traffic in : %s %s/s',
                 output_change_bytes => 2,
@@ -136,7 +136,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'host-traffic-out', set => {
+        { label => 'host-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'host traffic out : %s %s/s',
                 output_change_bytes => 2,
@@ -149,7 +149,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{vswitch} = [
-        { label => 'vswitch-traffic-in', set => {
+        { label => 'vswitch-traffic-in', nlabel => 'host.vswitch.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'traffic in : %s %s/s',
                 output_change_bytes => 2,
@@ -159,7 +159,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'vswitch-traffic-out', set => {
+        { label => 'vswitch-traffic-out', nlabel => 'host.vswitch.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'traffic out : %s %s/s',
                 output_change_bytes => 2,
@@ -180,7 +180,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'link-traffic-in', set => {
+        { label => 'link-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'display' }, { name => 'traffic_in' }, { name => 'speed' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -191,7 +191,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-traffic-out', set => {
+        { label => 'link-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'display' }, { name => 'traffic_out' }, { name => 'speed' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -202,7 +202,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-dropped-in', set => {
+        { label => 'link-dropped-in', nlabel => 'host.packets.in.dropped.percentage', set => {
                 key_values => [ { name => 'display' }, { name => 'packets_in' }, { name => 'dropped_in' } ],
                 closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_dropped_output'),
@@ -213,7 +213,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-dropped-out', set => {
+        { label => 'link-dropped-out', nlabel => 'host.packets.out.dropped.percentage', set => {
                 key_values => [ { name => 'display' }, { name => 'packets_out' }, { name => 'dropped_out' } ],
                 closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_dropped_output'),

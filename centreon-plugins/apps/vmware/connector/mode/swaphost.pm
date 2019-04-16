@@ -56,7 +56,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'swap-in', set => {
+        { label => 'swap-in', nlabel => 'host.swap.in.usage.bytesperseconds', set => {
                 key_values => [ { name => 'swap_in' }, { name => 'display' } ],
                 output_template => 'Swap In: %s %s/s',
                 output_change_bytes => 1,
@@ -66,7 +66,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'swap-out', set => {
+        { label => 'swap-out', nlabel => 'host.swap.out.usage.bytesperseconds', set => {
                 key_values => [ { name => 'swap_out' }, { name => 'display' } ],
                 output_template => 'Swap Out: %s %s/s',
                 output_change_bytes => 1,

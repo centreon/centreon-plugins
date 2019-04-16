@@ -35,7 +35,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-requests', set => {
+        { label => 'total-requests', nlabel => 'connector.requests.total.count', set => {
                 key_values => [ { name => 'requests', diff => 1  } ],
                 output_template => 'Total %s requests',
                 perfdatas => [
@@ -47,7 +47,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{container} = [
-        { label => 'requests', set => {
+        { label => 'requests', nlabel => 'connector.requests.total.count', set => {
                 key_values => [ { name => 'requests', diff => 1  } ],
                 output_template => '%s requests',
                 perfdatas => [
@@ -71,9 +71,9 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
