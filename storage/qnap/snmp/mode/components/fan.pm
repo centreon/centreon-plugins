@@ -61,9 +61,12 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Fan '%s' speed is %s rpm", $fan_descr, $fan_speed_value));
             }
-            $self->{output}->perfdata_add(label => 'fan_' . $instance, unit => 'rpm',
-                                          value => $fan_speed_value, min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'fan', unit => 'rpm',
+                nlabel => 'hardware.fan.speed.rpm',
+                instances => $instance,
+                value => $fan_speed_value, min => 0
+            );
         }
     }
 }

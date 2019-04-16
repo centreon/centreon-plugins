@@ -54,9 +54,12 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("CPU Temperature is '%s' degree centigrade", $value));
         }
-        $self->{output}->perfdata_add(label => 'temp_cpu', unit => 'C',
-                                      value => $value
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => 'cpu',
+            value => $value
+        );
     }
     
     my $system_temp = defined($self->{results}->{$oid_SystemTemperature_entry}->{$oid_SystemTemperature}) ? 
@@ -71,9 +74,12 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("System Temperature is '%s' degree centigrade", $value));
         }
-        $self->{output}->perfdata_add(label => 'temp_system', unit => 'C',
-                                      value => $value
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => 'system',
+            value => $value
+        );
     }
 }
 
