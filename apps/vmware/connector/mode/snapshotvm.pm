@@ -138,12 +138,18 @@ sub run {
         }
     }
 
-    $self->{output}->perfdata_add(label => 'num_warning',
-                                  value => scalar(keys %{$vm_errors{warning}}),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'num_critical',
-                                  value => scalar(keys %{$vm_errors{critical}}),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'num_warning',
+        nlabel => 'vm.snapshots.warning.current.count',
+        value => scalar(keys %{$vm_errors{warning}}),
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => 'num_critical',
+        nlabel => 'vm.snapshots.critical.current.count',
+        value => scalar(keys %{$vm_errors{critical}}),
+        min => 0
+    );
     if (scalar(keys %{$vm_errors{warning}}) > 0) {
         $self->{output}->output_add(severity => 'WARNING',
                                     short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{option_results}->{warning} / 86400), 

@@ -79,6 +79,30 @@ sub call_object_callback {
     return undef;
 }
 
+sub get_threshold_prefix {
+    my ($self, %options) = @_;
+    
+    my $prefix = '';
+    END_LOOP: foreach (@{$self->{maps_counters_type}}) {
+        if ($_->{name} eq $options{name}) {
+            $prefix = 'instance-' if ($_->{type} == 1);
+            last;
+        }
+        
+        if ($_->{type} == 3) {
+            foreach (@{$_->{group}}) {
+                if ($_->{name} eq $options{name}) {
+                    $prefix = 'instance-' if ($_->{type} == 0);
+                    $prefix = 'subinstance-' if ($_->{type} == 1);
+                    last END_LOOP;
+                }
+            }
+        }
+    }
+
+    return $prefix;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
@@ -102,8 +126,11 @@ sub new {
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
             my $label = $_->{label};
-            $label = $_->{nlabel} if ($self->{output}->use_new_perfdata() && defined($_->{nlabel}));
             my $thlabel = $label;
+            if ($self->{output}->use_new_perfdata() && defined($_->{nlabel})) {
+                $label = $_->{nlabel};
+                $thlabel = $self->get_threshold_prefix(name => $key) . $label;
+            }
             $thlabel =~ s/\./-/g;
             
             if (!defined($_->{threshold}) || $_->{threshold} != 0) {
@@ -125,7 +152,7 @@ sub new {
             $_->{obj}->set(%{$_->{set}});
         }
     }
-                                
+
     return $self;
 }
 
@@ -385,9 +412,13 @@ sub run_group {
     }
     
     if (defined($options{config}->{display_counter_problem})) {
-        $self->{output}->perfdata_add(label => $options{config}->{display_counter_problem}->{label}, unit => $options{config}->{display_counter_problem}->{unit},
-                                      value => $total_problems,
-                                      min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max});
+        $self->{output}->perfdata_add(
+            label => $options{config}->{display_counter_problem}->{label},
+            nlabel => $options{config}->{display_counter_problem}->{nlabel},
+            unit => $options{config}->{display_counter_problem}->{unit},
+            value => $total_problems,
+            min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max}
+        );
     }
 }
 

@@ -86,15 +86,19 @@ sub custom_status_calc {
 sub custom_dcmetrics_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
+    my $extra_label;
     # We do it manually. Because we have only 1 instance in group.
-    if (scalar(keys %{$self->{instance_mode}->{datacenter}}) > 1) {
-        $extra_label .= '_' . $self->{result_values}->{name};
+    if (scalar(keys %{$self->{instance_mode}->{datacenter}}) > 1 || $self->{output}->use_new_perfdata()) {
+        $extra_label = $self->{result_values}->{name};
     }
     
-    $self->{output}->perfdata_add(label => 'alarm_' . $self->{result_values}->{label_ref} . $extra_label,
-                                  value => $self->{result_values}->{alarm_value},
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'alarm_' . $self->{result_values}->{label_ref},
+        nlabel => 'datacenter.alarms.' . $self->{result_values}->{label_ref} . '.current.count',
+        instances => $extra_label,
+        value => $self->{result_values}->{alarm_value},
+        min => 0
+    );
 }
 
 sub custom_dcmetrics_calc {
@@ -120,7 +124,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-alarm-warning', set => {
+        { label => 'total-alarm-warning', nlabel => 'datacenter.alarms.warning.current.count', set => {
                 key_values => [ { name => 'yellow' } ],
                 output_template => '%s warning alarm(s) found(s)',
                 perfdatas => [
@@ -128,7 +132,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-alarm-critical', set => {
+        { label => 'total-alarm-critical', nlabel => 'datacenter.alarms.critical.current.count', set => {
                 key_values => [ { name => 'red' } ],
                 output_template => '%s critical alarm(s) found(s)',
                 perfdatas => [
