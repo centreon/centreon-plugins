@@ -151,7 +151,7 @@ sub check_memory_pool {
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping_memory_pool->{ciscoMemoryPoolName}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping_memory_pool, results => $snmp_result, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_memory_pool, results => $snmp_result, instance => $instance);
 
         $self->{checked_memory} = 1;
         if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
@@ -231,7 +231,7 @@ sub check_memory_enhanced_pool {
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping_enh_memory_pool->{cempMemPoolName}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping_enh_memory_pool, results => $snmp_result, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_enh_memory_pool, results => $snmp_result, instance => $instance);
 
         $self->{checked_memory} = 1;
         if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
