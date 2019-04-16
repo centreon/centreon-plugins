@@ -20,9 +20,9 @@
 
 package centreon::plugins::output;
 
-use centreon::plugins::misc;
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -48,6 +48,7 @@ sub new {
         "opt-exit:s"              => { name => 'opt_exit', default => 'unknown' },
         "output-xml"              => { name => 'output_xml' },
         "output-json"             => { name => 'output_json' },
+        "output-openmetrics"      => { name => 'output_openmetrics' },
         "output-file:s"           => { name => 'output_file' },
         "disco-format"            => { name => 'disco_format' },
         "disco-show"              => { name => 'disco_show' },
@@ -371,6 +372,34 @@ sub output_xml {
     print $self->{xml_output}->toString(1);
 }
 
+sub output_openmetrics {
+    my ($self, %options) = @_;
+
+    $self->change_perfdata();
+    foreach my $perf (@{$self->{perfdatas}}) {
+        next if (defined($self->{option_results}->{filter_perfdata}) &&
+                 $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
+        $perf->{unit} = '' if (defined($self->{option_results}->{filter_uom}) &&
+            $perf->{unit} !~ /$self->{option_results}->{filter_uom}/);
+        $self->range_perfdata(ranges => [\$perf->{warning}, \$perf->{critical}]);
+        my $label = $perf->{label};
+        my $instance;
+        if ($label =~ /^(.*?)#(.*)$/) {
+            ($perf->{instance}, $label) = ($1, $2);
+        }
+        my ($bucket, $append) = ('{plugin="' . $self->{plugin} . '",mode="' . $self->{mode} . '"', '');
+        foreach ('unit', 'warning', 'critical', 'min', 'max', 'instance') {
+            if (defined($perf->{$_}) && $perf->{$_} ne '') {
+                $bucket .= ',' . $_ . '="' . $perf->{$_} . '"';
+            }
+        }
+        $bucket .= '}';
+        
+        print $label . $bucket . ' ' . $perf->{value};
+    }
+    print "\n";
+}
+
 sub output_txt_short_display {
     my ($self, %options) = @_;
     
@@ -478,11 +507,16 @@ sub display {
                                force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
             return ;
         }
-    } 
+    } elsif (defined($self->{option_results}->{output_openmetrics})) {
+        $self->output_openmetrics();
+        return ;
+    }
     
-    $self->output_txt(exit_litteral => $self->get_litteral_status(), 
-                      nolabel => $nolabel,
-                      force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
+    $self->output_txt(
+        exit_litteral => $self->get_litteral_status(), 
+        nolabel => $nolabel,
+        force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output
+    );
 }
 
 sub die_exit {
@@ -531,7 +565,7 @@ sub option_exit {
             $self->output_json(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1, force_long_output => 1);
             $self->exit(exit_litteral => $exit_litteral);
         }
-    } 
+    }
 
     $self->output_txt(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1, force_long_output => 1);
     $self->exit(exit_litteral => $exit_litteral);
@@ -1288,11 +1322,15 @@ SSH connection refused, timeout, etc)
 
 =item B<--output-xml>
 
-Display output in XML Format.
+Display output in XML format.
 
 =item B<--output-json>
 
-Display output in JSON Format.
+Display output in JSON format.
+
+=item B<--output-openmetrics>
+
+Display metrics in OpenMetrics format.
 
 =item B<--output-file>
 

@@ -36,14 +36,14 @@ sub new {
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-                                   arguments => {
-                                                'mode:s'         => { name => 'mode_name' },
-                                                'dyn-mode:s'     => { name => 'dynmode_name' },
-                                                'list-mode'      => { name => 'list_mode' },
-                                                'mode-version:s' => { name => 'mode_version' },
-                                                'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
-                                                }
-                                  );
+    arguments => {
+            'mode:s'         => { name => 'mode_name' },
+            'dyn-mode:s'     => { name => 'dynmode_name' },
+            'list-mode'      => { name => 'list_mode' },
+            'mode-version:s' => { name => 'mode_version' },
+            'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
+        }
+    );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
     $self->{default} = undef;
@@ -57,6 +57,7 @@ sub new {
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
     $self->{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL OPTIONS');
+    $self->{output}->mode(name => $self->{mode_name});
 
     return $self;
 }
