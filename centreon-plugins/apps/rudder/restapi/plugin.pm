@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+        'discovery'                 => 'apps::rudder::restapi::mode::discovery',
         'global-compliance'         => 'apps::rudder::restapi::mode::globalcompliance',
         'list-nodes'                => 'apps::rudder::restapi::mode::listnodes',
         'list-rules'                => 'apps::rudder::restapi::mode::listrules',
