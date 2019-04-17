@@ -68,11 +68,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("voltage '%s' is '%s' V", $result->{ems_item}, $value));
         }
-        $self->{output}->perfdata_add(label => 'voltage_' . $result->{ems_item} . '_' . $instance, unit => 'V', 
-                                      value => $value,
-                                      warning => $warn,
-                                      critical => $crit
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'voltage', unit => 'V',
+            nlabel => 'hardware.voltage.volt',
+            instances => [$result->{ems_item}, $instance],
+            value => $value,
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

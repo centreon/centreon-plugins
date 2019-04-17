@@ -88,10 +88,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Voltage '%s' is %.3f V", $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageStatusValue}));
         }
-        $self->{output}->perfdata_add(label => "voltage_" . $result->{ciscoEnvMonVoltageStatusDescr}, unit => 'V',
-                                      value => sprintf("%.3f", $result->{ciscoEnvMonVoltageStatusValue}),
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => "voltage", unit => 'V',
+            nlabel => 'hardware.voltage.volt',
+            instances => $result->{ciscoEnvMonVoltageStatusDescr},
+            value => sprintf("%.3f", $result->{ciscoEnvMonVoltageStatusValue}),
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

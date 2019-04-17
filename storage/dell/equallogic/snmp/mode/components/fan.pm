@@ -89,11 +89,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Fan '%s/%s' speed is %s rpm", $member_name, $result->{eqlMemberHealthDetailsFanName}, $result->{eqlMemberHealthDetailsFanValue}));
             }
-            $self->{output}->perfdata_add(label => "fan_" . $member_name . "_" . $instance, unit => 'rpm',
-                                          value => $result->{eqlMemberHealthDetailsFanValue},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => "fan", unit => 'rpm',
+                nlabel => 'hardware.fan.speed.rpm',
+                instances => [$member_name, $instance],
+                value => $result->{eqlMemberHealthDetailsFanValue},
+                warning => $warn,
+                critical => $crit,
+                min => 0
+            );
         }
     }
 }

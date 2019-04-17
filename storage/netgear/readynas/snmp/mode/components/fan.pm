@@ -84,10 +84,14 @@ sub check_v4 {
                                         short_msg => sprintf("fan '%s' rpm is %s", $instance, $fanrpm));
         }
         
-        $self->{output}->perfdata_add(label => "fan_" . $instance, unit => 'rpm',
-                                      value => $fanrpm,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => "fan", unit => 'rpm',
+            nlabel => 'hardware.fan.speed.rpm',
+            instances => $instance,
+            value => $fanrpm,
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

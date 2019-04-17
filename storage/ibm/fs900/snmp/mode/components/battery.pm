@@ -70,13 +70,15 @@ sub check {
                     $self->{output}->output_add(severity => $exit,
                                                 short_msg => sprintf("Battery '%s' cell '%s' voltage is %s mV", $instance, lc($pretty_cell), $result->{$cell}));
                 }
-                $self->{output}->perfdata_add(label => 'battery_voltage_' . $instance . '_' . lc($pretty_cell),
-                                              unit => 'mV', 
-                                              value => $result->{$cell},
-                                              warning => $warn,
-                                              critical => $crit,
-                                              min => 0,
-                                              );
+                $self->{output}->perfdata_add(
+                    label => 'battery_voltage', unit => 'mV',
+                    nlabel => 'hardware.battery.voltage.millivolt',
+                    instances => [$instance, lc($pretty_cell)],
+                    value => $result->{$cell},
+                    warning => $warn,
+                    critical => $crit,
+                    min => 0,
+                );
             }
         }
 
@@ -86,12 +88,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Battery '%s' current is %s", $instance, $result->{batteryChgCurr}));
             }
-            $self->{output}->perfdata_add(label => 'battery_current_' . $instance, 
-                                          value => $result->{batteryChgCurr},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'battery_current',
+                nlabel => 'hardware.battery.current.count',
+                instances => $instance,
+                value => $result->{batteryChgCurr},
+                warning => $warn,
+                critical => $crit,
+                min => 0,
+            );
         }
 
         if (defined($result->{batteryRmngCap}) && $result->{batteryRmngCap} =~ /[0-9]/ && defined($result->{batteryFullCap}) && $result->{batteryFullCap} =~ /[0-9]/) {
@@ -100,13 +105,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Battery '%s' capacity is %s on %s", $instance, $result->{batteryRmngCap}, $result->{batteryFullCap}));
             }
-            $self->{output}->perfdata_add(label => 'battery_capacity_' . $instance, 
-                                          value => $result->{batteryRmngCap},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          max => $result->{batteryFullCap},
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'battery_capacity',
+                nlabel => 'hardware.battery.capacity.count',
+                instances => $instance,
+                value => $result->{batteryRmngCap},
+                warning => $warn,
+                critical => $crit,
+                min => 0, max => $result->{batteryFullCap},
+            );
         }
     }
 }
