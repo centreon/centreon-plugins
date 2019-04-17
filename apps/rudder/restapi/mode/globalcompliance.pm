@@ -29,14 +29,12 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{detail};
-    }
-    
-    $self->{output}->perfdata_add(label => 'value' . $extra_label,
-                                  value => $self->{result_values}->{value},
-                                  min => 0, max => 100, unit => '%');
+    $self->{output}->perfdata_add(
+        label => 'value',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{detail} : undef,
+        value => $self->{result_values}->{value},
+        min => 0, max => 100, unit => '%'
+    );
 }
 
 sub custom_status_output {
