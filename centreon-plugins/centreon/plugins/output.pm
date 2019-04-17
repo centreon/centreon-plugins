@@ -130,6 +130,7 @@ sub check_options {
     }
     
     $self->load_perfdata_extend_args();
+    $self->{option_results}->{use_new_perfdata} = 1 if (defined($self->{option_results}->{output_openmetrics}));
 }
 
 sub add_option_msg {
