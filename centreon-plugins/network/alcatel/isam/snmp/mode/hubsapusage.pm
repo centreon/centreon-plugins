@@ -45,7 +45,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'in-traffic', set => {
+        { label => 'in-traffic', nlabel => 'sap.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -54,7 +54,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_qsap_threshold'),
             }
         },
-        { label => 'out-traffic', set => {
+        { label => 'out-traffic', nlabel => 'sap.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
@@ -66,7 +66,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-in-traffic', set => {
+        { label => 'total-in-traffic', nlabel => 'traffic.in.bitsperseconds', set => {
                 key_values => [],
                 manual_keys => 1, per_second => 1, output_change_bytes => 2,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -75,7 +75,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_total_traffic_threshold'),
             }
         },
-        { label => 'total-out-traffic', set => {
+        { label => 'total-out-traffic', nlabel => 'traffic.out.bitsperseconds', set => {
                 key_values => [],
                 manual_keys => 1, per_second => 1, output_change_bytes => 2,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
@@ -101,6 +101,7 @@ sub custom_total_traffic_perfdata {
     
     $self->{output}->perfdata_add(
         label => 'total_traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        nlabel => $self->{nlabel},
         value => sprintf("%.2f", $self->{result_values}->{total_traffic}),
         warning => $warning,
         critical => $critical,
@@ -225,6 +226,7 @@ sub custom_sap_perfdata {
     
     $self->{output}->perfdata_add(
         label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        nlabel => $self->{nlabel},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
         value => sprintf("%.2f", $self->{result_values}->{traffic}),
         warning => $warning,
@@ -377,6 +379,7 @@ sub manage_selection {
 
     $self->{global} = {};
     $self->{sap} = {};
+
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
         next if ($oid !~ /^$oid_sapDescription\.(.*?)\.(.*?)\.(.*?)$/);
         # $SvcId and $SapEncapValue is the same. We use service table
@@ -400,6 +403,7 @@ sub manage_selection {
             SvcId => $SvcId, 
             SapPortId => $SapPortId, 
             SapEncapValue => $SapEncapValue);
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
@@ -413,7 +417,9 @@ sub manage_selection {
         $mapping->{fadSapStatsEgressOctets}->{oid},
         $mapping->{sapAdminStatus}->{oid}, $mapping->{sapOperStatus}->{oid}], 
         instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+)$');
+    
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
     foreach (keys %{$self->{sap}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);        
         $self->{sap}->{$_}->{in} = $result->{fadSapStatsIngressOctets} * 8;

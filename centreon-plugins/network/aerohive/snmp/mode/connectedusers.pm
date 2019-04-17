@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'ssid', type => 1, cb_prefix_output => 'prefix_ssid_output', message_multiple => 'All users by SSID are ok' },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'users.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Users : %s',
                 perfdatas => [
@@ -44,7 +44,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{ssid} = [
-        { label => 'ssid', set => {
+        { label => 'ssid', nlabel => 'ssid.users.total.count', set => {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'users : %s',
                 perfdatas => [
