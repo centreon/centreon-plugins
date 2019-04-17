@@ -86,9 +86,6 @@ sub run {
         nothing_quit => 1
     );
     
-    use Data::Dumper;
-    print Data::Dumper::Dumper($result);
-    
     my $total_size = $self->convert_bytes(value => $result->{$oid_SystemTotalMem});
     my $memory_free = $self->convert_bytes(value => $result->{$oid_SystemFreeMem});    
     my $memory_used = $total_size - $memory_free;
