@@ -742,20 +742,16 @@ sub new {
         $options{options}->add_options(arguments => { "add-volume" => { name => 'add_volume' }, });
     }
     if ($self->{no_oid_options} == 0) {
-        $options{options}->add_options(arguments =>
-                                {
-                                "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
-                                "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
-                                "oid-extra-display:s"     => { name => 'oid_extra_display' },
-                                }
-                                );
+        $options{options}->add_options(arguments => {
+            "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
+            "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
+            "oid-extra-display:s"     => { name => 'oid_extra_display' },
+        });
     }
     if ($self->{no_interfaceid_options} == 0) {
-        $options{options}->add_options(arguments =>
-                                {
-                                "name"                    => { name => 'use_name' },
-                                }
-                                );
+        $options{options}->add_options(arguments => {
+            "name"                    => { name => 'use_name' },
+        });
     }
     
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
@@ -767,9 +763,9 @@ sub new {
             my ($id, $name) = split /_/;
             if (!defined($self->{maps_counters}->{$key}->{$_}->{threshold}) || $self->{maps_counters}->{$key}->{$_}->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
-                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
+                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                });
             }
             $self->{maps_counters}->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
                                                       output => $self->{output}, perfdata => $self->{perfdata},

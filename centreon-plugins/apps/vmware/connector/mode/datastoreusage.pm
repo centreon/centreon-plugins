@@ -49,9 +49,7 @@ sub custom_usage_perfdata {
         ($label, $nlabel) = ('free', 'datastore.space.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = $self->{result_values}->{display}
-        if (!defined($options{extra_instance}) || $options{extra_instance} != 0 || $self->{output}->use_new_perfdata());
+
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
@@ -60,7 +58,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label, unit => 'B',
-        instances => $extra_label,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
         nlabel => $nlabel,
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
