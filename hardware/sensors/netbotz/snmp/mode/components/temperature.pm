@@ -72,11 +72,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Temperature '%s' is %s C", $label, $result->{tempSensorValue}));
         }
-        $self->{output}->perfdata_add(label => 'temperature_' . $label, unit => 'C', 
-                                      value => $result->{tempSensorValue},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temperature', unit => 'C',
+            nlabel => 'hardware.sensor.temperature.celsius',
+            instances => $label,
+            value => $result->{tempSensorValue},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

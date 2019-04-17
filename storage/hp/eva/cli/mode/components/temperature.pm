@@ -64,11 +64,14 @@ sub temp_ctrl {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Temperature '%s' is %s C", $instance, $result->{tempc}));
             }
-            $self->{output}->perfdata_add(label => 'temperature_' . $instance, unit => 'C', 
-                                          value => $result->{tempc},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temperature', unit => 'C',
+                nlabel => 'hardware.temperature.controller.celsius',
+                instances => $instance,
+                value => $result->{tempc},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }
@@ -118,11 +121,14 @@ sub temp_diskshelf {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Temperature '%s' is %s C", $instance, $result->{tempc}));
             }
-            $self->{output}->perfdata_add(label => 'temperature_' . $instance, unit => 'C', 
-                                          value => $result->{tempc},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temperature', unit => 'C', 
+                nlabel => 'hardware.temperature.diskshelf.celsius',
+                instances => $instance,
+                value => $result->{tempc},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }

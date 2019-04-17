@@ -49,10 +49,13 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Current is '%s' A", $result->{mtxrHlCurrent} / 100));
         }
-        $self->{output}->perfdata_add(label => 'current', unit => 'A', 
-                                      value => $result->{mtxrHlCurrent} / 100,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'current', unit => 'A',
+            nlabel => 'hardware.current.ampere',
+            value => $result->{mtxrHlCurrent} / 100,
+            warning => $warn,
+            critical => $crit
+        );
         $self->{components}->{current}->{total}++;
     }
 }

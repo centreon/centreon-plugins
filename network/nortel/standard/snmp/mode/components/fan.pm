@@ -67,11 +67,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Fan temperature '%s' is %s degree centigrade", $instance, $result->{rcChasFanAmbientTemperature}));
         }
-        $self->{output}->perfdata_add(label => 'fan_temp_' . $instance, unit => 'C', 
-                                      value => $result->{rcChasFanAmbientTemperature},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'fan_temp', unit => 'C',
+            nlabel => 'hardware.fan.temperature.celsius',
+            instances => $instance,
+            value => $result->{rcChasFanAmbientTemperature},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

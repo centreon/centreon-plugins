@@ -79,10 +79,14 @@ sub check {
                                         short_msg => sprintf("ambient '%s' is %s degree centigrade", 
                                                         $temp, $value));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $temp, unit => 'C',
-                                      value => $value,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.ambient.temperature.celsius',
+            instances => $temp,
+            value => $value,
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

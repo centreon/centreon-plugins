@@ -55,9 +55,13 @@ sub check {
                                     );
         
         if ($result->{chasEntPhysPower} > 0) {
-            $self->{output}->perfdata_add(label => "power_" . $instance, unit => 'W',
-                                          value => $result->{chasEntPhysPower},
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => "power", unit => 'W',
+                nlabel => 'hardware.unknown.power.watt',
+                instances => $instance,
+                value => $result->{chasEntPhysPower},
+                min => 0
+            );
         }
         
         my $exit = $self->get_severity(label => 'admin', section => 'unknown.admin', value => $result->{chasEntPhysAdminStatus});

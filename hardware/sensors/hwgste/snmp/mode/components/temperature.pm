@@ -59,10 +59,18 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("temperature '%s' value is %s %s", $result->{sensName}, $result->{sensValue}, $result->{sensUnit}));
             }
-            $self->{output}->perfdata_add(label => 'sensor_' . $result->{sensName}, unit => $result->{sensUnit},
-                                          value => $result->{sensValue},
-                                          warning => $warn,
-                                          critical => $crit);
+            
+            my $nunit = 'celsius';
+            $nunit = 'fahrenheit' if ($result->{sensUnit} =~ /F/i);
+            $nunit = 'kelvin' if ($result->{sensUnit} =~ /K/i);
+            $self->{output}->perfdata_add(
+                label => 'sensor', unit => $result->{sensUnit},
+                nlabel => 'hardware.sensor.temperature.' . $nunit,
+                instances => $result->{sensName},
+                value => $result->{sensValue},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }
