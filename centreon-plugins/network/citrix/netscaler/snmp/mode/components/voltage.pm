@@ -61,11 +61,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Voltage '%s' is %s V", $result->{sysHealthCounterName}, $result->{sysHealthCounterValue}));
         }
-        $self->{output}->perfdata_add(label => 'volt_' . $result->{sysHealthCounterName}, unit => 'V', 
-                                      value => $result->{sysHealthCounterValue},
-                                      warning => $warn,
-                                      critical => $crit, min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'volt', unit => 'V',
+            nlabel => 'hardware.voltage.volt',
+            instances => $result->{sysHealthCounterName},
+            value => $result->{sysHealthCounterValue},
+            warning => $warn,
+            critical => $crit, min => 0
+        );
     }
 }
 

@@ -67,8 +67,12 @@ sub check {
         }
         
         if (defined($result->{voltageSensorValue}) && $result->{voltageSensorValue} =~ /^[0-9\.]+$/) {
-            $self->{output}->perfdata_add(label => 'volt_' . $result->{voltageSensorName} . '_' . $instance, unit => 'V', 
-                                          value => sprintf("%.2f", $result->{voltageSensorValue}));
+            $self->{output}->perfdata_add(
+                label => 'volt', unit => 'V',
+                nlabel => 'hardware.voltage.volt',
+                instances => [$result->{voltageSensorName}, $instance],
+                value => sprintf("%.2f", $result->{voltageSensorValue})
+            );
         }
     }
 }

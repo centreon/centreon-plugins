@@ -50,10 +50,13 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature is '%s' C", $result->{mtxrHlTemperature} / 10));
         }
-        $self->{output}->perfdata_add(label => 'temperature', unit => 'C', 
-                                      value => $result->{mtxrHlTemperature} / 10,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'temperature', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            value => $result->{mtxrHlTemperature} / 10,
+            warning => $warn,
+            critical => $crit
+        );
         $self->{components}->{temperature}->{total}++;
     }
     if (defined($result->{mtxrHlProcessorTemperature}) && $result->{mtxrHlProcessorTemperature} =~ /[0-9]+/) {
@@ -65,10 +68,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Processor temperature is '%s' C", $result->{mtxrHlProcessorTemperature} / 10));
         }
-        $self->{output}->perfdata_add(label => 'temperature_processor', unit => 'C', 
-                                      value => $result->{mtxrHlProcessorTemperature} / 10,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'temperature', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => 'processor',
+            value => $result->{mtxrHlProcessorTemperature} / 10,
+            warning => $warn,
+            critical => $crit
+        );
         $self->{components}->{temperature}->{total}++;
     }
 }

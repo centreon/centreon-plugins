@@ -78,10 +78,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Voltage '%s' is %s", $result->{voltDescr}, $result->{voltReading}));
             }
-            $self->{output}->perfdata_add(label => "volt_" . $result->{voltDescr},
-                                          value => $result->{voltReading},
-                                          warning => $warn,
-                                          critical => $crit);
+            $self->{output}->perfdata_add(
+                label => "volt",
+                nlabel => 'hardware.voltage.volt',
+                instances => $result->{voltDescr},
+                value => $result->{voltReading},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

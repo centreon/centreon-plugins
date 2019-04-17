@@ -76,10 +76,13 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower} / 10));
         }
-        $self->{output}->perfdata_add(label => 'power', unit => 'W', 
-                                      value => $result->{mtxrHlPower} / 10,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'power', unit => 'W',
+            nlabel => 'hardware.power.watt',
+            value => $result->{mtxrHlPower} / 10,
+            warning => $warn,
+            critical => $crit
+        );
         $self->{components}->{psu}->{total}++;
     }
 }

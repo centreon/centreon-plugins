@@ -49,10 +49,13 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10));
         }
-        $self->{output}->perfdata_add(label => 'voltage', unit => 'V', 
-                                      value => $result->{mtxrHlVoltage} / 10,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'voltage', unit => 'V',
+            nlabel => 'hardware.voltage.volt',
+            value => $result->{mtxrHlVoltage} / 10,
+            warning => $warn,
+            critical => $crit
+        );
         $self->{components}->{voltage}->{total}++;
     }
 }

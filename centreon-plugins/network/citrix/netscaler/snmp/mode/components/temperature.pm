@@ -60,11 +60,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' is %s C", $result->{sysHealthCounterName}, $result->{sysHealthCounterValue}));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $result->{sysHealthCounterName}, unit => 'C', 
-                                      value => $result->{sysHealthCounterValue},
-                                      warning => $warn,
-                                      critical => $crit, min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $result->{sysHealthCounterName},
+            value => $result->{sysHealthCounterValue},
+            warning => $warn,
+            critical => $crit, min => 0
+        );
     }
 }
 

@@ -72,11 +72,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Humidity '%s' is %s %%", $label, $result->{humiSensorValue}));
         }
-        $self->{output}->perfdata_add(label => 'humidity_' . $label, unit => '%', 
-                                      value => $result->{humiSensorValue},
-                                      warning => $warn,
-                                      critical => $crit, min => 0, max => 100
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'humidity', unit => '%',
+            nlabel => 'hardware.sensor.humidity.percentage',
+            instances => $label,
+            value => $result->{humiSensorValue},
+            warning => $warn,
+            critical => $crit, min => 0, max => 100
+        );
     }
 }
 
