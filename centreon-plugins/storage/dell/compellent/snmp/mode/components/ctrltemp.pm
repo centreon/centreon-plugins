@@ -90,11 +90,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Controller temperature '%s' is %s C", $result->{scCtlrTempName}, $result->{scCtlrTempCurrentC}));
         }
-        $self->{output}->perfdata_add(label => 'ctrltemp_' . $instance, unit => 'C', 
-                                      value => $result->{scCtlrTempCurrentC},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'ctrltemp', unit => 'C',
+            nlabel => 'hardware.controller.temperature.celsius',
+            instances => $instance,
+            value => $result->{scCtlrTempCurrentC},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

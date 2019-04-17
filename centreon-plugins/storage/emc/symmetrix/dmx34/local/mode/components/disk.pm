@@ -108,10 +108,13 @@ sub check {
                                                     $total - $used - $not_ready, $total));
     }
     
-    $self->{output}->perfdata_add(label => "disk_spare_available",
-                                  value => $total - $used - $not_ready,
-                                  warning => $warn,
-                                  critical => $crit, min => 0, max => $total);
+    $self->{output}->perfdata_add(
+        label => "disk_spare_available",
+        nlabel => 'hardware.disk.spare.available.count',
+        value => $total - $used - $not_ready,
+        warning => $warn,
+        critical => $crit, min => 0, max => $total
+    );
 }
 
 1;

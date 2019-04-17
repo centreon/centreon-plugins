@@ -62,11 +62,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Power '%s' sensor is %s (Volt or Amp)", $result->{powerSensorName}, $result->{powerSensorValue}));
         }
-        $self->{output}->perfdata_add(label => 'power_' . $result->{powerSensorName}, 
-                                      value => $result->{powerSensorValue},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'power',
+            nlabel => 'hardware.power.sensor.count',
+            instances => $result->{powerSensorName}, 
+            value => $result->{powerSensorValue},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

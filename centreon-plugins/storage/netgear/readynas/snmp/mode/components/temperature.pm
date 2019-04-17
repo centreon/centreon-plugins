@@ -80,10 +80,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Temperature '%s' is %s%s", $instance, $result->{temperatureValue}, $temperatureMax_unit));
         }
-        $self->{output}->perfdata_add(label => "temp_" . $instance, unit => $temperatureMax_unit,
-                                      value => $result->{temperatureValue},
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => $temperatureMax_unit,
+            nlabel => 'hardware.temperature.' . (($temperatureMax_unit eq 'C') ? 'celsius' : 'fahrenheit'),
+            instances => $instance,
+            value => $result->{temperatureValue},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

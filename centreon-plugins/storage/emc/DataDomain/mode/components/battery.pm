@@ -79,12 +79,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Nvram battery '%s' charge is %s %%", $instance, $batt_value));
             }
-            $self->{output}->perfdata_add(label => 'nvram_battery_' . $instance, unit => '%', 
-                                          value => $batt_value,
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0, max => 100
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'nvram_battery', unit => '%',
+                nlabel => 'hardware.battery.nvram.charge.percentage',
+                instances => $instance,
+                value => $batt_value,
+                warning => $warn,
+                critical => $crit,
+                min => 0, max => 100
+            );
         }
     }
 }

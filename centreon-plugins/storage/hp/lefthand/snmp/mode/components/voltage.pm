@@ -86,12 +86,15 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("voltage sensor '%s' is %s V", $result->{infoVoltageSensorName}, $result->{infoVoltageSensorValue}));
         }
-        $self->{output}->perfdata_add(label => 'voltage_' . $result->{infoVoltageSensorName}, unit => 'V', 
-                                      value => $result->{infoVoltageSensorValue},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'voltage', unit => 'V',
+            nlabel => 'hardware.voltage.volt',
+            instances => $result->{infoVoltageSensorName},
+            value => $result->{infoVoltageSensorValue},
+            warning => $warn,
+            critical => $crit,
+            min => 0
+        );
     }
 }
 

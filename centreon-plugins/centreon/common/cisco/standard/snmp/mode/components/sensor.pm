@@ -240,10 +240,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Sensor '%s/%s' is %s %s", $sensor_descr, $instance, $result->{entSensorValue}, $perfdata_unit{$result->{entSensorType}}));
         }
-        $self->{output}->perfdata_add(label => $component . '_' . $sensor_descr, unit => $perfdata_unit{$result->{entSensorType}},
-                                      value => $result->{entSensorValue},
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => $component, unit => $perfdata_unit{$result->{entSensorType}},
+            nlabel => 'hardware.' . $component, 
+            instances => $sensor_descr,
+            value => $result->{entSensorValue},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

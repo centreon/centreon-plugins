@@ -52,10 +52,14 @@ sub temperature {
     $self->{output}->output_add(long_msg => sprintf("Temperature '%s' is %s degree centigrade.",
                                 $instance, $temperature));
     my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $temperature);
-    $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => 'C',
-                                  value => $temperature,
-                                  warning => $warn,
-                                  critical => $crit);
+    $self->{output}->perfdata_add(
+        label => 'temp', unit => 'C',
+        nlabel => 'hardware.temperature.celsius',
+        instances => $instance,
+        value => $temperature,
+        warning => $warn,
+        critical => $crit
+    );
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Temperature '%s' is %s degree centigrade", $instance, $temperature));

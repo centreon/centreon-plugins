@@ -122,10 +122,14 @@ sub check {
                                                                  $shelf_addr, $num, $current_value));
             }
             
-            $self->{output}->perfdata_add(label => "volt_" . $shelf_addr . "_" . $num, unit => 'mV',
-                                          value => $current_value,
-                                          warning => $warn,
-                                          critical => $crit);
+            $self->{output}->perfdata_add(
+                label => "volt", unit => 'mV',
+                nlabel => 'hardware.voltage.millivolt',
+                instances => [$shelf_addr, $num],
+                value => $current_value,
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

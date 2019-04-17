@@ -90,12 +90,15 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Controller fan '%s' is %s rpm", $result->{scCtlrFanName}, $result->{scCtlrFanCurrentRpm}));
         }
-        $self->{output}->perfdata_add(label => 'ctrlfan_' . $instance, unit => 'rpm', 
-                                      value => $result->{scCtlrFanCurrentRpm},
-                                      warning => $warn,
-                                      critical => $crit, 
-                                      min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'ctrlfan', unit => 'rpm',
+            nlabel => 'hardware.controller.fan.speed.rpm',
+            instances => $instance,
+            value => $result->{scCtlrFanCurrentRpm},
+            warning => $warn,
+            critical => $crit, 
+            min => 0
+        );
     }
 }
 

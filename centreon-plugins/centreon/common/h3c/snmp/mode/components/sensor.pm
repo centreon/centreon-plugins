@@ -97,11 +97,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature sensor '%s' is %s degree centigrade", $name, $result2->{EntityExtTemperature}));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => 'C', 
-                                      value => $result2->{EntityExtTemperature},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C', 
+            nlabel => 'hardware.sensor.temperature.celsius',
+            instances => $instance,
+            value => $result2->{EntityExtTemperature},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

@@ -73,11 +73,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' is %s degree centigrade", $result->{slHdwTempSensorName}, $result->{slHdwTempSensorCurrentTemp}));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $result->{slHdwTempSensorName}, unit => 'C', 
-                                      value => $result->{slHdwTempSensorCurrentTemp},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $result->{slHdwTempSensorName},
+            value => $result->{slHdwTempSensorCurrentTemp},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 
