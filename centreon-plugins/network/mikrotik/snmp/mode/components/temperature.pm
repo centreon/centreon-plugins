@@ -53,6 +53,7 @@ sub check {
         $self->{output}->perfdata_add(
             label => 'temperature', unit => 'C',
             nlabel => 'hardware.temperature.celsius',
+            instances => 'system',
             value => $result->{mtxrHlTemperature} / 10,
             warning => $warn,
             critical => $crit
