@@ -61,7 +61,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-usage', set => {
+        { label => 'total-usage', nlabel => 'page.space.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -72,7 +72,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-active', display_ok => 0, set => {
+        { label => 'total-active', nlabel => 'page.space.active.count', display_ok => 0, set => {
                 key_values => [ { name => 'nactive' }, { name => 'ntotal' } ],
                 output_template => 'Total page space active : %s',
                 perfdatas => [
@@ -84,7 +84,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{swap} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'page.space.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
