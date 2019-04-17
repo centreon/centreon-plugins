@@ -241,8 +241,9 @@ sub request {
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         my $short_msg = $self->{response}->status_line;
         if ($short_msg =~ /^401/) {
-            my ($authenticate) = $self->{response}->www_authenticate =~ /(\S+)/;
-            $short_msg .= ' (' . $authenticate . ' authentication expected)';
+            my $authenticate = '';
+            $short_msg .= ' (' . $1 . ' authentication expected)' if (defined($self->{response}->www_authenticate) &&
+                $self->{response}->www_authenticate =~ /(\S+)/);
         }
 
         $self->{output}->output_add(long_msg => $self->{response}->content, debug => 1);
