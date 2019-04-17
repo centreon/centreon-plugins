@@ -161,6 +161,16 @@ sub output {
     return sprintf($self->{output_template}, $value, $unit);
 }
 
+sub use_instances {
+    my ($self, %options) = @_;
+
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0 || $self->{output}->use_new_perfdata()) {
+        return 1;
+    }
+    
+    return 0;
+}
+
 sub perfdata {
     my ($self, %options) = @_;
     

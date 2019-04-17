@@ -124,13 +124,16 @@ sub run {
                                         $self->{result}->{$name}->{sessions}));
         }
 
-        my $extra_label = '';
+        my $extra_label;
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'sessions' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{sessions}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'sessions',
+            instances => $extra_label,
+            value => sprintf("%.2f", $self->{result}->{$name}->{sessions}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
     };
 
     $self->{output}->display();

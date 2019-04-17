@@ -61,9 +61,6 @@ sub custom_usage_perfdata {
     my $use_th = 1;
     $use_th = 0 if ($self->{instance_mode}->{option_results}->{units} eq '%' && $self->{result_values}->{max} <= 0);
     
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-    
     my $value_perf = $self->{result_values}->{used};
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%' && $self->{result_values}->{max} > 0) {
@@ -73,11 +70,14 @@ sub custom_usage_perfdata {
 
     my $label = $self->{label};
     $label =~ s/-/_/g;
-    $self->{output}->perfdata_add(label => $label . $extra_label,
-                                  value => $value_perf,
-                                  warning => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options) : undef,
-                                  critical => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options) : undef,
-                                  min => 0, max => $self->{result_values}->{max} > 0 ? $self->{result_values}->{max} : undef);
+    $self->{output}->perfdata_add(
+        label => $label,
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $value_perf,
+        warning => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options) : undef,
+        critical => $use_th == 1 ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options) : undef,
+        min => 0, max => $self->{result_values}->{max} > 0 ? $self->{result_values}->{max} : undef
+    );
 }
 
 sub custom_usage_threshold {
@@ -90,7 +90,7 @@ sub custom_usage_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 

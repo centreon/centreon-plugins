@@ -275,30 +275,41 @@ sub run {
                                        $requestInfo_errorCount_absolute_per_sec));
         }
         
-        my $extra_label = '';
+        my $extra_label;
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'maxTime' . $extra_label,
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_maxTime}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'maxTime',
+            instances => $extra_label,
+            value => sprintf("%.2f", $self->{result}->{$name}->{requestInfo_maxTime}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
 
-        $self->{output}->perfdata_add(label => 'processingTime' . $extra_label,
-                                      value => sprintf("%.3f", $requestInfo_processingTime_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-
-        $self->{output}->perfdata_add(label => 'requestCount' . $extra_label,
-                                      value => sprintf("%.2f", $requestInfo_requestCount_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'errorCount' . $extra_label,
-                                      value => sprintf("%.2f", $requestInfo_errorCount_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'processingTime',
+            instances => $extra_label,
+            value => sprintf("%.3f", $requestInfo_processingTime_absolute_per_sec),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
+        $self->{output}->perfdata_add(
+            label => 'requestCount',
+            instances => $extra_label,
+            value => sprintf("%.2f", $requestInfo_requestCount_absolute_per_sec),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
+        $self->{output}->perfdata_add(
+            label => 'errorCount',
+            instances => $extra_label,
+            value => sprintf("%.2f", $requestInfo_errorCount_absolute_per_sec),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
     };
 
     $self->{statefile_value}->write(data => $new_datas);    

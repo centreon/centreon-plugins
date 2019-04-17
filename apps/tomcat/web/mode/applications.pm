@@ -123,11 +123,14 @@ sub run {
                                         $self->{result}->{$name}->{state}));
         }
 
-        my $extra_label = '';
+        my $extra_label;
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'status' . $extra_label,
-                                      value => sprintf("%.1f", $staterc),
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'status',
+            instances => $extra_label,
+            value => sprintf("%.1f", $staterc),
+            min => 0
+        );
     };
 
     $self->{output}->display();
