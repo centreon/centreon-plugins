@@ -28,25 +28,22 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => "used" . $extra_label,
-				                  unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-usage'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-usage'),
-                                  min => 0,
-                                  max => $self->{result_values}->{total},
-                                 );
+    $self->{output}->perfdata_add(
+        label => "used", unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0, max => $self->{result_values}->{total},
+    );
 }
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used_prct},
-                                                  threshold => [ { label => 'critical-usage', exit_litteral => 'critical' },
-                                                                 { label => 'warning-usage', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                                 { label => 'warning-' .  $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
