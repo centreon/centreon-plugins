@@ -46,7 +46,7 @@ sub set_counters {
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'rx-snr', nlabel => 'rx.snr.ratio', set => {
+        { label => 'rx-snr', nlabel => 'rx.signal.noise.ratio.dbm', set => {
                 key_values => [ { name => 'rx_snr' } ],
                 output_template => 'Average signal to noise ratio: %s Dbm',
                 perfdatas => [
@@ -54,7 +54,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'rx-power', nlabel => 'rx.power.dbm', set => {
+        { label => 'rx-power', nlabel => 'rx.signal.strength.dbm', set => {
                 key_values => [ { name => 'rx_power' } ],
                 output_template => 'Received signal strength: %s Dbm',
                 perfdatas => [

@@ -199,15 +199,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-replication-status:s"    => { name => 'warning_replication_status', default => '' },
-                                  "critical-replication-status:s"   => { name => 'critical_replication_status', default => '%{status} !~ /normal/i' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"           => { name => 'filter_name' },
+        "warning-replication-status:s"    => { name => 'warning_replication_status', default => '' },
+        "critical-replication-status:s"   => { name => 'critical_replication_status', default => '%{status} !~ /normal/i' },
+        "units:s"             => { name => 'units', default => '%' },
+        "free"                => { name => 'free' },
+    });
+
     return $self;
 }
 

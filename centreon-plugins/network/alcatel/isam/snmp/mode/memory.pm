@@ -31,7 +31,7 @@ sub custom_usage_perfdata {
     my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        ($label, $nlabel) = ('free', 'memory.usage.bytes');
+        ($label, $nlabel) = ('free', 'memory.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
 
@@ -43,7 +43,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label, unit => 'B',
-        nlabel => $self->{nlabel},
+        nlabel => $nlabel,
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),

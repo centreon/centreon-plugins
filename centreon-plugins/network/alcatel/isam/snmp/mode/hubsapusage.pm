@@ -45,7 +45,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'in-traffic', nlabel => 'sap.traffic.in.bitsperseconds', set => {
+        { label => 'in-traffic', nlabel => 'sap.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -66,7 +66,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-in-traffic', nlabel => 'traffic.in.bitsperseconds', set => {
+        { label => 'total-in-traffic', nlabel => 'sap.traffic.in.bitspersecond', set => {
                 key_values => [],
                 manual_keys => 1, per_second => 1, output_change_bytes => 2,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -75,7 +75,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_total_traffic_threshold'),
             }
         },
-        { label => 'total-out-traffic', nlabel => 'traffic.out.bitsperseconds', set => {
+        { label => 'total-out-traffic', nlabel => 'sap.traffic.out.bitspersecond', set => {
                 key_values => [],
                 manual_keys => 1, per_second => 1, output_change_bytes => 2,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
