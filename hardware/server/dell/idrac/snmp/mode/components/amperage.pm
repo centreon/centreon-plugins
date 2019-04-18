@@ -110,11 +110,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Amperage '%s' is %s %s", $result->{amperageProbeLocationName}, $result->{amperageProbeReading}, $unit));
             }
-            $self->{output}->perfdata_add(label => 'amperage_' . $result->{amperageProbeLocationName}, unit => $unit, 
-                                          value => $result->{amperageProbeReading},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'amperage', unit => $unit,
+                nlabel => 'hardware.probe.amperage.' . ($unit eq 'A' ? 'ampere' : 'watt'),
+                instances =>  $result->{amperageProbeLocationName},
+                value => $result->{amperageProbeReading},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }

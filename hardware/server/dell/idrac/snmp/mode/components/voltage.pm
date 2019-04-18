@@ -101,11 +101,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Voltage '%s' is %s V", $result->{voltageProbeLocationName}, $result->{voltageProbeReading}));
             }
-            $self->{output}->perfdata_add(label => 'voltage_' . $result->{voltageProbeLocationName}, unit => 'V', 
-                                          value => $result->{voltageProbeReading},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'voltage', unit => 'V',
+                nlabel => 'hardware.probe.voltage.volt',
+                instances => $result->{voltageProbeLocationName},
+                value => $result->{voltageProbeReading},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }
