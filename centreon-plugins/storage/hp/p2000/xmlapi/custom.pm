@@ -184,12 +184,13 @@ sub DESTROY {
 sub get_infos {
     my ($self, %options) = @_;
     my ($xpath, $nodeset);
-    
+
+    $self->login();
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
-    my $response =$self->{http}->request(url_path => $self->{url_path} . $cmd, 
-                                         header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
-                                                    'dataType: api', 'sessionKey: '. $self->{session_id}]);
+    my $response = $self->{http}->request(url_path => $self->{url_path} . $cmd, 
+                                          header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                                                     'dataType: api', 'sessionKey: '. $self->{session_id}]);
     
     eval {
         $xpath = XML::XPath->new(xml => $response);
@@ -247,7 +248,9 @@ sub get_infos {
 ##############
 sub login {
     my ($self, %options) = @_;
-    
+
+    return if ($self->{logon} == 1);
+
     $self->build_options_for_httplib();
     $self->{http}->set_options(%{$self->{option_results}});
     
