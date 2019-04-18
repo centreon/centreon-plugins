@@ -138,6 +138,8 @@ my $oid_ciscoMemoryPoolEntry = '.1.3.6.1.4.1.9.9.48.1.1.1';
 
 sub check_memory_pool {
     my ($self, %options) = @_;
+
+    return if ($self->{checked_memory} == 1);
     
     my $snmp_result = $self->{snmp}->get_table(
         oid => $oid_ciscoMemoryPoolEntry,
@@ -253,10 +255,10 @@ sub manage_selection {
     $self->{snmp} = $options{snmp};
     $self->{checked_memory} = 0;
     $self->{memory} = {};
-    
+
+    $self->check_memory_enhanced_pool();
     $self->check_memory_pool();
     $self->check_memory_system_ext();
-    $self->check_memory_enhanced_pool();
     
     if ($self->{checked_memory} == 0) {
         $self->{output}->add_option_msg(short_msg => "Cannot find memory informations");
