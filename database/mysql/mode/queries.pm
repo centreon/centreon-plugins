@@ -34,7 +34,7 @@ sub set_counters {
     ];
    
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'queries.perseconds', set => {
+        { label => 'total', nlabel => 'queries.persecond', set => {
                 key_values => [ { name => 'Queries', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Total : %d',
@@ -48,7 +48,7 @@ sub set_counters {
     
     foreach ('update', 'delete', 'insert', 'truncate', 'select', 'commit', 'begin') {
         push @{$self->{maps_counters}->{global}}, {
-            label => $_, nlabel => 'queries.' . $_ . '.perseconds',  display_ok => 0, set => {
+            label => $_, nlabel => 'queries.' . $_ . '.persecond',  display_ok => 0, set => {
                 key_values => [ { name => 'Com_' . $_, diff => 1 } ],
                 per_second => 1,
                 output_template => $_ . ' : %d',
