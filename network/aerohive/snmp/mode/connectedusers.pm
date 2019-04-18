@@ -44,7 +44,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{ssid} = [
-        { label => 'ssid', nlabel => 'ssid.users.cuurent.count', set => {
+        { label => 'ssid', nlabel => 'ssid.users.current.count', set => {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'users : %s',
                 perfdatas => [
