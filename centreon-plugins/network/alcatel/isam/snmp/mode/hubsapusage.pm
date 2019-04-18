@@ -54,7 +54,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_qsap_threshold'),
             }
         },
-        { label => 'out-traffic', nlabel => 'sap.traffic.out.bitsperseconds', set => {
+        { label => 'out-traffic', nlabel => 'sap.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
