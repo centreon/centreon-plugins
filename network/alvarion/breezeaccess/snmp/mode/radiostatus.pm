@@ -46,7 +46,7 @@ sub set_counters {
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'rx-snr', set => {
+        { label => 'rx-snr', nlabel => 'rx.snr.ratio', set => {
                 key_values => [ { name => 'rx_snr' } ],
                 output_template => 'Average signal to noise ratio: %s Dbm',
                 perfdatas => [
@@ -54,7 +54,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'rx-power', set => {
+        { label => 'rx-power', nlabel => 'rx.power.dbm', set => {
                 key_values => [ { name => 'rx_power' } ],
                 output_template => 'Received signal strength: %s Dbm',
                 perfdatas => [
@@ -62,7 +62,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'bad-frames', set => {
+        { label => 'bad-frames', nlabel => 'frames.bad.percentage', set => {
                 key_values => [ { name => 'total_frames', diff => 1 }, { name => 'bad_frames', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_badframes_calc'),
                 output_template => 'Bad frames: %.2f %%', output_use => 'bad_prct', threshold_use => 'bad_prct',

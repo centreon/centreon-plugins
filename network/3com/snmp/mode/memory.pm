@@ -30,6 +30,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => 'used', unit => 'B',
+        nlabel =>  $self->{nlabel},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -79,7 +80,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{memory} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
