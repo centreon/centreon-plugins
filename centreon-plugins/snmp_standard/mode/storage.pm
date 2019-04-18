@@ -72,7 +72,7 @@ my %storage_types_manage = (
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my ($label, $nlabel) = ('used', $self->{label});
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
         ($label, $nlabel) = ('free', 'storage.space.free.bytes');

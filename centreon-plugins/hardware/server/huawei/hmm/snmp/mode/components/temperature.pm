@@ -64,11 +64,14 @@ sub check {
                                         short_msg => sprintf("Temperature '%s' is '%s' celsius degrees", $result->{bladeTemperatureIndex}, $result->{bladeTemperatureReading}));
         }
         
-        $self->{output}->perfdata_add(label => 'temperature_' . $result->{bladeTemperatureIndex}, unit => 'C', 
-                                        value => $result->{bladeTemperatureReading},
-                                        warning => $warn,
-                                        critical => $crit
-                                        );
+        $self->{output}->perfdata_add(
+            label => 'temperature', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $result->{bladeTemperatureIndex},
+            value => $result->{bladeTemperatureReading},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

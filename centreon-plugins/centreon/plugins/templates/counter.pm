@@ -146,9 +146,11 @@ sub new {
                     });
                 }
             }
-            $_->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
-                                                       output => $self->{output}, perfdata => $self->{perfdata},
-                                                       label => $label, thlabel => $thlabel);
+            $_->{obj} = centreon::plugins::values->new(
+                statefile => $self->{statefile_value},
+                output => $self->{output}, perfdata => $self->{perfdata},
+                label => $_->{label}, nlabel => $_->{nlabel}, thlabel => $thlabel,
+            );
             $_->{obj}->set(%{$_->{set}});
         }
     }
