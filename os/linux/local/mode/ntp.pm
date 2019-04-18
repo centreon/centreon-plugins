@@ -110,7 +110,7 @@ sub custom_offset_perfdata {
         );
     } else {
         $self->{output}->perfdata_add(
-            label => 'offset' . $extra_label, unit => 'ms',
+            label => 'offset', unit => 'ms',
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display_absolute} : undef,
             value => $self->{result_values}->{offset_absolute},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
