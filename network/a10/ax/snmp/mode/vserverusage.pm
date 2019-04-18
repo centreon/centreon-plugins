@@ -76,7 +76,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'traffic-in', nlabel => 'virtualserver.traffic.in.bitsperseconds', set => {
+        { label => 'traffic-in', nlabel => 'virtualserver.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'axVirtualServerStatBytesIn', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic In : %s %s/s',
@@ -86,7 +86,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'traffic-out', nlabel => 'virtualserver.traffic.out.bitsperseconds', set => {
+        { label => 'traffic-out', nlabel => 'virtualserver.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'axVirtualServerStatBytesOut', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out : %s %s/s',
