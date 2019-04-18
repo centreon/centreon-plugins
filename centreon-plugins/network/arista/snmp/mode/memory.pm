@@ -39,7 +39,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{storage} = [
-        { label => 'usage', nlabel => 'memory.usage.butes', set => {
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'size' }, { name => 'allocation_units' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
