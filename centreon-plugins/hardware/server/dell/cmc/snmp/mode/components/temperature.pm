@@ -25,9 +25,9 @@ use warnings;
 
 # In MIB 'DELL-RAC-MIB'
 my $mapping = {
-    drsChassisFrontPanelAmbientTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.10', instance => 'chassis', label => 'temp_chassis', descr => 'Chassis Ambient temperature' },
-    drsCMCAmbientTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.11', instance => 'ambient', label => 'temp_ambient', descr => 'CMC Ambient temperarture' },
-    drsCMCProcessorTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.12', instance => 'processor', label => 'temp_processor', descr => 'Processor temperature' },
+    drsChassisFrontPanelAmbientTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.10', instance => 'chassis', descr => 'Chassis Ambient temperature' },
+    drsCMCAmbientTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.11', instance => 'ambient', descr => 'CMC Ambient temperarture' },
+    drsCMCProcessorTemperature => { oid => '.1.3.6.1.4.1.674.10892.2.3.1.12', instance => 'processor', descr => 'Processor temperature' },
 };
 my $oid_drsChassisStatusGroup = '.1.3.6.1.4.1.674.10892.2.3';
 
@@ -61,10 +61,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("%s is %sC", $mapping->{$probe}->{descr}, $result->{$probe}));
         }
-        $self->{output}->perfdata_add(label => $mapping->{$probe}->{label}, unit => 'C',
-                                      value => $result->{$probe},
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $mapping->{$probe}->{instance},
+            value => $result->{$probe},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 
