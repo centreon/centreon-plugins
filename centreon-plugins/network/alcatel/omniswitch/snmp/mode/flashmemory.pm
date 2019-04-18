@@ -59,7 +59,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'flash.usage.bytes', set => {
                 key_values => [ { name => 'total' }, { name => 'free' }, { name => 'display' },  ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
