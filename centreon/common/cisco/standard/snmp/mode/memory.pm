@@ -28,7 +28,7 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my ($label, $nlabel, $unit, $total) = ('used', $self->{label}, '%', 100);
+    my ($label, $nlabel, $unit, $total) = ('used', $self->{nlabel}, '%', 100);
     my $value_perf = $self->{result_values}->{prct_used};
     my %total_options = ();
     if ($self->{result_values}->{total} != -1) {

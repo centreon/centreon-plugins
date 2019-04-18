@@ -35,6 +35,7 @@ sub new {
     $self->{output} = $options{output};
     $self->{perfdata} = $options{perfdata};
     $self->{label} = $options{label};
+    $self->{nlabel} = $options{nlabel};
     $self->{thlabel} = defined($options{thlabel}) ? $options{thlabel} : $self->{label};
 
     $self->{perfdatas} = [];
@@ -211,16 +212,11 @@ sub perfdata {
                 $instances = $instance;
             }
         }
-        
-        my %nlabel_option = ();
-        if ($self->{output}->use_new_perfdata()) {
-            $nlabel_option{nlabel} = $self->{label};
-        }
 
         $self->{output}->perfdata_add(
             label => $label,
             instances => $instances,
-            %nlabel_option,
+            nlabel => $self->{nlabel},
             unit => $perf->{unit},
             value => $cast_int == 1 ? int($self->{result_values}->{$perf->{value}}) : sprintf($template, $self->{result_values}->{$perf->{value}}),
             warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total, cast_int => $cast_int),
