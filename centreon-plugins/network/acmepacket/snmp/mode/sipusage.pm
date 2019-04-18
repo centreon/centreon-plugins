@@ -77,7 +77,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'latency', nlabel => 'sip.stats.latency.ms', set => {
+        { label => 'latency', nlabel => 'sip.stats.latency.milliseconds', set => {
                 key_values => [ { name => 'apSipSAStatsAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s ms',
                 perfdatas => [
