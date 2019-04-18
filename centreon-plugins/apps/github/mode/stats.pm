@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -77,7 +76,6 @@ sub run {
 
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->output_add(long_msg => Data::Dumper::Dumper(), debug => 1);
         $self->{output}->option_exit();
     }
 
