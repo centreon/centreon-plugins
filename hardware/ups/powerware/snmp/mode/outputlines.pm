@@ -109,8 +109,8 @@ my $mapping = {
     xupsOutputWatts     => { oid => '.1.3.6.1.4.1.534.1.4.4.1.4' }, # in W
 };
 my $mapping2 = {
-    xupsOutputLoad      => { oid => '.1.3.6.1.4.1.534.1.4.1', default => -1 }, # in %
-    xupsOutputFrequency => { oid => '.1.3.6.1.4.1.534.1.4.2', default => 0 }, # in dHZ
+    xupsOutputLoad      => { oid => '.1.3.6.1.4.1.534.1.4.1' }, # in %
+    xupsOutputFrequency => { oid => '.1.3.6.1.4.1.534.1.4.2' }, # in dHZ
 };
 
 my $oid_xupsOutput = '.1.3.6.1.4.1.534.1.4';
@@ -126,7 +126,7 @@ sub manage_selection {
     );
     
     foreach my $oid (keys %{$snmp_result}) {
-        $oid =~ /^$oid_xupsOutputEntry\.\d+\.(.*)$/;
+        next if ($oid !~ /^$oid_xupsOutputEntry\.\d+\.(.*)$/);
         my $instance = $1;
         next if (defined($self->{oline}->{$instance}));
         
