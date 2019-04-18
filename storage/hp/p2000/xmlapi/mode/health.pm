@@ -36,12 +36,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "component:s"      => { name => 'component', default => 'all' },
-                                  "no-component:s"   => { name => 'no_component' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "exclude:s"        => { name => 'exclude' },
+        "component:s"      => { name => 'component', default => 'all' },
+        "no-component:s"   => { name => 'no_component' },
+    });
 
     $self->{components} = {};
     $self->{no_components} = undef;
