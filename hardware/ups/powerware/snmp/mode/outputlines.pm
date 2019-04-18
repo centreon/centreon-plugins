@@ -144,9 +144,6 @@ sub manage_selection {
     $result->{xupsOutputFrequency} = defined($result->{xupsOutputFrequency}) ? ($result->{xupsOutputFrequency} * 0.1) : 0;
     $result->{xupsOutputLoad} = defined($result->{xupsOutputLoad}) ? $result->{xupsOutputLoad} : -1;
     $self->{global} = { %$result };
-    
-    use Data::Dumper;
-    print Data::Dumper::Dumper($self->{oline});
 }
 
 1;
