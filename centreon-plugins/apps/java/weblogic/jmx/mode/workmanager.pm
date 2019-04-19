@@ -57,29 +57,29 @@ sub set_counters {
             }
         },
         { label => 'request-completed', set => {
-                key_values => [ { name => 'completed', diff => 1 }, { name => 'runtime' } ],
+                key_values => [ { name => 'completed', diff => 1 }, { name => 'display' } ],
                 output_template => 'Requests completed : %s',
                 perfdatas => [
                     { label => 'request_completed', value => 'completed_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'runtime_absolute' },
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'request-pending', set => {
-                key_values => [ { name => 'pending' }, { name => 'runtime' } ],
+                key_values => [ { name => 'pending' }, { name => 'display' } ],
                 output_template => 'Requests pending : %s',
                 perfdatas => [
                     { label => 'request_pending', value => 'pending_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'runtime_absolute' },
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'thread-stuck', set => {
-                key_values => [ { name => 'stuck' }, { name => 'runtime' } ],
+                key_values => [ { name => 'stuck' }, { name => 'display' } ],
                 output_template => 'Threads stuck : %s',
                 perfdatas => [
                     { label => 'thread_stuck', value => 'stuck_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'runtime_absolute' },
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
