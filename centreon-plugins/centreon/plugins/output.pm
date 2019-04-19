@@ -815,8 +815,10 @@ sub is_debug {
 }
 
 sub use_new_perfdata {
-    my ($self) = @_;
+    my ($self, %options) = @_;
 
+    $self->{option_results}->{use_new_perfdata} = $options{value}
+        if (defined($options{value}));
     if (defined($self->{option_results}->{use_new_perfdata})) {
         return 1;
     }
