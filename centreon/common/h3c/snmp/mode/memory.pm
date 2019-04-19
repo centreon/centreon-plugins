@@ -20,59 +20,42 @@
 
 package centreon::common::h3c::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 use centreon::plugins::statefile;
-
-my $oid_entPhysicalEntry = '.1.3.6.1.2.1.47.1.1.1.1';
-my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
-my $oid_entPhysicalContainedIn = '.1.3.6.1.2.1.47.1.1.1.1.4';
-my $oid_entPhysicalClass = '.1.3.6.1.2.1.47.1.1.1.1.5';
-my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
-
-my $maps_counters = {
-    '000_usage' => { set => {
-                        key_values => [
-                                        { name => 'display' }, { name => 'used_prct' }, { name => 'total' },
-                                      ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
+
     if ($self->{result_values}->{total} == 4294967295) {
-        $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => '%',
-                                      value => $self->{result_values}->{prct_used},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            label => 'used', unit => '%',
+            nlabel => 'memory.usage.percentage',
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => $self->{result_values}->{prct_used},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+            min => 0, max => 100
+        );
     } else {
-        $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => 'B',
-                                      value => int($self->{result_values}->{used}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                      min => 0, max => $self->{result_values}->{total});
+        $self->{output}->perfdata_add(
+            label => 'used', unit => 'B',
+            nlabel => $self->{nlabel},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => int($self->{result_values}->{used}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+            min => 0, max => $self->{result_values}->{total}
+        );
     }
 }
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -108,108 +91,58 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory usages are ok' }
+    ];
+    
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'display' }, { name => 'used_prct' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+    
+    return "Memory '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                  "display-entity-name"     => { name => 'display_entity_name' },
-                                });                         
-     
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
+    $options{options}->add_options(arguments => { 
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+        "display-entity-name"     => { name => 'display_entity_name' },
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-
     $self->{statefile_cache}->check_options(%options);
 }
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{memory_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All memory usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{memory_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{memory_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(level => 1, extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg [entity = '" . $self->{memory_selected}->{$id}->{name} . "']");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Memory '" . $self->{memory_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
+my $oid_entPhysicalEntry = '.1.3.6.1.2.1.47.1.1.1.1';
+my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
+my $oid_entPhysicalContainedIn = '.1.3.6.1.2.1.47.1.1.1.1.4';
+my $oid_entPhysicalClass = '.1.3.6.1.2.1.47.1.1.1.1.5';
+my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
 
 sub check_cache {
     my ($self, %options) = @_;
@@ -261,6 +194,7 @@ sub get_long_name {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{snmp} = $options{snmp};
     my $oid_h3cEntityExtStateEntry = '.1.3.6.1.4.1.2011.10.2.6.1.1.1.1';
     my $oid_hh3cEntityExtStateEntry = '.1.3.6.1.4.1.25506.2.6.1.1.1.1';
     my $oid_hh3cEntityExtMemUsage = '.1.3.6.1.4.1.25506.2.6.1.1.1.1.8';
@@ -291,7 +225,7 @@ sub manage_selection {
         EntityExtMemSize => { oid => $self->{branch} . '.10' },
     };
     
-    $self->{memory_selected} = {};
+    $self->{memory} = {};
     foreach my $oid (keys %{$self->{results}->{$self->{branch} . '.8'}}) {
         next if ($oid !~ /^$self->{branch}\.8\.(\d+)/);
         my $instance = $1;
@@ -304,12 +238,15 @@ sub manage_selection {
             if (defined($self->{option_results}->{display_entity_name})) {
                 $name = $self->get_long_name(instance => $instance);
             }
-            $self->{memory_selected}->{$instance} = { display => $instance, name => $name, 
-                                                      used_prct => $result->{EntityExtMemUsage}, total => $result2->{EntityExtMemSize}};
+            $self->{memory}->{$instance} = { 
+                display => $instance, name => $name, 
+                used_prct => $result->{EntityExtMemUsage},
+                total => $result2->{EntityExtMemSize}
+            };
         }
     }
     
-    if (scalar(keys %{$self->{memory_selected}}) <= 0) {
+    if (scalar(keys %{$self->{memory}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }
