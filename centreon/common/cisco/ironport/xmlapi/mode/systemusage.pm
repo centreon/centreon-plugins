@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'total_utilization' } ],
                 output_template => 'total cpu usage: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'total_utilization_absolute', template => '%.2f',
+                    { value => 'total_utilization_absolute', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -99,7 +99,7 @@ sub set_counters {
                 key_values => [ { name => 'resource_conservation' } ],
                 output_template => 'resource conservation mode: %s',
                 perfdatas => [
-                    { label => 'resource_conservation', value => 'resource_conservation_absolute', template => '%s', min => 0 },
+                    { value => 'resource_conservation_absolute', template => '%s', min => 0 },
                 ],
             }
         },
@@ -107,7 +107,7 @@ sub set_counters {
                 key_values => [ { name => 'conn_in' } ],
                 output_template => 'current inbound connections: %s',
                 perfdatas => [
-                    { label => 'connections_in', value => 'conn_in_absolute', template => '%s', min => 0 },
+                    { value => 'conn_in_absolute', template => '%s', min => 0 },
                 ],
             }
         },
@@ -115,7 +115,7 @@ sub set_counters {
                 key_values => [ { name => 'conn_out' } ],
                 output_template => 'current outbound connections: %s',
                 perfdatas => [
-                    { label => 'connections_out', value => 'conn_out_absolute', template => '%s', min => 0 },
+                    { value => 'conn_out_absolute', template => '%s', min => 0 },
                 ],
             }
         },
@@ -123,7 +123,7 @@ sub set_counters {
                 key_values => [ { name => 'active_recips' } ],
                 output_template => 'queue active recipients: %s',
                 perfdatas => [
-                    { label => 'queue_active_recipients', value => 'active_recips_absolute', template => '%s', min => 0 },
+                    { value => 'active_recips_absolute', template => '%s', min => 0 },
                 ],
             }
         },
@@ -131,7 +131,7 @@ sub set_counters {
                 key_values => [ { name => 'msgs_in_quarantine' } ],
                 output_template => 'messages in quarantine: %s',
                 perfdatas => [
-                    { label => 'messages_quarantine', value => 'msgs_in_quarantine_absolute', template => '%s', min => 0 },
+                    { value => 'msgs_in_quarantine_absolute', template => '%s', min => 0 },
                 ],
             }
         },
@@ -139,7 +139,7 @@ sub set_counters {
                 key_values => [ { name => 'msgs_in_work_queue' } ],
                 output_template => 'messages in work queue: %s',
                 perfdatas => [
-                    { label => 'messages_workqueue', value => 'msgs_in_work_queue_absolute', template => '%s', min => 0 },
+                    { value => 'msgs_in_work_queue_absolute', template => '%s', min => 0 },
                 ],
             }
         },
@@ -148,7 +148,7 @@ sub set_counters {
                 per_second => 1,
                 output_template => 'messages received: %.2f/s',
                 perfdatas => [
-                    { label => 'message_received', value => 'msgs_received_lifetime_per_second', template => '%.2f',
+                    { value => 'msgs_received_lifetime_per_second', template => '%.2f',
                       unit => '/s', min => 0 },
                 ],
             }
@@ -157,7 +157,7 @@ sub set_counters {
                 key_values => [ { name => 'queuedisk' } ],
                 output_template => 'queue disk usage: %.2f %%',
                 perfdatas => [
-                    { label => 'queuedisk', value => 'queuedisk_absolute', template => '%.2f',
+                    { value => 'queuedisk_absolute', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
