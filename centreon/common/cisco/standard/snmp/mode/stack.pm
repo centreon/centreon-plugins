@@ -28,14 +28,14 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     my $msg = sprintf("State is '%s', Role is '%s'", $self->{result_values}->{state}, $self->{result_values}->{role});
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
     $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_role'};
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
@@ -44,13 +44,13 @@ sub custom_status_calc {
 
 sub prefix_global_output {
     my ($self, %options) = @_;
-    
+
     return "Number of members ";
 }
 
 sub prefix_status_output {
     my ($self, %options) = @_;
-    
+
     return "Member '" . $options{instance_value}->{id} . "' ";
 }
 
@@ -61,7 +61,7 @@ sub set_counters {
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'members', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All stack members status are ok' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'waiting', set => {
                 key_values => [ { name => 'waiting' } ],
@@ -163,7 +163,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{members} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'id' }, { name => 'role' }, { name => 'state' } ],
@@ -180,12 +180,13 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "warning-status:s"  => { name => 'warning_status', default => '' },
                                   "critical-status:s" => { name => 'critical_status', default => '%{state} !~ /ready/ && %{state} !~ /provisioned/' },
+                                  "ignore-cswringredundant:s" => { name => 'ignore_cswringredundant', default => ''},
                                 });
 
     return $self;
@@ -194,7 +195,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
@@ -229,9 +230,10 @@ my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3.0';
 sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
+    $self->{ignore_cswringredundant} = $self->{option_results}->{ignore_cswringredundant};
 
-    $self->{global} = { waiting => 0, progressing => 0, added => 0, ready => 0, sdmMismatch => 0, 
-        verMismatch => 0, featureMismatch => 0, newMasterInit => 0, provisioned => 0, 
+    $self->{global} = { waiting => 0, progressing => 0, added => 0, ready => 0, sdmMismatch => 0,
+        verMismatch => 0, featureMismatch => 0, newMasterInit => 0, provisioned => 0,
         invalid => 0, removed => 0 };
     $self->{members} = {};
 
@@ -239,7 +241,11 @@ sub manage_selection {
 
     if ($redundant->{$oid_cswRingRedundant} != 1) {
         $self->{output}->add_option_msg(short_msg => "Stack ring is not redundant");
-        $self->{output}->option_exit();
+
+        if ($self->{ignore_cswringredundant} eq ''){
+            $self->{output}->option_exit();
+        }
+
     }
 
     $self->{results} = $options{snmp}->get_table(oid => $oid_cswSwitchInfoEntry,
@@ -248,7 +254,7 @@ sub manage_selection {
     foreach my $oid (keys %{$self->{results}}) {
         next if($oid !~ /^$mapping->{cswSwitchRole}->{oid}\.(.*)$/);
         my $instance = $1;
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
 
         # .1001, .2001 the instance.
@@ -308,4 +314,3 @@ State can be: 'waiting', 'progressing', 'added',
 =back
 
 =cut
-    
