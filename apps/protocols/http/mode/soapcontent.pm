@@ -452,7 +452,7 @@ Set HTTP headers (Multiple option)
 
 =item B<--unknown-status>
 
-Threshold warning for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 
