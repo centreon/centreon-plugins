@@ -28,19 +28,30 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan|current|power)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan|current|psu)$';
     
     $self->{cb_hook2} = 'snmp_execute';
+     $self->{thresholds} = {
+        'psu.primary' => [
+            ['true', 'OK'],
+            ['false', 'CRITICAL'],
+        ],
+        'psu.backup' => [
+            ['true', 'OK'],
+            ['false', 'CRITICAL'],
+        ],
+    };
 
     $self->{components_path} = 'network::mikrotik::snmp::mode::components';
-    $self->{components_module} = ['current', 'fan', 'power', 'temperature', 'voltage'];
+    $self->{components_module} = ['current', 'fan', 'psu', 'temperature', 'voltage'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
     
+    my $oid_mtxrHealth = '.1.3.6.1.4.1.14988.1.1.3';
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    $self->{results} = $self->{snmp}->get_table(oid => $oid_mtxrHealth);
 }
 
 sub new {
@@ -49,10 +60,9 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -69,7 +79,7 @@ Check hardware.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'voltage', 'temperature', 'fan'.
+Can be: 'current', 'fan', 'psu', 'temperature', 'voltage'.
 
 =item B<--filter>
 
@@ -85,7 +95,6 @@ Can be specific or global: --absent-problem=fan,1
 
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
-
 
 =item B<--warning>
 

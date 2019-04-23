@@ -76,13 +76,48 @@ sub prefix_status_output {
     return "Node '" . $options{instance_value}->{serial} . "' ";
 }
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Nodes ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' },
     ];
-        
+    $self->{maps_counters}->{global} = [
+        { label => 'total-nodes', display_ok => 0, set => {
+                key_values => [ { name => 'total_nodes' } ],
+                output_template => 'Total nodes: %d',
+                perfdatas => [
+                    { label => 'total_nodes', value => 'total_nodes_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'synchronized', set => {
+                key_values => [ { name => 'synchronized' } ],
+                output_template => 'Synchronized: %d',
+                perfdatas => [
+                    { label => 'synchronized_nodes', value => 'synchronized_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'not-synchronized', set => {
+                key_values => [ { name => 'not_synchronized' } ],
+                output_template => 'Not Synchronized: %d',
+                perfdatas => [
+                    { label => 'not_synchronized_nodes', value => 'not_synchronized_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+    ];        
     $self->{maps_counters}->{nodes} = [
         { label => 'node', threshold => 0, set => {
                 key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' } ],
@@ -156,6 +191,8 @@ sub manage_selection {
     $self->{results} = $options{snmp}->get_table(oid => $oid_fgHaStatsEntry,
                                                  nothing_quit => 1);
 
+    $self->{global} = { synchronized => 0, not_synchronized => 0, total_nodes => 0 };
+
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -168,6 +205,9 @@ sub manage_selection {
             sync_status => $result->{fgHaStatsSyncStatus},
             role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? "master" : "slave",
         };
+        $result->{fgHaStatsSyncStatus} =~ s/ /_/;
+        $self->{global}->{$result->{fgHaStatsSyncStatus}}++;
+        $self->{global}->{total_nodes}++;
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -185,6 +225,16 @@ __END__
 Check cluster status (FORTINET-FORTIGATE-MIB).
 
 =over 8
+
+=item B<--warning-*>
+
+Set warning thresholds.
+Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
+
+=item B<--critical-*>
+
+Set critical thresholds.
+Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
 
 =item B<--warning-status>
 

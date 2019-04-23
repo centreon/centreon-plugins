@@ -20,10 +20,198 @@
 
 package snmp_standard::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    my %total_options = ();
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+    
+    $self->{output}->perfdata_add(label => 'used',
+                                  unit => 'B',
+                                  value => $self->{result_values}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+    
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used});
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_memTotalReal'};
+    $self->{result_values}->{available} = $options{new_datas}->{$self->{instance} . '_memAvailReal'};
+    $self->{result_values}->{buffer} = $options{new_datas}->{$self->{instance} . '_memBuffer'};
+    $self->{result_values}->{cached} = $options{new_datas}->{$self->{instance} . '_memCached'};
+
+    if ($self->{result_values}->{total} != 0) {
+        $self->{result_values}->{physical_used} = $self->{result_values}->{total} - $self->{result_values}->{available};
+        $self->{result_values}->{used} = $self->{result_values}->{physical_used} - $self->{result_values}->{buffer} - $self->{result_values}->{cached};
+        $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    } else {
+        $self->{result_values}->{used} = '0';
+        $self->{result_values}->{prct_used} = '0';
+    }
+
+    return 0;
+}
+
+sub custom_swap_perfdata {
+    my ($self, %options) = @_;
+
+    my %total_options = ();
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+    
+    $self->{output}->perfdata_add(label => 'swap',
+                                  unit => 'B',
+                                  value => $self->{result_values}->{used},
+                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+                                  min => 0, max => $self->{result_values}->{total});
+}
+
+sub custom_swap_threshold {
+    my ($self, %options) = @_;
+    
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{available} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+        $threshold_value = $self->{result_values}->{prct_available} if (defined($self->{instance_mode}->{option_results}->{free}));
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+                                                              { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_swap_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{available}),
+        $self->{result_values}->{prct_available});
+    return $msg;
+}
+
+sub custom_swap_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_memTotalSwap'};
+    $self->{result_values}->{available} = $options{new_datas}->{$self->{instance} . '_memAvailSwap'};
+
+    if ($self->{result_values}->{total} != 0) {
+        $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{available};
+        $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+        $self->{result_values}->{prct_available} = 100 - $self->{result_values}->{prct_used};
+    } else {
+        $self->{result_values}->{used} = '0';
+        $self->{result_values}->{prct_used} = '0';
+        $self->{result_values}->{prct_available} = '0';
+    }
+
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'ram', type => 0 },
+        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+    ];
+    
+    $self->{maps_counters}->{ram} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'memTotalReal' }, { name => 'memAvailReal' }, { name => 'memTotalFree' },
+                     { name => 'memBuffer' }, { name => 'memCached' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata')
+            }
+        },
+        { label => 'buffer', set => {
+                key_values => [ { name => 'memBuffer' } ],
+                output_template => 'Buffer: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'buffer', value => 'memBuffer_absolute', template => '%d',
+                      min => 0, unit => 'B' },
+                ],
+            }
+        },
+        { label => 'cached', set => {
+                key_values => [ { name => 'memCached' } ],
+                output_template => 'Cached: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'cached', value => 'memCached_absolute', template => '%d',
+                      min => 0, unit => 'B' },
+                ],
+            }
+        },
+        { label => 'shared', set => {
+                key_values => [ { name => 'memShared' } ],
+                output_template => 'Shared: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { label => 'shared', value => 'memShared_absolute', template => '%d',
+                      min => 0, unit => 'B' },
+                ],
+            }
+        },
+    ];
+    $self->{maps_counters}->{swap} = [
+        { label => 'swap', set => {
+                key_values => [ { name => 'memTotalSwap' }, { name => 'memAvailSwap' } ],
+                closure_custom_calc => $self->can('custom_swap_calc'),
+                closure_custom_output => $self->can('custom_swap_output'),
+                closure_custom_threshold_check => $self->can('custom_swap_threshold'),
+                closure_custom_perfdata => $self->can('custom_swap_perfdata')
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -31,140 +219,51 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "swap"                    => { name => 'check_swap' },
-                                  "warning-swap:s"          => { name => 'warning_swap' },
-                                  "critical-swap:s"         => { name => 'critical_swap' },
-                                  "no-swap:s"               => { name => 'no_swap' },
-                                });
-    $self->{no_swap} = 'critical';
+    $options{options}->add_options(arguments => { 
+        "units:s"       => { name => 'units', default => '%' },
+        "free"          => { name => 'free' },
+        "swap"          => { name => 'check_swap' },
+        "no-swap:s"     => { name => 'no_swap' }, # legacy
+    });
+    
     return $self;
 }
 
-sub check_options {
+my $mapping = {
+    memTotalSwap => { oid => '.1.3.6.1.4.1.2021.4.3' },
+    memAvailSwap => { oid => '.1.3.6.1.4.1.2021.4.4' },
+    memTotalReal => { oid => '.1.3.6.1.4.1.2021.4.5' },
+    memAvailReal => { oid => '.1.3.6.1.4.1.2021.4.6' },
+    memTotalFree => { oid => '.1.3.6.1.4.1.2021.4.11' },
+    memShared => { oid => '.1.3.6.1.4.1.2021.4.13' },
+    memBuffer => { oid => '.1.3.6.1.4.1.2021.4.14' },
+    memCached => { oid => '.1.3.6.1.4.1.2021.4.15' },
+};
+
+my $oid_memory = '.1.3.6.1.4.1.2021.4';
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{check_swap})) {
-        if (($self->{perfdata}->threshold_validate(label => 'warning-swap', value => $self->{option_results}->{warning_swap})) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong warning-swap threshold '" . $self->{option_results}->{warning_swap} . "'.");
-            $self->{output}->option_exit();
-        }
-        if (($self->{perfdata}->threshold_validate(label => 'critical-swap', value => $self->{option_results}->{critical_swap})) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong critical-swap threshold '" . $self->{option_results}->{critical_swap} . "'.");
-            $self->{output}->option_exit();
-        }
-        if (defined($self->{option_results}->{no_swap}) && $self->{option_results}->{no_swap} ne '') {
-            if ($self->{output}->is_litteral_status(status => $self->{option_results}->{no_swap}) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
-                $self->{output}->option_exit();
-            }
-            $self->{no_swap} = $self->{option_results}->{no_swap};
-        }
-    }
-}
+    my $results = $options{snmp}->get_table(oid => $oid_memory);
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    my $oid_memTotalReal = '.1.3.6.1.4.1.2021.4.5.0';
-    my $oid_memAvailReal = '.1.3.6.1.4.1.2021.4.6.0';
-    my $oid_memShared = '.1.3.6.1.4.1.2021.4.13.0';
-    my $oid_memBuffer = '.1.3.6.1.4.1.2021.4.14.0';
-    my $oid_memCached = '.1.3.6.1.4.1.2021.4.15.0';
-    my $oid_memTotalSwap = '.1.3.6.1.4.1.2021.4.3.0'; # KB
-    my $oid_memAvailSwap = '.1.3.6.1.4.1.2021.4.4.0'; # KB
+    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
     
-    my $oids = [$oid_memTotalReal, $oid_memAvailReal,
-                $oid_memShared, $oid_memBuffer, $oid_memCached];
-    if (defined($self->{option_results}->{check_swap})) {
-        push @$oids, ($oid_memTotalSwap, $oid_memAvailSwap);
-    }
-    my $result = $self->{snmp}->get_leef(oids => $oids, 
-                                         nothing_quit => 1);
-
-    my $shared_used = defined($result->{$oid_memShared}) ? $result->{$oid_memShared} * 1024 : 0;
-    my $cached_used = $result->{$oid_memCached} * 1024;
-    my $buffer_used = $result->{$oid_memBuffer} * 1024;
-    my $physical_used = ($result->{$oid_memTotalReal} * 1024) - ($result->{$oid_memAvailReal} * 1024);
-    my $nobuf_used = $physical_used - $buffer_used - $cached_used;
-    
-    my $total_size = $result->{$oid_memTotalReal} * 1024;
-    
-    my $prct_used = $nobuf_used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($nobuf_value, $nobuf_unit) = $self->{perfdata}->change_bytes(value => $nobuf_used);
-    my ($buffer_value, $buffer_unit) = $self->{perfdata}->change_bytes(value => $buffer_used);
-    my ($cached_value, $cached_unit) = $self->{perfdata}->change_bytes(value => $cached_used);
-    my ($shared_value, $shared_unit) = $self->{perfdata}->change_bytes(value => $shared_used);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram Total: %s, Used (-buffers/cache): %s (%.2f%%), Buffer: %s, Cached: %s, Shared: %s",
-                                            $total_value . " " . $total_unit,
-                                            $nobuf_value . " " . $nobuf_unit, $prct_used,
-                                            $buffer_value . " " . $buffer_unit,
-                                            $cached_value . " " . $cached_unit,
-                                            $shared_value . " " . $shared_unit));
-    
-    $self->{output}->perfdata_add(label => "cached", unit => 'B',
-                                  value => $cached_used,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "buffer", unit => 'B',
-                                  value => $buffer_used,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $nobuf_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
+    $self->{ram} = {
+        memTotalReal => ($result->{memTotalReal}) ? $result->{memTotalReal} * 1024 : 0,
+        memAvailReal => ($result->{memAvailReal}) ? $result->{memAvailReal} * 1024 : 0,
+        memTotalFree => ($result->{memTotalFree}) ? $result->{memTotalFree} * 1024 : 0,
+        memShared => ($result->{memShared}) ? $result->{memShared} * 1024 : 0,
+        memBuffer => ($result->{memBuffer}) ? $result->{memBuffer} * 1024 : 0,
+        memCached => ($result->{memCached}) ? $result->{memCached} * 1024 : 0,
+    };
 
     if (defined($self->{option_results}->{check_swap})) {
-        if ($result->{$oid_memTotalSwap} == 0) {
-            $self->{output}->output_add(severity => $self->{no_swap},
-                                        short_msg => 'No active swap.');
-            $self->{output}->display();
-            $self->{output}->exit();
-        }
-    
-        $total_size = $result->{$oid_memTotalSwap} * 1024;
-        my $swap_used = ($result->{$oid_memTotalSwap} - $result->{$oid_memAvailSwap}) * 1024;
-    
-        $prct_used = $swap_used * 100 / $total_size;
-        $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical-swap', 'exit_litteral' => 'critical' }, { label => 'warning-swap', exit_litteral => 'warning' } ]);
-
-        my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-        my ($swap_used_value, $swap_used_unit) = $self->{perfdata}->change_bytes(value => $swap_used);
-        my ($swap_free_value, $swap_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $swap_used));
-    
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                            $total_value . " " . $total_unit,
-                                            $swap_used_value . " " . $swap_used_unit, $prct_used,
-                                            $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)));
-    
-        $self->{output}->perfdata_add(label => "swap", unit => 'B',
-                                      value => $swap_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-swap', total => $total_size, cast_int => 1),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-swap', total => $total_size, cast_int => 1),
-                                      min => 0, max => $total_size);
+        $self->{swap} = {
+            memTotalSwap => ($result->{memTotalSwap}) ? $result->{memTotalSwap} * 1024 : 0,
+            memAvailSwap => ($result->{memAvailSwap}) ? $result->{memAvailSwap} * 1024 : 0,
+        };
     }
-                                  
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -173,33 +272,33 @@ __END__
 
 =head1 MODE
 
-Check physical memory (UCD-SNMP-MIB).
+Check memory usage (UCD-SNMP-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--units>
 
-Threshold warning in percent.
+Units of thresholds (Default: '%') ('%', 'absolute').
 
-=item B<--critical>
+=item B<--free>
 
-Threshold critical in percent.
+Thresholds are on free space left.
 
 =item B<--swap>
 
 Check swap also.
 
-=item B<--warning-swap>
+=item B<--warning-*>
 
-Threshold warning in percent.
+Threshold warning.
+Can be: 'usage', 'swap', 'buffer' (absolute),
+'cached' (absolute), 'shared' (absolute).
 
-=item B<--critical-swap>
+=item B<--critical-*>
 
-Threshold critical in percent.
-
-=item B<--no-swap>
-
-Threshold if no active swap (default: 'critical').
+Threshold critical.
+Can be: 'usage', 'swap', 'buffer' (absolute),
+'cached' (absolute), 'shared' (absolute).
 
 =back
 

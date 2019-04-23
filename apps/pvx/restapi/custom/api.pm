@@ -42,28 +42,25 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "api-key:s"         => { name => 'api_key' },
-                        "hostname:s"        => { name => 'hostname' },
-                        "url-path:s"        => { name => 'url_path' },
-                        "port:s"            => { name => 'port' },
-                        "proto:s"           => { name => 'proto' },
-                        "credentials"       => { name => 'credentials' },
-                        "basic"             => { name => 'basic' },
-                        "username:s"        => { name => 'username' },
-                        "password:s"        => { name => 'password' },
-                        "proxyurl:s"        => { name => 'proxyurl' },
-                        "timeout:s"         => { name => 'timeout' },
-                        "ssl-opt:s@"        => { name => 'ssl_opt' },
-                        "timeframe:s"       => { name => 'timeframe' },
-                    });
+        $options{options}->add_options(arguments => {
+            "api-key:s"         => { name => 'api_key' },
+            "hostname:s"        => { name => 'hostname' },
+            "url-path:s"        => { name => 'url_path' },
+            "port:s"            => { name => 'port' },
+            "proto:s"           => { name => 'proto' },
+            "credentials"       => { name => 'credentials' },
+            "basic"             => { name => 'basic' },
+            "username:s"        => { name => 'username' },
+            "password:s"        => { name => 'password' },
+            "timeout:s"         => { name => 'timeout' },
+            "timeframe:s"       => { name => 'timeframe' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'RESTAPI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
@@ -100,8 +97,6 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/api';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{credentials} = (defined($self->{option_results}->{credentials})) ? 1 : undef;
@@ -127,7 +122,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{credentials} = $self->{credentials};
     $self->{option_results}->{basic} = $self->{basic};
     $self->{option_results}->{username} = $self->{username};
@@ -263,17 +257,9 @@ Specify this option if you access the API over hidden basic authentication or yo
 
 (Use with --credentials)
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

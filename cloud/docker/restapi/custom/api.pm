@@ -42,32 +42,29 @@ sub new {
     }
 
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>
-                    {
-                        "hostname:s@"   => { name => 'hostname' },
-                        "port:s"        => { name => 'port', default => 8080 },
-                        "proto:s"       => { name => 'proto' },
-						"credentials"   => { name => 'credentials' },
-                        "basic"         => { name => 'basic' },
-						"username:s"    => { name => 'username' },
-						"password:s"    => { name => 'password' },
-						"proxyurl:s"    => { name => 'proxyurl' },
-                        "proxypac:s"    => { name => 'proxypac' },
-                        "timeout:s"     => { name => 'timeout', default => 10 },
-                        "ssl:s"         => { name => 'ssl' },
-                        "ssl-opt:s@"    => { name => 'ssl_opt' },
-                        "cert-file:s"   => { name => 'cert_file' },
-                        "key-file:s"    => { name => 'key_file' },
-                        "cacert-file:s" => { name => 'cacert_file' },
-                        "cert-pwd:s"    => { name => 'cert_pwd' },
-                        "cert-pkcs12"   => { name => 'cert_pkcs12' },
-                        "api-display"           => { name => 'api_display' },
-                        "api-write-file:s"      => { name => 'api_write_file' },
-                        "api-read-file:s"       => { name => 'api_read_file' },
-                        "reload-cache-time:s"   => { name => 'reload_cache_time', default => 300 },
-				    });
+        $options{options}->add_options(arguments => {
+            "hostname:s@"   => { name => 'hostname' },
+            "port:s"        => { name => 'port', default => 8080 },
+            "proto:s"       => { name => 'proto' },
+            "credentials"   => { name => 'credentials' },
+            "basic"         => { name => 'basic' },
+            "username:s"    => { name => 'username' },
+            "password:s"    => { name => 'password' },
+            "timeout:s"     => { name => 'timeout', default => 10 },
+            "cert-file:s"   => { name => 'cert_file' },
+            "key-file:s"    => { name => 'key_file' },
+            "cacert-file:s" => { name => 'cacert_file' },
+            "cert-pwd:s"    => { name => 'cert_pwd' },
+            "cert-pkcs12"   => { name => 'cert_pkcs12' },
+            "api-display"           => { name => 'api_display' },
+            "api-write-file:s"      => { name => 'api_write_file' },
+            "api-read-file:s"       => { name => 'api_read_file' },
+            "reload-cache-time:s"   => { name => 'reload_cache_time', default => 300 },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
+
+    $self->{http} = centreon::plugins::http->new(%options);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
@@ -111,14 +108,15 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
-    $self->{http} = {};
+    
+    $self->{node_names} = [];
     foreach my $node_name (@{$self->{hostname}}) {
         if ($node_name ne '') {
-            $self->{http}->{$node_name} = centreon::plugins::http->new(output => $self->{output});
-            $self->{option_results}->{hostname} = $node_name;
-            $self->{http}->{$node_name}->set_options(%{$self->{option_results}});
+            push @{$self->{node_names}}, $node_name;
         }
     }
+    
+    $self->{http}->set_options(%{$self->{option_results}});
 
     return 0;
 }
@@ -195,7 +193,7 @@ sub cache_containers {
         $containers = {};
         my $datas = { last_timestamp => time(), containers => $containers };
         
-        foreach my $node_name (keys %{$self->{http}}) {
+        foreach my $node_name (@{$self->{node_names}}) {
             my $list_containers = $self->internal_api_list_containers(node_name => $node_name);
             foreach my $container (@$list_containers) {
                 $containers->{$container->{Id}} = {
@@ -214,7 +212,8 @@ sub cache_containers {
 sub internal_api_list_nodes {
     my ($self, %options) = @_;
     
-    my $response = $self->{http}->{$options{node_name}}->request(
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
         url_path => '/nodes',
         unknown_status => '', critical_status => '', warning_status => '');
     my $nodes;
@@ -235,7 +234,8 @@ sub internal_api_list_nodes {
 sub internal_api_info {
     my ($self, %options) = @_;
     
-    my $response = $self->{http}->{$options{node_name}}->request(
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
         url_path => '/info',
         unknown_status => '', critical_status => '', warning_status => '');
     my $nodes;
@@ -254,7 +254,8 @@ sub internal_api_info {
 sub internal_api_list_containers {
     my ($self, %options) = @_;
     
-    my $response = $self->{http}->{$options{node_name}}->request(
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
         url_path => '/containers/json?all=true',
         unknown_status => '', critical_status => '', warning_status => '');
     my $containers;
@@ -273,7 +274,8 @@ sub internal_api_list_containers {
 sub internal_api_get_container_stats {
     my ($self, %options) = @_;
     
-    my $response = $self->{http}->{$options{node_name}}->request(
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
         url_path => '/containers/' . $options{container_id} . '/stats?stream=false',
         unknown_status => '', critical_status => '', warning_status => '');
     my $container_stats;
@@ -293,7 +295,7 @@ sub api_list_containers {
     my ($self, %options) = @_;
     
     my $containers = {};
-    foreach my $node_name (keys %{$self->{http}}) {
+    foreach my $node_name (@{$self->{node_names}}) {
         my $list_containers = $self->internal_api_list_containers(node_name => $node_name);
         foreach my $container (@$list_containers) {
             $containers->{$container->{Id}} = {
@@ -311,7 +313,7 @@ sub api_list_nodes {
     my ($self, %options) = @_;
     
     my $nodes = {};
-    foreach my $node_name (keys %{$self->{http}}) {
+    foreach my $node_name (@{$self->{node_names}}) {
         my $info_node = $self->internal_api_info(node_name => $node_name);
         my $list_nodes = $self->internal_api_list_nodes(node_name => $node_name);
         $nodes->{$node_name} = { nodes => [], 
@@ -410,21 +412,9 @@ Specify this option if you access server-status page over hidden basic authentic
 
 (Use with --credentials)
 
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 10)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--cert-file>
 

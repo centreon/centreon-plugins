@@ -106,10 +106,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Fru '%s' temperature is %s degree centigrade", $name, $result->{jnxFruTemp}));
             }
-            $self->{output}->perfdata_add(label => "temp_" . $name, unit => 'C',
-                                          value => $result->{jnxFruTemp},
-                                          warning => $warn,
-                                          critical => $crit);
+            $self->{output}->perfdata_add(
+                label => "temp", unit => 'C',
+                nlabel => 'hardware.temperature.celsius',
+                instances => $name,
+                value => $result->{jnxFruTemp},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

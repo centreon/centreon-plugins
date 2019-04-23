@@ -57,7 +57,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'in-sessions-rate', set => {
+        { label => 'in-sessions-rate', nlabel => 'sip.sessions.in.rate', set => {
                 key_values => [ { name => 'apSipSAStatsTotalSessionsInbound', diff => 1 }, { name => 'display' } ],
                 output_template => 'Inbound Sessions Rate : %.2f/s',
                 per_second => 1,
@@ -67,7 +67,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'out-sessions-rate', set => {
+        { label => 'out-sessions-rate', nlabel => 'sip.sessions.out.rate', set => {
                 key_values => [ { name => 'apSipSAStatsTotalSessionsOutbound', diff => 1 }, { name => 'display' } ],
                 output_template => 'Outbound Sessions Rate : %.2f/s',
                 per_second => 1,
@@ -77,7 +77,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'latency', set => {
+        { label => 'latency', nlabel => 'sip.stats.latency.milliseconds', set => {
                 key_values => [ { name => 'apSipSAStatsAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s ms',
                 perfdatas => [
@@ -86,7 +86,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'asr', set => {
+        { label => 'asr', nlabel => 'sip.stats.asr.percentage', set => {
                 key_values => [ { name => 'apSipSAStatsPeriodASR' }, { name => 'display' } ],
                 output_template => 'Answer-to-seizure Ratio : %s %%',
                 perfdatas => [

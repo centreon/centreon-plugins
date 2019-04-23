@@ -42,29 +42,26 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "hostname:s"        => { name => 'hostname' },
-                        "url-path:s"        => { name => 'url_path' },
-                        "port:s"            => { name => 'port' },
-                        "proto:s"           => { name => 'proto' },
-                        "credentials"       => { name => 'credentials' },
-                        "basic"             => { name => 'basic' },
-                        "username:s"        => { name => 'username' },
-                        "password:s"        => { name => 'password' },
-                        "proxyurl:s"        => { name => 'proxyurl' },
-                        "timeout:s"         => { name => 'timeout' },
-                        "ssl-opt:s@"        => { name => 'ssl_opt' },
-                        "header:s@"         => { name => 'header' },
-                        "timeframe:s"       => { name => 'timeframe' },
-                        "step:s"            => { name => 'step' },
-                    });
+        $options{options}->add_options(arguments =>  {
+            "hostname:s"        => { name => 'hostname' },
+            "url-path:s"        => { name => 'url_path' },
+            "port:s"            => { name => 'port' },
+            "proto:s"           => { name => 'proto' },
+            "credentials"       => { name => 'credentials' },
+            "basic"             => { name => 'basic' },
+            "username:s"        => { name => 'username' },
+            "password:s"        => { name => 'password' },
+            "timeout:s"         => { name => 'timeout' },
+            "header:s@"         => { name => 'header' },
+            "timeframe:s"       => { name => 'timeframe' },
+            "step:s"            => { name => 'step' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
@@ -161,8 +158,6 @@ sub query_range {
     my $uri = URI::Encode->new({encode_reserved => 1});
 
     foreach my $query (@{$options{queries}}) {
-        $self->{output}->output_add(long_msg => sprintf("Query range: '/query_range?query=%s&start=%s&end=%s&step=%s'",
-                                                            $query, $start_time, $end_time, $options{step}), debug => 1);
         my $result = $self->get_endpoint(url_path => '/query_range?query=' . $uri->encode($query) .
             '&start=' . $start_time . '&end=' . $end_time . '&step=' . $options{step});
         push @{$data}, @{$result->{result}};
@@ -178,7 +173,6 @@ sub query {
     my $uri = URI::Encode->new({encode_reserved => 1});
 
     foreach my $query (@{$options{queries}}) {
-        $self->{output}->output_add(long_msg => sprintf("Query: '/query?query=%s'", $query), debug => 1);
         my $result = $self->get_endpoint(url_path => '/query?query=' . $uri->encode($query));
         push @{$data}, @{$result->{result}};
     }
@@ -190,6 +184,10 @@ sub get_endpoint {
     my ($self, %options) = @_;
 
     $self->settings;
+    
+    $self->{output}->output_add(long_msg => "Query URL: '" . $self->{proto} . "://" . $self->{hostname} .
+        $self->{url_path} . $options{url_path} . "'", debug => 1);
+
     my $response = $self->{http}->request(url_path => $self->{url_path} . $options{url_path});
     
     my $content;
@@ -302,17 +300,9 @@ Specify this option if you access the API over hidden basic authentication or yo
 
 (Use with --credentials)
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL option (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--header>
 

@@ -71,10 +71,12 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "cpu-attribute:s"         => { name => 'cpu_attribute', default => 'cpu="total"' },
                                   "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
                                   "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
+                                  "filter-counters:s"       => { name => 'filter_counters' },
                                 });
    
     return $self;
@@ -108,7 +110,7 @@ sub check_options {
     }
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
+    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "5m";
 }
 
 sub manage_selection {
@@ -117,14 +119,14 @@ sub manage_selection {
     $self->{containers} = {};
 
     my $results = $options{custom}->query_range(queries => [ 'label_replace((irate({__name__=~"' . $self->{metrics}->{usage} . '",' .
-                                                                'cpu="total",' .
+                                                                $self->{option_results}->{cpu_attribute} . ',' .
                                                                 $self->{option_results}->{container} . ',' .
                                                                 $self->{option_results}->{pod} .
-                                                                $self->{extra_filter} . '}[1m])) * 100, "__name__", "usage", "", "")',
+                                                                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "usage", "", "")',
                                                              'label_replace((irate({__name__=~"' . $self->{metrics}->{throttled} . '",' .
                                                                 $self->{option_results}->{container} . ',' .
                                                                 $self->{option_results}->{pod} .
-                                                                $self->{extra_filter} . '}[1m])) * 100, "__name__", "throttled", "", "")' ],
+                                                                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "throttled", "", "")' ],
                                                 timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
 
     foreach my $result (@{$results}) {
@@ -152,6 +154,10 @@ Check containers CPU usage and throttled.
 
 =over 8
 
+=item B<--cpu-attribute>
+
+Set the cpu attribute to match element (Must be a PromQL filter, Default: 'cpu="total"')
+
 =item B<--container>
 
 Filter on a specific container (Must be a PromQL filter, Default: 'container_name!~".*POD.*"')
@@ -178,9 +184,19 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'usage', 'throttled')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - throttled: ^container_cpu_cfs_throttled_seconds_total.*
+    - usage: ^container_cpu_usage_seconds_total.*
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='throttled'
 
 =back
 

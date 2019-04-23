@@ -102,11 +102,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"        => { name => 'warning_status', default => '' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /ok|notInstalled/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning-status:s"        => { name => 'warning_status', default => '' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /ok|notInstalled/i' },
+    });
 
     return $self;
 }

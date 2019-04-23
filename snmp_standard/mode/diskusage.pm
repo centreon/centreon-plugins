@@ -27,30 +27,30 @@ use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -58,12 +58,12 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -86,10 +86,10 @@ sub custom_usage_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_size'};
     my $reserved_value = 0;
-    if (defined($instance_mode->{option_results}->{space_reservation})) {
-        $reserved_value = $instance_mode->{option_results}->{space_reservation} * $self->{result_values}->{total} / 100;
+    if (defined($self->{instance_mode}->{option_results}->{space_reservation})) {
+        $reserved_value = $self->{instance_mode}->{option_results}->{space_reservation} * $self->{result_values}->{total} / 100;
     }
-    
+
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used} - $reserved_value;
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / ($self->{result_values}->{total} - $reserved_value);
@@ -110,7 +110,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_init => 'skip_global' },
-        { name => 'diskpath', type => 1, cb_prefix_output => 'prefix_diskpath_output', message_multiple => 'All partitions are ok' },
+        { name => 'diskpath', type => 1, cb_prefix_output => 'prefix_diskpath_output', message_multiple => 'All partitions are ok', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{global} = [
@@ -130,6 +130,15 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'inodes', set => {
+                key_values => [ { name => 'inodes' }, { name => 'display' } ],
+                output_template => 'Inodes Used: %s %%',
+                perfdatas => [
+                    { label => 'inodes', value => 'inodes_absolute', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             }
         },
     ];
@@ -153,21 +162,19 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "free"                    => { name => 'free' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                  "name"                    => { name => 'use_name' },
-                                  "diskpath:s"              => { name => 'diskpath' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                  "show-cache"              => { name => 'show_cache' },
-                                  "space-reservation:s"     => { name => 'space_reservation' },
-                                  "filter-counters:s"       => { name => 'filter_counters', default => 'usage' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "units:s"                 => { name => 'units', default => '%' },
+        "free"                    => { name => 'free' },
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+        "name"                    => { name => 'use_name' },
+        "diskpath:s"              => { name => 'diskpath' },
+        "regexp"                  => { name => 'use_regexp' },
+        "regexp-isensitive"       => { name => 'use_regexpi' },
+        "display-transform-src:s" => { name => 'display_transform_src' },
+        "display-transform-dst:s" => { name => 'display_transform_dst' },
+        "show-cache"              => { name => 'show_cache' },
+        "space-reservation:s"     => { name => 'space_reservation' },
+    });
 
     $self->{diskpath_id_selected} = [];
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -179,6 +186,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    # compatibility
+    if (!defined($self->{option_results}->{filter_counters})) {
+        $self->{option_results}->{filter_counters} = 'usage';
+    }
     if (defined($self->{option_results}->{space_reservation}) && 
         ($self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100)) {
         $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
@@ -186,7 +197,6 @@ sub check_options {
     }
     
     $self->{statefile_cache}->check_options(%options);
-    $instance_mode = $self;
 }
 
 sub manage_selection {
@@ -199,9 +209,15 @@ sub manage_selection {
     my $oid_dskTotalHigh = '.1.3.6.1.4.1.2021.9.1.12'; # in kB
     my $oid_dskUsedLow = '.1.3.6.1.4.1.2021.9.1.15'; # in kB
     my $oid_dskUsedHigh = '.1.3.6.1.4.1.2021.9.1.16'; # in kB
+    my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
 
-    $self->{snmp}->load(oids => [$oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh], 
-                        instances => $self->{diskpath_id_selected}, nothing_quit => 1);
+    $self->{snmp}->load(
+        oids => [
+            $oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh, $oid_dskPercentNode
+        ], 
+        instances => $self->{diskpath_id_selected},
+        nothing_quit => 1
+    );
     my $result = $self->{snmp}->get_leef();
     
     $self->{global}->{count} = 0;
@@ -210,14 +226,14 @@ sub manage_selection {
         my $name_diskpath = $self->get_display_value(id => $_);
 
         if (!defined($result->{$oid_dskTotalHigh . "." . $_})) {
-            $self->{output}->add_option_msg(long_msg => sprintf("Skipping partition '%s': not found (need to reload the cache)", 
+            $self->{output}->add_option_msg(long_msg => sprintf("skipping partition '%s': not found (need to reload the cache)", 
                                                                 $name_diskpath));
             next;
         }
         
         my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
         if ($total_size == 0) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping partition '%s' (total size is 0)", $name_diskpath));
+            $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath));
             next;
         }
         my $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
@@ -226,6 +242,7 @@ sub manage_selection {
             display => $name_diskpath,
             size => $total_size,
             used => $total_used,
+            inodes => defined($result->{$oid_dskPercentNode . "." . $_}) ? $result->{$oid_dskPercentNode . "." . $_} : undef,
         };
         $self->{global}->{count}++;
     }
@@ -333,15 +350,15 @@ Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =item B<--filter-counters>
 
-Filter counters to be displayed (Default: 'usage', Can be: 'usage', 'count').
+Filter counters to be displayed (Default: 'usage', Can be: 'usage', 'count', 'inodes').
 
 =item B<--warning-*>
 
-Threshold warning (Can be: 'usage', 'count').
+Threshold warning (Can be: 'usage', 'inodes', 'count').
 
 =item B<--critical-*>
 
-Threshold warning (Can be: 'usage', 'count').
+Threshold warning (Can be: 'usage', 'inodes', 'count').
 
 =item B<--units>
 

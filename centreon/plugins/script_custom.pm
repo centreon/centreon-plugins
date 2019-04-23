@@ -35,16 +35,16 @@ sub new {
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-                                   arguments => {
-                                                'mode:s'          => { name => 'mode_name' },
-                                                'dyn-mode:s'      => { name => 'dynmode_name' },
-                                                'list-mode'       => { name => 'list_mode' },
-                                                'custommode:s'    => { name => 'custommode_name' },
-                                                'list-custommode' => { name => 'list_custommode' },
-                                                'multiple'        => { name => 'multiple' },
-                                                'sanity-options'  => { name => 'sanity_options' }, # keep it for 6 month before remove it
-                                                }
-                                  );
+        arguments => {
+            'mode:s'          => { name => 'mode_name' },
+            'dyn-mode:s'      => { name => 'dynmode_name' },
+            'list-mode'       => { name => 'list_mode' },
+            'custommode:s'    => { name => 'custommode_name' },
+            'list-custommode' => { name => 'list_custommode' },
+            'multiple'        => { name => 'multiple' },
+            'sanity-options'  => { name => 'sanity_options' }, # keep it for 6 month before remove it
+        }
+    );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
     %{$self->{custom_modes}} = ();
@@ -62,6 +62,7 @@ sub new {
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
     $self->{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL OPTIONS');
+    $self->{output}->mode(name => $self->{mode_name});
 
     return $self;
 }
@@ -97,6 +98,8 @@ sub init {
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
+    
+    $self->load_password_mgr();
 
     if (defined($self->{custommode_name}) && $self->{custommode_name} ne '') {
         $self->load_custom_mode();
@@ -139,6 +142,7 @@ sub init {
     
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
+    $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
 
     push @{$self->{custommode_stored}}, $self->{custommode_current};
     $self->{custommode_current}->set_options(option_results => $self->{option_results});
@@ -150,6 +154,18 @@ sub init {
         push @{$self->{custommode_stored}}, $self->{custommode_current};
     }
     $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+}
+
+sub load_password_mgr {
+    my ($self, %options) = @_;
+    
+    return if (!defined($self->{option_results}->{pass_manager}) || $self->{option_results}->{pass_manager} eq '');
+
+    (undef, my $pass_mgr_name) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager}, 
+        error_msg => "Cannot load module 'centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager} . "'"
+    );
+    $self->{pass_mgr} = $pass_mgr_name->new(options => $self->{options}, output => $self->{output});
 }
 
 sub run {

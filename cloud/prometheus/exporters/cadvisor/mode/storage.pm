@@ -25,22 +25,19 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
+    my $extra_label = '';
+    $extra_label = '_' . $self->{result_values}->{label} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{perf} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-    $extra_label .= '_' . $self->{result_values}->{device} if (!defined($options{extra_instance_lvl2}) || $options{extra_instance_lvl2} != 0);
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -57,10 +54,10 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
@@ -82,9 +79,9 @@ sub custom_usage_output {
 sub custom_usage_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{label} = $self->{instance};
     $self->{result_values}->{container} = $options{new_datas}->{$self->{instance} . '_container'};
     $self->{result_values}->{pod} = $options{new_datas}->{$self->{instance} . '_pod'};
-    $self->{result_values}->{perf} = $options{new_datas}->{$self->{instance} . '_perf'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_limit'};    
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
@@ -105,14 +102,18 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 3, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers storages usage are ok',
-          counters => [ { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages usage are ok' } ] },
+        { name => 'containers', type => 3, cb_prefix_output => 'prefix_containers_output', cb_long_output => 'long_output',
+          message_multiple => 'All containers storages usage are ok', indent_long_output => '    ',
+            group => [
+                { name => 'storage', display_long => 1, cb_prefix_output => 'prefix_storage_output',
+                  message_multiple => 'All storages usage are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
     $self->{maps_counters}->{storage} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'used' }, { name => 'limit' }, { name => 'container' }, { name => 'pod' },
-                    { name => 'perf' } ],
+                key_values => [ { name => 'used' }, { name => 'limit' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -122,10 +123,22 @@ sub set_counters {
     ];
 }
 
+sub prefix_container_output {
+    my ($self, %options) = @_;
+
+    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "]";
+}
+
 sub prefix_storage_output {
     my ($self, %options) = @_;
 
-    return "Container '" . $options{instance_value}->{container} . "' [pod: " . $options{instance_value}->{pod} . "] Device '" . $options{instance_value}->{device} . "' ";
+    return "Storage '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -134,17 +147,16 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
-                                  "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
-                                  "device:s"                => { name => 'device', default => 'device=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "free"                    => { name => 'free' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
+        "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
+        "device:s"                => { name => 'device', default => 'device=~".*"' },
+        "extra-filter:s@"         => { name => 'extra_filter' },
+        "units:s"                 => { name => 'units', default => '%' },
+        "free"                    => { name => 'free' },
+        "metric-overload:s@"      => { name => 'metric_overload' },
+    });
+
     return $self;
 }
 
@@ -173,9 +185,7 @@ sub check_options {
     $self->{extra_filter} = '';
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
         $self->{extra_filter} .= ',' . $filter;
-    }
-    
-    $instance_mode = $self;
+    }    
 }
 
 sub manage_selection {
@@ -196,10 +206,10 @@ sub manage_selection {
 
     foreach my $result (@{$results}) {
         next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{device} = $result->{metric}->{$self->{labels}->{device}};
-        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{perf} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{display} = $result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{container} = $result->{metric}->{$self->{labels}->{container}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{pod} = $result->{metric}->{$self->{labels}->{pod}};
+        $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{display} = $result->{metric}->{$self->{labels}->{device}};
         $self->{containers}->{$result->{metric}->{$self->{labels}->{pod}} . "_" . $result->{metric}->{$self->{labels}->{container}}}->{storage}->{$result->{metric}->{$self->{labels}->{device}}}->{$result->{metric}->{__name__}} = ${$result->{value}}[1];
     }
 
@@ -255,9 +265,14 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'used', 'limit')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - used: ^container_fs_usage_bytes.*
+    - limit: ^container_fs_limit_bytes.*
 
 =back
 

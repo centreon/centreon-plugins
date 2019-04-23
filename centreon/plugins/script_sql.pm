@@ -35,17 +35,17 @@ sub new {
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-                                   arguments => {
-                                                'mode:s'         => { name => 'mode_name' },
-                                                'dyn-mode:s'     => { name => 'dynmode_name' },
-                                                'list-mode'      => { name => 'list_mode' },
-                                                'mode-version:s' => { name => 'mode_version' },
-                                                'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
-                                                'list-sqlmode'   => { name => 'list_sqlmode' },
-                                                'multiple'       => { name => 'multiple' },
-                                                'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
-                                                }
-                                  );
+    arguments => {
+            'mode:s'         => { name => 'mode_name' },
+            'dyn-mode:s'     => { name => 'dynmode_name' },
+            'list-mode'      => { name => 'list_mode' },
+            'mode-version:s' => { name => 'mode_version' },
+            'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
+            'list-sqlmode'   => { name => 'list_sqlmode' },
+            'multiple'       => { name => 'multiple' },
+            'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
+        }
+    );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
     %{$self->{sql_modes}} = ('dbi' => 'centreon::plugins::dbi');
@@ -63,6 +63,7 @@ sub new {
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
     $self->{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL OPTIONS');
+    $self->{output}->mode(name => $self->{mode_name});
 
     return $self;
 }
@@ -89,6 +90,8 @@ sub init {
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
+    
+    $self->load_password_mgr();
 
     if (defined($self->{sqlmode_name}) && $self->{sqlmode_name} ne '') {
         $self->is_sqlmode(sqlmode => $self->{sqlmode_name});
@@ -135,6 +138,7 @@ sub init {
     
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
+    $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
 
     push @{$self->{sqlmode_stored}}, $self->{sqlmode_current};
     $self->{sqlmode_current}->set_options(option_results => $self->{option_results});
@@ -146,6 +150,18 @@ sub init {
         push @{$self->{sqlmode_stored}}, $self->{sqlmode_current};
     }
     $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+}
+
+sub load_password_mgr {
+    my ($self, %options) = @_;
+    
+    return if (!defined($self->{option_results}->{pass_manager}) || $self->{option_results}->{pass_manager} eq '');
+
+    (undef, my $pass_mgr_name) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager}, 
+        error_msg => "Cannot load module 'centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager} . "'"
+    );
+    $self->{pass_mgr} = $pass_mgr_name->new(options => $self->{options}, output => $self->{output});
 }
 
 sub run {

@@ -61,16 +61,28 @@ sub snmp_execute {
     
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [ 
-        { oid => $oids{entPhysicalClass} },
-        { oid => $oids{alaChasEntPhysFanStatus} },
+        { oid => $oids{common}->{entPhysicalClass} },
+        { oid => $oids{aos6}->{alaChasEntPhysFanStatus} },
+        { oid => $oids{aos7}->{alaChasEntPhysFanStatus} },
     ]);
     $self->{results}->{entity} = $self->{snmp}->get_multiple_table(oids => [ 
-        { oid => $oids{entPhysicalDescr} },
-        { oid => $oids{entPhysicalName} },
-        { oid => $oids{chasEntPhysAdminStatus} },
-        { oid => $oids{chasEntPhysOperStatus} },
-        { oid => $oids{chasEntPhysPower} },
+        { oid => $oids{common}->{entPhysicalDescr} },
+        { oid => $oids{common}->{entPhysicalName} },
+        { oid => $oids{aos6}->{chasEntPhysAdminStatus} },
+        { oid => $oids{aos6}->{chasEntPhysOperStatus} },
+        { oid => $oids{aos6}->{chasEntPhysPower} },
+        { oid => $oids{aos7}->{chasEntPhysAdminStatus} },
+        { oid => $oids{aos7}->{chasEntPhysOperStatus} },
+        { oid => $oids{aos7}->{chasEntPhysPower} },
     ], return_type => 1);
+
+    $self->{type} = 'aos6';
+    foreach (keys %{$self->{results}->{entity}}) {
+        if (/^$oids{aos7}->{entreprise_alcatel_base}\./) {
+            $self->{type} = 'aos7';
+            last;
+        }
+    }
 }
 
 sub new {
@@ -79,9 +91,8 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }

@@ -20,75 +20,81 @@
 
 package database::oracle::mode::datacachehitratio;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
+
+sub custom_hitratio_calc {
+    my ($self, %options) = @_;
+
+    my $delta_phys = ($options{new_datas}->{$self->{instance} . '_physical_reads'} - $options{old_datas}->{$self->{instance} . '_physical_reads'});
+    my $delta_cache = 
+        ($options{new_datas}->{$self->{instance} . '_db_block_gets'} - $options{old_datas}->{$self->{instance} . '_db_block_gets'}) +
+        ($options{new_datas}->{$self->{instance} . '_consistent_gets'} - $options{old_datas}->{$self->{instance} . '_consistent_gets'});
+    $self->{result_values}->{hit_ratio} = ($delta_cache == 0) ? 0 : 
+        ((1 - ($delta_phys / $delta_cache)) * 100);
+
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'physical_reads', diff => 1 }, { name => 'db_block_gets', diff => 1 },
+                    { name => 'consistent_gets', diff => 1 } ],
+                closure_custom_calc => $self->can('custom_hitratio_calc'),
+                output_template => 'Buffer cache hit ratio is %.2f%%',  output_error_template => 'Buffer cache hit ratio: %s', 
+                output_use => 'hit_ratio', threshold_use => 'hit_ratio',
+                perfdatas => [
+                    { label => 'sga_data_buffer_hit_ratio', value => 'hit_ratio', template => '%.2f', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
 
+    $self->{version} = '1.0';
+    $options{options}->add_options(arguments => {
+    });
+    
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+sub manage_selection {
+    my ($self, %options) = @_;    
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{
+    my $query = q{
         SELECT SUM(DECODE(name, 'physical reads', value, 0)),
-            SUM(DECODE(name, 'physical reads direct', value, 0)),
-            SUM(DECODE(name, 'physical reads direct (lob)', value, 0)),
-            SUM(DECODE(name, 'session logical reads', value, 0))
+            SUM(DECODE(name, 'db block gets', value, 0)),
+            SUM(DECODE(name, 'consistent gets', value, 0))
         FROM sys.v_$sysstat
-    });
-    my $result = $self->{sql}->fetchall_arrayref();
+    };
+
+    $options{sql}->connect();
+    $options{sql}->query(query => $query);
+    my @result = $options{sql}->fetchrow_array();
     
-    my $physical_reads = @$result[0]->[0];
-    my $physical_reads_direct = @$result[0]->[1];
-    my $physical_reads_direct_lob = @$result[0]->[2];
-    my $session_logical_reads = @$result[0]->[3];
+    $self->{global} = {
+        physical_reads => $result[0], 
+        db_block_gets => $result[1],
+        consistent_gets => $result[2],
+    };
 
-    my $hitratio = 100 - 100 * (($physical_reads - $physical_reads_direct - $physical_reads_direct_lob) / $session_logical_reads);
-
-    my $exit_code = $self->{perfdata}->threshold_check(value => $hitratio, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("Buffer cache hit ratio is %.2f%%", $hitratio));
-    $self->{output}->perfdata_add(label => 'sga_data_buffer_hit_ratio',
-                                  value => sprintf("%d",$hitratio),
-                                  unit => '%',
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0,
-                                  max => 100);
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{cache_name} = "oracle_" . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -101,11 +107,11 @@ Check Oracle buffer cache hit ratio.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical.
 

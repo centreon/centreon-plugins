@@ -205,9 +205,18 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'status')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - status: ^kube_namespace_status_phase$
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='status'
 
 =back
 

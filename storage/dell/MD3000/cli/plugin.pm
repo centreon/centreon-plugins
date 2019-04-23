@@ -35,9 +35,16 @@ sub new {
                          'health-status'  => 'centreon::common::smcli::mode::healthstatus',
                         );
     $self->{custom_modes}{smcli} = 'centreon::common::smcli::custom::custom';
-    $self->{default} = { 'health-status' => { storage_command => 'show storageArray healthstatus;',
-                                              smcli_path => '/opt/dell/mdstoragemanager/client' }, };
-    
+    $self->{default} = {
+        'health-status' => { 
+            storage_command => 'show storageArray healthstatus;',
+        }
+    };
+    $self->{customdefault} = {
+        'smcli' => { 
+            smcli_path => '/opt/dell/mdstoragemanager/client', 
+        }
+    };
     return $self;
 }
 

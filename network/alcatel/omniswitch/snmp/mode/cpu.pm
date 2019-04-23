@@ -31,11 +31,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"   => { name => 'warning', default => '' },
-                                  "critical:s"  => { name => 'critical', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning:s"   => { name => 'warning', default => '' },
+        "critical:s"  => { name => 'critical', default => '' },
+    });
 
     return $self;
 }
@@ -68,13 +67,20 @@ sub check_options {
 sub check_cpu {
     my ($self, %options) = @_;
     
-    my $exit1 = $self->{perfdata}->threshold_check(value => $options{'1min'}, threshold => [ { label => 'crit1m', exit_litteral => 'critical' },
-                                                                                    { label => 'warn1m', exit_litteral => 'warning' },
-                                                                                  ]);
-
-    my $exit2 = $self->{perfdata}->threshold_check(value => $options{'1hour'}, threshold => [ { label => 'crit1h', exit_litteral => 'critical' },
-                                                                                     { label => 'warn1h', exit_litteral => 'warning' },  
-                                                                                   ]);
+    my $exit1 = $self->{perfdata}->threshold_check(
+        value => $options{'1min'},
+        threshold => [ 
+            { label => 'crit1m', exit_litteral => 'critical' },
+            { label => 'warn1m', exit_litteral => 'warning' },
+        ]
+    );
+    my $exit2 = $self->{perfdata}->threshold_check(
+        value => $options{'1hour'}, 
+        threshold => [
+            { label => 'crit1h', exit_litteral => 'critical' },
+            { label => 'warn1h', exit_litteral => 'warning' },
+        ]
+    );
 
     my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
 
@@ -95,28 +101,60 @@ sub check_cpu {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    my $oid_healthDeviceCpu1MinAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.14'; # it's '.0' but it's for walk multiple
-    my $oid_healthDeviceCpu1HrAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.15'; # it's '.0' but it's for walk multiple
-    my $oid_healthModuleCpu1MinAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.15';
-    my $oid_healthModuleCpu1HrAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.16';
+    my $mapping = {
+        aos6 => {
+            entry_device => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1',
+            entry_module => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1',
+            device => {
+                healthDeviceCpu1MinAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.14' },
+                healthDeviceCpu1HrAvg   => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.15' },
+            },
+            module => {
+                healthModuleCpu1MinAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.15' },
+                healthModuleCpu1HrAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.16' },
+            },
+        },
+        aos7 => {
+            entry_module => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1',
+            module => {
+                healthModuleCpu1MinAvg  => { oid => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1.11' },
+                healthModuleCpu1HrAvg  => { oid => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1.12' },
+            },
+        },
+    };
+
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+        { oid => $mapping->{aos6}->{entry_device}, start => $mapping->{aos6}->{device}->{healthDeviceCpu1MinAvg}->{oid}, end => $mapping->{aos6}->{device}->{healthDeviceCpu1HrAvg}->{oid} },
+        { oid => $mapping->{aos6}->{entry_module}, start => $mapping->{aos6}->{module}->{healthModuleCpu1MinAvg}->{oid}, end => $mapping->{aos6}->{module}->{healthModuleCpu1HrAvg}->{oid} },
+        { oid => $mapping->{aos7}->{entry_module}, start => $mapping->{aos7}->{module}->{healthModuleCpu1MinAvg}->{oid}, end => $mapping->{aos7}->{module}->{healthModuleCpu1HrAvg}->{oid} },
+    ], nothing_quit => 1);
     
-    my $result = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_healthDeviceCpu1MinAvg },
-                                                            { oid => $oid_healthDeviceCpu1HrAvg },
-                                                            { oid => $oid_healthModuleCpu1MinAvg },
-                                                            { oid => $oid_healthModuleCpu1HrAvg },
-                                                           ], nothing_quit => 1);
+    my $type = 'aos6';
+    if (scalar(keys %{$snmp_result->{ $mapping->{aos7}->{entry_module} }}) > 0) {
+        $type = 'aos7';
+    }
     
-    $self->check_cpu(name => 'Device cpu', perf_label => '_device', 
-                     '1min' => $result->{$oid_healthDeviceCpu1MinAvg}->{$oid_healthDeviceCpu1MinAvg . '.' . 0}, 
-                     '1hour' => $result->{$oid_healthDeviceCpu1HrAvg}->{$oid_healthDeviceCpu1HrAvg . '.' . 0});
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_healthModuleCpu1MinAvg}})) {
-        $oid =~ /^$oid_healthModuleCpu1MinAvg\.(.*)$/;
-        $self->check_cpu(name => "Module cpu '$1'", perf_label => "_module_$1", 
-                         '1min' => $result->{$oid_healthModuleCpu1MinAvg}->{$oid_healthModuleCpu1MinAvg . '.' . $1}, 
-                         '1hour' => $result->{$oid_healthModuleCpu1HrAvg}->{$oid_healthModuleCpu1HrAvg . '.' . $1});
+    if (defined($mapping->{$type}->{device})) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{device}, results => $snmp_result->{ $mapping->{$type}->{entry_device} }, instance => '0');
+        $self->check_cpu(
+            name => 'Device cpu',
+            perf_label => '_device', 
+            '1min' => $result->{healthDeviceCpu1MinAvg}, 
+            '1hour' => $result->{healthDeviceCpu1HrAvg}
+        );
+    }
+    
+    foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result->{ $mapping->{$type}->{entry_module} }})) {
+        next if ($oid !~ /^$mapping->{$type}->{module}->{healthModuleCpu1MinAvg}->{oid}\.(.*)$/);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{module}, results => $snmp_result->{ $mapping->{$type}->{entry_module} }, instance => $1);
+        
+        $self->check_cpu(
+            name => "Module cpu '$1'",
+            perf_label => "_module_$1", 
+            '1min' => $result->{healthModuleCpu1MinAvg}, 
+            '1hour' => $result->{healthModuleCpu1HrAvg}
+        );
     }
 
     $self->{output}->display();

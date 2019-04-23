@@ -127,10 +127,14 @@ sub check {
                                                                  $shelf_addr, $num, $current_value));
             }
             
-            $self->{output}->perfdata_add(label => "temp_" . $shelf_addr . "_" . $num, unit => 'C',
-                                          value => $current_value,
-                                          warning => $warn,
-                                          critical => $crit);
+            $self->{output}->perfdata_add(
+                label => "temp", unit => 'C',
+                nlabel => 'hardware.temperature.celsius',
+                instances => [$shelf_addr, $num],
+                value => $current_value,
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

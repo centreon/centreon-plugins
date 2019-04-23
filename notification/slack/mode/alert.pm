@@ -45,36 +45,32 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "slack-url:s"           => { name => 'slack_url' },
-            "slack-channel:s"       => { name => 'slack_channel' },
-            "slack-username:s"      => { name => 'slack_username' },
-            "host-name:s"           => { name => 'host_name' },
-            "host-state:s"          => { name => 'host_state' },
-            "host-output:s"         => { name => 'host_output' },
-            "service-description:s" => { name => 'service_description' },
-            "service-state:s"       => { name => 'service_state' },
-            "service-output:s"      => { name => 'service_output' },
-            "slack-color:s"         => { name => 'slack_color' },
-            "slack-emoji:s"         => { name => 'slack_emoji', },
-            "graph-url:s"           => { name => 'graph_url' },
-            "priority:s"            => { name => 'priority' },
-            "zone:s"                => { name => 'zone' },
-            "link-url:s"            => { name => 'link_url' },
-            "centreon-url:s"        => { name => 'centreon_url' },
-            "centreon-token:s"      => { name => 'centreon_token' },
-            "credentials"           => { name => 'credentials' },
-            "basic"                 => { name => 'basic' },
-            "ntlm"                  => { name => 'ntlm' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "proxypac:s"            => { name => 'proxypac' },
-            "timeout:s"             => { name => 'timeout' },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $options{options}->add_options(arguments => {
+        "slack-url:s"           => { name => 'slack_url' },
+        "slack-channel:s"       => { name => 'slack_channel' },
+        "slack-username:s"      => { name => 'slack_username' },
+        "host-name:s"           => { name => 'host_name' },
+        "host-state:s"          => { name => 'host_state' },
+        "host-output:s"         => { name => 'host_output' },
+        "service-description:s" => { name => 'service_description' },
+        "service-state:s"       => { name => 'service_state' },
+        "service-output:s"      => { name => 'service_output' },
+        "slack-color:s"         => { name => 'slack_color' },
+        "slack-emoji:s"         => { name => 'slack_emoji', },
+        "graph-url:s"           => { name => 'graph_url' },
+        "priority:s"            => { name => 'priority' },
+        "zone:s"                => { name => 'zone' },
+        "link-url:s"            => { name => 'link_url' },
+        "centreon-url:s"        => { name => 'centreon_url' },
+        "centreon-token:s"      => { name => 'centreon_token' },
+        "credentials"           => { name => 'credentials' },
+        "basic"                 => { name => 'basic' },
+        "ntlm"                  => { name => 'ntlm' },
+        "username:s"            => { name => 'username' },
+        "password:s"            => { name => 'password' },
+        "timeout:s"             => { name => 'timeout' },
+    });
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{payload_attachment} = { fields => [] }; 
     
     return $self;
@@ -132,9 +128,9 @@ sub host_message {
     my ($self, %options) = @_;
     
     my $url_host = $self->{option_results}->{host_name};
+    $self->{payload_attachment}->{fallback} = "Host " . $self->{option_results}->{host_name};
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $url_host = '<' . $self->{option_results}->{link_url} . '|' . $self->{option_results}->{host_name} . '>';
-        $self->{payload_attachment}->{fallback} = "Host " . $self->{option_results}->{host_name};
     }
     $self->{payload_attachment}->{text} = "Host " . $url_host;
     
@@ -318,14 +314,6 @@ Specify the graph url (Example: %{centreon_url}/include/views/graphs/generateGra
 
 Specify the link url (Example: %{centreon_url}/main.php?p=20201&o=svc&host_search=%{host_name}&svc_search=%{service_description})
 
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
 =item B<--credentials>
 
 Specify this option if you access webpage with authentication
@@ -349,10 +337,6 @@ Specify this option if you access webpage over hidden basic authentication or yo
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

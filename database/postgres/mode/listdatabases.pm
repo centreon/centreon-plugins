@@ -31,10 +31,9 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "exclude:s"               => { name => 'exclude', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "exclude:s" => { name => 'exclude', },
+    });
 
     return $self;
 }
@@ -50,8 +49,9 @@ sub manage_selection {
     $self->{sql}->connect();
 
     $self->{sql}->query(query => q{
-SELECT datname FROM pg_database
-});
+            SELECT datname FROM pg_database
+        }
+    );
     $self->{list_db} = [];
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (defined($self->{option_results}->{exclude}) && $row->{datname} !~ /$self->{option_results}->{exclude}/) {

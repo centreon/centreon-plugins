@@ -31,13 +31,12 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "exclude:s"               => { name => 'exclude', },
-                                  "exclude-user:s"          => { name => 'exclude_user', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning:s"               => { name => 'warning', },
+        "critical:s"              => { name => 'critical', },
+        "exclude:s"               => { name => 'exclude', },
+        "exclude-user:s"          => { name => 'exclude_user', },
+    });
 
     return $self;
 }
@@ -66,19 +65,19 @@ sub run {
     my $query;
     if ($self->{sql}->is_version_minimum(version => '9.2')) {
         $query = q{
-SELECT datname, datid, pid, usename, client_addr, query AS current_query, state AS state,
-       CASE WHEN client_port < 0 THEN 0 ELSE client_port END AS client_port,
+SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.query AS current_query, pgsa.state AS state,
+       CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
        COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
-FROM pg_stat_activity WHERE (query_start IS NOT NULL AND (state NOT LIKE 'idle%' OR state IS NULL))
-ORDER BY query_start, pid DESC
+FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND (pgsa.state NOT LIKE 'idle%' OR pgsa.state IS NULL))
+ORDER BY pgsa.query_start, pgsa.pid DESC
 };
     } else {
         $query = q{
-SELECT datname, datid, procpid AS pid, usename, client_addr, current_query AS current_query, '' AS state,
-       CASE WHEN client_port < 0 THEN 0 ELSE client_port END AS client_port,
+SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.current_query AS current_query, '' AS state,
+       CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
        COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
-FROM pg_stat_activity WHERE (query_start IS NOT NULL AND current_query NOT LIKE '<IDLE>%')
-ORDER BY query_start, procpid DESC
+FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND current_query NOT LIKE '<IDLE>%')
+ORDER BY pgsa.query_start, pgsa.procpid DESC
 };
     }
     
@@ -88,6 +87,11 @@ ORDER BY query_start, procpid DESC
                                 short_msg => "All databases queries time are ok.");
     my $dbquery = {};
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
+        if (!defined($dbquery->{$row->{datname}})) {
+            $dbquery->{$row->{datname}} = { total => 0, code => {} };
+        }
+        next if (!defined($row->{datid}) || $row->{datid} eq ''); # No joint
+        
         if (defined($self->{option_results}->{exclude}) && $row->{datname} !~ /$self->{option_results}->{exclude}/) {
             next;
         }
@@ -107,8 +111,6 @@ ORDER BY query_start, procpid DESC
     foreach my $dbname (keys %$dbquery) {
         $self->{output}->perfdata_add(label => $dbname . '_qtime_num',
                                       value => $dbquery->{$dbname}->{total},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0);
         foreach my $exit_code (keys %{$dbquery->{$dbname}->{code}}) {
             $self->{output}->output_add(severity => $exit_code,

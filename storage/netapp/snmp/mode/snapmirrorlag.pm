@@ -20,118 +20,152 @@
 
 package storage::netapp::snmp::mode::snapmirrorlag;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my $oid_snapmirrorOn = '.1.3.6.1.4.1.789.1.9.1.0';
-my $oid_snapmirrorSrc = '.1.3.6.1.4.1.789.1.9.20.1.2';
-my $oid_snapmirrorLag = '.1.3.6.1.4.1.789.1.9.20.1.6'; # hundreth of seconds
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'snapmirror', type => 1, cb_prefix_output => 'prefix_snapmirror_output', message_multiple => 'All snapmirrors lags are ok' },
+    ];
+
+    $self->{maps_counters}->{snapmirror} = [
+         { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                output_template => "status is '%s'",
+                output_use => 'status',
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'lag', set => {
+                key_values => [ { name => 'lag' }, { name => 'display' } ],
+                output_template => 'lag: %s seconds',
+                perfdatas => [
+                    { label => 'lag', value => 'lag_absolute', template => '%s', min => 0, unit => 's',
+                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_snapmirror_output {
+    my ($self, %options) = @_;
+
+    return "Snapmirror '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"             => { name => 'warning' },
-                                  "critical:s"            => { name => 'critical' },
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                });
-    $self->{snapmirrors_id_selected} = [];
+    $options{options}->add_options(arguments => {
+        "filter-status:s"   => { name => 'filter_status' },
+        "unknown-status:s"  => { name => 'unknown_status', default => '' },
+        "warning-status:s"  => { name => 'warning_status', default => '%{status} =~ /quiesced/i' },
+        "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /unknown|brokenOff|uninitialized/i' },
+    });
 
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_snapmirrorOn]);
+    my $oid_snapmirrorOn = '.1.3.6.1.4.1.789.1.9.1.0';
+    my $oid_snapmirrorSrc = '.1.3.6.1.4.1.789.1.9.20.1.2';
+
+    my $result = $options{snmp}->get_leef(oids => [$oid_snapmirrorOn]);
     if (!defined($result->{$oid_snapmirrorOn}) || $result->{$oid_snapmirrorOn} != 2) {
         $self->{output}->add_option_msg(short_msg => "Snapmirror is not turned on.");
         $self->{output}->option_exit();
     }
     
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_snapmirrorSrc, nothing_quit => 1);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
+    my $id_selected = [];
+    my $snmp_result_name = $options{snmp}->get_table(oid => $oid_snapmirrorSrc, nothing_quit => 1);
+    foreach my $oid (keys %{$snmp_result_name}) {
         next if ($oid !~ /\.([0-9]+)$/);
         my $instance = $1;
         
         # Get all without a name
         if (!defined($self->{option_results}->{name})) {
-            push @{$self->{snapmirrors_id_selected}}, $instance; 
+            push @{$id_selected}, $instance; 
             next;
         }
         
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{snapmirrors_id_selected}}, $instance; 
+        if (!defined($self->{option_results}->{use_regexp}) && $snmp_result_name->{$oid} eq $self->{option_results}->{name}) {
+            push @{$id_selected}, $instance; 
         }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{snapmirrors_id_selected}}, $instance;
+        if (defined($self->{option_results}->{use_regexp}) && $snmp_result_name->{$oid} =~ /$self->{option_results}->{name}/) {
+            push @{$id_selected}, $instance;
         }
     }
 
-    if (scalar(@{$self->{snapmirrors_id_selected}}) <= 0) {
+    if (scalar(@{$id_selected}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No snapmirrors found for name '" . $self->{option_results}->{name} . "'.");
         $self->{output}->option_exit();
     }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_snapmirrorLag], instances => $self->{snapmirrors_id_selected});
-    my $result = $self->{snmp}->get_leef(nothing_quit => 1);
     
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All snapmirrors lags are ok.');
-    }
-
-    foreach my $instance (sort @{$self->{snapmirrors_id_selected}}) {
-        my $name = $self->{result_names}->{$oid_snapmirrorSrc . '.' . $instance};
-        my $lag = int($result->{$oid_snapmirrorLag . '.' . $instance} / 100);
-        
-        my $exit = $self->{perfdata}->threshold_check(value => $lag, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        $self->{output}->output_add(long_msg => sprintf("Snapmirror '%s' lag: %s seconds", $name, $lag));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Snapmirror '%s' lag: %s seconds", $name, $lag));
+    my %map_state = (
+        1 => 'uninitialized', 
+        2 => 'snapmirrored', 
+        3 => 'brokenOff', 
+        4 => 'quiesced',
+        5 => 'source',
+        6 => 'unknown',
+    );
+    my $mapping = {
+        snapmirrorState => { oid => '.1.3.6.1.4.1.789.1.9.20.1.5', map => \%map_state },
+        snapmirrorLag   => { oid => '.1.3.6.1.4.1.789.1.9.20.1.6' },
+    };
+    
+    $options{snmp}->load(oids => [$mapping->{snapmirrorState}->{oid}, $mapping->{snapmirrorLag}->{oid}], instances => $id_selected);
+    my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    $self->{snapmirror} = {};
+    
+    foreach (@{$id_selected}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
+            $result->{snapmirrorState} !~ /$self->{option_results}->{filter_status}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $snmp_result_name->{$oid_snapmirrorSrc . '.' . $_} . "': no matching filter.", debug => 1);
+            next;
         }
-
-        my $extra_label = '';
-        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        my %total_options = ();
-        $self->{output}->perfdata_add(label => 'lag' . $extra_label, unit => 's',
-                                      value => $lag,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        
+        $self->{snapmirror}->{$_} = {
+            display => $snmp_result_name->{$oid_snapmirrorSrc . '.' . $_},
+            status => $result->{snapmirrorState},
+            lag => int($result->{snapmirrorLag} / 100),
+        };
     }
     
-    $self->{output}->display();
-    $self->{output}->exit();
+    if (scalar(keys %{$self->{snapmirror}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No snapmirrors found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -140,17 +174,9 @@ __END__
 
 =head1 MODE
 
-Check snapmirrors lag.
+Check snapmirrors status and lag.
 
 =over 8
-
-=item B<--warning>
-
-Threshold warning in seconds.
-
-=item B<--critical>
-
-Threshold critical in seconds.
 
 =item B<--name>
 
@@ -159,6 +185,38 @@ Set the snapmirror name.
 =item B<--regexp>
 
 Allows to use regexp to filter snampmirror name (with option --name).
+
+=item B<--filter-status>
+
+Filter on status (can be a regexp).
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='^status$'
+
+=item B<--unknown-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{display}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%{status} =~ /quiesced/i').
+Can used special variables like: %{status}, %{display}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{status} =~ /unknown|brokenOff|uninitialized/i').
+Can used special variables like: %{status}, %{display}
+
+=item B<--warning-lag>
+
+Threshold warning.
+
+=item B<--critical-lag>
+
+Threshold critical.
 
 =back
 

@@ -63,6 +63,9 @@ sub custom_threshold_output {
 sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = 'Status : ' . $self->{result_values}->{opstatus} . ' (admin: ' . $self->{result_values}->{admstatus} . ')';
+    if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
+        $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
+    }
     
     return $msg;
 }
@@ -72,6 +75,7 @@ sub custom_status_calc {
     
     $self->{result_values}->{opstatus} = $options{new_datas}->{$self->{instance} . '_opstatus'};
     $self->{result_values}->{admstatus} = $options{new_datas}->{$self->{instance} . '_admstatus'};
+    $self->{result_values}->{duplexstatus} = $options{new_datas}->{$self->{instance} . '_duplexstatus'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -518,7 +522,7 @@ sub set_counters {
 sub set_key_values_status {
     my ($self, %options) = @_;
 
-    return [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ];
+    return [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'duplexstatus' }, { name => 'display' } ];
 }
 
 sub set_key_values_in_traffic {
@@ -537,9 +541,10 @@ sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
-        'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
-        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
+        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
+        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
+        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value', },
+        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index', },
     };
 }
 
@@ -553,6 +558,10 @@ sub set_oids_status {
     $self->{oid_opstatus} = '.1.3.6.1.2.1.2.2.1.8';
     $self->{oid_opstatus_mapping} = {
         1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown',
+    };
+    $self->{oid_duplexstatus} = '.1.3.6.1.2.1.10.7.2.1.19';
+    $self->{oid_duplexstatus_mapping} = {
+        1 => 'unknown', 2 => 'halfDuplex', 3 => 'fullDuplex',
     };
 }
 
@@ -608,7 +617,7 @@ sub check_oids_label {
     
     foreach (('oid_filter', 'oid_display')) {
         $self->{option_results}->{$_} = lc($self->{option_results}->{$_}) if (defined($self->{option_results}->{$_}));
-        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}})) {
+        if (!defined($self->{oids_label}->{$self->{option_results}->{$_}}->{oid})) {
             my $label = $_;
             $label =~ s/_/-/g;
             $self->{output}->add_option_msg(short_msg => "Unsupported oid in --" . $label . " option.");
@@ -618,7 +627,7 @@ sub check_oids_label {
     
     if (defined($self->{option_results}->{oid_extra_display})) {
         $self->{option_results}->{oid_extra_display} = lc($self->{option_results}->{oid_extra_display});
-        if (!defined($self->{oids_label}->{$self->{option_results}->{oid_extra_display}})) {
+        if (!defined($self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid})) {
             $self->{output}->add_option_msg(short_msg => "Unsupported oid in --oid-extra-display option.");
             $self->{output}->option_exit();
         }
@@ -693,30 +702,30 @@ sub new {
     }
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "add-global"              => { name => 'add_global' },
-                                "add-status"              => { name => 'add_status' },
-                                "warning-status:s"        => { name => 'warning_status', default => $self->default_warning_status() },
-                                "critical-status:s"       => { name => 'critical_status', default => $self->default_critical_status() },
-                                "global-admin-up-rule:s"    => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
-                                "global-oper-up-rule:s"     => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
-                                "global-admin-down-rule:s"  => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
-                                "global-oper-down-rule:s"   => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
-                                "interface:s"             => { name => 'interface' },
-                                "units-traffic:s"         => { name => 'units_traffic', default => '%' },
-                                "units-errors:s"          => { name => 'units_errors', default => '%' },
-                                "speed:s"                 => { name => 'speed' },
-                                "speed-in:s"              => { name => 'speed_in' },
-                                "speed-out:s"             => { name => 'speed_out' },
-                                "no-skipped-counters"     => { name => 'no_skipped_counters' },
-                                "display-transform-src:s" => { name => 'display_transform_src' },
-                                "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                "show-cache"              => { name => 'show_cache' },
-                                "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                "nagvis-perfdata"         => { name => 'nagvis_perfdata' },
-                                "force-counters32"        => { name => 'force_counters32' },
-                                });
+    $options{options}->add_options(arguments => {
+        "add-global"              => { name => 'add_global' },
+        "add-status"              => { name => 'add_status' },
+        "add-duplex-status"       => { name => 'add_duplex_status' },
+        "warning-status:s"        => { name => 'warning_status', default => $self->default_warning_status() },
+        "critical-status:s"       => { name => 'critical_status', default => $self->default_critical_status() },
+        "global-admin-up-rule:s"    => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
+        "global-oper-up-rule:s"     => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
+        "global-admin-down-rule:s"  => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
+        "global-oper-down-rule:s"   => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
+        "interface:s"             => { name => 'interface' },
+        "units-traffic:s"         => { name => 'units_traffic', default => '%' },
+        "units-errors:s"          => { name => 'units_errors', default => '%' },
+        "speed:s"                 => { name => 'speed' },
+        "speed-in:s"              => { name => 'speed_in' },
+        "speed-out:s"             => { name => 'speed_out' },
+        "no-skipped-counters"     => { name => 'no_skipped_counters' },
+        "display-transform-src:s" => { name => 'display_transform_src' },
+        "display-transform-dst:s" => { name => 'display_transform_dst' },
+        "show-cache"              => { name => 'show_cache' },
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+        "nagvis-perfdata"         => { name => 'nagvis_perfdata' },
+        "force-counters32"        => { name => 'force_counters32' },
+    });
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { "add-traffic" => { name => 'add_traffic' } });
     }
@@ -733,20 +742,16 @@ sub new {
         $options{options}->add_options(arguments => { "add-volume" => { name => 'add_volume' }, });
     }
     if ($self->{no_oid_options} == 0) {
-        $options{options}->add_options(arguments =>
-                                {
-                                "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
-                                "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
-                                "oid-extra-display:s"     => { name => 'oid_extra_display' },
-                                }
-                                );
+        $options{options}->add_options(arguments => {
+            "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
+            "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
+            "oid-extra-display:s"     => { name => 'oid_extra_display' },
+        });
     }
     if ($self->{no_interfaceid_options} == 0) {
-        $options{options}->add_options(arguments =>
-                                {
-                                "name"                    => { name => 'use_name' },
-                                }
-                                );
+        $options{options}->add_options(arguments => {
+            "name"                    => { name => 'use_name' },
+        });
     }
     
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
@@ -758,9 +763,9 @@ sub new {
             my ($id, $name) = split /_/;
             if (!defined($self->{maps_counters}->{$key}->{$_}->{threshold}) || $self->{maps_counters}->{$key}->{$_}->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
-                                                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
+                    'warning-' . $name . ':s'    => { name => 'warning-' . $name },
+                    'critical-' . $name . ':s'    => { name => 'critical-' . $name },
+                });
             }
             $self->{maps_counters}->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
                                                       output => $self->{output}, perfdata => $self->{perfdata},
@@ -989,6 +994,32 @@ sub check_oids_options_change {
     return 0;
 }
 
+sub reload_cache_index_value {
+    my ($self, %options) = @_;
+    
+    my $store_index = defined($options{store_index}) && $options{store_index} == 1 ? 1 : 0;
+    foreach ($self->{snmp}->oid_lex_sort(keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }})) {
+        /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
+        push @{$options{datas}->{all_ids}}, $1 if ($store_index == 1);
+        $options{datas}->{$options{name} . "_" . $1} = $self->{output}->to_utf8($options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_});
+    }
+}
+
+sub reload_cache_values_index {
+    my ($self, %options) = @_;
+    
+    my $store_index = defined($options{store_index}) && $options{store_index} == 1 ? 1 : 0;
+    foreach ($self->{snmp}->oid_lex_sort(keys %{$options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }})) {
+        /^$self->{oids_label}->{$options{name}}->{oid}\.(.*)$/;
+        push @{$options{datas}->{all_ids}}, $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_} if ($store_index == 1);
+        if (defined($options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}})) {
+            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} .= ', ' . $1;
+        } else {
+            $options{datas}->{$options{name} . "_" . $options{result}->{ $self->{oids_label}->{$options{name}}->{oid} }->{$_}} = $1;
+        }
+    }
+}
+
 sub reload_cache {
     my ($self) = @_;
     my $datas = {};
@@ -1000,22 +1031,20 @@ sub reload_cache {
     $datas->{all_ids} = [];
     
     my $snmp_get = [
-        { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}} },
+        { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}}->{oid} },
     ];
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}} };
+        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}}->{oid} };
     }
     if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
-        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}} };
+        push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid} };
     }    
     
     my $result = $self->{snmp}->get_multiple_table(oids => $snmp_get);
-    foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_filter}}}})) {
-        /^$self->{oids_label}->{$self->{option_results}->{oid_filter}}\.(.*)$/;
-        push @{$datas->{all_ids}}, $1;
-        $datas->{$self->{option_results}->{oid_filter} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_filter}}}->{$_});
-    }
+    
+    my $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_filter}}->{cache});
+    $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_filter}, store_index => 1);
 
     if (scalar(@{$datas->{all_ids}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "Can't construct cache...");
@@ -1023,17 +1052,13 @@ sub reload_cache {
     }
 
     if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display}) {
-       foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}})) {
-            /^$self->{oids_label}->{$self->{option_results}->{oid_display}}\.(.*)$/;
-            $datas->{$self->{option_results}->{oid_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}->{$_});
-       }
+        $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_display}}->{cache});
+        $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_display});
     }
     if (defined($self->{option_results}->{oid_extra_display}) && $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_display} && 
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
-        foreach ($self->{snmp}->oid_lex_sort(keys %{$result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}})) {
-            /^$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}\.(.*)$/;
-            $datas->{$self->{option_results}->{oid_extra_display} . "_" . $1} = $self->{output}->to_utf8($result->{$self->{oids_label}->{$self->{option_results}->{oid_extra_display}}}->{$_});
-       }
+        $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{cache});
+        $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_extra_display});
     }
     
     $self->{statefile_cache}->write(data => $datas);
@@ -1099,7 +1124,12 @@ sub load_status {
     my ($self, %options) = @_;
     
     $self->set_oids_status();
-    $self->{snmp}->load(oids => [$self->{oid_adminstatus}, $self->{oid_opstatus}], instances => $self->{array_interface_selected});
+    my $oids = [$self->{oid_adminstatus}, $self->{oid_opstatus}];
+    if (defined($self->{option_results}->{add_duplex_status})) {
+        push @$oids, $self->{oid_duplexstatus};
+    }
+    
+    $self->{snmp}->load(oids => $oids, instances => $self->{array_interface_selected});
 }
 
 sub load_traffic {
@@ -1224,6 +1254,7 @@ sub add_result_status {
     
     $self->{interface_selected}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
     $self->{interface_selected}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
+    $self->{interface_selected}->{$options{instance}}->{duplexstatus} = defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
 }
 
 sub add_result_errors {
@@ -1303,7 +1334,7 @@ sub add_result_cast {
         }
     }
     
-    foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'omcast')) {
+    foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'obcast')) {
         $self->{interface_selected}->{$options{instance}}->{$_} = 0 if (!defined($self->{interface_selected}->{$options{instance}}->{$_}));
     }
     
@@ -1362,6 +1393,10 @@ Check global port statistics (By default if no --add-* option is set).
 
 Check interface status.
 
+=item B<--add-duplex-status>
+
+Check duplex status (with --warning-status and --critical-status).
+
 =item B<--add-traffic>
 
 Check interface traffic.
@@ -1385,12 +1420,12 @@ Check interface data volume between two checks (not supposed to be graphed, usef
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*>
 
@@ -1454,11 +1489,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 

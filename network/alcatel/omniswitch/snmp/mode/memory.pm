@@ -31,11 +31,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"   => { name => 'warning', default => '' },
-                                  "critical:s"  => { name => 'critical', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning:s"   => { name => 'warning', default => '' },
+        "critical:s"  => { name => 'critical', default => '' },
+    });
 
     return $self;
 }
@@ -95,28 +94,60 @@ sub check_memory {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    my $oid_healthDeviceMemory1MinAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.10'; # it's '.0' but it's for walk multiple
-    my $oid_healthDeviceMemory1HrAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.11'; # it's '.0' but it's for walk multiple
-    my $oid_healthModuleMemory1MinAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.11';
-    my $oid_healthModuleMemory1HrAvg = '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.12';
+    my $mapping = {
+        aos6 => {
+            entry_device => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1',
+            entry_module => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1',
+            device => {
+                healthDeviceMemory1MinAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.10' },
+                healthDeviceMemory1HrAvg   => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.1.11' },
+            },
+            module => {
+                healthModuleMemory1MinAvg  => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.11' },
+                healthModuleMemory1HrAvg   => { oid => '.1.3.6.1.4.1.6486.800.1.2.1.16.1.1.2.1.1.12' },
+            },
+        },
+        aos7 => {
+            entry_module => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1',
+            module => {
+                healthModuleMemory1MinAvg  => { oid => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1.8' },
+                healthModuleMemory1HrAvg   => { oid => '.1.3.6.1.4.1.6486.801.1.2.1.16.1.1.1.1.1.9' },
+            },
+        },
+    };
     
-    my $result = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_healthDeviceMemory1MinAvg },
-                                                            { oid => $oid_healthDeviceMemory1HrAvg },
-                                                            { oid => $oid_healthModuleMemory1MinAvg },
-                                                            { oid => $oid_healthModuleMemory1HrAvg },
-                                                           ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+        { oid => $mapping->{aos6}->{entry_device}, start => $mapping->{aos6}->{device}->{healthDeviceMemory1MinAvg}->{oid}, end => $mapping->{aos6}->{device}->{healthDeviceMemory1HrAvg}->{oid} },
+        { oid => $mapping->{aos6}->{entry_module}, start => $mapping->{aos6}->{module}->{healthModuleMemory1MinAvg}->{oid}, end => $mapping->{aos6}->{module}->{healthModuleMemory1HrAvg}->{oid} },
+        { oid => $mapping->{aos7}->{entry_module}, start => $mapping->{aos7}->{module}->{healthModuleMemory1MinAvg}->{oid}, end => $mapping->{aos7}->{module}->{healthModuleMemory1HrAvg}->{oid} },
+    ], nothing_quit => 1);
+
+    my $type = 'aos6';
+    if (scalar(keys %{$snmp_result->{ $mapping->{aos7}->{entry_module} }}) > 0) {
+        $type = 'aos7';
+    }
     
-    $self->check_memory(name => 'Device memory', perf_label => '_device', 
-                        '1min' => $result->{$oid_healthDeviceMemory1MinAvg}->{$oid_healthDeviceMemory1MinAvg . '.' . 0}, 
-                        '1hour' => $result->{$oid_healthDeviceMemory1HrAvg}->{$oid_healthDeviceMemory1HrAvg . '.' . 0});
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_healthModuleMemory1MinAvg}})) {
-        $oid =~ /^$oid_healthModuleMemory1MinAvg\.(.*)$/;
-        $self->check_memory(name => "Module memory '$1'", perf_label => "_module_$1", 
-                            '1min' => $result->{$oid_healthModuleMemory1MinAvg}->{$oid_healthModuleMemory1MinAvg . '.' . $1}, 
-                            '1hour' => $result->{$oid_healthModuleMemory1HrAvg}->{$oid_healthModuleMemory1HrAvg . '.' . $1});
+    if (defined($mapping->{$type}->{device})) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{device}, results => $snmp_result->{ $mapping->{$type}->{entry_device} }, instance => '0');
+        $self->check_memory(
+            name => 'Device memory',
+            perf_label => '_device', 
+            '1min' => $result->{healthDeviceMemory1MinAvg}, 
+            '1hour' => $result->{healthDeviceMemory1HrAvg}
+        );
+    }
+
+    foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result->{ $mapping->{$type}->{entry_module} }})) {
+        next if ($oid !~ /^$mapping->{$type}->{module}->{healthModuleMemory1MinAvg}->{oid}\.(.*)$/);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{module}, results => $snmp_result->{ $mapping->{$type}->{entry_module} }, instance => $1);
+        
+        $self->check_memory(
+            name => "Module memory '$1'",
+            perf_label => "_module_$1", 
+            '1min' => $result->{healthModuleMemory1MinAvg}, 
+            '1hour' => $result->{healthModuleMemory1HrAvg}
+        );
     }
 
     $self->{output}->display();

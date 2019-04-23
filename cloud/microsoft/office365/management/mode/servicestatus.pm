@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = "status is '" . $self->{result_values}->{status} . "'";
+    my $msg = "Status is '" . $self->{result_values}->{status} . "'";
     return $msg;
 }
 
@@ -37,30 +37,44 @@ sub custom_status_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{service_name} = $options{new_datas}->{$self->{instance} . '_service_name'};
+    $self->{result_values}->{feature_name} = ($options{new_datas}->{$self->{instance} . '_feature_name'}) ? $options{new_datas}->{$self->{instance} . '_feature_name'} : '';
     return 0;
 }
 
 sub prefix_service_output {
     my ($self, %options) = @_;
     
-    return "Service '" . $options{instance_value}->{service_name} . "' ";
+    return "Service '" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_feature_output {
     my ($self, %options) = @_;
     
-    return "Service '" . $options{instance_value}->{service_name} . "' Feature '" . $options{instance_value}->{feature_name} . "' ";
+    return "Feature '" . $options{instance_value}->{feature_name} . "' ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking service '" . $options{instance_value}->{display} . "'";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'services', type => 3, cb_prefix_output => 'prefix_service_output', message_multiple => 'All services status are ok',
-          counters => [ { name => 'features', type => 1, cb_prefix_output => 'prefix_feature_output', message_multiple => 'All features status are ok' } ] },
+        { name => 'services', type => 3, cb_prefix_output => 'prefix_service_output', cb_long_output => 'long_output',
+          message_multiple => 'All services status are ok', indent_long_output => '    ',
+            group => [
+                { name => 'global',  type => 0, skipped_code => { -10 => 1 } },
+                { name => 'features', display_long => 1, cb_prefix_output => 'prefix_feature_output',
+                  message_multiple => 'All features status are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
-    
-    $self->{maps_counters}->{services} = [
+
+    $self->{maps_counters}->{global} = [
         { label => 'status', set => {
                 key_values => [ { name => 'status' }, { name => 'service_name' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
@@ -112,22 +126,23 @@ sub manage_selection {
     $self->{services} = {};
 
     my $results = $options{custom}->office_get_services_status();
-
+    
     foreach my $service (@{$results->{value}}) {
         if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
             $service->{WorkloadDisplayName} !~ /$self->{option_results}->{filter_service_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $service->{WorkloadDisplayName} . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $service->{WorkloadDisplayName} . "': no matching filter name.", debug => 1);
             next;
         }
-        $self->{services}->{$service->{Id}}->{service_name} = $service->{WorkloadDisplayName};
-        $self->{services}->{$service->{Id}}->{status} = $service->{StatusDisplayName};
+        $self->{services}->{$service->{Id}}->{display} = $service->{WorkloadDisplayName};
+        $self->{services}->{$service->{Id}}->{global}->{service_name} = $service->{WorkloadDisplayName};
+        $self->{services}->{$service->{Id}}->{global}->{status} = $service->{StatusDisplayName};
         foreach my $feature (@{$service->{FeatureStatus}}) {
             if (defined($self->{option_results}->{filter_feature_name}) && $self->{option_results}->{filter_feature_name} ne '' &&
                 $feature->{FeatureDisplayName} !~ /$self->{option_results}->{filter_feature_name}/) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $feature->{FeatureDisplayName} . "': no matching filter name.", debug => 1);
+                $self->{output}->output_add(long_msg => "skipping '" . $feature->{FeatureDisplayName} . "': no matching filter name.", debug => 1);
                 next;
             }
-            $self->{services}->{$service->{Id}}->{features}->{$feature->{FeatureName}}->{service_name} = $service->{WorkloadDisplayName};
+            $self->{services}->{$service->{Id}}->{features}->{$feature->{FeatureName}}->{service_name} = $service->{StatusDisplayName};
             $self->{services}->{$service->{Id}}->{features}->{$feature->{FeatureName}}->{feature_name} = $feature->{FeatureDisplayName};
             $self->{services}->{$service->{Id}}->{features}->{$feature->{FeatureName}}->{status} = $feature->{FeatureServiceStatusDisplayName};
         }

@@ -122,9 +122,6 @@ sub manage_selection {
         }
     }
     
-    use Data::Dumper;
-    print Data::Dumper::Dumper($self->{cr});
-    
     if (scalar(keys %{$self->{cr}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No client request found.");
         $self->{output}->option_exit();

@@ -30,8 +30,11 @@ sub new {
     bless $self, $class;
 
     $self->{perfdata} = centreon::plugins::perfdata->new(output => $options{output});
+    
     %{$self->{option_results}} = ();
     $self->{output} = $options{output};
+    $self->{output}->use_new_perfdata(value => 1)
+        if (defined($options{force_new_perfdata}) && $options{force_new_perfdata} == 1);
     $self->{mode} = $options{mode};
     $self->{version} = undef;
 

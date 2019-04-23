@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_app_state_threshold {
     my ($self, %options) = @_;
     my $status = 'ok';
@@ -36,11 +34,11 @@ sub custom_app_state_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
-        if (defined($instance_mode->{option_results}->{critical_app_state}) && $instance_mode->{option_results}->{critical_app_state} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_app_state}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_app_state}) && $self->{instance_mode}->{option_results}->{critical_app_state} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_app_state}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_app_state}) && $instance_mode->{option_results}->{warning_app_state} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_app_state}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_app_state}) && $self->{instance_mode}->{option_results}->{warning_app_state} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_app_state}") {
             $status = 'warning';
         }
     };
@@ -77,11 +75,11 @@ sub custom_inst_state_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
-        if (defined($instance_mode->{option_results}->{critical_instance_state}) && $instance_mode->{option_results}->{critical_instance_state} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_instance_state}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_instance_state}) && $self->{instance_mode}->{option_results}->{critical_instance_state} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_instance_state}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_instance_state}) && $instance_mode->{option_results}->{warning_instance_state} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_instance_state}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_instance_state}) && $self->{instance_mode}->{option_results}->{warning_instance_state} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_instance_state}") {
             $status = 'warning';
         }
     };
@@ -182,15 +180,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "app-guid:s"                    => { name => 'app_guid' },
-                                    "warning-app-state:s"           => { name => 'warning_app_state' },
-                                    "critical-app-state:s"          => { name => 'critical_app_state', default => '%{state} !~ /STARTED/i' },
-                                    "warning-instance-state:s"      => { name => 'warning_instance_state' },
-                                    "critical-instance-state:s"     => { name => 'critical_instance_state', default => '%{state} !~ /RUNNING/i' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        "app-guid:s"                    => { name => 'app_guid' },
+        "warning-app-state:s"           => { name => 'warning_app_state' },
+        "critical-app-state:s"          => { name => 'critical_app_state', default => '%{state} !~ /STARTED/i' },
+        "warning-instance-state:s"      => { name => 'warning_instance_state' },
+        "critical-instance-state:s"     => { name => 'critical_instance_state', default => '%{state} !~ /RUNNING/i' },
+    });
+
     return $self;
 }
 
@@ -203,7 +200,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
-    $instance_mode = $self;
     $self->change_macros(macros => ['warning_app_state', 'critical_app_state', 'warning_instance_state', 'critical_instance_state']);
 }
 

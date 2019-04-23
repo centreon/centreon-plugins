@@ -72,11 +72,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Dew point '%s' is %s C", $label, $result->{dewPointSensorValue}));
         }
-        $self->{output}->perfdata_add(label => 'dewpoint_' . $label, unit => 'C', 
-                                      value => $result->{dewPointSensorValue},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'dewpoint', unit => 'C',
+            nlabel => 'hardware.sensor.dewpoint.celsius',
+            instances => $label,
+            value => $result->{dewPointSensorValue},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

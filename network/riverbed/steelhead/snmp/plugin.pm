@@ -30,21 +30,25 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    # Plugin version
     $self->{version} = '0.1';
 
-    # Modes association
     %{$self->{modes}} = (
-                       'temperature'            => 'network::riverbed::steelhead::snmp::mode::temperature',
-                       'service-uptime'         => 'network::riverbed::steelhead::snmp::mode::serviceuptime',
-                       'health'                 => 'network::riverbed::steelhead::snmp::mode::health',
-                       'service-status'         => 'network::riverbed::steelhead::snmp::mode::servicestatus',
-                       'load-average'           => 'network::riverbed::steelhead::snmp::mode::loadaverage',
-                       'bandwidth-passthrough'  => 'network::riverbed::steelhead::snmp::mode::bwpassthrough',
-                       'bandwidth-optimization' => 'network::riverbed::steelhead::snmp::mode::bwoptimization',
-                       'disk-utilization'       => 'network::riverbed::steelhead::snmp::mode::diskutilization',
-                       'connections'            => 'network::riverbed::steelhead::snmp::mode::connections',
-                       );
+        'bandwidth-optimization'    => 'centreon::common::riverbed::steelhead::snmp::mode::bwoptimization',
+        'bandwidth-passthrough'     => 'centreon::common::riverbed::steelhead::snmp::mode::bwpassthrough',
+        'connections'               => 'centreon::common::riverbed::steelhead::snmp::mode::connections',
+        'cpu'                       => 'snmp_standard::mode::cpu',
+        'cpu-detailed'              => 'snmp_standard::mode::cpudetailed',
+        'disk-utilization'          => 'centreon::common::riverbed::steelhead::snmp::mode::diskutilization',
+        'interfaces'                => 'snmp_standard::mode::interfaces',
+        'list-interfaces'           => 'snmp_standard::mode::listinterfaces',
+        'list-storages'             => 'snmp_standard::mode::liststorages',
+        'load-average'              => 'centreon::common::riverbed::steelhead::snmp::mode::loadaverage',
+        'memory'                    => 'snmp_standard::mode::memory',
+        'status'                    => 'centreon::common::riverbed::steelhead::snmp::mode::status',
+        'storage'                   => 'snmp_standard::mode::storage',
+        'temperature'               => 'centreon::common::riverbed::steelhead::snmp::mode::temperature',
+        'uptime'                    => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

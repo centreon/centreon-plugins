@@ -28,6 +28,9 @@ use warnings;
 sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = 'Status : ' . $self->{result_values}->{linkstatus} . ' (oper: ' . $self->{result_values}->{opstatus} . ', ' . 'admin: ' . $self->{result_values}->{admstatus} . ')';
+    if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
+        $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
+    }
     
     return $msg;
 }
@@ -38,6 +41,7 @@ sub custom_status_calc {
     $self->{result_values}->{linkstatus} = $options{new_datas}->{$self->{instance} . '_linkstatus'};
     $self->{result_values}->{opstatus} = $options{new_datas}->{$self->{instance} . '_opstatus'};
     $self->{result_values}->{admstatus} = $options{new_datas}->{$self->{instance} . '_admstatus'};
+    $self->{result_values}->{duplexstatus} = $options{new_datas}->{$self->{instance} . '_duplexstatus'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
@@ -46,62 +50,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters} = { int => {}, global => {} } if (!defined($self->{maps_counters}));
-    
-    $self->{maps_counters}->{global}->{'000_total-port'} = { filter => 'add_global',
-        set => {
-            key_values => [ { name => 'total_port' } ],
-            output_template => 'Total port : %s', output_error_template => 'Total port : %s',
-            output_use => 'total_port_absolute',  threshold_use => 'total_port_absolute',
-            perfdatas => [
-                { label => 'total_port', value => 'total_port_absolute', template => '%s',
-                  min => 0, max => 'total_port_absolute' },
-           ],
-        }
-    };
-    $self->{maps_counters}->{global}->{'001_total-admin-up'} = { filter => 'add_global',
-        set => {
-            key_values => [ { name => 'global_admin_up' }, { name => 'total_port' } ],
-            output_template => 'AdminStatus Up : %s', output_error_template => 'AdminStatus Up : %s',
-            output_use => 'global_admin_up_absolute',  threshold_use => 'global_admin_up_absolute',
-            perfdatas => [
-                { label => 'total_admin_up', value => 'global_admin_up_absolute', template => '%s',
-                  min => 0, max => 'total_port_absolute' },
-           ],
-        }
-    };
-    $self->{maps_counters}->{global}->{'002_total-admin-down'} = { filter => 'add_global',
-        set => {
-            key_values => [ { name => 'global_admin_down' }, { name => 'total_port' } ],
-            output_template => 'AdminStatus Down : %s', output_error_template => 'AdminStatus Down : %s',
-            output_use => 'global_admin_down_absolute',  threshold_use => 'global_admin_down_absolute',
-            perfdatas => [
-                { label => 'total_admin_down', value => 'global_admin_down_absolute', template => '%s',
-                  min => 0, max => 'total_port_absolute' },
-           ],
-        }
-    };
-    $self->{maps_counters}->{global}->{'003_total-oper-up'} = { filter => 'add_global',
-        set => {
-            key_values => [ { name => 'global_oper_up' }, { name => 'total_port' } ],
-            output_template => 'OperStatus Up : %s', output_error_template => 'OperStatus Up : %s',
-            output_use => 'global_oper_up_absolute',  threshold_use => 'global_oper_up_absolute',
-            perfdatas => [
-                { label => 'total_oper_up', value => 'global_oper_up_absolute', template => '%s',
-                  min => 0, max => 'total_port_absolute' },
-           ],
-        }
-    };
-    $self->{maps_counters}->{global}->{'004_total-oper-down'} = { filter => 'add_global',
-        set => {
-            key_values => [ { name => 'global_oper_down' }, { name => 'total_port' } ],
-            output_template => 'OperStatus Down : %s', output_error_template => 'OperStatus Down : %s',
-            output_use => 'global_oper_down_absolute',  threshold_use => 'global_oper_down_absolute',
-            perfdatas => [
-                { label => 'global_oper_down', value => 'global_oper_down_absolute', template => '%s',
-                  min => 0, max => 'total_port_absolute' },
-           ],
-        }
-    };
+
     $self->{maps_counters}->{global}->{'005_total-link-up'} = { filter => 'add_global',
         set => {
             key_values => [ { name => 'global_link_up' }, { name => 'total_port' } ],
@@ -125,165 +74,33 @@ sub set_counters {
         }
     };
     
-    $self->{maps_counters}->{int}->{'000_status'} = { filter => 'add_status', threshold => 0,
+    $self->{maps_counters}->{int}->{'045_in-crc'} = { filter => 'add_errors',
         set => {
-            key_values => $self->set_key_values_status(),
-            closure_custom_calc => $self->can('custom_status_calc'),
-            closure_custom_output => $self->can('custom_status_output'),
-            closure_custom_perfdata => sub { return 0; },
-            closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
+            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
+            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
         }
     };
-    if ($self->{no_traffic} == 0 && $self->{no_set_traffic} == 0) {
-        $self->{maps_counters}->{int}->{'020_in-traffic'} = { filter => 'add_traffic',
-            set => {
-                key_values => $self->set_key_values_in_traffic(),
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-            }
-        };
-        $self->{maps_counters}->{int}->{'021_out-traffic'} = {  filter => 'add_traffic',
-            set => {
-                key_values => $self->set_key_values_out_traffic(),
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-            }
-        };
-    }
-    if ($self->{no_cast} == 0 && $self->{no_set_cast} == 0) {
-        $self->{maps_counters}->{int}->{'060_in-ucast'} = { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => $self->can('custom_cast_calc'), closure_custom_calc_extra_options => { label_ref => 'iucast', total_ref1 => 'ibcast', total_ref2 => 'imcast' },
-                output_template => 'In Ucast : %.2f %%', output_error_template => 'In Ucast : %s',
-                output_use => 'iucast_prct',  threshold_use => 'iucast_prct',
-                perfdatas => [
-                    { value => 'iucast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        };
-        $self->{maps_counters}->{int}->{'061_in-bcast'} = { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => $self->can('custom_cast_calc'), closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
-                output_template => 'In Bcast : %.2f %%', output_error_template => 'In Bcast : %s',
-                output_use => 'ibcast_prct',  threshold_use => 'ibcast_prct',
-                perfdatas => [
-                    { value => 'ibcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        };
-        $self->{maps_counters}->{int}->{'062_in-mcast'} = { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => $self->can('custom_cast_calc'), closure_custom_calc_extra_options => { label_ref => 'imcast', total_ref1 => 'iucast', total_ref2 => 'ibcast' },
-                output_template => 'In Mcast : %.2f %%', output_error_template => 'In Mcast : %s',
-                output_use => 'imcast_prct',  threshold_use => 'imcast_prct',
-                perfdatas => [
-                    { value => 'imcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        };
-        $self->{maps_counters}->{int}->{'063_out-ucast'} = { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => $self->can('custom_cast_calc'), closure_custom_calc_extra_options => { label_ref => 'oucast', total_ref1 => 'omcast', total_ref2 => 'obcast' },
-                output_template => 'Out Ucast : %.2f %%', output_error_template => 'Out Ucast : %s',
-                output_use => 'oucast_prct',  threshold_use => 'oucast_prct',
-                perfdatas => [
-                    { value => 'oucast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        };
-        $self->{maps_counters}->{int}->{'064_out-bcast'} = { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => $self->can('custom_cast_calc'), closure_custom_calc_extra_options => { label_ref => 'obcast', total_ref1 => 'omcast', total_ref2 => 'oucast' },
-                output_template => 'Out Bcast : %.2f %%', output_error_template => 'Out Bcast : %s',
-                output_use => 'obcast_prct',  threshold_use => 'obcast_prct',
-                perfdatas => [
-                    { value => 'obcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        };
-        $self->{maps_counters}->{int}->{'065_out-mcast'} = { filter => 'add_cast',
-            set => {
-                key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                closure_custom_calc => $self->can('custom_cast_calc'), closure_custom_calc_extra_options => { label_ref => 'omcast', total_ref1 => 'oucast', total_ref2 => 'obcast' },
-                output_template => 'Out Mcast : %.2f %%', output_error_template => 'Out Mcast : %s',
-                output_use => 'omcast_prct',  threshold_use => 'omcast_prct',
-                perfdatas => [
-                    { value => 'omcast_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        };
-    }
-    if ($self->{no_speed} == 0 && $self->{no_set_speed} == 0) {
-        $self->{maps_counters}->{int}->{'080_speed'} = { filter => 'add_speed',
-            set => {
-                key_values => [ { name => 'speed' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_speed_calc'),
-                output_template => 'Speed : %s%s/s', output_error_template => 'Speed : %s%s/s',
-                output_change_bytes => 2,
-                output_use => 'speed',  threshold_use => 'speed',
-                perfdatas => [
-                    { value => 'speed', template => '%s',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        };
-    }
-    if ($self->{no_volume} == 0 && $self->{no_set_volume} == 0) {
-        $self->{maps_counters}->{int}->{'090_in-volume'} = { filter => 'add_volume', threshold => 0,
-            set => {
-                key_values => [ { name => 'in_volume', diff => 1 }, { name => 'display' } ],
-                output_template => 'Volume In : %.2f %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { label => 'volume_in', value => 'in_volume_absolute', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        };
-        $self->{maps_counters}->{int}->{'091_out-volume'} = {  filter => 'add_volume', threshold => 0,
-            set => {
-                key_values => [ { name => 'out_volume', diff => 1 }, { name => 'display' } ],
-                output_template => 'Volume Out : %.2f %s',
-                output_change_bytes => 1,
-                perfdatas => [
-                    { label => 'volume_out', value => 'out_volume_absolute', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        };
-    }
+
+    $self->SUPER::set_counters(%options);
 }
 
 sub set_key_values_status {
     my ($self, %options) = @_;
 
-    return [ { name => 'linkstatus' }, { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ];
+    return [ { name => 'linkstatus' }, { name => 'opstatus' }, { name => 'admstatus' }, { name => 'duplexstatus' }, { name => 'display' } ];
 }
 
 sub set_oids_label {
     my ($self, %options) = @_;
 
     $self->{oids_label} = {
-        'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
-        'ifalias' => '.1.3.6.1.2.1.31.1.1.1.18',
-        'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
+        'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
+        'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
+        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value', },
+        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index', },
     };
 }
 
@@ -307,6 +124,11 @@ sub set_oids_status {
         16 => 'isolatedByDot1agOverRate', 17 => 'isolatedByLacpOverRate', 18 => 'isolatedByAhOverRate',
         19 => 'isolatedByUdld', 20 => 'isolatedByShdslLinkDown',
     };
+    
+    $self->{oid_duplexstatus} = '.1.3.6.1.4.1.6926.2.1.2.1.9';
+    $self->{oid_duplexstatus_mapping} = {
+        1 => 'other', 3 => 'fullDuplex', 4 => 'halfDuplex',
+    };
 }
 
 sub set_oids_traffic {
@@ -321,6 +143,12 @@ sub set_oids_speed {
     my ($self, %options) = @_;
     
     $self->{oid_speed64} = '.1.3.6.1.4.1.6926.2.1.2.1.7'; # in Mb/s
+}
+
+sub set_oids_errors {
+    my ($self, %options) = @_;
+    
+    $self->{oid_ifInCrc} = '.1.3.6.1.4.1.6926.2.1.5.1.13'; # osPortCntRecvCRCorAlignmentErrs
 }
 
 sub set_oids_cast {
@@ -390,14 +218,13 @@ sub default_global_oper_down_rule {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_errors => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_set_errors => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "global-link-up-rule:s"    => { name => 'global_link_up_rule', default => $self->default_global_link_up_rule() },
-                                "global-link-down-rule:s"  => { name => 'global_link_down_rule', default => $self->default_global_link_down_rule() },
-                                });
+    $options{options}->add_options(arguments => {
+        "global-link-up-rule:s"    => { name => 'global_link_up_rule', default => $self->default_global_link_up_rule() },
+        "global-link-down-rule:s"  => { name => 'global_link_down_rule', default => $self->default_global_link_down_rule() },
+    });
     
     return $self;
 }
@@ -406,7 +233,12 @@ sub load_status {
     my ($self, %options) = @_;
     
     $self->set_oids_status();
-    $self->{snmp}->load(oids => [$self->{oid_linkstatus}, $self->{oid_adminstatus}, $self->{oid_opstatus}], instances => $self->{array_interface_selected});
+    my $oids = [$self->{oid_linkstatus}, $self->{oid_adminstatus}, $self->{oid_opstatus}];
+    if (defined($self->{option_results}->{add_duplex_status})) {
+        push @$oids, $self->{oid_duplexstatus};
+    }
+    
+    $self->{snmp}->load(oids => $oids, instances => $self->{array_interface_selected});    
 }
 
 sub load_traffic {
@@ -438,6 +270,18 @@ sub load_cast {
     $self->{snmp}->load(oids => [$self->{oid_ifHCInUcastPkts}, $self->{oid_ifHCInMulticastPkts}, $self->{oid_ifHCInBroadcastPkts},
                                     $self->{oid_ifHCOutUcastPkts}, $self->{oid_ifHCOutMulticastPkts}, $self->{oid_ifHCOutBroadcastPkts}],
                         instances => $self->{array_interface_selected});
+}
+
+sub load_errors {
+    my ($self, %options) = @_;
+    
+    $self->set_oids_errors();
+    $self->{snmp}->load(
+        oids => [
+            $self->{oid_ifInCrc}
+        ],
+        instances => $self->{array_interface_selected}
+    );
 }
 
 sub load_speed {
@@ -502,6 +346,7 @@ sub add_result_status {
     $self->{interface_selected}->{$options{instance}}->{linkstatus} = defined($self->{results}->{$self->{oid_linkstatus} . '.' . $options{instance}}) ? $self->{oid_linkstatus_mapping}->{$self->{results}->{$self->{oid_linkstatus} . '.' . $options{instance}}} : undef;
     $self->{interface_selected}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
     $self->{interface_selected}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
+    $self->{interface_selected}->{$options{instance}}->{duplexstatus} = defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
 }
 
 sub add_result_traffic {
@@ -534,7 +379,6 @@ sub add_result_traffic {
 sub add_result_cast {
     my ($self, %options) = @_;
     
-    
     my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
     if (defined($iucast) && $iucast =~ /[1-9]/) {
         $self->{interface_selected}->{$options{instance}}->{iucast} = $iucast;
@@ -546,9 +390,19 @@ sub add_result_cast {
         $self->{interface_selected}->{$options{instance}}->{mode_cast} = 64;
     }
     
-    foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'omcast')) {
+    foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'obcast')) {
         $self->{interface_selected}->{$options{instance}}->{$_} = 0 if (!defined($self->{interface_selected}->{$options{instance}}->{$_}));
-    }}
+    }
+    
+    $self->{interface_selected}->{$options{instance}}->{total_in_packets} = $self->{interface_selected}->{$options{instance}}->{iucast} + $self->{interface_selected}->{$options{instance}}->{imcast} + $self->{interface_selected}->{$options{instance}}->{ibcast};
+    $self->{interface_selected}->{$options{instance}}->{total_out_packets} = $self->{interface_selected}->{$options{instance}}->{oucast} + $self->{interface_selected}->{$options{instance}}->{omcast} + $self->{interface_selected}->{$options{instance}}->{obcast};
+}
+
+sub add_result_errors {
+    my ($self, %options) = @_;
+
+    $self->{interface_selected}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
+}
 
 sub add_result_speed {
     my ($self, %options) = @_;
@@ -584,9 +438,17 @@ Check global port statistics.
 
 Check interface status (By default if no --add-* option is set).
 
+=item B<--add-duplex-status>
+
+Check duplex status (with --warning-status and --critical-status).
+
 =item B<--add-traffic>
 
 Check interface traffic.
+
+=item B<--add-errors>
+
+Check interface errors.
 
 =item B<--add-cast>
 
@@ -603,25 +465,25 @@ Check interface data volume between two checks (not supposed to be graphed, usef
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} eq "enabled" and %{linkstatus} ne "true"').
-Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{linkstatus}, %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--warning-*>
 
 Threshold warning.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down', 'total-link-up', 'total-link-down',
-'in-traffic', 'out-traffic', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-traffic', 'out-traffic', 'in-crc', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down', 'total-link-up', 'total-link-down',
-'in-traffic', 'out-traffic', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
+'in-traffic', 'out-traffic', 'in-crc', 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
 =item B<--units-traffic>

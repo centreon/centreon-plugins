@@ -51,19 +51,18 @@ sub windows_execute {
     
     $| = 1;
     pipe FROM_CHILD, TO_PARENT or do {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Internal error: can't create pipe from child to parent: $!");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Internal error: can't create pipe from child to parent: $!");
+        $options{output}->option_exit();
     };
     my $job = Win32::Job->new;
+    my $stderr = 'NUL';
+    $stderr = \*TO_PARENT if ($options{output}->is_debug());
     if (!($pid = $job->spawn(undef, $cmd,
-                       { stdout => \*TO_PARENT,
-                         stderr => \*TO_PARENT }))) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                     short_msg => "Internal error: execution issue: $^E");
-        $options{output}->display();
-        $options{output}->exit();
+                       { stdin => 'NUL',
+                         stdout => \*TO_PARENT,
+                         stderr => $stderr }))) {
+        $options{output}->add_option_msg(short_msg => "Internal error: execution issue: $^E");
+        $options{output}->option_exit();
     }
     close TO_PARENT;
 
@@ -97,10 +96,8 @@ sub windows_execute {
     close FROM_CHILD;    
     
     if ($ended == 0) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command too long to execute (timeout)...");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command too long to execute (timeout)...");
+        $options{output}->option_exit();
     }
     chomp $stdout;
     
@@ -110,10 +107,8 @@ sub windows_execute {
     
     if ($result->{$pid}->{exitcode} != 0) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $stdout");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->option_exit();
     }
     
     return ($stdout, $result->{$pid}->{exitcode});
@@ -190,10 +185,8 @@ sub unix_execute {
     
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                     short_msg => $stdout);
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => $stdout);
+        $options{output}->option_exit();
     }
     
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
@@ -202,10 +195,8 @@ sub unix_execute {
     
     if ($exit_code != 0 && (!defined($options{no_errors}) || !defined($options{no_errors}->{$exit_code}))) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $stdout");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->option_exit();
     }
     
     return $stdout;
@@ -339,6 +330,18 @@ sub powershell_escape {
     return $value;
 }
 
+sub powershell_json_sanitizer {
+    my (%options) = @_;
+
+    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'JSON::XS',
+                                           error_msg => "Cannot load module 'JSON::XS'.");
+    foreach my $line (split /\n/, $options{string}) {
+        eval { JSON::XS->new->utf8->decode($line) };
+        return $line if (!$@);
+    }
+    return -1;
+}
+
 sub minimal_version {
     my ($version_src, $version_dst) = @_;
         
@@ -438,11 +441,20 @@ sub convert_bytes {
     return $value;
 }
 
+sub expand_exponential {
+    my (%options) = @_;
+    
+    return $options{value} unless ($options{value} =~ /^(.*)e([-+]?)(.*)$/);
+    my ($num, $sign, $exp) = ($1, $2, $3);
+    my $sig = $sign eq '-' ? "." . ($exp - 1 + length $num) : '';
+    return sprintf("%${sig}f", $options{value});
+}
+
 sub parse_threshold {
     my (%options) = @_;
 
     my $perf = trim($options{threshold});
-    my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => "", end => "" };
+    my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => '', end => '' };
 
     my $global_status = 1;    
     if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {

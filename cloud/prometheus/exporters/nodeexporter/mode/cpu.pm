@@ -29,47 +29,62 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes CPU usage are ok',
-          counters => [ { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usage are ok' } ] },
+        { name => 'nodes', type => 3, cb_prefix_output => 'prefix_node_output', cb_long_output => 'node_long_output',
+          message_multiple => 'All nodes usage are ok', indent_long_output => '    ',
+            group => [
+                { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'cpu', display_long => 1, cb_prefix_output => 'prefix_cpu_output',
+                  message_multiple => 'All CPUs usage are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
-
-    $self->{maps_counters}->{nodes} = [
+    
+    $self->{maps_counters}->{global_cpu} = [
         { label => 'node-usage', set => {
-                key_values => [ { name => 'average' }, { name => 'display' } ],
-                output_template => 'usage %.2f %%',
+                key_values => [ { name => 'node_average' } ],
+                output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'node', value => 'average_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'node', value => 'node_average_absolute', template => '%.2f', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
     ];
     $self->{maps_counters}->{cpu} = [
         { label => 'cpu-usage', set => {
-                key_values => [ { name => 'average' }, { name => 'multi' }, { name => 'display' } ],
-                output_template => 'usage %.2f %%',
+                key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
+                output_template => 'Usage: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'average_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%',
-                      label_multi_instances => 1, multi_use => 'multi_absolute',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', value => 'cpu_usage_absolute', template => '%.2f', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
     ];
 }
 
-sub prefix_nodes_output {
+sub prefix_node_output {
     my ($self, %options) = @_;
 
     return "Node '" . $options{instance_value}->{display} . "' ";
 }
 
+sub node_long_output {
+    my ($self, %options) = @_;
+
+    return "Checking node '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_global_cpu_output {
+    my ($self, %options) = @_;
+
+    return "CPU Average Usage: ";
+}
+
 sub prefix_cpu_output {
     my ($self, %options) = @_;
 
-    return "Node '" . $options{instance_value}->{multi} . "' " . "Cpu '" . $options{instance_value}->{display} . "' ";
+    return "CPU '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -84,6 +99,7 @@ sub new {
                                   "cpu:s"                   => { name => 'cpu', default => 'cpu=~".*"' },
                                   "extra-filter:s@"         => { name => 'extra_filter' },
                                   "metric-overload:s@"      => { name => 'metric_overload' },
+                                  "filter-counters:s"       => { name => 'filter_counters' },
                                 });
    
     return $self;
@@ -116,33 +132,31 @@ sub check_options {
     }
 
     $self->{prom_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "1m";
+    $self->{prom_step} = defined($self->{option_results}->{step}) ? $self->{option_results}->{step} : "5m";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{nodes} = {};
-    $self->{cpu} = {};
 
     my $results = $options{custom}->query_range(queries => [ '(1 - irate({__name__=~"' . $self->{metrics}->{cpu} . '",' . 
                                                             'mode="idle",' .
                                                             $self->{option_results}->{instance} . ',' .
                                                             $self->{option_results}->{cpu} .
-                                                            $self->{extra_filter} . '}[1m])) * 100' ],
+                                                            $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100' ],
                                                 timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
 
     foreach my $result (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{average} += $average;
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{multi} = $result->{metric}->{$self->{labels}->{instance}};
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}},
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{global_cpu}->{node_average} += $average;
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{display} = $result->{metric}->{$self->{labels}->{cpu}};
-        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{average} = $average;
-    }
-    
+        $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{cpu}->{$result->{metric}->{$self->{labels}->{cpu}}}->{cpu_usage} = $average;
+    }    
+
     foreach my $node (keys %{$self->{nodes}}) {
-        $self->{nodes}->{$node}->{average} /= scalar(keys %{$self->{nodes}->{$node}->{cpu}});
+        $self->{nodes}->{$node}->{global_cpu}->{node_average} /= scalar(keys %{$self->{nodes}->{$node}->{cpu}});
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -187,9 +201,18 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'cpu')
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - cpu: ^node_cpu.*
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='node'
 
 =back
 

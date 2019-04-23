@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -35,7 +33,7 @@ sub custom_usage_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{perf} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = ();
-    if ($self->{result_values}->{total} > 0 && $instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{result_values}->{total} > 0 && $self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -50,10 +48,10 @@ sub custom_usage_perfdata {
 sub custom_usage_threshold {
     my ($self, %options) = @_;
 
-    return 'ok' if ($self->{result_values}->{total} <= 0 && $instance_mode->{option_results}->{units} eq '%');
+    return 'ok' if ($self->{result_values}->{total} <= 0 && $self->{instance_mode}->{option_results}->{units} eq '%');
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{result_values}->{label}, exit_litteral => 'critical' },
@@ -168,15 +166,15 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
-                                  "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
+        "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
+        "extra-filter:s@"         => { name => 'extra_filter' },
+        "units:s"                 => { name => 'units', default => '%' },
+        "metric-overload:s@"      => { name => 'metric_overload' },
+        "filter-counters:s"       => { name => 'filter_counters' },
+    });
+
     return $self;
 }
 
@@ -209,9 +207,7 @@ sub check_options {
     $self->{extra_filter} = '';
     foreach my $filter (@{$self->{option_results}->{extra_filter}}) {
         $self->{extra_filter} .= ',' . $filter;
-    }
-    
-    $instance_mode = $self;
+    }    
 }
 
 sub manage_selection {
@@ -298,10 +294,23 @@ Example : --extra-filter='name=~".*pretty.*"'
 
 =item B<--metric-overload>
 
-Overload default metrics name (Can be multiple, metric can be 'limits',
-'usage', 'working', 'cache', 'rss', 'swap'.)
+Overload default metrics name (Can be multiple)
 
 Example : --metric-overload='metric,^my_metric_name$'
+
+Default :
+
+    - limits: ^container_spec_memory_limit_bytes.*
+    - usage: ^container_memory_usage_bytes.*
+    - working: ^container_memory_working_set_bytes.*
+    - cache: ^container_memory_cache.*
+    - rss: ^container_memory_rss.*
+    - swap: ^container_memory_swap.*
+
+=item B<--filter-counters>
+
+Only display some counters (regexp can be used).
+Example: --filter-counters='usage'
 
 =back
 

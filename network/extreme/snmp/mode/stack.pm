@@ -108,7 +108,8 @@ sub run {
                                                             ], nothing_quit => 1);
     
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results->{$mapping->{extremeStackDetection}->{oid}}, instance => '0');
-    if ($result->{extremeStackDetection} eq 'disabled') {
+    # disable is voluntary
+    if ($result->{extremeStackDetection} eq 'disable') {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'Stacking is disable');
         $self->{output}->display();

@@ -40,23 +40,22 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "aws-secret-key:s"    => { name => 'aws_secret_key' },
-                        "aws-access-key:s"    => { name => 'aws_access_key' },
-                        "endpoint-url:s"      => { name => 'endpoint_url' },
-                        "region:s"            => { name => 'region' },
-                        "timeframe:s"         => { name => 'timeframe' },
-                        "period:s"            => { name => 'period' },
-                        "statistic:s@"        => { name => 'statistic' },
-                        "zeroed"              => { name => 'zeroed' },
-                        "timeout:s"           => { name => 'timeout', default => 50 },
-                        "sudo"                => { name => 'sudo' },
-                        "command:s"           => { name => 'command', default => 'aws' },
-                        "command-path:s"      => { name => 'command_path' },
-                        "command-options:s"   => { name => 'command_options', default => '' },
-                        "proxyurl:s"          => { name => 'proxyurl' },
-                    });
+        $options{options}->add_options(arguments => {
+            "aws-secret-key:s"    => { name => 'aws_secret_key' },
+            "aws-access-key:s"    => { name => 'aws_access_key' },
+            "endpoint-url:s"      => { name => 'endpoint_url' },
+            "region:s"            => { name => 'region' },
+            "timeframe:s"         => { name => 'timeframe' },
+            "period:s"            => { name => 'period' },
+            "statistic:s@"        => { name => 'statistic' },
+            "zeroed"              => { name => 'zeroed' },
+            "timeout:s"           => { name => 'timeout', default => 50 },
+            "sudo"                => { name => 'sudo' },
+            "command:s"           => { name => 'command', default => 'aws' },
+            "command-path:s"      => { name => 'command_path' },
+            "command-options:s"   => { name => 'command_options', default => '' },
+            "proxyurl:s"          => { name => 'proxyurl' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
 
@@ -122,6 +121,33 @@ sub check_options {
     return 0;
 }
 
+sub execute {
+    my ($self, %options) = @_;
+
+    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $options{cmd_options} . "'", debug => 1);
+    
+    my ($response) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $options{cmd_options});
+
+    my $raw_results;
+
+    eval {
+        $raw_results = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $self->{output}->output_add(long_msg => $response, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->option_exit();
+    }
+
+    return $raw_results; 
+}
+
 sub cloudwatch_get_metrics_set_cmd {
     my ($self, %options) = @_;
     
@@ -146,86 +172,79 @@ sub cloudwatch_get_metrics {
     my $end_time = DateTime->now->iso8601;
 
     foreach my $metric_name (@{$options{metrics}}) {
-        my $cmd_options = $self->cloudwatch_get_metrics_set_cmd(%options, metric_name => $metric_name, start_time => $start_time, end_time => $end_time);
-        my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options);
+        my $cmd_options = $self->cloudwatch_get_metrics_set_cmd(%options, metric_name => $metric_name,
+            start_time => $start_time, end_time => $end_time);
+        my $raw_results = $self->execute(cmd_options => $cmd_options);
 
-        my $metric_result;
-        eval {
-            $metric_result = JSON::XS->new->utf8->decode($response);
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-            $self->{output}->option_exit();
-        }
-
-        $metric_results->{$metric_result->{Label}} = { points => 0 };
-        foreach my $point (@{$metric_result->{Datapoints}}) {
+        $metric_results->{$raw_results->{Label}} = { points => 0 };
+        foreach my $point (@{$raw_results->{Datapoints}}) {
             if (defined($point->{Average})) {
-                $metric_results->{$metric_result->{Label}}->{average} = 0 if (!defined($metric_results->{$metric_result->{Label}}->{average}));
-                $metric_results->{$metric_result->{Label}}->{average} += $point->{Average};
+                $metric_results->{$raw_results->{Label}}->{average} = 0 if (!defined($metric_results->{$raw_results->{Label}}->{average}));
+                $metric_results->{$raw_results->{Label}}->{average} += $point->{Average};
             }
             if (defined($point->{Minimum})) {
-                $metric_results->{$metric_result->{Label}}->{minimum} = $point->{Minimum}
-                    if (!defined($metric_results->{$metric_result->{Label}}->{minimum}) || $point->{Minimum} < $metric_results->{$metric_result->{Label}}->{minimum});
+                $metric_results->{$raw_results->{Label}}->{minimum} = $point->{Minimum}
+                    if (!defined($metric_results->{$raw_results->{Label}}->{minimum}) || $point->{Minimum} < $metric_results->{$raw_results->{Label}}->{minimum});
             }
             if (defined($point->{Maximum})) {
-                $metric_results->{$metric_result->{Label}}->{maximum} = $point->{Maximum}
-                    if (!defined($metric_results->{$metric_result->{Label}}->{maximum}) || $point->{Maximum} > $metric_results->{$metric_result->{Label}}->{maximum});
+                $metric_results->{$raw_results->{Label}}->{maximum} = $point->{Maximum}
+                    if (!defined($metric_results->{$raw_results->{Label}}->{maximum}) || $point->{Maximum} > $metric_results->{$raw_results->{Label}}->{maximum});
             }
             if (defined($point->{Sum})) {
-                $metric_results->{$metric_result->{Label}}->{sum} = 0 if (!defined($metric_results->{$metric_result->{Label}}->{sum}));
-                $metric_results->{$metric_result->{Label}}->{sum} += $point->{Sum};
+                $metric_results->{$raw_results->{Label}}->{sum} = 0 if (!defined($metric_results->{$raw_results->{Label}}->{sum}));
+                $metric_results->{$raw_results->{Label}}->{sum} += $point->{Sum};
             }
             
-            $metric_results->{$metric_result->{Label}}->{points}++;
+            $metric_results->{$raw_results->{Label}}->{points}++;
         }
         
-        if (defined($metric_results->{$metric_result->{Label}}->{average})) {
-            $metric_results->{$metric_result->{Label}}->{average} /= $metric_results->{$metric_result->{Label}}->{points};
+        if (defined($metric_results->{$raw_results->{Label}}->{average})) {
+            $metric_results->{$raw_results->{Label}}->{average} /= $metric_results->{$raw_results->{Label}}->{points};
         }
     }
     
     return $metric_results;
 }
 
+sub discovery_set_cmd {
+    my ($self, %options) = @_;
+    
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = $options{service} . " " . $options{command} . " --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options; 
+}
+
+sub discovery {
+    my ($self, %options) = @_;
+    
+    my $cmd_options = $self->discovery_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results;
+}
+
 sub cloudwatch_get_alarms_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "cloudwatch describe-alarms --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
 sub cloudwatch_get_alarms {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $self->cloudwatch_get_alarms_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    my $alarm_result;
-    eval {
-        $alarm_result = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     my $alarm_results = [];
-    foreach my $alarm (@{$alarm_result->{MetricAlarms}}) {
+    foreach my $alarm (@{$raw_results->{MetricAlarms}}) {
         push @$alarm_results, {
             AlarmName => $alarm->{AlarmName},
             StateValue => $alarm->{StateValue},
@@ -241,71 +260,47 @@ sub cloudwatch_list_metrics_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "cloudwatch list-metrics --region $options{region} --output json";
     $cmd_options .= " --namespace $options{namespace}" if defined($options{namespace});
     $cmd_options .= " --metric-name $options{metric}" if defined($options{metric});
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
 sub cloudwatch_list_metrics {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $self->cloudwatch_list_metrics_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    my $list_metrics;
-    eval {
-        $list_metrics = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
-    return $list_metrics->{Metrics};
+    return $raw_results->{Metrics};
 }
 
 sub ec2_get_instances_status_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "ec2 describe-instance-status --include-all-instances --no-dry-run --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
 sub ec2_get_instances_status {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $self->ec2_get_instances_status_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    my $list_instances;
-    eval {
-        $list_instances = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     my $instance_results = {};
-    foreach (@{$list_instances->{InstanceStatuses}}) {
-        $instance_results->{$_->{InstanceId}} = { state => $_->{InstanceState}->{Name}, 
-                                                  status => => $_->{InstanceStatus}->{Status} };
+    foreach (@{$raw_results->{InstanceStatuses}}) {
+        $instance_results->{$_->{InstanceId}} = {
+            state => $_->{InstanceState}->{Name}, 
+            status => => $_->{InstanceStatus}->{Status}
+        };
     }
     
     return $instance_results;
@@ -315,34 +310,21 @@ sub ec2_list_resources_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "ec2 describe-instances --no-dry-run --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
 sub ec2_list_resources {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $self->ec2_list_resources_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    my $list_instances;
-    eval {
-        $list_instances = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     my $resource_results = [];
-    foreach my $reservation (@{$list_instances->{Reservations}}) {
+    foreach my $reservation (@{$raw_results->{Reservations}}) {
         foreach my $instance (@{$reservation->{Instances}}) {
             my @instance_tags;
             foreach my $tag (@{$instance->{Tags}}) {
@@ -376,8 +358,10 @@ sub asg_get_resources_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "autoscaling describe-auto-scaling-groups --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
@@ -385,59 +369,30 @@ sub asg_get_resources {
     my ($self, %options) = @_;
 
     my $cmd_options = $self->asg_get_resources_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    
-    my $autoscaling_groups;
-    eval {
-        $autoscaling_groups = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
-    
-    return \@{$autoscaling_groups->{AutoScalingGroups}};
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+        
+    return \@{$raw_results->{AutoScalingGroups}};
 }
 
 sub rds_get_instances_status_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
 sub rds_get_instances_status {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $self->rds_get_instances_status_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    my $list_instances;
-    eval {
-        $list_instances = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     my $instance_results = {};
-    foreach (@{$list_instances->{DBInstances}}) {
+    foreach (@{$raw_results->{DBInstances}}) {
         $instance_results->{$_->{DBInstanceIdentifier}} = { state => $_->{DBInstanceStatus} };
     }
     
@@ -448,34 +403,21 @@ sub rds_list_instances_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
 sub rds_list_instances {
     my ($self, %options) = @_;
-    
-    my $cmd_options = $self->rds_get_instances_status_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    my $list_instances;
-    eval {
-        $list_instances = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+
+    my $cmd_options = $self->rds_list_instances_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     my $instance_results = [];
-    foreach my $instance (@{$list_instances->{DBInstances}}) {
+    foreach my $instance (@{$raw_results->{DBInstances}}) {
         push @{$instance_results}, {
             Name => $instance->{DBInstanceIdentifier},
             AvailabilityZone => $instance->{AvailabilityZone},
@@ -492,34 +434,21 @@ sub rds_list_clusters_set_cmd {
     my ($self, %options) = @_;
     
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
     my $cmd_options = "rds describe-db-clusters --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
     return $cmd_options; 
 }
 
 sub rds_list_clusters {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $self->rds_list_clusters_set_cmd(%options);
-    my ($response) = centreon::plugins::misc::execute(
-            output => $self->{output},
-            options => $self->{option_results},
-            sudo => $self->{option_results}->{sudo},
-            command => $self->{option_results}->{command},
-            command_path => $self->{option_results}->{command_path},
-            command_options => $cmd_options
-    );
-    my $list_clusters;
-    eval {
-        $list_clusters = JSON::XS->new->utf8->decode($response);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
-        $self->{output}->option_exit();
-    }
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     my $cluster_results = [];
-    foreach my $cluster (@{$list_clusters->{DBClusters}}) {
+    foreach my $cluster (@{$raw_results->{DBClusters}}) {
         push @{$cluster_results}, {
             Name => $cluster->{DBClusterIdentifier},
             DatabaseName => $cluster->{DatabaseName},
