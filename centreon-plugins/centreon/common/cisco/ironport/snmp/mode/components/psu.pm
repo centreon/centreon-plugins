@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::mode::components::psu;
+package centreon::common::cisco::ironport::snmp::mode::components::psu;
 
 use strict;
 use warnings;

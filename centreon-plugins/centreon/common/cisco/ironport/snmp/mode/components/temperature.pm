@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::mode::components::temperature;
+package centreon::common::cisco::ironport::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::mode::components::raid;
+package centreon::common::cisco::ironport::snmp::mode::components::raid;
 
 use strict;
 use warnings;

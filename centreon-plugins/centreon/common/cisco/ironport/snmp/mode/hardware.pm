@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::mode::hardware;
+package centreon::common::cisco::ironport::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -47,7 +47,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::cisco::ironport::snmp::mode::components';
+    $self->{components_path} = 'centreon::common::cisco::ironport::snmp::mode::components';
     $self->{components_module} = ['fan', 'temperature', 'psu', 'raid'];
 }
 
@@ -64,9 +64,8 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
     
     return $self;
 }
