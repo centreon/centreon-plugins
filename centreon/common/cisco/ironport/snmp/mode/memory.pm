@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::mode::memory;
+package centreon::common::cisco::ironport::snmp::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
@@ -31,11 +31,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning:s"               => { name => 'warning', },
+        "critical:s"              => { name => 'critical', },
+    });
 
     return $self;
 }

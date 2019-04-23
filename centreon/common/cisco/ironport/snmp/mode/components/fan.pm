@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::mode::components::fan;
+package centreon::common::cisco::ironport::snmp::mode::components::fan;
 
 use strict;
 use warnings;

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ironport::snmp::mode::cpu;
+package centreon::common::cisco::ironport::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -59,9 +59,8 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
