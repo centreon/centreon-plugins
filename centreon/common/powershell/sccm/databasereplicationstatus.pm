@@ -50,12 +50,10 @@ Try {
     New-PSDrive -Name SCCMDrive -PSProvider "AdminUI.PS.Provider\CMSite" -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
     CD "SCCMDrive:\"
 
-    $CMObject = Get-CMSite
+    $CMObject = Get-CMDatabaseReplicationStatus
 
     CD "C:\"
     Remove-PSDrive -Name SCCMDrive
-
-    $CMObject = Get-CMDatabaseReplicationStatus
     
     $returnObject = New-Object -TypeName PSObject
     Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LinkStatus" -Value $CMObject.LinkStatus
