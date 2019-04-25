@@ -31,7 +31,7 @@ sub custom_usage_perfdata {
     my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        ($label, $nlabel) = ('free', 'memory.free.bytes');
+        ($label, $nlabel) = ('free', 'volume.space.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
 
