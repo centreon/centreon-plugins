@@ -110,7 +110,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, cb_init => 'skip_global' },
         { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok' },
         { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All device interfaces are ok', skipped_code => { -10 => 1 } },
     ];
@@ -177,6 +177,7 @@ sub new {
         "filter-name:s"           => { name => 'filter_name' },
         "filter-interface:s"      => { name => 'filter_interface' },
         "filter-network:s"        => { name => 'filter_network' },
+        "filter-product:s"        => { name => 'filter_product' },
         "warning-status:s"        => { name => 'warning_status', default => '' },
         "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /offline/' },
         "speed-in:s"              => { name => 'speed_in' },
@@ -194,10 +195,17 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
+sub skip_global {
+    my ($self, %options) = @_;
+
+    scalar(keys %{$self->{device}}) > 1 ? return(0) : return(1);
+}
+
 sub prefix_device_output {
     my ($self, %options) = @_;
     
-    return "Device '" . $options{instance_value}->{display} . "' [network: " . $options{instance_value}->{network} . "] ";
+    return "Device '" . $options{instance_value}->{display} . "' [network: " . $options{instance_value}->{network} . "]" .
+        " [product: " . $options{instance_value}->{product} . "] ";
 }
 
 sub prefix_interface_output {
@@ -214,6 +222,7 @@ my $mapping = {
     devName         => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.2' },
     devStatus       => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.3', map => \%map_status },
     devClientCount  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.5' },
+    devProductCode  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.9' },
     devNetworkName  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.11' },
 };
 my $mapping2 = {
@@ -232,6 +241,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
         { oid => $mapping->{devName}->{oid} },
         { oid => $mapping2->{devInterfaceName}->{oid} },
+        { oid => $mapping->{devProductCode}->{oid} },
         { oid => $mapping->{devNetworkName}->{oid} }
     ], nothing_quit => 1);
     
@@ -241,8 +251,14 @@ sub manage_selection {
         my $dev_name = $snmp_result->{$mapping->{devName}->{oid}}->{$oid};
         my $network = defined($snmp_result->{$mapping->{devNetworkName}->{oid}}->{ $mapping->{devNetworkName}->{oid} . '.' . $instance })
             ? $snmp_result->{$mapping->{devNetworkName}->{oid}}->{ $mapping->{devNetworkName}->{oid} . '.' . $instance } : 'n/a';
+        my $product = $snmp_result->{$mapping->{devProductCode}->{oid}}->{ $mapping->{devProductCode}->{oid} . '.' . $instance };
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $dev_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_product}) && $self->{option_results}->{filter_product} ne '' &&
+            $product !~ /$self->{option_results}->{filter_product}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
             next;
         }
@@ -267,7 +283,7 @@ sub manage_selection {
         }
         
         $self->{global}->{total}++;
-        $self->{device}->{$instance} = { display => $dev_name, network => $network };
+        $self->{device}->{$instance} = { display => $dev_name, network => $network, product => $product };
     }
 
     if (scalar(keys %{$self->{interface}}) > 0) {
@@ -297,7 +313,8 @@ sub manage_selection {
     $self->{cache_name} = "cisco_meraki_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_product}) ? md5_hex($self->{option_results}->{filter_product}) : md5_hex('all'));
 }
 
 1;
@@ -318,6 +335,10 @@ Example: --filter-counters='^clients$'
 =item B<--filter-name>
 
 Filter device name (can be a regexp).
+
+=item B<--filter-product>
+
+Filter device product code (can be a regexp).
 
 =item B<--filter-network>
 
