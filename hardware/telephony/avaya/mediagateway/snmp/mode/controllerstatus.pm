@@ -101,7 +101,7 @@ sub manage_selection {
 
     
     my $snmp_result = $options{snmp}->get_leef(
-        oids => [$mapping->{cmgRegistrationState}->{oid}, $mapping->{cmgH248LinkStatus}->{oid}],
+        oids => [$mapping->{cmgRegistrationState}->{oid} . '.0', $mapping->{cmgH248LinkStatus}->{oid} . '.0'],
         nothing_quit => 1
     );
 
