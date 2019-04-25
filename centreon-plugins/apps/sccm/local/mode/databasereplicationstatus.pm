@@ -29,6 +29,38 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 use centreon::common::powershell::sccm::databasereplicationstatus;
 use DateTime;
 
+my %map_link_status = (
+    1 => 'Degraded',
+    2 => 'Active',
+    3 => 'Failed',
+);
+my %map_status = (
+    100 => 'SITE_INSTALLING',
+    105 => 'SITE_INSTALL_COMPLETE',
+    110 => 'INACTIVE',
+    115 => 'INITIALIZING',
+    120 => 'MAINTENANCE_MODE',
+    125 => 'ACTIVE',
+    130 => 'DETACHING',
+    135 => 'READY_TO_DETACH',
+    199 => 'STATUS_UNKNOWN',
+    200 => 'SITE_RECOVERED',
+    205 => 'SITE_PREPARE_FOR_RECOVERY',
+    210 => 'SITE_PREPARED_FOR_RECOVERY',
+    215 => 'REPLCONFIG_REINITIALIZING',
+    220 => 'REPLCONFIG_REINITIALIZED',
+    225 => 'RECOVERY_IN_PROGRESS',
+    230 => 'RECOVERING_DELTAS',
+    250 => 'RECOVERY_RETRY',
+    255 => 'RECOVERY_FAILED',
+);
+my %map_type = (
+    0 => 'Unknown',
+    1 => 'SECONDARY',
+    2 => 'PRIMARY',
+    4 => 'CAS',
+);
+
 sub custom_status_output {
     my ($self, %options) = @_;
 
@@ -90,7 +122,7 @@ sub set_counters {
     ];
     $self->{maps_counters}->{sites} = [
         { label => 'site-status', threshold => 0, set => {
-                key_values => [ { name => 'SiteType' }, { name => 'SiteStatus' }, { name => 'SiteToSiteGlobalState' },
+                key_values => [ { name => 'SiteType' }, { name => 'SiteStatus' }, { name => '' },
                     { name => 'SiteToSiteGlobalSyncTime' } ],
                 closure_custom_calc => $self->can('custom_site_status_calc'),
                 closure_custom_output => $self->can('custom_site_status_output'),
@@ -167,19 +199,19 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{global}->{LinkStatus} = $decoded->{LinkStatus};
+    $self->{global}->{LinkStatus} = $map_link_status{$decoded->{LinkStatus}};
 
     $self->{sites}->{$decoded->{Site1}} = {
         display => $decoded->{Site1},
-        SiteType => $decoded->{SiteType1},
-        SiteStatus => $decoded->{Site1Status},
+        SiteType => $map_type{$decoded->{SiteType1}},
+        SiteStatus => $map_status{$decoded->{Site1Status}},
         SiteToSiteGlobalState => $decoded->{Site1ToSite2GlobalState},
         SiteToSiteGlobalSyncTime => $decoded->{Site1ToSite2GlobalSyncTime},
     };
     $self->{sites}->{$decoded->{Site2}} = {
         display => $decoded->{Site2},
-        SiteType => $decoded->{SiteType2},
-        SiteStatus => $decoded->{Site2Status},
+        SiteType => $map_type{$decoded->{SiteType2}},
+        SiteStatus => $map_status{$decoded->{Site2Status}},
         SiteToSiteGlobalState => $decoded->{Site2ToSite1GlobalState},
         SiteToSiteGlobalSyncTime => $decoded->{Site2ToSite1GlobalSyncTime},
     };
