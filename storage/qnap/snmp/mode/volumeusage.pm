@@ -100,7 +100,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{volume} = [
-        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+        { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'free' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
