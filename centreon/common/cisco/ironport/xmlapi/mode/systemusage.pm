@@ -143,7 +143,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'message-received', nlabel => 'system.queue.messages.received.persecond', set => {
+        { label => 'messages-received', nlabel => 'system.queue.messages.received.persecond', set => {
                 key_values => [ { name => 'msgs_received_lifetime', diff => 1 } ],
                 per_second => 1,
                 output_template => 'messages received: %.2f/s',
@@ -321,7 +321,7 @@ Can used special variables like: %{system_status}
 Warning threshold.
 Can be: 'memory' (%), 'cpu-total' (%), 'diskio' (%), 'log' (%), 'resource-conservation',
 'connections-in', 'connections-out', 'queue-active-recipients', 'messages-quarantine',
-'messages-workqueue', 'queuedisk' (%), 'message-received'.
+'messages-workqueue', 'queuedisk' (%), 'messages-received'.
 
 =back
 
