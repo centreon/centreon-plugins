@@ -171,9 +171,6 @@ sub manage_selection {
             SecondarySiteCMUpdateStatus => $site->{SecondarySiteCMUpdateStatus},
         };
     }
-
-    use Data::Dumper;
-    print Dumper $self->{sites};
 }
 
 1;
