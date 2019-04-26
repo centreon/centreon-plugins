@@ -132,7 +132,9 @@ sub execute {
         sudo => $self->{option_results}->{sudo},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $options{cmd_options});
+        command_options => $options{cmd_options},
+        redirect_stderr => 0
+    );
 
     my $raw_results;
 
