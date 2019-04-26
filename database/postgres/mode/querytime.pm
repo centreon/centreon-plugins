@@ -73,7 +73,7 @@ ORDER BY pgsa.query_start, pgsa.pid DESC
 };
     } else {
         $query = q{
-SELECT pg_database.datname, pgsa.datid, pgsa.pid, pgsa.usename, pgsa.client_addr, pgsa.current_query AS current_query, '' AS state,
+SELECT pg_database.datname, pgsa.datid, pgsa.procpid, pgsa.usename, pgsa.client_addr, pgsa.current_query AS current_query, '' AS state,
        CASE WHEN pgsa.client_port < 0 THEN 0 ELSE pgsa.client_port END AS client_port,
        COALESCE(ROUND(EXTRACT(epoch FROM now()-query_start)),0) AS seconds
 FROM pg_database LEFT JOIN pg_stat_activity pgsa ON pg_database.datname = pgsa.datname AND (pgsa.query_start IS NOT NULL AND current_query NOT LIKE '<IDLE>%')
