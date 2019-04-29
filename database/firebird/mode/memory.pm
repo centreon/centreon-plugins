@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'used', newlabel => 'database.usage.bytes',  set => {
+        { label => 'used', nlabel => 'database.usage.bytes',  set => {
                 key_values => [ { name => 'database_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'database' },
                 closure_custom_output => $self->can('custom_used_output'),
@@ -41,7 +41,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_used_perfdata'),
             }
         },
-        { label => 'attachment', newlabel => 'attachment.usage.bytes', set => {
+        { label => 'attachment', nlabel => 'attachment.usage.bytes', set => {
                 key_values => [ { name => 'attachment_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'attachment' },
                 closure_custom_output => $self->can('custom_unit_output'),
@@ -49,7 +49,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        { label => 'transaction', newlabel => 'transaction.usage.bytes', set => {
+        { label => 'transaction', nlabel => 'transaction.usage.bytes', set => {
                 key_values => [ { name => 'transaction_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'transaction' },
                 closure_custom_output => $self->can('custom_unit_output'),
@@ -57,7 +57,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        { label => 'statement', newlabel => 'statement.usage.bytes', set => {
+        { label => 'statement', nlabel => 'statement.usage.bytes', set => {
                 key_values => [ { name => 'statement_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'statement' },
                 closure_custom_output => $self->can('custom_unit_output'),
@@ -65,7 +65,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        { label => 'call', newlabel => 'call.usage.bytes', set => {
+        { label => 'call', nlabel => 'call.usage.bytes', set => {
                 key_values => [ { name => 'call_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'call' },
                 closure_custom_output => $self->can('custom_unit_output'),

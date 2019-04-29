@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{ccache} = [
-        { label => 'used', newlabel => 'ccache.utilization.percentage' set => {
+        { label => 'used', nlabel => 'ccache.utilization.percentage' set => {
                 key_values => [ { name => 'Capacity_Value' }, { name => 'Size_Value' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -45,7 +45,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'hits', newlabel => 'ccache.hits.percentage', set => {
+        { label => 'hits', nlabel => 'ccache.hits.percentage', set => {
                 key_values => [ { name => 'Requests_Count', diff => 1 }, { name => 'Hits_Count', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_hits_calc'),
                 output_template => 'Hits = %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',

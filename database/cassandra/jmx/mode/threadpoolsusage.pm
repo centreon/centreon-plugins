@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{thpool} = [
-        { label => 'active-tasks', newlabel => 'thread.tasks.active.count', set => {
+        { label => 'active-tasks', nlabel => 'thread.tasks.active.count', set => {
                 key_values => [ { name => 'ActiveTasks_Value' }, { name => 'display' } ],
                 output_template => 'Current Active Tasks : %s',
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'pending-tasks', newlabel => 'thread.tasks.pending.count', set => {
+        { label => 'pending-tasks', nlabel => 'thread.tasks.pending.count', set => {
                 key_values => [ { name => 'PendingTasks_Value' }, { name => 'display' } ],
                 output_template => 'Current Pending Tasks : %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-completed-tasks', newlabel => 'thread.tasks.completed.count', set => {
+        { label => 'total-completed-tasks', nlabel => 'thread.tasks.completed.count', set => {
                 key_values => [ { name => 'CompletedTasks_Value', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Completed Tasks : %s',
                 perfdatas => [
@@ -61,7 +61,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-blocked-tasks', newlabel => 'thread.tasks.blocked.count', set => {
+        { label => 'total-blocked-tasks', nlabel => 'thread.tasks.blocked.count', set => {
                 key_values => [ { name => 'TotalBlockedTasks_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Blocked Tasks : %s',
                 perfdatas => [
@@ -70,7 +70,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-blocked-tasks', newlabel => 'thread.tasks.blocked.current.count', set => {
+        { label => 'current-blocked-tasks', nlabel => 'thread.tasks.blocked.current.count', set => {
                 key_values => [ { name => 'CurrentlyBlockedTasks_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Currently Blocked Tasks : %s',
                 perfdatas => [
