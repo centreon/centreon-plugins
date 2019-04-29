@@ -76,6 +76,7 @@ sub run {
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => $msg);
     $self->{output}->perfdata_add(label => 'users', value => $result,
+                                  nlabel => 'users.count',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);

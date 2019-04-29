@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{disk} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'disk.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -47,10 +47,10 @@ sub set_counters {
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used_' . $self->{result_values}->{display};
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free_' . $self->{result_values}->{display};
+        ($label, $nlabel) = ('free', 'disk.usage.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
 
@@ -62,6 +62,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label, unit => 'B',
+        nlabel => $self->{nlabel},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),

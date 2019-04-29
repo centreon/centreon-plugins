@@ -29,7 +29,8 @@ sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => $self->{result_values}->{label} . '_used', unit => 'B',
+        label => 'used', unit => 'B',
+        nlabel => $self->{nlabel},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
         value => $self->{result_values}->{used},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -80,7 +81,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{memory} = [
-        { label => 'physical-usage', set => {
+        { label => 'physical-usage', nlabel => 'host.memory.usage.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'physical' },
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -90,7 +91,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{swap} = [
-        { label => 'swap-usage', set => {
+        { label => 'swap-usage', nlabel => 'host.swap.usage.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'swap' },
                 closure_custom_output => $self->can('custom_usage_output'),
