@@ -45,12 +45,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "api-username:s"    => { name => 'api_username' },
-            "api-password:s"    => { name => 'api_password' },
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port' },
-            "proto:s"           => { name => 'proto' },
-            "timeout:s"         => { name => 'timeout' },
+            "api-username:s"        => { name => 'api_username' },
+            "api-password:s"        => { name => 'api_password' },
+            "hostname:s"            => { name => 'hostname' },
+            "port:s"                => { name => 'port' },
+            "proto:s"               => { name => 'proto' },
+            "timeout:s"             => { name => 'timeout' },
+            "reload-cache-time:s"   => { name => 'reload_cache_time' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -94,6 +95,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
 
     $self->{cache}->check_options(option_results => $self->{option_results});
 
@@ -212,6 +214,72 @@ sub request_api {
     }
 
     return $decoded;
+}
+
+sub list_vms {
+    my ($self, %options) = @_;
+    
+    my $url_path = '/ovirt-engine/api/vms';
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+    
+    return $response->{vm};
+}
+
+sub list_hosts {
+    my ($self, %options) = @_;
+    
+    my $url_path = '/ovirt-engine/api/hosts';
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+    
+    return $response->{host};
+}
+
+sub get_host_statistics {
+    my ($self, %options) = @_;
+    
+    my $url_path = '/ovirt-engine/api/hosts/' . $options{id} . '/statistics';
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+    
+    return $response->{statistic};
+}
+
+sub cache_hosts {
+    my ($self, %options) = @_;
+
+    $self->{cache_hosts} = centreon::plugins::statefile->new(%options);
+    $self->{cache_hosts}->check_options(option_results => $self->{option_results});
+    my $has_cache_file = $self->{cache_hosts}->read(statefile => 'cache_ovirt_hosts_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{api_username}));
+    my $timestamp_cache = $self->{cache_hosts}->get(name => 'last_timestamp');
+    my $hosts = $self->{cache_hosts}->get(name => 'hosts');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {
+        $hosts = [];
+        my $datas = { last_timestamp => time(), hosts => $hosts };
+        my $list = $self->list_hosts();
+        foreach (@{$list}) {
+            push @{$hosts}, { id => $_->{id}, name => $_->{name} };
+        }
+        $self->{cache_hosts}->write(data => $datas);
+    }
+
+    return $hosts;
+}
+
+sub list_clusters {
+    my ($self, %options) = @_;
+    
+    my $url_path = '/ovirt-engine/api/clusters';
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+    
+    return $response->{cluster};
+}
+
+sub list_datacenters {
+    my ($self, %options) = @_;
+    
+    my $url_path = '/ovirt-engine/api/datacenters';
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+    
+    return $response->{data_center};
 }
 
 1;

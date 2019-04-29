@@ -46,19 +46,22 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{hosts} = $options{custom}->request_api(url_path => '/ovirt-engine/api/hosts');
+    $self->{hosts} = $options{custom}->list_hosts();
 }
 
 sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $host (@{$self->{hosts}->{host}}) {
+    foreach my $host (@{$self->{hosts}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $host->{name} !~ /$self->{option_results}->{filter_name}/);
         
-        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s]",
-            $host->{id}, $host->{name}));
+        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][address = %s][status = %s]",
+            $host->{id},
+            $host->{name},
+            $host->{address},
+            $host->{status}));
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -70,17 +73,19 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['id', 'name']);
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'address', 'status']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $host (@{$self->{hosts}->{data_center}}) {
+    foreach my $host (@{$self->{hosts}}) {
         $self->{output}->add_disco_entry(
             id => $host->{id},
             name => $host->{name},
+            address => $host->{address},
+            status => $host->{status},
         );
     }
 }

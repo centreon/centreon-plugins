@@ -46,14 +46,14 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{clusters} = $options{custom}->request_api(url_path => '/ovirt-engine/api/clusters');
+    $self->{clusters} = $options{custom}->list_clusters();
 }
 
 sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $cluster (@{$self->{clusters}->{cluster}}) {
+    foreach my $cluster (@{$self->{clusters}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $cluster->{name} !~ /$self->{option_results}->{filter_name}/);
         
@@ -77,7 +77,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $cluster (@{$self->{clusters}->{data_center}}) {
+    foreach my $cluster (@{$self->{clusters}}) {
         $self->{output}->add_disco_entry(
             id => $cluster->{id},
             name => $cluster->{name},
