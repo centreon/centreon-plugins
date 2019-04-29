@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'cpu-host'          => 'apps::virtualization::ovirt::mode::cpuhost',
         'list-clusters'     => 'apps::virtualization::ovirt::mode::listclusters',
         'list-datacenters'  => 'apps::virtualization::ovirt::mode::listdatacenters',
         'list-hosts'        => 'apps::virtualization::ovirt::mode::listhosts',

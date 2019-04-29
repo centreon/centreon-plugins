@@ -46,14 +46,14 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{datacenters} = $options{custom}->request_api(url_path => '/ovirt-engine/api/datacenters');
+    $self->{datacenters} = $options{custom}->list_datacenters();
 }
 
 sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $datacenter (@{$self->{datacenters}->{data_center}}) {
+    foreach my $datacenter (@{$self->{datacenters}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $datacenter->{name} !~ /$self->{option_results}->{filter_name}/);
         
@@ -77,7 +77,7 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $datacenter (@{$self->{datacenters}->{data_center}}) {
+    foreach my $datacenter (@{$self->{datacenters}}) {
         $self->{output}->add_disco_entry(
             id => $datacenter->{id},
             name => $datacenter->{name},
