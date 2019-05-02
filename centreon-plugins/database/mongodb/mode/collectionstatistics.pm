@@ -146,9 +146,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => 'No databases found');
         $self->{output}->option_exit();
     }
-
-    use Data::Dumper;
-    print Dumper $self;
 }
 
 1;
