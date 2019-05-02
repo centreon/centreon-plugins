@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -158,13 +156,12 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "filter-type:s"           => { name => 'filter_type' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-name:s"           => { name => 'filter_name' },
+        "filter-type:s"           => { name => 'filter_type' },
+        "threshold-overload:s@"   => { name => 'threshold_overload' },
+    });
+
     return $self;
 }
 

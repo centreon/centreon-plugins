@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,12 +35,11 @@ my $thresholds = {
         ['gray', 'UNKNOWN'],
     ],
 };
-my $instance_mode;
 
 sub custom_threshold_output {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'pool', value => $self->{result_values}->{AvailState});
+    return $self->{instance_mode}->get_severity(section => 'pool', value => $self->{result_values}->{AvailState});
 }
 
 sub custom_status_calc {
@@ -90,11 +89,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"           => { name => 'filter_name' },
+        "threshold-overload:s@"   => { name => 'threshold_overload' },
+    });
     
     return $self;
 }
@@ -102,9 +100,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
-    
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*?),(.*)$/) {
@@ -181,8 +177,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
                                                             { oid => $mapping->{new}->{AvailState}->{oid} },
                                                             { oid => $mapping->{old}->{AvailState}->{oid} },
-                                                         ],
-                                                         , nothing_quit => 1);
+                                                         ],  nothing_quit => 1);
     
     my ($branch_name, $map) = ($mapping->{new}->{AvailState}->{oid}, 'new');
     if (!defined($snmp_result->{$mapping->{new}->{AvailState}->{oid}}) || scalar(keys %{$snmp_result->{$mapping->{new}->{AvailState}->{oid}}}) == 0)  {
@@ -197,8 +192,9 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch_name}, instance => $instance);
         $result->{Name} = '';
         foreach (split /\./, $instance) {
-            $result->{Name} .= chr  if ($_ >= 32 && $_ <= 126);
+            $result->{Name} .= chr if ($_ >= 32 && $_ <= 126);
         }
+        $result->{Name} =~ s/^.//;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {

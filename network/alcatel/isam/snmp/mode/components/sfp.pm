@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -84,12 +84,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Sfp '%s' voltage is %s VDC", $name, $value));
             }
-            $self->{output}->perfdata_add(label => 'sfp_voltage_' . $name, 
-                                          unit => 'VDC', 
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit
-                                      );
+            $self->{output}->perfdata_add(
+                label => 'sfp_voltage', unit => 'vdc',
+                nlabel => 'hardware.sfp.voltage.voltdc',
+                instances => $name,
+                value => $value,
+                warning => $warn,
+                critical => $crit
+            );
         }
         
         if ($result2->{sfpDiagTemperature} =~ /(\S+)\s+degrees Celsius/i) {
@@ -99,12 +101,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Sfp '%s' temperature is %s C", $name, $value));
             }
-            $self->{output}->perfdata_add(label => 'sfp_temperature_' . $name, 
-                                          unit => 'C', 
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit
-                                      );
+            $self->{output}->perfdata_add(
+                label => 'sfp_temperature',  unit => 'C',
+                nlabel => 'hardware.sfp.temperature.celsius',
+                instances => $name, 
+                value => $value,
+                warning => $warn,
+                critical => $crit
+            );
         }
         
         if ($result2->{sfpDiagTxPower} =~ /(\S+)\s+dBm/i) {
@@ -114,12 +118,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Sfp '%s' tx power is %s dBm", $name, $value));
             }
-            $self->{output}->perfdata_add(label => 'sfp_txpower_' . $name, 
-                                          unit => 'dBm', 
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit
-                                      );
+            $self->{output}->perfdata_add(
+                label => 'sfp_txpower', unit => 'dBm',
+                nlabel => 'hardware.sfp.txpower.dbm',
+                instances => $name,
+                value => $value,
+                warning => $warn,
+                critical => $crit
+            );
         }
         
         if ($result2->{sfpDiagRxPower} =~ /(\S+)\s+dBm/i) {
@@ -129,12 +135,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Sfp '%s' rx power is %s dBm", $name, $value));
             }
-            $self->{output}->perfdata_add(label => 'sfp_rxpower_' . $name, 
-                                          unit => 'dBm', 
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit
-                                      );
+            $self->{output}->perfdata_add(
+                label => 'sfp_rxpower', unit => 'dBm',
+                nlabel => 'hardware.sfp.rxpower.dbm',
+                instances => $name,
+                value => $value,
+                warning => $warn,
+                critical => $crit
+            );
         }
         
         if ($result2->{sfpDiagTxBiasCurrent} =~ /(\S+)\s+mA/i) {
@@ -144,12 +152,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Sfp '%s' current is %s mA", $name, $value));
             }
-            $self->{output}->perfdata_add(label => 'sfp_current_' . $name, 
-                                          unit => 'mA', 
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit
-                                      );
+            $self->{output}->perfdata_add(
+                label => 'sfp_current', unit => 'mA',
+                nlabel => 'hardware.sfp.current.milliampere',
+                instances => $name,
+                value => $value,
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

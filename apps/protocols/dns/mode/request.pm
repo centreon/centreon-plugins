@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -167,7 +167,7 @@ Set the search value (required).
 
 =item B<--search-type>
 
-Set the search type. Can be: 'MX', 'SOA', 'NS', 'A' or 'PTR'.
+Set the search type. Can be: 'MX', 'SOA', 'NS', 'A', 'CNAME' or 'PTR'.
 'A' or 'PTR' is used by default (depends if an IP or not).
 
 =item B<--expected-answer>

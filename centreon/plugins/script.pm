@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,7 @@ use Pod::Find qw(pod_where);
 
 my %handlers = (DIE => {});
 
-my $global_version = 20170913;
+my $global_version = '(dev)';
 my $alternative_fatpacker = 0;
 
 sub new {
@@ -99,15 +99,15 @@ sub get_plugin {
     $self->{options}->set_output(output => $self->{output});
 
     $self->{options}->add_options(arguments => {
-                                                'plugin:s'          => { name => 'plugin' },
-                                                'list-plugin'       => { name => 'list_plugin' }, 
-                                                'help'              => { name => 'help' },
-                                                'ignore-warn-msg'   => { name => 'ignore_warn_msg' },
-                                                'version'           => { name => 'version' },
-                                                'runas:s'           => { name => 'runas' },
-                                                'environment:s%'    => { name => 'environment' },
-                                                'convert-args:s'    => { name => 'convert_args' },
-                                                } );
+        'plugin:s'          => { name => 'plugin' },
+        'list-plugin'       => { name => 'list_plugin' }, 
+        'help'              => { name => 'help' },
+        'ignore-warn-msg'   => { name => 'ignore_warn_msg' },
+        'version'           => { name => 'version' },
+        'runas:s'           => { name => 'runas' },
+        'environment:s%'    => { name => 'environment' },
+        'convert-args:s'    => { name => 'convert_args' },
+    });
 
     $self->{options}->parse_options();
 
@@ -120,7 +120,6 @@ sub get_plugin {
     $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg' );
     $self->{convert_args} = $self->{options}->get_option(argument => 'convert_args' );
 
-    $self->{output}->mode(name => $self->{mode});
     $self->{output}->plugin(name => $self->{plugin});
     $self->{output}->check_options(option_results => $self->{options}->get_options());
 

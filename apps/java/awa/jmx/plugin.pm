@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'agent'   => 'apps::java::awa::jmx::mode::agent',
-                          'queue'   => 'apps::java::awa::jmx::mode::queue',
-                          'server'  => 'apps::java::awa::jmx::mode::server',
-                         );
+        'agent'           => 'apps::java::awa::jmx::mode::agent',
+        'list-agents'     => 'apps::java::awa::jmx::mode::listagents',
+        'list-queues'     => 'apps::java::awa::jmx::mode::listqueues',
+        'list-servers'    => 'apps::java::awa::jmx::mode::listservers',
+        'queue'           => 'apps::java::awa::jmx::mode::queue',
+        'server'          => 'apps::java::awa::jmx::mode::server',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;

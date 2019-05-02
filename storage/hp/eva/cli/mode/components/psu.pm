@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -122,11 +122,14 @@ sub psu_diskshelf {
                     $self->{output}->output_add(severity => $exit2,
                                                 short_msg => sprintf("Power supply '%s' is %s V", $instance, $voltage->{current}));
                 }
-                $self->{output}->perfdata_add(label => 'voltage_' . $instance . '/' . $voltage->{type}, unit => 'V', 
-                                              value => $voltage->{current},
-                                              warning => $warn,
-                                              critical => $crit,
-                                              );
+                $self->{output}->perfdata_add(
+                    label => 'voltage', unit => 'V',
+                    nlabel => 'hardware.powersupply.diskshelf.voltage.volt',
+                    instances => [$instance, $voltage->{type}],
+                    value => $voltage->{current},
+                    warning => $warn,
+                    critical => $crit,
+                );
             }
         }
     }

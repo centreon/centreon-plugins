@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -144,6 +144,14 @@ sub check_options {
         return 0;
     }
     return 1;
+}
+
+sub get_connection_info {
+    my ($self, %options) = @_;
+
+    my $connection_info = $self->{url};
+    $connection_info .= '_' . $self->{proxy_url} if (defined($self->{proxy_url}));
+    return $connection_info;
 }
 
 sub connect {

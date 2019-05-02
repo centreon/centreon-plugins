@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -119,12 +119,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Power supply '%s' power is %s W", $instance, $result->{powerSupplyOutputWatts}));
             }
-            $self->{output}->perfdata_add(label => 'psu_power_' . $instance, unit => 'W', 
-                                          value => $result->{powerSupplyOutputWatts},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'psu_power', unit => 'W',
+                nlabel => 'hardware.powersupply.power.watt',
+                instances => $instance,
+                value => $result->{powerSupplyOutputWatts},
+                warning => $warn,
+                critical => $crit,
+                min => 0
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,19 +45,19 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "hostname:s@"      => { name => 'hostname', },
-                      "port:s@"          => { name => 'port', },
-                      "proto:s@"         => { name => 'proto', },
-                      "urlpath:s@"       => { name => 'url_path', },
-                      "proxyurl:s@"      => { name => 'proxyurl', },
-                      "username:s@"      => { name => 'username', },
-                      "password:s@"      => { name => 'password', },
-                      "timeout:s@"       => { name => 'timeout', },
-                    });
+        $options{options}->add_options(arguments => {
+            "hostname:s@"      => { name => 'hostname' },
+            "port:s@"          => { name => 'port' },
+            "proto:s@"         => { name => 'proto' },
+            "urlpath:s@"       => { name => 'url_path' },
+            "username:s@"      => { name => 'username' },
+            "password:s@"      => { name => 'password' },
+            "timeout:s@"       => { name => 'timeout' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'P2000 OPTIONS', once => 1);
+
+    $self->{http} = centreon::plugins::http->new(%options);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
@@ -107,7 +107,6 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
         
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
@@ -133,7 +132,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{url_path} = $self->{url_path};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
 }
 
 sub check_login {
@@ -186,12 +184,13 @@ sub DESTROY {
 sub get_infos {
     my ($self, %options) = @_;
     my ($xpath, $nodeset);
-    
+
+    $self->login();
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
-    my $response =$self->{http}->request(url_path => $self->{url_path} . $cmd, 
-                                         header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
-                                                    'dataType: api', 'sessionKey: '. $self->{session_id}]);
+    my $response = $self->{http}->request(url_path => $self->{url_path} . $cmd, 
+                                          header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                                                     'dataType: api', 'sessionKey: '. $self->{session_id}]);
     
     eval {
         $xpath = XML::XPath->new(xml => $response);
@@ -249,9 +248,10 @@ sub get_infos {
 ##############
 sub login {
     my ($self, %options) = @_;
-    
+
+    return if ($self->{logon} == 1);
+
     $self->build_options_for_httplib();
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{http}->set_options(%{$self->{option_results}});
     
     # Login First
@@ -283,10 +283,6 @@ HP p2000 Hostname.
 =item B<--port>
 
 Port used
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =item B<--proto>
 

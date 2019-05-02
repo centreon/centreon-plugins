@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,6 +35,8 @@ sub new {
     $self->{output} = $options{output};
     $self->{perfdata} = $options{perfdata};
     $self->{label} = $options{label};
+    $self->{nlabel} = $options{nlabel};
+    $self->{thlabel} = defined($options{thlabel}) ? $options{thlabel} : $self->{label};
 
     $self->{perfdatas} = [];
     
@@ -61,8 +63,8 @@ sub new {
 
 sub init {
     my ($self, %options) = @_;
-    my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
-    my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label}; 
+    my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{thlabel};
+    my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{thlabel}; 
     
     if (($self->{perfdata}->threshold_validate(label => $warn, value => $options{option_results}->{$warn})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong $warn threshold '" . $options{option_results}->{$warn} . "'.");
@@ -108,8 +110,8 @@ sub threshold_check {
         return &{$self->{closure_custom_threshold_check}}($self, %options);
     }
     
-    my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
-    my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label};
+    my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{thlabel};
+    my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{thlabel};
     
     my $first = ${${$self->{key_values}}[0]}{name};
     my $value;
@@ -160,6 +162,16 @@ sub output {
     return sprintf($self->{output_template}, $value, $unit);
 }
 
+sub use_instances {
+    my ($self, %options) = @_;
+
+    if (!defined($options{extra_instance}) || $options{extra_instance} != 0 || $self->{output}->use_new_perfdata()) {
+        return 1;
+    }
+    
+    return 0;
+}
+
 sub perfdata {
     my ($self, %options) = @_;
     
@@ -167,8 +179,8 @@ sub perfdata {
         return &{$self->{closure_custom_perfdata}}($self, %options);
     }
     
-    my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{label};
-    my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{label}; 
+    my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{thlabel};
+    my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{thlabel}; 
     
     foreach my $perf (@{$self->{perfdatas}}) {
         my ($label, $extra_label, $min, $max, $th_total) = ($self->{label}, '');
@@ -187,21 +199,30 @@ sub perfdata {
             $th_total = ($perf->{threshold_total} =~ /[^0-9]/) ? $self->{result_values}->{$perf->{threshold_total}} : $perf->{threshold_total};
         }
         
-        if (defined($perf->{label_extra_instance}) && $perf->{label_extra_instance} == 1 && 
-           (!defined($options{extra_instance}) || $options{extra_instance} != 0)) {
-          
+        my $instances;
+        if (defined($perf->{label_extra_instance}) && $perf->{label_extra_instance} == 1) {
+            my $instance = '';
             if (defined($perf->{instance_use})) {
-                $extra_label .= '_' . $self->{result_values}->{$perf->{instance_use}};
+                $instance = $self->{result_values}->{$perf->{instance_use}};
             } else {
-                $extra_label .= '_' . $self->{instance};
+                $instance = $self->{instance};
+            }
+            
+            if (!defined($options{extra_instance}) || $options{extra_instance} != 0 || $self->{output}->use_new_perfdata()) {
+                $instances = $instance;
             }
         }
 
-        $self->{output}->perfdata_add(label => $label . $extra_label, unit => $perf->{unit},
-                                      value => $cast_int == 1 ? int($self->{result_values}->{$perf->{value}}) : sprintf($template, $self->{result_values}->{$perf->{value}}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total, cast_int => $cast_int),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => $crit, total => $th_total, cast_int => $cast_int),
-                                      min => $min, max => $max);
+        $self->{output}->perfdata_add(
+            label => $label,
+            instances => $instances,
+            nlabel => $self->{nlabel},
+            unit => $perf->{unit},
+            value => $cast_int == 1 ? int($self->{result_values}->{$perf->{value}}) : sprintf($template, $self->{result_values}->{$perf->{value}}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total, cast_int => $cast_int),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => $crit, total => $th_total, cast_int => $cast_int),
+            min => $min, max => $max
+        );
     }
 }
 

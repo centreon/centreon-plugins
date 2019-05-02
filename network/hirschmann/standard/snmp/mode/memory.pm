@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -67,7 +67,7 @@ sub run {
 
     my $mem_total = $mem_allocated + $mem_free;
 
-    my $mem_percent_used = $mem_allocated / $mem_total * 100;
+    my $mem_percent_used = ($mem_total != 0) ? $mem_allocated / $mem_total * 100 : '0';
 
     my $exit = $self->{perfdata}->threshold_check(value => $mem_percent_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,17 +34,17 @@ sub check {
     return if ($self->check_filter(section => 'other'));
     
     my @instances = ();
-    foreach my $key (keys %{$self->{results}->{$oids{entPhysicalClass}}}) {
-        if ($self->{results}->{$oids{entPhysicalClass}}->{$key} == 1) {
-            next if ($key !~ /^$oids{entPhysicalClass}\.(.*)$/);
+    foreach my $key (keys %{$self->{results}->{$oids{common}->{entPhysicalClass}}}) {
+        if ($self->{results}->{$oids{common}->{entPhysicalClass}}->{$key} == 1) {
+            next if ($key !~ /^$oids{common}->{entPhysicalClass}\.(.*)$/);
             push @instances, $1;
         }
     }
     
     foreach my $instance (@instances) {
-        next if (!defined($self->{results}->{entity}->{$oids{chasEntPhysAdminStatus} . '.' . $instance}));
+        next if (!defined($self->{results}->{entity}->{$oids{$self->{type}}{chasEntPhysAdminStatus} . '.' . $instance}));
         
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{entity}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{type}}, results => $self->{results}->{entity}, instance => $instance);
         
         next if ($self->check_filter(section => 'other', instance => $instance));
         $self->{components}->{other}->{total}++;
@@ -55,9 +55,13 @@ sub check {
                                     );
         
         if ($result->{chasEntPhysPower} > 0) {
-            $self->{output}->perfdata_add(label => "power_" . $instance, unit => 'W',
-                                          value => $result->{chasEntPhysPower},
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => "power", unit => 'W',
+                nlabel => 'hardware.other.power.watt',
+                instances => $instance,
+                value => $result->{chasEntPhysPower},
+                min => 0
+            );
         }
         
         my $exit = $self->get_severity(label => 'admin', section => 'other.admin', value => $result->{chasEntPhysAdminStatus});

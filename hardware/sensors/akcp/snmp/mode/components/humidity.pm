@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,64 +25,73 @@ use warnings;
 use hardware::sensors::akcp::snmp::mode::components::resources qw(%map_default1_status %map_online);
 
 my $mapping = {
-    hhmsSensorArrayHumidityDescription  => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.1' },
-    hhmsSensorArrayHumidityPercent      => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.3' },
-    hhmsSensorArrayHumidityStatus       => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.4', map => \%map_default1_status },
-    hhmsSensorArrayHumidityOnline       => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.5', map => \%map_online },
-    hhmsSensorArrayHumidityHighWarning  => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.7' },
-    hhmsSensorArrayHumidityHighCritical => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.8' },
-    hhmsSensorArrayHumidityLowWarning   => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.9' },
-    hhmsSensorArrayHumidityLowCritical  => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.10' },
+    HumidityDescription  => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.1' }, # hhmsSensorArrayHumidityDescription
+    HumidityPercent      => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.3' }, # hhmsSensorArrayHumidityPercent
+    HumidityStatus       => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.4', map => \%map_default1_status }, # hhmsSensorArrayHumidityStatus
+    HumidityOnline       => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.5', map => \%map_online }, # hhmsSensorArrayHumidityOnline
+    HumidityHighWarning  => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.7' }, # hhmsSensorArrayHumidityHighWarning
+    HumidityHighCritical => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.8' }, # hhmsSensorArrayHumidityHighCritical
+    HumidityLowWarning   => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.9' }, # hhmsSensorArrayHumidityLowWarning
+    HumidityLowCritical  => { oid => '.1.3.6.1.4.1.3854.1.2.2.1.17.1.10' }, # hhmsSensorArrayHumidityLowCritical
 };
+my $mapping2 = {
+    HumidityDescription  => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.2' }, # humidityDescription
+    HumidityPercent      => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.4' }, # humidityPercent
+    HumidityStatus       => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.6', map => \%map_default1_status }, # humidityStatus
+    HumidityOnline       => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.8', map => \%map_online }, # humidityGoOffline
+    HumidityHighWarning  => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.11' }, # humidityHighWarning
+    HumidityHighCritical => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.12' }, # humidityHighCritical
+    HumidityLowWarning   => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.10' }, # humidityLowWarning
+    HumidityLowCritical  => { oid => '.1.3.6.1.4.1.3854.3.5.3.1.9' }, # humidityLowCritical
+};
+
 my $oid_hhmsSensorArrayHumidityEntry = '.1.3.6.1.4.1.3854.1.2.2.1.17.1';
+my $oid_humidityEntry = '.1.3.6.1.4.1.3854.3.5.3.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_hhmsSensorArrayHumidityEntry };
+    push @{$self->{request}}, { oid => $oid_hhmsSensorArrayHumidityEntry }, 
+        { oid => $oid_humidityEntry, end => $mapping2->{HumidityHighCritical}->{oid} };
 }
 
-sub check {
-    my ($self) = @_;
+sub check_humidity {
+    my ($self, %options) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking humidities");
-    $self->{components}->{humidity} = {name => 'humidities', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'humidity'));
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_hhmsSensorArrayHumidityEntry}})) {
-        next if ($oid !~ /^$mapping->{hhmsSensorArrayHumidityOnline}->{oid}\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$options{entry}}})) {
+        next if ($oid !~ /^$options{mapping}->{HumidityOnline}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_hhmsSensorArrayHumidityEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $options{mapping}, results => $self->{results}->{$options{entry}}, instance => $instance);
         
         next if ($self->check_filter(section => 'humidity', instance => $instance));
-        if ($result->{hhmsSensorArrayHumidityOnline} eq 'offline') {
-            $self->{output}->output_add(long_msg => sprintf("skipping '%s': is offline", $result->{hhmsSensorArrayHumidityDescription}));
+        if ($result->{HumidityOnline} eq 'offline') {
+            $self->{output}->output_add(long_msg => sprintf("skipping '%s': is offline", $result->{HumidityDescription}));
             next;
         }
         $self->{components}->{humidity}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("humidity '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $result->{hhmsSensorArrayHumidityDescription}, $result->{hhmsSensorArrayHumidityStatus}, $instance, 
-                                    $result->{hhmsSensorArrayHumidityPercent}));
+                                    $result->{HumidityDescription}, $result->{HumidityStatus}, $instance, 
+                                    $result->{HumidityPercent}));
         
-        my $exit = $self->get_severity(label => 'default1', section => 'humidity', value => $result->{hhmsSensorArrayHumidityStatus});
+        my $exit = $self->get_severity(label => 'default1', section => 'humidity', value => $result->{HumidityStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Humdity '%s' status is '%s'", $result->{hhmsSensorArrayHumidityDescription}, $result->{hhmsSensorArrayHumidityStatus}));
+                                        short_msg => sprintf("Humdity '%s' status is '%s'", $result->{HumidityDescription}, $result->{HumidityStatus}));
         }
              
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'humidity', instance => $instance, value => $result->{hhmsSensorArrayHumidityPercent});
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'humidity', instance => $instance, value => $result->{HumidityPercent});
         if ($checked == 0) {
-            $result->{hhmsSensorArrayHumidityLowWarning} = (defined($result->{hhmsSensorArrayHumidityLowWarning}) && $result->{hhmsSensorArrayHumidityLowWarning} =~ /[0-9]/) ?
-                $result->{hhmsSensorArrayHumidityLowWarning} : '';
-            $result->{hhmsSensorArrayHumidityLowCritical} = (defined($result->{hhmsSensorArrayHumidityLowCritical}) && $result->{hhmsSensorArrayHumidityLowCritical} =~ /[0-9]/) ?
-                $result->{hhmsSensorArrayHumidityLowCritical} : '';
-            $result->{hhmsSensorArrayHumidityHighWarning} = (defined($result->{hhmsSensorArrayHumidityHighWarning}) && $result->{hhmsSensorArrayHumidityHighWarning} =~ /[0-9]/) ?
-                $result->{hhmsSensorArrayHumidityHighWarning} : '';
-            $result->{hhmsSensorArrayHumidityHighCritical} = (defined($result->{hhmsSensorArrayHumidityHighCritical}) && $result->{hhmsSensorArrayHumidityHighCritical} =~ /[0-9]/) ?
-                $result->{hhmsSensorArrayHumidityHighCritical} : '';
-            my $warn_th = $result->{hhmsSensorArrayHumidityLowWarning} . ':' . $result->{hhmsSensorArrayHumidityHighWarning};
-            my $crit_th = $result->{hhmsSensorArrayHumidityLowCritical} . ':' . $result->{hhmsSensorArrayHumidityHighCritical};
+            $result->{HumidityLowWarning} = (defined($result->{HumidityLowWarning}) && $result->{HumidityLowWarning} =~ /[0-9]/) ?
+                $result->{HumidityLowWarning} : '';
+            $result->{HumidityLowCritical} = (defined($result->{HumidityLowCritical}) && $result->{HumidityLowCritical} =~ /[0-9]/) ?
+                $result->{HumidityLowCritical} : '';
+            $result->{HumidityHighWarning} = (defined($result->{HumidityHighWarning}) && $result->{HumidityHighWarning} =~ /[0-9]/) ?
+                $result->{HumidityHighWarning} : '';
+            $result->{HumidityHighCritical} = (defined($result->{HumidityHighCritical}) && $result->{HumidityHighCritical} =~ /[0-9]/) ?
+                $result->{HumidityHighCritical} : '';
+            my $warn_th = $result->{HumidityLowWarning} . ':' . $result->{HumidityHighWarning};
+            my $crit_th = $result->{HumidityLowCritical} . ':' . $result->{HumidityHighCritical};
             $self->{perfdata}->threshold_validate(label => 'warning-humidity-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-humidity-instance-' . $instance, value => $crit_th);
             
@@ -92,14 +101,29 @@ sub check {
         
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Humdity '%s' is %s %%", $result->{hhmsSensorArrayHumidityDescription}, $result->{hhmsSensorArrayHumidityPercent}));
+                                        short_msg => sprintf("Humdity '%s' is %s %%", $result->{HumidityDescription}, $result->{HumidityPercent}));
         }
-        $self->{output}->perfdata_add(label => 'humidity_' . $result->{hhmsSensorArrayHumidityDescription}, unit => '%', 
-                                      value => $result->{hhmsSensorArrayHumidityPercent},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            label => 'humidity', unit => '%',
+            nlabel => 'hardware.sensor.humidity.percentage',
+            instances => $result->{HumidityDescription},
+            value => $result->{HumidityPercent},
+            warning => $warn,
+            critical => $crit,
+            min => 0, max => 100
+        );
     }
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "Checking humidities");
+    $self->{components}->{humidity} = {name => 'humidities', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'humidity'));
+    
+    check_humidity($self, entry => $oid_hhmsSensorArrayHumidityEntry, mapping => $mapping);
+    check_humidity($self, entry => $oid_humidityEntry, mapping => $mapping2);
 }
 
 1;

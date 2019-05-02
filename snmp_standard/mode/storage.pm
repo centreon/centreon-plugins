@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,7 +20,7 @@
 
 package snmp_standard::mode::storage;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
@@ -69,31 +69,158 @@ my %storage_types_manage = (
     '.1.3.6.1.2.1.25.3.9.23' => 'hrFSLinuxExt2',
 );
 
+sub custom_usage_perfdata {
+    my ($self, %options) = @_;
+
+    my ($label, $nlabel) = ('used', $self->{nlabel});
+    my $value_perf = $self->{result_values}->{used};
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        ($label, $nlabel) = ('free', 'storage.space.free.bytes');
+        $value_perf = $self->{result_values}->{free};
+    }
+
+    my %total_options = ();
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $total_options{total} = $self->{result_values}->{total};
+        $total_options{cast_int} = 1;
+    }
+
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $nlabel,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
+}
+
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+
+    my ($exit, $threshold_value);
+    $threshold_value = $self->{result_values}->{used};
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
+        $threshold_value = $self->{result_values}->{prct_used};
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    }
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+    return $exit;
+}
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                   $total_size_value . " " . $total_size_unit,
+                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_size'} * $options{new_datas}->{$self->{instance} . '_allocation_units'};
+    my $reserved_value = 0;
+    if (defined($self->{instance_mode}->{option_results}->{space_reservation})) {
+        $reserved_value = $self->{instance_mode}->{option_results}->{space_reservation} * $self->{result_values}->{total} / 100;
+    }
+    
+    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'} * $options{new_datas}->{$self->{instance} . '_allocation_units'};
+    $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used} - $reserved_value;
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / ($self->{result_values}->{total} - $reserved_value);
+    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
+    
+    # limit to 100. Better output.
+    if ($self->{result_values}->{prct_used} > 100) {
+        $self->{result_values}->{free} = 0;
+        $self->{result_values}->{prct_used} = 100;
+        $self->{result_values}->{prct_free} = 0;
+    }
+
+    return 0;
+}
+
+sub custom_access_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Access : %s", 
+        $self->{result_values}->{access_absolute} == 1 ? 'readWrite' : 'readOnly'
+    );
+
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages are ok', skipped_code => { -10 => 1 } },
+    ];
+    
+    $self->{maps_counters}->{storage} = [
+        { label => 'usage', nlabel => 'storage.space.usage.bytes', set => {
+                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'size' }, { name => 'allocation_units' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+        { label => 'access', nlabel => 'storage.access', set => {
+                key_values => [ { name => 'access' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_access_output'),
+                perfdatas => [
+                    { label => 'access', value => 'access_absolute', template => '%d', min => 1, max => 2, 
+                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_storage_output {
+    my ($self, %options) = @_;
+    
+    return "Storage '" . $options{instance_value}->{display} . "' ";
+}
+
+sub default_storage_type {
+    my ($self, %options) = @_;
+    
+    return '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$';
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "units:s"                 => { name => 'units', default => '%' },
-                                  "free"                    => { name => 'free' },
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                  "name"                    => { name => 'use_name' },
-                                  "storage:s"               => { name => 'storage' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "oid-filter:s"            => { name => 'oid_filter', default => 'hrStorageDescr'},
-                                  "oid-display:s"           => { name => 'oid_display', default => 'hrStorageDescr'},
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                  "show-cache"              => { name => 'show_cache' },
-                                  "space-reservation:s"     => { name => 'space_reservation' },
-                                  "filter-storage-type:s"   => { name => 'filter_storage_type', default => '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "units:s"                 => { name => 'units', default => '%' },
+        "free"                    => { name => 'free' },
+        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
+        "name"                    => { name => 'use_name' },
+        "storage:s"               => { name => 'storage' },
+        "regexp"                  => { name => 'use_regexp' },
+        "regexp-isensitive"       => { name => 'use_regexpi' },
+        "oid-filter:s"            => { name => 'oid_filter', default => 'hrStorageDescr'},
+        "oid-display:s"           => { name => 'oid_display', default => 'hrStorageDescr'},
+        "display-transform-src:s" => { name => 'display_transform_src' },
+        "display-transform-dst:s" => { name => 'display_transform_dst' },
+        "show-cache"              => { name => 'show_cache' },
+        "space-reservation:s"     => { name => 'space_reservation' },
+        "filter-storage-type:s"   => { name => 'filter_storage_type', default => $self->default_storage_type() },
+        "add-access"              => { name => 'add_access' },
+    });
 
     $self->{storage_id_selected} = [];
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -103,155 +230,105 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
     if (defined($self->{option_results}->{space_reservation}) && 
         ($self->{option_results}->{space_reservation} < 0 || $self->{option_results}->{space_reservation} > 100)) {
-       $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
+        $self->{output}->option_exit();
     }
     
     $self->{option_results}->{oid_filter} = lc($self->{option_results}->{oid_filter});
     if ($self->{option_results}->{oid_filter} !~ /^(hrstoragedescr|hrfsmountpoint)$/) {
-       $self->{output}->add_option_msg(short_msg => "Unsupported --oid-filter option.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Unsupported --oid-filter option.");
+        $self->{output}->option_exit();
     }
     $self->{option_results}->{oid_display} = lc($self->{option_results}->{oid_display});
     if ($self->{option_results}->{oid_display} !~ /^(hrstoragedescr|hrfsmountpoint)$/) {
-       $self->{output}->add_option_msg(short_msg => "Unsupported --oid-display option.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Unsupported --oid-display option.");
+        $self->{output}->option_exit();
     }
-    
+
     $self->{statefile_cache}->check_options(%options);
 }
 
-sub run {
+sub access_result {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
+    
+    return {}
+        if (!defined($self->{option_results}->{add_access}));
+    my $oid_hrFSAccess = '.1.3.6.1.2.1.25.3.8.1.5';
+    my $relations = $self->{statefile_cache}->get(name => 'relation_storageindex_fsstorageindex');
+    return {} if (!defined($relations) || scalar(keys %$relations) <= 0);
+    my @instances = [];
+    foreach (@{$self->{storage_id_selected}}) {
+        if (defined($relations->{$_})) {
+            push @instances, $relations->{$_};
+        }
+    }
+    
+    $self->{snmp}->load(
+        oids => [$oid_hrFSAccess], 
+        instances => \@instances, nothing_quit => 1
+    );
+    my $snmp_result = $self->{snmp}->get_leef();
+    my $result = {};
+    foreach (@{$self->{storage_id_selected}}) {
+        if (defined($snmp_result->{$oid_hrFSAccess . '.' . $relations->{$_}})) {
+            $result->{$_} = $snmp_result->{$oid_hrFSAccess . '.' . $relations->{$_}};
+        }
+    }
+    
+    return $result;
+}
 
-    $self->manage_selection();
+sub manage_selection {
+    my ($self, %options) = @_;
+    
+    $self->{snmp} = $options{snmp};
+    $self->get_selection();
     
     my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
     my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
-
+    
     $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
                         instances => $self->{storage_id_selected}, nothing_quit => 1);
     my $result = $self->{snmp}->get_leef();
-    my $multiple = 0;
-    if (scalar(@{$self->{storage_id_selected}}) > 1) {
-        $multiple = 1;
-    }
+    my $access_result = $self->access_result();
     
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All storages are ok.');
-    }
-
+    $self->{storage} = {};
     foreach (sort @{$self->{storage_id_selected}}) {
         my $name_storage = $self->get_display_value(id => $_);
 
         if (!defined($result->{$oid_hrStorageAllocationUnits . "." . $_})) {
-            if ($multiple == 0) {
-                $self->{output}->add_option_msg(severity => 'UNKNOWN',
-                                                short_msg => sprintf("Skipping storage '%s': not found (need to reload the cache)", 
-                                                                     $name_storage));
-            } else {
-                $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%s': not found (need to reload the cache)", 
-                                                                    $name_storage));
-            }
+            $self->{output}->add_option_msg(long_msg => sprintf("skipping storage '%s': not found (need to reload the cache)", 
+                                                                $name_storage));
             next;
         }
         
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
-            if ($multiple == 0) {
-                $self->{output}->add_option_msg(severity => 'UNKNOWN',
-                                                short_msg => sprintf("Skipping storage '%s': total size is <= 0 (%s)", 
-                                                                     $name_storage, int($total_size)));
-            } else {
-                $self->{output}->add_option_msg(long_msg => sprintf("Skipping storage '%s': total size is <= 0 (%s)", 
-                                                                    $name_storage, int($total_size)));
-            }
+            $self->{output}->add_option_msg(long_msg => sprintf("skipping storage '%s': total size is <= 0 (%s)", 
+                                                                $name_storage, int($total_size)));
             next;
         }
         
-        my $reserved_value = 0;
-        if (defined($self->{option_results}->{space_reservation})) {
-            $reserved_value = $self->{option_results}->{space_reservation} * $total_size / 100;
-        }
-        my $total_used = $result->{$oid_hrStorageUsed . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
-        my $total_free = $total_size - $total_used - $reserved_value;
-        my $prct_used = $total_used * 100 / ($total_size - $reserved_value);
-        my $prct_free = 100 - $prct_used;
-        
-        # limit to 100. Better output.
-        if ($prct_used > 100) {
-            $total_free = 0;
-            $prct_used = 100;
-            $prct_free = 0;
-        }
-
-        my ($exit, $threshold_value);
-
-        $threshold_value = $total_used;
-        $threshold_value = $total_free if (defined($self->{option_results}->{free}));
-        if ($self->{option_results}->{units} eq '%') {
-            $threshold_value = $prct_used;
-            $threshold_value = $prct_free if (defined($self->{option_results}->{free}));
-        } 
-        $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-        my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-        my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $total_used);
-        my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $total_free);
-
-        $self->{output}->output_add(long_msg => sprintf("Storage '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
-                                            $total_size_value . " " . $total_size_unit,
-                                            $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || ($multiple == 0)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Storage '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $name_storage,
-                                            $total_size_value . " " . $total_size_unit,
-                                            $total_used_value . " " . $total_used_unit, $prct_used,
-                                            $total_free_value . " " . $total_free_unit, $prct_free));
-        }    
-
-        my $label = 'used';
-        my $value_perf = $total_used;
-        if (defined($self->{option_results}->{free})) {
-            $label = 'free';
-            $value_perf = $total_free;
-        }
-        my $extra_label = '';
-        $extra_label = '_' . $name_storage if ($multiple == 1);
-        my %total_options = ();
-        if ($self->{option_results}->{units} eq '%') {
-            $total_options{total} = $total_size - $reserved_value;
-            $total_options{cast_int} = 1; 
-        }
-        $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                      value => $value_perf,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-                                      min => 0, max => int($total_size - $reserved_value));
+        $self->{storage}->{$_} = {
+            display => $name_storage,
+            allocation_units => $result->{$oid_hrStorageAllocationUnits . "." . $_},
+            size => $result->{$oid_hrStorageSize . "." . $_},
+            used => $result->{$oid_hrStorageUsed . "." . $_},
+            access => defined($access_result->{$_}) ? $access_result->{$_} : undef,
+        };
     }
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    
+    if (scalar(keys %{$self->{storage}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "Issue with storage information (see details)");
+        $self->{output}->option_exit();
+    }
 }
 
 sub reload_cache {
@@ -262,17 +339,25 @@ sub reload_cache {
     $datas->{oid_display} = $self->{option_results}->{oid_display};
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
+    $datas->{relation_storageindex_fsstorageindex} = {};
     
     my $request = [ { oid => $oids_hrStorageTable{hrstoragetype} } ];
     my $added = {};
+    my $build_relation = 0;
     foreach (($self->{option_results}->{oid_filter}, $self->{option_results}->{oid_display} )) {
         next if (defined($added->{$_}));
         $added->{$_} = 1;
         if (/hrFSMountPoint/i) {
             push @{$request}, ({ oid => $oids_hrStorageTable{hrfsmountpoint} }, { oid => $oids_hrStorageTable{hrfsstorageindex} });
+            $build_relation = 1;
         } else {
             push @{$request}, { oid => $oids_hrStorageTable{hrstoragedescr} };
         }
+    }
+    
+    if (defined($self->{option_results}->{add_access}) && !defined($added->{hrFSMountPoint})) {
+        push @{$request}, { oid => $oids_hrStorageTable{hrfsstorageindex} };
+        $build_relation = 1;
     }
 
     my $result = $self->{snmp}->get_multiple_table(oids => $request);
@@ -289,6 +374,13 @@ sub reload_cache {
             }
 
             $datas->{$$_[1] . "_" . $storage_index} = $self->{output}->to_utf8($result->{ $oids_hrStorageTable{$$_[1]} }->{$key});
+        }
+    }
+    
+    if ($build_relation == 1) {
+        foreach (keys %{$result->{ $oids_hrStorageTable{hrfsstorageindex} }}) {
+            /\.([0-9]+)$/;
+            $datas->{relation_storageindex_fsstorageindex}->{ $result->{ $oids_hrStorageTable{hrfsstorageindex} }->{$_} } = $1;
         }
     }
 
@@ -311,11 +403,11 @@ sub filter_type {
     return 0;
 }
 
-sub manage_selection {
+sub get_selection {
     my ($self, %options) = @_;
 
     # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
         $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
         $self->{output}->option_exit();
@@ -382,13 +474,26 @@ __END__
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical.
+
+=item B<--warning-access>
+
+Threshold warning. 
+
+=item B<--critical-access>
+
+Threshold critical.
+Check if storage is readOnly: --critical-access=@2:2
+
+=item B<--add-access>
+
+Check storage access (readOnly, readWrite).
 
 =item B<--units>
 

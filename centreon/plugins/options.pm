@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,6 +46,7 @@ sub new {
         Getopt::Long::Configure('no_auto_abbrev');
     } else {
         require centreon::plugins::alternative::Getopt;
+        $centreon::plugins::alternative::Getopt::warn_message = 0;
         centreon::plugins::alternative::Getopt->import();
     }
     
@@ -114,11 +115,17 @@ sub add_options {
     # $options{arguments} = ref to hash table with string and name to store (example: { 'mode:s' => { name => 'mode', default => 'defaultvalue' )
     
     foreach (keys %{$options{arguments}}) {
+        if (defined($options{arguments}->{$_}->{redirect})) {
+            $self->{options}->{$_} = \$self->{options_stored}->{$options{arguments}->{$_}->{redirect}};
+            next;
+        }
+        
         if (defined($options{arguments}->{$_}->{default})) {
             $self->{options_stored}->{$options{arguments}->{$_}->{name}} = $options{arguments}->{$_}->{default};
         } else {
             $self->{options_stored}->{$options{arguments}->{$_}->{name}} = undef;
         }
+        
         $self->{options}->{$_} = \$self->{options_stored}->{$options{arguments}->{$_}->{name}};
     }
 }

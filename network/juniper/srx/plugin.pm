@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,7 +38,7 @@ sub new {
                          'memory-forwarding'    => 'network::juniper::common::junos::mode::memoryforwarding', # packet forwarding engine
                          'cp-sessions'          => 'network::juniper::common::junos::mode::cpsessions', # CP = 'central point'
                          'flow-sessions'        => 'network::juniper::common::junos::mode::flowsessions',
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
+                         'interfaces'           => 'network::juniper::common::junos::mode::interfaces', 
                          'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
                          'list-storages'        => 'snmp_standard::mode::liststorages',
                          'storage'              => 'snmp_standard::mode::storage',

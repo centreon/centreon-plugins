@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,8 +36,23 @@ sub get_powershell {
     
     $ps .= '
 try {
-    $ErrorActionPreference = "Stop"    
+    $ErrorActionPreference = "Stop"
+';
+    if (defined($options{password}) && $options{password} ne '') {
+        $ps .= '
+    $username = "' . $options{mailbox}  . '"
+    $password = "' . $options{password}  . '"
+    $secstr = New-Object -TypeName System.Security.SecureString
+    $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
+    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
+    $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -MailboxCredential $cred
+';
+    } else {
+        $ps .= '
     $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -Identity "' . $options{mailbox} . '"
+';
+    }
+    $ps .= '
 } catch {
     Write-Host $Error[0].Exception
     exit 1

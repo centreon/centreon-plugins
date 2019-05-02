@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,32 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-
-my $instance_mode;
-
-sub custom_threshold_output {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -67,25 +42,35 @@ sub custom_status_calc {
     return 0;
 }
 
+sub custom_usage_threshold {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{instance_mode}->{option_results}->{'critical-usage'}) || $self->{instance_mode}->{option_results}->{'critical-usage'} eq '') {
+        $self->{perfdata}->threshold_validate(label => 'critical-usage', value => $self->{result_values}->{watermark_absolute});
+    }
+    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{usage_absolute}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All dedup status are ok' }
+        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All dedup status are ok' }
     ];
     
-    $self->{maps_counters}->{pool} = [
+    $self->{maps_counters}->{volume} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'usage', set => {
-                key_values => [ { name => 'usage' }, { name => 'display' } ],
+                key_values => [ { name => 'usage' }, { name => 'watermark' }, { name => 'display' } ],
                 output_template => 'Use: %s %%',
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
                 perfdatas => [
                     { label => 'used', value => 'usage_absolute', template => '%s', 
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -103,16 +88,20 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'nbdevquery' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-listdv -U -stype PureDisk' },
+                                  "hostname:s"              => { name => 'hostname' },
+                                  "remote"                  => { name => 'remote' },
+                                  "ssh-option:s@"           => { name => 'ssh_option' },
+                                  "ssh-path:s"              => { name => 'ssh_path' },
+                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
+                                  "timeout:s"               => { name => 'timeout', default => 30 },
+                                  "sudo"                    => { name => 'sudo' },
+                                  "command:s"               => { name => 'command', default => 'nbdevquery' },
+                                  "command-path:s"          => { name => 'command_path' },
+                                  "command-options:s"       => { name => 'command_options', default => '-listdp -U' },
+                                  "command2:s"              => { name => 'command2', default => 'nbdevquery' },
+                                  "command2-path:s"         => { name => 'command2_path' },
+                                  "command2-options:s"      => { name => 'command2_options', default => '-listdv -U -stype PureDisk' },
+                                  "exec-only"               => { name => 'exec_only' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /up/i' },
@@ -125,24 +114,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-sub prefix_pool_output {
+sub prefix_volume_output {
     my ($self, %options) = @_;
     
-    return "Disk pool name '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    return "Disk volume '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
@@ -153,8 +131,50 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
-    $self->{pool} = {};
+                                                    command_options => $self->{option_results}->{command_options});
+
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    }
+
+    #Disk Pool Name   : NBU-MASTER-DP
+    #Disk Pool Id     : NBU-MASTER-DP
+    #Disk Type        : PureDisk
+    #Status           : UP
+    #Flag             : Patchwork
+    #Raw Size (GB)    : 19236.97
+    #Usable Size (GB) : 19236.97
+    #High Watermark   : 99
+    #Low Watermark    : 60
+    #Num Volumes      : 1
+    #Max IO Streams   : -1
+    my $watermark = {};
+    while ($stdout =~ /^(Disk Pool Name.*?)(?=Disk Pool Name|\z)/msig) {
+        my $pool = $1;
+        
+        $pool =~ /^Disk Pool Name\s*:\s*(.*?)\n/msi;
+        my $display = centreon::plugins::misc::trim($1);
+        $pool =~ /^High Watermark\s*:\s*(.*?)\n/msi;
+        $watermark->{$display} = centreon::plugins::misc::trim($1);
+    }
+    
+    ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
+                                                    options => $self->{option_results},
+                                                    sudo => $self->{option_results}->{sudo},
+                                                    command => $self->{option_results}->{command2},
+                                                    command_path => $self->{option_results}->{command2_path},
+                                                    command_options => $self->{option_results}->{command2_options});
+
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
+    }
+
+    $self->{volume} = {};
     #Disk Pool Name      : NBU-MASTER-DP
     #Disk Type           : PureDisk
     #Disk Volume Name    : PureDiskVolume
@@ -167,24 +187,26 @@ sub manage_selection {
     #Flag                : AdminUp
     #Flag                : InternalUp
     while ($stdout =~ /^(Disk Pool Name.*?)(?=Disk Pool Name|\z)/msig) {
-        my $pool = $1;
+        my $volume = $1;
         
-        my ($display, $usage, $status);
-        $display = centreon::plugins::misc::trim($1) if ($pool =~ /^Disk Pool Name\s*:\s*(.*?)\n/msi);
-        $status = $1 if ($pool =~ /^Status\s*:\s*(.*?)\n/msi);
-        $usage = $1 if ($pool =~ /^Use%\s*:\s*(.*?)\n/msi);
+        my ($pool_name, $volume_name, $usage, $status);
+        $pool_name = centreon::plugins::misc::trim($1) if ($volume =~ /^Disk Pool Name\s*:\s*(.*?)\n/msi);
+        $volume_name = centreon::plugins::misc::trim($1) if ($volume =~ /^Disk Volume Name\s*:\s*(.*?)\n/msi);
+        $status = $1 if ($volume =~ /^Status\s*:\s*(.*?)\n/msi);
+        $usage = $1 if ($volume =~ /^Use%\s*:\s*(.*?)\n/msi);
         
+        my $display = $pool_name . '.' . $volume_name;
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $display !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
             next;
         }
         
-        $self->{pool}->{$display} = { display => $display, usage => $usage, status => $status };
+        $self->{volume}->{$display} = { display => $display, usage => $usage, status => $status, watermark => $watermark->{$pool_name} };
     }
     
-    if (scalar(keys %{$self->{pool}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No pool found.");
+    if (scalar(keys %{$self->{volume}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No volume found.");
         $self->{output}->option_exit();
     }
 }
@@ -238,7 +260,24 @@ Command path (Default: none).
 
 =item B<--command-options>
 
+Command options (Default: ' -listdp -U').
+
+=item B<--command2>
+
+Command to get information (Default: 'nbdevquery').
+Can be changed if you have output in a file.
+
+=item B<--command2-path>
+
+Command path (Default: none).
+
+=item B<--command2-options>
+
 Command options (Default: '-listdv -U -stype PureDisk').
+
+=item B<--exec-only>
+
+Print command output
 
 =item B<--filter-name>
 

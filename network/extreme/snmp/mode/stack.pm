@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,7 +108,8 @@ sub run {
                                                             ], nothing_quit => 1);
     
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results->{$mapping->{extremeStackDetection}->{oid}}, instance => '0');
-    if ($result->{extremeStackDetection} eq 'disabled') {
+    # disable is voluntary
+    if ($result->{extremeStackDetection} eq 'disable') {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => 'Stacking is disable');
         $self->{output}->display();

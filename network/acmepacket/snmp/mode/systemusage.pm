@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,21 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf('replication state : %s', $self->{result_values}->{replication_state});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{replication_state} = $options{new_datas}->{$self->{instance} . '_replication_state'};
+    return 0;
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -33,7 +48,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'health-score', set => {
+        { label => 'health-score', nlabel => 'health.score.percentage', set => {
                 key_values => [ { name => 'health_score' } ],
                 output_template => 'Health Score : %.2f %%',
                 perfdatas => [
@@ -42,7 +57,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-load', set => {
+        { label => 'cpu-load', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_load' } ],
                 output_template => 'Cpu Load : %.2f %%',
                 perfdatas => [
@@ -51,7 +66,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory-usage', set => {
+        { label => 'memory-usage', nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'memory_used' } ],
                 output_template => 'Memory Used : %.2f %%',
                 perfdatas => [
@@ -60,7 +75,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'license-usage', set => {
+        { label => 'license-usage', nlabel => 'licence.usage.percentage', set => {
                 key_values => [ { name => 'license_used' } ],
                 output_template => 'License Used : %.2f %%',
                 perfdatas => [
@@ -69,7 +84,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-sessions', set => {
+        { label => 'current-sessions', nlabel => 'sessions.current.count', set => {
                 key_values => [ { name => 'current_sessions' } ],
                 output_template => 'Current Sessions : %s',
                 perfdatas => [
@@ -78,13 +93,21 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-calls', set => {
+        { label => 'current-calls', nlabel => 'calls.current.count', set => {
                 key_values => [ { name => 'current_calls' } ],
                 output_template => 'Current Calls : %s/s',
                 perfdatas => [
                     { label => 'current_calls', value => 'current_calls_absolute', template => '%s',
                       unit => '/s', min => 0 },
                 ],
+            }
+        },
+        { label => 'replication-status', threshold => 0, set => {
+                key_values => [ { name => 'replication_state' }, ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -98,27 +121,46 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                "warning-replication-status:s"    => { name => 'warning_replication_status', default => '' },
+                                "critical-replication-status:s"   => { name => 'critical_replication_status', default => '%{replication_state} =~ /outOfService/i' },
                                 });
    
     return $self;
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_replication_status', 'critical_replication_status']);
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
-                                                           
+    
+    my %mapping_redundancy = (
+        0 => 'unknown', 1 => 'initial', 2 => 'active', 3 => 'standby', 
+        4 => 'outOfService', 5 => 'unassigned', 6 => 'activePending', 
+        7 => 'standbyPending', 8 => 'outOfServicePending', 9 => 'recovery',
+    );
+
     my $oid_apSysCPUUtil = '.1.3.6.1.4.1.9148.3.2.1.1.1.0';
     my $oid_apSysMemoryUtil = '.1.3.6.1.4.1.9148.3.2.1.1.2.0';
     my $oid_apSysHealthScore = '.1.3.6.1.4.1.9148.3.2.1.1.3.0';
+    my $oid_apSysRedundancy = '.1.3.6.1.4.1.9148.3.2.1.1.4.0';
     my $oid_apSysGlobalConSess = '.1.3.6.1.4.1.9148.3.2.1.1.5.0';
     my $oid_apSysGlobalCPS = '.1.3.6.1.4.1.9148.3.2.1.1.6.0';
     my $oid_apSysLicenseCapacity = '.1.3.6.1.4.1.9148.3.2.1.1.10.0';
     my $result = $options{snmp}->get_leef(oids => [
-            $oid_apSysCPUUtil, $oid_apSysMemoryUtil, $oid_apSysHealthScore,
+            $oid_apSysCPUUtil, $oid_apSysMemoryUtil, $oid_apSysHealthScore, $oid_apSysRedundancy,
             $oid_apSysLicenseCapacity, $oid_apSysGlobalConSess, $oid_apSysGlobalCPS
         ], 
         nothing_quit => 1);
-    $self->{global} = { cpu_load => $result->{$oid_apSysCPUUtil},
+
+    $self->{global} = { 
+        cpu_load => $result->{$oid_apSysCPUUtil},
         memory_used => $result->{$oid_apSysMemoryUtil},
+        replication_state => $mapping_redundancy{$result->{$oid_apSysRedundancy}},
         license_used => $result->{$oid_apSysLicenseCapacity},
         health_score => $result->{$oid_apSysHealthScore},
         current_sessions => $result->{$oid_apSysGlobalConSess},
@@ -140,6 +182,16 @@ Check system usage.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^memory-usage$'
+
+=item B<--warning-replication-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{replication_state}
+
+=item B<--critical-replication-status>
+
+Set critical threshold for status (Default: '%{replication_state} =~ /outOfService/i').
+Can used special variables like: %{replication_state}
 
 =item B<--warning-*>
 

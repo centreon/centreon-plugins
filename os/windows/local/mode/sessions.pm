@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -285,12 +285,14 @@ Filter session name (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'inactive', 'active'.
+Can be: 'sessions-created', 'sessions-disconnected', 
+'sessions-reconnected', 'sessions-active'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'inactive', 'active', 'time' (in seconds since the session starts).
+Can be: 'sessions-created', 'sessions-disconnected', 
+'sessions-reconnected', 'sessions-active'.
 
 =back
 

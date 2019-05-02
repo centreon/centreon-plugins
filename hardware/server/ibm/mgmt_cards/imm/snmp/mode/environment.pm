@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,15 +20,42 @@
 
 package hardware::server::ibm::mgmt_cards::imm::snmp::mode::environment;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
 
-use hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::globalstatus;
-use hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::temperature;
-use hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::voltage;
-use hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::fan;
+sub set_system {
+    my ($self, %options) = @_;
+    
+    $self->{regexp_threshold_overload_check_section_option} = '^(global|temperature|voltage|fan)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan)$';
+    
+    $self->{cb_hook2} = 'snmp_execute';
+    
+    $self->{thresholds} = {
+        global => [
+            ['non recoverable', 'CRITICAL'],
+            ['non critical', 'WARNING'],
+            ['critical', 'CRITICAL'],
+            ['nominal', 'OK'],
+        ],
+        fan => [
+            ['offline', 'WARNING'],
+            ['.*', 'OK'],
+        ],
+    };
+    
+    $self->{components_path} = 'hardware::server::ibm::mgmt_cards::imm::snmp::mode::components';
+    $self->{components_module} = ['global', 'temperature', 'voltage', 'fan'];
+}
+
+sub snmp_execute {
+    my ($self, %options) = @_;
+    
+    $self->{snmp} = $options{snmp};
+    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -38,76 +65,9 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "exclude:s"        => { name => 'exclude' },
-                                  "component:s"      => { name => 'component', default => 'all' },
                                 });
-    $self->{components} = {};
+    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-}
-
-sub global {
-    my ($self, %options) = @_;
-
-    hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::globalstatus::check($self);
-    hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::temperature::check($self);
-    hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::voltage::check($self);
-    hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::fan::check($self);
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    if ($self->{option_results}->{component} eq 'all') {
-        $self->global();
-    } elsif ($self->{option_results}->{component} eq 'globalstatus') {
-        hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::globalstatus::check($self);
-    } elsif ($self->{option_results}->{component} eq 'temperature') {
-        hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::temperature::check($self);
-    } elsif ($self->{option_results}->{component} eq 'voltage') {
-        hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::voltage::check($self);
-    } elsif ($self->{option_results}->{component} eq 'fan') {
-        hardware::server::ibm::mgmt_cards::imm::snmp::mode::components::fan::check($self);
-    } else {
-        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    my $total_components = 0;
-    my $display_by_component = '';
-    my $display_by_component_append = '';
-    foreach my $comp (sort(keys %{$self->{components}})) {
-        # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0);
-        $total_components += $self->{components}->{$comp}->{total};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . ' ' . $self->{components}->{$comp}->{name};
-        $display_by_component_append = ', ';
-    }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components [%s] are ok.", 
-                                                     $total_components,
-                                                     $display_by_component
-                                                    )
-                                );
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub check_exclude {
-    my ($self, $section) = @_;
-
-    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$section(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $section section."));
-        return 1;
-    }
-    return 0;
 }
 
 1;
@@ -122,12 +82,34 @@ Check sensors (Fans, Temperatures, Voltages).
 
 =item B<--component>
 
-Which component to check (Default: 'all').
-Can be: 'globalstatus', 'fan', 'temperature', 'voltage'.
+Which component to check (Default: '.*').
+Can be: 'global', 'fan', 'temperature', 'voltage'.
 
-=item B<--exclude>
+=item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --exclude=temperatures,fans).
+Exclude some parts (comma seperated list) (Example: --filter=fan --filter=temperature)
+Can also exclude specific instance: --filter=fan,1
+
+=item B<--no-component>
+
+Return an error if no compenents are checked.
+If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,[instance,]status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='fan,OK,offline'
+
+=item B<--warning>
+
+Set warning threshold for 'temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Set critical threshold for temperature', 'fan', 'voltage' (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,40'
 
 =back
 

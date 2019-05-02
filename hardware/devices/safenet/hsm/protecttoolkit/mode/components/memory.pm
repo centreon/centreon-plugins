@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,10 +50,13 @@ sub check {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => $message);
     }
-    $self->{output}->perfdata_add(label => "used_memory", unit => 'B',
-                                  value => $used,
-                                  warning => $warn,
-                                  critical => $crit, min => 0, total => $total);
+    $self->{output}->perfdata_add(
+        label => "used_memory", unit => 'B',
+        nlabel => 'hardware.memory.usage.bytes',
+        value => $used,
+        warning => $warn,
+        critical => $crit, min => 0, total => $total
+    );
 }
 
 1;

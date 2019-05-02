@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::omc_fan;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_Fan');
+    my $result = $self->{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_Fan', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking OMC fans");
     $self->{components}->{omc_fan} = {name => 'omc fans', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'omc_fan'));
+    return if ($self->check_filter(section => 'omc_fan') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = $_->{Name};

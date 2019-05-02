@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,14 +23,16 @@ package apps::vmware::wsman::mode::components::omc_psu;
 use strict;
 use warnings;
 
+sub load {}
+
 sub check {
     my ($self) = @_;
     
-    my $result = $self->{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_PowerSupply');
+    my $result = $self->{wsman}->request(uri => 'http://schema.omc-project.org/wbem/wscim/1/cim-schema/2/OMC_PowerSupply', dont_quit => 1);
     
     $self->{output}->output_add(long_msg => "Checking OMC power supplies");
     $self->{components}->{omc_psu} = {name => 'omc psus', total => 0, skip => 0};
-    return if ($self->check_filter(section => 'omc_psu'));
+    return if ($self->check_filter(section => 'omc_psu') || !defined($result));
 
     foreach (@{$result}) {
         my $instance = $_->{Name};

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -53,10 +53,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("System stat '%s' value is '%s'", $_->{stat_name}, $_->{stat_current}));
         }
-        $self->{output}->perfdata_add(label => "sstat_" . $_->{stat_name},
-                                      value => $_->{stat_current},
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => "sstat",
+            nlabel => 'hardware.systemstats.current.count',
+            instances => $_->{stat_name},
+            value => $_->{stat_current},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

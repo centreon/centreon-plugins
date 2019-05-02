@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,32 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -88,7 +63,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -102,6 +77,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
+                                  "filter-msg:s"        => { name => 'filter_msg' },
                                   "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /minor|warning/i' },
                                   "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /critical|major/i' },
                                   "memory"              => { name => 'memory' },
@@ -117,20 +93,9 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
-    }
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
     }
 }
 
@@ -153,7 +118,7 @@ sub manage_selection {
             { oid => $mapping->{msgText}->{oid} },
             { oid => $mapping->{msgGenerationTime}->{oid} },
             { oid => $mapping->{msgSeverity}->{oid} },
-        ], nothing_quit => 1, return_type => 1);
+        ], return_type => 1);
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {
@@ -175,6 +140,11 @@ sub manage_selection {
         }
         
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $create_time);
+        if (defined($self->{option_results}->{filter_msg}) && $self->{option_results}->{filter_msg} ne '' &&
+            $result->{msgText} !~ /$self->{option_results}->{filter_msg}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{msgText} . "': no matching filter.", debug => 1);
+            next;
+        }
         
         my $diff_time = $current_time - $create_time;
         
@@ -196,6 +166,10 @@ __END__
 Check alarms.
 
 =over 8
+
+=item B<--filter-msg>
+
+Filter by message (can be a regexp).
 
 =item B<--warning-status>
 

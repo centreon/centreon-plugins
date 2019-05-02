@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -107,35 +105,33 @@ sub set_counters {
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
     
-    $self->{output}->perfdata_add(label => 'icmap_traffic' . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'icmap_traffic', unit => 'b/s',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -184,14 +180,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-source:s"       => { name => 'filter_source' },
-                                "oid-filter:s"          => { name => 'oid_filter', default => 'ifname' },
-                                "oid-display:s"         => { name => 'oid_display', default => 'ifname' },
-                                "units-traffic:s"       => { name => 'units_traffic', default => '%' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-source:s"       => { name => 'filter_source' },
+        "oid-filter:s"          => { name => 'oid_filter', default => 'ifname' },
+        "oid-display:s"         => { name => 'oid_display', default => 'ifname' },
+        "units-traffic:s"       => { name => 'units_traffic', default => '%' },
+    });
+
     return $self;
 }
 
@@ -205,7 +200,6 @@ sub check_options {
         'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
     };
     $self->check_oids_label();
-    $instance_mode = $self;
 }
 
 sub check_oids_label {
@@ -374,12 +368,20 @@ sub manage_selection {
             display => $name,
             traffic_usage => $traffic_usage * 8, drop_usage => $drop_usage * 8, total => $total
         };
-        $self->{classmap}->{$class_name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$class_name}));
-        $self->{classmap}->{$class_name}->{traffic_usage} += $traffic_usage * 8;
-        $self->{classmap}->{$class_name}->{drop_usage} += $drop_usage * 8;
         
-        $self->{total}->{traffic_usage} += $traffic_usage * 8;
-        $self->{total}->{drop_usage} += $drop_usage * 8;
+        my @tabname = split /:/, $name;
+        if (defined($tabname[3])){
+            $class_name = $tabname[3].'-'.$class_name;
+        }
+        
+        $self->{classmap}->{$name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$name}));
+        $self->{classmap}->{$name}->{traffic_usage} += $traffic_usage * 8;
+        $self->{classmap}->{$name}->{drop_usage} += $drop_usage * 8;
+        
+        if (!defined($tabname[3])){
+            $self->{total}->{traffic_usage} += $traffic_usage * 8;
+            $self->{total}->{drop_usage} += $drop_usage * 8;
+        }
     }
     
     $self->{cache_name} = "cisco_qos_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .

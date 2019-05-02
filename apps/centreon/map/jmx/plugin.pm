@@ -1,4 +1,4 @@
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,12 +30,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'gates'            => 'apps::centreon::map::jmx::mode::gates',
-                         'elements'         => 'apps::centreon::map::jmx::mode::elements',
-                         'sessions'         => 'apps::centreon::map::jmx::mode::sessions',
-                         'event-queue'      => 'apps::centreon::map::jmx::mode::eventqueue',
-                         'event-statistics' => 'apps::centreon::map::jmx::mode::eventstatistics',
-                         );
+        'broker-stats'      => 'apps::centreon::map::jmx::mode::brokerstats',
+        'events'            => 'apps::centreon::map::jmx::mode::events',
+        'engine-stats'      => 'apps::centreon::map::jmx::mode::enginestats',
+        'open-views'        => 'apps::centreon::map::jmx::mode::openviews',
+        'sessions'          => 'apps::centreon::map::jmx::mode::sessions',
+        'sync-stats'        => 'apps::centreon::map::jmx::mode::syncstats',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;
@@ -47,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Centreon Map informations. Need Jolokia agent and Map >= 4.0.
+Check statistic counters of Centreon Map >= 18.10 (Needs Jolokia).
 
 =cut

@@ -1243,7 +1243,7 @@ Nous supposons que ces options sont définies :
 
 .. code-block:: perl
 
-  $self->{http} = centreon::plugins::http->new(output => $self->{output});
+  $self->{http} = centreon::plugins::http->new(output => $self->{output}, options => $self->{options});
   $self->{http}->set_options(%{$self->{option_results}});
   my $webcontent = $self->{http}->request();
   print $webcontent;
@@ -1469,7 +1469,7 @@ Ensuite, éditer le fichier **plugin.pm** et ajouter les lignes suivantes :
 .. code-block:: perl
 
   #
-  # Copyright 2016 Centreon (http://www.centreon.com/)
+  # Copyright 2018 Centreon (http://www.centreon.com/)
   #
   # Centreon is a full-fledged industry-strength solution that meets
   # the needs in IT infrastructure and application monitoring for
@@ -1559,7 +1559,7 @@ Editer le fichier **memorydroppedpackets.pm** et ajouter les lignes suivantes :
 .. code-block:: perl
 
   #
-  # Copyright 2016 Centreon (http://www.centreon.com/)
+  # Copyright 2018 Centreon (http://www.centreon.com/)
   #
   # Centreon is a full-fledged industry-strength solution that meets
   # the needs in IT infrastructure and application monitoring for

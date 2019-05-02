@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,13 +39,13 @@ my %map_sensor_type = (1 => 'other',
     7 => 'counter', 8 => 'switch', 9 => 'lock', 10 => 'humidity',
     11 => 'smokeDetection', 12 => 'presence', 13 => 'airFlow');
 my %mapping_units = (
-    1 => '', 2 => '',
-    3 => 'C', # Degrees C
-    4 => 'F', # Degrees F
-    5 => 'K', # Degrees K
-    6 => 'V', # Volts
-    7 => 'A', # Amps,
-    8 => 'W', # Watts
+    1 => 'unknown', 2 => 'unknown',
+    3 => 'celsius',
+    4 => 'fahrenheit',
+    5 => 'kelvin',
+    6 => 'volt',
+    7 => 'ampere',
+    8 => 'watt',
     9 => 'Joules', 10 => 'Coulombs', 11 => 'VA', 12 => 'Nits',
     13 => 'Lumens', 14 => 'Lux', 15 => 'Candelas',
     16 => 'kPa', 17 => 'PSI', 18 => 'Newtons',
@@ -54,20 +54,20 @@ my %mapping_units = (
     22 => 'Seconds', 23 => 'Minutes', 24 => 'Hours',
     25 => 'Days', 26 => 'Weeks', 27 => 'Mils',
     28 => 'Inches', 29 => 'Feet', 30 => 'Cubic_Inches',
-    31 => 'Cubic_Feet', 32 => 'Meters', 33 => 'Cubic_Centimeters',
-    34 => 'Cubic_Meters', 35 => 'Liters', 36 => 'Fluid_Ounces',
+    31 => 'CubicFeet', 32 => 'Meters', 33 => 'CubicCentimeters',
+    34 => 'CubicMeters', 35 => 'Liters', 36 => 'FluidOunces',
     37 => 'Radians', 38 => 'Steradians', 39 => 'Revolutions',
     40 => 'Cycles', 41 => 'Gravities', 42 => 'Ounces',
-    43 => 'Pounds', 44 => 'Foot_Pounds', 45 => 'Ounce_Inches',
+    43 => 'Pounds', 44 => 'FootPounds', 45 => 'OunceInches',
     46 => 'Gauss', 47 => 'Gilberts', 48 => 'Henries',
     49 => 'Farads', 50 => 'Ohms', 51 => 'Siemens',
     52 => 'Moles', 53 => 'Becquerels', 54 => 'PPM',
     55 => 'Decibels', 56 => 'DbA', 57 => 'DbC',
-    58 => 'Grays', 59 => 'Sieverts', 60 => 'Color_Temperature_Degrees_K',
-    61 => 'b', # bits
-    62 => 'B', # Bytes
+    58 => 'Grays', 59 => 'Sieverts', 60 => 'ColorTemperatureDegreesKelvin',
+    61 => 'bits',
+    62 => 'bytes',
     63 => 'Words', 64 => 'DoubleWords', 65 => 'QuadWords',
-    66 => '%', # Percentage,
+    66 => 'percentage',
     67 => 'Pascals',
 );
 
@@ -130,11 +130,14 @@ sub check {
                                         short_msg => sprintf("%s '%s' is '%s' %s", $result->{sunPlatSensorType}, 
                                             $result->{entPhysicalName}, $result->{sunPlatNumericSensorCurrent}, $result->{sunPlatNumericSensorBaseUnits}));
         }
-        $self->{output}->perfdata_add(label => $result->{sunPlatSensorType} . '_' . $result->{entPhysicalName},, unit => $result->{sunPlatNumericSensorBaseUnits}, 
-                                      value => $result->{sunPlatNumericSensorCurrent},
-                                      warning => $warn,
-                                      critical => $crit
-                                      );
+        $self->{output}->perfdata_add(
+            label => $result->{sunPlatSensorType}, unit => $result->{sunPlatNumericSensorBaseUnits},
+            nlabel => 'hardware.entity.' . $result->{sunPlatSensorType} . '.' . lc($result->{sunPlatNumericSensorBaseUnits}),
+            instances => $result->{entPhysicalName},
+            value => $result->{sunPlatNumericSensorCurrent},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

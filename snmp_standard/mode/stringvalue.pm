@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -247,10 +247,10 @@ sub build_format_details {
         my $append = '';
         foreach my $instance (sort keys %{$self->{instances}->{$severity}}) {
             my $details = $self->{option_results}->{'format_details_' . $severity};
-            $details =~ s/%{rows}/$self->{macros}->{rows}/g;
-            $details =~ s/%{filter_rows}/$self->{macros}->{filter_rows}/g;
-            $details =~ s/%{instance}/$instance/g;
-            $details =~ s/%{value}/$self->{instances}->{$severity}->{$instance}/g;
+            $details =~ s/%\{rows\}/$self->{macros}->{rows}/g;
+            $details =~ s/%\{filter_rows\}/$self->{macros}->{filter_rows}/g;
+            $details =~ s/%\{instance\}/$instance/g;
+            $details =~ s/%\{value\}/$self->{instances}->{$severity}->{$instance}/g;
         
             $self->{macros}->{'details_' . $severity} .= $append . $details;
             $append = $self->{option_results}->{'format_details_separator_' . $severity};

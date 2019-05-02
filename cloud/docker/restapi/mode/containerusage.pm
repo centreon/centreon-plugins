@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,32 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_container_status}) && $instance_mode->{option_results}->{critical_container_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_container_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_container_status}) && $instance_mode->{option_results}->{warning_container_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_container_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -140,7 +115,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'cpu', set => {
@@ -217,6 +192,7 @@ sub new {
     $options{options}->add_options(arguments =>
                                 {
                                   "container-id:s"              => { name => 'container_id' },
+                                  "container-name:s"            => { name => 'container_name' },
                                   "filter-name:s"               => { name => 'filter_name' },
                                   "use-name"                    => { name => 'use_name' },
                                   "warning-container-status:s"  => { name => 'warning_container_status', default => '' },
@@ -231,8 +207,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_container_status', 'critical_container_status']);
     $self->{statefile_cache_containers}->check_options(%options);
 }
 
@@ -248,22 +223,13 @@ sub prefix_containers_output {
     return "Container '" . $options{instance_value}->{display} . "' ";
 }
 
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_container_status', 'critical_container_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
                                                            
     $self->{containers} = {};
     $self->{containers_traffic} = {};
-    my $result = $options{custom}->api_get_containers(container_id => $self->{option_results}->{container_id}, statefile => $self->{statefile_cache_containers});
+    my $result = $options{custom}->api_get_containers(container_id => $self->{option_results}->{container_id}, 
+        container_name => $self->{option_results}->{container_name}, statefile => $self->{statefile_cache_containers});
 
     foreach my $container_id (keys %{$result}) {
         next if (!defined($result->{$container_id}->{Stats})); 
@@ -309,7 +275,8 @@ sub manage_selection {
     $self->{cache_name} = "docker_" . $self->{mode} . '_' . join('_', @$hostnames) . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{container_id}) ? md5_hex($self->{option_results}->{container_id}) : md5_hex('all'));
+        (defined($self->{option_results}->{container_id}) ? md5_hex($self->{option_results}->{container_id}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{container_name}) ? md5_hex($self->{option_results}->{container_name}) : md5_hex('all'));
 }
 
 1;
@@ -325,6 +292,10 @@ Check container usage.
 =item B<--container-id>
 
 Exact container ID.
+
+=item B<--container-name>
+
+Exact container name (if multiple names: names separated by ':').
 
 =item B<--use-name>
 

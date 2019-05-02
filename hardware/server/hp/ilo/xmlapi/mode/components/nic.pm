@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,6 +44,8 @@ sub check {
     #      </NIC>
    foreach my $result (@{$self->{xml_result}->{GET_EMBEDDED_HEALTH_DATA}->{NIC_INFORMATION}->{NIC}}) {
         my $instance = $result->{NETWORK_PORT}->{VALUE};
+        $instance = $result->{PORT_DESCRIPTION}->{VALUE} . '.' . $instance
+            if (defined($result->{PORT_DESCRIPTION}->{VALUE}));
             
         next if ($self->check_filter(section => 'nic', instance => $instance));
         next if ($result->{STATUS}->{VALUE} =~ /not installed|n\/a|not present|not applicable/i &&

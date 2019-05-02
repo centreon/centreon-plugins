@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -86,10 +86,10 @@ sub create_command {
     my ($self, %options) = @_;
     my $oids2set = {};
 
-    $oids2set->{$oid_nsExtendStatus . '.' . $options{instance}} = 4;
-    $oids2set->{$oid_nsExtendArgs . '.' . $options{instance}} = $self->{option_results}->{args};
-    $oids2set->{$oid_nsExtendCommand . '.' . $options{instance}} = $self->{option_results}->{command};
-    $oids2set->{$oid_nsExtendExecType . '.' . $options{instance}} = defined($self->{option_results}->{shell}) ? 2 : 1;
+    $oids2set->{$oid_nsExtendStatus . '.' . $options{instance}} = { value => 4, type => 'INTEGER' };
+    $oids2set->{$oid_nsExtendArgs . '.' . $options{instance}} = { value => $self->{option_results}->{args}, type => 'OCTETSTR' };
+    $oids2set->{$oid_nsExtendCommand . '.' . $options{instance}} = { value => $self->{option_results}->{command}, type => 'OCTETSTR' };
+    $oids2set->{$oid_nsExtendExecType . '.' . $options{instance}} = { value => (defined($self->{option_results}->{shell}) ? 2 : 1), type => 'INTEGER' };
     $self->{snmp}->set(oids => $oids2set);
 }
 
@@ -106,15 +106,15 @@ sub update_command {
     my $oids2set = {};
     if (!defined($options{result}->{$oid_nsExtendCommand . '.' . $options{instance}}) || 
         $options{result}->{$oid_nsExtendCommand . '.' . $options{instance}} ne $self->{option_results}->{command}) {
-        $oids2set->{$oid_nsExtendCommand . '.' . $options{instance}} = $self->{option_results}->{command};
+        $oids2set->{$oid_nsExtendCommand . '.' . $options{instance}} = { value => $self->{option_results}->{command}, type => 'OCTETSTR' };
     }
     if (!defined($options{result}->{$oid_nsExtendArgs . '.' . $options{instance}}) || 
         $options{result}->{$oid_nsExtendArgs . '.' . $options{instance}} ne $self->{option_results}->{args}) {
-        $oids2set->{$oid_nsExtendArgs . '.' . $options{instance}} = $self->{option_results}->{args};
+        $oids2set->{$oid_nsExtendArgs . '.' . $options{instance}} = { value => $self->{option_results}->{args}, type => 'OCTETSTR' };
     }
     if (!defined($options{result}->{$oid_nsExtendExecType . '.' . $options{instance}}) || 
         $options{result}->{$oid_nsExtendExecType . '.' . $options{instance}} ne $shell) {
-        $oids2set->{$oid_nsExtendExecType . '.' . $options{instance}} = $shell;
+        $oids2set->{$oid_nsExtendExecType . '.' . $options{instance}} = { value => $shell, type => 'INTEGER' };
     }
     
     if (scalar(keys %$oids2set) > 0) {

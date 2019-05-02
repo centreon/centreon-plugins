@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,58 +24,69 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
+my $mapping = {
+    tempDescr               => { oid => '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.2' },
+    tempReading             => { oid => '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.3' },
+    tempCritLimitHigh       => { oid => '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.6' },
+    tempNonCritLimitHigh    => { oid => '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.7' },
+    tempCritLimitLow        => { oid => '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.9' },
+    tempNonCritLimitLow     => { oid => '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.10' },
+};
+my $oid_tempEntry = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1';
+
+sub load {
+    my ($self) = @_;
+    
+    push @{$self->{request}}, { oid => $oid_tempEntry };
+}
+
 sub check {
     my ($self) = @_;
 
-    $self->{components}->{temperatures} = {name => 'temperatures', total => 0};
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    return if ($self->check_exclude('temperatures'));
+    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
+    return if ($self->check_filter(section => 'temperature'));
     
-    my $oid_tempEntry = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1';
-    my $oid_tempDescr = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.2';
-    my $oid_tempReading = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.3';
-    my $oid_tempCritLimitHigh = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.6';
-    my $oid_tempNonCritLimitHigh = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.7';
-    my $oid_tempCritLimitLow = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.9';
-    my $oid_tempNonCritLimitLow = '.1.3.6.1.4.1.2.3.51.3.1.1.2.1.10';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_tempEntry);
-    return if (scalar(keys %$result) <= 0);
-
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($key !~ /^$oid_tempDescr\.(\d+)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_tempEntry}})) {
+        next if ($oid !~ /^$mapping->{tempDescr}->{oid}\.(.*)$/);
         my $instance = $1;
-    
-        my $temp_descr = centreon::plugins::misc::trim($result->{$oid_tempDescr . '.' . $instance});
-        my $temp_value = $result->{$oid_tempReading . '.' . $instance};
-        my $temp_crit_high = $result->{$oid_tempCritLimitHigh . '.' . $instance};
-        my $temp_warn_high = $result->{$oid_tempNonCritLimitHigh . '.' . $instance};
-        my $temp_crit_low = $result->{$oid_tempCritLimitLow . '.' . $instance};
-        my $temp_warn_low = $result->{$oid_tempNonCritLimitLow . '.' . $instance};
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_tempEntry}, instance => $instance);
+
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        $result->{tempDescr} = centreon::plugins::misc::trim($result->{tempDescr});
+        $self->{components}->{temperature}->{total}++;
+
+        $self->{output}->output_add(long_msg => sprintf("temperature '%s' value is %s C [instance: %s].",
+                                    $result->{tempDescr}, $result->{tempReading}, $instance));
         
-        my $warn_threshold = '';
-        $warn_threshold = $temp_warn_low . ':' . $temp_warn_high;
-        my $crit_threshold = '';
-        $crit_threshold = $temp_crit_low . ':' . $temp_crit_high;
-        
-        $self->{perfdata}->threshold_validate(label => 'warning_' . $instance, value => $warn_threshold);
-        $self->{perfdata}->threshold_validate(label => 'critical_' . $instance, value => $crit_threshold);
-        
-        my $exit = $self->{perfdata}->threshold_check(value => $temp_value, threshold => [ { label => 'critical_' . $instance, 'exit_litteral' => 'critical' }, { label => 'warning_' . $instance, exit_litteral => 'warning' } ]);
-        
-        $self->{components}->{temperatures}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' value is %s C.", 
-                                    $temp_descr, $temp_value));
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' value is %s C", $temp_descr, $temp_value));
+        if (defined($result->{tempReading})) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{tempReading});
+            if ($checked == 0) {
+                my $warn_th = $result->{tempNonCritLimitLow} . ':' . $result->{tempNonCritLimitHigh};
+                my $crit_th = $result->{tempCritLimitLow} . ':' . $result->{tempCritLimitHigh};
+                $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
+                $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
+                $exit = $self->{perfdata}->threshold_check(
+                    value => $result->{tempReading},
+                    threshold => [ { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' },
+                                   { label => 'warning-temperature-instance-' . $instance, exit_litteral => 'warning' } ]);
+                
+                $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
+                $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);    
+            }
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(severity => $exit,
+                                            short_msg => sprintf("Temperature '%s' is %s C", $result->{tempDescr}, $result->{tempReading}));
+            }
+            $self->{output}->perfdata_add(
+                label => "temp", unit => 'C',
+                nlabel => 'hardware.temperature.celsius',
+                instances => $result->{tempDescr},
+                value => $result->{tempReading},
+                warning => $warn,
+                critical => $crit
+            );
         }
-        
-        $self->{output}->perfdata_add(label => 'temp_' . $temp_descr, unit => 'C',
-                                      value => $temp_value,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_' . $instance),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_' . $instance),
-                                      );
     }
 }
 

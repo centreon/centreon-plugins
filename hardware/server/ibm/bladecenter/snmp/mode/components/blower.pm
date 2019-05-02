@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,11 +76,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Blower speed '%s' is %s %%", $instance, $blower_speed));
             }
-            $self->{output}->perfdata_add(label => "blower_speed_" . $instance, unit => '%',
-                                          value => $blower_speed,
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0, max => 100);
+            $self->{output}->perfdata_add(
+                label => "blower_speed", unit => '%',
+                nlabel => 'hardware.blower.speed.percentage',
+                instances => $instance,
+                value => $blower_speed,
+                warning => $warn,
+                critical => $crit,
+                min => 0, max => 100
+            );
         }
         
         $self->{output}->output_add(long_msg => sprintf("Blower '%s' state is %s (%d %%).", 

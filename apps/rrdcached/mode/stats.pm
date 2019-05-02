@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use IO::Socket;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
