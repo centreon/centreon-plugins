@@ -216,10 +216,10 @@ sub new {
         "wsus-server:s"         => { name => 'wsus_server', default => 'localhost' },
         "wsus-port:s"           => { name => 'wsus_port', default => 8530 },
         "use-ssl"               => { name => 'use_ssl' },
-        "warning-synchronisation-status:s"  => { name => 'warning_synchronisation_status', default => '' },
-        "critical-synchronisation-tatus:s"  => { name => 'critical_synchronisation_status', default => '' },
-        "warning-last-synchronisation-status:s" => { name => 'warning_last_synchronisation_status', default => '' },
-        "critical-last-synchronisation-tatus:s" => { name => 'critical_last_synchronisation_status', default => '%{status} !~ /Succeeded/' },
+        "warning-synchronisation-status:s"          => { name => 'warning_synchronisation_status', default => '' },
+        "critical-synchronisation-status:s"         => { name => 'critical_synchronisation_status', default => '' },
+        "warning-last-synchronisation-status:s"     => { name => 'warning_last_synchronisation_status', default => '' },
+        "critical-last-synchronisation-status:s"    => { name => 'critical_last_synchronisation_status', default => '%{status} !~ /Succeeded/' },
         "timezone:s"            => { name => 'timezone', default => 'UTC' },
     });
     

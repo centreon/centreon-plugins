@@ -152,10 +152,10 @@ sub new {
         "command-options:s"     => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
         "no-ps"                 => { name => 'no_ps' },
         "ps-exec-only"          => { name => 'ps_exec_only' },
-        "warning-link-status:s" => { name => 'warning_link_status', default => '' },
-        "critical-link-tatus:s" => { name => 'critical_link_status', default => '' },
-        "warning-site-status:s" => { name => 'warning_site_status', default => '' },
-        "critical-site-tatus:s" => { name => 'critical_site_status', default => '' },
+        "warning-link-status:s"     => { name => 'warning_link_status', default => '' },
+        "critical-link-status:s"    => { name => 'critical_link_status', default => '' },
+        "warning-site-status:s"     => { name => 'warning_site_status', default => '' },
+        "critical-site-status:s"    => { name => 'critical_site_status', default => '' },
         "timezone:s"            => { name => 'timezone', default => 'UTC' },
     });
     
