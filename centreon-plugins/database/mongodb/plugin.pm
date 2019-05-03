@@ -35,8 +35,9 @@ sub new {
         'connections'           => 'database::mongodb::mode::connections',
         'connection-time'       => 'database::mongodb::mode::connectiontime',
         'database-statistics'   => 'database::mongodb::mode::databasestatistics',
-        'queries'               => 'database::mongodb::mode::queries',
         'list-databases'        => 'database::mongodb::mode::listdatabases',
+        'queries'               => 'database::mongodb::mode::queries',
+        'replication-status'    => 'database::mongodb::mode::replicationstatus',
     );
                         
     $self->{custom_modes}{driver} = 'database::mongodb::custom::driver';
