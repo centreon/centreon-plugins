@@ -119,7 +119,7 @@ sub new {
         "no-ps"                 => { name => 'no_ps' },
         "ps-exec-only"          => { name => 'ps_exec_only' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-tatus:s"      => { name => 'critical_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
     });
     
     return $self;
