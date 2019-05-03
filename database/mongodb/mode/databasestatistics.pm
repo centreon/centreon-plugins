@@ -82,11 +82,11 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'objects', nlabel => 'database.objects.count', set => {
-                key_values => [ { name => 'objects' }, { name => 'display' } ],
-                output_template => 'Objects: %s',
+        { label => 'documents', nlabel => 'database.documents.count', set => {
+                key_values => [ { name => 'documents' }, { name => 'display' } ],
+                output_template => 'Documents: %s',
                 perfdatas => [
-                    { value => 'objects_absolute', template => '%s',
+                    { value => 'documents_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -148,7 +148,7 @@ sub manage_selection {
             display => $db_stats->{db},
             collections => $db_stats->{collections},
             views => $db_stats->{views},
-            objects => $db_stats->{objects},
+            documents => $db_stats->{objects},
             storageSize => $db_stats->{storageSize},
             indexSize => $db_stats->{indexSize},
             dataSize => $db_stats->{dataSize},
@@ -189,13 +189,13 @@ Can be: 'storage', 'data', 'index'.
 =item B<--warning-instance-database-*-count>
 
 Threshold warning.
-Can be: 'collections', 'views', 'objects',
+Can be: 'collections', 'views', 'documents',
 'indexes'.
 
 =item B<--critical-instance-database-*-count>
 
 Threshold critical.
-Can be: 'collections', 'views', 'objects',
+Can be: 'collections', 'views', 'documents',
 'indexes'.
 
 =back
