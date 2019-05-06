@@ -154,6 +154,11 @@ sub manage_selection {
     foreach (keys %{$self->{pool}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
 
+        if ($result->{eqlStoragePoolStatsSpace} == 0) {
+            $self->{output}->output_add(long_msg => "skipping pool '" . $_ . "'. Total size is 0", debug => 1);
+            next;
+        }
+
         $self->{pool}->{$_}->{total} = $result->{eqlStoragePoolStatsSpace} * 1024 * 1024;
         $self->{pool}->{$_}->{used} = $result->{eqlStoragePoolStatsSpaceUsed} * 1024 * 1024;
     }
