@@ -58,7 +58,7 @@ sub set_counters {
                 output_template => 'Backend busy: %.2f/s', output_error_template => "Backend busy: %s",
                 per_second => 1,
                 perfdatas => [
-                    { label => 'backend_miss', value => 'backend_miss_per_second', template => '%.2f',
+                    { label => 'backend_busy', value => 'backend_busy_per_second', template => '%.2f',
                       min => 0 },
                 ],
             }
