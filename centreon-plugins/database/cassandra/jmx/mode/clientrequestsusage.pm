@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cr} = [
-        { label => 'total-latency', set => {
+        { label => 'total-latency', nlabel => 'client.request.latency.microsecond', set => {
                 key_values => [ { name => 'TotalLatency_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Latency : %s us',
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'timeouts', set => {
+        { label => 'timeouts', nlabel => 'client.request.timeout.count', set => {
                 key_values => [ { name => 'Timeouts_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Timeouts : %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'unavailables', set => {
+        { label => 'unavailables', nlabel => 'client.request.unavailable.count', set => {
                 key_values => [ { name => 'Unavailables_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Unavailables : %s',
                 perfdatas => [
@@ -61,7 +61,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'failures', set => {
+         label => 'failures', nlabel => 'client.request.failure.count', set => {
                 key_values => [ { name => 'Failures_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Failures : %s',
                 perfdatas => [

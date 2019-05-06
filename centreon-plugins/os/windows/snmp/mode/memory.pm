@@ -28,10 +28,10 @@ use warnings;
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'free';
+        ($label, $nlabel) = 'memory.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
 
@@ -42,6 +42,7 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(label => $label,
+                                  nlabel => $self->{nlabel},
                                   value => $value_perf, unit => 'B',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -92,7 +93,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes' set => {
                 key_values => [ { name => 'used' }, { name => 'total' }  ],
                 closure_custom_calc => \&custom_usage_calc,
                 closure_custom_output => \&custom_usage_output,
