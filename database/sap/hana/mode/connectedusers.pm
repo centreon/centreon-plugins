@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'host', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All connected users are ok' },
     ];
     $self->{maps_counters}->{host} = [
-        { label => 'users', set => {
+        { label => 'users', nlabel => 'users.count', set => {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'Connected Users : %s',
                 perfdatas => [
