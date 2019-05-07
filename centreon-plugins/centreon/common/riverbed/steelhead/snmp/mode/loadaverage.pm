@@ -53,7 +53,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'average', set => {
+        { label => 'average', nlabel => 'cpu.usage.percentage', set => {
                 key_values => [ { name => 'cpuUtil1' } ],
                 output_template => 'CPU Average: %.2f%%',
                 perfdatas => [
@@ -62,7 +62,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '1min', set => {
+        { label => '1min', nlabel => 'cpu.1m.usage.percentage', set => {
                 key_values => [ { name => 'cpuLoad1' } ],
                 output_template => 'Load 1 min: %.2f',
                 perfdatas => [
@@ -71,7 +71,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '5min', set => {
+        { label => '5min', nlabel => 'cpu.5m.usage.percentage', set => {
                 key_values => [ { name => 'cpuLoad5' } ],
                 output_template => 'Load 5 min: %.2f',
                 perfdatas => [
@@ -80,7 +80,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '15min', set => {
+        { label => '15min', nlabel => 'cpu.15m.usage.percentage', set => {
                 key_values => [ { name => 'cpuLoad15' } ],
                 output_template => 'Load 15 min: %.2f',
                 perfdatas => [
@@ -155,8 +155,8 @@ sub manage_selection {
 
         $self->{global} = {
             cpuLoad1 => $result->{cpuLoad1} / 100,
-            cpuLoad5 => $result->{cpuLoad1} / 100,
-            cpuLoad15 => $result->{cpuLoad1} / 100,
+            cpuLoad5 => $result->{cpuLoad5} / 100,
+            cpuLoad15 => $result->{cpuLoad15} / 100,
             cpuUtil1 => $result->{cpuUtil1},
         };
     }
