@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -136,20 +136,35 @@ sub check {
                                            $psu_index, $map_conditions{$psu_condition}));
         }
         
-        $self->{output}->perfdata_add(label => "psu_" . $psu_index . "_power", unit => 'W',
-                                      value => $psu_pwrout);
+        $self->{output}->perfdata_add(
+            label => 'psu_power', unit => 'W',
+            nlabel => 'hardware.powersupply.power.watt',
+            instances => $psu_index,
+            value => $psu_pwrout
+        );
         if (defined($psu_intemp) && $psu_intemp != -1) {
-            $self->{output}->perfdata_add(label => "psu_" . $psu_index . "_temp_intake", unit => 'C',
-                                          value => $psu_intemp);
+            $self->{output}->perfdata_add(
+                label => 'psu_temp', unit => 'C',
+                nlabel => 'hardware.powersupply.temperature.celsius',
+                instances => [$psu_index, 'intake'],
+                value => $psu_intemp
+            );
         }
         if (defined($psu_exhtemp) && $psu_exhtemp != -1) {
-            $self->{output}->perfdata_add(label => "psu_" . $psu_index . "_temp_exhaust", unit => 'C',
-                                          value => $psu_exhtemp);
+            $self->{output}->perfdata_add(
+                label => 'psu_temp', unit => 'C',
+                nlabel => 'hardware.powersupply.temperature.celsius',
+                instances => [$psu_index, 'exhaust'],
+                value => $psu_exhtemp
+            );
         }
     }
     
-    $self->{output}->perfdata_add(label => "total_power", unit => 'W',
-                                  value => $total_watts);
+    $self->{output}->perfdata_add(
+        label => 'total_power', unit => 'W',
+        nlabel => 'hardware.powersupply.power.watt',
+        value => $total_watts
+    );
 }
 
 1;

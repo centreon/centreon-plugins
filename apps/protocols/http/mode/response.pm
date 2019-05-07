@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,44 +33,38 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.1';
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"    => { name => 'hostname' },
-         "http-peer-addr:s"  => { name => 'http_peer_addr' },
-         "port:s"        => { name => 'port', },
-         "method:s"      => { name => 'method' },
-         "proto:s"       => { name => 'proto' },
-         "urlpath:s"     => { name => 'url_path' },
-         "credentials"   => { name => 'credentials' },
-         "ntlm"          => { name => 'ntlm' },
-         "ntlmv2"        => { name => 'ntlmv2' },
-         "username:s"    => { name => 'username' },
-         "password:s"    => { name => 'password' },
-         "proxyurl:s"    => { name => 'proxyurl' },
-         "proxypac:s"    => { name => 'proxypac' },
-         "timeout:s"     => { name => 'timeout' },
-         "no-follow"     => { name => 'no_follow', },
-         "ssl:s"         => { name => 'ssl' },
-         "ssl-opt:s@"    => { name => 'ssl_opt' },
-         "cert-file:s"   => { name => 'cert_file' },
-         "key-file:s"    => { name => 'key_file' },
-         "cacert-file:s" => { name => 'cacert_file' },
-         "cert-pwd:s"    => { name => 'cert_pwd' },
-         "cert-pkcs12"   => { name => 'cert_pkcs12' },
-         "header:s@"            => { name => 'header' },
-         "get-param:s@"         => { name => 'get_param' },
-         "post-param:s@"        => { name => 'post_param' },
-         "cookies-file:s"       => { name => 'cookies_file' },
-         "unknown-status:s"     => { name => 'unknown_status', default => '' },
-         "warning-status:s"     => { name => 'warning_status' },
-         "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-         "warning:s"            => { name => 'warning' },
-         "critical:s"           => { name => 'critical' },
-         "warning-size:s"       => { name => 'warning_size' },
-         "critical-size:s"      => { name => 'critical_size' },
-         });
+    $options{options}->add_options(arguments => {
+        "hostname:s"    => { name => 'hostname' },
+        "port:s"        => { name => 'port', },
+        "method:s"      => { name => 'method' },
+        "proto:s"       => { name => 'proto' },
+        "urlpath:s"     => { name => 'url_path' },
+        "credentials"   => { name => 'credentials' },
+        "basic"         => { name => 'basic' },
+        "ntlmv2"        => { name => 'ntlmv2' },
+        "username:s"    => { name => 'username' },
+        "password:s"    => { name => 'password' },
+        "timeout:s"     => { name => 'timeout' },
+        "no-follow"     => { name => 'no_follow', },
+        "cert-file:s"   => { name => 'cert_file' },
+        "key-file:s"    => { name => 'key_file' },
+        "cacert-file:s" => { name => 'cacert_file' },
+        "cert-pwd:s"    => { name => 'cert_pwd' },
+        "cert-pkcs12"   => { name => 'cert_pkcs12' },
+        "header:s@"            => { name => 'header' },
+        "get-param:s@"         => { name => 'get_param' },
+        "post-param:s@"        => { name => 'post_param' },
+        "cookies-file:s"       => { name => 'cookies_file' },
+        "unknown-status:s"     => { name => 'unknown_status', default => '' },
+        "warning-status:s"     => { name => 'warning_status' },
+        "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+        "warning:s"            => { name => 'warning' },
+        "critical:s"           => { name => 'critical' },
+        "warning-size:s"       => { name => 'warning_size' },
+        "critical-size:s"      => { name => 'critical_size' },
+    });
     
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -152,10 +146,6 @@ Check Webpage response and size.
 
 IP Addr/FQDN of the webserver host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used by Webserver
@@ -174,27 +164,27 @@ Set path to get webpage (Default: '/')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentication
+Specify this option if you access webpage with authentication
+
+=item B<--username>
+
+Specify username for authentication (Mandatory if --credentials is specified)
+
+=item B<--password>
+
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--ntlmv2>
 
 Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
-
-=item B<--username>
-
-Specify username for basic authentication (Mandatory if --credentials is specidied)
-
-=item B<--password>
-
-Specify password for basic authentication (Mandatory if --credentials is specidied)
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
 
 =item B<--timeout>
 
@@ -203,10 +193,6 @@ Threshold for HTTP timeout (Default: 5)
 =item B<--no-follow>
 
 Do not follow http redirect
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--cert-file>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,16 +40,15 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {                      
-                        "aws-secret-key:s"    => { name => 'aws_secret_key' },
-                        "aws-access-key:s"    => { name => 'aws_access_key' },
-                        "region:s"            => { name => 'region' },
-                        "timeframe:s"         => { name => 'timeframe' },
-                        "period:s"            => { name => 'period' },
-                        "statistic:s@"        => { name => 'statistic' },
-                        "zeroed"              => { name => 'zeroed' },
-                    });
+        $options{options}->add_options(arguments => {                      
+            "aws-secret-key:s"    => { name => 'aws_secret_key' },
+            "aws-access-key:s"    => { name => 'aws_access_key' },
+            "region:s"            => { name => 'region' },
+            "timeframe:s"         => { name => 'timeframe' },
+            "period:s"            => { name => 'period' },
+            "statistic:s@"        => { name => 'statistic' },
+            "zeroed"              => { name => 'zeroed' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
 

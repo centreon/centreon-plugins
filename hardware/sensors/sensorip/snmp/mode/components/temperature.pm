@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -104,11 +104,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Temperature sensor '%s' is %s degree centigrade", $result->{sensorProbeTempDescription}, $result->{sensorProbeTempDegree}));
             }
-            $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => 'C', 
-                                          value => $result->{sensorProbeTempDegree},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temp', unit => 'C',
+                nlabel => 'hardware.sensor.temperature.celsius',
+                instances => $instance,
+                value => $result->{sensorProbeTempDegree},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }

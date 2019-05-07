@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -148,9 +148,9 @@ sub read {
     }
     
     if (! -e $self->{statefile_dir} . "/" . $self->{statefile}) {
-        if (! -w $self->{statefile_dir}) {
+        if (! -w $self->{statefile_dir} || ! -x $self->{statefile_dir}) {
             $self->error(1);
-            $self->{output}->add_option_msg(short_msg =>  "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write permissions on directory.");
+            $self->{output}->add_option_msg(short_msg =>  "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write/exec permissions on directory.");
             if ($self->{no_quit} == 0) {
                 $self->{output}->option_exit();
             }

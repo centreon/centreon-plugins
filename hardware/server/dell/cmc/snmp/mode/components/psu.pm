@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,9 +33,9 @@ my %map_psu_capable = (
 my $mapping = {
     drsPSULocation => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.3' },
     drsPSUMonitoringCapable => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.4', map => \%map_psu_capable },
-    drsPSUVoltsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.5', section => 'voltage', label => 'voltage', unit => 'V' },
-    drsPSUAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.6', section => 'current', label => 'current', unit => 'A' },
-    drsPSUWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.7', section => 'power', label => 'power', unit => 'W' },
+    drsPSUVoltsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.5', section => 'voltage', label => 'voltage', unit => 'volt' },
+    drsPSUAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.6', section => 'current', label => 'current', unit => 'ampere' },
+    drsPSUWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.2.1.7', section => 'power', label => 'power', unit => 'watt' },
 };
 my $oid_drsCMCPSUTableEntry = '.1.3.6.1.4.1.674.10892.2.4.2.1';
 
@@ -73,10 +73,14 @@ sub check {
                                             short_msg => sprintf("Power supply '%s' %s is %s%s", $result->{drsPSULocation}, 
                                                                  $mapping->{$probe}->{section}, $result->{$probe}, $mapping->{$probe}->{unit}));
             }
-            $self->{output}->perfdata_add(label => 'psu_' . $mapping->{$probe}->{label} . '_' . $instance, unit => $mapping->{$probe}->{unit},
-                                          value => $result->{$probe},
-                                          warning => $warn,
-                                          critical => $crit);
+            $self->{output}->perfdata_add(
+                label => 'psu_' . $mapping->{$probe}->{label}, unit => $mapping->{$probe}->{unit},
+                nlabel => 'hardware.' . $mapping->{$probe}->{label} . '.' . $mapping->{$probe}->{unit},
+                instances => $instance,
+                value => $result->{$probe},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

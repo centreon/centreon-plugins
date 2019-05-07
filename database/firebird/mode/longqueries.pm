@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -94,6 +94,7 @@ sub run {
                                 short_msg => sprintf("%s queries over %s seconds",
                                                      $long_queries, $self->{option_results}->{seconds}));
     $self->{output}->perfdata_add(label => 'longqueries',
+                                  nlabel => 'longqueries.count',
                                   value => $long_queries,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

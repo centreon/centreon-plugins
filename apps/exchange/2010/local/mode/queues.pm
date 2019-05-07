@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -144,12 +144,12 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}
+Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}, %{messagecount}
 
 =item B<--critical>
 
 Set critical threshold (Default: '%{status} !~ /Ready|Active/i').
-Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}
+Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}, %{messagecount}
 
 =back
 

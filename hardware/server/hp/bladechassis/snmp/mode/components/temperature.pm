@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -98,9 +98,13 @@ sub check {
                                           $temp_index, $map_conditions{$temp_condition}));
         }
         
-        $self->{output}->perfdata_add(label => "temp_" . $temp_index, unit => 'C',
-                                      value => $temp_current,
-                                      warning => $temp_threshold);
+        $self->{output}->perfdata_add(
+            label => "temp", unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $temp_index,
+            value => $temp_current,
+            warning => $temp_threshold
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'table.usage.bytes', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Size : %s%s',
                 output_change_bytes => 1,
@@ -46,7 +46,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{table} = [
-        { label => 'table', set => {
+        { label => 'table', nlabel => 'table.usage.bytes', set => {
                 key_values => [ { name => 'size' }, { name => 'display' } ],
                 output_template => 'size : %s%s',
                 output_change_bytes => 1,

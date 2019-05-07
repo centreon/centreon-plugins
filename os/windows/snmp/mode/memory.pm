@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,25 +25,24 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'used';
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
-        $label = 'free';
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        ($label, $nlabel) = 'memory.free.bytes';
         $value_perf = $self->{result_values}->{free};
     }
 
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
     $self->{output}->perfdata_add(label => $label,
+                                  nlabel => $self->{nlabel},
                                   value => $value_perf, unit => 'B',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -55,10 +54,10 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
@@ -94,7 +93,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes' set => {
                 key_values => [ { name => 'used' }, { name => 'total' }  ],
                 closure_custom_calc => \&custom_usage_calc,
                 closure_custom_output => \&custom_usage_output,
@@ -108,7 +107,7 @@ sub set_counters {
 sub prefix_memory_output {
     my ($self, %options) = @_;
 
-    return "RAM ";
+    return "Ram ";
 }
 
 sub new {
@@ -117,20 +116,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "units:s"           => { name => 'units', default => '%' },
-                                  "free"              => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => {
+        "units:s"   => { name => 'units', default => '%' },
+        "free"      => { name => 'free' },
+    });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub manage_selection {
@@ -145,7 +136,7 @@ sub manage_selection {
     foreach my $key (keys %$result) {
         next if ($key !~ /\.([0-9]+)$/);
         my $oid = $1;
-        if ($result->{$key} =~ /^Physical memory$/i) {
+        if ($result->{$key} =~ /^Physical (memory|RAM)$/i) {
             $self->{physical_memory_id} = $oid;
         }
     }

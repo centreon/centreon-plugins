@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'get-alarms'            => 'cloud::aws::cloudwatch::mode::getalarms',
-        'get-metrics'           => 'cloud::aws::cloudwatch::mode::getmetrics',
-        'list-metrics'          => 'cloud::aws::cloudwatch::mode::listmetrics',
+        'discovery'     => 'cloud::aws::cloudwatch::mode::discovery',
+        'get-alarms'    => 'cloud::aws::cloudwatch::mode::getalarms',
+        'get-metrics'   => 'cloud::aws::cloudwatch::mode::getmetrics',
+        'list-metrics'  => 'cloud::aws::cloudwatch::mode::listmetrics',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,12 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'df', type => 1, cb_prefix_output => 'prefix_df_output', message_multiple => 'All data files are ok' },
+        { name => 'df', type => 1, cb_prefix_output => 'prefix_df_output', message_multiple => 'All data files are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{df} = [
@@ -38,7 +39,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'online-status', threshold => 0, set => {
@@ -46,36 +47,10 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_online_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
-}
-
-my $instance_mode;
-
-sub custom_threshold_output {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label_th}}) && $instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label_th}} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label_th}}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label_th}}) && $instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label_th}} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label_th}}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
 }
 
 sub custom_status_output {
@@ -111,15 +86,15 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-tablespace:s"       => { name => 'filter_tablespace' },
-                                "filter-data-file:s"        => { name => 'filter_data_file' },
-                                "warning-status:s"          => { name => 'warning_status', default => '' },
-                                "critical-status:s"         => { name => 'critical_status', default => '' },
-                                "warning-online-status:s"   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
-                                "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-tablespace:s"       => { name => 'filter_tablespace' },
+        "filter-data-file:s"        => { name => 'filter_data_file' },
+        "warning-status:s"          => { name => 'warning_status', default => '' },
+        "critical-status:s"         => { name => 'critical_status', default => '' },
+        "warning-online-status:s"   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
+        "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' },
+    });
+    
     return $self;
 }
 
@@ -127,18 +102,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status', 'warning_online_status', 'critical_online_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_online_status', 'critical_online_status']);
 }
 
 sub prefix_df_output {
@@ -151,8 +115,12 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $options{sql}->connect();
-    $options{sql}->query(query => "SELECT file_name, tablespace_name, status, online_status
-                                  FROM dba_data_files");
+    
+    if ($options{sql}->is_version_minimum(version => '10')) {
+        $options{sql}->query(query => "SELECT file_name, tablespace_name, status, online_status FROM dba_data_files");
+    } else {
+        $options{sql}->query(query => "SELECT file_name, tablespace_name, status FROM dba_data_files");
+    }
     my $result = $options{sql}->fetchall_arrayref();
     
     $self->{df} = {};
@@ -167,7 +135,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $$row[1] . "': no matching filter.", debug => 1);
             next
         }
-        $self->{df}->{$$row[1] . '/' . $$row[0]} = { status => $$row[2], online_status => $$row[3], display => $$row[1] . '/' . $$row[0] };
+        $self->{df}->{$$row[1] . '/' . $$row[0]} = { 
+            status => $$row[2], 
+            online_status => defined($$row[3]) ? $$row[3] : undef, 
+            display => $$row[1] . '/' . $$row[0]
+        };
     }
 }
 

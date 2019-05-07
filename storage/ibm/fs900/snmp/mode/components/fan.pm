@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -66,14 +66,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Fan module '%s' PWM is %s%", $instance, $result->{fanPWM}));
             }
-            $self->{output}->perfdata_add(label => 'fan_pwm_' . $instance,
-                                          unit => '%', 
-                                          value => $result->{fanPWM},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          max => 100,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'fan_pwm', unit => '%',
+                nlabel => 'hardware.fan.pwm.percentage',
+                instances => $instance,
+                value => $result->{fanPWM},
+                warning => $warn,
+                critical => $crit,
+                min => 0, max => 100,
+            );
         }
 
         if (defined($result->{fanTemp}) && $result->{fanTemp} =~ /[0-9]/) {
@@ -82,13 +83,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Fan module '%s' temperature is %s degree centigrade", $instance, $result->{fanTemp} / 10));
             }
-            $self->{output}->perfdata_add(label => 'fan_temp_' . $instance,
-                                          unit => 'C', 
-                                          value => $result->{fanTemp} / 10,
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'fan_temp', unit => 'C',
+                nlabel => 'hardware.fan.temperature.celsius',
+                instances => $instance,
+                value => $result->{fanTemp} / 10,
+                warning => $warn,
+                critical => $crit,
+                min => 0,
+            );
         }
 
         foreach my $fan ('fan0', 'fan1', 'fan2', 'fan3') {
@@ -98,14 +101,15 @@ sub check {
                     $self->{output}->output_add(severity => $exit,
                                                 short_msg => sprintf("Fan module '%s' fan '%s' speed is %s%%", $instance, $fan, $result->{$fan}));
                 }
-                $self->{output}->perfdata_add(label => 'fan_speed_' . $instance . '_' . $fan,
-                                            unit => '%', 
-                                            value => $result->{$fan},
-                                            warning => $warn,
-                                            critical => $crit,
-                                            min => 0,
-                                            max => 100,
-                                            );
+                $self->{output}->perfdata_add(
+                    label => 'fan_speed', unit => '%',
+                    nlabel => 'hardware.fan.speed.percentage',
+                    instances => [$instance, $fan],
+                    value => $result->{$fan},
+                    warning => $warn,
+                    critical => $crit,
+                    min => 0, max => 100,
+                );
             }
         }
     }

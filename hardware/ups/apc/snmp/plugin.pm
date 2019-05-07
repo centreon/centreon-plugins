@@ -29,10 +29,11 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'battery-status'   => 'hardware::ups::apc::snmp::mode::batterystatus',
-                         'output-lines'     => 'hardware::ups::apc::snmp::mode::outputlines',
-                         'sensors'          => 'hardware::ups::apc::snmp::mode::sensors',
-                         );
+        'battery-status'    => 'hardware::ups::apc::snmp::mode::batterystatus',
+        'input-lines'       => 'hardware::ups::apc::snmp::mode::inputlines',
+        'output-lines'      => 'hardware::ups::apc::snmp::mode::outputlines',
+        'sensors'           => 'hardware::ups::apc::snmp::mode::sensors',
+    );
 
     return $self;
 }

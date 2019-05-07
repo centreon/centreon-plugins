@@ -25,13 +25,11 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'log', type => 1, cb_prefix_output => 'prefix_log_output', message_multiple => 'All logs are OK' },
+        { name => 'log', type => 1, cb_prefix_output => 'prefix_log_output', message_multiple => 'All logs are ok' },
     ];
 
     $self->{maps_counters}->{log} = [
@@ -49,14 +47,14 @@ sub set_counters {
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
-    my $label = 'log_' . $self->{result_values}->{display} . '_used';
+    my $label = 'log_' . lc($self->{result_values}->{display}) . '_used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
-        $label = 'log_' . $self->{result_values}->{display} . '_free';
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        $label = 'log_' . lc($self->{result_values}->{display}) . '_free';
         $value_perf = $self->{result_values}->{free};
     }
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -73,13 +71,14 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, 
-                                                                                         { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, 
+                                                              { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -102,7 +101,6 @@ sub custom_usage_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
     $self->{result_values}->{prct_used} = $options{new_datas}->{$self->{instance} . '_prct_used'};
-
     $self->{result_values}->{used} = $self->{result_values}->{prct_used} * $self->{result_values}->{total} / 100;
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
@@ -116,12 +114,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-log:s"   => { name => 'filter_log' },
-                                "units:s"        => { name => 'units', default => '%' },
-                                "free"           => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-log:s"   => { name => 'filter_log' },
+        "units:s"        => { name => 'units', default => '%' },
+        "free"           => { name => 'free' },
+    });
+
     return $self;
 }
 
@@ -129,13 +127,6 @@ sub prefix_log_output {
     my ($self, %options) = @_;
 
     return "Log '" . $options{instance_value}->{display} . "' ";
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub manage_selection {
@@ -157,9 +148,11 @@ sub manage_selection {
         my $total = $$row[1] * 1024 * 1024;
         my $prct_used = $$row[2];
 
-        $self->{log}->{$$row[0]} = { total => $total,
-                                     prct_used => $prct_used,
-                                     display => lc $$row[0] };
+        $self->{log}->{$$row[0]} = { 
+            total => $total,
+            prct_used => $prct_used,
+            display => $$row[0]
+        };
     }
 
     if (scalar(keys %{$self->{log}}) <= 0) {
@@ -178,6 +171,10 @@ Check MSSQL Log usage
 
 =over 8
 
+=item B<--filter-log>
+
+Filter log by name (Can be a regex).
+
 =item B<--warning-log>
 
 Threshold warning.
@@ -185,10 +182,6 @@ Threshold warning.
 =item B<--critical-log>
 
 Threshold critical.
-
-=item B<--filter-log>
-
-Filter log by name. Can be a regex
 
 =item B<--units>
 

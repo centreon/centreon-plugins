@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'global', type => 0 },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'blocked-transactions', set => {
+        { label => 'blocked-transactions', nlabel => 'transactions.blocked.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Current Total Blocked Transactions : %s',
                 perfdatas => [

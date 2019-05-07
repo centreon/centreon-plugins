@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_node_perfdata {
     my ($self, %options) = @_;
@@ -39,7 +38,7 @@ sub custom_node_threshold {
     my ($self, %options) = @_;
 
     my ($exit, $threshold_value);
-    $threshold_value = defined($instance_mode->{option_results}->{percent}) ? $self->{result_values}->{prct_dead} : $self->{result_values}->{dead_nodes} ;
+    $threshold_value = defined($self->{instance_mode}->{option_results}->{percent}) ? $self->{result_values}->{prct_dead} : $self->{result_values}->{dead_nodes} ;
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-dead-nodes', exit_litteral => 'critical' }, { label => 'warning-dead-nodes', exit_litteral => 'warning' } ]);
     return $exit;
 }
@@ -60,30 +59,6 @@ sub custom_node_calc {
     $self->{result_values}->{prct_dead} = $options{new_datas}->{$self->{instance} . '_prct_dead'};
 
     return 0;
-}
-
-sub custom_state_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_state}) && $instance_mode->{option_results}->{critical_state} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_state}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_state}) && $instance_mode->{option_results}->{warning_state} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_state}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter state issue: ' . $message);
-    }
-
-    return $status;
 }
 
 sub custom_state_output {
@@ -126,7 +101,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_state_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'health', set => {
@@ -163,22 +138,11 @@ sub new {
     return $self;
 }
 
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach ('warning_state', 'critical_state') {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
-}
-
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_state', 'critical_state']);
 }
 
 my %map_status = (

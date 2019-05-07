@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -76,6 +76,7 @@ sub run {
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => $msg);
     $self->{output}->perfdata_add(label => 'users', value => $result,
+                                  nlabel => 'users.count',
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0);

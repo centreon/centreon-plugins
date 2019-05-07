@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -88,10 +88,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Voltage '%s' is %.3f V", $result->{ciscoEnvMonVoltageStatusDescr}, $result->{ciscoEnvMonVoltageStatusValue}));
         }
-        $self->{output}->perfdata_add(label => "voltage_" . $result->{ciscoEnvMonVoltageStatusDescr}, unit => 'V',
-                                      value => sprintf("%.3f", $result->{ciscoEnvMonVoltageStatusValue}),
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => "voltage", unit => 'V',
+            nlabel => 'hardware.voltage.volt',
+            instances => $result->{ciscoEnvMonVoltageStatusDescr},
+            value => sprintf("%.3f", $result->{ciscoEnvMonVoltageStatusValue}),
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

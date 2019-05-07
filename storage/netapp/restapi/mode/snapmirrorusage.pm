@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -97,7 +97,7 @@ sub manage_selection {
     foreach my $snapmirror (@{$result}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $snapmirror->{source_location} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $snapmirror->{name} . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $snapmirror->{source_location} . "': no matching filter name.", debug => 1);
             next;
         }
 

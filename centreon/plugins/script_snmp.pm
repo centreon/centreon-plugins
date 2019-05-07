@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,14 +36,15 @@ sub new {
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-                                   arguments => {
-                                                'mode:s'         => { name => 'mode_name' },
-                                                'dyn-mode:s'     => { name => 'dynmode_name' },
-                                                'list-mode'      => { name => 'list_mode' },
-                                                'mode-version:s' => { name => 'mode_version' },
-                                                'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
-                                                }
-                                  );
+        arguments => {
+            'mode:s'         => { name => 'mode_name' },
+            'dyn-mode:s'     => { name => 'dynmode_name' },
+            'list-mode'      => { name => 'list_mode' },
+            'mode-version:s' => { name => 'mode_version' },
+            'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
+            'pass-manager:s' => { name => 'pass_manager' },
+        }
+    );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
     $self->{default} = undef;
@@ -57,6 +58,7 @@ sub new {
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
     $self->{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL OPTIONS');
+    $self->{output}->mode(name => $self->{mode_name});
 
     return $self;
 }
@@ -81,9 +83,11 @@ sub init {
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
 
+    $self->load_password_mgr();
+
     # SNMP
     $self->{snmp} = centreon::plugins::snmp->new(options => $self->{options}, output => $self->{output});
-    
+
     # Load mode
     if (defined($self->{mode_name}) && $self->{mode_name} ne '') {
         $self->is_mode(mode => $self->{mode_name});
@@ -120,8 +124,21 @@ sub init {
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
     
+    $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
     $self->{snmp}->check_options(option_results => $self->{option_results});
-    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default}, snmp => $self->{snmp});
+}
+
+sub load_password_mgr {
+    my ($self, %options) = @_;
+    
+    return if (!defined($self->{option_results}->{pass_manager}) || $self->{option_results}->{pass_manager} eq '');
+
+    (undef, my $pass_mgr_name) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager}, 
+        error_msg => "Cannot load module 'centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager} . "'"
+    );
+    $self->{pass_mgr} = $pass_mgr_name->new(options => $self->{options}, output => $self->{output});
 }
 
 sub run {
@@ -205,6 +222,10 @@ Check minimal version of mode. If not, unknown error.
 =item B<--version>
 
 Display plugin version.
+
+=item B<--pass-manager>
+
+Use a password manager.
 
 =back
 

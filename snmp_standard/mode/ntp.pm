@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -68,14 +68,8 @@ sub run {
 
     my ($ref_time, $distant_time);
     my $oid_hrSystemDate = '.1.3.6.1.2.1.25.1.2.0';
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemDate ]);
-    if (scalar(keys %$result) == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Cannot get 'hrSystemDate' information.");
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-    if (defined($self->{option_results}->{ntp_hostname})) {
+    my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemDate ], nothing_quit => 1);
+    if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
         
         eval {
@@ -101,6 +95,7 @@ sub run {
         $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
     }
     
+    my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
     my $dt = DateTime->new(
       year       => $remote_date[0],
       month      => $remote_date[1],
@@ -108,7 +103,7 @@ sub run {
       hour       => $remote_date[3],
       minute     => $remote_date[4],
       second     => $remote_date[5],
-      time_zone  => $timezone, 
+      %$tz
     );
     $distant_time = $dt->epoch;
     

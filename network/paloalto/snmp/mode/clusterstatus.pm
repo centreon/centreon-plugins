@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -125,7 +125,9 @@ sub run {
         }
         
         $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("Cluster status is ok."));
+                                    short_msg => sprintf("Cluster status is ok [member: %s] [peer: %s]",
+                                        $self->{result}->{$oid_panSysHAState},
+                                        $self->{result}->{$oid_panSysHAPeerState}));
         
         $self->{output}->output_add(long_msg => sprintf("current high-availability state is %s",
                                                          $self->{result}->{$oid_panSysHAState}));

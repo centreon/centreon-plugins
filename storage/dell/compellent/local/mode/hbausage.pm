@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -150,7 +150,7 @@ sub parse_date {
     }
     
     my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                           time_zone => $self->{option_results}->{timezone});
+                           %{$self->{tz}});
     return $dt;
 }
 
@@ -169,10 +169,11 @@ sub check_options {
     }
     
     my ($dt_start, $dt_end);
+    $self->{tz} = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     if (defined($self->{option_results}->{end_time}) && $self->{option_results}->{end_time} ne '') {
         $dt_end = $self->parse_date(date => $self->{option_results}->{end_time});
     } else {
-        $dt_end = DateTime->now(time_zone => $self->{option_results}->{timezone});
+        $dt_end = DateTime->now(%{$self->{tz}});
     }
     $self->{end_time} = $self->get_iso8601(date => $dt_end);
     

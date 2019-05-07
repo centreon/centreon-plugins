@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -273,7 +273,7 @@ sub fetchrow_array {
         $self->{stdout} =~ s/^(.*?)\Q$self->{record_separator}\E//ms;
         @{$self->{columns}} = split(/\Q$self->{field_separator}\E/, $1);
     }
-    if (($self->{stdout} =~ s/^(.*?)\Q$self->{record_separator}\E//ms)) {
+    if (($self->{stdout} =~ s/^(.*?)(\Q$self->{record_separator}\E|\Z)//ms)) {
         push @array_result, split(/\Q$self->{field_separator}\E/, $1);
     }
     
@@ -288,7 +288,7 @@ sub fetchrow_hashref {
         $self->{stdout} =~ s/^(.*?)\Q$self->{record_separator}\E//ms;
         @{$self->{columns}} = split(/\Q$self->{field_separator}\E/, $1);
     }
-    if ($self->{stdout} ne '' && $self->{stdout} =~ s/^(.*?)\Q$self->{record_separator}\E//ms) {
+    if ($self->{stdout} ne '' && $self->{stdout} =~ s/^(.*?)(\Q$self->{record_separator}\E|\Z)//ms) {
         $array_result = {};
         my @values = split(/\Q$self->{field_separator}\E/, $1);
         for (my $i = 0; $i < scalar(@values); $i++) {

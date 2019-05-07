@@ -1,5 +1,5 @@
 #
-# Copyright 2018 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,37 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = 'status : ' . $self->{result_values}->{status};
+    $msg .= ' [Description: ' . $self->{result_values}->{description} . ']' if (defined($self->{result_values}->{description}) && $self->{result_values}->{description} ne '');
     return $msg;
 }
 
@@ -62,7 +38,7 @@ sub custom_status_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_ccmPhoneStatus'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_ccmPhoneDescription'};
+    $self->{result_values}->{description} = $options{new_datas}->{$self->{instance} . 'ccmPhoneDescription'};
     return 0;
 }
 
@@ -76,11 +52,11 @@ sub set_counters {
     
     $self->{maps_counters}->{phone} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'ccmPhoneStatus' }, { name => 'ccmPhoneDescription' } ],
+                key_values => [ { name => 'ccmPhoneDescription' }, { name => 'ccmPhoneStatus' }, { name => 'ccmPhoneName' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -127,30 +103,19 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub prefix_phone_output {
     my ($self, %options) = @_;
 
-    return "Phone '" . $options{instance_value}->{ccmPhoneDescription} . "' ";
+    return "Phone '" . $options{instance_value}->{ccmPhoneName} . "' ";
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
 
     return "Total ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 my %mapping_status = (
@@ -161,6 +126,7 @@ my %mapping_status = (
 my $mapping = {
     ccmPhoneDescription => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.4' },
     ccmPhoneStatus      => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.7', map => \%mapping_status },
+    ccmPhoneName        => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.20' },
 };
 
 my $oid_ccmPhoneEntry = '.1.3.6.1.4.1.9.9.156.1.2.1.1';
@@ -168,7 +134,7 @@ my $oid_ccmPhoneEntry = '.1.3.6.1.4.1.9.9.156.1.2.1.1';
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_ccmPhoneEntry, start => $mapping->{ccmPhoneDescription}->{oid}, end => $mapping->{ccmPhoneStatus}->{oid}, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_ccmPhoneEntry, start => $mapping->{ccmPhoneDescription}->{oid}, end => $mapping->{ccmPhoneName}->{oid}, nothing_quit => 1);
     
     $self->{phone} = {};
     $self->{global} = { unknown => 0, registered => 0, unregistered => 0, rejected => 0, partiallyregistered => 0 };
