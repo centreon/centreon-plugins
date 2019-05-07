@@ -155,8 +155,8 @@ sub manage_selection {
 
         $self->{global} = {
             cpuLoad1 => $result->{cpuLoad1} / 100,
-            cpuLoad5 => $result->{cpuLoad1} / 100,
-            cpuLoad15 => $result->{cpuLoad1} / 100,
+            cpuLoad5 => $result->{cpuLoad5} / 100,
+            cpuLoad15 => $result->{cpuLoad15} / 100,
             cpuUtil1 => $result->{cpuUtil1},
         };
     }
