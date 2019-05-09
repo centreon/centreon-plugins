@@ -186,6 +186,7 @@ sub new {
                                 {
                                   "warning-status:s"  => { name => 'warning_status', default => '' },
                                   "critical-status:s" => { name => 'critical_status', default => '%{state} !~ /ready/ && %{state} !~ /provisioned/' },
+				  "ignore-cswringredundant" => { name => 'ignore_cswringredundant'},
                                 });
 
     return $self;
@@ -229,7 +230,6 @@ my $oid_cswRingRedundant = '.1.3.6.1.4.1.9.9.500.1.1.3.0';
 sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
-
     $self->{global} = { waiting => 0, progressing => 0, added => 0, ready => 0, sdmMismatch => 0, 
         verMismatch => 0, featureMismatch => 0, newMasterInit => 0, provisioned => 0, 
         invalid => 0, removed => 0 };
@@ -239,7 +239,11 @@ sub manage_selection {
 
     if ($redundant->{$oid_cswRingRedundant} != 1) {
         $self->{output}->add_option_msg(short_msg => "Stack ring is not redundant");
-        $self->{output}->option_exit();
+
+	if (!defined($self->{option_results}->{ignore_cswringredundant})){
+		$self->{output}->option_exit();
+	}
+
     }
 
     $self->{results} = $options{snmp}->get_table(oid => $oid_cswSwitchInfoEntry,
@@ -304,6 +308,10 @@ Role can be: 'master', 'member', 'notMember', 'standby'.
 State can be: 'waiting', 'progressing', 'added',
 'ready', 'sdmMismatch', 'verMismatch', 'featureMismatch',
 'newMasterInit', 'provisioned', 'invalid', 'removed'.
+
+=item B<--ignore-cswringredundant>
+
+Ignore if Stack-Ring is not redundant
 
 =back
 
