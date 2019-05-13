@@ -157,28 +157,37 @@ Check city weather
 
 =item B<--city-name>
 
-Filter node name (regexp can be used)
+City name (e.g London or ISO 3166 code like London,uk) 
 
 =item B<--warning-weather>
 
-Set warning threshold on node compliance.
+Set warning threshold for weather string desc (Default: '').
+Can used special variables like: %{weather}
 
 =item B<--critical-weather>
 
-Set critical threshold on node compliance.
-
-=item B<--warning-status>
-
-Set warning threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
-
-=item B<--critical-status>
-
-Set critical threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
-
+Set critical threshold for weather string desc (Default: '').
+Can used special variables like:  %{weather}
 Example :
-  --critical-status='%{rule} eq "Global configuration for all nodes" && %{compliance} < 95'
+  --critical-weather='%{weather} eq "Clouds'
+
+=item B<--warning-*>
+
+Set warning threshold for each metric gathered 
+Can be : 
+    - temperature (Celsius)
+    - humidity (%)
+    - clouds (% coverage)
+    - wind (speed m/s)
+
+=item B<--critical-*>
+
+Set warning threshold for each metric gathered 
+Can be : 
+    - temperature (Celsius)
+    - humidity (%)
+    - clouds (% coverage)
+    - wind (speed m/s)
 
 =back
 
