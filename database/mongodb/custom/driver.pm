@@ -25,6 +25,7 @@ use warnings;
 use DateTime;
 use MongoDB;
 use Hash::Ordered;
+use URI::Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -106,8 +107,12 @@ sub get_port {
 sub connect {
     my ($self, %options) = @_;
 
-    my $uri = 'mongodb://';
-    $uri .= $self->{username} . ':' . $self->{password} . '@' if ($self->{username} ne '' && $self->{password} ne '');
+    my $uri = URI::Encode->new({encode_reserved => 1});
+    my $encoded_username = $uri->encode($self->{username});
+    my $encoded_password = $uri->encode($self->{password});
+
+    $uri = 'mongodb://';
+    $uri .= $encoded_username . ':' . $encoded_password . '@' if ($encoded_username ne '' && $encoded_password ne '');
     $uri .= $self->{hostname} if ($self->{hostname} ne '');
     $uri .= ':' . $self->{port} if ($self->{port} ne '');
 
