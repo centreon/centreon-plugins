@@ -111,7 +111,7 @@ sub connect {
     my $encoded_username = $uri->encode($self->{username});
     my $encoded_password = $uri->encode($self->{password});
 
-    my $uri = 'mongodb://';
+    $uri = 'mongodb://';
     $uri .= $encoded_username . ':' . $encoded_password . '@' if ($encoded_username ne '' && $encoded_password ne '');
     $uri .= $self->{hostname} if ($self->{hostname} ne '');
     $uri .= ':' . $self->{port} if ($self->{port} ne '');
