@@ -182,7 +182,7 @@ Can be :
 
 =item B<--critical-*>
 
-Set warning threshold for each metric gathered 
+Set critical threshold for each metric gathered 
 Can be : 
     - temperature (Celsius)
     - humidity (%)
