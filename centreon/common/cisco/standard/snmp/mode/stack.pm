@@ -237,13 +237,9 @@ sub manage_selection {
 
     my $redundant = $self->{snmp}->get_leef(oids => [ $oid_cswRingRedundant ], nothing_quit => 1);
 
-    if ($redundant->{$oid_cswRingRedundant} != 1) {
-        $self->{output}->add_option_msg(short_msg => "Stack ring is not redundant");
-
-	if (!defined($self->{option_results}->{ignore_cswringredundant})){
+    if (($redundant->{$oid_cswRingRedundant} != 1) && (!defined($self->{option_results}->{ignore_cswringredundant}))) {
+		$self->{output}->add_option_msg(short_msg => "Stack ring is not redundant");
 		$self->{output}->option_exit();
-	}
-
     }
 
     $self->{results} = $options{snmp}->get_table(oid => $oid_cswSwitchInfoEntry,
