@@ -93,7 +93,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory', nlabel => 'memory.usage.bytes' set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'total' }  ],
                 closure_custom_calc => \&custom_usage_calc,
                 closure_custom_output => \&custom_usage_output,
