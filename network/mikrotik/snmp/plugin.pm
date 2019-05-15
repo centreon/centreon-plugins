@@ -33,7 +33,7 @@ sub new {
     %{$self->{modes}} = (
                          'cpu'               => 'snmp_standard::mode::cpu',
                          'environment'       => 'network::mikrotik::snmp::mode::environment',
-                         'interfaces'        => 'snmp_standard::mode::interfaces',
+                         'interfaces'        => 'network::mikrotik::snmp::mode::interfaces',
                          'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
                          'list-frequencies'  => 'network::mikrotik::snmp::mode::listfrequencies',
                          'list-ssids'        => 'network::mikrotik::snmp::mode::listssids',
