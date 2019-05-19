@@ -57,7 +57,8 @@ sub snmp_execute {
         oids => [{ oid => $mapping->{branch_sensors}->{hwgste} }, { oid => $mapping->{branch_sensors}->{hwgste2} }]
     );
     $self->{branch} = 'hwgste';
-    if (defined($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) && scalar($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) > 0) {
+    if (defined($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) && 
+        scalar(keys %{$self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }}) > 0) {
         $self->{branch} = 'hwgste2';
     }
 }
