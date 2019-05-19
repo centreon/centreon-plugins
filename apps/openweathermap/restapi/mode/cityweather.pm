@@ -58,7 +58,7 @@ sub set_counters {
         },
         { label => 'temperature', nlabel => 'temperature.celsius', set => {
                 key_values => [ { name => 'temperature' } ],
-                output_template => 'Temperature: %d C°',
+                output_template => 'Temperature: %d C',
                 perfdatas => [
                     { label => 'temperature', value => 'temperature_absolute', template => '%d',
                       unit => 'C' }
@@ -126,10 +126,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{city} = {};
-
-    my $results = $options{custom}->request_api(url_path => "/weather?",
-                                                get_param => ["q=" . $self->{option_results}->{city_name}]);
+    my $results = $options{custom}->request_api(
+        url_path => "/weather?",
+        get_param => ["q=" . $self->{option_results}->{city_name}]
+    );
 
     $self->{city} = {
         wind => $results->{wind}->{speed},
@@ -138,11 +138,6 @@ sub manage_selection {
         clouds => $results->{clouds}->{all},
         weather => @{$results->{weather}->[0]}{main}
     };
-
-    if (scalar(keys %{$self->{city}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No city found.");
-        $self->{output}->option_exit();
-    }
 }
 
 1;

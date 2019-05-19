@@ -123,24 +123,6 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub get_connection_info {
-    my ($self, %options) = @_;
-
-    return $self->{hostname} . ":" . $self->{port};
-}
-
-sub get_hostname {
-    my ($self, %options) = @_;
-
-    return $self->{hostname};
-}
-
-sub get_port {
-    my ($self, %options) = @_;
-
-    return $self->{port};
-}
-
 sub set_token {
     my ($self, %options) = @_;
     push @{$self->{get_param}}, 'APPID=' . $self->{api_token};
@@ -152,15 +134,13 @@ sub request_api {
     $self->set_token();
     $self->settings;
 
-    $self->{output}->output_add(long_msg => "Query URL: '" . $self->{proto} . "://" . $self->{hostname} .
-        $self->{url_path} . $options{url_path} . "'", debug => 1);
-
     foreach my $get_param (@{$options{get_param}}) {
         push @{$self->{get_param}}, $get_param;
     }
-    my $content = $self->{http}->request(url_path => $self->{url_path} . $options{url_path},
-                                         get_param => \@{$self->{get_param}}
-                                        );
+    my $content = $self->{http}->request(
+        url_path => $self->{url_path} . $options{url_path},
+        get_param => \@{$self->{get_param}}
+    );
 
     my $decoded;
     eval {
