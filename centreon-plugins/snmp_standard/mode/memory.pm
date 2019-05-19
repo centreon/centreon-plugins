@@ -33,13 +33,26 @@ sub custom_usage_perfdata {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
-    
-    $self->{output}->perfdata_add(label => 'used',
-                                  unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        $self->{output}->perfdata_add(
+            label => 'free',
+            unit => 'B',
+            value => $self->{result_values}->{free},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+            min => 0, max => $self->{result_values}->{total}
+        );
+    } else {
+        $self->{output}->perfdata_add(
+            label => 'used',
+            unit => 'B',
+            value => $self->{result_values}->{used},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+            min => 0, max => $self->{result_values}->{total}
+        );
+    }
 }
 
 sub custom_usage_threshold {
@@ -61,7 +74,7 @@ sub custom_usage_threshold {
 sub custom_usage_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%)",
+    my $msg = sprintf('Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
         $self->{result_values}->{prct_used});
@@ -79,10 +92,12 @@ sub custom_usage_calc {
     if ($self->{result_values}->{total} != 0) {
         $self->{result_values}->{physical_used} = $self->{result_values}->{total} - $self->{result_values}->{available};
         $self->{result_values}->{used} = $self->{result_values}->{physical_used} - $self->{result_values}->{buffer} - $self->{result_values}->{cached};
+        $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
         $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     } else {
-        $self->{result_values}->{used} = '0';
-        $self->{result_values}->{prct_used} = '0';
+        $self->{result_values}->{used} = 0;
+        $self->{result_values}->{free} = 0;
+        $self->{result_values}->{prct_used} = 0;
     }
 
     return 0;
@@ -97,12 +112,14 @@ sub custom_swap_perfdata {
         $total_options{cast_int} = 1;
     }
     
-    $self->{output}->perfdata_add(label => 'swap',
-                                  unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'swap',
+        unit => 'B',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_swap_threshold {
@@ -144,9 +161,9 @@ sub custom_swap_calc {
         $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
         $self->{result_values}->{prct_available} = 100 - $self->{result_values}->{prct_used};
     } else {
-        $self->{result_values}->{used} = '0';
-        $self->{result_values}->{prct_used} = '0';
-        $self->{result_values}->{prct_available} = '0';
+        $self->{result_values}->{used} = 0;
+        $self->{result_values}->{prct_used} = 0;
+        $self->{result_values}->{prct_available} = 0;
     }
 
     return 0;
@@ -220,10 +237,10 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
-        "units:s"       => { name => 'units', default => '%' },
-        "free"          => { name => 'free' },
-        "swap"          => { name => 'check_swap' },
-        "no-swap:s"     => { name => 'no_swap' }, # legacy
+        "units:s"   => { name => 'units', default => '%' },
+        "free"      => { name => 'free' },
+        "swap"      => { name => 'check_swap' },
+        "no-swap:s" => { name => 'no_swap' }, # legacy
     });
     
     return $self;
