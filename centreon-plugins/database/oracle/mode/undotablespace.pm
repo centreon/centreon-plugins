@@ -166,6 +166,8 @@ group by a.tablespace_name
     while (my $result = $self->{sql}->fetchrow_hashref()) {
         $self->{undotablespace}->{$result->{TABLESPACE_NAME}} = { used => $result->{USED_BYTES}, total => $result->{TOTAL_BYTES}, display => lc $result->{TABLESPACE_NAME} };
     }
+
+    $self->{sql}->disconnect();
 }
 
 1;

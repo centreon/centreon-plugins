@@ -133,6 +133,8 @@ sub manage_selection {
         };
         $i++;
     }
+
+    $self->{sql}->disconnect();
 }
 
 1;

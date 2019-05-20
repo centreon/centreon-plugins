@@ -184,7 +184,9 @@ sub manage_selection {
     if ($self->{sql}->is_version_minimum(version => '10')) {
         $self->event_count_and_details();
     }
-    
+
+    $self->{sql}->disconnect();
+
     if (scalar(keys %{$self->{event}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No event found.");
         $self->{output}->option_exit();

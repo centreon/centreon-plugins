@@ -170,7 +170,6 @@ sub get_id {
     return $msg;
 }
 
-
 sub get_unique_id4save {
     my ($self, %options) = @_;
 
@@ -208,6 +207,8 @@ sub command_execution {
     
     return ($exit_code, $stdout); 
 }
+
+sub disconnect {}
 
 # Connection initializer
 sub connect {

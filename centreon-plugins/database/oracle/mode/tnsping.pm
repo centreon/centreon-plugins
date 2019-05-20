@@ -71,6 +71,7 @@ sub run {
                                     short_msg => sprintf("Connection established to listener '%s'.", $sid));
     }
  
+    $self->{sql}->disconnect();
     $self->{output}->display();
     $self->{output}->exit();
 }

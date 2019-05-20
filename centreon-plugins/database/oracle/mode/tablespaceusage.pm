@@ -348,6 +348,7 @@ sub manage_selection {
     }
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
+    $self->{sql}->disconnect();
 
     $self->{tablespace} = {};
 

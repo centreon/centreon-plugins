@@ -93,6 +93,7 @@ sub class_handle_ALRM {
 sub handle_ALRM {
     my $self = shift;
     
+    $self->disconnect();
     $self->{output}->output_add(severity => $self->{sql_errors_exit},
                                 short_msg => "Timeout");
     $self->{output}->display();
@@ -196,6 +197,12 @@ sub set_version {
     
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
 }
+
+sub disconnect {
+    my ($self) = @_;
+    
+    $self->{instance}->disconnect if (defined($self->{instance}));
+}
     
 sub connect {
     my ($self, %options) = @_;
@@ -213,7 +220,7 @@ sub connect {
         "DBI:". $self->{data_source},
         $self->{username},
         $self->{password},
-        { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1, %{$self->{connect_options_hash}} }
+        { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
     );
     alarm(0) if (defined($self->{timeout}));
 
@@ -267,6 +274,7 @@ sub query {
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
         return 1 if ($continue_error == 1);
+        $self->disconnect();
         $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{instance}->errstr);
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
@@ -274,6 +282,7 @@ sub query {
     my $rv = $self->{statement_handle}->execute;
     if (!$rv) {
         return 1 if ($continue_error == 1);
+        $self->disconnect();
         $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{statement_handle}->errstr);
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
