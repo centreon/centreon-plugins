@@ -122,6 +122,7 @@ sub manage_selection {
         $options{sql}->query(query => "SELECT file_name, tablespace_name, status FROM dba_data_files");
     }
     my $result = $options{sql}->fetchall_arrayref();
+    $options{sql}->disconnect();
     
     $self->{df} = {};
     foreach my $row (@$result) {

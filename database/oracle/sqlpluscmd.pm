@@ -269,6 +269,8 @@ exit;";
     return ($exit_code, $stdout); 
 }
 
+sub disconnect {}
+
 # Connection initializer
 sub connect {
     my ($self, %options) = @_;

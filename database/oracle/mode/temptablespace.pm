@@ -42,11 +42,13 @@ sub custom_usage_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label,
-                                  value => $value_perf, unit => 'B',
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label,
+        value => $value_perf, unit => 'B',
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -159,6 +161,8 @@ sub manage_selection {
     while (my $result = $self->{sql}->fetchrow_hashref()) {
         $self->{tmptablespace}->{$result->{TABLESPACE}} = { used => $result->{B_USED}, total => $result->{B_TOTAL}, display => lc $result->{TABLESPACE} };
     }
+
+    $self->{sql}->disconnect();
 }
 
 1;

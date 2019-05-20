@@ -58,6 +58,8 @@ SELECT name, state, type FROM V$ASM_DISKGROUP
             type => $row->[2],
         };
     }
+
+    $self->{sql}->disconnect();
 }
 
 sub run {

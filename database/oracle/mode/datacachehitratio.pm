@@ -86,6 +86,7 @@ sub manage_selection {
     $options{sql}->connect();
     $options{sql}->query(query => $query);
     my @result = $options{sql}->fetchrow_array();
+    $options{sql}->disconnect();
     
     $self->{global} = {
         physical_reads => $result[0], 
