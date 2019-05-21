@@ -159,6 +159,7 @@ sub manage_selection {
         }
     }
 
+    $self->{sql}->disconnect();
     if (scalar(keys %{$self->{rows}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => $self->{option_results}->{empty_sql_string});
         $self->{output}->option_exit();
