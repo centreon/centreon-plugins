@@ -201,7 +201,10 @@ sub set_version {
 sub disconnect {
     my ($self) = @_;
     
-    $self->{instance}->disconnect if (defined($self->{instance}));
+    if (defined($self->{instance})) {
+        $self->{statement_handle} = undef;
+        $self->{instance}->disconnect();
+    }
 }
     
 sub connect {
