@@ -63,6 +63,7 @@ sub run {
     my $session = $self->{sql}->fetchrow_array();
     $self->{sql}->disconnect();
 
+    $session =~ s/,/./g;
     my $exit_code = $self->{perfdata}->threshold_check(value => $session, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
                                   short_msg => sprintf("%.2f%% of session resources used.", $session));
