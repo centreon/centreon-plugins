@@ -31,17 +31,17 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu-routing'          => 'network::juniper::common::junos::mode::cpurouting', # routing engine
-                         'hardware'             => 'network::juniper::common::junos::mode::hardware',
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
-                         'ldp-session-status'   => 'network::juniper::common::junos::mode::ldpsessionstatus',
-                         'lsp-status'           => 'network::juniper::common::junos::mode::lspstatus',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'        => 'snmp_standard::mode::liststorages',
-                         'memory-routing'       => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
-                         'rsvp-session-status'  => 'network::juniper::common::junos::mode::rsvpsessionstatus',
-                         'storage'              => 'snmp_standard::mode::storage',
-                         );
+        'cpu-routing'          => 'network::juniper::common::junos::mode::cpurouting', # routing engine
+        'hardware'             => 'network::juniper::common::junos::mode::hardware',
+        'interfaces'           => 'snmp_standard::mode::interfaces', 
+        'ldp-session-status'   => 'network::juniper::common::junos::mode::ldpsessionstatus',
+        'lsp-status'           => 'network::juniper::common::junos::mode::lspstatus',
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'list-storages'        => 'snmp_standard::mode::liststorages',
+        'memory-routing'       => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
+        'rsvp-session-status'  => 'network::juniper::common::junos::mode::rsvpsessionstatus',
+        'storage'              => 'snmp_standard::mode::storage',
+    );
 
     return $self;
 }
