@@ -80,17 +80,18 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "component:s"             => { name => 'component', default => '.*' },
-        "no-component:s"          => { name => 'no_component' },
-        "threshold-overload:s@"   => { name => 'threshold_overload' },
+        'component:s'             => { name => 'component', default => '.*' },
+        'no-component:s'          => { name => 'no_component' },
+        'threshold-overload:s@'   => { name => 'threshold_overload' },
+        'add-name-instance'       => { name => 'add_name_instance' },
     });
     
     $self->{performance} = (defined($options{no_performance}) && $options{no_performance} == 1) ?
         0 : 1;
     if ($self->{performance} == 1) {
         $options{options}->add_options(arguments => {
-            "warning:s@"              => { name => 'warning' },
-            "critical:s@"             => { name => 'critical' },
+            'warning:s@'     => { name => 'warning' },
+            'critical:s@'   => { name => 'critical' },
         });
     }
     
@@ -98,15 +99,15 @@ sub new {
         0 : 1;
     if ($self->{filter_exclude} == 1) {
         $options{options}->add_options(arguments => {
-            "exclude:s"     => { name => 'exclude' },
-            "filter:s@"     => { name => 'filter' },
+            'exclude:s'     => { name => 'exclude' },
+            'filter:s@'     => { name => 'filter' },
         });
     }
     $self->{absent} = (defined($options{no_absent}) && $options{no_absent} == 1) ?
         0 : 1;
     if ($self->{absent} == 1) {
         $options{options}->add_options(arguments => {
-            "absent-problem:s@"       => { name => 'absent_problem' },
+            'absent-problem:s@'       => { name => 'absent_problem' },
         });
     }
     
@@ -310,7 +311,7 @@ sub display {
     $exit = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
     
     if ($self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(short_msg => sprintf("All %s components are ok [%s].", 
+        $self->{output}->output_add(short_msg => sprintf('All %s components are ok [%s].', 
                                                         $total_components,
                                                         $display_by_component)
                                     );
@@ -354,22 +355,23 @@ sub check_filter {
         if (defined($options{instance})) {
             if ($self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
                 $self->{components}->{$options{section}}->{skip}++;
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+                $self->{output}->output_add(long_msg => sprintf("skipping $options{section} section $options{instance} instance."));
                 return 1;
             }
         } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+            $self->{output}->output_add(long_msg => sprintf("skipping $options{section} section."));
             return 1;
         }
     }
-    
+
+    $options{instance} .= '#' . $options{name} if (defined($self->{option_results}->{add_name_instance}) && defined($options{name}));   
     foreach (@{$self->{filter}}) {
         if ($options{section} =~ /$_->{filter}/) {
             if (!defined($options{instance}) && !defined($_->{instance})) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
+                $self->{output}->output_add(long_msg => sprintf("skipping $options{section} section."));
                 return 1;
             } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
+                $self->{output}->output_add(long_msg => sprintf("skipping $options{section} section $options{instance} instance."));
                 return 1;
             }
         }
@@ -380,7 +382,8 @@ sub check_filter {
 
 sub absent_problem {
     my ($self, %options) = @_;
-    
+
+    $options{instance} .= '#' . $options{name} if (defined($self->{option_results}->{add_name_instance}) && defined($options{name}));
     foreach (@{$self->{absent_problem}}) {
         if ($options{section} =~ /$_->{filter}/) {
             if (!defined($_->{instance}) || $options{instance} =~ /$_->{instance}/) {
@@ -416,7 +419,8 @@ sub get_severity_numeric {
     my $status = 'OK'; # default
     my $thresholds = { warning => undef, critical => undef };
     my $checked = 0;
-    
+
+    $options{instance} .= '#' . $options{name} if (defined($self->{option_results}->{add_name_instance}) && defined($options{name}));
     if (defined($self->{numeric_threshold}->{$options{section}})) {
         my $exits = [];
         foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
