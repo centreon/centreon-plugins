@@ -69,7 +69,7 @@ sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking frus");
-    $self->{components}->{fru} = {name => 'frus', total => 0, skip => 0};
+    $self->{components}->{fru} = { name => 'frus', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fru'));
 
     my $mapping = {
@@ -82,15 +82,15 @@ sub check {
 
     foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruName})) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
-        
-        next if ($self->check_filter(section => 'fru', instance => $instance));
+        my $name = $self->get_cache(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruName}, instance => $instance);
+
+        next if ($self->check_filter(section => 'fru', instance => $instance, name => $name));
         next if ($result->{jnxFruState} =~ /empty/i && 
-                 $self->absent_problem(section => 'fru', instance => $instance));
+                 $self->absent_problem(section => 'fru', instance => $instance, name => $name));
         $self->{components}->{fru}->{total}++;
 
-        my $name = $self->get_cache(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruName}, instance => $instance);
         my $type = $self->get_cache(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruType}, instance => $instance);
-        $self->{output}->output_add(long_msg => sprintf("Fru '%s' state is %s [instance: %s, type: %s, offline reason: %s]", 
+        $self->{output}->output_add(long_msg => sprintf("fru '%s' state is %s [instance: %s, type: %s, offline reason: %s]", 
                                     $name, $result->{jnxFruState}, 
                                     $instance, $map_fru_type{$type}, $result->{jnxFruOfflineReason}));
         my $exit = $self->get_severity(section => 'fru', value => $result->{jnxFruState});
@@ -101,7 +101,7 @@ sub check {
         }
         
         if (defined($result->{jnxFruTemp}) && $result->{jnxFruTemp} != 0) {
-            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fru-temperature', instance => $instance, value => $result->{jnxFruTemp});
+            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fru-temperature', instance => $instance, name => $name, value => $result->{jnxFruTemp});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Fru '%s' temperature is %s degree centigrade", $name, $result->{jnxFruTemp}));
