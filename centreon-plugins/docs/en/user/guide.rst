@@ -609,8 +609,23 @@ We exclude the module ``IO::Socket::INET6`` (Perl 5.14 has the full set of IPv6 
   --link=%PERL_INSTALL_DIR%\c\bin\libiconv-2__.dll ^
   --link=%PERL_INSTALL_DIR%\c\bin\liblzma-5__.dll ^
   --link=%PERL_INSTALL_DIR%\c\bin\zlib1__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\libcrypto-1_1-x64__.dll ^
+  --link=%PERL_INSTALL_DIR%\c\bin\libssl-1_1-x64__.dll ^
+  -M IO::Socket::SSL ^
   -M Win32::Job ^
+  -M Email::Send::SMTP::Gmail ^
+  -M HTTP::ProxyPAC ^
+  -M JE ^
+  -M Tie::RefHash::Weak ^
+  -M XML::LibXML::SAX ^
+  -M Net::FTPSSL ^
+  -M Authen::NTLM ^
+  -M JSON::XS ^
   -M centreon::plugins::script ^
+  -M centreon::plugins::backend::http::lwp ^
+  -M centreon::plugins::backend::http::curl ^
+  -M centreon::plugins::backend::http::useragent ^
+  -M centreon::plugins::backend::http::curlconstants ^
   -M centreon::plugins::alternative::Getopt ^
   -M apps::backup::netbackup::local::plugin ^
   -M apps::backup::netbackup::local::mode::dedupstatus ^
@@ -619,8 +634,12 @@ We exclude the module ``IO::Socket::INET6`` (Perl 5.14 has the full set of IPv6 
   -M apps::backup::netbackup::local::mode::jobstatus ^
   -M apps::backup::netbackup::local::mode::listpolicies ^
   -M apps::backup::netbackup::local::mode::tapeusage ^
+  -M apps::backup::veeam::local::plugin ^
+  -M apps::backup::veeam::local::mode::jobstatus ^
+  -M apps::backup::veeam::local::mode::listjobs ^
   -M apps::activedirectory::local::plugin ^
   -M apps::activedirectory::local::mode::dcdiag ^
+  -M apps::activedirectory::local::mode::dfsrbacklog ^
   -M apps::activedirectory::local::mode::netdom ^
   -M apps::citrix::local::plugin ^
   -M apps::citrix::local::mode::license ^
@@ -652,11 +671,65 @@ We exclude the module ``IO::Socket::INET6`` (Perl 5.14 has the full set of IPv6 
   -M apps::cluster::mscs::local::mode::resourcestatus ^
   -M apps::cluster::mscs::local::mode::resourcegroupstatus ^
   -M os::windows::local::plugin ^
+  -M os::windows::local::mode::cmdreturn ^
   -M os::windows::local::mode::ntp ^
-  -M os::windows::local::mode::rdpsessions ^
+  -M os::windows::local::mode::pendingreboot ^
+  -M os::windows::local::mode::sessions ^
+  -M os::windows::local::mode::liststorages ^
+  -M centreon::common::powershell::windows::liststorages ^
   -M storage::dell::compellent::local::plugin ^
   -M storage::dell::compellent::local::mode::hbausage ^
   -M storage::dell::compellent::local::mode::volumeusage ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::plugin ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::hardware ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::temperature ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::hwstatus ^
+  -M hardware::devices::safenet::hsm::protecttoolkit::mode::components::memory ^
+  -M apps::centreon::local::plugin ^
+  -M apps::centreon::local::mode::downtimetrap ^
+  -M apps::centreon::local::mode::centreonpluginsversion ^
+  -M apps::hyperv::2012::local::plugin ^
+  -M apps::hyperv::2012::local::mode::listnodevms ^
+  -M apps::hyperv::2012::local::mode::scvmmintegrationservice ^
+  -M apps::hyperv::2012::local::mode::scvmmsnapshot ^
+  -M apps::hyperv::2012::local::mode::scvmmvmstatus ^
+  -M apps::hyperv::2012::local::mode::nodeintegrationservice ^
+  -M apps::hyperv::2012::local::mode::nodereplication ^
+  -M apps::hyperv::2012::local::mode::nodesnapshot ^
+  -M apps::hyperv::2012::local::mode::nodevmstatus ^
+  -M centreon::common::powershell::hyperv::2012::listnodevms ^
+  -M centreon::common::powershell::hyperv::2012::nodeintegrationservice ^
+  -M centreon::common::powershell::hyperv::2012::nodereplication ^
+  -M centreon::common::powershell::hyperv::2012::nodesnapshot ^
+  -M centreon::common::powershell::hyperv::2012::nodevmstatus ^
+  -M centreon::common::powershell::hyperv::2012::scvmmintegrationservice ^
+  -M centreon::common::powershell::hyperv::2012::scvmmsnapshot ^
+  -M centreon::common::powershell::hyperv::2012::scvmmvmstatus ^
+  -M apps::protocols::http::plugin ^
+  -M apps::protocols::http::mode::expectedcontent ^
+  -M apps::protocols::http::mode::response ^
+  -M apps::protocols::tcp::plugin ^
+  -M apps::protocols::tcp::mode::responsetime ^
+  -M apps::protocols::ftp::plugin ^
+  -M apps::protocols::ftp::mode::commands ^
+  -M apps::protocols::ftp::mode::date ^
+  -M apps::protocols::ftp::mode::filescount ^
+  -M apps::protocols::ftp::mode::login ^
+  -M apps::backup::veeam::local::plugin ^
+  -M apps::backup::veeam::local::mode::jobstatus ^
+  -M apps::backup::veeam::local::mode::listjobs ^
+  -M centreon::common::powershell::veeam::jobstatus ^
+  -M centreon::common::powershell::veeam::listjobs ^
+  -M centreon::common::powershell::wsus::computersstatus ^
+  -M centreon::common::powershell::wsus::updatesstatus ^
+  -M centreon::common::powershell::wsus::synchronisationstatus ^
+  -M centreon::common::powershell::wsus::serverstatistics ^
+  -M apps::wsus::local::plugin ^
+  -M apps::wsus::local::mode::computersstatus ^
+  -M apps::wsus::local::mode::updatesstatus ^
+  -M apps::wsus::local::mode::synchronisationstatus ^
+  -M apps::wsus::local::mode::serverstatistics ^
+  -M centreon::common::powershell::functions ^
   --verbose
   
   pause
@@ -673,7 +746,7 @@ If you want to change the executable version and ico file, add following code af
   chdir /d %~dp0
   
   for /f "tokens=4 delims= " %%i in ('type centreon-plugins\centreon\plugins\script.pm ^| findstr global_version ^| findstr my') do set "VERSION_PLUGIN=%%i"
-  set VERSION_PLUGIN=%VERSION_PLUGIN:~0,8%
+  set VERSION_PLUGIN=%VERSION_PLUGIN:~1,8%
   
   (
   echo #define PP_MANIFEST_FILEFLAGS 0
