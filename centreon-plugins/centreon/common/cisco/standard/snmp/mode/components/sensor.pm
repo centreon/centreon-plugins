@@ -204,7 +204,6 @@ sub check {
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 
            $result->{entSensorValue} * (10 ** ($result->{entSensorScale}) * (10 ** -($result->{entSensorPrecision}))) : undef;
-        $result->{entSensorValue} = sprintf("%.2f", $result->{entSensorValue});
         
         $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance: %s] [value: %s %s]", 
                                     $sensor_descr, $result->{entSensorStatus},
