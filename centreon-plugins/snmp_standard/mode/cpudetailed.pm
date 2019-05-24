@@ -29,6 +29,12 @@ use Digest::MD5 qw(md5_hex);
 sub custom_cpu_calc {
     my ($self, %options) = @_;
 
+    return -10 if (!defined($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}));
+    if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}})) {
+        $self->{error_msg} = "Buffer creation";
+        return -1;
+    }
+
     if (!defined($self->{instance_mode}->{total_cpu})) {
         $self->{instance_mode}->{total_cpu} = 0;        
         foreach (keys %{$options{new_datas}}) {
