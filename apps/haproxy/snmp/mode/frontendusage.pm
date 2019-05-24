@@ -105,12 +105,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /OPEN/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"           => { name => 'filter_name' },
+        "warning-status:s"        => { name => 'warning_status', default => '' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /OPEN/i' },
+    });
     
     return $self;
 }
@@ -129,12 +128,24 @@ sub prefix_frontend_output {
 }
 
 my $mapping = {
-    alFrontendName          => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.3' },
-    alFrontendSessionCur    => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.4' },
-    alFrontendSessionTotal  => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.7' },
-    alFrontendBytesIN       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.8' },
-    alFrontendBytesOUT      => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.9' },
-    alFrontendStatus        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.13' },
+    entreprise => {
+        alFrontendSessionCur    => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.4' },
+        alFrontendSessionTotal  => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.7' },
+        alFrontendBytesIN       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.8' },
+        alFrontendBytesOUT      => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.9' },
+        alFrontendStatus        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.13' },
+    },
+    csv => {
+        alFrontendSessionCur     => { oid => '.1.3.6.1.4.1.29385.106.1.0.4' },
+        alFrontendSessionTotal   => { oid => '.1.3.6.1.4.1.29385.106.1.0.7' },
+        alFrontendBytesIN        => { oid => '.1.3.6.1.4.1.29385.106.1.0.8' },
+        alFrontendBytesOUT       => { oid => '.1.3.6.1.4.1.29385.106.1.0.9' },
+        alFrontendStatus         => { oid => '.1.3.6.1.4.1.29385.106.1.0.17' },
+    },
+};
+my $mapping_name = {
+    csv => '.1.3.6.1.4.1.29385.106.1.0.0',
+    entreprise => '.1.3.6.1.4.1.23263.4.2.1.3.2.1.3', # alFrontendName
 };
 
 sub manage_selection {
@@ -146,38 +157,48 @@ sub manage_selection {
     }
     
     $self->{frontend} = {};
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $mapping->{alFrontendName}->{oid} },
-            { oid => $mapping->{alFrontendSessionCur}->{oid} },
-            { oid => $mapping->{alFrontendSessionTotal}->{oid} },
-            { oid => $mapping->{alFrontendBytesIN}->{oid} },
-            { oid => $mapping->{alFrontendBytesOUT}->{oid} },
-            { oid => $mapping->{alFrontendStatus}->{oid} },
-        ],
-        return_type => 1, nothing_quit => 1);
+    
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping_name->{csv} }, { oid => $mapping_name->{entreprise} } ], nothing_quit => 1);
+    my $branch = 'entreprise';
+    if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(%{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
+        $branch = 'csv';
+    }
 
-    foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{alFrontendName}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result->{ $mapping_name->{$branch} }}) {
+        $oid =~ /^$mapping_name->{$branch}\.(.*)$/;
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        my $name = $snmp_result->{$mapping_name->{$branch}}->{$oid};
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{alFrontendName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{wgPolicyName} . "': no matching filter.", debug => 1);
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping frontend '" . $name . "'.", debug => 1);
             next;
         }
-        
-        $result->{alFrontendBytesIN} *= 8;
-        $result->{alFrontendBytesOUT} *= 8;
-        $self->{frontend}->{$instance} = { display => $result->{alFrontendName}, 
-            %$result
-        };
+
+        $self->{frontend}->{$instance} = { display => $name };
     }
-    
+
     if (scalar(keys %{$self->{frontend}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No frontend found.");
         $self->{output}->option_exit();
+    }
+
+    $options{snmp}->load(
+        oids => [
+            map($_->{oid}, values(%{$mapping->{$branch}})) 
+        ],
+        instances => [keys %{$self->{frontend}}],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    foreach (keys %{$self->{frontend}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$branch}, results => $snmp_result, instance => $_);
+
+        $result->{alFrontendBytesIN} *= 8;
+        $result->{alFrontendBytesOUT} *= 8;
+
+        $self->{frontend}->{$_} = { %{$self->{frontend}->{$_}}, %$result };
     }
     
     $self->{cache_name} = "haproxy_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
