@@ -123,9 +123,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '%{http_code} < 200 or %{http_code} >= 300';
-    $self->{option_results}->{unknown_status} = '';
 }
 
 sub settings {
@@ -154,8 +151,11 @@ sub authenticate {
         
         $self->settings();
 
-        my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
-                                             url_path => '/api/login');
+        my $content = $self->{http}->request(
+            method => 'POST', query_form_post => $post_data,
+            url_path => '/api/login',
+            warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
+        );
 
         my $header = $self->{http}->get_header(name => 'Set-Cookie');
         if (defined ($header) && $header =~ /(?:^| ).AspNetCore.Cookies=([^;]+);.*/) {
@@ -190,7 +190,9 @@ sub request_api {
 
     $self->settings();
 
-    my $content = $self->{http}->request(%options);
+    my $content = $self->{http}->request(%options, 
+        warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
+    );
 
     my $decoded;
     eval {
@@ -212,7 +214,7 @@ sub request_api {
 
 sub internal_single_status {
     my ($self, %options) = @_;
-    
+
     my $status = $self->request_api(method => 'GET', url_path =>'/api/SystemStatus/GetSingleStatus');
     return $status;
 }

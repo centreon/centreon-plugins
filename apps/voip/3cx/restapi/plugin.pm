@@ -32,18 +32,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'status'        => 'apps::voip::3cx::restapi::mode::status',
-                         );
+        'system'    => 'apps::voip::3cx::restapi::mode::system',
+    );
 
     $self->{custom_modes}{api} = 'apps::voip::3cx::restapi::custom::api';
-
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;
