@@ -336,7 +336,7 @@ Can used special variables like: %{status}, %{display}
 Set critical threshold for status (Default: '%{status} =~ /^overload/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-*> =item B<--critical-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'current', 'power'.
