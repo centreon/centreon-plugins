@@ -134,7 +134,7 @@ sub manage_selection {
     
     $self->{global} = {
         calls_active => $system->{CallsActive},
-        extensions_registered => $self->{system}->{ExtensionsRegistered},
+        extensions_registered => $system->{ExtensionsRegistered},
     };
 }
 
@@ -166,7 +166,7 @@ Can used special variables like: %{health}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'calls-active', 'extensions-registred'.
+Can be: 'calls-active', 'extensions-registered'.
 
 =back
 
