@@ -43,9 +43,10 @@ sub set_system {
             ['failed', 'CRITICAL'],
             ['notInstalled', 'OK'],
             ['unknown', 'UNKNOWN'],
+            ['ignore', 'OK'],
         ],
         led => [
-            ['off', 'UNKNOWN'],
+            ['off', 'OK'],
             ['green', 'OK'],
             ['yellow', 'WARNING'],
             ['red', 'CRITICAL'],
@@ -69,9 +70,8 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
