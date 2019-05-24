@@ -121,7 +121,10 @@ sub manage_selection {
     $self->{service} = {};
     foreach my $item (keys %$single) {
         # As of 3CX 15.5 / 16, we have Firewall, Phones, Trunks
-        $self->{service}->{$item} = { display => $item, health => $single->{$item} };
+        $self->{service}->{$item} = { 
+            display => $item, 
+            health => $single->{$item} ? 'true' : 'false',
+        };
     }
     $self->{service}->{HasNotRunningServices} = {
         display => 'HasNotRunningServices',
