@@ -114,12 +114,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /UP/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'           => { name => 'filter_name' },
+        'warning-status:s'        => { name => 'warning_status', default => '' },
+        'critical-status:s'       => { name => 'critical_status', default => '%{status} !~ /UP/i' },
+    });
     
     return $self;
 }
@@ -138,13 +137,26 @@ sub prefix_backend_output {
 }
 
 my $mapping = {
-    alBackendName           => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.3' },
-    alBackendQueueCur       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.4' },
-    alBackendSessionCur     => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.7' },
-    alBackendSessionTotal   => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.10' },
-    alBackendBytesIN        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.12' },
-    alBackendBytesOUT       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.13' },
-    alBackendStatus         => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.20' },
+    entreprise => {
+        alBackendQueueCur       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.4' },
+        alBackendSessionCur     => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.7' },
+        alBackendSessionTotal   => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.10' },
+        alBackendBytesIN        => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.12' },
+        alBackendBytesOUT       => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.13' },
+        alBackendStatus         => { oid => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.20' },
+    },
+    csv => {
+        alBackendQueueCur       => { oid => '.1.3.6.1.4.1.29385.106.1.1.2' },
+        alBackendSessionCur     => { oid => '.1.3.6.1.4.1.29385.106.1.1.4' },
+        alBackendSessionTotal   => { oid => '.1.3.6.1.4.1.29385.106.1.1.7' },
+        alBackendBytesIN        => { oid => '.1.3.6.1.4.1.29385.106.1.1.8' },
+        alBackendBytesOUT       => { oid => '.1.3.6.1.4.1.29385.106.1.1.9' },
+        alBackendStatus         => { oid => '.1.3.6.1.4.1.29385.106.1.1.17' },
+    },
+};
+my $mapping_name = {
+    csv => '.1.3.6.1.4.1.29385.106.1.1.0',
+    entreprise => '.1.3.6.1.4.1.23263.4.2.1.3.3.1.3', # alBackendName
 };
 
 sub manage_selection {
@@ -156,41 +168,50 @@ sub manage_selection {
     }
     
     $self->{backend} = {};
-    my $snmp_result = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $mapping->{alBackendName}->{oid} },
-            { oid => $mapping->{alBackendQueueCur}->{oid} },
-            { oid => $mapping->{alBackendSessionCur}->{oid} },
-            { oid => $mapping->{alBackendSessionTotal}->{oid} },
-            { oid => $mapping->{alBackendBytesIN}->{oid} },
-            { oid => $mapping->{alBackendBytesOUT}->{oid} },
-            { oid => $mapping->{alBackendStatus}->{oid} },
-        ],
-        return_type => 1, nothing_quit => 1);
+    
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping_name->{csv} }, { oid => $mapping_name->{entreprise} } ], nothing_quit => 1);
+    my $branch = 'entreprise';
+    if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(%{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
+        $branch = 'csv';
+    }
 
-    foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{alBackendName}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result->{ $mapping_name->{$branch} }}) {
+        $oid =~ /^$mapping_name->{$branch}\.(.*)$/;
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        my $name = $snmp_result->{$mapping_name->{$branch}}->{$oid};
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $result->{alBackendName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{wgPolicyName} . "': no matching filter.", debug => 1);
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping backend '" . $name . "'.", debug => 1);
             next;
         }
-        
-        $result->{alBackendBytesIN} *= 8;
-        $result->{alBackendBytesOUT} *= 8;
-        $self->{backend}->{$instance} = { display => $result->{alBackendName}, 
-            %$result
-        };
+
+        $self->{backend}->{$instance} = { display => $name };
     }
-    
+
     if (scalar(keys %{$self->{backend}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No backend found.");
         $self->{output}->option_exit();
     }
+
+    $options{snmp}->load(
+        oids => [
+            map($_->{oid}, values(%{$mapping->{$branch}})) 
+        ],
+        instances => [keys %{$self->{backend}}],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     
+    foreach (keys %{$self->{backend}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$branch}, results => $snmp_result, instance => $_);
+
+        $result->{alBackendBytesIN} *= 8;
+        $result->{alBackendBytesOUT} *= 8;
+
+        $self->{backend}->{$_} = { %{$self->{backend}->{$_}}, %$result };
+    }
+
     $self->{cache_name} = "haproxy_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
