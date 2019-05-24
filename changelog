@@ -1,3 +1,17 @@
+2019-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: SCCM
+ * Plugin added: Cisco ESA XML API
+ * Plugin added: MongoDB
+ * Plugin added: Ovirt Rest API
+ * Plugin added: Keepalived SNMP
+ * Plugin added: Openweathermap Rest API
+ * Plugin added: 3CX Rest API
+ * Plugin added: Atto FiberBridge SNMP
+ * Plugin added: Buffalo TeraStation SNMP
+ * Enhancement: [haproxy/snmp] manage oss mib (#1475)
+ * Enhancement: [oracle] Fix segfault with last DBD::Oracle
+ * Break: [pdu/apc] modes refactoring
+
 2019-04-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Google Cloud Platform Compute Engine API
  * Plugin added: Prometheus NGINX Ingress Controller
