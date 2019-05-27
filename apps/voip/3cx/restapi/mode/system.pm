@@ -128,11 +128,11 @@ sub manage_selection {
     }
     $self->{service}->{HasNotRunningServices} = {
         display => 'HasNotRunningServices',
-        health => $self->{system}->{HasNotRunningServices} ? 'false' : 'true',
+        health => $system->{HasNotRunningServices} ? 'false' : 'true',
     };
     $self->{service}->{HasUnregisteredSystemExtensions} = {
         display => 'HasUnregisteredSystemExtensions', 
-        health => $self->{system}->{HasUnregisteredSystemExtensions} ? 'false' : 'true',
+        health => $system->{HasUnregisteredSystemExtensions} ? 'false' : 'true',
     };
     
     $self->{global} = {
