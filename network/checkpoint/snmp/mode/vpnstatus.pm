@@ -67,12 +67,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{type} eq "permanent" and %{status} =~ /down/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{type} eq "permanent" and %{status} =~ /down/i' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'buggy-snmp'        => { name => 'buggy_snmp' },
+    });
     
     return $self;
 }
@@ -100,16 +101,22 @@ my $mapping = {
     tunnelState         => { oid => '.1.3.6.1.4.1.2620.500.9002.1.3', map => \%map_state },
     tunnelType          => { oid => '.1.3.6.1.4.1.2620.500.9002.1.11', map => \%map_type },
 };
+my $oid_tunnelEntry = '.1.3.6.1.4.1.2620.500.9002.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{vs} = {};
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+    my $snmp_result;
+    if (defined($self->{option_results}->{buggy_snmp})) {
+        $snmp_result = $options{snmp}->get_table(oid => $oid_tunnelEntry, nothing_quit => 1);
+    } else {
+        $snmp_result = $options{snmp}->get_multiple_table(oids => [
             { oid => $mapping->{tunnelPeerObjName}->{oid} },
             { oid => $mapping->{tunnelState}->{oid} },
             { oid => $mapping->{tunnelType}->{oid} },
         ], nothing_quit => 1, return_type => 1);
+    }
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{tunnelState}->{oid}\.(.*)$/);
@@ -122,9 +129,11 @@ sub manage_selection {
             next;
         }
         
-        $self->{vpn}->{$instance} = { display => $result->{tunnelPeerObjName}, 
-                                      status => $result->{tunnelState},
-                                      type => $result->{tunnelType} };
+        $self->{vpn}->{$instance} = {
+            display => $result->{tunnelPeerObjName}, 
+            status => $result->{tunnelState},
+            type => $result->{tunnelType}
+        };
     }
     
     if (scalar(keys %{$self->{vpn}}) <= 0) {
@@ -156,6 +165,10 @@ Can used special variables like: %{type}, %{status}, %{display}
 
 Set critical threshold for status (Default: '%{type} eq "permanent" and %{status} =~ /down/i').
 Can used special variables like: %{type}, %{status}, %{display}
+
+=item B<--buggy-snmp>
+
+Checkpoint snmp can be buggy. Test that option if no response.
 
 =back
 
