@@ -96,8 +96,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{health} =~ /false/' },
+        "warning-status:s"  => { name => 'warning_status', default => '%{display} =~ /HasUpdatesAvailable/ && %{health} =~ /true/' },
+        "critical-status:s" => { name => 'critical_status', default => '%{display} !~ /HasUpdatesAvailable/ && %{health} =~ /false/' },
     });
 
     return $self;
@@ -117,6 +117,7 @@ sub manage_selection {
 
     my $single = $options{custom}->api_single_status();
     my $system = $options{custom}->api_system_status();
+    my $update = $options{custom}->api_update_checker();
 
     $self->{service} = {};
     foreach my $item (keys %$single) {
@@ -133,6 +134,10 @@ sub manage_selection {
     $self->{service}->{HasUnregisteredSystemExtensions} = {
         display => 'HasUnregisteredSystemExtensions', 
         health => $self->{system}->{HasUnregisteredSystemExtensions} ? 'false' : 'true',
+    };
+    $self->{service}->{HasUpdatesAvailable} = {
+        display => 'HasUpdatesAvailable', 
+        health => scalar(@$update) ? 'true' : 'false',
     };
     
     $self->{global} = {
@@ -158,12 +163,14 @@ Can used special variables like: %{health}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status.
+Set warning threshold for status
+(Default: '%{display} =~ /HasUpdatesAvailable/ && %{health} =~ /true/').
 Can used special variables like: %{health}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} =~ /false/').
+Set critical threshold for status
+(Default: '%{display} !~ /HasUpdatesAvailable/ && %{health} =~ /false/').
 Can used special variables like: %{health}, %{display}
 
 =item B<--warning-*> B<--critical-*>

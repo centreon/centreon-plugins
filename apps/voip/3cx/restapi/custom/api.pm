@@ -194,6 +194,12 @@ sub request_api {
         warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
     );
 
+    # Some content may be strangely returned, for example : "[{\"Category\":\"provider\",\"Count\":1}]"
+    if ($content =~ /^"(\[.*\])"$/) {
+        $content = $1;
+        $content =~ s/\\"/"/g;
+    }
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
@@ -237,6 +243,20 @@ sub api_system_status {
     my ($self, %options) = @_;
 
     my $status = $self->internal_system_status();
+    return $status;
+}
+
+sub internal_update_checker {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/UpdateChecker/GetFromParams');
+    return $status;
+}
+
+sub api_update_checker {
+    my ($self, %options) = @_;
+
+    my $status = $self->internal_update_checker();
     return $status;
 }
 
