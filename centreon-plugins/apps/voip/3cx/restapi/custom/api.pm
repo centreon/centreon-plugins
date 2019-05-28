@@ -195,9 +195,8 @@ sub request_api {
     );
 
     # Some content may be strangely returned, for example : "[{\"Category\":\"provider\",\"Count\":1}]"
-    if ($content =~ /^"(\[.*\])"$/) {
-        $content = $1;
-        $content =~ s/\\"/"/g;
+    if (defined($options{eval_content}) && $options{eval_content} == 1) {
+        $content = eval "$content";
     }
 
     my $decoded;
@@ -249,7 +248,7 @@ sub api_system_status {
 sub internal_update_checker {
     my ($self, %options) = @_;
     
-    my $status = $self->request_api(method => 'GET', url_path =>'/api/UpdateChecker/GetFromParams');
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/UpdateChecker/GetFromParams', eval_content => 1);
     return $status;
 }
 
