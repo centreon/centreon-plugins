@@ -82,6 +82,7 @@ sub prefix_outlet_output {
 }
 
 my $mapping = {
+    outletName      => { oid => '.1.3.6.1.4.1.534.6.6.7.6.1.1.3' },
     outletVoltage   => { oid => '.1.3.6.1.4.1.534.6.6.7.6.3.1.2' }, # in mVolt 
     outletCurrent   => { oid => '.1.3.6.1.4.1.534.6.6.7.6.4.1.3' }, # in mA
     outletWatts     => { oid => '.1.3.6.1.4.1.534.6.6.7.6.5.1.3' }, # in Watt 
@@ -93,6 +94,7 @@ sub manage_selection {
     $self->{outlet} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
+            { oid => $mapping->{outletName}->{oid} },
             { oid => $mapping->{outletVoltage}->{oid} },
             { oid => $mapping->{outletCurrent}->{oid} },
             { oid => $mapping->{outletWatts}->{oid} },
@@ -108,7 +110,9 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         $result->{outletVoltage} *= 0.001 if (defined($result->{outletVoltage}));
         $result->{outletCurrent} *= 0.001 if (defined($result->{outletCurrent}));
-        $self->{outlet}->{$instance} = { display => $instance, %$result };
+        my $display = $instance;
+        $display = $result->{outletName} if (defined($result->{outletName}) && $result->{outletName} ne '');
+        $self->{outlet}->{$display} = { display => $display, %$result };
     }
 
     if (scalar(keys %{$self->{outlet}}) <= 0) {

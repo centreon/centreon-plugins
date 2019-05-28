@@ -11,6 +11,7 @@
  * Enhancement: [haproxy/snmp] manage oss mib (#1475)
  * Enhancement: [oracle] Fix segfault with last DBD::Oracle
  * Break: [pdu/apc] modes refactoring
+ * Break: [pdu/eaton] modes refactoring
 
 2019-04-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Google Cloud Platform Compute Engine API
