@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::pdu::eaton::plugin;
+package hardware::pdu::eaton::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,9 +31,9 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'group'            => 'hardware::pdu::eaton::mode::group',
-                         'outlet'           => 'hardware::pdu::eaton::mode::outlet',
-                         );
+        'group'     => 'hardware::pdu::eaton::snmp::mode::group',
+        'outlet'    => 'hardware::pdu::eaton::snmp::mode::outlet',
+    );
 
     return $self;
 }
