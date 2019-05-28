@@ -160,7 +160,7 @@ sub manage_selection {
     
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $mapping_name->{csv} }, { oid => $mapping_name->{entreprise} } ], nothing_quit => 1);
     my $branch = 'entreprise';
-    if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(%{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
+    if (defined($snmp_result->{ $mapping_name->{csv} }) && scalar(keys %{$snmp_result->{ $mapping_name->{csv} }}) > 0) {
         $branch = 'csv';
     }
 
