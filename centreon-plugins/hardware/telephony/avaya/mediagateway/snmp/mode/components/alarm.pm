@@ -59,7 +59,7 @@ sub check {
     my $oid_cmgHardwareFaultMask = '.1.3.6.1.4.1.6889.2.9.1.1.10.12.0';
     return if (!defined($self->{results}->{$oid_cmgHardwareFaultMask}));
 
-    $self->{results}->{$oid_cmgHardwareFaultMask} = oct("0b" . unpack('b*', $self->{results}->{$oid_cmgHardwareFaultMask}));
+    $self->{results}->{$oid_cmgHardwareFaultMask} = oct("0b" . unpack('B*', $self->{results}->{$oid_cmgHardwareFaultMask}));
     foreach (sort { $a <=> $b }  keys %$bits_alarm) {
         my $instance = $_;
         my $status = 'disabled';
