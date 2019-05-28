@@ -117,6 +117,7 @@ sub manage_selection {
 
     my $single = $options{custom}->api_single_status();
     my $system = $options{custom}->api_system_status();
+    my $update = $options{custom}->api_update_checker();
 
     $self->{service} = {};
     foreach my $item (keys %$single) {
@@ -133,6 +134,10 @@ sub manage_selection {
     $self->{service}->{HasUnregisteredSystemExtensions} = {
         display => 'HasUnregisteredSystemExtensions', 
         health => $system->{HasUnregisteredSystemExtensions} ? 'false' : 'true',
+    };
+    $self->{service}->{HasUpdatesAvailable} = {
+        display => 'HasUpdatesAvailable', 
+        health => scalar(@$update) ? 'false' : 'true',
     };
     
     $self->{global} = {
@@ -153,7 +158,7 @@ Check system health
 
 =item B<--unknown-status>
 
-Set warning threshold for status.
+Set unknown threshold for status.
 Can used special variables like: %{health}, %{display}
 
 =item B<--warning-status>
