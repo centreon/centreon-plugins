@@ -96,8 +96,8 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '%{display} =~ /HasUpdatesAvailable/ && %{health} =~ /true/' },
-        "critical-status:s" => { name => 'critical_status', default => '%{display} !~ /HasUpdatesAvailable/ && %{health} =~ /false/' },
+        "warning-status:s"  => { name => 'warning_status', default => '' },
+        "critical-status:s" => { name => 'critical_status', default => '%{health} =~ /false/' },
     });
 
     return $self;
@@ -137,7 +137,7 @@ sub manage_selection {
     };
     $self->{service}->{HasUpdatesAvailable} = {
         display => 'HasUpdatesAvailable', 
-        health => scalar(@$update) ? 'true' : 'false',
+        health => scalar(@$update) ? 'false' : 'true',
     };
     
     $self->{global} = {
@@ -158,19 +158,17 @@ Check system health
 
 =item B<--unknown-status>
 
-Set warning threshold for status.
+Set unknown threshold for status.
 Can used special variables like: %{health}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status
-(Default: '%{display} =~ /HasUpdatesAvailable/ && %{health} =~ /true/').
+Set warning threshold for status.
 Can used special variables like: %{health}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status
-(Default: '%{display} !~ /HasUpdatesAvailable/ && %{health} =~ /false/').
+Set critical threshold for status (Default: '%{health} =~ /false/').
 Can used special variables like: %{health}, %{display}
 
 =item B<--warning-*> B<--critical-*>
