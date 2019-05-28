@@ -82,6 +82,7 @@ sub prefix_group_output {
 }
 
 my $mapping = {
+    groupName       => { oid => '.1.3.6.1.4.1.534.6.6.7.5.1.1.3' },
     groupVoltage    => { oid => '.1.3.6.1.4.1.534.6.6.7.5.3.1.3' }, # in mVolt 
     groupCurrent    => { oid => '.1.3.6.1.4.1.534.6.6.7.5.4.1.3' },  # in mA
     groupWatts      => { oid => '.1.3.6.1.4.1.534.6.6.7.5.5.1.3' }, # in Watt 
@@ -93,6 +94,7 @@ sub manage_selection {
     $self->{group} = {};
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
+            { oid => $mapping->{groupName}->{oid} },
             { oid => $mapping->{groupVoltage}->{oid} },
             { oid => $mapping->{groupCurrent}->{oid} },
             { oid => $mapping->{groupWatts}->{oid} },
@@ -108,7 +110,9 @@ sub manage_selection {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         $result->{groupVoltage} *= 0.001 if (defined($result->{groupVoltage}));
         $result->{groupCurrent} *= 0.001 if (defined($result->{groupCurrent}));
-        $self->{group}->{$instance} = { display => $instance, %$result };
+        my $display = $instance;
+        $display = $result->{groupName} if (defined($result->{groupName}) && $result->{groupName} ne '');
+        $self->{group}->{$display} = { display => $display, %$result };
     }
 
     if (scalar(keys %{$self->{group}}) <= 0) {
