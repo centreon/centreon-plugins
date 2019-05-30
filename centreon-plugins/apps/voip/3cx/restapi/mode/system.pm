@@ -127,6 +127,12 @@ sub manage_selection {
             health => $single->{$item} ? 'true' : 'false',
         };
     }
+    # As per 3CX support, $single->{Trunks} does not trigger if TrunksRegistered != TrunksTotal,
+    # but only if "trunk is unsupported", so let's workaround
+    $self->{service}->{HasUnregisteredTrunks} = { 
+        display => 'HasUnregisteredTrunks', 
+        health => ($system->{TrunksRegistered} < $system->{TrunksTotal}) ? 'false' : 'true',
+    };
     $self->{service}->{HasNotRunningServices} = {
         display => 'HasNotRunningServices',
         health => $system->{HasNotRunningServices} ? 'false' : 'true',
