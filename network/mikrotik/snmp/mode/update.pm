@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::version;
+package network::mikrotik::snmp::mode::update;
 
 use base qw(centreon::plugins::mode);
 
