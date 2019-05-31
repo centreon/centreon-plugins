@@ -40,6 +40,7 @@ sub new {
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
         'invalid-object'           => 'database::oracle::mode::invalidobject',
+        'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
         'long-queries'             => 'database::oracle::mode::longqueries',
         'password-expiration'      => 'database::oracle::mode::passwordexpiration',
@@ -66,10 +67,10 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-            'hostname:s@'   => { name => 'hostname' },
-            'port:s@'       => { name => 'port' },
-            'sid:s'         => { name => 'sid' },
-            'servicename:s' => { name => 'servicename' },
+        'hostname:s@'   => { name => 'hostname' },
+        'port:s@'       => { name => 'port' },
+        'sid:s'         => { name => 'sid' },
+        'servicename:s' => { name => 'servicename' },
     });
 
     $self->{options}->parse_options();
