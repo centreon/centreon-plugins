@@ -18,37 +18,32 @@
 # limitations under the License.
 #
 
-package network::cisco::fabric::aci::restapi::mode::fabric;
+package network::cisco::aci::apic::restapi::mode::fabric;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_health_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Current: '%d'%% Previous '%d'%%", $self->{result_values}->{current}, $self->{result_values}->{previous});
+    my $msg = sprintf("health current: %d%%, previous: %d%%", $self->{result_values}->{current}, $self->{result_values}->{previous});
     return $msg;
-}
-
-sub custom_health_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{dn} = $options{new_datas}->{$self->{instance} . '_dn'};
-    $self->{result_values}->{previous} = $options{new_datas}->{$self->{instance} . '_previous'};
-    $self->{result_values}->{current} = $options{new_datas}->{$self->{instance} . '_current'};
-    return 0;
 }
 
 sub custom_health_perfdata {
     my ($self, %options) = @_;
 
     foreach ('current', 'previous') {
-        $self->{output}->perfdata_add(label => $_ . '_' . $self->{result_values}->{dn},
-                                      value => $self->{result_values}->{$_},
-                                      unit => '%', min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            label => $_,
+            nlabel => 'fabric.health.' . $_, 
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{dn} : undef,
+            value => $self->{result_values}->{$_},
+            unit => '%', min => 0, max => 100
+        );
     }
 }
 
@@ -56,17 +51,16 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'fabric', type => 1, cb_prefix_output => 'prefix_fabric_output',
-            message_multiple => 'Global health is OK' },
+        { name => 'fabric', type => 1, cb_prefix_output => 'prefix_fabric_output', message_multiple => 'all fabrics are ok' },
     ];
 
     $self->{maps_counters}->{fabric} = [
-        { label => 'health', set => {
-                key_values => [ { name => 'current' }, { name => 'previous' }, { name => 'dn'} ],
-                closure_custom_calc => $self->can('custom_health_calc'),
+        { label => 'health', threshold => 0, set => {
+                key_values => [ { name => 'current' }, { name => 'previous' }, { name => 'dn' } ],
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_health_output'),
                 closure_custom_threshold_check => \&catalog_status_threshold,
-		        closure_custom_perfdata => $self->can('custom_health_perfdata')
+		        closure_custom_perfdata => $self->can('custom_health_perfdata'),
             }
         },
     ];    
@@ -75,20 +69,19 @@ sub set_counters {
 sub prefix_fabric_output {
     my ($self, %options) = @_;
 
-    return "Fabric '" . $options{instance_value}->{dn} . "' Health ";
+    return "Fabric '" . $options{instance_value}->{dn} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments => 
-				{
-                                  "warning-health:s" => { name => 'warning_health' },
-                                  "critical-health:s" => { name => 'critical_health' },
-    				});
+    $options{options}->add_options(arguments =>  {
+        'warning-health:s'  => { name => 'warning_health' },
+        'critical-health:s' => { name => 'critical_health' },
+    });
     
     return $self;
 }
@@ -107,12 +100,17 @@ sub manage_selection {
 
     my $result_global = $options{custom}->get_fabric_health();
     foreach my $object (@{$result_global->{imdata}}) {
-	my $dn = $object->{fabricHealthTotal}->{attributes}->{dn};
+        my $dn = $object->{fabricHealthTotal}->{attributes}->{dn};
 	    $self->{fabric}->{$dn} = { 
             current => $object->{fabricHealthTotal}->{attributes}->{cur}, 
 		    previous => $object->{fabricHealthTotal}->{attributes}->{prev}, 
 		    dn => $dn
 	    }; 
+    }
+
+    if (scalar(keys %{$self->{fabric}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No fabric found (try --debug)");
+        $self->{output}->option_exit();
     }
 }
 
@@ -121,6 +119,10 @@ sub manage_selection {
 __END__
 
 =head1 MODE
+
+Check fabrics.
+
+=over 8
 
 =item B<--warning-health>
 

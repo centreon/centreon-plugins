@@ -18,24 +18,25 @@
 # limitations under the License.
 #
 
-package network::cisco::fabric::aci::restapi::plugin;
+package network::cisco::aci::apic::restapi::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'node'     => 'network::cisco::fabric::aci::restapi::mode::node',
-        'tenant'   => 'network::cisco::fabric::aci::restapi::mode::tenant',
-        'fabric'   => 'network::cisco::fabric::aci::restapi::mode::fabric',
+        'node'     => 'network::cisco::aci::apic::restapi::mode::node',
+        'tenant'   => 'network::cisco::aci::apic::restapi::mode::tenant',
+        'fabric'   => 'network::cisco::aci::apic::restapi::mode::fabric',
     );
 
+    $self->{custom_modes}{api} = 'network::cisco::aci::apic::restapi::custom::api';
     return $self;
 }
 
@@ -45,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Cisco Fabric ACI
+Check Cisco ACI with APIC Rest API
 
 =cut

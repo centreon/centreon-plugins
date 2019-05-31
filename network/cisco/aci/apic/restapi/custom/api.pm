@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::fabric::aci::restapi::custom::api;
+package network::cisco::aci::apic::restapi::custom::api;
 
 use strict;
 use warnings;
@@ -44,12 +44,12 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "hostname:s"    => { name => 'hostname' },
-            "timeout:s"     => { name => 'timeout' },
-            "port:s"        => { name => 'port'},
-            "proto:s"       => { name => 'proto'}
+            'username:s'    => { name => 'username' },
+            'password:s'    => { name => 'password' },
+            'hostname:s'    => { name => 'hostname' },
+            'timeout:s'     => { name => 'timeout' },
+            'port:s'        => { name => 'port'},
+            'proto:s'       => { name => 'proto'}
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -95,20 +95,19 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
     if (!defined($self->{username}) || $self->{username} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --username option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --username option.');
         $self->{output}->option_exit();
     }
     if (!defined($self->{password}) || $self->{password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --password option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --password option.');
         $self->{output}->option_exit();
     }
 
     $self->{cache}->check_options(option_results => $self->{option_results});
-
     return 0;
 }
 
@@ -131,11 +130,9 @@ sub settings {
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
     if (defined($self->{access_token})) {
-        $self->{http}->add_header(key => 'Cookie', value => "APIC-Cookie=" . $self->{access_token});
+        $self->{http}->add_header(key => 'Cookie', value => 'APIC-Cookie=' . $self->{access_token});
     }
     $self->{http}->set_options(%{$self->{option_results}});
-
-
 }
 
 sub refresh_token {
@@ -150,8 +147,8 @@ sub refresh_token {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if (defined($decoded->{imdata}->[0]->{error}->{attributes}) && $decoded->{imdata}->[0]->{error}->{attributes}->{code} == 403
-	   && $decoded->{imdata}->[0]->{error}->{attributes}->{text} eq 'Token was invalid (Error: Token timeout)') {
-	   return 1
+       && $decoded->{imdata}->[0]->{error}->{attributes}->{text} eq 'Token was invalid (Error: Token timeout)') {
+       return 1
     }
 
     return 0
@@ -160,7 +157,7 @@ sub refresh_token {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'fabric_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{username}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'cisco_aci_apic_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{username}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
     my $refresh_timeout = $options{statefile}->get(name => 'refresh_timeout');
@@ -177,28 +174,35 @@ sub get_access_token {
 
         $self->settings();
 
-        my $content = $self->{http}->request(method => 'POST', query_form_post => $post_json,
-                                             url_path => '/api/aaaLogin.json');
+        my $content = $self->{http}->request(
+            method => 'POST',
+            query_form_post => $post_json,
+            url_path => '/api/aaaLogin.json'
+        );
 
         my $decoded;
-        $decoded = JSON::XS->new->utf8->decode($content);
+        eval {
+            $decoded = JSON::XS->new->utf8->decode($content);
+        };
         if ($@) {
             $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Cannot get token from API");
+            $self->{output}->add_option_msg(short_msg => 'Cannot get token from API');
             $self->{output}->option_exit();
         }
         if (defined($decoded->{imdata}->[0]->{error}->{attributes})) {
             $self->{output}->add_option_msg(short_msg => "Error '" . uc($decoded->{imdata}->[0]->{error}->{attributes}->{code}) . " "
-						 . $decoded->{imdata}->[0]->{error}->{attributes}->{text} . "'");
+                         . $decoded->{imdata}->[0]->{error}->{attributes}->{text} . "'");
             $self->{output}->option_exit();
         }
 
         $access_token = $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token};
-        my $datas = {last_timestamp => time(),
-		     refresh_timeout => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{refreshTimeoutSeconds},
-                     access_token => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token}, 
-                     expires_on => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{creationTime}
-                                    + $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{maximumLifetimeSeconds} };
+        my $datas = {
+            last_timestamp => time(),
+            refresh_timeout => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{refreshTimeoutSeconds},
+            access_token => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token}, 
+            expires_on => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{creationTime}
+                + $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{maximumLifetimeSeconds}
+        };
         $options{statefile}->write(data => $datas);
     }
 
@@ -213,7 +217,6 @@ sub request_api {
     }
 
     $self->settings();
-
     my $content = $self->{http}->request(%options);
     
     my $decoded;
@@ -236,24 +239,21 @@ sub request_api {
 sub get_fabric_health {
     my ($self, %options) = @_;
 
-    my $response = $self->request_api(method => 'GET', url_path => "/api/class/fabricHealthTotal.json");
-
+    my $response = $self->request_api(method => 'GET', url_path => '/api/class/fabricHealthTotal.json');
     return $response;
 }
 
 sub get_node_health_5m {
     my ($self, %options) = @_;
 
-    my $response = $self->request_api(method => 'GET', url_path => "/api/class/fabricNodeHealth5min.json");
-
+    my $response = $self->request_api(method => 'GET', url_path => '/api/class/fabricNodeHealth5min.json');
     return $response;
 }
 
 sub get_tenant_health {
     my ($self, %options) = @_;
 
-    my $response = $self->request_api(method => 'GET', url_path => "/api/class/fvTenant.json?rsp-subtree-include=health,required");
-
+    my $response = $self->request_api(method => 'GET', url_path => '/api/class/fvTenant.json?rsp-subtree-include=health,required');
     return $response;
 }
 
@@ -263,25 +263,25 @@ __END__
 
 =head1 NAME
 
-Cisco Fabric ACI API Interface 
+Cisco ACI APIC API Interface 
 
 =head1 REST API OPTIONS
 
-Cisco Fabric ACI API Interface 
+Cisco ACI APIC Interface 
 
 =over 8
 
 =item B<--hostname>
 
-IP/FQDN of the Cisco Fabric ACI
+IP/FQDN of the Cisco ACI APIC
 
 =item B<--username>
 
-Username to connect to ACI
+Username to connect to ACI APIC
 
 =item B<--hostname>
 
-Password to connect to ACI
+Password to connect to ACI APIC
 
 =item B<--timeout>
 
