@@ -29,8 +29,8 @@ use Digest::MD5 qw(md5_hex);
 sub custom_pin_hitratio_calc {
     my ($self, %options) = @_;
 
-    my $delta_total = ($options{new_datas}->{$self->{instance} . '_gets'} - $options{old_datas}->{$self->{instance} . '_gets'});
-    my $delta_cache = ($options{new_datas}->{$self->{instance} . '_get_hits'} - $options{old_datas}->{$self->{instance} . '_get_hits'});
+    my $delta_total = ($options{new_datas}->{$self->{instance} . '_pins'} - $options{old_datas}->{$self->{instance} . '_pins'});
+    my $delta_cache = ($options{new_datas}->{$self->{instance} . '_pin_hits'} - $options{old_datas}->{$self->{instance} . '_pin_hits'});
     $self->{result_values}->{hit_ratio} = $delta_total ? (100 * $delta_cache / $delta_total) : 0;
 
     return 0;
@@ -84,7 +84,7 @@ sub set_counters {
             }
         },
         { label => 'invalids', nlabel => 'library.cache.invalids.persecond', set => {
-                key_values => [ { name => 'reloads', diff => 1 }, ],
+                key_values => [ { name => 'invalids', diff => 1 }, ],
                 per_second => 1,
                 output_template => 'invalids %.2f/s',
                 perfdatas => [
@@ -133,7 +133,7 @@ sub manage_selection {
         pin_hits => $result[2],
         pins => $result[3],
         reloads => $result[4],
-        invalid => $result[5],
+        invalids => $result[5],
     };
 
     $self->{cache_name} = "oracle_" . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
