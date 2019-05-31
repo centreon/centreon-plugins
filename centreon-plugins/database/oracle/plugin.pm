@@ -38,6 +38,8 @@ sub new {
         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
+        'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
+        'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
         'invalid-object'           => 'database::oracle::mode::invalidobject',
         'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
