@@ -249,6 +249,51 @@ sub check_memory_enhanced_pool {
     }
 }
 
+my $mapping_memory_process = {
+    cpmCPUMemoryUsed        => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.12' }, # in KB
+    cpmCPUMemoryFree        => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.13' }, # in KB
+    cpmCPUMemoryUsedOvrflw  => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.16' }, # in KB
+    cpmCPUMemoryFreeOvrflw  => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.18' }, # in KB
+};
+
+sub check_memory_process {
+    my ($self, %options) = @_;
+
+    return if ($self->{checked_memory} == 1);
+
+    my $oid_cpmCPUTotalEntry = '.1.3.6.1.4.1.9.9.109.1.1.1.1';
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => $oid_cpmCPUTotalEntry, 
+        start => $mapping_memory_process->{cpmCPUMemoryUsed}->{oid},
+        end => $mapping_memory_process->{cpmCPUMemoryFreeOvrflw}->{oid},
+    );
+    
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping_memory_process->{cpmCPUMemoryUsed}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_memory_process, results => $snmp_result, instance => $instance);
+
+        $self->{checked_memory} = 1;
+
+        my $used = (
+            defined($result->{cpmCPUMemoryUsedOvrflw}) ? 
+            ($result->{cpmCPUMemoryUsedOvrflw} << 32) + ($result->{cpmCPUMemoryUsed}) :
+            $result->{cpmCPUMemoryUsed}
+        ) * 1024;
+        my $free = (
+            defined($result->{cpmCPUMemoryFreeOvrflw}) ? 
+            ($result->{cpmCPUMemoryFreeOvrflw} << 32) + ($result->{cpmCPUMemoryFree}) :
+            $result->{cpmCPUMemoryFree}
+        ) * 1024;
+        $self->{memory}->{$instance} = {
+            display => $instance,
+            total => $used + $free,
+            used => $used,
+            prct_used => -1,
+        };
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -258,6 +303,7 @@ sub manage_selection {
 
     $self->check_memory_enhanced_pool();
     $self->check_memory_pool();
+    $self->check_memory_process();
     $self->check_memory_system_ext();
     
     if ($self->{checked_memory} == 0) {
