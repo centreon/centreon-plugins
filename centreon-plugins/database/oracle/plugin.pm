@@ -47,6 +47,7 @@ sub new {
         'long-queries'             => 'database::oracle::mode::longqueries',
         'password-expiration'      => 'database::oracle::mode::passwordexpiration',
         'process-usage'            => 'database::oracle::mode::processusage',
+        'redolog-usage'            => 'database::oracle::mode::redologusage',
         'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
         'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
         'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
