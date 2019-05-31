@@ -25,7 +25,7 @@ use warnings;
 use Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(catalog_status_threshold);
+our @EXPORT_OK = qw(catalog_status_threshold catalog_status_calc);
 
 sub catalog_status_threshold {
     my ($self, %options) = @_;
@@ -57,6 +57,16 @@ sub catalog_status_threshold {
     }
 
     return $status;
+}
+
+sub catalog_status_calc {
+    my ($self, %options) = @_;
+
+    foreach (keys %{$options{new_datas}}) {
+        if (/^$self->{instance}_(.*)/) {
+            $self->{result_values}->{$1} = $options{new_datas}->{$_};
+        }
+    }
 }
 
 1;
