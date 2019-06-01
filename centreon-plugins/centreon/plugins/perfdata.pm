@@ -66,10 +66,10 @@ sub get_perfdata_for_output {
     $perf_value{start} = int($perf_value{start}) if ($perf_value{infinite_neg} == 0 && defined($options{cast_int}) && $options{cast_int} == 1);
     $perf_value{end} = int($perf_value{end}) if ($perf_value{infinite_pos} == 0 && defined($options{cast_int}) && $options{cast_int} == 1);
     
-    my $perf_output = ($perf_value{arobase} == 1 ? "@" : "") . 
-                      (($perf_value{infinite_neg} == 0) ? $perf_value{start} : "~") . 
-                      ":" . 
-                      (($perf_value{infinite_pos} == 0) ? $perf_value{end} : "");
+    my $perf_output = ($perf_value{arobase} == 1 ? '@' : '') . 
+                      (($perf_value{infinite_neg} == 0) ? $perf_value{start} : '~') . 
+                      ':' . 
+                      (($perf_value{infinite_pos} == 0) ? $perf_value{end} : '');
 
     return $perf_output;
 }
@@ -150,7 +150,7 @@ sub change_bytes {
         $value = $value / $divide;
     }
 
-    return (sprintf("%.2f", $sign . $value), $unit . (defined($options{network}) ? 'b' : 'B'));
+    return (sprintf('%.2f', $sign . $value), $unit . (defined($options{network}) ? 'b' : 'B'));
 }
 
 1;
