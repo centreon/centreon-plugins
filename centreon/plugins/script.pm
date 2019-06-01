@@ -146,13 +146,13 @@ sub display_local_help {
         open STDOUT, '>', \$stdout;
         
         if ($alternative_fatpacker == 0) {
-            pod2usage(-exitval => "NOEXIT", -input => pod_where({-inc => 1}, __PACKAGE__));
+            pod2usage(-exitval => 'NOEXIT', -input => pod_where({-inc => 1}, __PACKAGE__));
         } else {
-            my $pp = __PACKAGE__ . ".pm";
+            my $pp = __PACKAGE__ . '.pm';
             $pp =~ s{::}{/}g;
             my $content_class = $INC{$pp}->{$pp};
             open my $str_fh, '<', \$content_class;
-            pod2usage(-exitval => "NOEXIT", -input => $str_fh);
+            pod2usage(-exitval => 'NOEXIT', -input => $str_fh);
             close $str_fh;
         }
     }
@@ -165,7 +165,7 @@ sub check_directory {
     
     opendir(my $dh, $directory) || return ;
     while (my $filename = readdir $dh) {
-        $self->check_directory($directory . "/" . $filename) if ($filename !~ /^\./ && -d $directory . "/" . $filename);
+        $self->check_directory($directory . '/' . $filename) if ($filename !~ /^\./ && -d $directory . '/' . $filename);
         if ($filename eq 'plugin.pm') {
             my $stdout = '';
             
@@ -202,7 +202,7 @@ sub check_plugin_option {
     my ($self) = @_;
     
     if (defined($self->{version})) {
-        $self->{output}->add_option_msg(short_msg => "Global Version: " . $global_version);
+        $self->{output}->add_option_msg(short_msg => 'Global Version: ' . $global_version);
         $self->{output}->option_exit(nolabel => 1);
     }
     
@@ -231,7 +231,7 @@ sub display_list_plugin {
         foreach my $key (@$integrated_plugins) {
             # Need to load it to get the description
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $key, 
-                                                   error_msg => "Cannot load module --plugin.");
+                                                   error_msg => 'Cannot load module --plugin.');
                                                
             my $name = $key;
             $name =~ s/\.pm//g;
@@ -244,7 +244,7 @@ sub display_list_plugin {
                 open STDOUT, '>', \$stdout;
                 my $content_class = $INC{$key}->{$key};
                 open my $str_fh, '<', \$content_class;
-                pod2usage(-exitval => "NOEXIT", -input => $str_fh, -verbose => 99, -sections => "PLUGIN DESCRIPTION");
+                pod2usage(-exitval => 'NOEXIT', -input => $str_fh, -verbose => 99, -sections => 'PLUGIN DESCRIPTION');
                 close $str_fh;
                 $self->{output}->add_option_msg(long_msg => $stdout);
             }
@@ -302,15 +302,16 @@ sub check_relaunch {
 
     if ($need_restart == 1) {
         if (scalar(@args) <= 0) {
-            unshift @args, @ARGV, "--plugin=" . $self->{plugin}
+            unshift @args, @ARGV, '--plugin=' . $self->{plugin}
         }
 
         my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $cmd,
-                                                 arguments => [@args],
-                                                 timeout => 30,
-                                                 wait_exit => 1
-                                                 );
+            command => $cmd,
+            arguments => [@args],
+            timeout => 30,
+            wait_exit => 1
+        );
+
         if ($exit_code <= -1000) {
             if ($exit_code == -1000) {
                 $self->{output}->output_add(severity => 'UNKNOWN', 
@@ -351,7 +352,7 @@ sub run {
     
     (undef, $self->{plugin}) = 
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
-                                               error_msg => "Cannot load module --plugin.");
+                                               error_msg => 'Cannot load module --plugin.');
     my $plugin = $self->{plugin}->new(options => $self->{options}, output => $self->{output});
     $plugin->init(help => $self->{help},
                   version => $self->{version});
