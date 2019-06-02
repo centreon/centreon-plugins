@@ -56,7 +56,7 @@ sub class_handle_ALRM {
 sub handle_ALRM {
     my $self = shift;
     
-    $self->{logger}->writeLogError("Child process autokill!!");
+    $self->{logger}->writeLogError('Child process autokill!!');
     exit(0);
 }
 
@@ -94,7 +94,7 @@ sub build_filter {
     } elsif (!defined($self->{$options{search_option}})) {
         $filters->{name} = qr/.*/;
     } else {
-        if ($self->{case_insensitive} == 1) {
+        if ($self->{global_case_insensitive} == 1) {
             $filters->{name} = qr/$self->{$options{search_option}}/i;
         } else {
             $filters->{name} = qr/$self->{$options{search_option}}/;
