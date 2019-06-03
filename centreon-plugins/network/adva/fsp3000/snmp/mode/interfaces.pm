@@ -40,7 +40,7 @@ sub set_counters_traffic {
     my ($self, %options) = @_;
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'traffic-in', filter => 'add_traffic', set => {
+        { label => 'traffic-in', filter => 'add_traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in_15min', diff => 1 }, { name => 'traffic_in_1day', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -49,7 +49,7 @@ sub set_counters_traffic {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
             }
         },
-        { label => 'traffic-out', filter => 'add_traffic', set => {
+        { label => 'traffic-out', filter => 'add_traffic', nlabel => 'interface.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out_15min', diff => 1 }, { name => 'traffic_out_1day', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
@@ -67,7 +67,7 @@ sub set_counters {
     $self->SUPER::set_counters(%options);
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'laser-temp', filter => 'add_optical', set => {
+        { label => 'laser-temp', filter => 'add_optical', nlabel => 'interface.laser.temperature.celsius', set => {
                 key_values => [ { name => 'laser_temp' }, { name => 'display' } ],
                 output_template => 'Laser Temperature : %.2f C', output_error_template => 'Laser Temperature : %.2f',
                 perfdatas => [
@@ -76,7 +76,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'input-power', filter => 'add_optical', set => {
+        { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
                 key_values => [ { name => 'input_power' }, { name => 'display' } ],
                 output_template => 'Input Power : %s dBm', output_error_template => 'Input Power : %s',
                 perfdatas => [
@@ -85,7 +85,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'output-power', filter => 'add_optical', set => {
+        { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
                 key_values => [ { name => 'output_power' }, { name => 'display' } ],
                 output_template => 'Output Power : %s dBm', output_error_template => 'Output Power : %s',
                 perfdatas => [
@@ -100,11 +100,6 @@ sub set_counters {
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
     my ($warning, $critical);
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
@@ -114,11 +109,15 @@ sub custom_traffic_perfdata {
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
     
-    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    $self->{output}->perfdata_add(
+        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        nlabel => $self->{nlabel},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
 }
 
 sub custom_traffic_threshold {
@@ -126,9 +125,9 @@ sub custom_traffic_threshold {
     
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
