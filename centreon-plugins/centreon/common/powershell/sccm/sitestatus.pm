@@ -45,7 +45,7 @@ Try {
     $ErrorActionPreference = "Stop"
 
     $module = ${env:ProgramFiles} + "\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
-    If (!(Test-Path $module)) {
+    If (-Not (Test-Path $module)) {
         $module = ${env:ProgramFiles(x86)} + "\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
     }
     Import-Module $module
