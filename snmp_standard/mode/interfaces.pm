@@ -108,10 +108,6 @@ sub custom_cast_calc {
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
     if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{result_values}->{traffic_per_seconds} /= 8;
         $self->{result_values}->{speed} /= 8 if (defined($self->{result_values}->{speed}));
@@ -128,7 +124,8 @@ sub custom_traffic_perfdata {
     
     if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{output}->perfdata_add(
-            label => $self->{result_values}->{label} . $extra_label,
+            label => $self->{result_values}->{label},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
             value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
             warning => $warning,
             critical => $critical,
@@ -136,7 +133,9 @@ sub custom_traffic_perfdata {
         );
     } else {
         $self->{output}->perfdata_add(
-            label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
+            label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+            nlabel => $self->{nlabel},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
             value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
             warning => $warning,
             critical => $critical,
@@ -198,14 +197,12 @@ sub custom_traffic_calc {
 # Errors
 sub custom_errors_perfdata {
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
+
     if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
         $self->{output}->perfdata_add(
-            label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1} . $extra_label, unit => '%',
+            label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1}, unit => '%',
+            nlabel => 'interface.packets.' . $self->{result_values}->{label1} . '.' . $self->{result_values}->{label2} . 's.percentage',
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
             value => sprintf("%.2f", $self->{result_values}->{prct}),
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
@@ -213,7 +210,9 @@ sub custom_errors_perfdata {
         );
     } else {
         $self->{output}->perfdata_add(
-            label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1} . $extra_label,
+            label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1},
+            nlabel => $self->{nlabel},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
             value => $self->{result_values}->{used},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
@@ -286,7 +285,7 @@ sub set_counters_global {
     my ($self, %options) = @_;
 
     push @{$self->{maps_counters}->{global}}, 
-        { label => 'total-port', filter => 'add_global', set => {
+        { label => 'total-port', filter => 'add_global', nlabel => 'total.interfaces.count', set => {
                 key_values => [ { name => 'total_port' } ],
                 output_template => 'Total port : %s', output_error_template => 'Total port : %s',
                 output_use => 'total_port_absolute',  threshold_use => 'total_port_absolute',
@@ -296,7 +295,7 @@ sub set_counters_global {
                ],
             }
         },
-        { label => 'global-admin-up', filter => 'add_global', set => {
+        { label => 'global-admin-up', filter => 'add_global', nlabel => 'total.interfaces.admin.up.count', set => {
                 key_values => [ { name => 'global_admin_up' }, { name => 'total_port' } ],
                 output_template => 'AdminStatus Up : %s', output_error_template => 'AdminStatus Up : %s',
                 output_use => 'global_admin_up_absolute',  threshold_use => 'global_admin_up_absolute',
@@ -306,7 +305,7 @@ sub set_counters_global {
                ],
             }
         },
-        { label => 'total-admin-down', filter => 'add_global', set => {
+        { label => 'total-admin-down', filter => 'add_global', nlabel => 'total.interfaces.admin.down.count', set => {
                 key_values => [ { name => 'global_admin_down' }, { name => 'total_port' } ],
                 output_template => 'AdminStatus Down : %s', output_error_template => 'AdminStatus Down : %s',
                 output_use => 'global_admin_down_absolute',  threshold_use => 'global_admin_down_absolute',
@@ -316,7 +315,7 @@ sub set_counters_global {
                ],
             }
         },
-        { label => 'total-oper-up', filter => 'add_global', set => {
+        { label => 'total-oper-up', filter => 'add_global', nlabel => 'total.interfaces.operational.up.count', set => {
                 key_values => [ { name => 'global_oper_up' }, { name => 'total_port' } ],
                 output_template => 'OperStatus Up : %s', output_error_template => 'OperStatus Up : %s',
                 output_use => 'global_oper_up_absolute',  threshold_use => 'global_oper_up_absolute',
@@ -326,7 +325,7 @@ sub set_counters_global {
                ],
             }
         },
-        { label => 'total-oper-down', filter => 'add_global', set => {
+        { label => 'total-oper-down', filter => 'add_global', nlabel => 'total.interfaces.operational.down.count', set => {
                 key_values => [ { name => 'global_oper_down' }, { name => 'total_port' } ],
                 output_template => 'OperStatus Down : %s', output_error_template => 'OperStatus Down : %s',
                 output_use => 'global_oper_down_absolute',  threshold_use => 'global_oper_down_absolute',
@@ -360,7 +359,7 @@ sub set_counters_traffic {
     return if ($self->{no_traffic} != 0 && $self->{no_set_traffic} != 0);
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-traffic', filter => 'add_traffic', set => {
+        { label => 'in-traffic', filter => 'add_traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => $self->set_key_values_in_traffic(),
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -369,7 +368,7 @@ sub set_counters_traffic {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
             }
         },
-        { label => 'out-traffic', filter => 'add_traffic', set => {
+        { label => 'out-traffic', filter => 'add_traffic', nlabel => 'interface.traffic.out.bitspersecond', set => {
                 key_values => $self->set_key_values_out_traffic(),
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
@@ -387,7 +386,7 @@ sub set_counters_errors {
     return if ($self->{no_errors} != 0 && $self->{no_set_errors} != 0);
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-discard', filter => 'add_errors', set => {
+        { label => 'in-discard', filter => 'add_errors', nlabel => 'interface.packets.in.discards.count', set => {
                 key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Discard : %s',
@@ -395,7 +394,7 @@ sub set_counters_errors {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold'),
             }
         },
-        { label => 'in-error', filter => 'add_errors', set => {
+        { label => 'in-error', filter => 'add_errors', nlabel => 'interface.packets.in.errors.count', set => {
                 key_values => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Error : %s',
@@ -403,7 +402,7 @@ sub set_counters_errors {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold'),
             }
         },
-        { label => 'out-discard', filter => 'add_errors', set => {
+        { label => 'out-discard', filter => 'add_errors', nlabel => 'interface.packets.out.discards.count', set => {
                 key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Discard : %s',
@@ -411,7 +410,7 @@ sub set_counters_errors {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold'),
             }
         },
-        { label => 'out-error', filter => 'add_errors', set => {
+        { label => 'out-error', filter => 'add_errors', nlabel => 'interface.packets.out.errors.count', set => {
                 key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Error : %s',
@@ -428,7 +427,7 @@ sub set_counters_cast {
     return if ($self->{no_cast} != 0 && $self->{no_set_cast} != 0);
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-ucast', filter => 'add_cast', set => {
+        { label => 'in-ucast', filter => 'add_cast', nlabel => 'interface.packets.in.unicast.count', set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'iucast', total_ref1 => 'ibcast', total_ref2 => 'imcast' },
                 output_template => 'In Ucast : %.2f %%', output_error_template => 'In Ucast : %s',
@@ -439,7 +438,7 @@ sub set_counters_cast {
                 ],
             }
         },
-        { label => 'in-bcast', filter => 'add_cast', set => {
+        { label => 'in-bcast', filter => 'add_cast', nlabel => 'interface.packets.in.broadcast.count', set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'ibcast', total_ref1 => 'iucast', total_ref2 => 'imcast' },
                 output_template => 'In Bcast : %.2f %%', output_error_template => 'In Bcast : %s',
@@ -450,7 +449,7 @@ sub set_counters_cast {
                 ],
             }
         },
-        { label => 'in-mcast', filter => 'add_cast', set => {
+        { label => 'in-mcast', filter => 'add_cast', nlabel => 'interface.packets.in.multicast.count', set => {
                 key_values => [ { name => 'iucast', diff => 1 }, { name => 'imcast', diff => 1 }, { name => 'ibcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'imcast', total_ref1 => 'iucast', total_ref2 => 'ibcast' },
                 output_template => 'In Mcast : %.2f %%', output_error_template => 'In Mcast : %s',
@@ -461,7 +460,7 @@ sub set_counters_cast {
                 ],
             }
         },
-        { label => 'out-ucast', filter => 'add_cast', set => {
+        { label => 'out-ucast', filter => 'add_cast', nlabel => 'interface.packets.out.unicast.count', set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'oucast', total_ref1 => 'omcast', total_ref2 => 'obcast' },
                 output_template => 'Out Ucast : %.2f %%', output_error_template => 'Out Ucast : %s',
@@ -472,7 +471,7 @@ sub set_counters_cast {
                 ],
             }
         },
-        { label => 'out-bcast', filter => 'add_cast', set => {
+        { label => 'out-bcast', filter => 'add_cast', nlabel => 'interface.packets.out.broadcast.count', set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'obcast', total_ref1 => 'omcast', total_ref2 => 'oucast' },
                 output_template => 'Out Bcast : %.2f %%', output_error_template => 'Out Bcast : %s',
@@ -483,7 +482,7 @@ sub set_counters_cast {
                 ],
             }
         },
-        { label => 'out-mcast', filter => 'add_cast', set => {
+        { label => 'out-mcast', filter => 'add_cast', nlabel => 'interface.packets.out.multicast.count', set => {
                 key_values => [ { name => 'oucast', diff => 1 }, { name => 'omcast', diff => 1 }, { name => 'obcast', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => \&custom_cast_calc, closure_custom_calc_extra_options => { label_ref => 'omcast', total_ref1 => 'oucast', total_ref2 => 'obcast' },
                 output_template => 'Out Mcast : %.2f %%', output_error_template => 'Out Mcast : %s',
@@ -503,7 +502,7 @@ sub set_counters_speed {
     return if ($self->{no_speed} != 0 && $self->{no_set_speed} != 0);
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'speed', filter => 'add_speed', set => {
+        { label => 'speed', filter => 'add_speed', nlabel => 'interface.speed.bitspersecond', set => {
                 key_values => [ { name => 'speed' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_speed_calc'),
                 output_template => 'Speed : %s%s/s', output_error_template => 'Speed : %s%s/s',
@@ -524,7 +523,7 @@ sub set_counters_volume {
     return if ($self->{no_volume} != 0 && $self->{no_set_volume} != 0);
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-volume', filter => 'add_volume', set => {
+        { label => 'in-volume', filter => 'add_volume', nlabel => 'interface.volume.in.bytes', set => {
                 key_values => [ { name => 'in_volume', diff => 1 }, { name => 'display' } ],
                 output_template => 'Volume In : %.2f %s',
                 output_change_bytes => 1,
@@ -534,7 +533,7 @@ sub set_counters_volume {
                 ],
             }
         },
-        { label => 'out-volume', filter => 'add_volume', set => {
+        { label => 'out-volume', filter => 'add_volume', nlabel => 'interface.volume.out.bytes', set => {
                 key_values => [ { name => 'out_volume', diff => 1 }, { name => 'display' } ],
                 output_template => 'Volume Out : %.2f %s',
                 output_change_bytes => 1,

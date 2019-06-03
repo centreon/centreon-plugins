@@ -52,7 +52,7 @@ sub set_counters_global {
     $self->SUPER::set_counters_global(%options);
 
     push @{$self->{maps_counters}->{global}}, 
-        { label => 'total-link-up', filter => 'add_global', set => {
+        { label => 'total-link-up', filter => 'add_global', nlabel => 'total.interfaces.link.up.count', set => {
                 key_values => [ { name => 'global_link_up' }, { name => 'total_port' } ],
                 output_template => 'LinkStatus Up : %s', output_error_template => 'LinkStatus Up : %s',
                 output_use => 'global_link_up_absolute',  threshold_use => 'global_link_up_absolute',
@@ -62,7 +62,7 @@ sub set_counters_global {
                 ],
             }
         },
-        { label => 'total-link-down', filter => 'add_global', set => {
+        { label => 'total-link-down', filter => 'add_global', nlabel => 'total.interfaces.link.down.count', set => {
                 key_values => [ { name => 'global_link_down' }, { name => 'total_port' } ],
                 output_template => 'LinkStatus Down : %s', output_error_template => 'LinkStatus Down : %s',
                 output_use => 'global_link_down_absolute',  threshold_use => 'global_link_down_absolute',
@@ -79,7 +79,7 @@ sub set_counters_errors {
     my ($self, %options) = @_;
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-crc', filter => 'add_errors', set => {
+        { label => 'in-crc', filter => 'add_errors', nlabel => 'interface.packets.in.crc.count', set => {
                 key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
