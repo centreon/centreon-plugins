@@ -66,6 +66,16 @@ sub set_counters {
     #};    
 }
 
+sub get_callback {
+    my ($self, %options) = @_;
+
+    if (defined($options{method_name})) {
+        return $self->can($options{method_name});
+    }
+    
+    return undef;
+}
+
 sub call_object_callback {
     my ($self, %options) = @_;
     
@@ -121,7 +131,7 @@ sub new {
     }
     
     $self->{maps_counters} = {} if (!defined($self->{maps_counters}));
-    $self->set_counters();
+    $self->set_counters(%options);
     
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
@@ -270,6 +280,7 @@ sub run_instances {
     my ($self, %options) = @_;
     
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
+    my $cb_init_counters = $self->get_callback(method_name => $options{config}->{cb_init_counters});
     my $display_status_lo = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
     my $no_message_multiple = 1;
@@ -291,10 +302,11 @@ sub run_instances {
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
             my $obj = $_->{obj};
-            
+
             next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
-            
+            next if ($cb_init_counters && $self->$cb_init_counters(%$_) == 1);
+
             $no_message_multiple = 0;
             $obj->set(instance => $id);
         
