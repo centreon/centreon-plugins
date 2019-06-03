@@ -123,7 +123,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-pool:s"           => { name => 'filter_pool' },
+        'filter-pool:s'     => { name => 'filter_pool' },
+        'check-order:s'     => { name => 'check_order', default => 'enhanced_pool,pool,process,system_ext' },
     });
 
     return $self;
@@ -301,11 +302,13 @@ sub manage_selection {
     $self->{checked_memory} = 0;
     $self->{memory} = {};
 
-    $self->check_memory_enhanced_pool();
-    $self->check_memory_pool();
-    $self->check_memory_process();
-    $self->check_memory_system_ext();
-    
+    foreach (split /,/, $self->{option_results}->{check_order}) {
+        my $method = $self->can('check_memory_' . $_);
+        if ($method) {
+            $self->$method();
+        }
+    }
+
     if ($self->{checked_memory} == 0) {
         $self->{output}->add_option_msg(short_msg => "Cannot find memory informations");
         $self->{output}->option_exit();
@@ -333,6 +336,11 @@ Threshold critical in percent.
 =item B<--filter-pool>
 
 Filter pool to check (can use regexp).
+
+=item B<--check-order>
+
+Check memory in standard cisco mib. If you have some issue (wrong memory information in a specific mib), you can change the order 
+(Default: 'enhanced_pool,pool,process,system_ext').
 
 =back
 
