@@ -199,6 +199,10 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
+    if (!defined($decoded->{LinkStatus})) {
+        $self->{output}->add_option_msg(short_msg => "No database replication");
+        $self->{output}->option_exit();
+    }
     $self->{global}->{LinkStatus} = $map_link_status{$decoded->{LinkStatus}};
 
     $self->{sites}->{$decoded->{Site1}} = {
