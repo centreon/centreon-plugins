@@ -135,6 +135,7 @@ sub run {
                     
                     push @disco_data, \%esx if ($self->{resource_type} eq 'esx');
                     next if ($self->{resource_type} ne 'vm');
+                    next if (!$esx->vm);
 
                     @properties = ('parent', 'config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
                         'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState');
