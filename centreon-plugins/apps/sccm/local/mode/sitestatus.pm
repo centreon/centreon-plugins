@@ -161,15 +161,31 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    foreach my $site (@{$decoded}) {
-        $self->{sites}->{$site->{SiteCode}} = {
-            display => $site->{SiteCode},
-            SiteName => $site->{SiteName},
-            Type => $map_type{$site->{Type}},
-            Mode => $map_mode{$site->{Mode}},
-            Status => $map_status{$site->{Status}},
-            SecondarySiteCMUpdateStatus => $site->{SecondarySiteCMUpdateStatus},
+	if (ref($decoded) eq "ARRAY") {
+        foreach my $site (@{$decoded}) {
+            $self->{sites}->{$site->{SiteCode}} = {
+                display => $site->{SiteCode},
+                SiteName => $site->{SiteName},
+                Type => $map_type{$site->{Type}},
+                Mode => $map_mode{$site->{Mode}},
+                Status => $map_status{$site->{Status}},
+                SecondarySiteCMUpdateStatus => $site->{SecondarySiteCMUpdateStatus},
+            };
+        }
+	} else {
+        $self->{sites}->{$decoded->{SiteCode}} = {
+            display => $decoded->{SiteCode},
+            SiteName => $decoded->{SiteName},
+            Type => $map_type{$decoded->{Type}},
+            Mode => $map_mode{$decoded->{Mode}},
+            Status => $map_status{$decoded->{Status}},
+            SecondarySiteCMUpdateStatus => $decoded->{SecondarySiteCMUpdateStatus},
         };
+    }
+
+    if (scalar(keys %{$self->{sites}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No sites found.");
+        $self->{output}->option_exit();
     }
 }
 

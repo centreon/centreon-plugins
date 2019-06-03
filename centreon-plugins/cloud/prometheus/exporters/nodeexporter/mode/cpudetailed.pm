@@ -320,17 +320,17 @@ Filter on a specific type (Must be a PromQL filter, Default: 'mode=~".*"')
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'node-idle', 'node-wait', 'node-irq', 'node-nice',
+Can be: 'node-idle', 'node-wait', 'node-interrupt', 'node-nice',
 'node-softirq', 'node-steal', 'node-system', 'node-user',
-'cpu-idle', 'cpu-wait', 'cpu-irq', 'cpu-nice', 'cpu-softirq',
+'cpu-idle', 'cpu-wait', 'cpu-interrupt', 'cpu-nice', 'cpu-softirq',
 'cpu-steal', 'cpu-system', 'cpu-user'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'node-idle', 'node-wait', 'node-irq', 'node-nice',
+Can be: 'node-idle', 'node-wait', 'node-interrupt', 'node-nice',
 'node-softirq', 'node-steal', 'node-system', 'node-user',
-'cpu-idle', 'cpu-wait', 'cpu-irq', 'cpu-nice', 'cpu-softirq',
+'cpu-idle', 'cpu-wait', 'cpu-interrupt', 'cpu-nice', 'cpu-softirq',
 'cpu-steal', 'cpu-system', 'cpu-user'.
 
 =item B<--extra-filter>

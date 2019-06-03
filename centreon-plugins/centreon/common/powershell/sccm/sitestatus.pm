@@ -44,7 +44,10 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
-    $module =  ${env:ProgramFiles(x86)} + "\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
+    $module = ${env:ProgramFiles} + "\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
+    If (-Not (Test-Path $module)) {
+        $module = ${env:ProgramFiles(x86)} + "\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1"
+    }
     Import-Module $module
 
     New-PSDrive -Name SCCMDrive -PSProvider "AdminUI.PS.Provider\CMSite" -Root $env:COMPUTERNAME -Description "SCCM Site" | Out-Null
