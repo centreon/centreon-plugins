@@ -18,11 +18,11 @@
 # limitations under the License.
 #
 
-package storage::hp::3par::7000::plugin;
+package storage::hp::3par::ssh::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -31,18 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'physicaldisk'	=> 'storage::hp::3par::7000::mode::physicaldisk',
-                         'psu'			=> 'storage::hp::3par::7000::mode::psu',
-                         'node'         => 'storage::hp::3par::7000::mode::node',
-                         'battery'		=> 'storage::hp::3par::7000::mode::battery', 
-                         'wsapi'		=> 'storage::hp::3par::7000::mode::wsapi',
-                         'cim'			=> 'storage::hp::3par::7000::mode::cim',
-                         'temperature'	=> 'storage::hp::3par::7000::mode::temperature',
-                         'storage'		=> 'storage::hp::3par::7000::mode::storage',
-                         'iscsi'		=> 'storage::hp::3par::7000::mode::iscsi',
-                         'volume'		=> 'storage::hp::3par::7000::mode::volume',
-						);
+        'components'   => 'storage::hp::3par::ssh::mode::hardware',
+        'disk-usage'   => 'storage::hp::3par::ssh::mode::diskusage',
+        'volume-usage' => 'storage::hp::3par::ssh::mode::volumeusage',
+    );
 
+    $self->{custom_modes}{ssh} = 'storage::hp::3par::ssh::custom::custom';
     return $self;
 }
 
@@ -52,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check HP 3par 7000 series in SSH.
+Check HP 3par in SSH.
 
 =cut
