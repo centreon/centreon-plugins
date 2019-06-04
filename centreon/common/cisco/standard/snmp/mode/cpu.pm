@@ -241,15 +241,10 @@ Check cpu usage (CISCO-PROCESS-MIB and CISCO-SYSTEM-EXT-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning in percent (5s,1min,5min).
-Used 5min threshold when you have only 'cpu' metric.
-
-=item B<--critical>
-
-Threshold critical in percent (5s,1min,5min).
-Used 5min threshold when you have only 'cpu' metric.
+Thresholds.
+Can be: 'core-5s', 'core-1m', 'core-5m', 'average-5s', 'average-1m', 'average-5m'.
 
 =back
 
