@@ -25,7 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::protocols::ldap::lib::ldap;
+use centreon::common::protocols::ldap::lib::ldap;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,22 +33,22 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"               => { name => 'hostname' },
-         "search-base:s"            => { name => 'search_base' },
-         "search-filter:s"          => { name => 'search_filter' },
-         "ldap-connect-options:s@"  => { name => 'ldap_connect_options' },
-         "ldap-starttls-options:s@" => { name => 'ldap_starttls_options' },
-         "ldap-bind-options:s@"     => { name => 'ldap_bind_options' },
-         "ldap-search-options:s@"   => { name => 'ldap_search_options' },
-         "tls"                      => { name => 'use_tls' },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '30' },
-         });
+    $options{options}->add_options(arguments => {
+         'hostname:s'               => { name => 'hostname' },
+         'search-base:s'            => { name => 'search_base' },
+         'search-filter:s'          => { name => 'search_filter' },
+         'ldap-connect-options:s@'  => { name => 'ldap_connect_options' },
+         'ldap-starttls-options:s@' => { name => 'ldap_starttls_options' },
+         'ldap-bind-options:s@'     => { name => 'ldap_bind_options' },
+         'ldap-search-options:s@'   => { name => 'ldap_search_options' },
+         'tls'                      => { name => 'use_tls' },
+         'username:s'   => { name => 'username' },
+         'password:s'   => { name => 'password' },
+         'warning:s'    => { name => 'warning' },
+         'critical:s'   => { name => 'critical' },
+         'timeout:s'    => { name => 'timeout', default => '30' },
+    });
+
     return $self;
 }
 
@@ -66,16 +66,34 @@ sub check_options {
     }
 
     if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
+        $self->{output}->add_option_msg(short_msg => 'Please set the hostname option');
+        $self->{output}->option_exit();
+    }
+    if (defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' &&
+        !defined($self->{option_results}->{password})) {
+        $self->{output}->add_option_msg(short_msg => "Please set --password option.");
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{search_base})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the search-base option");
+        $self->{output}->add_option_msg(short_msg => 'Please set the search-base option');
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{search_filter})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the search-filter option");
+        $self->{output}->add_option_msg(short_msg => 'Please set the search-filter option');
         $self->{output}->option_exit();
+    }
+}
+
+sub ldap_error {
+    my ($self, %options) = @_;
+    
+    if ($options{code} == 1) {
+        $self->{output}->output_add(
+            severity => 'unknown',
+            short_msg => $options{err_msg}
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
     }
 }
 
@@ -84,9 +102,25 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    apps::protocols::ldap::lib::ldap::connect($self);
-    my $search_result = apps::protocols::ldap::lib::ldap::search($self);  
-    apps::protocols::ldap::lib::ldap::quit();
+    my ($ldap_handle, $code, $err_msg) = centreon::common::protocols::ldap::lib::ldap::connect(
+        hostname => $self->{option_results}->{hostname},
+        username => $self->{option_results}->{username},
+        password => $self->{option_results}->{password},
+        timeout => $self->{option_results}->{timeout},
+        ldap_connect_options => $self->{option_results}->{ldap_connect_options},
+        use_tls => $self->{option_results}->{use_tls},
+        ldap_starttls_options => $self->{option_results}->{ldap_starttls_options},
+        ldap_bind_options => $self->{option_results}->{ldap_bind_options},
+    );
+    $self->ldap_error(code => $code, err_msg => $err_msg);
+    (my $search_result, $code, $err_msg) = centreon::common::protocols::ldap::lib::ldap::search(
+        ldap_handle => $ldap_handle,
+        search_base => $self->{option_results}->{search_base},
+        search_filter => $self->{option_results}->{search_filter},
+        ldap_search_options => $self->{option_results}->{ldap_search_options},
+    );
+    $self->ldap_error(code => $code, err_msg => $err_msg);
+    centreon::common::protocols::ldap::lib::ldap::quit(ldap_handle => $ldap_handle);
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
@@ -94,12 +128,12 @@ sub run {
     my $exit = $self->{perfdata}->threshold_check(value => $num_entries,
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Number of results returned: %s", $num_entries));
+                                short_msg => sprintf('Number of results returned: %s', $num_entries));
                                 
-    $self->{output}->perfdata_add(label => "time", unit => 's',
+    $self->{output}->perfdata_add(label => 'time', unit => 's',
                                   value => sprintf('%.3f', $timeelapsed),
                                   min => 0);
-    $self->{output}->perfdata_add(label => "entries",
+    $self->{output}->perfdata_add(label => 'entries',
                                   value => $num_entries,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
