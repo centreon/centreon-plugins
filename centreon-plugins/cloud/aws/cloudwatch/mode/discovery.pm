@@ -33,7 +33,6 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "region:s"      => { name => 'region' },
         "service:s@"    => { name => 'service' },
         "prettify"      => { name => 'prettify' },
     });
@@ -52,11 +51,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 
     if (!defined($self->{option_results}->{service}) || $self->{option_results}->{service} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --service option.");
@@ -244,6 +238,16 @@ __END__
 Resources discovery.
 
 =over 8
+
+=item B<--service>
+
+Choose the service from which discover
+resources (Can be: 'VPC', 'EC2', 'RDS',
+'ELB', 'VPN') (Mandatory).
+
+=item B<--prettify>
+
+Prettify JSON output.
 
 =back
 

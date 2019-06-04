@@ -113,6 +113,26 @@ Resources discovery.
 
 =over 8
 
+=item B<--namespace>
+
+Specify resources namespace.
+
+=item B<--type>
+
+Specify resources type.
+
+=item B<--resource-group>
+
+Specify resources resource group.
+
+=item B<--location>
+
+Specify resources location.
+
+=item B<--prettify>
+
+Prettify JSON output.
+
 =back
 
 =cut

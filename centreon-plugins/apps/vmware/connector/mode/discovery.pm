@@ -77,6 +77,15 @@ Resources discovery.
 
 =over 8
 
+=item B<--resource-type>
+
+Choose the type of resources
+to discover (Can be: 'esx', 'vm') (Mandatory).
+
+=item B<--prettify>
+
+Prettify JSON output.
+
 =back
 
 =cut
