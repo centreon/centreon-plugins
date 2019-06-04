@@ -93,12 +93,7 @@ sub load_errors {
     my ($self, %options) = @_;
 
     $self->{snmp}->load(
-        oids => [
-            $self->{oids_errors}->{oid_ifInDiscard}, $self->{oids_errors}->{oid_ifInError},
-            $self->{oids_errors}->{oid_ifOutDiscard}, $self->{oids_errors}->{oid_ifOutError},
-            $self->{oids_errors}->{oid_ifInTooShort}, $self->{oids_errors}->{oid_ifInTooLong}, $self->{oids_errors}->{oid_ifInFCSError}, $self->{oids_errors}->{oid_ifInAlignError}, $self->{oids_errors}->{oid_ifInFragment}, $self->{oids_errors}->{oid_ifInOverflow}, $self->{oids_errors}->{oid_ifInUnknownOp}, $self->{oids_errors}->{oid_ifInLengthError}, $self->{oids_errors}->{oid_ifInCodeError}, $self->{oids_errors}->{oid_ifInCarrierError}, $self->{oids_errors}->{oid_ifInJabber}, $self->{oids_errors}->{oid_ifInDrop},
-            $self->{oids_errors}->{oid_ifOutTooShort}, $self->{oids_errors}->{oid_ifOutTooLong}, $self->{oids_errors}->{oid_ifOutUnderrun}, $self->{oids_errors}->{oid_ifOutCollision}, $self->{oids_errors}->{oid_ifOutExcessiveCollision}, $self->{oids_errors}->{oid_ifOutMultipleCollision}, $self->{oids_errors}->{oid_ifOutSingleCollision}, $self->{oids_errors}->{oid_ifOutExcessiveDeferred}, $self->{oids_errors}->{oid_ifOutDeferred}, $self->{oids_errors}->{oid_ifOutLateCollision}, $self->{oids_errors}->{oid_ifOutTotalCollision}, $self->{oids_errors}->{oid_ifOutDrop}, $self->{oids_errors}->{oid_ifOutJabber}, $self->{oids_errors}->{oid_ifOutFCSError}, $self->{oids_errors}->{oid_ifOutFragment}
-        ],
+        oids => [ values %{$self->{oids_errors}} ],
         instances => $self->{array_interface_selected}
     );
 }
