@@ -113,6 +113,7 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
+        'check-order:s'     => { name => 'check_order', default => 'process,old_sys,system_ext' },
     });
 
     return $self;
@@ -121,47 +122,44 @@ sub new {
 sub check_nexus_cpu {
     my ($self, %options) = @_;
     
-    if (!defined($self->{results}->{$options{oid}}->{$options{oid} . '.0'})) {
-        return 0;
-    }
+    return if (!defined($options{snmp_result}->{$options{oid} . '.0'}));
 
     my $instance = 0;
     $self->{cpu_core}->{$instance} = {
         display => $instance,
-        cpu_5m => $self->{results}->{$options{oid}}->{$options{oid} . '.0'},
+        cpu_5m => $options{snmp_result}->{$options{oid} . '.0'},
     };
 
-    return 1;
+    $self->{checked_cpu} = 1;
 }
 
 sub check_table_cpu {
     my ($self, %options) = @_;
     
-    my $checked = 0;
+    return if ($self->{checked_cpu} == 1);
+
     my $instances =  {};
-    foreach my $oid (keys %{$self->{results}->{$options{entry}}}) {
+    foreach my $oid (keys %{$options{snmp_result}}) {
         $oid =~ /\.([0-9]+)$/;
         next if (defined($instances->{$1}));
         $instances->{$1} = 1;        
         my $instance = $1;
         
-        my $cpu5sec = defined($self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance}) ? $self->{results}->{$options{entry}}->{$options{sec5} . '.' . $instance}  : undef;
-        my $cpu1min = defined($self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance}) ? $self->{results}->{$options{entry}}->{$options{min1} . '.' . $instance} : undef;
-        my $cpu5min = defined($self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance}) ? $self->{results}->{$options{entry}}->{$options{min5} . '.' . $instance} : undef;
-        
+        my $cpu5sec = defined($options{snmp_result}->{$options{sec5} . '.' . $instance}) ? $options{snmp_result}->{$options{sec5} . '.' . $instance}  : undef;
+        my $cpu1min = defined($options{snmp_result}->{$options{min1} . '.' . $instance}) ? $options{snmp_result}->{$options{min1} . '.' . $instance} : undef;
+        my $cpu5min = defined($options{snmp_result}->{$options{min5} . '.' . $instance}) ? $options{snmp_result}->{$options{min5} . '.' . $instance} : undef;
+
         # Case that it's maybe other CPU oid in table for datas.
         next if (!defined($cpu5sec) && !defined($cpu1min) && !defined($cpu5min));
 
-        $checked = 1;
+        $self->{checked_cpu} = 1;
         $self->{cpu_core}->{$instance} = {
             display => $instance,
             cpu_5s => $cpu5sec,
             cpu_1m => $cpu1min,
             cpu_5m => $cpu5min,
         };
-    }
-    
-    return $checked;
+    }    
 }
 
 sub check_cpu_average {
@@ -186,11 +184,10 @@ sub check_cpu_average {
     };
 }
 
-sub manage_selection {
+sub check_cpu_process {
     my ($self, %options) = @_;
 
-    $self->{cpu_avg} = {};
-    $self->{cpu_core} = {};
+    return if ($self->{checked_cpu} == 1);
 
     # Cisco IOS Software releases later to 12.0(3)T and prior to 12.2(3.5)
     my $oid_cpmCPUTotalEntry = '.1.3.6.1.4.1.9.9.109.1.1.1.1';
@@ -201,31 +198,63 @@ sub manage_selection {
     my $oid_cpmCPUTotal5minRev = '.1.3.6.1.4.1.9.9.109.1.1.1.1.8';
     my $oid_cpmCPUTotal1minRev = '.1.3.6.1.4.1.9.9.109.1.1.1.1.7';
     my $oid_cpmCPUTotal5secRev = '.1.3.6.1.4.1.9.9.109.1.1.1.1.6';
+
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => $oid_cpmCPUTotalEntry, start => $oid_cpmCPUTotal5sec, end => $oid_cpmCPUTotal5minRev
+    );
+    $self->check_table_cpu(snmp_result => $snmp_result, sec5 => $oid_cpmCPUTotal5secRev, min1 => $oid_cpmCPUTotal1minRev, min5 => $oid_cpmCPUTotal5minRev);
+    $self->check_table_cpu(snmp_result => $snmp_result, sec5 => $oid_cpmCPUTotal5sec, min1 => $oid_cpmCPUTotal1min, min5 => $oid_cpmCPUTotal5min);
+}
+
+sub check_cpu_old_sys {
+    my ($self, %options) = @_;
+
+    return if ($self->{checked_cpu} == 1);
+
     # Cisco IOS Software releases prior to 12.0(3)T
     my $oid_lcpu = '.1.3.6.1.4.1.9.2.1';
     my $oid_busyPer = '.1.3.6.1.4.1.9.2.1.56'; # .0 in reality
     my $oid_avgBusy1 = '.1.3.6.1.4.1.9.2.1.57'; # .0 in reality
     my $oid_avgBusy5 = '.1.3.6.1.4.1.9.2.1.58'; # .0 in reality
+    
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => $oid_lcpu, start => $oid_busyPer, end => $oid_avgBusy5
+    );
+    $self->check_table_cpu(snmp_result => $snmp_result, sec5 => $oid_busyPer, min1 => $oid_avgBusy1, min5 => $oid_avgBusy5);
+}
+
+sub check_cpu_system_ext {
+    my ($self, %options) = @_;
+
+    return if ($self->{checked_cpu} == 1);
+
     # Cisco Nexus
     my $oid_cseSysCPUUtilization = '.1.3.6.1.4.1.9.9.305.1.1.1'; # .0 in reality
-    
-    $self->{results} = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_cpmCPUTotalEntry, start => $oid_cpmCPUTotal5sec, end => $oid_cpmCPUTotal5minRev },
-            { oid => $oid_lcpu, start => $oid_busyPer, end => $oid_avgBusy5 },
-            { oid => $oid_cseSysCPUUtilization },
-        ],
-        nothing_quit => 1
+    my $snmp_result = $self->{snmp}->get_table(
+        oid => $oid_cseSysCPUUtilization
     );
+
+    $self->check_nexus_cpu(snmp_result => $snmp_result, oid => $oid_cseSysCPUUtilization);
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    $self->{snmp} = $options{snmp};
+    $self->{cpu_avg} = {};
+    $self->{cpu_core} = {};
+    $self->{checked_cpu} = 0;
     
-    if (!$self->check_table_cpu(entry => $oid_cpmCPUTotalEntry, sec5 => $oid_cpmCPUTotal5secRev, min1 => $oid_cpmCPUTotal1minRev, min5 => $oid_cpmCPUTotal5minRev)
-        && !$self->check_table_cpu(entry => $oid_cpmCPUTotalEntry, sec5 => $oid_cpmCPUTotal5sec, min1 => $oid_cpmCPUTotal1min, min5 => $oid_cpmCPUTotal5min)
-        && !$self->check_table_cpu(entry => $oid_lcpu, sec5 => $oid_busyPer, min1 => $oid_avgBusy1, min5 => $oid_avgBusy5)
-       ) {
-        if (!$self->check_nexus_cpu(oid => $oid_cseSysCPUUtilization)) {
-            $self->{output}->add_option_msg(short_msg => "Cannot find CPU informations");
-            $self->{output}->option_exit();
+    foreach (split /,/, $self->{option_results}->{check_order}) {
+        my $method = $self->can('check_cpu_' . $_);
+        if ($method) {
+            $self->$method();
         }
+    }
+
+     if ($self->{checked_cpu} == 0) {
+        $self->{output}->add_option_msg(short_msg => "Cannot find CPU informations");
+        $self->{output}->option_exit();
     }
 
     $self->check_cpu_average();
@@ -240,6 +269,11 @@ __END__
 Check cpu usage (CISCO-PROCESS-MIB and CISCO-SYSTEM-EXT-MIB).
 
 =over 8
+
+=item B<--check-order>
+
+Check cpu in standard cisco mib. If you have some issue (wrong cpu information in a specific mib), you can change the order 
+(Default: 'process,old_sys,system_ext').
 
 =item B<--warning-*> B<--critical-*>
 
