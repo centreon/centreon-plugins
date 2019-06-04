@@ -28,315 +28,57 @@ use warnings;
 sub set_oids_errors {
     my ($self, %options) = @_;
     
-    $self->{oid_ifInDiscards} = '.1.3.6.1.2.1.2.2.1.13';
-    $self->{oid_ifInErrors} = '.1.3.6.1.2.1.2.2.1.14';
-    $self->{oid_ifOutDiscards} = '.1.3.6.1.2.1.2.2.1.19';
-    $self->{oid_ifOutErrors} = '.1.3.6.1.2.1.2.2.1.20';
-    $self->{oid_ifInTooShort} = '.1.3.6.1.4.1.14988.1.1.14.1.1.33';
-    $self->{oid_ifInTooLong} = '.1.3.6.1.4.1.14988.1.1.14.1.1.41';
-    $self->{oid_ifInFCSError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.45';
-    $self->{oid_ifInAlignError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.46';
-    $self->{oid_ifInFragment} = '.1.3.6.1.4.1.14988.1.1.14.1.1.47';
-    $self->{oid_ifInOverflow} = '.1.3.6.1.4.1.14988.1.1.14.1.1.48';
-    $self->{oid_ifInUnknownOp} = '.1.3.6.1.4.1.14988.1.1.14.1.1.50';
-    $self->{oid_ifInLengthError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.51';
-    $self->{oid_ifInCodeError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.52';
-    $self->{oid_ifInCarrierError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.53';
-    $self->{oid_ifInJabber} = '.1.3.6.1.4.1.14988.1.1.14.1.1.54';
-    $self->{oid_ifInDrop} = '.1.3.6.1.4.1.14988.1.1.14.1.1.55';
-    $self->{oid_ifOutTooShort} = '.1.3.6.1.4.1.14988.1.1.14.1.1.63';
-    $self->{oid_ifOutTooLong} = '.1.3.6.1.4.1.14988.1.1.14.1.1.71';
-    $self->{oid_ifOutUnderrun} = '.1.3.6.1.4.1.14988.1.1.14.1.1.75';
-    $self->{oid_ifOutCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.76';
-    $self->{oid_ifOutExcessiveCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.77';
-    $self->{oid_ifOutMultipleCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.78';
-    $self->{oid_ifOutSingleCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.79';
-    $self->{oid_ifOutExcessiveDeferred} = '.1.3.6.1.4.1.14988.1.1.14.1.1.80';
-    $self->{oid_ifOutDeferred} = '.1.3.6.1.4.1.14988.1.1.14.1.1.81';
-    $self->{oid_ifOutLateCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.82';
-    $self->{oid_ifOutTotalCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.83';
-    $self->{oid_ifOutDrop} = '.1.3.6.1.4.1.14988.1.1.14.1.1.85';
-    $self->{oid_ifOutJabber} = '.1.3.6.1.4.1.14988.1.1.14.1.1.86';
-    $self->{oid_ifOutFCSError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.87';
-    $self->{oid_ifOutFragment} = '.1.3.6.1.4.1.14988.1.1.14.1.1.89';
+    $self->{oids_errors}->{oid_ifInDiscard} = '.1.3.6.1.2.1.2.2.1.13';
+    $self->{oids_errors}->{oid_ifInError} = '.1.3.6.1.2.1.2.2.1.14';
+    $self->{oids_errors}->{oid_ifOutDiscard} = '.1.3.6.1.2.1.2.2.1.19';
+    $self->{oids_errors}->{oid_ifOutError} = '.1.3.6.1.2.1.2.2.1.20';
+    $self->{oids_errors}->{oid_ifInTooShort} = '.1.3.6.1.4.1.14988.1.1.14.1.1.33';
+    $self->{oids_errors}->{oid_ifInTooLong} = '.1.3.6.1.4.1.14988.1.1.14.1.1.41';
+    $self->{oids_errors}->{oid_ifInFCSError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.45';
+    $self->{oids_errors}->{oid_ifInAlignError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.46';
+    $self->{oids_errors}->{oid_ifInFragment} = '.1.3.6.1.4.1.14988.1.1.14.1.1.47';
+    $self->{oids_errors}->{oid_ifInOverflow} = '.1.3.6.1.4.1.14988.1.1.14.1.1.48';
+    $self->{oids_errors}->{oid_ifInUnknownOp} = '.1.3.6.1.4.1.14988.1.1.14.1.1.50';
+    $self->{oids_errors}->{oid_ifInLengthError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.51';
+    $self->{oids_errors}->{oid_ifInCodeError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.52';
+    $self->{oids_errors}->{oid_ifInCarrierError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.53';
+    $self->{oids_errors}->{oid_ifInJabber} = '.1.3.6.1.4.1.14988.1.1.14.1.1.54';
+    $self->{oids_errors}->{oid_ifInDrop} = '.1.3.6.1.4.1.14988.1.1.14.1.1.55';
+    $self->{oids_errors}->{oid_ifOutTooShort} = '.1.3.6.1.4.1.14988.1.1.14.1.1.63';
+    $self->{oids_errors}->{oid_ifOutTooLong} = '.1.3.6.1.4.1.14988.1.1.14.1.1.71';
+    $self->{oids_errors}->{oid_ifOutUnderrun} = '.1.3.6.1.4.1.14988.1.1.14.1.1.75';
+    $self->{oids_errors}->{oid_ifOutCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.76';
+    $self->{oids_errors}->{oid_ifOutExcessiveCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.77';
+    $self->{oids_errors}->{oid_ifOutMultipleCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.78';
+    $self->{oids_errors}->{oid_ifOutSingleCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.79';
+    $self->{oids_errors}->{oid_ifOutExcessiveDeferred} = '.1.3.6.1.4.1.14988.1.1.14.1.1.80';
+    $self->{oids_errors}->{oid_ifOutDeferred} = '.1.3.6.1.4.1.14988.1.1.14.1.1.81';
+    $self->{oids_errors}->{oid_ifOutLateCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.82';
+    $self->{oids_errors}->{oid_ifOutTotalCollision} = '.1.3.6.1.4.1.14988.1.1.14.1.1.83';
+    $self->{oids_errors}->{oid_ifOutDrop} = '.1.3.6.1.4.1.14988.1.1.14.1.1.85';
+    $self->{oids_errors}->{oid_ifOutJabber} = '.1.3.6.1.4.1.14988.1.1.14.1.1.86';
+    $self->{oids_errors}->{oid_ifOutFCSError} = '.1.3.6.1.4.1.14988.1.1.14.1.1.87';
+    $self->{oids_errors}->{oid_ifOutFragment} = '.1.3.6.1.4.1.14988.1.1.14.1.1.89';
 }
 
-sub set_counters {
+sub set_counters_errors {
     my ($self, %options) = @_;
 
-    $self->{maps_counters} = { int => {}, global => {} };
-    
-    $self->{maps_counters}->{int}->{'133_in-tooshort'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'intooshort', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'tooshort' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In TooShort : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
+    $self->set_oids_errors();
 
-    $self->{maps_counters}->{int}->{'141_in-toolong'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'intoolong', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'toolong' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In TooLong : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'145_in-fcserror'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'infcserror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'fcserror' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In FCSError : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'146_in-alignerror'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'inalignerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'alignerror' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In AlignError : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'147_in-fragment'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'infragment', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'fragment' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Fragment : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'148_in-overflow'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'inoverflow', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'overflow' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Overflow : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'150_in-unknownop'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'inunknownop', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'unknownop' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In UnknownOp : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'151_in-lengtherror'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'inlengtherror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'lengtherror' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In LengthError : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'152_in-codeerror'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'incodeerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'codeerror' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In CodeError : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'153_in-carriererror'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'incarriererror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'carriererror' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In CarrierError : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'154_in-jabber'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'injabber', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'jabber' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Jabber : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'155_in-drop'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'indrop', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'drop' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Drop : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'163_out-tooshort'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outtooshort', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'tooshort' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out TooShort : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'171_out-toolong'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outtoolong', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'toolong' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out TooLong : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'175_out-underrun'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outunderrun', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'underrun' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Underrun : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'176_out-collision'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outcollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'collision' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Collision : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'177_out-excessivecollision'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outexcessivecollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'excessivecollision' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out ExcessiveCollision : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'178_out-multiplecollision'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outmultiplecollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'multiplecollision' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out MultipleCollision : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'179_out-singlecollision'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outsinglecollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'singlecollision' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out SingleCollision : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'180_out-excessivedeferred'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outexcessivedeferred', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'excessivedeferred' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out ExcessiveDeferred : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'181_out-deferred'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outdeferred', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'deferred' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Deferred : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'182_out-latecollision'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outlatecollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'latecollision' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out LateCollision : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'183_out-totalcollision'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outtotalcollision', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'totalcollision' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out TotalCollision : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'185_out-drop'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outdrop', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'drop' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Drop : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'186_out-jabber'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outjabber', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'jabber' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Jabber : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'187_out-fcserror'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outfcserror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'fcserror' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out FCSError : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-
-    $self->{maps_counters}->{int}->{'189_out-fragment'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'outfragment', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'fragment' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Fragment : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-    
-    $self->SUPER::set_counters(%options);
+    foreach my $oid (keys %{$self->{oids_errors}}) {
+        $oid =~ /^oid_if(In|Out)(.*)$/;
+        push @{$self->{maps_counters}->{int}}, 
+            { label => lc($1) . '-' . lc($2), filter => 'add_errors', nlabel => 'interface.packets.' . lc($1) . '.' . lc($2) . '.count', set => {
+                    key_values => [ { name => lc($1.$2), diff => 1 }, { name => 'total_' . lc($1) . '_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                    closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => lc($1), label_ref2 => lc($2) },
+                    closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets ' . $1 . ' ' . $2 . ' : %s',
+                    closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                    closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                }
+            },
+        ;
+    }
 }
 
 sub new {
@@ -349,14 +91,13 @@ sub new {
 
 sub load_errors {
     my ($self, %options) = @_;
-    
-    $self->set_oids_errors();
+
     $self->{snmp}->load(
         oids => [
-            $self->{oid_ifInDiscards}, $self->{oid_ifInErrors},
-            $self->{oid_ifOutDiscards}, $self->{oid_ifOutErrors},
-            $self->{oid_ifInTooShort}, $self->{oid_ifInTooLong}, $self->{oid_ifInFCSError}, $self->{oid_ifInAlignError}, $self->{oid_ifInFragment}, $self->{oid_ifInOverflow}, $self->{oid_ifInUnknownOp}, $self->{oid_ifInLengthError}, $self->{oid_ifInCodeError}, $self->{oid_ifInCarrierError}, $self->{oid_ifInJabber}, $self->{oid_ifInDrop},
-            $self->{oid_ifOutTooShort}, $self->{oid_ifOutTooLong}, $self->{oid_ifOutUnderrun}, $self->{oid_ifOutCollision}, $self->{oid_ifOutExcessiveCollision}, $self->{oid_ifOutMultipleCollision}, $self->{oid_ifOutSingleCollision}, $self->{oid_ifOutExcessiveDeferred}, $self->{oid_ifOutDeferred}, $self->{oid_ifOutLateCollision}, $self->{oid_ifOutTotalCollision}, $self->{oid_ifOutDrop}, $self->{oid_ifOutJabber}, $self->{oid_ifOutFCSError}, $self->{oid_ifOutFragment}
+            $self->{oids_errors}->{oid_ifInDiscard}, $self->{oids_errors}->{oid_ifInError},
+            $self->{oids_errors}->{oid_ifOutDiscard}, $self->{oids_errors}->{oid_ifOutError},
+            $self->{oids_errors}->{oid_ifInTooShort}, $self->{oids_errors}->{oid_ifInTooLong}, $self->{oids_errors}->{oid_ifInFCSError}, $self->{oids_errors}->{oid_ifInAlignError}, $self->{oids_errors}->{oid_ifInFragment}, $self->{oids_errors}->{oid_ifInOverflow}, $self->{oids_errors}->{oid_ifInUnknownOp}, $self->{oids_errors}->{oid_ifInLengthError}, $self->{oids_errors}->{oid_ifInCodeError}, $self->{oids_errors}->{oid_ifInCarrierError}, $self->{oids_errors}->{oid_ifInJabber}, $self->{oids_errors}->{oid_ifInDrop},
+            $self->{oids_errors}->{oid_ifOutTooShort}, $self->{oids_errors}->{oid_ifOutTooLong}, $self->{oids_errors}->{oid_ifOutUnderrun}, $self->{oids_errors}->{oid_ifOutCollision}, $self->{oids_errors}->{oid_ifOutExcessiveCollision}, $self->{oids_errors}->{oid_ifOutMultipleCollision}, $self->{oids_errors}->{oid_ifOutSingleCollision}, $self->{oids_errors}->{oid_ifOutExcessiveDeferred}, $self->{oids_errors}->{oid_ifOutDeferred}, $self->{oids_errors}->{oid_ifOutLateCollision}, $self->{oids_errors}->{oid_ifOutTotalCollision}, $self->{oids_errors}->{oid_ifOutDrop}, $self->{oids_errors}->{oid_ifOutJabber}, $self->{oids_errors}->{oid_ifOutFCSError}, $self->{oids_errors}->{oid_ifOutFragment}
         ],
         instances => $self->{array_interface_selected}
     );
@@ -364,38 +105,11 @@ sub load_errors {
 
 sub add_result_errors {
     my ($self, %options) = @_;
-    
-    $self->{interface_selected}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{intooshort} = $self->{results}->{$self->{oid_ifInTooShort} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{intoolong} = $self->{results}->{$self->{oid_ifInTooLong} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{infcserror} = $self->{results}->{$self->{oid_ifInFCSError} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{inalignerror} = $self->{results}->{$self->{oid_ifInAlignError} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{infragment} = $self->{results}->{$self->{oid_ifInFragment} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{inoverflow} = $self->{results}->{$self->{oid_ifInOverflow} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{inunknownop} = $self->{results}->{$self->{oid_ifInUnknownOp} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{inlengtherror} = $self->{results}->{$self->{oid_ifInLengthError} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{incodeerror} = $self->{results}->{$self->{oid_ifInCodeError} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{incarriererror} = $self->{results}->{$self->{oid_ifInCarrierError} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{injabber} = $self->{results}->{$self->{oid_ifInJabber} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{indrop} = $self->{results}->{$self->{oid_ifInDrop} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outtooshort} = $self->{results}->{$self->{oid_ifOutTooShort} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outtoolong} = $self->{results}->{$self->{oid_ifOutTooLong} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outunderrun} = $self->{results}->{$self->{oid_ifOutUnderrun} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outcollision} = $self->{results}->{$self->{oid_ifOutCollision} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outexcessivecollision} = $self->{results}->{$self->{oid_ifOutExcessiveCollision} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outmultiplecollision} = $self->{results}->{$self->{oid_ifOutMultipleCollision} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outsinglecollision} = $self->{results}->{$self->{oid_ifOutSingleCollision} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outexcessivedeferred} = $self->{results}->{$self->{oid_ifOutExcessiveDeferred} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outdeferred} = $self->{results}->{$self->{oid_ifOutDeferred} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outlatecollision} = $self->{results}->{$self->{oid_ifOutLateCollision} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outtotalcollision} = $self->{results}->{$self->{oid_ifOutTotalCollision} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outdrop} = $self->{results}->{$self->{oid_ifOutDrop} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outjabber} = $self->{results}->{$self->{oid_ifOutJabber} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outfcserror} = $self->{results}->{$self->{oid_ifOutFCSError} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outfragment} = $self->{results}->{$self->{oid_ifOutFragment} . '.' . $options{instance}};
+
+    foreach my $oid (keys %{$self->{oids_errors}}) {
+        $oid =~ /^oid_if(In|Out)(.*)$/;
+        $self->{int}->{$options{instance}}->{lc($1.$2)} = $self->{results}->{$self->{oids_errors}->{$oid} . '.' . $options{instance}};
+    }
 }
 
 1;
