@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{ccache} = [
-        { label => 'used', nlabel => 'ccache.utilization.percentage' set => {
+        { label => 'used', nlabel => 'ccache.utilization.percentage', set => {
                 key_values => [ { name => 'Capacity_Value' }, { name => 'Size_Value' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
