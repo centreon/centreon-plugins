@@ -85,8 +85,51 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
+    $options{options}->add_options(arguments => {
+        'warning-errors:s'        => { name => 'warning_errors' },
+        'critical-errors:s'       => { name => 'critical_errors' },
+    });
+
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->set_oids_errors();
+
+    if (defined($options{option_results}{warning_errors})) {
+        foreach my $oid (keys %{$self->{oids_errors}}) {
+            $oid =~ /^oid_if(In|Out)(.*)$/;
+            if (exists($options{option_results}{'warning-instance-interface-packets-' . lc($1) . '-' . lc($2) . '-count'})) {
+                if (!defined($options{option_results}{'warning-instance-interface-packets-' . lc($1) . '-' . lc($2) . '-count'})) {
+                    $options{option_results}{'warning-instance-interface-packets-' . lc($1) . '-' . lc($2) . '-count'} = $options{option_results}{warning_errors};
+                }
+            } else {
+                if (!defined($options{option_results}{'warning-' . lc($1) . '-' . lc($2)})) {
+                    $options{option_results}{'warning-' . lc($1) . '-' . lc($2)} = $options{option_results}{warning_errors};
+                }
+            }
+        }
+    }
+
+    if (defined($options{option_results}{critical_errors})) {
+        foreach my $oid (keys %{$self->{oids_errors}}) {
+            $oid =~ /^oid_if(In|Out)(.*)$/;
+            if (exists($options{option_results}{'critical-instance-interface-packets-' . lc($1) . '-' . lc($2) . '-count'})) {
+                if (!defined($options{option_results}{'critical-instance-interface-packets-' . lc($1) . '-' . lc($2) . '-count'})) {
+                    $options{option_results}{'critical-instance-interface-packets-' . lc($1) . '-' . lc($2) . '-count'} = $options{option_results}{critical_errors};
+                }
+            } else {
+                if (!defined($options{option_results}{'critical-' . lc($1) . '-' . lc($2)})) {
+                    $options{option_results}{'critical-' . lc($1) . '-' . lc($2)} = $options{option_results}{critical_errors};
+                }
+            }
+        }
+    }
+
+    $self->SUPER::check_options(%options);
 }
 
 sub load_errors {
@@ -159,9 +202,17 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{d
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
 Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
+=item B<--warning-errors>
+
+Set warning threshold for all error counters.
+
+=item B<--critical-errors>
+
+Set critical threshold for all error counters.
+
 =item B<--warning-*>
 
-Threshold warning.
+Threshold warning (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
@@ -176,7 +227,7 @@ And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror
 
 =item B<--critical-*>
 
-Threshold critical.
+Threshold critical (will superseed --critical-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
