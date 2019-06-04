@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::lmsensors::plugin;
+package apps::lmsensors::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,8 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'temperature'           => 'apps::lmsensors::mode::temperature',
-			'fan'                   => 'apps::lmsensors::mode::fan',
-			'voltage'               => 'apps::lmsensors::mode::voltage',
-			'misc'                  => 'apps::lmsensors::mode::misc',
-			);
+        'sensors'    => 'apps::lmsensors::snmp::mode::sensors',
+    );
 
 	return $self;
 }
@@ -46,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check with SNMP LM-Sensors Status
+Check with SNMP LM-Sensors
 
 =cut
