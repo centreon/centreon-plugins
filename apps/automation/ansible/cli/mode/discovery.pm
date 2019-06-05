@@ -53,7 +53,7 @@ sub run {
 
     $disco_stats->{start_time} = time();
 
-    my $result = $options{custom}->ansible_list_host(host_pattern => $self->{option_results}->{host_pattern});
+    my $result = $options{custom}->ansible_list_hosts(host_pattern => $self->{option_results}->{host_pattern});
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
@@ -102,6 +102,14 @@ __END__
 Resources discovery.
 
 =over 8
+
+=item B<--host-pattern>
+
+Specify host pattern to look for (Default: 'all').
+
+=item B<--prettify>
+
+Prettify JSON output.
 
 =back
 
