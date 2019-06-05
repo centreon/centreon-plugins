@@ -325,19 +325,9 @@ Directory Path to Varnishstat Binary File (Default: /usr/bin)
 
 Parameter for Binary File (Default: ' -1 -j 2>&1')
 
-=item B<--warning-*>
+=item B<--warning-[countername]> B<--critical-[countername]>
 
-Warning Threshold for:
-hit     => Cache Hits,
-hitpass => Cache hits for Pass,
-miss    => Cache Misses
-
-=item B<--critical-*>
-
-Critical Threshold for:
-hit     => Cache Hits,
-hitpass => Cache hits for Pass,
-miss    => Cache Misses
+Thresholds. Use option --list-counters to see available counters
 
 =back
 
