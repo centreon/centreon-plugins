@@ -263,7 +263,6 @@ sub custom_errors_calc {
     $self->{result_values}->{prct} = $total == 0 ? 0 : $diff * 100 / $total;
     $self->{result_values}->{used} = $diff;
     $self->{result_values}->{total} = $total;
-    $self->{result_values}->{label} = $options{extra_options}->{label};
     if (defined($options{extra_options}->{label})) {
         $self->{result_values}->{label} = $options{extra_options}->{label};
     } else {
