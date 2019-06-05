@@ -90,7 +90,7 @@ sub calc {
     # manage only one value ;)
     foreach my $value (@{$self->{key_values}}) {
         if (defined($value->{diff}) && $value->{diff} == 1) { 
-            if ($self->{per_second} == 1) {
+            if (defined($self->{per_second}) && $self->{per_second} == 1) {
                 $self->{result_values}->{$value->{name} . '_per_second'} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
             }
             $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
@@ -118,7 +118,7 @@ sub threshold_check {
 
     if (!defined($self->{threshold_use})) {
         $value = $self->{result_values}->{$first . '_absolute'};
-        if ($self->{per_second} == 1) {
+        if (defined($self->{per_second}) && $self->{per_second} == 1) {
             $value = $self->{result_values}->{$first . '_per_second'};
         }
     } else {
@@ -281,7 +281,7 @@ sub execute {
         return -1;
     }
     
-    if ($self->{per_second} == 1) {
+    if (defined($self->{per_second}) && $self->{per_second} == 1) {
         if (!defined($self->{last_timestamp})) {
             $self->{last_timestamp} = $self->{statefile}->get(name => 'last_timestamp');
         }
@@ -292,7 +292,7 @@ sub execute {
     }
    
     my $delta_time;
-    if ($self->{per_second} == 1) {
+    if (defined($self->{per_second}) && $self->{per_second} == 1) {
         $delta_time = $options{new_datas}->{last_timestamp} - $self->{last_timestamp};
         if ($delta_time <= 0) {
             $delta_time = 1;
