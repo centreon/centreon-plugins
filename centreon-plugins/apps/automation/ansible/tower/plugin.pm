@@ -31,11 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'discovery'     => 'apps::automation::ansible::tower::mode::discovery',
+        'dashboard'             => 'apps::automation::ansible::tower::mode::dashboard',
+        'discovery'             => 'apps::automation::ansible::tower::mode::discovery',
+        'inventory-statistics'  => 'apps::automation::ansible::tower::mode::inventorystatistics',
     );
                         
     $self->{custom_modes}{towercli} = 'apps::automation::ansible::tower::custom::towercli';
-    $self->{custom_modes}{api} = 'apps::automation::ansible::tower::custom::api';
     return $self;
 }
 

@@ -124,7 +124,7 @@ sub execute {
     return $raw_results; 
 }
 
-sub tower_list_host_set_cmd {
+sub tower_list_hosts_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
@@ -133,14 +133,60 @@ sub tower_list_host_set_cmd {
     $cmd_options .= " --tower-host '$self->{host}'" if (defined($self->{host}) && $self->{host} ne '');
     $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}) && $self->{username} ne '');
     $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}) && $self->{password} ne '');
+    $cmd_options .= " --group '$options{group}'" if (defined($options{group}) && $options{group} ne '');
+    $cmd_options .= " --inventory '$options{inventory}'" if (defined($options{inventory}) && $options{inventory} ne '');
         
     return $cmd_options; 
 }
 
-sub tower_list_host {
+sub tower_list_hosts {
     my ($self, %options) = @_;
 
-    my $cmd_options = $self->tower_list_host_set_cmd(%options);
+    my $cmd_options = $self->tower_list_hosts_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results;
+}
+
+sub tower_list_inventories_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "inventory list --insecure --all-pages --format json";
+    $cmd_options .= " --tower-host '$self->{host}'" if (defined($self->{host}) && $self->{host} ne '');
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}) && $self->{username} ne '');
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}) && $self->{password} ne '');
+        
+    return $cmd_options; 
+}
+
+sub tower_list_inventories {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_list_inventories_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results;
+}
+
+sub tower_list_projects_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "project list --insecure --all-pages --format json";
+    $cmd_options .= " --tower-host '$self->{host}'" if (defined($self->{host}) && $self->{host} ne '');
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}) && $self->{username} ne '');
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}) && $self->{password} ne '');
+        
+    return $cmd_options; 
+}
+
+sub tower_list_projects {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_list_projects_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
