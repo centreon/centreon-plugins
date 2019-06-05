@@ -33,15 +33,15 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"       => { name => 'hostname' },
-                                  "username:s"       => { name => 'username' },
-                                  "password:s"       => { name => 'password' },
-                                  "timeout:s"        => { name => 'timeout', default => 30 },
-                                  "memory"           => { name => 'memory' },
-                                  "command-plink:s"  => { name => 'command_plink', default => 'plink' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'       => { name => 'hostname' },
+        'username:s'       => { name => 'username' },
+        'password:s'       => { name => 'password' },
+        'timeout:s'        => { name => 'timeout', default => 30 },
+        'memory'           => { name => 'memory' },
+        'command-plink:s'  => { name => 'command_plink', default => 'plink' },
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -77,10 +77,10 @@ sub run {
     my $cmd_in = 'show -o table -level all /SP/faultmgmt';
     my $cmd = "echo '$cmd_in' | " . $self->{option_results}->{command_plink} . " -T -l '" . $self->{option_results}->{username} . "' -batch -pw '" . $self->{option_results}->{password} . "' " . $self->{option_results}->{hostname} . " 2>&1";
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $cmd,
-                                                 timeout => $self->{option_results}->{timeout},
-                                                 wait_exit => 1
-                                                 );
+        command => $cmd,
+        timeout => $self->{option_results}->{timeout},
+        wait_exit => 1
+    );
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
         $self->{output}->output_add(severity => 'UNKNOWN', 
