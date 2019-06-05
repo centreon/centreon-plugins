@@ -22,7 +22,6 @@ package apps::automation::ansible::cli::custom::cli;
 
 use strict;
 use warnings;
-use DateTime;
 use JSON::XS;
 
 sub new {
@@ -51,7 +50,6 @@ sub new {
             "command:s"             => { name => 'command', default => 'ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json ansible' },
             "command-path:s"        => { name => 'command_path' },
             "command-options:s"     => { name => 'command_options', default => '' },
-            "proxyurl:s"            => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CLI OPTIONS', once => 1);
@@ -87,11 +85,6 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
-    if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
-        $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
-        $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
-    }
-
     return 0;
 }
 
@@ -106,7 +99,8 @@ sub execute {
         sudo => $self->{option_results}->{sudo},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $options{cmd_options});
+        command_options => $options{cmd_options}
+    );
 
     my $raw_results;
 
@@ -122,7 +116,7 @@ sub execute {
     return $raw_results; 
 }
 
-sub ansible_list_host_set_cmd {
+sub ansible_list_hosts_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
@@ -132,10 +126,10 @@ sub ansible_list_host_set_cmd {
     return $cmd_options; 
 }
 
-sub ansible_list_host {
+sub ansible_list_hosts {
     my ($self, %options) = @_;
 
-    my $cmd_options = $self->ansible_list_host_set_cmd(%options);
+    my $cmd_options = $self->ansible_list_hosts_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
     return $raw_results;
@@ -165,7 +159,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'ansible').
+Command to get information (Default: 'ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json ansible').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -175,10 +169,6 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: none).
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =back
 
