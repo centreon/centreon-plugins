@@ -120,8 +120,9 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-counters:s" => { name => 'filter_counters' },
-        "list-counters"     => { name => 'list_counters' },
+        'filter-counters:s'     => { name => 'filter_counters' },
+        'display-ok-counters:s' => { name => 'display_ok_counters' },
+        'list-counters'         => { name => 'list_counters' },
     });
     $self->{statefile_value} = undef;
     if (defined($options{statefile}) && $options{statefile}) {
@@ -229,7 +230,9 @@ sub run_global {
         push @exits, $exit2;
 
         my $output = $obj->output();
-        if (!defined($_->{display_ok}) || $_->{display_ok} != 0) {
+        if (!defined($_->{display_ok}) || $_->{display_ok} != 0 ||
+            (defined($self->{option_results}->{display_ok_counters}) && $self->{option_results}->{display_ok_counters} ne '' &&
+             $_->{label} =~ /$self->{option_results}->{display_ok_counters}/)) {
             $long_msg .= $long_msg_append . $output;
             $long_msg_append = $message_separator;
         }
@@ -322,7 +325,9 @@ sub run_instances {
             push @exits, $exit2;
 
             my $output = $obj->output();
-            if (!defined($_->{display_ok}) || $_->{display_ok} != 0) {
+            if (!defined($_->{display_ok}) || $_->{display_ok} != 0 ||
+                (defined($self->{option_results}->{display_ok_counters}) && $self->{option_results}->{display_ok_counters} ne '' &&
+                 $_->{label} =~ /$self->{option_results}->{display_ok_counters}/)) {
                 $long_msg .= $long_msg_append . $output;
                 $long_msg_append = $message_separator;
             }
