@@ -197,6 +197,8 @@ sub request_api {
     }
 
     $self->settings();
+    
+    my $lang = $self->{http}->request(method => 'GET', url_path => '/api/set/cli-parameters/locale/English');
 
     $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port} .
         $options{url_path} . "'", debug => 1);

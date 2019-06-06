@@ -216,25 +216,25 @@ Check volumes statistics.
 
 Filter volume name (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-instance-*>
 
 Threshold warning.
-Can be: 'volume.data.read.bytespersecond', 'volume.data.written.bytespersecond',
-'volume.reads.count', 'volume.writes.count',
-'volume.data.transfer.bytespersecond', 'volume.iops.ops',
-'volume.cache.write.usage.percentage', 'volume.cache.write.hits.count',
-'volume.cache.write.misses.count', 'volume.cache.read.hits.count',
-'volume.cache.read.misses.count'.
+Can be: 'volume-data-read-bytespersecond', 'volume-data-written-bytespersecond',
+'volume-reads-count', 'volume-writes-count',
+'volume-data-transfer-bytespersecond', 'volume-iops-ops',
+'volume-cache-write-usage-percentage', 'volume-cache-write-hits-count',
+'volume-cache-write-misses-count', 'volume-cache-read-hits-count',
+'volume-cache-read-misses-count'-
 
-=item B<--critical-*>
+=item B<--critical-instance-*>
 
 Threshold critical.
-Can be: 'volume.data.read.bytespersecond', 'volume.data.written.bytespersecond',
-'volume.reads.count', 'volume.writes.count',
-'volume.data.transfer.bytespersecond', 'volume.iops.ops',
-'volume.cache.write.usage.percentage', 'volume.cache.write.hits.count',
-'volume.cache.write.misses.count', 'volume.cache.read.hits.count',
-'volume.cache.read.misses.count'.
+Can be: 'volume-data-read-bytespersecond', 'volume-data-written-bytespersecond',
+'volume-reads-count', 'volume-writes-count',
+'volume-data-transfer-bytespersecond', 'volume-iops-ops',
+'volume-cache-write-usage-percentage', 'volume-cache-write-hits-count',
+'volume-cache-write-misses-count', 'volume-cache-read-hits-count',
+'volume-cache-read-misses-count'.
 
 =back
 
