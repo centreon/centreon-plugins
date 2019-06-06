@@ -236,8 +236,8 @@ sub custom_errors_threshold {
 sub custom_errors_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Packets %s %s : %.2f%% (%s)",
-                      ucfirst($self->{result_values}->{label1}), ucfirst($self->{result_values}->{label2}),
+    my $msg = sprintf("Packets %s : %.2f%% (%s)",
+                      $self->{result_values}->{label},
                       $self->{result_values}->{prct}, $self->{result_values}->{used});
     return $msg;
 }
@@ -263,6 +263,11 @@ sub custom_errors_calc {
     $self->{result_values}->{prct} = $total == 0 ? 0 : $diff * 100 / $total;
     $self->{result_values}->{used} = $diff;
     $self->{result_values}->{total} = $total;
+    if (defined($options{extra_options}->{label})) {
+        $self->{result_values}->{label} = $options{extra_options}->{label};
+    } else {
+        $self->{result_values}->{label} = ucfirst($options{extra_options}->{label_ref1}) . ' ' . ucfirst($options{extra_options}->{label_ref2});
+    }
     $self->{result_values}->{label1} = $options{extra_options}->{label_ref1};
     $self->{result_values}->{label2} = $options{extra_options}->{label_ref2};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
