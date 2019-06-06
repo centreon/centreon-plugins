@@ -102,7 +102,12 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $oid_nasArrayEntry = '.1.3.6.1.4.1.5227.27.1.3.1';
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_nasArrayEntry, end => $mapping->{nasArrayUsed}->{oid}, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_nasArrayEntry,
+        start => $mapping->{nasArrayCapacity}->{oid},
+        end => $mapping->{nasArrayUsed}->{oid},
+        nothing_quit => 1
+    );
 
     $self->{array} = {};
     foreach my $oid (keys %{$snmp_result}) {
