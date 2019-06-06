@@ -115,7 +115,8 @@ my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_entSensorValueEntry }, { oid => $oid_entSensorThresholdEntry };
+    push @{$self->{request}}, { oid => $oid_entSensorValueEntry, end => $mapping->{entSensorStatus}->{oid} }, 
+        { oid => $oid_entSensorThresholdEntry, end => $mapping2->{entSensorThresholdValue}->{oid} };
 }
 
 sub get_default_warning_threshold {
