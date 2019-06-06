@@ -1,3 +1,7 @@
+2019-06-06 Colin Gagnaire <cgagnaire@centreon.com> - 3.0.2
+ * Fix: ESX with no VMs causes VM discovery to crash
+ * Fix: VM with no folder causes VM discovery to crash
+ 
 2019-04-12 Colin Gagnaire <cgagnaire@centreon.com> - 3.0.1
  * Enhancement: add resource type filter option for discovery
  * Enhancement: add uuid and folder to vm discovery
