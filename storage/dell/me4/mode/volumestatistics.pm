@@ -224,7 +224,7 @@ Can be: 'volume-data-read-bytespersecond', 'volume-data-written-bytespersecond',
 'volume-data-transfer-bytespersecond', 'volume-iops-ops',
 'volume-cache-write-usage-percentage', 'volume-cache-write-hits-count',
 'volume-cache-write-misses-count', 'volume-cache-read-hits-count',
-'volume-cache-read-misses-count'-
+'volume-cache-read-misses-count'.
 
 =item B<--critical-instance-*>
 

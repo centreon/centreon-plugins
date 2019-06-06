@@ -245,7 +245,7 @@ Can be: 'controller-data-read-bytespersecond', 'controller-data-written-bytesper
 'controller-commands-forwarded-count',
 'controller-cache-write-usage-percentage', 'controller-cache-write-hits-count',
 'controller-cache-write-misses-count', 'controller-cache-read-hits-count',
-'controller-cache-read-misses-count', 'controller-cpu-utilization-percentage'-
+'controller-cache-read-misses-count', 'controller-cpu-utilization-percentage'.
 
 =item B<--critical-instance-*>
 
