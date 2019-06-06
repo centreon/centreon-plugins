@@ -32,19 +32,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'health'           => 'storage::hp::p2000::xmlapi::mode::health',
-        'list-volumes'     => 'storage::hp::p2000::xmlapi::mode::listvolumes',
-        'volume-stats'     => 'storage::hp::p2000::xmlapi::mode::volumesstats',
+        'health'         => 'storage::hp::p2000::xmlapi::mode::health',
+        'list-volumes'   => 'storage::hp::p2000::xmlapi::mode::listvolumes',
+        'volume-stats'   => 'storage::hp::p2000::xmlapi::mode::volumesstats',
     );
     $self->{custom_modes}{p2000xml} = 'storage::hp::p2000::xmlapi::custom';
 
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
 }
 
 1;

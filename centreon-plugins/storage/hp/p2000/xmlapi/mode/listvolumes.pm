@@ -32,9 +32,9 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "name:s"              => { name => 'name' },
-        "regexp"              => { name => 'use_regexp' },
-        "filter-type:s"       => { name => 'filter_type' },
+        'name:s'        => { name => 'name' },
+        'regexp"        => { name => 'use_regexp' },
+        'filter-type:s' => { name => 'filter_type' },
     });
 
     $self->{volume_name_selected} = [];
@@ -50,10 +50,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $self->{p2000}->get_infos(cmd => 'show volumes', 
-                                                 base_type => 'volumes',
-                                                 key => 'volume-name', 
-                                                 properties_name => '^volume-type$');
+    ($self->{results}) = $self->{p2000}->get_infos(
+        cmd => 'show volumes', 
+        base_type => 'volumes',
+        key => 'volume-name', 
+        properties_name => '^volume-type$'
+    );
     foreach my $name (keys %{$self->{results}}) {
         my $volume_type = $self->{results}->{$name}->{'volume-type'};
         
