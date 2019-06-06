@@ -26,7 +26,7 @@ use warnings;
 sub load {
     my ($self) = @_;
 
-    $self->{json_results}->{sensors} = $self->{custom}->request_api(method => 'GET', url_path => '/api/show/sensors');
+    $self->{json_results}->{sensors} = $self->{custom}->request_api(method => 'GET', url_path => '/api/show/sensor-status');
 }
 
 my %mapping = (

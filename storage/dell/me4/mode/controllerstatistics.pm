@@ -236,27 +236,27 @@ Check controllers statistics.
 
 Filter controller name (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-instance-*>
 
 Threshold warning.
-Can be: 'controller.data.read.bytespersecond', 'controller.data.written.bytespersecond',
-'controller.reads.count', 'controller.writes.count',
-'controller.data.transfer.bytespersecond', 'controller.iops.ops',
-'controller.commands.forwarded.count',
-'controller.cache.write.usage.percentage', 'controller.cache.write.hits.count',
-'controller.cache.write.misses.count', 'controller.cache.read.hits.count',
-'controller.cache.read.misses.count', 'controller.cpu.utilization.percentage'.
+Can be: 'controller-data-read-bytespersecond', 'controller-data-written-bytespersecond',
+'controller-reads-count', 'controller-writes-count',
+'controller-data-transfer-bytespersecond', 'controller-iops-ops',
+'controller-commands-forwarded-count',
+'controller-cache-write-usage-percentage', 'controller-cache-write-hits-count',
+'controller-cache-write-misses-count', 'controller-cache-read-hits-count',
+'controller-cache-read-misses-count', 'controller-cpu-utilization-percentage'-
 
-=item B<--critical-*>
+=item B<--critical-instance-*>
 
 Threshold critical.
-Can be: 'controller.data.read.bytespersecond', 'controller.data.written.bytespersecond',
-'controller.reads.count', 'controller.writes.count',
-'controller.data.transfer.bytespersecond', 'controller.iops.ops',
-'controller.commands.forwarded.count',
-'controller.cache.write.usage.percentage', 'controller.cache.write.hits.count',
-'controller.cache.write.misses.count', 'controller.cache.read.hits.count',
-'controller.cache.read.misses.count', 'controller.cpu.utilization.percentage'.
+Can be: 'controller-data-read-bytespersecond', 'controller-data-written-bytespersecond',
+'controller-reads-count', 'controller-writes-count',
+'controller-data-transfer-bytespersecond', 'controller-iops-ops',
+'controller-commands-forwarded-count',
+'controller-cache-write-usage-percentage', 'controller-cache-write-hits-count',
+'controller-cache-write-misses-count', 'controller-cache-read-hits-count',
+'controller-cache-read-misses-count', 'controller-cpu-utilization-percentage'.
 
 =back
 
