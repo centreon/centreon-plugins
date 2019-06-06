@@ -27,6 +27,7 @@ sub load {
     my ($self) = @_;
 
     $self->{json_results}->{controllers} = $self->{custom}->request_api(method => 'GET', url_path => '/api/show/controllers');
+}
 
 sub check {
     my ($self) = @_;
