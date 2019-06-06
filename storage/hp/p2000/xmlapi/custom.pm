@@ -30,10 +30,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
 
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
@@ -46,13 +42,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s@"      => { name => 'hostname' },
-            "port:s@"          => { name => 'port' },
-            "proto:s@"         => { name => 'proto' },
-            "urlpath:s@"       => { name => 'url_path' },
-            "username:s@"      => { name => 'username' },
-            "password:s@"      => { name => 'password' },
-            "timeout:s@"       => { name => 'timeout' },
+            'hostname:s@'      => { name => 'hostname' },
+            'port:s@'          => { name => 'port' },
+            'proto:s@'         => { name => 'proto' },
+            'urlpath:s@'       => { name => 'url_path' },
+            'username:s@'      => { name => 'username' },
+            'password:s@'      => { name => 'password' },
+            'timeout:s@'       => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'P2000 OPTIONS', once => 1);
@@ -68,20 +64,15 @@ sub new {
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
         if ($_ eq $self->{mode}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
@@ -97,8 +88,6 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still hostname
-    # return 0 = no hostname left
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
@@ -109,7 +98,7 @@ sub check_options {
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
         
     if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
     if (!defined($self->{username}) || !defined($self->{password})) {
@@ -216,7 +205,8 @@ sub get_infos {
         if ($return_code != 0) {
             $nodestatus = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='response']");
             @nodes = $nodestatus->get_nodelist();
-            $node = shift @nodes;   
+            $node = shift @nodes;
+            return ({}, 0, $node->string_value) if (defined($options{no_quit}) && $options{no_quit} == 1);
             $self->{output}->add_option_msg(short_msg => $node->string_value);
             $self->{output}->option_exit();
         }
@@ -240,7 +230,7 @@ sub get_infos {
         }
     }
     
-    return $results;
+    return ($results, 1);
 }
 
 ##############

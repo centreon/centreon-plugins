@@ -127,8 +127,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
-        "name:s"                => { name => 'name' },
-        "regexp"                => { name => 'use_regexp' },
+        'name:s'    => { name => 'name' },
+        'regexp'    => { name => 'use_regexp' },
     });
 
     return $self;
@@ -143,7 +143,7 @@ sub prefix_volume_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->get_infos(
+    my ($result) = $options{custom}->get_infos(
         cmd => 'show volume-statistics', 
         base_type => 'volume-statistics',
         key => 'volume-name',
@@ -165,11 +165,11 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{volume}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No volume found.");
+        $self->{output}->add_option_msg(short_msg => 'No volume found.');
         $self->{output}->option_exit();
     }
     
-    $self->{cache_name} = "hp_p2000_" . $options{custom}->{hostname}  . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'hp_p2000_' . $options{custom}->{hostname}  . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
