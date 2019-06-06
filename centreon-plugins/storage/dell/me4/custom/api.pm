@@ -138,6 +138,12 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
+sub get_hostname {
+    my ($self, %options) = @_;
+
+    return $self->{hostname};
+}
+
 sub get_session_key {
     my ($self, %options) = @_;
 

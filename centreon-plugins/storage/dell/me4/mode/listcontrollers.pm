@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::listvolumes;
+package storage::dell::me4::mode::listcontrollers;
 
 use base qw(centreon::plugins::mode);
 
@@ -46,25 +46,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{result} = $options{custom}->request_api(method => 'GET', url_path => '/api/show/volumes');
+    $self->{result} = $options{custom}->request_api(method => 'GET', url_path => '/api/show/controllers');
 }
 
 sub run {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $volume (@{$self->{result}->{volumes}}) {
+    foreach my $controller (@{$self->{result}->{controllers}}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $volume->{'volume-name'} !~ /$self->{option_results}->{filter_name}/);
+            && $controller->{'durable-id'} !~ /$self->{option_results}->{filter_name}/);
         
-        $self->{output}->output_add(long_msg => sprintf("[name = %s][volumegroup = %s]",
-            $volume->{'volume-name'},
-            $volume->{'volume-group'},
+        $self->{output}->output_add(long_msg => sprintf("[name = %s]",
+            $controller->{'durable-id'},
         ));
     }
 
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List volumes:');
+                                short_msg => 'List controllers:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -72,17 +71,16 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'volumegroup']);
+    $self->{output}->add_disco_format(elements => ['name']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $volume (@{$self->{volumes}}) {
+    foreach my $controller (@{$self->{controllers}}) {
         $self->{output}->add_disco_entry(
-            name => $volume->{'volume-name'},
-            volumegroup => $volume->{'volume-group'},
+            name => $controller->{'durable-id'},
         );
     }
 }
@@ -93,13 +91,13 @@ __END__
 
 =head1 MODE
 
-List volumes.
+List controllers.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter volume name (Can be a regexp).
+Filter controller name (Can be a regexp).
 
 =back
 
