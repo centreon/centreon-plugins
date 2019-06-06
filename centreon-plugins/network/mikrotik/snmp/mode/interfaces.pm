@@ -71,7 +71,7 @@ sub set_counters_errors {
         push @{$self->{maps_counters}->{int}}, 
             { label => lc($1) . '-' . lc($2), filter => 'add_errors', nlabel => 'interface.packets.' . lc($1) . '.' . lc($2) . '.count', set => {
                     key_values => [ { name => lc($1.$2), diff => 1 }, { name => 'total_' . lc($1) . '_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-                    closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => lc($1), label_ref2 => lc($2) },
+                    closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label => $1 . ' ' . $2, label_ref1 => lc($1), label_ref2 => lc($2) },
                     closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets ' . $1 . ' ' . $2 . ' : %s',
                     closure_custom_perfdata => $self->can('custom_errors_perfdata'),
                     closure_custom_threshold_check => $self->can('custom_errors_threshold'),
