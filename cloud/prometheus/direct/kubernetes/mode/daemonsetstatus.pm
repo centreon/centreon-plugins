@@ -28,46 +28,46 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
-    
+
     $self->{output}->perfdata_add(
         label => 'desired',
-        nlabel => 'kubernetes.daemonset.nodes.desired.count',
+        nlabel => 'daemonset.nodes.desired.count',
         value => $self->{result_values}->{desired},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'current',
-        nlabel => 'kubernetes.daemonset.nodes.current.count',
+        nlabel => 'daemonset.nodes.current.count',
         value => $self->{result_values}->{current},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'available',
-        nlabel => 'kubernetes.daemonset.nodes.available.count',
+        nlabel => 'daemonset.nodes.available.count',
         value => $self->{result_values}->{available},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'unavailable',
-        nlabel => 'kubernetes.daemonset.nodes.unavailable.count',
+        nlabel => 'daemonset.nodes.unavailable.count',
         value => $self->{result_values}->{unavailable},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'up_to_date',
-        nlabel => 'kubernetes.daemonset.nodes.uptodate.count',
+        nlabel => 'daemonset.nodes.uptodate.count',
         value => $self->{result_values}->{up_to_date},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'ready',
-        nlabel => 'kubernetes.daemonset.nodes.ready.count',
+        nlabel => 'daemonset.nodes.ready.count',
         value => $self->{result_values}->{ready},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'misscheduled',
-        nlabel => 'kubernetes.daemonset.nodes.misscheduled.count',
+        nlabel => 'daemonset.nodes.misscheduled.count',
         value => $self->{result_values}->{misscheduled},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );

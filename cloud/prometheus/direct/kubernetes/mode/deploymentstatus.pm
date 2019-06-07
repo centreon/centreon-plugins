@@ -31,31 +31,31 @@ sub custom_status_perfdata {
     
     $self->{output}->perfdata_add(
         label => 'desired',
-        nlabel => 'kubernetes.deployment.replicas.desired.count',
+        nlabel => 'deployment.replicas.desired.count',
         value => $self->{result_values}->{desired},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'current',
-        nlabel => 'kubernetes.deployment.replicas.current.count',
+        nlabel => 'deployment.replicas.current.count',
         value => $self->{result_values}->{current},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'available',
-        nlabel => 'kubernetes.deployment.replicas.available.count',
+        nlabel => 'deployment.replicas.available.count',
         value => $self->{result_values}->{available},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'unavailable',
-        nlabel => 'kubernetes.deployment.replicas.unavailable.count',
+        nlabel => 'deployment.replicas.unavailable.count',
         value => $self->{result_values}->{unavailable},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
     $self->{output}->perfdata_add(
         label => 'up_to_date',
-        nlabel => 'kubernetes.deployment.replicas.uptodate.count',
+        nlabel => 'deployment.replicas.uptodate.count',
         value => $self->{result_values}->{up_to_date},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
