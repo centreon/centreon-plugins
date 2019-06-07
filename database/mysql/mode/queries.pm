@@ -34,7 +34,7 @@ sub set_counters {
     ];
    
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'queries.persecond', set => {
+        { label => 'total', nlabel => 'queries.total.persecond', set => {
                 key_values => [ { name => 'Queries', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Total : %d',
