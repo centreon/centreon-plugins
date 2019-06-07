@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'load1', set => {
+        { label => 'load1', nlabel => 'load.1minute.count', set => {
                 key_values => [ { name => 'load1' }, { name => 'display' } ],
                 output_template => 'Load 1 minute: %.2f',
                 output_change_bytes => 1,
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'load5', set => {
+        { label => 'load5', nlabel => 'load.5minutes.count', set => {
                 key_values => [ { name => 'load5' }, { name => 'display' } ],
                 output_template => 'Load 5 minutes: %.2f',
                 output_change_bytes => 1,
@@ -53,7 +53,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'load15', set => {
+        { label => 'load15', nlabel => 'load.15minutes.count', set => {
                 key_values => [ { name => 'load15' }, { name => 'display' } ],
                 output_template => 'Load 15 minutes: %.2f',
                 output_change_bytes => 1,
@@ -78,13 +78,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                  "filter-counters:s"       => { name => 'filter_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+        "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
+        "extra-filter:s@"         => { name => 'extra_filter' },
+        "metric-overload:s@"      => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -123,15 +121,19 @@ sub manage_selection {
 
     $self->{nodes} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{load1} . '",' .
-                                                            $self->{option_results}->{instance} .
-                                                            $self->{extra_filter} . '}, "__name__", "load1", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{load5} . '",' .
-                                                            $self->{option_results}->{instance} .
-                                                            $self->{extra_filter} . '}, "__name__", "load5", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{load15} . '",' .
-                                                            $self->{option_results}->{instance} .
-                                                            $self->{extra_filter} . '}, "__name__", "load15", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{load1} . '",' .
+                $self->{option_results}->{instance} .
+                $self->{extra_filter} . '}, "__name__", "load1", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{load5} . '",' .
+                $self->{option_results}->{instance} .
+                $self->{extra_filter} . '}, "__name__", "load5", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{load15} . '",' .
+                $self->{option_results}->{instance} .
+                $self->{extra_filter} . '}, "__name__", "load15", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};

@@ -104,7 +104,6 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-counters:s"     => { name => 'filter_counters' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "metric-overload:s@"    => { name => 'metric_overload' },
     });
