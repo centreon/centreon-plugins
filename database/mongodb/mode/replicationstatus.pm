@@ -239,12 +239,12 @@ Set critical threshold for members status (Default: '%{health} !~ /up/').
 Can used special variables like: %{name}, %{state}, %{health},
 %{slave_delay}, %{priority}.
 
-=item B<--warning-instance-lag>
+=item B<--warning-instance-lag-seconds>
 
 Threshold warning for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).
 
-=item B<--critical-instance-lag>
+=item B<--critical-instance-lag-seconds>
 
 Threshold critical for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).
