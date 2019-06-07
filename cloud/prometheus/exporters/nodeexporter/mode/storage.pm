@@ -42,8 +42,8 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label . $extra_label, unit => 'B',
-        nlabel => 'memory.usage.bytes', 
+        label => $label, unit => 'B',
+        nlabel => 'storage.space.usage.bytes', 
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),

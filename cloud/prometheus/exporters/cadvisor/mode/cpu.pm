@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{containers} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'container.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'usage' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Usage: %.2f %%',
                 perfdatas => [
@@ -44,7 +44,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'throttled', set => {
+        { label => 'throttled', nlabel => 'container.cpu.throttled.percentage', set => {
                 key_values => [ { name => 'throttled' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Throttled: %.2f %%',
                 perfdatas => [
@@ -69,15 +69,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "cpu-attribute:s"         => { name => 'cpu_attribute', default => 'cpu="total"' },
-                                  "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
-                                  "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                  "filter-counters:s"       => { name => 'filter_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+        "cpu-attribute:s"       => { name => 'cpu_attribute', default => 'cpu="total"' },
+        "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -118,16 +116,21 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $results = $options{custom}->query_range(queries => [ 'label_replace((irate({__name__=~"' . $self->{metrics}->{usage} . '",' .
-                                                                $self->{option_results}->{cpu_attribute} . ',' .
-                                                                $self->{option_results}->{container} . ',' .
-                                                                $self->{option_results}->{pod} .
-                                                                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "usage", "", "")',
-                                                             'label_replace((irate({__name__=~"' . $self->{metrics}->{throttled} . '",' .
-                                                                $self->{option_results}->{container} . ',' .
-                                                                $self->{option_results}->{pod} .
-                                                                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "throttled", "", "")' ],
-                                                timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
+    my $results = $options{custom}->query_range(
+        queries => [
+            'label_replace((irate({__name__=~"' . $self->{metrics}->{usage} . '",' .
+                $self->{option_results}->{cpu_attribute} . ',' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "usage", "", "")',
+            'label_replace((irate({__name__=~"' . $self->{metrics}->{throttled} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100, "__name__", "throttled", "", "")'
+        ],
+        timeframe => $self->{prom_timeframe},
+        step => $self->{prom_step}
+    );
 
     foreach my $result (@{$results}) {
         next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));

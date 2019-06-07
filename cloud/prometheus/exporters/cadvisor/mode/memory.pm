@@ -30,19 +30,22 @@ sub custom_usage_perfdata {
 
     my $label = $self->{result_values}->{perfdata};
     my $value_perf = $self->{result_values}->{used};
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{perf} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    
     my %total_options = ();
     if ($self->{result_values}->{total} > 0 && $self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{label}, %total_options),
-                                  min => 0, max => $total_options{total});
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        nlabel => 'memory.' . $label . '.bytes', 
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
 }
 
 sub custom_usage_threshold {
@@ -54,8 +57,9 @@ sub custom_usage_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{result_values}->{label}, exit_litteral => 'critical' },
-                                                                                         { label => 'warning-'. $self->{result_values}->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{result_values}->{thlabel}, exit_litteral => 'critical' },
+                                                              { label => 'warning-'. $self->{result_values}->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -97,7 +101,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers memory usage are ok' },
+        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
+          message_multiple => 'All containers memory usage are ok' },
     ];
 
     $self->{maps_counters}->{containers} = [
@@ -121,7 +126,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'cache', set => {
+        { label => 'cache', nlabel => 'cache.usage.bytes', set => {
                 key_values => [ { name => 'cache' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Cache: %.2f %s',
                 output_change_bytes => 1,
@@ -131,7 +136,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'rss', set => {
+        { label => 'rss', nlabel => 'rss.usage.bytes', set => {
                 key_values => [ { name => 'rss' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Rss: %.2f %s',
                 output_change_bytes => 1,
@@ -141,7 +146,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'swap', set => {
+        { label => 'swap', nlabel => 'swap.usage.bytes', set => {
                 key_values => [ { name => 'swap' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Swap: %.2f %s',
                 output_change_bytes => 1,
@@ -167,12 +172,11 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
-        "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
-        "extra-filter:s@"         => { name => 'extra_filter' },
-        "units:s"                 => { name => 'units', default => '%' },
-        "metric-overload:s@"      => { name => 'metric_overload' },
-        "filter-counters:s"       => { name => 'filter_counters' },
+        "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "units:s"               => { name => 'units', default => '%' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
     });
 
     return $self;
@@ -215,30 +219,34 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{usage} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "usage", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{limits} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "limits", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{working} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "working", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{cache} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "cache", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{rss} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "rss", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{swap} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "swap", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{usage} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "usage", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{limits} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "limits", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{working} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "working", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{cache} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "cache", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{rss} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "rss", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{swap} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "swap", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));

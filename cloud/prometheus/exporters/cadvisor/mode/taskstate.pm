@@ -30,11 +30,11 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
-            message_multiple => 'All containers tasks states are ok', skipped_code => { -10 => 1 } },
+          message_multiple => 'All containers tasks states are ok', skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{containers} = [
-        { label => 'sleeping', set => {
+        { label => 'sleeping', nlabel => 'tasks.sleeping.count', set => {
                 key_values => [ { name => 'sleeping' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Sleeping: %d',
                 output_change_bytes => 1,
@@ -44,7 +44,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'running', set => {
+        { label => 'running', nlabel => 'tasks.running.count', set => {
                 key_values => [ { name => 'running' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Running: %d',
                 output_change_bytes => 1,
@@ -54,7 +54,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'stopped', set => {
+        { label => 'stopped', nlabel => 'tasks.stopped.count', set => {
                 key_values => [ { name => 'stopped' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Stopped: %d',
                 output_change_bytes => 1,
@@ -64,7 +64,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'uninterruptible', set => {
+        { label => 'uninterruptible', nlabel => 'tasks.uninterruptible.count', set => {
                 key_values => [ { name => 'uninterruptible' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Uninterruptible: %d',
                 output_change_bytes => 1,
@@ -74,7 +74,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'iowaiting', set => {
+        { label => 'iowaiting', nlabel => 'tasks.iowaiting.count', set => {
                 key_values => [ { name => 'iowaiting' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Iowaiting: %d',
                 output_change_bytes => 1,
@@ -99,14 +99,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
-                                  "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
-                                  "state:s"                 => { name => 'state', default => 'state=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                });
+    $options{options}->add_options(arguments => {
+        "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
+        "state:s"               => { name => 'state', default => 'state=~".*"' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -143,11 +142,15 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{tasks_state} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} . ',' .
-                                                            $self->{option_results}->{state} .
-                                                            $self->{extra_filter} . '}, "__name__", "tasks_state", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{tasks_state} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} . ',' .
+                $self->{option_results}->{state} .
+                $self->{extra_filter} . '}, "__name__", "tasks_state", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
