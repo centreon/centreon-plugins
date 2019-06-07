@@ -76,7 +76,9 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        'filter-node:s'  => { name => 'filter_node' },
+    });
     
     return $self;
 }
