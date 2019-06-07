@@ -58,7 +58,7 @@ sub custom_usage_perfdata {
 
     $self->{output}->perfdata_add(
         label => $label,
-        nlabel => 'kubernetes.pods.allocated.count',
+        nlabel => 'pods.allocated.count',
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),

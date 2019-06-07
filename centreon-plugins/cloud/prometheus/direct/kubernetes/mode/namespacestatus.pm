@@ -51,7 +51,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'active', nlabel => 'kubernetes.namespace.active.count', set => {
+        { label => 'active', nlabel => 'namespaces.active.count', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active : %d',
                 perfdatas => [
@@ -60,7 +60,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'terminating', nlabel => 'kubernetes.namespace.terminating.count', set => {
+        { label => 'terminating', nlabel => 'namespaces.terminating.count', set => {
                 key_values => [ { name => 'terminating' } ],
                 output_template => 'Terminating : %d',
                 perfdatas => [

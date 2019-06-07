@@ -68,7 +68,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'restarts-count', nlabel => 'kubernetes.container.restarts.count', set => {
+        { label => 'restarts-count', nlabel => 'containers.restarts.count', set => {
                 key_values => [ { name => 'restarts' }, { name => 'perf' } ],
                 output_template => 'Restarts count : %d',
                 perfdatas => [
