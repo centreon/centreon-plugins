@@ -99,7 +99,6 @@ sub new {
         "critical-status:s"     => { name => 'critical_status', default => '%{status} !~ /running/ || %{state} !~ /ready/' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "metric-overload:s@"    => { name => 'metric_overload' },
-        "filter-counters:s"     => { name => 'filter_counters' },
     });
    
     return $self;
