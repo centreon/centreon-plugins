@@ -29,23 +29,42 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
-    $self->{output}->perfdata_add(label => 'desired' . $extra_label,
-                                  value => $self->{result_values}->{desired});
-    $self->{output}->perfdata_add(label => 'current' . $extra_label,
-                                  value => $self->{result_values}->{current});
-    $self->{output}->perfdata_add(label => 'available' . $extra_label,
-                                  value => $self->{result_values}->{available});
-    $self->{output}->perfdata_add(label => 'up_to_date' . $extra_label,
-                                  value => $self->{result_values}->{up_to_date});
-    $self->{output}->perfdata_add(label => 'ready' . $extra_label,
-                                  value => $self->{result_values}->{ready});
-    $self->{output}->perfdata_add(label => 'misscheduled' . $extra_label,
-                                  value => $self->{result_values}->{misscheduled});
+    $self->{output}->perfdata_add(
+        label => 'desired',
+        nlabel => 'daemonset.pods.desired.count',
+        value => $self->{result_values}->{desired},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'current',
+        nlabel => 'daemonset.pods.current.count',
+        value => $self->{result_values}->{current},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'available',
+        nlabel => 'daemonset.pods.available.count',
+        value => $self->{result_values}->{available},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'up_to_date',
+        nlabel => 'daemonset.pods.uptodate.count',
+        value => $self->{result_values}->{up_to_date},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'ready',
+        nlabel => 'daemonset.pods.ready.count',
+        value => $self->{result_values}->{ready},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'misscheduled',
+        nlabel => 'daemonset.pods.misscheduled.count',
+        value => $self->{result_values}->{misscheduled},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
 }
 
 sub custom_status_output {

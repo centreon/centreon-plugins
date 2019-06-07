@@ -31,8 +31,7 @@ sub custom_usage_perfdata {
 
     my $label = 'allocated_pods';
     my $value_perf = $self->{result_values}->{allocated};
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{allocatable};
@@ -40,11 +39,13 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label . $extra_label,
+        label => $label,
+        nlabel => 'pods.allocated.count',
         value => $value_perf,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-        min => 0, max => $self->{result_values}->{allocatable}
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{allocatable},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
 }
 
@@ -57,8 +58,8 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_allocated};
     }
     $exit = $self->{perfdata}->threshold_check(
-        value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                  { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]
+        value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                  { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]
     );
     return $exit;
 }
@@ -120,8 +121,8 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-name:s"         => { name => 'filter_name' },
-        "units:s"               => { name => 'units', default => '%' },        
+        "filter-name:s" => { name => 'filter_name' },
+        "units:s"       => { name => 'units', default => '%' },        
     });
    
     return $self;
