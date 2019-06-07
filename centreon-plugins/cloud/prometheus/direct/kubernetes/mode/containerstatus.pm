@@ -68,7 +68,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'restarts-count', set => {
+        { label => 'restarts-count', nlabel => 'kubernetes.container.restarts.count', set => {
                 key_values => [ { name => 'restarts' }, { name => 'perf' } ],
                 output_template => 'Restarts count : %d',
                 perfdatas => [
@@ -92,16 +92,15 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container:s"             => { name => 'container', default => 'container=~".*"' },
-                                  "pod:s"                   => { name => 'pod', default => 'pod=~".*"' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /running/ || %{state} !~ /ready/' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                  "filter-counters:s"       => { name => 'filter_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+        "container:s"           => { name => 'container', default => 'container=~".*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod=~".*"' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{status} !~ /running/ || %{state} !~ /ready/' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+        "filter-counters:s"     => { name => 'filter_counters' },
+    });
    
     return $self;
 }
@@ -146,34 +145,38 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{ready} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "ready", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{running} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "running", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{terminated} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "terminated", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{terminated_reason} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "terminated_reason", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{waiting} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "waiting", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{waiting_reason} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "waiting_reason", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{restarts} . '",' .
-                                                            $self->{option_results}->{container} . ',' .
-                                                            $self->{option_results}->{pod} .
-                                                            $self->{extra_filter} . '}, "__name__", "restarts", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{ready} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "ready", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{running} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "running", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{terminated} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "terminated", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{terminated_reason} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "terminated_reason", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{waiting} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "waiting", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{waiting_reason} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "waiting_reason", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{restarts} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "restarts", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));
