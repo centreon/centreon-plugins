@@ -179,7 +179,7 @@ sub query {
             $self->{output}->add_option_msg(short_msg => "API returns error '" . $results->{results}[0]->{error} . "'");
             $self->{output}->option_exit();
         }
-        push @{$data}, @{$results->{results}[0]->{series}};
+        push @{$data}, @{$results->{results}[0]->{series}} if (defined($results->{results}[0]->{series}));
     }
 
     return $data;
