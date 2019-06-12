@@ -107,7 +107,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'lag', nlabel => 'replication.lag.seconds', set => {
+        { label => 'replication-lag', nlabel => 'replication.lag.seconds', set => {
                 key_values => [  { name => 'lag' }, { name => 'name' } ],
                 output_template => 'Replication Lag: %s s',
                 perfdatas => [
@@ -239,12 +239,12 @@ Set critical threshold for members status (Default: '%{health} !~ /up/').
 Can used special variables like: %{name}, %{state}, %{health},
 %{slave_delay}, %{priority}.
 
-=item B<--warning-instance-lag-seconds>
+=item B<--warning-instance-replication-lag-seconds>
 
 Threshold warning for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).
 
-=item B<--critical-instance-lag-seconds>
+=item B<--critical-instance-replication-lag-seconds>
 
 Threshold critical for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).
