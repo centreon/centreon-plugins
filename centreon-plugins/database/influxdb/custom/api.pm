@@ -170,14 +170,15 @@ sub request {
 
 sub query {
     my ($self, %options) = @_;
-  
-    # push @post_params, 'db=' . $options{db} if (defined($options{db}) && $options{db} ne '');
 
     my $data;
     foreach my $query (@{$options{queries}}) {
-        my @post_params;  
-        push @post_params, 'q=' . $query;
-        my $results = $self->request(method => 'POST', url_path => '/query', post_param => \@post_params);
+        my $results = $self->request(method => 'POST', url_path => '/query', post_param => ['q=' . $query]);
+        
+        if (defined($results->{results}[0]->{error})) {
+            $self->{output}->add_option_msg(short_msg => "API returns error '" . $results->{results}[0]->{error} . "'");
+            $self->{output}->option_exit();
+        }
         push @{$data}, @{$results->{results}[0]->{series}};
     }
 
