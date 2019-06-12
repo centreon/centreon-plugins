@@ -45,7 +45,7 @@ sub manage_selection {
     my ($self, %options) = @_;
     $self->{custom} = $options{custom};
     
-    my $results = $self->{custom}->query(query => 'SHOW DATABASES');
+    my $results = $self->{custom}->query(queries => [ 'SHOW DATABASES' ]);
 
     foreach my $value (@{$$results[0]->{values}}) {
         push @{$self->{databases}}, $$value[0];
