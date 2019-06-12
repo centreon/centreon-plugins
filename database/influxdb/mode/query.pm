@@ -34,7 +34,7 @@ sub custom_status_perfdata {
             label => $key,
             nlabel => $key,
             value => $self->{result_values}->{$key},
-            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{instance} : undef
         );
     }
 }
@@ -74,7 +74,7 @@ sub set_counters {
 
     $self->{maps_counters}->{queries_results} = [
         { label => 'status', set => {
-                key_values => [ { name => 'instance' }, { name => 'display' } ],
+                key_values => [ { name => 'instance' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => $self->can('custom_status_perfdata'),
@@ -112,6 +112,11 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
+    if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --instance option.");
+        $self->{output}->option_exit();
+    }
+    
     if (!defined($self->{option_results}->{query})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --query option.");
         $self->{output}->option_exit();
@@ -120,7 +125,7 @@ sub check_options {
     $self->{custom_keys} = [];
     $self->{queries} = {};
     foreach my $query (@{$self->{option_results}->{query}}) {
-        next if ($query !~ /^(\w+),(.*)/);
+        next if ($query !~ /^(.*),(.*)/);
         $self->{queries}->{$1} = $2;
         push @{$self->{maps_counters}->{queries_results}[0]->{set}->{key_values}}, { name => $1 };
         push @{$self->{custom_keys}}, $1;
@@ -147,10 +152,8 @@ sub manage_selection {
         next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));        
         my $value;
         $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}) if (defined($result->{values}));
-        $value = ${$result->{value}}[1] if (defined($result->{value}));
         
         $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
-        $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{display} = $result->{tags}->{$self->{option_results}->{instance}};
         $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[1]} = $value;
     }
     
@@ -170,7 +173,65 @@ Launch queries.
 
 Examples:
 
-To come
+# perl centreon_plugins.pl --plugin=database::influxdb::plugin --mode=query --hostname=localhost --port=8086
+--query='cpu.utilization.percentage,SELECT last("cpu.utilization.percentage")
+AS "cpu.utilization.percentage" FROM "centreon"."autogen"."Cpu" GROUP BY "host"' --instance='host'
+--critical-status='%{cpu.utilization.percentage} > 90'
+--output="Host '%{instance}' Cpu Utilization: %{cpu.utilization.percentage}%"
+--multiple-output='All cpu utilization are ok' --verbose
+
+# perl centreon_plugins.pl --plugin=database::influxdb::plugin --mode=query --hostname=localhost --port=8086
+--query='load1,SELECT last("load1") AS "load1" FROM "centreon"."autogen"."Load"
+GROUP BY "host"' --query='load5,SELECT last("load5") AS "load5" FROM "centreon"."autogen"."Load"
+GROUP BY "host"' --query='load15,SELECT last("load15") AS "load15" FROM "centreon"."autogen"."Load"
+GROUP BY "host"' --instance='host' --output="Host '%{instance}' Load1: %{load1} Load5: %{load5}
+Load15: %{load15}" --multiple-output='All load metrics are ok' --verbose
+
+=over 8
+
+=item B<--query>
+
+Set a InfluxQL query. Query option must be like --query='label,query'.
+
+Query must contain an "AS" keyword to rename the column
+of the selected data, and must match the label.
+
+(Example: --query='mymetric,SELECT the_data AS "mymetric" 
+FROM "database"."retention"."measurement" GROUP BY "instance"')
+
+=item B<--instance>
+
+Set the instance label on which the results should be calculate for (Example: --instance='name').
+
+The instance label must be the same label as the "GROUP BY" keyword.
+
+=item B<--output>
+
+Set the output for each instances (Example: --output='Object %{instance} value is {label}').
+
+=item B<--multiple-output>
+
+Set the global output in case everything is fine for multiple instances
+(Example: --multiple-output='All instance values are ok').
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+
+Can use special variables like %{instance} and any other
+labels you set through --query.
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+
+Can use special variables like %{instance} and any other
+labels you set through --query.
+
+=item B<--aggregation>
+
+Set the aggregation on metric values (Can be: 'average', 'min', 'max', 'sum')
+(Default: 'average').
 
 =over 8
 
