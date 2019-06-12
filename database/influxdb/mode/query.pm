@@ -125,7 +125,7 @@ sub check_options {
     $self->{custom_keys} = [];
     $self->{queries} = {};
     foreach my $query (@{$self->{option_results}->{query}}) {
-        next if ($query !~ /^(.*),(.*)/);
+        next if ($query !~ /^(.*?),(.*)$/);
         $self->{queries}->{$1} = $2;
         push @{$self->{maps_counters}->{queries_results}[0]->{set}->{key_values}}, { name => $1 };
         push @{$self->{custom_keys}}, $1;
