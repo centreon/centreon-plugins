@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{nodes} = [
-        { label => 'health-current', nlabel => 'node.health.current', set => {
+        { label => 'health-current', nlabel => 'node.health.current.percentage', set => {
                 key_values => [ { name => 'current' }, { name => 'dn' } ],
                 output_template => 'current: %s %%', output_error_template => "current: %s %%",
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'health-minimum', nlabel => 'node.health.minimum', set => {
+        { label => 'health-minimum', nlabel => 'node.health.minimum.percentage', set => {
                 key_values => [ { name => 'min' }, { name => 'dn' } ],
                 output_template => 'min: %s %%', output_error_template => "min: %s %%",
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'health-average', nlabel => 'node.health.average', set => {
+        { label => 'health-average', nlabel => 'node.health.average.percentage', set => {
                 key_values => [ { name => 'avg' }, { name => 'dn' } ],
                 output_template => 'average: %s %%', output_error_template => "average %s %%",
                 perfdatas => [
