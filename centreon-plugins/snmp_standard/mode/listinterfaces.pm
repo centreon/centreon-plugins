@@ -39,6 +39,7 @@ sub set_oids_status {
     $self->{oid_opstatus_mapping} = {
         1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown', 5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown',
     };
+    $self->{oid_mac_address} = '.1.3.6.1.2.1.2.2.1.6';
 }
 
 sub check_oids_label {
@@ -94,23 +95,23 @@ sub new {
     
     $self->{no_speed} = defined($options{no_speed}) && $options{no_speed} =~ /^[01]$/ ? $options{no_speed} : 0;
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "name"                    => { name => 'use_name' },
-                                  "interface:s"             => { name => 'interface' },
-                                  "speed:s"                 => { name => 'speed' },
-                                  "filter-status:s"         => { name => 'filter_status' },
-                                  "skip-speed0"             => { name => 'skip_speed0' },
-                                  "use-adminstatus"         => { name => 'use_adminstatus' },
-                                  "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
-                                  "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                  "add-extra-oid:s@"        => { name => 'add_extra_oid' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "name"                    => { name => 'use_name' },
+        "interface:s"             => { name => 'interface' },
+        "speed:s"                 => { name => 'speed' },
+        "filter-status:s"         => { name => 'filter_status' },
+        "skip-speed0"             => { name => 'skip_speed0' },
+        "use-adminstatus"         => { name => 'use_adminstatus' },
+        "oid-filter:s"            => { name => 'oid_filter', default => $self->default_oid_filter_name() },
+        "oid-display:s"           => { name => 'oid_display', default => $self->default_oid_display_name() },
+        "display-transform-src:s" => { name => 'display_transform_src' },
+        "display-transform-dst:s" => { name => 'display_transform_dst' },
+        "add-extra-oid:s@"        => { name => 'add_extra_oid' },
+        "add-mac-address"         => { name => 'add_mac_address' },
+    });
 
     $self->{interface_id_selected} = [];
-    
+
     return $self;
 }
 
@@ -141,7 +142,6 @@ sub run {
 
     $self->manage_selection();
     my $result = $self->get_additional_information();
-    
     foreach (sort @{$self->{interface_id_selected}}) {
         my $display_value = $self->get_display_value(id => $_);
 
@@ -170,7 +170,7 @@ sub run {
             next;
         }
         
-        my $extra_values = $self->get_extra_values_by_instance(instance => $_);
+        my $extra_values = $self->get_extra_values_by_instance(result => $result, instance => $_);
         my $extra_display = '';
         foreach my $name (keys %{$extra_values}) {
             $extra_display .= ', ' . $name . ' = ' . $extra_values->{$name};
@@ -193,6 +193,7 @@ sub get_additional_information {
     my $oids = [];
     push @$oids, $self->{oid_adminstatus} if (defined($self->{oid_adminstatus}));
     push @$oids, $self->{oid_opstatus} if (defined($self->{oid_opstatus}));
+    push @$oids, $self->{oid_mac_address} if (defined($self->{option_results}->{add_mac_address}));
     push @$oids, $oid_speed32 if ($self->{no_speed} == 0);
     push @$oids, $oid_speed64 if (!$self->{snmp}->is_snmpv1() && $self->{no_speed} == 0);
     
@@ -290,6 +291,13 @@ sub get_extra_values_by_instance {
             }
         }
     }
+    
+    if (defined($self->{option_results}->{add_mac_address})) {
+        my $macaddress = defined($options{result}->{$self->{oid_mac_address} . "." . $_}) ? unpack('H*', $options{result}->{$self->{oid_mac_address} . "." . $_}) : '';
+        $macaddress =~ s/(..)(?=.)/$1:/g;
+        $extra_values->{macaddress} = $macaddress;
+    }
+    
     return $extra_values;
 }
 
@@ -300,6 +308,10 @@ sub disco_format {
     if (scalar(keys %{$self->{extra_oids}}) > 0) {
         push @$names, keys %{$self->{extra_oids}};
     }
+    if (defined($self->{option_results}->{add_mac_address})) {
+        push @$names, 'macaddress';
+    }
+    
     $self->{output}->add_disco_format(elements => $names);
 }
 
@@ -328,7 +340,7 @@ sub disco_show {
             $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} !~ /$self->{option_results}->{filter_status}/i);
         next if ($self->is_admin_status_down(admin_status => $result->{$self->{oid_adminstatus} . "." . $_}));
          
-        my $extra_values = $self->get_extra_values_by_instance(instance => $_);
+        my $extra_values = $self->get_extra_values_by_instance(result => $result, instance => $_);
         $self->{output}->add_disco_entry(name => $display_value,
                                          total => $interface_speed,
                                          status => defined($result->{$self->{oid_opstatus} . "." . $_}) ? $self->{oid_opstatus_mapping}->{$result->{$self->{oid_opstatus} . "." . $_}} : '',
@@ -391,6 +403,9 @@ Display an OID.
 Example: --add-extra-oid='alias,.1.3.6.1.2.1.31.1.1.1.18'
 or --add-extra-oid='vlan,.1.3.6.1.2.1.31.19,%{instance}\..*'
 
+=item B<--add-mac-address>
+
+Display interface mac address.
 
 =back
 

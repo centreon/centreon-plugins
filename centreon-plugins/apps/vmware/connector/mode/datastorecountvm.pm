@@ -50,7 +50,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-on', set => {
+        { label => 'total-on', nlabel => 'datastore.vm.poweredon.current.count', set => {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
@@ -59,7 +59,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-off', set => {
+        { label => 'total-off', nlabel => 'datastore.vm.poweredoff.current.count', set => {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
@@ -68,7 +68,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-suspended', set => {
+        { label => 'total-suspended', nlabel => 'datastore.vm.suspended.current.count', set => {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
@@ -88,7 +88,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'on', set => {
+        { label => 'on', nlabel => 'datastore.vm.poweredon.current.count', set => {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
@@ -97,7 +97,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'off', set => {
+        { label => 'off', nlabel => 'datastore.vm.poweredoff.current.count', set => {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
@@ -106,7 +106,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'suspended', set => {
+        { label => 'suspended', nlabel => 'datastore.vm.suspended.current.count', set => {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [

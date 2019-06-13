@@ -43,8 +43,6 @@ sub custom_status_calc {
 sub custom_summary_output {
     my ($self, %options) = @_;
 
-    use Data::Dumper;
-    print Data::Dumper::Dumper($self->{result_values});
     my $msg;
     if ($self->{result_values}->{type_absolute} ne '') {
         $msg = $self->{result_values}->{type_absolute} . " sensor " . $self->{result_values}->{name_absolute} . ": ". $self->{result_values}->{summary_absolute};
@@ -69,7 +67,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-problems', set => {
+        { label => 'total-problems', nlabel => 'host.health.problems.current.count', set => {
                 key_values => [ { name => 'total_problems' }, { name => 'total' } ],
                 output_template => '%s total health issue(s) found',
                 perfdatas => [
@@ -98,7 +96,7 @@ sub set_counters {
                 closure_custom_perfdata => sub { return 0; },
             }
         },
-        { label => 'problems', set => {
+        { label => 'problems', nlabel => 'host.health.problems.current.count', set => {
                 key_values => [ { name => 'total_problems' }, { name => 'total' } ],
                 output_template => '%s total health issue(s) found',
                 perfdatas => [
@@ -107,7 +105,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'problems-yellow', set => {
+        { label => 'problems-yellow', nlabel => 'host.health.yellow.current.count', set => {
                 key_values => [ { name => 'yellow' }, { name => 'total' } ],
                 output_template => '%s yellow health issue(s) found',
                 perfdatas => [
@@ -116,7 +114,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'problems-red', set => {
+        { label => 'problems-red', nlabel => 'host.health.red.current.count', set => {
                 key_values => [ { name => 'red' }, { name => 'total' } ],
                 output_template => '%s red health issue(s) found',
                 perfdatas => [

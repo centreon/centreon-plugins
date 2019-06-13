@@ -86,14 +86,19 @@ sub custom_status_calc {
 sub custom_dcmetrics_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
+    my $extra_label;
     # We do it manually. Because we have only 1 instance in group.
-    if (scalar(keys %{$self->{instance_mode}->{datacenter}}) > 1) {
-        $extra_label .= '_' . $self->{result_values}->{name};
+    if (scalar(keys %{$self->{instance_mode}->{datacenter}}) > 1 || $self->{output}->use_new_perfdata()) {
+        $extra_label = $self->{result_values}->{name};
     }
-    $self->{output}->perfdata_add(label => 'alarm_' . $self->{result_values}->{label_ref} . $extra_label,
-                                  value => $self->{result_values}->{alarm_value},
-                                  min => 0);
+    
+    $self->{output}->perfdata_add(
+        label => 'alarm_' . $self->{result_values}->{label_ref},
+        nlabel => 'datacenter.alarms.' . $self->{result_values}->{label_ref} . '.current.count',
+        instances => $extra_label,
+        value => $self->{result_values}->{alarm_value},
+        min => 0
+    );
 }
 
 sub custom_dcmetrics_calc {
@@ -119,7 +124,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-alarm-warning', set => {
+        { label => 'total-alarm-warning', nlabel => 'datacenter.alarms.warning.current.count', set => {
                 key_values => [ { name => 'yellow' } ],
                 output_template => '%s warning alarm(s) found(s)',
                 perfdatas => [
@@ -127,7 +132,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-alarm-critical', set => {
+        { label => 'total-alarm-critical', nlabel => 'datacenter.alarms.critical.current.count', set => {
                 key_values => [ { name => 'red' } ],
                 output_template => '%s critical alarm(s) found(s)',
                 perfdatas => [
@@ -153,6 +158,7 @@ sub set_counters {
         { label => 'alarm-warning', threshold => 0, set => {
                 key_values => [ { name => 'name' }  ],
                 output_template => '',
+                closure_custom_threshold_check => sub { return 'ok' },
                 closure_custom_calc => $self->can('custom_dcmetrics_calc'), closure_custom_calc_extra_options => { label_ref => 'warning' },
                 closure_custom_perfdata => $self->can('custom_dcmetrics_perfdata'),
             }
@@ -160,6 +166,7 @@ sub set_counters {
         { label => 'alarm-critical', threshold => 0, set => {
                 key_values => [ { name => 'name' }  ],
                 output_template => '',
+                closure_custom_threshold_check => sub { return 'ok' },
                 closure_custom_calc => $self->can('custom_dcmetrics_calc'), closure_custom_calc_extra_options => { label_ref => 'critical' },
                 closure_custom_perfdata => $self->can('custom_dcmetrics_perfdata'),
             }
@@ -192,15 +199,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "datacenter:s"            => { name => 'datacenter' },
-                                  "filter"                  => { name => 'filter' },
-                                  "filter-time:s"           => { name => 'filter_time', },
-                                  "memory"                  => { name => 'memory', },
-                                  "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /yellow/i' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /red/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "datacenter:s"            => { name => 'datacenter' },
+        "filter"                  => { name => 'filter' },
+        "filter-time:s"           => { name => 'filter_time', },
+        "memory"                  => { name => 'memory', },
+        "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /yellow/i' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /red/i' },
+    });
     
     centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Parse',
                                            error_msg => "Cannot load module 'Date::Parse'.");

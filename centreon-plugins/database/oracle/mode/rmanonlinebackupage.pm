@@ -32,12 +32,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "timezone:s"              => { name => 'timezone', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning:s"               => { name => 'warning', },
+        "critical:s"              => { name => 'critical', },
+        "timezone:s"              => { name => 'timezone', },
+    });
 
     return $self;
 }
@@ -72,6 +71,7 @@ sub run {
     };
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
+    $self->{sql}->disconnect();
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("Backup online modes are ok."));

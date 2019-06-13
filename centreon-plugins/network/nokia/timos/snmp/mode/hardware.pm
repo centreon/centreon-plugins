@@ -201,11 +201,14 @@ sub check {
                                         short_msg => sprintf("%s '%s' temperature is '%s' C", $result->{tmnxHwClass}, 
                                             $result->{tmnxHwName}, $result->{tmnxHwTemperature}));
         }
-        $self->{output}->perfdata_add(label => 'temperature_' . $result->{tmnxHwName}, unit => 'C', 
-                                      value => $result->{tmnxHwTemperature},
-                                      warning => $warn,
-                                      critical => $crit
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temperature' . , unit => 'C',
+            nlabel => 'hardware.entity.temperature.celsius',
+            instances => $result->{tmnxHwName},
+            value => $result->{tmnxHwTemperature},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

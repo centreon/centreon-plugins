@@ -90,6 +90,15 @@ sub set_counters {
         { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' },
     ];
     $self->{maps_counters}->{global} = [
+        { label => 'total-nodes', display_ok => 0, set => {
+                key_values => [ { name => 'total_nodes' } ],
+                output_template => 'Total nodes: %d',
+                perfdatas => [
+                    { label => 'total_nodes', value => 'total_nodes_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
         { label => 'synchronized', set => {
                 key_values => [ { name => 'synchronized' } ],
                 output_template => 'Synchronized: %d',
@@ -182,7 +191,7 @@ sub manage_selection {
     $self->{results} = $options{snmp}->get_table(oid => $oid_fgHaStatsEntry,
                                                  nothing_quit => 1);
 
-    $self->{global} = { synchronized => 0, not_synchronized => 0 };
+    $self->{global} = { synchronized => 0, not_synchronized => 0, total_nodes => 0 };
 
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
@@ -198,6 +207,7 @@ sub manage_selection {
         };
         $result->{fgHaStatsSyncStatus} =~ s/ /_/;
         $self->{global}->{$result->{fgHaStatsSyncStatus}}++;
+        $self->{global}->{total_nodes}++;
     }
 
     if (scalar(keys %{$self->{nodes}}) <= 0) {
@@ -219,12 +229,12 @@ Check cluster status (FORTINET-FORTIGATE-MIB).
 =item B<--warning-*>
 
 Set warning thresholds.
-Can be: 'synchronized', 'not-synchronized'
+Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
 
 =item B<--critical-*>
 
 Set critical thresholds.
-Can be: 'synchronized', 'not-synchronized'
+Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
 
 =item B<--warning-status>
 

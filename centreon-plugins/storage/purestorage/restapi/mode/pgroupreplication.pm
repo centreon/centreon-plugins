@@ -130,7 +130,7 @@ sub manage_selection {
         }
 
         $entry->{created} =~ /^(\d+)-(\d+)-(\d+)T(\d+)[:\/](\d+)[:\/](\d+)Z$/;
-        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %tz);
+        my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
         my $created_time = $dt->epoch;
         my $creation_seconds = time() - $created_time;
 

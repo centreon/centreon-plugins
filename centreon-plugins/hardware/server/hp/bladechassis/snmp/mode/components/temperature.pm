@@ -98,9 +98,13 @@ sub check {
                                           $temp_index, $map_conditions{$temp_condition}));
         }
         
-        $self->{output}->perfdata_add(label => "temp_" . $temp_index, unit => 'C',
-                                      value => $temp_current,
-                                      warning => $temp_threshold);
+        $self->{output}->perfdata_add(
+            label => "temp", unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $temp_index,
+            value => $temp_current,
+            warning => $temp_threshold
+        );
     }
 }
 

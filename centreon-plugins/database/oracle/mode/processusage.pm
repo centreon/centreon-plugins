@@ -31,11 +31,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning:s"               => { name => 'warning', },
+        "critical:s"              => { name => 'critical', },
+    });
 
     return $self;
 }
@@ -62,6 +61,7 @@ sub run {
     $self->{sql}->connect();
     $self->{sql}->query(query => q{SELECT current_utilization/limit_value*100 FROM v$resource_limit WHERE resource_name = 'processes'});
     my $session = $self->{sql}->fetchrow_array();
+    $self->{sql}->disconnect();
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $session, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,

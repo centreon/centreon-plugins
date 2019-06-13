@@ -65,7 +65,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{datastore} = [
-        { label => 'read-latency', set => {
+        { label => 'read-latency', nlabel => 'host.datastore.latency.read.milliseconds', set => {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
                 output_template => 'read : %s ms',
                 perfdatas => [
@@ -74,7 +74,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write-latency', set => {
+        { label => 'write-latency', nlabel => 'host.datastore.latency.write.milliseconds', set => {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'write : %s ms',
                 perfdatas => [

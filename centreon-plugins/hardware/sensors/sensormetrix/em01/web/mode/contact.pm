@@ -32,8 +32,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
+    $options{options}->add_options(arguments => {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto' },
@@ -42,15 +41,13 @@ sub new {
             "basic"             => { name => 'basic' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
-            "proxyurl:s"        => { name => 'proxyurl' },
             "warning"           => { name => 'warning' },
             "critical"          => { name => 'critical' },
             "closed"            => { name => 'closed' },
             "timeout:s"         => { name => 'timeout' },
-            "ssl-opt:s@"        => { name => 'ssl_opt' },
-            });
+    });
     $self->{status} = { closed => 'ok', opened => 'ok' };
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -112,10 +109,6 @@ IP Addr/FQDN of the webserver host
 
 Port used by Apache
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Specify https if needed
@@ -147,10 +140,6 @@ Specify this option if you access server-status page over hidden basic authentic
 =item B<--timeout>
 
 Threshold for HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning>
 

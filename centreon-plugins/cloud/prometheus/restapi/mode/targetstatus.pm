@@ -67,45 +67,45 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'active', set => {
+        { label => 'active', nlabel => 'targets.active.count', set => {
                 key_values => [ { name => 'active' } ],
-                output_template => 'Active : %s',
+                output_template => 'Active: %s',
                 perfdatas => [
                     { label => 'active_targets', value => 'active_absolute', template => '%s',
                       min => 0 },
                 ],
             }
         },
-        { label => 'dropped', set => {
+        { label => 'dropped', nlabel => 'targets.dropped.count', set => {
                 key_values => [ { name => 'dropped' } ],
-                output_template => 'Dropped : %s',
+                output_template => 'Dropped: %s',
                 perfdatas => [
                     { label => 'dropped_targets', value => 'dropped_absolute', template => '%s',
                       min => 0 },
                 ],
             }
         },
-        { label => 'up', set => {
+        { label => 'up', nlabel => 'targets.up.count', set => {
                 key_values => [ { name => 'up' } ],
-                output_template => 'Up : %s',
+                output_template => 'Up: %s',
                 perfdatas => [
                     { label => 'up_targets', value => 'up_absolute', template => '%s',
                       min => 0 },
                 ],
             }
         },
-        { label => 'down', set => {
+        { label => 'down', nlabel => 'targets.down.count', set => {
                 key_values => [ { name => 'down' } ],
-                output_template => 'Down : %s',
+                output_template => 'Down: %s',
                 perfdatas => [
                     { label => 'down_targets', value => 'down_absolute', template => '%s',
                       min => 0 },
                 ],
             }
         },
-        { label => 'unknown', set => {
+        { label => 'unknown', nlabel => 'targets.unknown.count', set => {
                 key_values => [ { name => 'unknown' } ],
-                output_template => 'Unknown : %s',
+                output_template => 'Unknown: %s',
                 perfdatas => [
                     { label => 'unknown_targets', value => 'unknown_absolute', template => '%s',
                       min => 0 },
@@ -132,12 +132,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-label:s@"   => { name => 'filter_label' },
-                                  "warning-status:s"  => { name => 'warning_status', default => '' },
-                                  "critical-status:s" => { name => 'critical_status', default => '%{health} !~ /up/' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-label:s@"   => { name => 'filter_label' },
+        "warning-status:s"  => { name => 'warning_status', default => '' },
+        "critical-status:s" => { name => 'critical_status', default => '%{health} !~ /up/' },
+    });
    
     return $self;
 }

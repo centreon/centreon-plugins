@@ -40,23 +40,22 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "subscription:s"      => { name => 'subscription' },
-                        "tenant:s"            => { name => 'tenant' },
-                        "client-id:s"         => { name => 'client_id' },
-                        "client-secret:s"     => { name => 'client_secret' },
-                        "timeframe:s"         => { name => 'timeframe' },
-                        "interval:s"          => { name => 'interval' },
-                        "aggregation:s@"      => { name => 'aggregation' },
-                        "zeroed"              => { name => 'zeroed' },
-                        "timeout:s"           => { name => 'timeout', default => 50 },
-                        "sudo"                => { name => 'sudo' },
-                        "command:s"           => { name => 'command', default => 'az' },
-                        "command-path:s"      => { name => 'command_path' },
-                        "command-options:s"   => { name => 'command_options', default => '' },
-                        "proxyurl:s"          => { name => 'proxyurl' },
-                    });
+        $options{options}->add_options(arguments => {
+            "subscription:s"      => { name => 'subscription' },
+            "tenant:s"            => { name => 'tenant' },
+            "client-id:s"         => { name => 'client_id' },
+            "client-secret:s"     => { name => 'client_secret' },
+            "timeframe:s"         => { name => 'timeframe' },
+            "interval:s"          => { name => 'interval' },
+            "aggregation:s@"      => { name => 'aggregation' },
+            "zeroed"              => { name => 'zeroed' },
+            "timeout:s"           => { name => 'timeout', default => 50 },
+            "sudo"                => { name => 'sudo' },
+            "command:s"           => { name => 'command', default => 'az' },
+            "command-path:s"      => { name => 'command_path' },
+            "command-options:s"   => { name => 'command_options', default => '' },
+            "proxyurl:s"          => { name => 'proxyurl' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AZCLI OPTIONS', once => 1);
 
@@ -129,7 +128,8 @@ sub execute {
         $raw_results = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->output_add(long_msg => $response, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
 
@@ -141,15 +141,15 @@ sub convert_duration {
 
     my $duration;
     if ($options{time_string} =~ /^P.*S$/) {
-        centreon::plugins::misc::mymodule_load(module => 'DateTime::Format::Duration::ISO8601',
-                                            error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'.");
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
+                                               error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'.");
 
         my $format = DateTime::Format::Duration::ISO8601->new;
         my $d = $format->parse_duration($options{time_string});
         $duration = $d->minutes * 60 + $d->seconds;
     } elsif ($options{time_string} =~ /^(\d+):(\d+):(\d+)\.\d+$/) {
-        centreon::plugins::misc::mymodule_load(module => 'DateTime::Duration',
-                                            error_msg => "Cannot load module 'DateTime::Format::Duration'.");
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Duration',
+                                               error_msg => "Cannot load module 'DateTime::Format::Duration'.");
 
         my $d = DateTime::Duration->new(hours => $1, minutes => $2, seconds => $3);
         $duration = $d->minutes * 60 + $d->seconds;

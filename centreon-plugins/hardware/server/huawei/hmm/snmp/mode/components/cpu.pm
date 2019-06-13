@@ -78,12 +78,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Cpu '%s' temperature is %s celsius degrees", $result->{bladeCPUMark}, $result->{bladeCPUTemperature}));
             }
-            $self->{output}->perfdata_add(label => 'temperature_' . $result->{bladeCPUMark}, unit => 'C', 
-                                          value => $result->{bladeCPUTemperature},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temperature', unit => 'C',
+                nlabel => 'hardware.cpu.temperature.celsius',
+                instances => $result->{bladeCPUMark},
+                value => $result->{bladeCPUTemperature},
+                warning => $warn,
+                critical => $crit, min => 0
+            );
         }
         
         $self->{output}->output_add(long_msg => sprintf("Cpu '%s' status is '%s' [instance = %s]",

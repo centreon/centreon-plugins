@@ -38,6 +38,7 @@ sub new {
                             'ftp-statistics'        => 'apps::antivirus::mcafee::webgateway::snmp::mode::ftpstatistics',
                             'http-statistics'       => 'apps::antivirus::mcafee::webgateway::snmp::mode::httpstatistics',
                             'https-statistics'      => 'apps::antivirus::mcafee::webgateway::snmp::mode::httpsstatistics',
+                            'versions'              => 'apps::antivirus::mcafee::webgateway::snmp::mode::versions',
                         );
 
     return $self;

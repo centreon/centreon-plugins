@@ -56,11 +56,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                  "filter-channel:s"  => { name => 'filter_channel' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-channel:s'  => { name => 'filter_channel' },
+    });
 
     return $self;
 }

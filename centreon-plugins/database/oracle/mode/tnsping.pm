@@ -66,11 +66,12 @@ sub run {
         $self->{output}->output_add(severity => 'CRITICAL',
                                     short_msg => $msg_error);
     } else {
-        my ($sid) = $self->{sql}->{data_source} =~ /sid=(\S+)/;
+        my ($sid) = $self->{sql}->{data_source} =~ /(?:sid|service_name)=(\S+)/;
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => sprintf("Connection established to listener '%s'.", $sid));
     }
  
+    $self->{sql}->disconnect();
     $self->{output}->display();
     $self->{output}->exit();
 }

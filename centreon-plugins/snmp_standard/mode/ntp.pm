@@ -68,13 +68,7 @@ sub run {
 
     my ($ref_time, $distant_time);
     my $oid_hrSystemDate = '.1.3.6.1.2.1.25.1.2.0';
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemDate ]);
-    if (scalar(keys %$result) == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Cannot get 'hrSystemDate' information.");
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
+    my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemDate ], nothing_quit => 1);
     if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
         

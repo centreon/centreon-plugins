@@ -56,7 +56,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'TEAMPASS OPTIONS');
 
     $self->{output} = $options{output};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options, noptions => 1);
     $JSON::Path::Safe = 0;
     
     return $self;

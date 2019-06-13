@@ -34,24 +34,21 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.1';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', default => '8086'},
-            "proto:s"           => { name => 'proto' },
-            "urlpath:s"         => { name => 'url_path', default => "/db" },
-            "database:s"        => { name => 'database' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "timeout:s"         => { name => 'timeout' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "ssl-opt:s@"        => { name => 'ssl_opt' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname' },
+        "port:s"            => { name => 'port', default => '8086'},
+        "proto:s"           => { name => 'proto' },
+        "urlpath:s"         => { name => 'url_path', default => "/db" },
+        "database:s"        => { name => 'database' },
+        "username:s"        => { name => 'username' },
+        "password:s"        => { name => 'password' },
+        "timeout:s"         => { name => 'timeout' },
+        "warning:s"         => { name => 'warning' },
+        "critical:s"        => { name => 'critical' },
+    });
 
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -198,17 +195,9 @@ Specify username for API authentification
 
 Specify password for API authentification
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning>
 

@@ -25,21 +25,17 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $oid_ltmVsStatusName = '.1.3.6.1.4.1.3375.2.2.10.13.2.1.1';
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                });
-    $self->{vs_id_selected} = [];
-
+    $options{options}->add_options(arguments => {
+        "name:s"    => { name => 'name' },
+        "regexp"    => { name => 'use_regexp' },
+    });
+    
     return $self;
 }
 
@@ -48,43 +44,77 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
+my %map_vs_status = (
+    0 => 'none',
+    1 => 'green',
+    2 => 'yellow',
+    3 => 'red',
+    4 => 'blue', # unknown
+    5 => 'gray',
+);
+my %map_vs_enabled = (
+    0 => 'none',
+    1 => 'enabled',
+    2 => 'disabled',
+    3 => 'disabledbyparent',
+);
+my $mapping = {
+    new => {
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2', map => \%map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.3', map => \%map_vs_enabled },
+    },
+    old => {
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.22', map => \%map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.23', map => \%map_vs_enabled },
+    },
+};
+my $oid_ltmVsStatusEntry = '.1.3.6.1.4.1.3375.2.2.10.13.2.1'; # new
+my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_ltmVsStatusName, nothing_quit => 1);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
-        next if ($oid !~ /^$oid_ltmVsStatusName\.(.*)$/);
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+        { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{EnabledState}->{oid} },
+        { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{EnabledState}->{oid} },
+    ], nothing_quit => 1);
+    
+    my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
+    if (!defined($snmp_result->{$oid_ltmVsStatusEntry}) || scalar(keys %{$snmp_result->{$oid_ltmVsStatusEntry}}) == 0)  {
+        ($branch, $map) = ($oid_ltmVirtualServEntry, 'old');
+    }
+    
+    $self->{vs} = {};
+    foreach my $oid (keys %{$snmp_result->{$branch}}) {
+        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch}, instance => $instance);
         
-        # Get all without a name
-        if (!defined($self->{option_results}->{name})) {
-            push @{$self->{vs_id_selected}}, $instance; 
-            next;
+        $result->{Name} = '';
+        foreach (split /\./, $instance) {
+            $result->{Name} .= chr if ($_ >= 32 && $_ <= 126);
+        }
+        $result->{Name} =~ s/^.//;
+        
+        if (defined($self->{option_results}->{name}) && $self->{option_results}->{name} ne '') {
+            next if (defined($self->{option_results}->{use_regexp}) && $result->{Name} !~ /$self->{option_results}->{name}/);
+            next if ($result->{Name} ne $self->{option_results}->{name});
         }
         
-        $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{vs_id_selected}}, $instance;
-            next;
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{vs_id_selected}}, $instance;
-            next;
-        }
-        
-        $self->{output}->output_add(long_msg => "Skipping virtual server '" . $self->{result_names}->{$oid} . "': no matching filter name", debug => 1);
+        $self->{vs}->{$result->{Name}} = { %$result };
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
-    foreach my $instance (sort @{$self->{vs_id_selected}}) { 
-        my $name = $self->{result_names}->{$oid_ltmVsStatusName . '.' . $instance};
-
-        $self->{output}->output_add(long_msg => "'" . $name . "'");
+    $self->manage_selection(%options);
+    foreach (sort keys %{$self->{vs}}) {
+        $self->{output}->output_add(long_msg => 
+            "[name = '" . $self->{vs}->{$_}->{Name} . "']" .
+            "[availstate = '" . $self->{vs}->{$_}->{AvailState} . "']" .
+            "[enabledtate = '" . $self->{vs}->{$_}->{EnabledState} . "']"
+        );
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -96,18 +126,19 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['name', 'availstate', 'enabledtate']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection(disco => 1);
-    foreach my $instance (sort @{$self->{vs_id_selected}}) {        
-        my $name = $self->{result_names}->{$oid_ltmVsStatusName . '.' . $instance};
-        
-        $self->{output}->add_disco_entry(name => $name);
+    $self->manage_selection(%options);
+    foreach (sort keys %{$self->{vs}}) {        
+        $self->{output}->add_disco_entry(
+            name => $self->{vs}->{$_}->{Name},
+            availstate => $self->{vs}->{$_}->{AvailState},
+            enabledtate => $self->{vs}->{$_}->{EnabledState},
+        );
     }
 }
 

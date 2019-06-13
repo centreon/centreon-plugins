@@ -71,12 +71,15 @@ sub fan_ctrl {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Fan '%s' is %s rpm", $instance, $result->{speed}));
             }
-            $self->{output}->perfdata_add(label => 'fan_' . $instance, unit => 'rpm', 
-                                          value => $result->{speed},
-                                          warning => $warn,
-                                          critical => $crit, 
-                                          min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'fan_' . $instance, unit => 'rpm',
+                nlabel => 'hardware.fan.controller.speed.rpm',
+                instances => $instance,
+                value => $result->{speed},
+                warning => $warn,
+                critical => $crit, 
+                min => 0
+            );
         }
     }
 }

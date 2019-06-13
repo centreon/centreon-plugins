@@ -60,11 +60,14 @@ sub check {
                                         short_msg => sprintf("Temperature of '%s' is '%s' celsius degrees", $result->{temperatureObject}, $result->{temperatureReading} / 10));
         }
         
-        $self->{output}->perfdata_add(label => 'temperature_' . $result->{temperatureObject}, unit => 'C', 
-                                        value => $result->{temperatureReading} / 10,
-                                        warning => $warn,
-                                        critical => $crit
-                                        );
+        $self->{output}->perfdata_add(
+            label => 'temperature', unit => 'C', 
+            nlabel => 'hardware.temperature.celsius',
+            instances => $result->{temperatureObject},
+            value => $result->{temperatureReading} / 10,
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

@@ -31,12 +31,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"       => { name => 'warning', },
-                                  "critical:s"      => { name => 'critical', },
-                                  "retention:s"     => { name => 'retention', default => 3},
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning:s"       => { name => 'warning', },
+        "critical:s"      => { name => 'critical', },
+        "retention:s"     => { name => 'retention', default => 3 },
+    });
 
     return $self;
 }
@@ -65,6 +64,7 @@ sub run {
     my $query = q{SELECT COUNT(*) FROM v$rman_status WHERE operation = 'BACKUP' AND status != 'COMPLETED' AND status != 'RUNNING' AND start_time > sysdate-} . $retention;
     $self->{sql}->query(query => $query);
     my $rman_backup_problems = $self->{sql}->fetchrow_array();
+    $self->{sql}->disconnect();
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $rman_backup_problems, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,

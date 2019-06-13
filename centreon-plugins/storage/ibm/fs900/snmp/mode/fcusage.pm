@@ -28,23 +28,22 @@ use warnings;
 sub custom_bandwidth_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => lc($self->{result_values}->{type}) . "_bandwidth" . $extra_label,
-				                  unit => 'B/s',
-                                  value => $self->{result_values}->{bandwidth},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . lc($self->{result_values}->{type}) . '-bandwidth'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . lc($self->{result_values}->{type}) . '-bandwidth'),
-                                 );
+    $self->{output}->perfdata_add(
+        label => lc($self->{result_values}->{type}) . "_bandwidth", unit => 'B/s',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{bandwidth},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub custom_bandwidth_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{bandwidth},
-                                                  threshold => [ { label => 'critical-' . lc($self->{result_values}->{type}) . '-bandwidth', exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . lc($self->{result_values}->{type}) . '-bandwidth', exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                                 { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -62,7 +61,7 @@ sub custom_bandwidth_calc {
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_fcObject'};
     $self->{result_values}->{type} = $options{extra_options}->{type};
-    $self->{result_values}->{bandwidth} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{bandwidth}} *1024 * 1024;
+    $self->{result_values}->{bandwidth} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{bandwidth}} * 1024 * 1024;
 
     return 0;
 }

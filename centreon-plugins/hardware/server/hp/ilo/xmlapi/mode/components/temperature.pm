@@ -72,11 +72,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Temperature '%s' is %s %s", $result->{LABEL}->{VALUE}, $result->{CURRENTREADING}->{VALUE}, $unit));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => $unit, 
-                                      value => $result->{CURRENTREADING}->{VALUE},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => $unit,
+            nlabel => 'hardware.temperature.' . lc($result->{CURRENTREADING}->{UNIT}),
+            instances => $instance,
+            value => $result->{CURRENTREADING}->{VALUE},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

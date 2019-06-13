@@ -90,11 +90,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Controller voltage '%s' is %s V", $result->{scCtlrVoltageName}, $result->{scCtlrVoltageCurrentV}));
         }
-        $self->{output}->perfdata_add(label => 'ctrlvoltage_' . $instance, unit => 'V', 
-                                      value => $result->{scCtlrVoltageCurrentV},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'ctrlvoltage', unit => 'V',
+            nlabel => 'hardware.controller.voltage.volt',
+            instances => $instance,
+            value => $result->{scCtlrVoltageCurrentV},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

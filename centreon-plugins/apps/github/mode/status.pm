@@ -41,19 +41,16 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"                => { name => 'hostname', default => 'status.github.com' },
-            "port:s"                    => { name => 'port', default => '443'},
-            "proto:s"                   => { name => 'proto', default => 'https' },
-            "urlpath:s"                 => { name => 'url_path', default => '/api/last-message.json' },
-            "timeout:s"                 => { name => 'timeout' },
-            "proxyurl:s"                => { name => 'proxyurl' },
-            "ssl-opt:s@"                => { name => 'ssl_opt' },
-            "threshold-overload:s@"     => { name => 'threshold_overload' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"                => { name => 'hostname', default => 'status.github.com' },
+        "port:s"                    => { name => 'port', default => '443'},
+        "proto:s"                   => { name => 'proto', default => 'https' },
+        "urlpath:s"                 => { name => 'url_path', default => '/api/last-message.json' },
+        "timeout:s"                 => { name => 'timeout' },
+        "threshold-overload:s@"     => { name => 'threshold_overload' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -151,17 +148,9 @@ Specify https if needed (Default: 'https')
 
 Set path to get GitHub's status information (Default: '/api/last-message.json')
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--threshold-overload>
 

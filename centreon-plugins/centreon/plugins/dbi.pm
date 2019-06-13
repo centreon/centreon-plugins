@@ -46,13 +46,13 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    { "datasource:s@"      => { name => 'data_source' },
-                      "username:s@"        => { name => 'username' },
-                      "password:s@"        => { name => 'password' },
-                      "connect-options:s@" => { name => 'connect_options' },
-                      "sql-errors-exit:s"  => { name => 'sql_errors_exit', default => 'unknown' },
-                      "timeout:i"          => { name => 'timeout' },
+        $options{options}->add_options(arguments => {
+            'datasource:s@'      => { name => 'data_source' },
+            'username:s@'        => { name => 'username' },
+            'password:s@'        => { name => 'password' },
+            'connect-options:s@' => { name => 'connect_options' },
+            'sql-errors-exit:s'  => { name => 'sql_errors_exit', default => 'unknown' },
+            'timeout:i'          => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
@@ -93,8 +93,9 @@ sub class_handle_ALRM {
 sub handle_ALRM {
     my $self = shift;
     
+    $self->disconnect();
     $self->{output}->output_add(severity => $self->{sql_errors_exit},
-                                short_msg => "Timeout");
+                                short_msg => 'Timeout');
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -145,7 +146,7 @@ sub check_options {
     }
     
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify data_source arguments.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify data_source arguments.');
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
     if (defined($self->{connect_options}) && $self->{connect_options} ne '') {
@@ -196,6 +197,15 @@ sub set_version {
     
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
 }
+
+sub disconnect {
+    my ($self) = @_;
+    
+    if (defined($self->{instance})) {
+        $self->{statement_handle} = undef;
+        $self->{instance}->disconnect();
+    }
+}
     
 sub connect {
     my ($self, %options) = @_;
@@ -213,12 +223,12 @@ sub connect {
         "DBI:". $self->{data_source},
         $self->{username},
         $self->{password},
-        { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1, %{$self->{connect_options_hash}} }
+        { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
     );
     alarm(0) if (defined($self->{timeout}));
 
     if (!defined($self->{instance})) {
-        my $err_msg = sprintf("Cannot connect: %s", defined($DBI::errstr) ? $DBI::errstr : "(no error string)");
+        my $err_msg = sprintf('Cannot connect: %s', defined($DBI::errstr) ? $DBI::errstr : '(no error string)');
         if ($dontquit == 0) {
             $self->{output}->add_option_msg(short_msg => $err_msg);
             $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
@@ -267,14 +277,16 @@ sub query {
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
         return 1 if ($continue_error == 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{instance}->errstr);
+        $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $self->{instance}->errstr);
+        $self->disconnect();
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
     my $rv = $self->{statement_handle}->execute;
     if (!$rv) {
         return 1 if ($continue_error == 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{statement_handle}->errstr);
+        $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $self->{statement_handle}->errstr);
+        $self->disconnect();
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
     

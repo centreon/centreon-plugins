@@ -99,10 +99,8 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-counters:s" => { name => 'filter_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
                                 
     return $self;
 }

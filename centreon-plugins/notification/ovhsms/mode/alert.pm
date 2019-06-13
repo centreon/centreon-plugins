@@ -33,28 +33,24 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "hostname:s"        => { name => 'hostname', default => 'www.ovh.com' },
-                                    "port:s"            => { name => 'port', default => 443 },
-                                    "proto:s"           => { name => 'proto', default => 'https' },
-                                    "urlpath:s"         => { name => 'url_path', default => "/cgi-bin/sms/http2sms.cgi" },
-                                    "account:s"         => { name => 'account' },
-                                    "login:s"           => { name => 'login' },
-                                    "password:s"        => { name => 'password' },
-                                    "from:s"            => { name => 'from'},
-                                    "to:s"              => { name => 'to' },
-                                    "message:s"         => { name => 'message' },
-                                    "class:s"           => { name => 'class', default => 1 },
-                                    "nostop:s"          => { name => 'nostop', default => 1 },
-                                    "smscoding:s"       => { name => 'smscoding', default => 1 },
-                                    "proxyurl:s"        => { name => 'proxyurl' },
-                                    "proxypac:s"        => { name => 'proxypac' },
-                                    "timeout:s"         => { name => 'timeout' },
-                                    "ssl-opt:s@"        => { name => 'ssl_opt' },
-                                });
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname', default => 'www.ovh.com' },
+        "port:s"            => { name => 'port', default => 443 },
+        "proto:s"           => { name => 'proto', default => 'https' },
+        "urlpath:s"         => { name => 'url_path', default => "/cgi-bin/sms/http2sms.cgi" },
+        "account:s"         => { name => 'account' },
+        "login:s"           => { name => 'login' },
+        "password:s"        => { name => 'password' },
+        "from:s"            => { name => 'from'},
+        "to:s"              => { name => 'to' },
+        "message:s"         => { name => 'message' },
+        "class:s"           => { name => 'class', default => 1 },
+        "nostop:s"          => { name => 'nostop', default => 1 },
+        "smscoding:s"       => { name => 'smscoding', default => 1 },
+        "timeout:s"         => { name => 'timeout' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -157,14 +153,6 @@ Specify https if needed (Default: 'https').
 
 Set path to the SMS API (Default: '/cgi-bin/sms/http2sms.cgi').
 
-=item B<--proxyurl>
-
-Proxy URL if any.
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file).
-
 =item B<--account>
 
 Specify SMS Account for API authentification.
@@ -204,10 +192,6 @@ Specify the coding of message. (Default : '1').
 =item B<--timeout>
 
 Threshold for HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

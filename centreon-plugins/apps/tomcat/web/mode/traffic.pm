@@ -29,8 +29,6 @@ use Digest::MD5 qw(md5_hex);
 use XML::XPath;
 use URI::Escape;
 
-my $instance_mode;
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -63,35 +61,33 @@ sub set_counters {
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
 
-    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    $self->{output}->perfdata_add(
+        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
 }
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -119,9 +115,9 @@ sub custom_traffic_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     my $diff_traffic = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}} - $options{old_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
     $self->{result_values}->{traffic} = $diff_traffic / $options{delta_time};
-    if (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
-        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
-        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    if (defined($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
     return 0;
 }
@@ -138,26 +134,23 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '8080' },
-            "proto:s"               => { name => 'proto' },
-            "credentials"           => { name => 'credentials' },
-            "basic"                 => { name => 'basic' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "timeout:s"             => { name => 'timeout' },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
-            "filter-name:s"         => { name => 'filter_name' },
-            "speed-in:s"            => { name => 'speed_in' },
-            "speed-out:s"           => { name => 'speed_out' },
-            "units-traffic:s"       => { name => 'units_traffic', default => '%' },
-            });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname' },
+        "port:s"                => { name => 'port', default => '8080' },
+        "proto:s"               => { name => 'proto' },
+        "credentials"           => { name => 'credentials' },
+        "basic"                 => { name => 'basic' },
+        "username:s"            => { name => 'username' },
+        "password:s"            => { name => 'password' },
+        "timeout:s"             => { name => 'timeout' },
+        "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
+        "filter-name:s"         => { name => 'filter_name' },
+        "speed-in:s"            => { name => 'speed_in' },
+        "speed-out:s"           => { name => 'speed_out' },
+        "units-traffic:s"       => { name => 'units_traffic', default => '%' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -171,7 +164,6 @@ sub check_options {
     }
     
     $self->{http}->set_options(%{$self->{option_results}});
-    $instance_mode = $self;
 }
 
 my %xpath_to_check = (
@@ -285,10 +277,6 @@ IP Address or FQDN of the Tomcat Application Server
 
 Port used by Tomcat
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Protocol used http or https
@@ -316,10 +304,6 @@ Specify this option if you access server-status page over hidden basic authentic
 =item B<--timeout>
 
 Threshold for HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--urlpath>
 

@@ -78,11 +78,15 @@ sub check {
                                                 short_msg => sprintf("Shelve '%s' Fan '%s' speed is '%s'", $shelf_addr, $num, $current_value));
                 }
                 
-                $self->{output}->perfdata_add(label => "speed_" . $shelf_addr . "_" . $num, unit => 'rpm',
-                                              value => $current_value,
-                                              warning => $warn,
-                                              critical => $crit,
-                                              min => 0);
+                $self->{output}->perfdata_add(
+                    label => "speed", unit => 'rpm',
+                    nlabel => 'hardware.fan.speed.rpm',
+                    instances => [$shelf_addr, $num],
+                    value => $current_value,
+                    warning => $warn,
+                    critical => $crit,
+                    min => 0
+                );
             }
         }
     }

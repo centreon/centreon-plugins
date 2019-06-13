@@ -41,26 +41,23 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "hostname:s"        => { name => 'hostname' },
-                        "port:s"            => { name => 'port' },
-                        "proto:s"           => { name => 'proto' },
-                        "username:s"        => { name => 'username' },
-                        "password:s"        => { name => 'password' },
-                        "proxyurl:s"        => { name => 'proxyurl' },
-                        "timeout:s"         => { name => 'timeout' },
-                        "ssl-opt:s@"        => { name => 'ssl_opt' },
-                        "api-path:s"        => { name => 'api_path' },
-                        "api-username:s"    => { name => 'api_username' },
-                        "api-password:s"    => { name => 'api_password' },
-                    });
+        $options{options}->add_options(arguments => {
+            "hostname:s"        => { name => 'hostname' },
+            "port:s"            => { name => 'port' },
+            "proto:s"           => { name => 'proto' },
+            "username:s"        => { name => 'username' },
+            "password:s"        => { name => 'password' },
+            "timeout:s"         => { name => 'timeout' },
+            "api-path:s"        => { name => 'api_path' },
+            "api-username:s"    => { name => 'api_username' },
+            "api-password:s"    => { name => 'api_password' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
@@ -97,8 +94,6 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : 'cf';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/v2';
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
@@ -128,8 +123,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
 }
@@ -151,7 +144,6 @@ sub request_api {
 
     my $content = $self->{http}->request(method => $options{method}, url_path => $self->{api_path} . $options{url_path},
         query_form_post => $options{query_form_post}, critical_status => '', warning_status => '', unknown_status => '');
-    my $response = $self->{http}->get_response();
     my $decoded;
     eval {
         $decoded = decode_json($content);
@@ -161,7 +153,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
-    if ($response->code() != 200) {
+    if ($self->{http}->get_code() != 200) {
         $self->{output}->add_option_msg(short_msg => "Error code: " . $decoded->{error_code} . ". Description: " . $decoded->{description});
         $self->{output}->option_exit();
     }
@@ -319,18 +311,9 @@ Authorization endpoint username (Default: 'cf')
 
 Authorization endpoint password (Default: '')
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (Examples: --ssl-opt="SSL_version => TLSv1"
---ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

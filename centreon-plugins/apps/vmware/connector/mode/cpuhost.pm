@@ -65,7 +65,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_cpu} = [
-        { label => 'total-cpu', set => {
+        { label => 'total-cpu', nlabel => 'host.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_average' } ],
                 output_template => '%s %%',
                 perfdatas => [
@@ -74,7 +74,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-cpu-mhz', set => {
+        { label => 'total-cpu-mhz', nlabel => 'host.cpu.utilization.mhz', set => {
                 key_values => [ { name => 'cpu_average_mhz' }, { name => 'cpu_average_mhz_max' } ],
                 output_template => '%s MHz',
                 perfdatas => [
@@ -86,7 +86,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cpu} = [
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'host.core.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
                 output_template => 'usage : %s',
                 perfdatas => [

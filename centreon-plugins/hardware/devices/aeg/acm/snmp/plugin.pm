@@ -31,12 +31,12 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'ac-status'            => 'hardware::devices::aeg::acm::snmp::mode::acstatus',
-                         'alarms-status'        => 'hardware::devices::aeg::acm::snmp::mode::alarmsstatus',
-                         'battery-status'       => 'hardware::devices::aeg::acm::snmp::mode::batterystatus',
-                         'load-status'          => 'hardware::devices::aeg::acm::snmp::mode::loadstatus',
-                         'rectifier-status'     => 'hardware::devices::aeg::acm::snmp::mode::rectifierstatus',
-                         );
+        'ac-status'            => 'hardware::devices::aeg::acm::snmp::mode::acstatus',
+        'alarms-status'        => 'hardware::devices::aeg::acm::snmp::mode::alarmsstatus',
+        'battery-status'       => 'hardware::devices::aeg::acm::snmp::mode::batterystatus',
+        'load-status'          => 'hardware::devices::aeg::acm::snmp::mode::loadstatus',
+        'rectifier-status'     => 'hardware::devices::aeg::acm::snmp::mode::rectifierstatus',
+    );
 
     return $self;
 }

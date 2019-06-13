@@ -51,23 +51,22 @@ sub windows_execute {
     
     $| = 1;
     pipe FROM_CHILD, TO_PARENT or do {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Internal error: can't create pipe from child to parent: $!");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Internal error: can't create pipe from child to parent: $!");
+        $options{output}->option_exit();
     };
     my $job = Win32::Job->new;
+    my $stderr = 'NUL';
+    $stderr = \*TO_PARENT if ($options{output}->is_debug());
     if (!($pid = $job->spawn(undef, $cmd,
-                       { stdout => \*TO_PARENT,
-                         stderr => \*TO_PARENT }))) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                     short_msg => "Internal error: execution issue: $^E");
-        $options{output}->display();
-        $options{output}->exit();
+                       { stdin => 'NUL',
+                         stdout => \*TO_PARENT,
+                         stderr => $stderr }))) {
+        $options{output}->add_option_msg(short_msg => "Internal error: execution issue: $^E");
+        $options{output}->option_exit();
     }
     close TO_PARENT;
 
-    my $ein = "";
+    my $ein = '';
     vec($ein, fileno(FROM_CHILD), 1) = 1;
     $job->watch(
         sub {            
@@ -97,10 +96,8 @@ sub windows_execute {
     close FROM_CHILD;    
     
     if ($ended == 0) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command too long to execute (timeout)...");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => 'Command too long to execute (timeout)...');
+        $options{output}->option_exit();
     }
     chomp $stdout;
     
@@ -110,10 +107,8 @@ sub windows_execute {
     
     if ($result->{$pid}->{exitcode} != 0) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $stdout");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->option_exit();
     }
     
     return ($stdout, $result->{$pid}->{exitcode});
@@ -124,6 +119,11 @@ sub unix_execute {
     my $cmd = '';
     my $args = [];
     my ($lerror, $stdout, $exit_code);
+
+    my $redirect_stderr = 1;
+    $redirect_stderr = $options{redirect_stderr} if (defined($options{redirect_stderr}));
+    my $wait_exit = 1;
+    $wait_exit = $options{wait_exit} if (defined($options{wait_exit}));
     
     # Build command line
     # Can choose which command is done remotely (can filter and use local file)
@@ -152,21 +152,21 @@ sub unix_execute {
         $sub_cmd .= $options{command_options} if (defined($options{command_options}));
         # On some equipment. Cannot get a pseudo terminal
         if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
-            $cmd = "echo '" . $sub_cmd . "' | " . $cmd . ' ' . join(" ", @$args);
+            $cmd = "echo '" . $sub_cmd . "' | " . $cmd . ' ' . join(' ', @$args);
             ($lerror, $stdout, $exit_code) = backtick(
-                                                 command => $cmd,
-                                                 timeout => $options{options}->{timeout},
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
+                command => $cmd,
+                timeout => $options{options}->{timeout},
+                wait_exit => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
         } else {
             ($lerror, $stdout, $exit_code) = backtick(
-                                                 command => $cmd,
-                                                 arguments => [@$args, $sub_cmd],
-                                                 timeout => $options{options}->{timeout},
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
+                command => $cmd,
+                arguments => [@$args, $sub_cmd],
+                timeout => $options{options}->{timeout},
+                wait_exit => $wait_exit,
+                redirect_stderr => $redirect_stderr
+            );
         }
     } else {
         $cmd = 'sudo ' if (defined($options{sudo}));
@@ -175,11 +175,11 @@ sub unix_execute {
         $cmd .= $options{command_options} if (defined($options{command_options}));
         
         ($lerror, $stdout, $exit_code) = backtick(
-                                                 command => $cmd,
-                                                 timeout => $options{options}->{timeout},
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
+            command => $cmd,
+            timeout => $options{options}->{timeout},
+            wait_exit => $wait_exit,
+            redirect_stderr => $redirect_stderr
+        );
     }
 
     if (defined($options{options}->{show_output}) && 
@@ -190,10 +190,8 @@ sub unix_execute {
     
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                     short_msg => $stdout);
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => $stdout);
+        $options{output}->option_exit();
     }
     
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
@@ -202,10 +200,8 @@ sub unix_execute {
     
     if ($exit_code != 0 && (!defined($options{no_errors}) || !defined($options{no_errors}->{$exit_code}))) {
         $stdout =~ s/\n/ - /g;
-        $options{output}->output_add(severity => 'UNKNOWN', 
-                                    short_msg => "Command error: $stdout");
-        $options{output}->display();
-        $options{output}->exit();
+        $options{output}->add_option_msg(short_msg => "Command error: $stdout");
+        $options{output}->option_exit();
     }
     
     return $stdout;
@@ -214,7 +210,7 @@ sub unix_execute {
 sub mymodule_load {
     my (%options) = @_;
     my $file;
-    ($file = ($options{module} =~ /\.pm$/ ? $options{module} : $options{module} . ".pm")) =~ s{::}{/}g;
+    ($file = ($options{module} =~ /\.pm$/ ? $options{module} : $options{module} . '.pm')) =~ s{::}{/}g;
     
     eval {
         local $SIG{__DIE__} = 'IGNORE';
@@ -278,7 +274,7 @@ sub backtick {
             }
 
             alarm(0);
-            return (-1000, "Command too long to execute (timeout)...", -1);
+            return (-1000, 'Command too long to execute (timeout)...', -1);
         } else {
             if ($arg{wait_exit} == 1) {
                 # We're waiting the exit code                
@@ -295,7 +291,7 @@ sub backtick {
         setpgrp( 0, 0 );
 
         if ($arg{redirect_stderr} == 1) {
-            open STDERR, ">&STDOUT";
+            open STDERR, '>&STDOUT';
         }
         if (scalar(@{$arg{arguments}}) <= 0) {
             exec($arg{command});
@@ -324,7 +320,7 @@ sub powershell_encoded {
 
     require Encode;
     require MIME::Base64;
-    my $bytes = Encode::encode("utf16LE", $value);
+    my $bytes = Encode::encode('utf16LE', $value);
     my $script = MIME::Base64::encode_base64($bytes, "\n");
     $script =~ s/\n//g;
     return $script;
@@ -337,6 +333,18 @@ sub powershell_escape {
     $value =~ s/'/`'/g;
     $value =~ s/"/`"/g;
     return $value;
+}
+
+sub powershell_json_sanitizer {
+    my (%options) = @_;
+
+    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'JSON::XS',
+                                           error_msg => "Cannot load module 'JSON::XS'.");
+    foreach my $line (split /\n/, $options{string}) {
+        eval { JSON::XS->new->utf8->decode($line) };
+        return $line if (!$@);
+    }
+    return -1;
 }
 
 sub minimal_version {
@@ -366,13 +374,13 @@ sub change_seconds {
     my %options = @_;
     my ($str, $str_append) = ('', '');
     my $periods = [
-                    { unit => 'y', value => 31556926 },
-                    { unit => 'M', value => 2629743 },
-                    { unit => 'w', value => 604800 },
-                    { unit => 'd', value => 86400 },
-                    { unit => 'h', value => 3600 },
-                    { unit => 'm', value => 60 },
-                    { unit => 's', value => 1 },
+        { unit => 'y', value => 31556926 },
+        { unit => 'M', value => 2629743 },
+        { unit => 'w', value => 604800 },
+        { unit => 'd', value => 86400 },
+        { unit => 'h', value => 3600 },
+        { unit => 'm', value => 60 },
+        { unit => 's', value => 1 },
     ];
     my %values = ('y' => 1, 'M' => 2, 'w' => 3, 'd' => 4, 'h' => 5, 'm' => 6, 's' => 7);
 
@@ -451,15 +459,29 @@ sub parse_threshold {
     my (%options) = @_;
 
     my $perf = trim($options{threshold});
-    my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => "", end => "" };
+    my $perf_result = { arobase => 0, infinite_neg => 0, infinite_pos => 0, start => '', end => '' };
 
     my $global_status = 1;    
-    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?)?$/) {
+    if ($perf =~ /^(\@?)((?:~|(?:\+|-)?\d+(?:[\.,]\d+)?(?:[KMGTPE][bB])?|):)?((?:\+|-)?\d+(?:[\.,]\d+)?(?:[KMGTPE][bB])?)?$/) {
         $perf_result->{start} = $2 if (defined($2));
         $perf_result->{end} = $3 if (defined($3));
         $perf_result->{arobase} = 1 if (defined($1) && $1 eq '@');
         $perf_result->{start} =~ s/[\+:]//g;
         $perf_result->{end} =~ s/\+//;
+        if ($perf_result->{start} =~ s/([KMGTPE])([bB])//) {
+            $perf_result->{start} = scale_bytesbit(
+                value => $perf_result->{start},
+                src_unit => $2, dst_unit => $2,
+                src_quantity => $1, dst_quantity => '',
+            );
+        }
+        if ($perf_result->{end} =~ s/([KMGTPE])([bB])//) {
+            $perf_result->{end} = scale_bytesbit(
+                value => $perf_result->{end},
+                src_unit => $2, dst_unit => $2,
+                src_quantity => $1, dst_quantity => '',
+            );
+        }
         if ($perf_result->{end} eq '') {
             $perf_result->{end} = 1e500;
             $perf_result->{infinite_pos} = 1;
@@ -482,10 +504,10 @@ sub parse_threshold {
 sub get_threshold_litteral {
     my (%options) = @_;
     
-    my $perf_output = ($options{arobase} == 1 ? "@" : "") . 
-                      (($options{infinite_neg} == 0) ? $options{start} : "~") . 
-                      ":" . 
-                      (($options{infinite_pos} == 0) ? $options{end} : "");
+    my $perf_output = ($options{arobase} == 1 ? '@' : '') . 
+                      (($options{infinite_neg} == 0) ? $options{start} : '~') . 
+                      ':' . 
+                      (($options{infinite_pos} == 0) ? $options{end} : '');
     return $perf_output;
 }
 

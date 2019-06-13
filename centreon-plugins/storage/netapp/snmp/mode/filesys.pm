@@ -71,31 +71,31 @@ sub set_counters {
     ];
 }
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
     return if ($self->{result_values}->{total} <= 0);
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -104,12 +104,12 @@ sub custom_usage_threshold {
     return 'ok' if ($self->{result_values}->{total} <= 0);
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -166,21 +166,15 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "units:s"               => { name => 'units', default => '%' },
-                                  "free"                  => { name => 'free' },
-                                  "filter-name:s"         => { name => 'filter_name' },
-                                  "filter-type:s"         => { name => 'filter_type' },
-                                });
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-type:s'     => { name => 'filter_type' },
+        'filter-vserver:s'  => { name => 'filter_vserver' },
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
+    return $self;
 }
 
 my %map_types = (
@@ -200,6 +194,7 @@ my $mapping2 = {
     dfPerCentInodeCapacity  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.9' },
     df64TotalKBytes         => { oid => '.1.3.6.1.4.1.789.1.5.4.1.29' },
     df64UsedKBytes          => { oid => '.1.3.6.1.4.1.789.1.5.4.1.30' },
+    dfVserver               => { oid => '.1.3.6.1.4.1.789.1.5.4.1.34' },
     dfCompressSavedPercent  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.38' },
     dfDedupeSavedPercent    => { oid => '.1.3.6.1.4.1.789.1.5.4.1.40' },
 };
@@ -213,6 +208,7 @@ sub manage_selection {
         $mapping2->{dfPerCentInodeCapacity}->{oid},
         $mapping2->{dfCompressSavedPercent}->{oid},
         $mapping2->{dfDedupeSavedPercent}->{oid},
+        $mapping2->{dfVserver}->{oid},
     );
     if (!$options{snmp}->is_snmpv1()) {
         push @oids, $mapping2->{df64TotalKBytes}->{oid};
@@ -222,7 +218,14 @@ sub manage_selection {
 
     my $results;
     if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '') {
-        $results = $options{snmp}->get_multiple_table(oids => [{oid => $mapping->{dfType}->{oid}}, {oid => $mapping2->{dfFileSys}->{oid}}], return_type => 1, nothing_quit => 1);
+        $results = $options{snmp}->get_multiple_table(
+            oids => [
+                { oid => $mapping->{dfType}->{oid} }, 
+                { oid => $mapping2->{dfFileSys}->{oid} }
+            ],
+            return_type => 1,
+            nothing_quit => 1
+        );
     } else {
         $results = $options{snmp}->get_table(oid => $mapping2->{dfFileSys}->{oid}, nothing_quit => 1);
     }
@@ -251,19 +254,25 @@ sub manage_selection {
 
     $self->{fs} = {};
     $options{snmp}->load(oids => \@oids, instances => \@fs_selected);
-    my $result2 = $options{snmp}->get_leef(nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     foreach my $instance (sort @fs_selected) {
-        $self->{fs}->{$instance} = { display => $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance}};
-        $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{dfKBytesTotal}->{oid} . '.' . $instance} * 1024;
-        $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{dfKBytesUsed}->{oid} . '.' . $instance} * 1024;
-        if (defined($result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance}) && $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} > 0) {
-            $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} * 1024;
-            $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{df64UsedKBytes}->{oid} . '.' . $instance} * 1024;
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $instance);
+        
+        $self->{fs}->{$instance} = {
+            display => defined($result2->{dfVserver}) && $result2->{dfVserver} ne '' ? 
+                $result2->{dfVserver} . ':' . $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance} : 
+                $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance}
+        };
+        $self->{fs}->{$instance}->{total} = $result2->{dfKBytesTotal} * 1024;
+        $self->{fs}->{$instance}->{used} = $result2->{dfKBytesUsed} * 1024;
+        if (defined($result2->{df64TotalKBytes}) && $result2->{df64TotalKBytes} > 0) {
+            $self->{fs}->{$instance}->{total} = $result2->{df64TotalKBytes} * 1024;
+            $self->{fs}->{$instance}->{used} = $result2->{df64UsedKBytes} * 1024;
         }
-        $self->{fs}->{$instance}->{dfCompressSavedPercent} = $result2->{$mapping2->{dfCompressSavedPercent}->{oid} . '.' . $instance};
-        $self->{fs}->{$instance}->{dfDedupeSavedPercent} = $result2->{$mapping2->{dfDedupeSavedPercent}->{oid} . '.' . $instance};
+        $self->{fs}->{$instance}->{dfCompressSavedPercent} = $result2->{dfCompressSavedPercent};
+        $self->{fs}->{$instance}->{dfDedupeSavedPercent} = $result2->{dfDedupeSavedPercent};
         if ($self->{fs}->{$instance}->{total} > 0) {
-            $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{$mapping2->{dfPerCentInodeCapacity}->{oid} . '.' . $instance};
+            $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{dfPerCentInodeCapacity};
         }
     }
 }
@@ -299,6 +308,10 @@ Thresholds are on free space left.
 =item B<--filter-name>
 
 Filter by filesystem name (can be a regexp).
+
+=item B<--filter-vserver>
+
+Filter by vserver name (can be a regexp).
 
 =item B<--filter-type>
 

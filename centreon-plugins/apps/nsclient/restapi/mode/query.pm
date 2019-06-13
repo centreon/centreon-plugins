@@ -34,10 +34,8 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.1';
-    $options{options}->add_options(arguments =>
-         {
+    $options{options}->add_options(arguments => {
          "hostname:s"           => { name => 'hostname' },
-         "http-peer-addr:s"     => { name => 'http_peer_addr' },
          "port:s"               => { name => 'port', default => 8443 },
          "proto:s"              => { name => 'proto', default => 'https' },
          "credentials"          => { name => 'credentials' },
@@ -45,19 +43,15 @@ sub new {
          "username:s"           => { name => 'username' },
          "password:s"           => { name => 'password' },
          "legacy-password:s"    => { name => 'legacy_password' },
-         "proxyurl:s"           => { name => 'proxyurl' },
-         "proxypac:s"           => { name => 'proxypac' },
          "timeout:s"            => { name => 'timeout' },
-         "ssl-opt:s@"           => { name => 'ssl_opt' },
-         "ssl:s"		        => { name => 'ssl' },
          "command:s"            => { name => 'command' },
          "arg:s@"               => { name => 'arg' },
          "unknown-status:s"     => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
          "warning-status:s"     => { name => 'warning_status' },
          "critical-status:s"    => { name => 'critical_status', default => '' },
-         });
+    });
     
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -180,10 +174,6 @@ Query NSClient Rest API.
 
 IP Addr/FQDN of the host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used (Default: 8443)
@@ -216,21 +206,9 @@ Specify this option if you access webpage over hidden basic authentication or yo
 
 Specify password for old authentification system.
 
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--command>
 

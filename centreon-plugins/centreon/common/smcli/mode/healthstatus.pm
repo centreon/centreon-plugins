@@ -31,10 +31,9 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "storage-command:s"       => { name => 'storage_command', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "storage-command:s"       => { name => 'storage_command', },
+    });
 
     return $self;
 }

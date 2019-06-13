@@ -33,29 +33,26 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '8080' },
-            "proto:s"               => { name => 'proto' },
-            "credentials"           => { name => 'credentials' },
-            "basic"                 => { name => 'basic' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "timeout:s"             => { name => 'timeout' },
-            "ssl-opt:s@"            => { name => 'ssl_opt' },
-            "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
-            "warning:s"             => { name => 'warning' },
-            "critical:s"            => { name => 'critical' },
-            "name:s"                => { name => 'name' },
-            "regexp"                => { name => 'use_regexp' },
-            "regexp-isensitive"     => { name => 'use_regexpi' },
-            });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname' },
+        "port:s"                => { name => 'port', default => '8080' },
+        "proto:s"               => { name => 'proto' },
+        "credentials"           => { name => 'credentials' },
+        "basic"                 => { name => 'basic' },
+        "username:s"            => { name => 'username' },
+        "password:s"            => { name => 'password' },
+        "timeout:s"             => { name => 'timeout' },
+        "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
+        "warning:s"             => { name => 'warning' },
+        "critical:s"            => { name => 'critical' },
+        "name:s"                => { name => 'name' },
+        "regexp"                => { name => 'use_regexp' },
+        "regexp-isensitive"     => { name => 'use_regexpi' },
+    });
 
     $self->{result} = {};
     $self->{hostname} = undef;
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -187,21 +184,27 @@ sub run {
                                         $self->{result}->{$name}->{currentThreadsBusy}));
         }
 
-        my $extra_label = '';
+        my $extra_label;
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'currentThreadsBusy' . $extra_label,
-                                      value => $self->{result}->{$name}->{currentThreadsBusy},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0,
-                                      max => $self->{result}->{$name}->{maxThreads});
+        $self->{output}->perfdata_add(
+            label => 'currentThreadsBusy',
+            instances => $extra_label,
+            value => $self->{result}->{$name}->{currentThreadsBusy},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0,
+            max => $self->{result}->{$name}->{maxThreads}
+        );
 
-        $self->{output}->perfdata_add(label => 'currentThreadCount' . $extra_label,
-                                      value => $self->{result}->{$name}->{currentThreadCount},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0,
-                                      max => $self->{result}->{$name}->{maxThreads});
+        $self->{output}->perfdata_add(
+            label => 'currentThreadCount',
+            instances => $extra_label,
+            value => $self->{result}->{$name}->{currentThreadCount},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0,
+            max => $self->{result}->{$name}->{maxThreads}
+        );
     };
 
     $self->{output}->display();
@@ -225,10 +228,6 @@ IP Address or FQDN of the Tomcat Application Server
 =item B<--port>
 
 Port used by Tomcat
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =item B<--proto>
 
@@ -257,10 +256,6 @@ Specify this option if you access server-status page over hidden basic authentic
 =item B<--timeout>
 
 Threshold for HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--urlpath>
 

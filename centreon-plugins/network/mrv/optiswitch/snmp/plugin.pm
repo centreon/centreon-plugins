@@ -31,11 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'environment'      => 'network::mrv::optiswitch::snmp::mode::environment',
-                         'interfaces'       => 'network::mrv::optiswitch::snmp::mode::interfaces',
-                         'list-interfaces'  => 'network::mrv::optiswitch::snmp::mode::listinterfaces',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                        );
+        'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
+        'environment'       => 'network::mrv::optiswitch::snmp::mode::environment',
+        'interfaces'        => 'network::mrv::optiswitch::snmp::mode::interfaces',
+        'list-interfaces'   => 'network::mrv::optiswitch::snmp::mode::listinterfaces',
+        'load'              => 'snmp_standard::mode::loadaverage',
+        'memory'            => 'network::mrv::optiswitch::snmp::mode::memory',
+        'uptime'            => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

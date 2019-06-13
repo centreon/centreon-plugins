@@ -150,11 +150,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("entity '%s' temperature is %s C", $entry->{name}, $entry->{temperature}));
             }
-            $self->{output}->perfdata_add(label => 'temperature_' . $entry->{name}, unit => 'C', 
-                                          value => $entry->{temperature},
-                                          warning => $warn,
-                                          critical => $crit, min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temperature', unit => 'C',
+                nlabel => 'hardware.entity.temperature.celsius',
+                instances => $entry->{name},
+                value => $entry->{temperature},
+                warning => $warn,
+                critical => $crit, min => 0
+            );
         }
     }
 }

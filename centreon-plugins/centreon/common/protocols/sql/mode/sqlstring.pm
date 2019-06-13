@@ -106,17 +106,18 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "sql-statement:s"         => { name => 'sql_statement' },
-                                  "key-column:s"            => { name => 'key_column' },
-                                  "value-column:s"          => { name => 'value_column' },
-                                  "warning-string:s"        => { name => 'warning_string', default => '' },
-                                  "critical-string:s"       => { name => 'critical_string', default => '' },
-                                  "printf-format:s"         => { name => 'printf_format' },
-                                  "printf-value:s"          => { name => 'printf_value' },
-                                  "dual-table"              => { name => 'dual_table' },
-                                });
+    $options{options}->add_options(arguments => {
+        "sql-statement:s"         => { name => 'sql_statement' },
+        "key-column:s"            => { name => 'key_column' },
+        "value-column:s"          => { name => 'value_column' },
+        "warning-string:s"        => { name => 'warning_string', default => '' },
+        "critical-string:s"       => { name => 'critical_string', default => '' },
+        "printf-format:s"         => { name => 'printf_format' },
+        "printf-value:s"          => { name => 'printf_value' },
+        "dual-table"              => { name => 'dual_table' },
+        "empty-sql-string:s"      => { name => 'empty_sql_string', default => 'No row returned or --key-column/--value-column do not correctly match selected field' },
+    });
+
     return $self;
 }
 
@@ -124,12 +125,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{instance_mode}->{option_results}->{sql_statement}) || $self->{instance_mode}->{option_results}->{sql_statement} eq '') {
-        $self->{instance_mode}->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
-        $self->{instance_mode}->{output}->option_exit();
+    if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
+        $self->{output}->option_exit();
     }
 
-    $self->{instance_mode}->change_macros(macros => ['warning_string', 'critical_string']);
+    $self->change_macros(macros => ['warning_string', 'critical_string']);
 }
 
 sub manage_selection {
@@ -158,8 +159,9 @@ sub manage_selection {
         }
     }
 
+    $self->{sql}->disconnect();
     if (scalar(keys %{$self->{rows}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No row returned or --key-column/--value-column do not correctly match selected field");
+        $self->{output}->add_option_msg(short_msg => $self->{option_results}->{empty_sql_string});
         $self->{output}->option_exit();
     }
 
@@ -210,6 +212,11 @@ Set critical condition (if statement syntax) for status evaluation.
 =item B<--dual-table>
 
 Set this option to ensure compatibility with dual table and Oracle.
+
+=item B<--empty-sql-string>
+
+Set this option to change the output message when the sql statement result is empty.
+(Default: 'No row returned or --key-column/--value-column do not correctly match selected field')
 
 =back
 

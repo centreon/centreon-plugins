@@ -87,10 +87,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Temperature '%s' is %s degree centigrade", $result->{ciscoEnvMonTemperatureStatusDescr}, $result->{ciscoEnvMonTemperatureStatusValue}));
         }
-        $self->{output}->perfdata_add(label => "temp_" . $result->{ciscoEnvMonTemperatureStatusDescr}, unit => 'C',
-                                      value => $result->{ciscoEnvMonTemperatureStatusValue},
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => "temp", unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $result->{ciscoEnvMonTemperatureStatusDescr},
+            value => $result->{ciscoEnvMonTemperatureStatusValue},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

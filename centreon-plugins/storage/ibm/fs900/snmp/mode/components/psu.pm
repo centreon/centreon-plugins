@@ -89,13 +89,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Psu '%s' fan speed is %s rpm", $instance, $result->{psuFan}));
             }
-            $self->{output}->perfdata_add(label => 'psu_fan_' . $instance,
-                                          unit => 'rpm', 
-                                          value => $result->{psuFan},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'psu_fan', unit => 'rpm',
+                nlabel => 'hardware.psu.fan.speed.rpm',
+                instances => $instance,
+                value => $result->{psuFan},
+                warning => $warn,
+                critical => $crit,
+                min => 0,
+            );
         }
     }
 }

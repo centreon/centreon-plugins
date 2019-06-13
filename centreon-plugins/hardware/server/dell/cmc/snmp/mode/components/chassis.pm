@@ -25,8 +25,8 @@ use warnings;
 
 # In MIB 'DELL-RAC-MIB'
 my $mapping = {
-    drsWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.13', section => 'power', label => 'power', unit => 'W' },
-    drsAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.14', section => 'current', label => 'current', unit => 'A' },
+    drsWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.13', section => 'power', label => 'power', unit => 'watt' },
+    drsAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.14', section => 'current', label => 'current', unit => 'ampere' },
 };
 my $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry = '.1.3.6.1.4.1.674.10892.2.4.1.1';
 
@@ -63,10 +63,14 @@ sub check {
                                             short_msg => sprintf("Chassis '%s' %s is %s%s", $instance, 
                                                                  $mapping->{$probe}->{section}, $result->{$probe}, $mapping->{$probe}->{unit}));
             }
-            $self->{output}->perfdata_add(label => 'chassis_' . $mapping->{$probe}->{label} . '_' . $instance, unit => $mapping->{$probe}->{unit},
-                                          value => $result->{$probe},
-                                          warning => $warn,
-                                          critical => $crit);
+            $self->{output}->perfdata_add(
+                label => 'chassis_' . $mapping->{$probe}->{label}, unit => $mapping->{$probe}->{unit},
+                nlabel => 'hardware.chassis.' . $mapping->{$probe}->{label} . '.' . $mapping->{$probe}->{unit},
+                instances => $instance,
+                value => $result->{$probe},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

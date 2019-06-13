@@ -66,22 +66,22 @@ sub set_counters {
 sub custom_info_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{name} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
-
-    $self->{output}->perfdata_add(label => 'members' . $extra_label,
-                                  value => $self->{result_values}->{num_members},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'members',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{name} : undef,
+        value => $self->{result_values}->{num_members},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub custom_info_threshold {
     my ($self, %options) = @_;
     
     my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{num_members},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                                 { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -108,10 +108,9 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-channel:s"      => { name => 'filter_channel' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-channel:s"      => { name => 'filter_channel' },
+    });
    
     return $self;
 }

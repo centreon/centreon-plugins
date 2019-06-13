@@ -40,25 +40,21 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "interval:s@" => { name => 'interval' },
-                        "hostname:s@" => { name => 'hostname' },
-                        "port:s@"     => { name => 'port' },
-                        "proto:s@"    => { name => 'proto' },
-                        "username:s@" => { name => 'username' },
-                        "password:s@" => { name => 'password' },
-                        "proxyurl:s@" => { name => 'proxyurl' },
-                        "timeout:s@"  => { name => 'timeout' },
-                        "ssl:s@"      => { name => 'ssl' },
-                        "ssl-opt:s@"  => { name => 'ssl_opt' },
-                    });
+        $options{options}->add_options(arguments =>  {
+            "interval:s@" => { name => 'interval' },
+            "hostname:s@" => { name => 'hostname' },
+            "port:s@"     => { name => 'port' },
+            "proto:s@"    => { name => 'proto' },
+            "username:s@" => { name => 'username' },
+            "password:s@" => { name => 'password' },
+            "timeout:s@"  => { name => 'timeout' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
@@ -95,8 +91,6 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
-    $self->{ssl} = (defined($self->{option_results}->{ssl})) ? shift(@{$self->{option_results}->{ssl}}) : 'tlsv1';
     $self->{interval} = (defined($self->{option_results}->{interval})) ? shift(@{$self->{option_results}->{interval}}) : '15min';
  
     if (!defined($self->{hostname})) {
@@ -119,12 +113,10 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{credentials} = 1;
     $self->{option_results}->{basic} = 1;
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
-    $self->{option_results}->{ssl} = $self->{ssl};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
 }
@@ -226,17 +218,9 @@ Cluster username.
 
 Cluster password.
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

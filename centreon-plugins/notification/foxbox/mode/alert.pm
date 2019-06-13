@@ -32,21 +32,19 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(
-        arguments => {
-            "foxbox-username:s" => { name => 'foxbox_username', default => 'centreon' },
-            "foxbox-password:s" => { name => 'foxbox_password' },
-            "from:s"            => { name => 'from',     default => 'centreon' },
-            "proto:s"           => { name => 'proto',    default => 'http' },
-            "urlpath:s"         => { name => 'url_path', default => '/source/send_sms.php' },
-            "phonenumber:s"     => { name => 'phonenumber' },
-            "hostname:s"        => { name => 'hostname' },
-            "texto:s"           => { name => 'texto' },
-            "timeout:s"         => { name => 'timeout',  default => 10 },
-        }
-    );
+    $options{options}->add_options(arguments => {
+        "foxbox-username:s" => { name => 'foxbox_username', default => 'centreon' },
+        "foxbox-password:s" => { name => 'foxbox_password' },
+        "from:s"            => { name => 'from',     default => 'centreon' },
+        "proto:s"           => { name => 'proto',    default => 'http' },
+        "urlpath:s"         => { name => 'url_path', default => '/source/send_sms.php' },
+        "phonenumber:s"     => { name => 'phonenumber' },
+        "hostname:s"        => { name => 'hostname' },
+        "texto:s"           => { name => 'texto' },
+        "timeout:s"         => { name => 'timeout',  default => 10 },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 

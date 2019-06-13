@@ -75,13 +75,12 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '' },
-                                  "memory"              => { name => 'memory' },
-                                  "timezone:s"          => { name => 'timezone' },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning-status:s"    => { name => 'warning_status', default => '' },
+        "critical-status:s"   => { name => 'critical_status', default => '' },
+        "memory"              => { name => 'memory' },
+        "timezone:s"          => { name => 'timezone' },
+    });
     
     centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime',
                                            error_msg => "Cannot load module 'DateTime'.");
@@ -135,6 +134,8 @@ sub manage_selection {
 
     my ($i, $current_time) = (1, time());
     while ((my @row = $self->{sql}->fetchrow_array())) {
+        # can be: 1541985283,999999999999999999999999999996
+        $row[1] =~ s/,/./;
         my @values = localtime($row[1]);
         my $dt = DateTime->new(
             year       => $values[5] + 1900,
@@ -162,6 +163,8 @@ sub manage_selection {
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->write(data => { last_time => $current_time });
     }
+
+    $self->{sql}->disconnect();
 }
 
 1;

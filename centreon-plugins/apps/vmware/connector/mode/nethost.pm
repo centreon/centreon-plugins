@@ -92,8 +92,11 @@ sub custom_dropped_calc {
     $self->{result_values}->{dropped} = $options{new_datas}->{$self->{instance} . '_dropped_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{packets} = $options{new_datas}->{$self->{instance} . '_packets_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{label_ref} = $options{extra_options}->{label_ref};
-    $self->{result_values}->{dropped_prct} = $self->{result_values}->{dropped} * 100 / $self->{result_values}->{packets};
-
+    $self->{result_values}->{dropped_prct} = 0;
+    if ($self->{result_values}->{packets} > 0) {
+        $self->{result_values}->{dropped_prct} = $self->{result_values}->{dropped} * 100 / $self->{result_values}->{packets};
+    }
+    
     return 0;
 }
 
@@ -123,20 +126,20 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_host} = [
-        { label => 'host-traffic-in', set => {
+        { label => 'host-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'host traffic in : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'host_traffic_in', value => 'traffic_in_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'host-traffic-out', set => {
+        { label => 'host-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'host traffic out : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'host_traffic_out', value => 'traffic_out_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
@@ -146,20 +149,20 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{vswitch} = [
-        { label => 'vswitch-traffic-in', set => {
+        { label => 'vswitch-traffic-in', nlabel => 'host.vswitch.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'traffic in : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'vswitch_traffic_in', value => 'traffic_in_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
-        { label => 'vswitch-traffic-out', set => {
+        { label => 'vswitch-traffic-out', nlabel => 'host.vswitch.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'traffic out : %s %s/s',
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'vswitch_traffic_out', value => 'traffic_out_absolute', template => '%s',
                       unit => 'b/s', min => 0, label_extra_instance => 1 },
@@ -177,7 +180,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'link-traffic-in', set => {
+        { label => 'link-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'display' }, { name => 'traffic_in' }, { name => 'speed' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -188,7 +191,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-traffic-out', set => {
+        { label => 'link-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'display' }, { name => 'traffic_out' }, { name => 'speed' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -199,7 +202,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-dropped-in', set => {
+        { label => 'link-dropped-in', nlabel => 'host.packets.in.dropped.percentage', set => {
                 key_values => [ { name => 'display' }, { name => 'packets_in' }, { name => 'dropped_in' } ],
                 closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_dropped_output'),
@@ -210,7 +213,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-dropped-out', set => {
+        { label => 'link-dropped-out', nlabel => 'host.packets.out.dropped.percentage', set => {
                 key_values => [ { name => 'display' }, { name => 'packets_out' }, { name => 'dropped_out' } ],
                 closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_dropped_output'),
@@ -260,11 +263,11 @@ sub new {
         "filter"                => { name => 'filter' },
         "scope-datacenter:s"    => { name => 'scope_datacenter' },
         "scope-cluster:s"       => { name => 'scope_cluster' },
-        "filter-nic"            => { name => 'filter_nic' },
         "no-proxyswitch"        => { name => 'no_proxyswitch' },
         "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
+        "unknown-link-status:s"     => { name => 'unknown_link_status', default => '' },
         "warning-link-status:s"     => { name => 'warning_link_status', default => '' },
         "critical-link-status:s"    => { name => 'critical_link_status', default => '%{link_status} !~ /up/' },
     });
@@ -277,7 +280,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status',
-        'warning_link_status', 'critical_link_status']);
+        'unknown_link_status', 'warning_link_status', 'critical_link_status']);
 }
 
 sub manage_selection {
@@ -302,6 +305,8 @@ sub manage_selection {
         
         foreach my $pnic_name (sort keys %{$response->{data}->{$host_id}->{pnic}}) {
             $self->{host}->{$host_name}->{pnic} = {} if (!defined($self->{host}->{$host_name}->{pnic}));
+            next if (defined($self->{option_results}->{nic_name}) && $self->{option_results}->{nic_name} ne '' &&
+                $pnic_name !~ /$self->{option_results}->{nic_name}/);
             
             $self->{host}->{$host_name}->{pnic}->{$pnic_name} = { 
                 display     => $pnic_name, 
@@ -371,10 +376,6 @@ Search in following cluster(s) (can be a regexp).
 ESX nic to check.
 If not set, we check all nics.
 
-=item B<--filter-nic>
-
-Nic name is a regexp.
-
 =item B<--unknown-status>
 
 Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
@@ -390,15 +391,20 @@ Can used special variables like: %{status}
 Set critical threshold for status (Default: '').
 Can used special variables like: %{status}
 
+=item B<--unknown-link-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{link_status}
+
 =item B<--warning-link-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Can used special variables like: %{link_status}
 
 =item B<--critical-link-status>
 
 Set critical threshold for status (Default: '%{link_status} !~ /up/').
-Can used special variables like: %{status}
+Can used special variables like: %{link_status}
 
 =item B<--warning-*>
 

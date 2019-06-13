@@ -27,8 +27,6 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use DateTime;
 
-my $instance_mode;
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -66,13 +64,12 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container-id:s"              => { name => 'container_id' },
-                                  "container-name:s"            => { name => 'container_name' },
-                                  "filter-name:s"               => { name => 'filter_name' },
-                                  "use-name"                    => { name => 'use_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        "container-id:s"              => { name => 'container_id' },
+        "container-name:s"            => { name => 'container_name' },
+        "filter-name:s"               => { name => 'filter_name' },
+        "use-name"                    => { name => 'use_name' },
+    });
    
     return $self;
 }

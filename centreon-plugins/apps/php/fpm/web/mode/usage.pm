@@ -140,21 +140,19 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "hostname:s"        => { name => 'hostname' },
-                                "port:s"            => { name => 'port', },
-                                "proto:s"           => { name => 'proto' },
-                                "urlpath:s"         => { name => 'url_path', default => "/fpm-status" },
-                                "credentials"       => { name => 'credentials' },
-                                "basic"             => { name => 'basic' },
-                                "username:s"        => { name => 'username' },
-                                "password:s"        => { name => 'password' },
-                                "proxyurl:s"        => { name => 'proxyurl' },
-                                "timeout:s"         => { name => 'timeout', default => 5 },
-                                "ssl-opt:s@"        => { name => 'ssl_opt' },
-                                });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname' },
+        "port:s"            => { name => 'port', },
+        "proto:s"           => { name => 'proto' },
+        "urlpath:s"         => { name => 'url_path', default => "/fpm-status" },
+        "credentials"       => { name => 'credentials' },
+        "basic"             => { name => 'basic' },
+        "username:s"        => { name => 'username' },
+        "password:s"        => { name => 'password' },
+        "timeout:s"         => { name => 'timeout', default => 5 },
+    });
+    
+    $self->{http} = centreon::plugins::http->new(%options);
     
     return $self;
 }
@@ -202,10 +200,6 @@ IP Addr/FQDN of the webserver host
 
 Port used by web server
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Specify https if needed
@@ -237,10 +231,6 @@ Specify this option if you access server-status page over hidden basic authentic
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =item B<--warning-*>
 

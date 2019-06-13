@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cpu} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'usage' }, { name => 'display' }, ],
                 output_template => 'Usage : %.2f %%',
                 perfdatas => [

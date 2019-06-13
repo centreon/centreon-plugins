@@ -25,13 +25,11 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_active_perfdata {
     my ($self, %options) = @_;
 
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -47,7 +45,7 @@ sub custom_active_threshold {
     my ($self, %options) = @_;
 
     my $threshold_value = $self->{result_values}->{active};
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_active};
     }
     my $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
@@ -167,21 +165,12 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-user:s"     => { name => 'filter_user' },
-                                    "units:s"           => { name => 'units', default => '%' },
-                                    "filter-counters:s" => { name => 'filter_counters' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-user:s"     => { name => 'filter_user' },
+        "units:s"           => { name => 'units', default => '%' },
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub manage_selection {
