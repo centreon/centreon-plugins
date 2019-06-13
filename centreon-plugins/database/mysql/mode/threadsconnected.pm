@@ -121,13 +121,10 @@ Check number of open connections.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
+Thresholds.
+Can be: 'usage', 'usage-prct' (%).
 
 =back
 
