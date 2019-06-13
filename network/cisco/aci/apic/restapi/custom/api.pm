@@ -135,40 +135,15 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub refresh_token {
-    my ($self, %options) = @_;
-
-    $self->settings();
-
-    my $content = $self->{http}->request(method => 'GET', url_path => '/api/aaaRefresh.json');
-
-    my $decoded;
-    eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
-    };
-    if (defined($decoded->{imdata}->[0]->{error}->{attributes}) && $decoded->{imdata}->[0]->{error}->{attributes}->{code} == 403
-       && $decoded->{imdata}->[0]->{error}->{attributes}->{text} eq 'Token was invalid (Error: Token timeout)') {
-       return 1
-    }
-
-    return 0
-}
-
 sub get_access_token {
     my ($self, %options) = @_;
 
     my $has_cache_file = $options{statefile}->read(statefile => 'cisco_aci_apic_' . md5_hex($self->{hostname}) . '_' . md5_hex($self->{username}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
-    my $refresh_timeout = $options{statefile}->get(name => 'refresh_timeout');
     my $last_timestamp = $options{statefile}->get(name => 'last_timestamp');
-    my $renew_token = 0;
 
-    if (defined($last_timestamp) && (time() - $last_timestamp > 400) && (time() - $last_timestamp < $refresh_timeout)) {
-        $renew_token = $self->refresh_token();
-    }
-
-    if ($has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10) || $renew_token == 1) {
+    if ($has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10)) {
         my $login = { aaaUser => { attributes => { name => $self->{username}, pwd => $self->{password} } } };
         my $post_json = JSON::XS->new->utf8->encode($login);
 
@@ -191,17 +166,15 @@ sub get_access_token {
         }
         if (defined($decoded->{imdata}->[0]->{error}->{attributes})) {
             $self->{output}->add_option_msg(short_msg => "Error '" . uc($decoded->{imdata}->[0]->{error}->{attributes}->{code}) . " "
-                         . $decoded->{imdata}->[0]->{error}->{attributes}->{text} . "'");
+                . $decoded->{imdata}->[0]->{error}->{attributes}->{text} . "'");
             $self->{output}->option_exit();
         }
 
         $access_token = $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token};
         my $datas = {
             last_timestamp => time(),
-            refresh_timeout => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{refreshTimeoutSeconds},
             access_token => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token}, 
-            expires_on => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{creationTime}
-                + $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{maximumLifetimeSeconds}
+            expires_on => time() + $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{refreshTimeoutSeconds}
         };
         $options{statefile}->write(data => $datas);
     }

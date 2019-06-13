@@ -39,7 +39,7 @@ sub custom_health_perfdata {
     foreach ('current', 'previous') {
         $self->{output}->perfdata_add(
             label => $_,
-            nlabel => 'tenant.health.' . $_, 
+            nlabel => 'tenant.health.' . $_ . '.percentage', 
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{dn} : undef,
             value => $self->{result_values}->{$_},
             unit => '%', min => 0, max => 100
