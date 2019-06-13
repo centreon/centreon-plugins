@@ -80,7 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 0,
+                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
                       unit => '%' },
                 ],
             }
@@ -139,7 +139,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'swap_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 0,
+                    { label => 'swap_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
                       unit => '%' },
                 ],
             }
