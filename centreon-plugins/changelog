@@ -10,6 +10,9 @@
  * Plugin added: 3CX Rest API
  * Plugin added: Atto FiberBridge SNMP
  * Plugin added: Buffalo TeraStation SNMP
+ * Plugin added: Influxdb
+ * Plugin added: PDU Schleifenbauer Gateway SNMP
+ * Plugin added: Ansible Tower
  * Mode added: [oracle] 'librarycacheusage'
  * Mode added: [oracle] 'dictionarycacheusage'
  * Mode added: [oracle] 'redologusage'
@@ -20,6 +23,8 @@
  * Break: [apps/lmsensors] modes refactoring
  * Break: [cisco/standard] 'cpu', 'memory' refactoring
  * Break: [3par/ssh] modes refactoring
+ * Break: [mysql] 'threads-connected' refactoring
+ * Break: [snmp_standard] 'swap' refactoring
 
 2019-04-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Google Cloud Platform Compute Engine API
