@@ -37,6 +37,7 @@ sub new {
         'interfaces'       => 'snmp_standard::mode::interfaces', 
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'centreon::common::cisco::ironport::snmp::mode::memory',
+        'proxy-usage'      => 'centreon::common::cisco::ironport::snmp::mode::proxyusage',
     );
 
     return $self;
