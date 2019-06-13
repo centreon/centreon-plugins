@@ -44,16 +44,16 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global_http', type => 0, , cb_prefix_output => 'prefix_http_output', skipped_code => { -10 => 1 } },
-        { name => 'global_icp', type => 0, , cb_prefix_output => 'prefix_icp_output', skipped_code => { -10 => 1 } },
-        { name => 'global', type => 0, , cb_prefix_output => 'prefix_server_output', skipped_code => { -10 => 1 } }
+        { name => 'global_http', type => 0, cb_prefix_output => 'prefix_http_output', skipped_code => { -10 => 1 } },
+        { name => 'global_icp', type => 0, cb_prefix_output => 'prefix_icp_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_server_output', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{global_http} = [
          { label => 'http-hits-rate', set => {
                 key_values => [ { name => 'cacheProtoClientHttpRequests', diff => 1 }, { name => 'cacheHttpHits', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'),
-                output_template => 'hits rate : %.2f %%', output_use => 'hits_prct',
+                output_template => 'hits rate : %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
                 perfdatas => [
                     { label => 'http_hits_rate', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
