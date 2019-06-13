@@ -25,26 +25,33 @@ use base qw(snmp_standard::mode::memory);
 use strict;
 use warnings;
 
-sub custom_usage_calc {
+sub memory_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_memTotalReal'};
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_memTotalFree'};
-    $self->{result_values}->{buffer} = $options{new_datas}->{$self->{instance} . '_memBuffer'};
-    $self->{result_values}->{cached} = $options{new_datas}->{$self->{instance} . '_memCached'};
+    my $available = ($options{result}->{memTotalFree}) ? $options{result}->{memTotalFree} * 1024 : 0;
+    my $total = ($options{result}->{memTotalReal}) ? $options{result}->{memTotalReal} * 1024 : 0;
+    my $buffer = ($options{result}->{memBuffer}) ? $options{result}->{memBuffer} * 1024 : 0;
+    my $cached = ($options{result}->{memCached}) ? $options{result}->{memCached} * 1024 : 0;
+    my ($used, $free, $prct_used, $prct_free) = (0, 0, 0, 0);
 
-    if ($self->{result_values}->{total} != 0) {
-        $self->{result_values}->{physical_used} = $self->{result_values}->{total} - $self->{result_values}->{free};
-        $self->{result_values}->{used} = $self->{result_values}->{physical_used} - $self->{result_values}->{buffer} - $self->{result_values}->{cached};
-        $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    } else {
-        $self->{result_values}->{used} = '0';
-        $self->{result_values}->{prct_used} = '0';
+    if ($total != 0) {
+        $used = $total - $available - $buffer - $cached;
+        $free = $total - $used;
+        $prct_used = $used * 100 / $total;
+        $prct_free = 100 - $prct_used;
     }
-
-    return 0;
+    
+    $self->{ram} = {
+        total => $total,
+        used => $used,
+        free => $free,
+        prct_used => $prct_used,
+        prct_free => $prct_free,
+        memShared => ($options{result}->{memShared}) ? $options{result}->{memShared} * 1024 : 0,
+        memBuffer => $buffer,
+        memCached => $cached,
+    };
 }
-
 
 1;
 

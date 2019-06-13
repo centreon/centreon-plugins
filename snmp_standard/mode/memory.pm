@@ -53,7 +53,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'ram', type => 0 },
+        { name => 'ram', type => 0, skipped_code => { -10 => 1 } },
         { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
     ];
     
