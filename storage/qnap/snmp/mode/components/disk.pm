@@ -89,9 +89,12 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Disk '%s' temperature is %s degree centigrade", $result->{HdDescr}, $disk_temp));
             }
-            $self->{output}->perfdata_add(label => 'temp_disk_' . $instance, unit => 'C',
-                                          value => $disk_temp
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temp_disk', unit => 'C',
+                nlabel => 'hardware.disk.temperature.celsius',
+                instances => $instance,
+                value => $disk_temp
+            );
         }
     }
 }

@@ -45,31 +45,27 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "hostname:s"            => { name => 'hostname', default => 'api.telegram.org' },
-                                    "port:s"                => { name => 'port', default => 443 },
-                                    "proto:s"               => { name => 'proto', default => 'https' },
-                                    "urlpath:s"             => { name => 'url_path', default => "/sendMessage" },
-                                    "chat-id:s"             => { name => 'chat_id' },
-                                    "bot-token:s"           => { name => 'bot_token' },
-                                    "host-name:s"           => { name => 'host_name' },
-                                    "host-state:s"          => { name => 'host_state' },
-                                    "host-output:s"         => { name => 'host_output' },
-                                    "service-description:s" => { name => 'service_description' },
-                                    "service-state:s"       => { name => 'service_state' },
-                                    "service-output:s"      => { name => 'service_output' },
-                                    "graph-url:s"           => { name => 'graph_url' },
-                                    "link-url:s"            => { name => 'link_url' },
-                                    "centreon-url:s"        => { name => 'centreon_url' },
-                                    "centreon-token:s"      => { name => 'centreon_token' },
-                                    "proxyurl:s"            => { name => 'proxyurl' },
-                                    "proxypac:s"            => { name => 'proxypac' },
-                                    "timeout:s"             => { name => 'timeout' },
-                                    "ssl-opt:s@"            => { name => 'ssl_opt' },
-                                });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname', default => 'api.telegram.org' },
+        "port:s"                => { name => 'port', default => 443 },
+        "proto:s"               => { name => 'proto', default => 'https' },
+        "urlpath:s"             => { name => 'url_path', default => "/sendMessage" },
+        "chat-id:s"             => { name => 'chat_id' },
+        "bot-token:s"           => { name => 'bot_token' },
+        "host-name:s"           => { name => 'host_name' },
+        "host-state:s"          => { name => 'host_state' },
+        "host-output:s"         => { name => 'host_output' },
+        "service-description:s" => { name => 'service_description' },
+        "service-state:s"       => { name => 'service_state' },
+        "service-output:s"      => { name => 'service_output' },
+        "graph-url:s"           => { name => 'graph_url' },
+        "link-url:s"            => { name => 'link_url' },
+        "centreon-url:s"        => { name => 'centreon_url' },
+        "centreon-token:s"      => { name => 'centreon_token' },
+        "timeout:s"             => { name => 'timeout' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -230,14 +226,6 @@ Use Telegram CLI for getting Chat ID
 Telegram Bot Token (Check Telegram Doc for Creating Bot)
 https://core.telegram.org/bots#3-how-do-i-create-a-bot
 
-=item B<--proxyurl>
-
-Proxy URL if any.
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file).
-
 =item B<--host-state>
 
 Specify host server state for the alert.
@@ -281,10 +269,6 @@ Specify the link url (Example: %{centreon_url}/main.php?p=20201&o=svc&host_searc
 =item B<--timeout>
 
 Threshold for HTTP timeout.
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

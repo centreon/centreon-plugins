@@ -165,7 +165,6 @@ sub manage_selection {
     my $alt_subjects = '';
     for (my $i =  0; $i < $#subject_alt_names; $i += 2) {
         my ($type, $name) = ($subject_alt_names[$i], $subject_alt_names[$i + 1]);
-        next if ($name eq $subject);
         if ($type == GEN_IPADD) {
             $name = inet_ntoa($name);
         }

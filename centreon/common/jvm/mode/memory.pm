@@ -55,17 +55,15 @@ sub set_counters {
     ];
 }
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
     my $use_th = 1;
-    $use_th = 0 if ($instance_mode->{option_results}->{units} eq '%' && $self->{result_values}->{max} <= 0);
+    $use_th = 0 if ($self->{instance_mode}->{option_results}->{units} eq '%' && $self->{result_values}->{max} <= 0);
     
     my $value_perf = $self->{result_values}->{used};
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%' && $self->{result_values}->{max} > 0) {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%' && $self->{result_values}->{max} > 0) {
         $total_options{total} = $self->{result_values}->{max};
         $total_options{cast_int} = 1;
     }
@@ -81,10 +79,10 @@ sub custom_usage_threshold {
     my ($self, %options) = @_;
     
     # Cannot use percent without total
-    return 'ok' if ($self->{result_values}->{max} <= 0 && $instance_mode->{option_results}->{units} eq '%');
+    return 'ok' if ($self->{result_values}->{max} <= 0 && $self->{instance_mode}->{option_results}->{units} eq '%');
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
@@ -130,18 +128,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "units:s"               => { name => 'units', default => '%' },
-                                });
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+        "units:s"   => { name => 'units', default => '%' },
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
+    return $self;
 }
 
 sub manage_selection {

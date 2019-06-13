@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cluster} = [
-        { label => 'svmotion', set => {
+        { label => 'svmotion', nlabel => 'cluster.operations.svmotion.current.count', set => {
                 key_values => [ { name => 'numSVMotion', diff => 1  }, { name => 'display' } ],
                 output_template => 'SVMotion %s',
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'vmotion', set => {
+        { label => 'vmotion', nlabel => 'cluster.operations.vmotion.current.count', set => {
                 key_values => [ { name => 'numVMotion', diff => 1  }, { name => 'display' } ],
                 output_template => 'VMotion %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'clone', set => {
+        { label => 'clone', nlabel => 'cluster.operations.clone.current.count', set => {
                 key_values => [ { name => 'numClone', diff => 1  }, { name => 'display' } ],
                 output_template => 'Clone %s',
                 perfdatas => [

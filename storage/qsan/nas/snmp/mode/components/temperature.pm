@@ -68,11 +68,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' is '%s' C", $result->{ems_item}, $value));
         }
-        $self->{output}->perfdata_add(label => 'temperature_' . $result->{ems_item} . '_' . $instance, unit => 'C', 
-                                      value => $value,
-                                      warning => $warn,
-                                      critical => $crit
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temperature', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => [$result->{ems_item}, $instance],
+            value => $value,
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

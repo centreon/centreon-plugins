@@ -68,8 +68,12 @@ sub check {
         }
 
         if (defined($result->{fanSpeedSensorValue}) && $result->{fanSpeedSensorValue} =~ /^[0-9\.]+$/) {
-            $self->{output}->perfdata_add(label => $result->{fanSpeedSensorName}, unit => 'rpm',
-                                          value => sprintf("%d", $result->{fanSpeedSensorValue}));
+            $self->{output}->perfdata_add(
+                label => 'fan_speed', unit => 'rpm',
+                nlabel => 'hardware.fan.speed.rpm',
+                instances => [$result->{fanSpeedSensorName}, $instance],
+                value => sprintf("%d", $result->{fanSpeedSensorValue})
+            );
         }
     }
 }

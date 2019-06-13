@@ -44,27 +44,24 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "hostname:s"            => { name => 'hostname' },
-                        "port:s"                => { name => 'port'},
-                        "proto:s"               => { name => 'proto' },
-                        "api-username:s"        => { name => 'api_username' },
-                        "api-password:s"        => { name => 'api_password' },
-                        "realm:s"               => { name => 'realm' },
-                        "proxyurl:s"            => { name => 'proxyurl' },
-                        "timeout:s"             => { name => 'timeout' },
-                        "ssl-opt:s@"            => { name => 'ssl_opt' },
-                        "timeout:s"             => { name => 'timeout', default => 30 },
-                        "reload-cache-time:s"   => { name => 'reload_cache_time', default => 7200 },
-                    });
+        $options{options}->add_options(arguments =>  {
+            "hostname:s"            => { name => 'hostname' },
+            "port:s"                => { name => 'port'},
+            "proto:s"               => { name => 'proto' },
+            "api-username:s"        => { name => 'api_username' },
+            "api-password:s"        => { name => 'api_password' },
+            "realm:s"               => { name => 'realm' },
+            "timeout:s"             => { name => 'timeout' },
+            "timeout:s"             => { name => 'timeout', default => 30 },
+            "reload-cache-time:s"   => { name => 'reload_cache_time', default => 7200 },
+        });
     }
     
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
@@ -99,7 +96,6 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8006;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
@@ -143,7 +139,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '';
@@ -540,21 +535,9 @@ Set Proxmox VE Password
 
 Set Proxmox VE Realm (pam, pve or custom) (Default: 'pam').
 
-=item B<--proxyurl>
-
-Proxy URL if any.
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file).
-
 =item B<--timeout>
 
 Threshold for HTTP timeout.
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

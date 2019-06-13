@@ -58,7 +58,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'current-con', set => {
+        { label => 'current-con', nlabel => 'virtualserver.connections.current.count', set => {
                 key_values => [ { name => 'axVirtualServerStatCurConns' }, { name => 'display' } ],
                 output_template => 'Current Connections : %s',
                 perfdatas => [
@@ -67,7 +67,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-con', set => {
+        { label => 'total-con', nlabel => 'virtualserver.connections.total.count', set => {
                 key_values => [ { name => 'axVirtualServerStatTotConns', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Connections : %s',
                 perfdatas => [
@@ -76,7 +76,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'virtualserver.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'axVirtualServerStatBytesIn', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic In : %s %s/s',
@@ -86,7 +86,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'virtualserver.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'axVirtualServerStatBytesOut', diff => 1 }, { name => 'display' } ],
                 per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out : %s %s/s',

@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'device-usage'     => 'network::cisco::meraki::cloudcontroller::snmp::mode::deviceusage',
-                         );
+        'device-usage'  => 'network::cisco::meraki::cloudcontroller::snmp::mode::deviceusage',
+        'list-devices'  => 'network::cisco::meraki::cloudcontroller::snmp::mode::listdevices',
+    );
 
     return $self;
 }

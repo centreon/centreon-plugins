@@ -37,7 +37,7 @@ sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking operatings");
-    $self->{components}->{operating} = {name => 'operatings', total => 0, skip => 0};
+    $self->{components}->{operating} = { name => 'operatings', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'operating'));
 
     my $mapping = {
@@ -48,12 +48,12 @@ sub check {
     
     foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_operating}->{jnxOperatingEntry}, oid_name => $self->{oids_operating}->{jnxOperatingDescr})) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
-        
-        next if ($self->check_filter(section => 'operating', instance => $instance));
+        my $desc = $self->get_cache(oid_entry => $self->{oids_operating}->{jnxOperatingEntry}, oid_name => $self->{oids_operating}->{jnxOperatingDescr}, instance => $instance);
+
+        next if ($self->check_filter(section => 'operating', instance => $instance, name => $desc));
         $self->{components}->{operating}->{total}++;
         
-        my $desc = $self->get_cache(oid_entry => $self->{oids_operating}->{jnxOperatingEntry}, oid_name => $self->{oids_operating}->{jnxOperatingDescr}, instance => $instance);
-        $self->{output}->output_add(long_msg => sprintf("Operating '%s' state is %s [instance: %s]", 
+        $self->{output}->output_add(long_msg => sprintf("operating '%s' state is %s [instance: %s]", 
                                                         $desc, $result->{jnxOperatingState}, $instance));
         my $exit = $self->get_severity(section => 'operating', value => $result->{jnxOperatingState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

@@ -65,11 +65,10 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"        => { name => 'warning_status', default => '' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /true/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning-status:s"        => { name => 'warning_status', default => '' },
+        "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /true/i' },
+    });
 
     return $self;
 }
@@ -99,11 +98,14 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {};
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_acm1000AcPlant },
-                                                                    { oid => $oid_acmi1000AcPlant },
-                                                                  ],
-                                                          nothing_quit => 1);
-                                                         
+    $self->{results} = $options{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $oid_acm1000AcPlant },
+            { oid => $oid_acmi1000AcPlant },
+        ],
+        nothing_quit => 1
+    );
+
     my $result_acm1000 = $options{snmp}->map_instance(mapping => $mapping_acm1000, results => $self->{results}->{$oid_acm1000AcPlant}, instance => '0');
     my $result_acmi1000 = $options{snmp}->map_instance(mapping => $mapping_acmi1000, results => $self->{results}->{$oid_acmi1000AcPlant}, instance => '0');
 

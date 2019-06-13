@@ -83,11 +83,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Fanpack '%s' speed is %s rpm", $instance, $result->{fanPackAverageSpeedRPM}));
             }
-            $self->{output}->perfdata_add(label => "fanpack_" . $instance, unit => 'rpm',
-                                          value => $result->{fanPackAverageSpeedRPM},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => "fanpack", unit => 'rpm',
+                nlabel => 'hardware.fanpack.speed.rpm',
+                instances => $instance,
+                value => $result->{fanPackAverageSpeedRPM},
+                warning => $warn,
+                critical => $crit,
+                min => 0
+            );
         }
     }
 }

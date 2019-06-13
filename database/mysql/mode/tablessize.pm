@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'table.usage.bytes', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Size : %s%s',
                 output_change_bytes => 1,
@@ -46,7 +46,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{table} = [
-        { label => 'table', set => {
+        { label => 'table', nlabel => 'table.usage.bytes', set => {
                 key_values => [ { name => 'size' }, { name => 'display' } ],
                 output_template => 'size : %s%s',
                 output_change_bytes => 1,

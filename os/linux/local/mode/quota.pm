@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
 
@@ -83,8 +81,8 @@ sub custom_usage_calc {
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label_ref} . '_used'};
     
     $self->{result_values}->{warn_label} = $self->{label};
-    if (defined($instance_mode->{option_results}->{'warning-' . $self->{label}}) && $instance_mode->{option_results}->{'warning-' . $self->{label}} ne '') {
-        $self->{result_values}->{warn_limit} = $instance_mode->{option_results}->{'warning-' . $self->{label}};
+    if (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '') {
+        $self->{result_values}->{warn_limit} = $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}};
     } elsif ($options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label_ref} . '_soft'} > 0) {
         $self->{result_values}->{warn_limit} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label_ref} . '_soft'};
         $self->{perfdata}->threshold_validate(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display}, value => $self->{result_values}->{warn_limit});
@@ -92,8 +90,8 @@ sub custom_usage_calc {
     }
 
     $self->{result_values}->{crit_label} = $self->{label};
-    if (defined($instance_mode->{option_results}->{'critical-' . $self->{label}}) && $instance_mode->{option_results}->{'critical-' . $self->{label}} ne '') {
-        $self->{result_values}->{crit_limit} = $instance_mode->{option_results}->{'critical-' . $self->{label}};
+    if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '') {
+        $self->{result_values}->{crit_limit} = $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}};
     } elsif ($options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label_ref} . '_hard'} > 0) {
         $self->{result_values}->{crit_limit} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label_ref} . '_hard'} - 1;
         $self->{perfdata}->threshold_validate(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display}, value => $self->{result_values}->{crit_limit});
@@ -141,30 +139,23 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'repquota' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-a -i 2>&1' },
-                                  "filter-user:s"     => { name => 'filter_user', },
-                                  "filter-fs:s"       => { name => 'filter_fs', },
-                                });
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname' },
+        "remote"            => { name => 'remote' },
+        "ssh-option:s@"     => { name => 'ssh_option' },
+        "ssh-path:s"        => { name => 'ssh_path' },
+        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"         => { name => 'timeout', default => 30 },
+        "sudo"              => { name => 'sudo' },
+        "command:s"         => { name => 'command', default => 'repquota' },
+        "command-path:s"    => { name => 'command_path' },
+        "command-options:s" => { name => 'command_options', default => '-a -i 2>&1' },
+        "filter-user:s"     => { name => 'filter_user', },
+        "filter-fs:s"       => { name => 'filter_fs', },
+    });
+
     $self->{result} = {};
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub manage_selection {

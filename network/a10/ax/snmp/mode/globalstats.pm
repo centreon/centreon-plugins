@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'current-connections', set => {
+        { label => 'current-connections', nlabel => 'connections.current.count', set => {
                 key_values => [ { name => 'current_connections' } ],
                 output_template => 'Current Connections : %s',
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-connections', set => {
+        { label => 'total-connections', nlabel => 'connections.total.count', set => {
                 key_values => [ { name => 'total_connections', diff => 1 } ],
                 output_template => 'Total Connections : %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-ssl-connections', set => {
+        { label => 'total-ssl-connections', nlabel => 'connections.ssl.total.count', set => {
                 key_values => [ { name => 'total_ssl_connections', diff => 1 } ],
                 output_template => 'Total SSL Connections : %s',
                 perfdatas => [

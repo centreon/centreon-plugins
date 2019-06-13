@@ -66,10 +66,10 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_snapshot} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'datastore.snapshots.usage.bytes', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total snapshots [size = %s %s]',
-                output_change_bytes => 2,
+                output_change_bytes => 1,
                 perfdatas => [
                     { label => 'total_size', value => 'total_absolute', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 },
@@ -79,10 +79,10 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{files} = [
-        { label => 'snapshot', set => {
+        { label => 'snapshot', nlabel => 'datastore.snapshot.usage.bytes', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => '[size = %s %s]',
-                output_change_bytes => 2,
+                output_change_bytes => 1,
                 closure_custom_perfdata => sub { return 0; },
             }
         },

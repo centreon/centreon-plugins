@@ -27,8 +27,6 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use DateTime;
 
-my $instance_mode;
-
 sub custom_memory_output {
     my ($self, %options) = @_;
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_total_absolute});
@@ -136,15 +134,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container-id:s"              => { name => 'container_id' },
-                                  "container-name:s"            => { name => 'container_name' },
-                                  "filter-name:s"               => { name => 'filter_name' },
-                                  "use-name"                    => { name => 'use_name' },
-                                  "warning-container-status:s"  => { name => 'warning_container_status', default => '' },
-                                  "critical-container-status:s" => { name => 'critical_container_status', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        "container-id:s"              => { name => 'container_id' },
+        "container-name:s"            => { name => 'container_name' },
+        "filter-name:s"               => { name => 'filter_name' },
+        "use-name"                    => { name => 'use_name' },
+        "warning-container-status:s"  => { name => 'warning_container_status', default => '' },
+        "critical-container-status:s" => { name => 'critical_container_status', default => '' },
+    });
    
     return $self;
 }
@@ -153,23 +150,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_container_status', 'critical_container_status']);
 }
 
 sub prefix_containers_output {
     my ($self, %options) = @_;
     return "Container '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_container_status', 'critical_container_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {

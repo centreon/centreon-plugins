@@ -40,6 +40,7 @@ sub new {
         "scope-host:s"          => { name => 'scope_host' },
         "filter-description:s"  => { name => 'filter_description' },
         "filter-os:s"           => { name => 'filter_os' },
+        "filter-uuid:s"         => { name => 'filter_uuid' },
         "display-description"   => { name => 'display_description' },
         "check-consolidation"   => { name => 'check_consolidation' },
         "nopoweredon-skip"      => { name => 'nopoweredon_skip' },
@@ -137,20 +138,26 @@ sub run {
         }
     }
 
-    $self->{output}->perfdata_add(label => 'num_warning',
-                                  value => scalar(keys %{$vm_errors{warning}}),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'num_critical',
-                                  value => scalar(keys %{$vm_errors{critical}}),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'num_warning',
+        nlabel => 'vm.snapshots.warning.current.count',
+        value => scalar(keys %{$vm_errors{warning}}),
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => 'num_critical',
+        nlabel => 'vm.snapshots.critical.current.count',
+        value => scalar(keys %{$vm_errors{critical}}),
+        min => 0
+    );
     if (scalar(keys %{$vm_errors{warning}}) > 0) {
         $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{warning} / 86400), 
+                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{option_results}->{warning} / 86400), 
                                                          join('] [', sort keys %{$vm_errors{warning}})));
     }
     if (scalar(keys %{$vm_errors{critical}}) > 0) {
         $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{critical} / 86400), 
+                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{option_results}->{critical} / 86400), 
                                                          join('] [', sort keys %{$vm_errors{critical}})));
     }
     if (scalar(keys %vm_consolidate) > 0) {

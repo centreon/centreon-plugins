@@ -70,13 +70,15 @@ sub check {
                     $self->{output}->output_add(severity => $exit,
                                                 short_msg => sprintf("Flashcard '%s' temperature '%s' is %sC", $instance, uc($pretty_temp), $result->{$temp} / 10));
                 }
-                $self->{output}->perfdata_add(label => 'flashcard_temperature_' . $instance . '_' . lc($pretty_temp), unit => 'C', 
-                                            value => $result->{$temp} / 10,
-                                            warning => $warn,
-                                            critical => $crit,
-                                            unit => 'C',
-                                            min => 0,
-                                            );
+                $self->{output}->perfdata_add(
+                    label => 'flashcard_temperature', unit => 'C',
+                    nlabel => 'hardware.flashcard.temperature.celsius',
+                    instances => [$instance, lc($pretty_temp)],
+                    value => $result->{$temp} / 10,
+                    warning => $warn,
+                    critical => $crit,
+                    min => 0,
+               );
             }
         }
 
@@ -86,13 +88,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Flashcard '%s' power is %sW", $instance, $result->{flashPower}));
             }
-            $self->{output}->perfdata_add(label => 'flashcard_power_' . $instance,
-                                          unit => 'W',
-                                          value => $result->{flashPower},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'flashcard_power', unit => 'W',
+                nlabel => 'hardware.flashcard.power.watt',
+                instances => $instance,
+                value => $result->{flashPower},
+                warning => $warn,
+                critical => $crit,
+                min => 0,
+            );
         }
 
         if (defined($result->{flashOverallHealth}) && $result->{flashOverallHealth} =~ /[0-9]/) {
@@ -101,14 +105,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Flashcard '%s' overall health is %s%%", $instance, $result->{flashOverallHealth}));
             }
-            $self->{output}->perfdata_add(label => 'flashcard_overallhealth_' . $instance,
-                                          unit => '%',
-                                          value => $result->{flashOverallHealth},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          max => 100,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'flashcard_overallhealth', unit => '%',
+                nlabel => 'hardware.flashcard.overallhealth.percentage',
+                instances => $instance,
+                value => $result->{flashOverallHealth},
+                warning => $warn,
+                critical => $crit,
+                min => 0, max => 100,
+            );
         }
     }
 }

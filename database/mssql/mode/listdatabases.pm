@@ -31,10 +31,10 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-database:s"   => { name => 'filter_database' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-database:s"   => { name => 'filter_database' },
+    });
+
     return $self;
 }
 
@@ -76,7 +76,7 @@ sub run {
     $self->manage_selection(%options);
     foreach my $database (sort keys %{$self->{databases}}) {
         $self->{output}->output_add(long_msg => sprintf("[name = %s] [total = %s]",
-                                                         $self->{databases}->{$database}->{name}, $self->{databases}->{$database}->{total}));
+                                                         $self->{databases}->{$database}->{display}, $self->{databases}->{$database}->{total}));
     }
 
     $self->{output}->output_add(severity => 'OK',
@@ -97,7 +97,7 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach my $database (sort keys %{$self->{databases}}) {
         $self->{output}->add_disco_entry(
-            name => $self->{databases}->{$database}->{name},
+            name => $self->{databases}->{$database}->{display},
             total => $self->{databases}->{$database}->{total},
         );
     }

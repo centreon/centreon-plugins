@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use DateTime;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -116,13 +117,13 @@ sub manage_selection {
     }
     
     my ($i, $current_time) = (1, time());
-    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone}));
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     while (my $row = $self->{sql}->fetchrow_hashref()) {
         # date form: 2017-09-22 01:01:08.133
         $row->{LOGDATE} =~ /^(\d+)-(\d+)-(\d+)\s+(\d+)[:\/](\d+)[:\/](\d+)/;
         
         my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                               %tz);
+                               %$tz);
 
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
 

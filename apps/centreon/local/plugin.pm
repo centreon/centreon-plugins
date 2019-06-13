@@ -31,13 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
-                         'centreon-plugins-version' => 'apps::centreon::local::mode::centreonpluginsversion',
-                         'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
-                         'dummy'                    => 'apps::centreon::local::mode::dummy',
-                         'metaservice'              => 'apps::centreon::local::mode::metaservice',
-                         'retention-broker'         => 'apps::centreon::local::mode::retentionbroker',
-                         );
+        'bamservice'               => 'apps::centreon::local::mode::bamservice',
+        'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
+        'centreon-plugins-version' => 'apps::centreon::local::mode::centreonpluginsversion',
+        'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
+        'dummy'                    => 'apps::centreon::local::mode::dummy',
+        'metaservice'              => 'apps::centreon::local::mode::metaservice',
+        'retention-broker'         => 'apps::centreon::local::mode::retentionbroker',
+    );
 
     return $self;
 }

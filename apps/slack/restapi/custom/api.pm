@@ -40,23 +40,20 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "hostname:s"        => { name => 'hostname' },
-                        "port:s"            => { name => 'port' },
-                        "proto:s"           => { name => 'proto' },
-                        "proxyurl:s"        => { name => 'proxyurl' },
-                        "timeout:s"         => { name => 'timeout' },
-                        "ssl-opt:s@"        => { name => 'ssl_opt' },
-                        "api-path:s"        => { name => 'api_path' },
-                        "api-token:s"       => { name => 'api_token' },
-                    });
+        $options{options}->add_options(arguments => {
+            "hostname:s"        => { name => 'hostname' },
+            "port:s"            => { name => 'port' },
+            "proto:s"           => { name => 'proto' },
+            "timeout:s"         => { name => 'timeout' },
+            "api-path:s"        => { name => 'api_path' },
+            "api-token:s"       => { name => 'api_token' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
@@ -91,8 +88,6 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : undef;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/api';
     $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : undef;
  
@@ -115,8 +110,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
 }
@@ -140,7 +133,6 @@ sub request_api {
 
     my $content = $self->{http}->request(method => $options{method}, url_path => $self->{api_path} . $options{url_path},
         query_form_post => $options{query_form_post}, critical_status => '', warning_status => '', unknown_status => '');
-    my $response = $self->{http}->get_response();
     my $decoded;
     eval {
         $decoded = decode_json($content);
@@ -218,18 +210,9 @@ Slack API port
 
 Specify https if needed (Default: 'https')
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (Examples: --ssl-opt="SSL_version => TLSv1"
---ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

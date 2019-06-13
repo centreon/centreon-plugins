@@ -46,11 +46,12 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_init => 'skip_global', cb_prefix_output => 'prefix_global_output' },
-        { name => 'namespaces', type => 1, cb_prefix_output => 'prefix_namespace_output', message_multiple => 'All namespaces status are ok', skipped_code => { -11 => 1 } },
+        { name => 'namespaces', type => 1, cb_prefix_output => 'prefix_namespace_output',
+          message_multiple => 'All namespaces status are ok', skipped_code => { -11 => 1 } },
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'active', set => {
+        { label => 'active', nlabel => 'namespaces.active.count', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active : %d',
                 perfdatas => [
@@ -59,7 +60,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'terminating', set => {
+        { label => 'terminating', nlabel => 'namespaces.terminating.count', set => {
                 key_values => [ { name => 'terminating' } ],
                 output_template => 'Terminating : %d',
                 perfdatas => [
@@ -105,15 +106,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "namespace:s"             => { name => 'namespace', default => 'namespace=~".*"' },
-                                  "phase:s"                 => { name => 'phase', default => 'phase=~".*"' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{phase} !~ /Active/' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                });
+    $options{options}->add_options(arguments => {
+        "namespace:s"           => { name => 'namespace', default => 'namespace=~".*"' },
+        "phase:s"               => { name => 'phase', default => 'phase=~".*"' },
+        "warning-status:s"      => { name => 'warning_status' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{phase} !~ /Active/' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -153,9 +153,13 @@ sub manage_selection {
     $self->{global} = { active => 0, terminating => 0 };
     $self->{namespaces} = {};
 
-    my $results = $options{custom}->query(queries => [ '{__name__=~"' . $self->{metrics}->{status} . '",' .
-                                                            $self->{option_results}->{namespace} .
-                                                            $self->{extra_filter} . '}' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            '{__name__=~"' . $self->{metrics}->{status} . '",' .
+                $self->{option_results}->{namespace} .
+                $self->{extra_filter} . '}'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         $self->{namespaces}->{$result->{metric}->{$self->{labels}->{namespace}}}->{display} = $result->{metric}->{$self->{labels}->{namespace}};

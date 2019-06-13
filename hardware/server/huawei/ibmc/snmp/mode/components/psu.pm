@@ -77,15 +77,17 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Power supply '%s' power is %s watts", $result->{powerSupplyDevicename}, $result->{powerSupplyInputPower}));
             }
-            my $perf_label = $result->{powerSupplyDevicename};
-            $perf_label =~ s/ /_/g;
-            $self->{output}->perfdata_add(label => 'power_' . $perf_label, unit => 'W', 
-                                          value => $result->{powerSupplyInputPower},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0,
-                                          max => $result->{powerSupplyPowerRating}
-                                          );
+
+            $self->{output}->perfdata_add(
+                label => 'power', unit => 'W',
+                nlabel => 'hardware.powersupply.power.watt',
+                instances => $result->{powerSupplyDevicename},
+                value => $result->{powerSupplyInputPower},
+                warning => $warn,
+                critical => $crit,
+                min => 0,
+                max => $result->{powerSupplyPowerRating}
+            );
         }
         
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is '%s' [instance = %s]",

@@ -32,17 +32,23 @@ sub custom_usage_calc {
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_mitelBWMCurrentBandwidthInUse'} * 1000;
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_mitelBWMCurrentBandwidthLimit'} * 1000;
     $self->{result_values}->{used_prct} = $self->{result_values}->{used} / $self->{result_values}->{total} * 100;
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
 }
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
+
+    my $extra_label = '';
+    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     
-    $self->{output}->perfdata_add(label => 'usage', unit => 'b/s',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'usage' . $extra_label, unit => 'b/s',
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_output {
@@ -56,12 +62,14 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'zap', type => 1, cb_prefix_output => 'prefix_zap_output', message_multiple => 'All zone access points are ok' },
+        { name => 'zap', type => 1, cb_prefix_output => 'prefix_zap_output',
+          message_multiple => 'All zone access points are ok' },
     ];
     
     $self->{maps_counters}->{zap} = [
         { label => 'usage', set => {
-                key_values => [ { name => 'mitelBWMCurrentBandwidthInUse' }, { name => 'mitelBWMCurrentBandwidthLimit' },
+                key_values => [ { name => 'mitelBWMCurrentBandwidthInUse' },
+                                { name => 'mitelBWMCurrentBandwidthLimit' },
                                 { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), 
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -84,10 +92,9 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"    => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-name:s" => { name => 'filter_name' },
+    });
 
     return $self;
 }
@@ -99,8 +106,8 @@ sub check_options {
 
 my $oid_mitelBWMCurrentZAPLabel = '.1.3.6.1.4.1.1027.4.1.1.2.5.1.1.1.1.4',
 my $mapping = {
-    mitelBWMCurrentBandwidthInUse       => { oid => '.1.3.6.1.4.1.1027.4.1.1.2.5.1.1.1.1.5' },
-    mitelBWMCurrentBandwidthLimit       => { oid => '.1.3.6.1.4.1.1027.4.1.1.2.5.1.1.1.1.6' },
+    mitelBWMCurrentBandwidthInUse => { oid => '.1.3.6.1.4.1.1027.4.1.1.2.5.1.1.1.1.5' },
+    mitelBWMCurrentBandwidthLimit => { oid => '.1.3.6.1.4.1.1027.4.1.1.2.5.1.1.1.1.6' },
 };
 
 sub manage_selection {
@@ -127,8 +134,7 @@ sub manage_selection {
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     
     foreach (keys %{$self->{zap}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);        
-                
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
         foreach my $name (keys %{$mapping}) {
             $self->{zap}->{$_}->{$name} = $result->{$name};
         }

@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub prefix_metric_output {
     my ($self, %options) = @_;
     
@@ -48,7 +46,7 @@ sub custom_metric_calc {
 sub custom_metric_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => defined($instance_mode->{option_results}->{per_sec}) ?  $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
+    my $exit = $self->{perfdata}->threshold_check(value => defined($self->{instance_mode}->{option_results}->{per_sec}) ?  $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
                                                   threshold => [ { label => 'critical-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat}), exit_litteral => 'critical' },
                                                                  { label => 'warning-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat}), exit_litteral => 'warning' } ]);
     return $exit;
@@ -61,8 +59,8 @@ sub custom_metric_perfdata {
     $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
 
     $self->{output}->perfdata_add(label => lc($self->{result_values}->{metric}) . "_" . lc($self->{result_values}->{stat}) . $extra_label,
-				                  unit => defined($instance_mode->{option_results}->{per_sec}) ? 'requests/s' : 'requests',
-                                  value => sprintf("%.2f", defined($instance_mode->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
+				                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'requests/s' : 'requests',
+                                  value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
                                  );
@@ -72,7 +70,7 @@ sub custom_metric_output {
     my ($self, %options) = @_;
     my $msg = "";
 
-    if (defined($instance_mode->{option_results}->{per_sec})) {
+    if (defined($self->{instance_mode}->{option_results}->{per_sec})) {
         my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{value_per_sec});
         $msg = $self->{result_values}->{metric}  . ": " . $value . "requests/s"; 
     } else {
@@ -111,12 +109,11 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "id:s@"	          => { name => 'id' },
-                                    "per-sec"         => { name => 'per_sec' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "id:s@"	    => { name => 'id' },
+        "per-sec"   => { name => 'per_sec' },
+    });
+
     return $self;
 }
 
@@ -148,9 +145,7 @@ sub check_options {
         }
     }
 
-    push @{$self->{aws_metrics}}, 'Requests';
- 
-    $instance_mode = $self;
+    push @{$self->{aws_metrics}}, 'Requests'; 
 }
 
 sub manage_selection {

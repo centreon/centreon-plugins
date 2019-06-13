@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'show-faulty'      => 'hardware::server::sun::mgmt_cards::mode::showfaulty',
-                         'showfaults'       => 'hardware::server::sun::mgmt_cards::mode::showfaults',
-                         'showstatus'       => 'hardware::server::sun::mgmt_cards::mode::showstatus',
-                         'showboards'       => 'hardware::server::sun::mgmt_cards::mode::showboards',
-                         'showenvironment'  => 'hardware::server::sun::mgmt_cards::mode::showenvironment',
-                         'environment-v8xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentv8xx',
-                         'environment-v4xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentv4xx',
-                         'environment-sf2xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentsf2xx',
-                         );
+        'show-faulty'       => 'hardware::server::sun::mgmt_cards::mode::showfaulty',
+        'showfaults'        => 'hardware::server::sun::mgmt_cards::mode::showfaults',
+        'showstatus'        => 'hardware::server::sun::mgmt_cards::mode::showstatus',
+        'showboards'        => 'hardware::server::sun::mgmt_cards::mode::showboards',
+        'showenvironment'   => 'hardware::server::sun::mgmt_cards::mode::showenvironment',
+        'environment-v8xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentv8xx',
+        'environment-v4xx'  => 'hardware::server::sun::mgmt_cards::mode::environmentv4xx',
+        'environment-sf2xx' => 'hardware::server::sun::mgmt_cards::mode::environmentsf2xx',
+    );
 
     return $self;
 }

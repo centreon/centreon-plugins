@@ -163,6 +163,13 @@ sub manage_selection {
 
             my $endpoint = $entry;
             $endpoint =~ s/endpoint //;
+
+            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+                $endpoint !~ /$self->{option_results}->{filter_name}/i) {
+                $self->{output}->output_add(long_msg => "skipping endpoint '" . $endpoint . "': no matching filter name");
+                next;
+            }
+
             my $state = $json->{$entry}->{state};
             my $type = 'output';
             $type = 'input' if (!defined($json->{$entry}->{status}));
@@ -227,6 +234,10 @@ Use 'sudo' to execute the command.
 =item B<--broker-stats-file>
 
 Specify the centreon-broker json stats file (Required). Can be multiple.
+
+=item B<--filter-name>
+
+Filter endpoint name.
 
 =item B<--warning-*>
 

@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use IO::Socket;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;

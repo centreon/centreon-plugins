@@ -72,11 +72,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' is %.2f C", $instance, $result->{raisecomTemperatureValue}));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => 'C',
-                                      value => $result->{raisecomTemperatureValue},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $instance,
+            value => $result->{raisecomTemperatureValue},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

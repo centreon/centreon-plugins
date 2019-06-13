@@ -149,7 +149,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my ($results, $raw_results, $command_line) = $options{custom}->azure_get_metrics(
+    my ($results, $raw_results) = $options{custom}->azure_get_metrics(
         resource => $self->{az_resource},
         resource_group => $self->{az_resource_group},
         resource_type => $self->{az_resource_type},
@@ -175,7 +175,6 @@ sub manage_selection {
         }
     }
 
-    $self->{output}->output_add(long_msg => sprintf("Command line: %s", $command_line), debug => 1);
     $self->{output}->output_add(long_msg => sprintf("Raw data:\n%s", Dumper($raw_results)), debug => 1);
 }
 

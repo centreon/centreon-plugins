@@ -32,13 +32,13 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "skip-no-backup"          => { name => 'skip_no_backup', },
-                                  "filter-type:s"           => { name => 'filter_type', },
-                                  "timezone:s"              => { name => 'timezone', },
-                                  "incremental-level"       => { name => 'incremental_level', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "skip-no-backup"          => { name => 'skip_no_backup', },
+        "filter-type:s"           => { name => 'filter_type', },
+        "timezone:s"              => { name => 'timezone', },
+        "incremental-level"       => { name => 'incremental_level', },
+    });
+
     foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
         my $label = $_;
         $label =~ s/ /-/g;
@@ -101,6 +101,7 @@ sub run {
     }
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
+    $self->{sql}->disconnect();
 
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => sprintf("Rman backup age are ok."));

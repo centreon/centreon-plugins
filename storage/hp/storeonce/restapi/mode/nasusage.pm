@@ -95,15 +95,14 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-nas-status:s"    => { name => 'warning_nas_status', default => '%{health} =~ /warning/i' },
-                                  "critical-nas-status:s"   => { name => 'critical_nas_status', default => '%{health} =~ /critical/i' },
-                                  "warning-share-status:s"  => { name => 'warning_share_status', default => '%{health} =~ /warning/i' },
-                                  "critical-share-status:s" => { name => 'critical_share_status', default => '%{health} =~ /critical/i' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+        "warning-nas-status:s"    => { name => 'warning_nas_status', default => '%{health} =~ /warning/i' },
+        "critical-nas-status:s"   => { name => 'critical_nas_status', default => '%{health} =~ /critical/i' },
+        "warning-share-status:s"  => { name => 'warning_share_status', default => '%{health} =~ /warning/i' },
+        "critical-share-status:s" => { name => 'critical_share_status', default => '%{health} =~ /critical/i' },
+    });
+
     return $self;
 }
 

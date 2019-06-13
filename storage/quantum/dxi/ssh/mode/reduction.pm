@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-my $instance_mode;
-
 sub custom_volume_perfdata {
     my ($self, %options) = @_;
     
@@ -56,7 +54,7 @@ sub custom_volume_output {
 sub custom_volume_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{volume} = $instance_mode->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    $self->{result_values}->{volume} = $self->{instance_mode}->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
     $self->{result_values}->{display} = $options{extra_options}->{display_ref};
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     
@@ -196,18 +194,17 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'syscli' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '--get datareductionstat' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"          => { name => 'hostname' },
+        "ssh-option:s@"       => { name => 'ssh_option' },
+        "ssh-path:s"          => { name => 'ssh_path' },
+        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"           => { name => 'timeout', default => 30 },
+        "sudo"                => { name => 'sudo' },
+        "command:s"           => { name => 'command', default => 'syscli' },
+        "command-path:s"      => { name => 'command_path' },
+        "command-options:s"   => { name => 'command_options', default => '--get datareductionstat' },
+    });
     
     return $self;
 }
@@ -218,9 +215,7 @@ sub check_options {
 
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         $self->{option_results}->{remote} = 1;
-    }
-    
-    $instance_mode = $self;
+    }    
 }
 
 sub manage_selection {

@@ -72,11 +72,14 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Air flow '%s' is %s m/min", $label, $result->{airFlowSensorValue}));
         }
-        $self->{output}->perfdata_add(label => 'airflow_' . $label, unit => 'm/min', 
-                                      value => $result->{airFlowSensorValue},
-                                      warning => $warn,
-                                      critical => $crit, min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'airflow', unit => 'm/min',
+            nlabel => 'hardware.sensor.airflow.cubicmeterperminute',
+            instances => $label,
+            value => $result->{airFlowSensorValue},
+            warning => $warn,
+            critical => $crit, min => 0
+        );
     }
 }
 

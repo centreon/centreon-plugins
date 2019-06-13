@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
         'numeric-value'      => 'snmp_standard::mode::numericvalue',
+        'response-time'      => 'apps::protocols::snmp::mode::responsetime',
         'string-value'       => 'snmp_standard::mode::stringvalue',
         'uptime'             => 'snmp_standard::mode::uptime',
     );
