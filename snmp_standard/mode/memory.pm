@@ -256,8 +256,6 @@ sub manage_selection {
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
 
     $self->memory_calc(result => $result);
-    
-
     if (defined($self->{option_results}->{check_swap})) {
         $self->swap_calc(result => $result);
     }
