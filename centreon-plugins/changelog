@@ -15,6 +15,7 @@
  * Plugin added: Influxdb
  * Plugin added: PDU Schleifenbauer Gateway SNMP
  * Plugin added: Ansible Tower
+ * Plugin added: Dell ME4 Rest API
  * Mode added: [oracle] 'librarycacheusage'
  * Mode added: [oracle] 'dictionarycacheusage'
  * Mode added: [oracle] 'redologusage'
