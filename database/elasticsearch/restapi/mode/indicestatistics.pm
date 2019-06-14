@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::elasticsearch::restapi::mode::indices;
+package database::elasticsearch::restapi::mode::indicestatistics;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,9 +28,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status};
 
-    return $msg;
+    return "Status '" . $self->{result_values}->{status} . "'";
 }
 
 sub custom_status_calc {
@@ -57,20 +56,49 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'active-primary-shards', set => {
-                key_values => [ { name => 'active_primary_shards' }, { name => 'display' } ],
-                output_template => 'Active Primary Shards : %s',
+        { label => 'documents-total', nlabel => 'indice.documents.total.count', set => {
+                key_values => [ { name => 'docs_count' }, { name => 'display' } ],
+                output_template => 'Documents: %d',
                 perfdatas => [
-                    { label => 'active_primary_shards', value => 'active_primary_shards_absolute', template => '%s',
+                    { value => 'docs_count_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
-        { label => 'active-shards', set => {
-                key_values => [ { name => 'active_shards' }, { name => 'display' } ],
-                output_template => 'Active Shards : %s',
+        { label => 'data-size-primaries', nlabel => 'indice.data.primaries.size.bytes', set => {
+                key_values => [ { name => 'size_in_bytes_primaries' }, { name => 'display' } ],
+                output_template => 'Data Primaries: %s%s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'active_shards', value => 'active_shards_absolute', template => '%s',
+                    { value => 'size_in_bytes_primaries_absolute', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'data-size-total', nlabel => 'indice.data.total.size.bytes', set => {
+                key_values => [ { name => 'size_in_bytes_total' }, { name => 'display' } ],
+                output_template => 'Data Total: %s%s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'size_in_bytes_total_absolute', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'shards-active', nlabel => 'shards.active.count', set => {
+                key_values => [ { name => 'shards_active' }, { name => 'display' } ],
+                output_template => 'Shards Active: %d',
+                perfdatas => [
+                    { value => 'shards_active_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'shards-unassigned', nlabel => 'shards.unassigned.count', set => {
+                key_values => [ { name => 'shards_unassigned' }, { name => 'display' } ],
+                output_template => 'Shards Unassigned: %d',
+                perfdatas => [
+                    { value => 'shards_unassigned_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -80,17 +108,15 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "elastic-path:s"      => { name => 'elastic_path', default => '/_cluster/health?level=indices' },
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /yellow/i' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /red/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-name:s"       => { name => 'filter_name' },
+        "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /yellow/i' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /red/i' },
+    });
    
     return $self;
 }
@@ -108,23 +134,15 @@ sub prefix_indices_output {
     return "Indices '" . $options{instance_value}->{display} . "' ";
 }
 
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-                                                           
+    
     $self->{indices} = {};
-    my $result = $options{custom}->get(path => $self->{option_results}->{elastic_path});
+    
+    my $indices = $options{custom}->get(path => '/_cluster/health?level=indices');
+    my $stats = $options{custom}->get(path => '/_stats');
 
-    foreach my $indice (keys %{$result->{indices}}) {        
+    foreach my $indice (keys %{$indices->{indices}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $indice !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $indice . "': no matching filter.", debug => 1);
@@ -133,9 +151,12 @@ sub manage_selection {
         
         $self->{indices}->{$indice} = { 
             display => $indice,
-            status => $result->{indices}->{$indice}->{status},
-            active_primary_shards => $result->{indices}->{$indice}->{active_primary_shards},
-            active_shards => $result->{indices}->{$indice}->{active_shards},
+            status => $indices->{indices}->{$indice}->{status},
+            shards_active => $indices->{indices}->{$indice}->{active_shards},
+            shards_unassigned => $indices->{indices}->{$indice}->{unassigned_shards},
+            docs_count => $stats->{indices}->{$indice}->{primaries}->{docs}->{count},
+            size_in_bytes_primaries => $stats->{indices}->{$indice}->{primaries}->{store}->{size_in_bytes},
+            size_in_bytes_total => $stats->{indices}->{$indice}->{total}->{store}->{size_in_bytes},
         };
     }
     
@@ -151,13 +172,9 @@ __END__
 
 =head1 MODE
 
-Check Elasticsearch indices.
+Check indices statistics.
 
 =over 8
-
-=item B<--elastic-path>
-
-Set path to get Elasticsearch information (Default: '/_cluster/health?level=indices')
 
 =item B<--filter-name>
 

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::elasticsearch::restapi::custom::api;
+package database::elasticsearch::restapi::custom::api;
 
 use strict;
 use warnings;
@@ -128,8 +128,8 @@ sub get {
 
     $self->settings();
 
-    my $response = $self->{http}->request(url_path => $options{path},
-                                          critical_status => '', warning_status => '');
+    my $response = $self->{http}->request(url_path => $options{path}, critical_status => '', warning_status => '');
+    
     my $content;
     eval {
         $content = JSON::XS->new->utf8->decode($response);
