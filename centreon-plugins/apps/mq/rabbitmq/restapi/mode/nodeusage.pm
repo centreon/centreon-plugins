@@ -155,7 +155,7 @@ Can used special variables like: %{status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'read-iops', 'disk-write-iops'.
+Can be: 'read', 'write'.
 
 =back
 
