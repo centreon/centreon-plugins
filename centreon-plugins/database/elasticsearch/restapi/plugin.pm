@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::elasticsearch::restapi::plugin;
+package database::elasticsearch::restapi::plugin;
 
 use strict;
 use warnings;
@@ -30,12 +30,13 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-                        'cluster'       => 'apps::elasticsearch::restapi::mode::cluster',
-                        'indices'       => 'apps::elasticsearch::restapi::mode::indices',
-                        'nodes'         => 'apps::elasticsearch::restapi::mode::nodes',
-                        );
-    $self->{custom_modes}{api} = 'apps::elasticsearch::restapi::custom::api';
+    %{$self->{modes}} = ( 
+        'cluster-statistics'    => 'database::elasticsearch::restapi::mode::clusterstatistics',
+        'indice-statistics'     => 'database::elasticsearch::restapi::mode::indicestatistics',
+        'license'               => 'database::elasticsearch::restapi::mode::license',
+        'node-statistics'       => 'database::elasticsearch::restapi::mode::nodestatistics',
+    );
+    $self->{custom_modes}{api} = 'database::elasticsearch::restapi::custom::api';
     return $self;
 }
 
@@ -45,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check elasticsearch through HTTP/REST API.
+Check Elasticsearch through HTTP/REST API.
 
 =cut
