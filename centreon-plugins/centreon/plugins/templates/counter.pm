@@ -174,13 +174,18 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (defined($self->{option_results}->{list_counters})) {
-        my $list_counter = "Counter list:";
+        my $list_counter = 'counter list:';
+        my $th_counter = '';
         foreach my $key (keys %{$self->{maps_counters}}) {
             foreach (@{$self->{maps_counters}->{$key}}) {
+                my $label = $_->{label};
+                $label =~ s/-//g;
                 $list_counter .= " " . $_->{label};
+                $th_counter .= " --warning-$label='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$label='\$_SERVICECRITICAL" . uc($label) . "\$'";  
             }
         }
         $self->{output}->output_add(short_msg => $list_counter);
+        $self->{output}->output_add(long_msg => 'configuration: ' . $th_counter); 
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
         $self->{output}->exit();
     }
