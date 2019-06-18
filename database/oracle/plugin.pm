@@ -61,7 +61,8 @@ sub new {
         'undo-usage'               => 'database::oracle::mode::undotablespace',
     );
 
-	$self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+    $self->{sql_modes}{dbi} = 'database::oracle::dbi';
+    $self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
 						 
     return $self;
 }
