@@ -40,7 +40,7 @@ sub new {
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
         'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
-        'fra-usage'        => 'database::oracle::mode::frausage',
+        'fra-usage'                => 'database::oracle::mode::frausage',
         'invalid-object'           => 'database::oracle::mode::invalidobject',
         'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
