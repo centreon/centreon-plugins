@@ -37,6 +37,7 @@ sub new {
         'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
         'dummy'                    => 'apps::centreon::local::mode::dummy',
         'metaservice'              => 'apps::centreon::local::mode::metaservice',
+        'not-so-dummy'             => 'apps::centreon::local::mode::notsodummy',
         'retention-broker'         => 'apps::centreon::local::mode::retentionbroker',
     );
 
