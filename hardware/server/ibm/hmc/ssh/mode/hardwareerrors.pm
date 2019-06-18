@@ -41,7 +41,7 @@ sub new {
                                   "ssh-path:s"              => { name => 'ssh_path' },
                                   "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
                                   "hmc-command:s"           => { name => 'hmc_command', default => 'lssvcevents' },
-                                  "retention:i"             => { name => 'retention' },
+                                  "retention:s"             => { name => 'retention' },
                                   "minutes"                 => { name => 'minutes' },
                                   "filter-status:s"         => { name => 'filter_status', default => 'open' },
                                   "filter-problem-nums:s"   => { name => 'filter_problem_nums' },
