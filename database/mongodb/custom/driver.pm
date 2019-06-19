@@ -48,6 +48,7 @@ sub new {
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "timeout:s"             => { name => 'timeout' },
+            "ssl-opt:s@"            => { name => 'ssl_opt' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DRIVER OPTIONS', once => 1);
@@ -89,6 +90,11 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
 
+    foreach (@{$self->{option_results}->{ssl_opt}}) {
+        $_ =~ /(\w+)\s*=>\s*(\w+)/;
+        $self->{ssl_opts}->{$1} = $2;
+    }
+
     return 0;
 }
 
@@ -118,7 +124,8 @@ sub connect {
 
     $self->{output}->output_add(long_msg => 'Connection URI: ' . $uri, debug => 1);
     
-    $self->{client} = MongoDB::MongoClient->new(host => $uri);
+    my $ssl = (defined($self->{ssl_opts})) ? $self->{ssl_opts} : 0;
+    $self->{client} = MongoDB::MongoClient->new(host => $uri, ssl => $ssl);
     $self->{client}->connect();
 
     eval {
@@ -212,6 +219,10 @@ MongoDB password.
 =item B<--timeout>
 
 Set timeout in seconds (Default: 10).
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 
