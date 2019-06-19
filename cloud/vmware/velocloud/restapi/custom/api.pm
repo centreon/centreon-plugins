@@ -157,11 +157,14 @@ sub get_session_cookie {
         url_path => $self->{api_path} . $login_url,
         query_form_post => $encoded
     );
-    my ($cookie) = $self->{http}->get_header(name => 'Set-Cookie');
-    $cookie =~ /velocloud.message=(.*);/
-    my $message = $1;
-    $cookie =~ /velocloud.session=(.*);/
-    my $session = $1;
+    my ($cookies) = $self->{http}->get_header(name => 'Set-Cookie');
+
+    my $message = '';
+    my $session = '';
+    foreach my $cookie (@{$cookies}) {
+        $message = $1 if ($cookie =~ /velocloud.message=(.*);/);
+        $session = $1 if ($cookie =~ /velocloud.session=(.*);/);
+    }
 
     if (!defined($session)) {
         $self->{output}->add_option_msg(short_msg => "Cannot get session cookie: " . $message);
