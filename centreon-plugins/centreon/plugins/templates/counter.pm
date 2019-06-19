@@ -181,7 +181,7 @@ sub check_options {
                 my $label = $_->{label};
                 $label =~ s/-//g;
                 $list_counter .= " " . $_->{label};
-                $th_counter .= " --warning-$label='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$label='\$_SERVICECRITICAL" . uc($label) . "\$'";  
+                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";  
             }
         }
         $self->{output}->output_add(short_msg => $list_counter);
