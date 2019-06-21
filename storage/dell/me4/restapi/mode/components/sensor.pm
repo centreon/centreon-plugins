@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::components::sensor;
+package storage::dell::me4::restapi::mode::components::sensor;
 
 use strict;
 use warnings;

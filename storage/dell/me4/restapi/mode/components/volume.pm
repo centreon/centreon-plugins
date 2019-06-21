@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::components::volume;
+package storage::dell::me4::restapi::mode::components::volume;
 
 use strict;
 use warnings;

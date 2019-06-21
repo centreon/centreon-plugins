@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::components::disk;
+package storage::dell::me4::restapi::mode::components::disk;
 
 use strict;
 use warnings;

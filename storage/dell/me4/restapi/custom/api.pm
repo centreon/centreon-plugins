@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::custom::api;
+package storage::dell::me4::restapi::custom::api;
 
 use strict;
 use warnings;
@@ -45,12 +45,12 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "api-username:s"        => { name => 'api_username' },
-            "api-password:s"        => { name => 'api_password' },
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port' },
-            "proto:s"               => { name => 'proto' },
-            "timeout:s"             => { name => 'timeout' },
+            'api-username:s'    => { name => 'api_username' },
+            'api-password:s'    => { name => 'api_password' },
+            'hostname:s'        => { name => 'hostname' },
+            'port:s'            => { name => 'port' },
+            'proto:s'           => { name => 'proto' },
+            'timeout:s'         => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);

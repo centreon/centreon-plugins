@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::components::psu;
+package storage::dell::me4::restapi::mode::components::psu;
 
 use strict;
 use warnings;

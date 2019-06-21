@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::components::fan;
+package storage::dell::me4::restapi::mode::components::fan;
 
 use strict;
 use warnings;
