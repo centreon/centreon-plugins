@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::plugin;
+package storage::dell::me4::restapi::plugin;
 
 use strict;
 use warnings;
@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'controller-statistics' => 'storage::dell::me4::mode::controllerstatistics',
-        'hardware'              => 'storage::dell::me4::mode::hardware',
-        'list-controllers'      => 'storage::dell::me4::mode::listcontrollers',
-        'list-volumes'          => 'storage::dell::me4::mode::listvolumes',
-        'volume-statistics'     => 'storage::dell::me4::mode::volumestatistics',
+        'controller-statistics' => 'storage::dell::me4::restapi::mode::controllerstatistics',
+        'hardware'              => 'storage::dell::me4::restapi::mode::hardware',
+        'list-controllers'      => 'storage::dell::me4::restapi::mode::listcontrollers',
+        'list-volumes'          => 'storage::dell::me4::restapi::mode::listvolumes',
+        'volume-statistics'     => 'storage::dell::me4::restapi::mode::volumestatistics',
     );
 
-    $self->{custom_modes}{api} = 'storage::dell::me4::custom::api';
+    $self->{custom_modes}{api} = 'storage::dell::me4::restapi::custom::api';
     return $self;
 }
 

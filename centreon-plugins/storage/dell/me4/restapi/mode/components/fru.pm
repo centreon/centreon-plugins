@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::components::fru;
+package storage::dell::me4::restapi::mode::components::fru;
 
 use strict;
 use warnings;

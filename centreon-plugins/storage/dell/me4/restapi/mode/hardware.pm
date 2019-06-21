@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::dell::me4::mode::hardware;
+package storage::dell::me4::restapi::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -121,7 +121,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'storage::dell::me4::mode::components';
+    $self->{components_path} = 'storage::dell::me4::restapi::mode::components';
     $self->{components_module} = ['controller', 'disk', 'fan', 'fru', 'psu', 'sensor', 'volume'];
 }
 
