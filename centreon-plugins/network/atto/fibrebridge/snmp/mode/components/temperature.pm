@@ -20,7 +20,7 @@
 # Author : ArnoMLT
 #
 
-package network::atto::fiberbridge::snmp::mode::components::temperature;
+package network::atto::fibrebridge::snmp::mode::components::temperature;
 
 use strict;
 use warnings;

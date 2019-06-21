@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::atto::fiberbridge::snmp::plugin;
+package network::atto::fibrebridge::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'hardware'      => 'network::atto::fiberbridge::snmp::mode::hardware',
-        'fcport-usage'  => 'network::atto::fiberbridge::snmp::mode::fcportusage',
+        'hardware'      => 'network::atto::fibrebridge::snmp::mode::hardware',
+        'fcport-usage'  => 'network::atto::fibrebridge::snmp::mode::fcportusage',
     );
 
     return $self;
@@ -44,6 +44,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Atto FiberBridge (6500, 7500,...) in SNMP.
+Check Atto FibreBridge (6500, 7500,...) in SNMP.
 
 =cut

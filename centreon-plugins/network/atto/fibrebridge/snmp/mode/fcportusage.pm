@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::atto::fiberbridge::snmp::mode::fcportusage;
+package network::atto::fibrebridge::snmp::mode::fcportusage;
 
 use base qw(centreon::plugins::templates::counter);
 

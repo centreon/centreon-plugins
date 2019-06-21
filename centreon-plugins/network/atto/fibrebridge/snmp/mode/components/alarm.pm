@@ -20,7 +20,7 @@
 # Author : ArnoMLT
 #
 
-package network::atto::fiberbridge::snmp::mode::components::alarm;
+package network::atto::fibrebridge::snmp::mode::components::alarm;
 
 use strict;
 use warnings;

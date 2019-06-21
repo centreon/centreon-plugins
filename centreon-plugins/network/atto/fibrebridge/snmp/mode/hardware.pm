@@ -20,7 +20,7 @@
 # Author : ArnoMLT
 #
 
-package network::atto::fiberbridge::snmp::mode::hardware;
+package network::atto::fibrebridge::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -47,7 +47,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'network::atto::fiberbridge::snmp::mode::components';
+    $self->{components_path} = 'network::atto::fibrebridge::snmp::mode::components';
     $self->{components_module} = ['alarm', 'temperature'];
 }
 
