@@ -33,23 +33,23 @@ sub new {
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "oid:s"                   => { name => 'oid' },
-                                  "oid-type:s"              => { name => 'oid_type' },
-                                  "counter-per-seconds"     => { name => 'counter_per_seconds' },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "format:s"                => { name => 'format' },
-                                  "format-custom:s"         => { name => 'format_custom' },
-                                  "format-scale"            => { name => 'format_scale' },
-                                  "format-scale-type:s"     => { name => 'format_scale_type' },
-                                  "perfdata-unit:s"         => { name => 'perfdata_unit' },
-                                  "perfdata-name:s"         => { name => 'perfdata_name' },
-                                  "perfdata-min:s"          => { name => 'perfdata_min' },
-                                  "perfdata-max:s"          => { name => 'perfdata_max' },
-                                  "config-json:s"           => { name => 'config_json' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'oid:s'                   => { name => 'oid' },
+        'oid-type:s'              => { name => 'oid_type' },
+        'counter-per-seconds'     => { name => 'counter_per_seconds' },
+        'warning:s'               => { name => 'warning' },
+        'critical:s'              => { name => 'critical' },
+        'format:s'                => { name => 'format' },
+        'format-custom:s'         => { name => 'format_custom' },
+        'format-scale'            => { name => 'format_scale' },
+        'format-scale-type:s'     => { name => 'format_scale_type' },
+        'perfdata-unit:s'         => { name => 'perfdata_unit' },
+        'perfdata-name:s'         => { name => 'perfdata_name' },
+        'perfdata-min:s'          => { name => 'perfdata_min' },
+        'perfdata-max:s'          => { name => 'perfdata_max' },
+        'config-json:s'           => { name => 'config_json' },
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{use_statefile} = 0;
     return $self;
@@ -204,7 +204,7 @@ sub run {
     
     if ($self->{use_statefile} == 1) {
         $self->{cache_datas} = {};
-        $self->{statefile_cache}->read(statefile => "snmpstandard_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex(join('-', @{$self->{request_oids}})));
+        $self->{statefile_cache}->read(statefile => 'snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex(join('-', @{$self->{request_oids}})));
     }
 
     $self->{results} = $options{snmp}->get_leef(oids => $self->{request_oids}, nothing_quit => 1);
