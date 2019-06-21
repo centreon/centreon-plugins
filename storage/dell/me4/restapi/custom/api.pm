@@ -22,11 +22,9 @@ package storage::dell::me4::restapi::custom::api;
 
 use strict;
 use warnings;
-use DateTime;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
 use JSON::XS;
-use URI::Encode;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
