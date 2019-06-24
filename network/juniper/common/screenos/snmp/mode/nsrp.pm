@@ -30,7 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("status : %s",
+    my $msg = sprintf("status: %s",
         $self->{result_values}->{status});
     return $msg;
 }
