@@ -31,16 +31,17 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
-                        'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
-                        'interfaces'        => 'snmp_standard::mode::interfaces',
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'list-vpn'          => 'network::juniper::common::screenos::snmp::mode::listvpn',
-                        'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
-                        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions',
-                        'vpn-status'        => 'network::juniper::common::screenos::snmp::mode::vpnstatus',
-                        'vpn-usage'         => 'network::juniper::common::screenos::snmp::mode::vpnusage',
-                         );
+        'cpu'               => 'network::juniper::common::screenos::snmp::mode::cpu',
+        'hardware'          => 'network::juniper::common::screenos::snmp::mode::hardware',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'list-vpn'          => 'network::juniper::common::screenos::snmp::mode::listvpn',
+        'memory'            => 'network::juniper::common::screenos::snmp::mode::memory',
+        'nsrp'              => 'network::juniper::common::screenos::snmp::mode::nsrp',
+        'sessions'          => 'network::juniper::common::screenos::snmp::mode::sessions',
+        'vpn-status'        => 'network::juniper::common::screenos::snmp::mode::vpnstatus',
+        'vpn-usage'         => 'network::juniper::common::screenos::snmp::mode::vpnusage',
+    );
 
     return $self;
 }
