@@ -48,6 +48,7 @@ sub new {
         'qtree-usage'      => 'storage::netapp::snmp::mode::qtreeusage',
         'share-calls'      => 'storage::netapp::snmp::mode::sharecalls',
         'shelf'            => 'storage::netapp::snmp::mode::shelf',
+        'sis'              => 'storage::netapp::snmp::mode::sis',
         'snapmirrorlag'    => 'storage::netapp::snmp::mode::snapmirrorlag',
         'snapshotage'      => 'storage::netapp::snmp::mode::snapshotage',
         'snapvault-usage'  => 'storage::netapp::snmp::mode::snapvaultusage',
