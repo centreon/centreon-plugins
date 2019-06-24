@@ -31,14 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'             => 'network::juniper::common::junos::mode::hardware',
-                         'cpu-routing'          => 'network::juniper::common::junos::mode::cpurouting', # routing engine
-                         'memory-routing'       => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'        => 'snmp_standard::mode::liststorages',
-                         'storage'              => 'snmp_standard::mode::storage',
-                         );
+        'cpu-routing'       => 'network::juniper::common::junos::mode::cpurouting', # routing engine
+        'hardware'          => 'network::juniper::common::junos::mode::hardware',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces', 
+        'memory-routing'    => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
+        'list-storages'     => 'snmp_standard::mode::liststorages',
+        'stack'             => 'network::juniper::common::junos::mode::stack',
+        'storage'           => 'snmp_standard::mode::storage',
+    );
 
     return $self;
 }
