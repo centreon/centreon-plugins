@@ -224,6 +224,7 @@ sub manage_aep {
 sub add_service {
     my ($self, %options) = @_;
 
+    return if (!defined($options{display}));
     return if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
         $options{display} !~ /$self->{option_results}->{filter_name}/);
     $self->{service}->{$options{display}} = { %options };
@@ -255,7 +256,8 @@ sub manage_selection {
         state => $result->{avAesTsapiState},
         status => $result->{avAesTsapiStatus},
         license_error => $result->{avAesTsapiLicenseError},
-        avAesTsapiClientsConnected => $result->{avAesTsapiClientsConnected} != -1 ? $result->{avAesTsapiClientsConnected} : undef,
+        avAesTsapiClientsConnected => 
+            defined($result->{avAesTsapiClientsConnected}) && $result->{avAesTsapiClientsConnected} != -1 ? $result->{avAesTsapiClientsConnected} : undef,
     );
     $self->add_service(
         display => $result->{avAesDlgName},
@@ -268,7 +270,8 @@ sub manage_selection {
         state => $result->{avAesDmccState},
         status => $result->{avAesDmccStatus},
         license_error => $result->{avAesDmccLicenseError},
-        mem_used_prct => ($result->{avAesDmccUsedMemory} * 100) / ($result->{avAesDmccUsedMemory} + $result->{avAesDmccFreeMemory})
+        mem_used_prct => 
+            defined($result->{avAesDmccFreeMemory}) ? (($result->{avAesDmccUsedMemory} * 100) / ($result->{avAesDmccUsedMemory} + $result->{avAesDmccFreeMemory})) : undef
     );
 
     $self->manage_aep(%options);
