@@ -145,9 +145,9 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
-        "units:s"       => { name => 'units', default => '%' },
-        "free"          => { name => 'free' },
+        'filter-name:s' => { name => 'filter_name' },
+        'units:s'       => { name => 'units', default => '%' },
+        'free'          => { name => 'free' },
     });
 
     return $self;
@@ -180,6 +180,11 @@ sub manage_selection {
             display => $entry->{name},
             %{$entry},
         };
+    }
+
+    if (scalar(keys %{$self->{volume}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No volume found.");
+        $self->{output}->option_exit();
     }
 }
 
