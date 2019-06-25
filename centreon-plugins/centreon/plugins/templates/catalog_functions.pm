@@ -63,7 +63,7 @@ sub catalog_status_calc {
     my ($self, %options) = @_;
 
     foreach (keys %{$options{new_datas}}) {
-        if (/^$self->{instance}_(.*)/) {
+        if (/^\Q$self->{instance}\E_(.*)/) {
             $self->{result_values}->{$1} = $options{new_datas}->{$_};
         }
     }
