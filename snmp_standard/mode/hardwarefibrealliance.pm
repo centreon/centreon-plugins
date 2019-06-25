@@ -163,9 +163,9 @@ sub check {
         
         $self->{components}->{sensors}->{total}++;
         $self->{output}->output_add(long_msg => sprintf(
-            "sensor '%s' status is %s [msg = %s] [type = %s] [chara = %s]",
+            "sensor '%s' status is %s [msg: %s] [type: %s] [chara: %s] [instance: %s]",
             $result->{connUnitSensorName}, $result->{connUnitSensorStatus},
-            $result->{connUnitSensorMessage}, $result->{connUnitSensorType}, $result->{connUnitSensorCharacteristic})
+            $result->{connUnitSensorMessage}, $result->{connUnitSensorType}, $result->{connUnitSensorCharacteristic}, $instance)
         );
         my $exit = $self->get_severity(section => 'sensors', name => $result->{connUnitSensorName}, value => $result->{connUnitSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -216,8 +216,8 @@ sub check {
         next if ($self->check_filter(section => 'port', instance => $instance, name => $name));
         
         $self->{components}->{port}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("port '%s' status is %s",
-                                                        $name, $result->{connUnitPortStatus}));
+        $self->{output}->output_add(long_msg => sprintf("port '%s' status is %s [instance: %s]",
+                                                        $name, $result->{connUnitPortStatus}, $instance));
         my $exit = $self->get_severity(section => 'port', name => $name, value => $result->{connUnitPortStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
