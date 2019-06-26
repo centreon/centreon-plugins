@@ -116,3 +116,7 @@ extend-sh myalias /bin/echo "it works !"
 =item B<--alias>
 
 name of the alias to check on the remote host
+
+=back
+
+=cut
