@@ -27,7 +27,9 @@ use warnings;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-my %errors_num = (0 => 'OK', 1 => 'WARNING', 2 => 'CRITICAL', 3 => 'UNKNOWN');
+my %errors_service = (0 => 'OK', 1 => 'WARNING', 2 => 'CRITICAL', 3 => 'UNKNOWN');
+my %errors_host = (0 => 'UP', 1 => 'DOWN');
+my %errors_hash = ('UP' => 'OK', 'DOWN' => 'WARNING');
 
 sub new {
     my ($class, %options) = @_;
@@ -37,6 +39,7 @@ sub new {
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "status-sequence:s"     => { name => 'status_sequence' },
+        "host"                  => { name => 'host' },
         "restart-sequence"      => { name => 'restart_sequence' },
         "show-sequence"         => { name => 'show_sequence' },
         "output:s"              => { name => 'output' },
@@ -61,8 +64,12 @@ sub check_options {
     }
 
     foreach my $status (split(',', $self->{option_results}->{status_sequence})) {
-        if ($status !~ /^[0-3]$/ && $status !~ /ok|warning|critical|unknown/i) {
+        if (!defined($self->{option_results}->{host}) && $status !~ /^[0-3]$/ && $status !~ /ok|warning|critical|unknown/i) {
             $self->{output}->add_option_msg(short_msg => "Status should be in '0,1,2,3' or 'ok,warning,critical,unknown' (case isensitive).");
+            $self->{output}->option_exit();
+        }
+        if (defined($self->{option_results}->{host}) && $status !~ /^[0-1]$/ && $status !~ /up|down/i) {
+            $self->{output}->add_option_msg(short_msg => "Status should be in '0,1' or 'up,down' (case isensitive).");
             $self->{output}->option_exit();
         }
         push @{$self->{status_sequence}}, $status;
@@ -99,7 +106,8 @@ sub get_sequence_output {
 
     my $i = 0;
     foreach my $status (split(',', $self->{option_results}->{status_sequence})) {
-        $status = $errors_num{$status} if $status =~ /^[0-3]$/;
+        $status = $errors_service{$status} if ($status =~ /^[0-3]$/ && !defined($self->{option_results}->{host}));
+        $status = $errors_host{$status} if ($status =~ /^[0-1]$/ && defined($self->{option_results}->{host}));
 
         push @sequence_output, uc($status) if ($i == $options{index});
         push @sequence_output, lc($status) if ($i != $options{index});
@@ -113,20 +121,27 @@ sub run {
     my ($self, %options) = @_;
 
     my ($status, $index) = $self->get_next_status(statefile => $self->{cache});
-    $status = $errors_num{$status} if $status =~ /^[0-3]$/;
-
+    my $status_label = $status;
+    if (defined($self->{option_results}->{host})) {
+        $status_label = $errors_host{$status} if ($status =~ /^[0-1]$/);
+        $status = $errors_host{$status} if ($status =~ /^[0-1]$/);
+        $status = $errors_hash{uc($status)};
+    } else {
+        $status_label = $errors_service{$status} if ($status =~ /^[0-3]$/);
+        $status = $errors_service{$status} if ($status =~ /^[0-3]$/);
+    }
     my $output = $self->{option_results}->{output};
     $output .= ' [' . $self->get_sequence_output(index => $index) . ']' if ($self->{option_results}->{show_sequence});
     
     $self->{output}->output_add(
         severity => $status,
-        short_msg => $output
+        short_msg => uc($status_label) . ': ' . $output
     );
     $self->{output}->perfdata_add(
         nlabel => 'sequence.index.position', value => ++$index,
         min => 1, max => scalar(@{$self->{status_sequence}})
     );
-    $self->{output}->display();
+    $self->{output}->display(nolabel => 1);
     $self->{output}->exit();
 }
 
@@ -145,8 +160,12 @@ Do a not-so-dummy check.
 Comma separated sequence of statuses
 from which the mode should pick is
 return code from.
-(Example: --status-sequence='ok,critical,ok,ok')
-(Should be numeric value between 0 and 3, or string in ok, warning, critical, unknown).
+(Example: --status-sequence='ok,critical,ok,ok' or --status-sequence='up,up,down' --host)
+(Should be numeric value between 0 and 3, or string in ok, warning, critical, unknown, up, down).
+
+=item B<--host>
+
+Host statuses.
 
 =item B<--restart-sequence>
 
