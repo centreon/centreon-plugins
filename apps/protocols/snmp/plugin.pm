@@ -36,6 +36,7 @@ sub new {
         'response-time'      => 'apps::protocols::snmp::mode::responsetime',
         'string-value'       => 'snmp_standard::mode::stringvalue',
         'uptime'             => 'snmp_standard::mode::uptime',
+        'extend'             => 'snmp_standard::mode::extend',
     );
 
     return $self;
