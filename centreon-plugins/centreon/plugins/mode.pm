@@ -36,7 +36,6 @@ sub new {
     $self->{output}->use_new_perfdata(value => 1)
         if (defined($options{force_new_perfdata}) && $options{force_new_perfdata} == 1);
     $self->{mode} = $options{mode};
-    $self->{version} = undef;
 
     return $self;
 }

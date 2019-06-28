@@ -212,7 +212,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "filter-ib-name:s"        => { name => 'filter_ib_name' },
         "filter-ibgw-name:s"      => { name => 'filter_ibgw_name' },

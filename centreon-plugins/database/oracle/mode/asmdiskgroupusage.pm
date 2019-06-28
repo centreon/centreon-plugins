@@ -213,7 +213,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "unknown-status:s"          => { name => 'unknown_status', default => '' },
         "warning-status:s"          => { name => 'warning_status', default => '' },

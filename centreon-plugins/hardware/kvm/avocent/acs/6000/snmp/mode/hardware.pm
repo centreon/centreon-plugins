@@ -56,7 +56,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                 });

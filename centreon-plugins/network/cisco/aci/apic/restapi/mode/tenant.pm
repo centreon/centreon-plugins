@@ -77,7 +77,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>  {
         'filter-tenant:s'   => { name => 'filter_tenant' },
         'warning-health:s'  => { name => 'warning_health' },

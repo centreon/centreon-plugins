@@ -135,7 +135,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "unknown-bank-status:s"  => { name => 'unknown_bank_status', default => '' },
         "warning-bank-status:s"  => { name => 'warning_bank_status', default => '%{status} =~ /low|nearOverload/i' },

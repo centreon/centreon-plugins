@@ -136,7 +136,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
          "sahi-hostname:s"      => { name => 'sahi_hostname' },
          "sahi-port:s"          => { name => 'sahi_port', default => 9999 },

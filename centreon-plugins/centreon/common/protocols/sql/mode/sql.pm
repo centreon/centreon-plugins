@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "sql-statement:s"         => { name => 'sql_statement', },
         "format:s"                => { name => 'format', default => 'SQL statement result : %i.'},

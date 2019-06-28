@@ -201,7 +201,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /yellow/i' },
         "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /red/i' },

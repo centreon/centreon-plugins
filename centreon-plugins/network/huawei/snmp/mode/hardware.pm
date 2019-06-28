@@ -65,7 +65,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'reload-cache-time:s'   => { name => 'reload_cache_time', default => 180 },
         'short-name'            => { name => 'short_name' },

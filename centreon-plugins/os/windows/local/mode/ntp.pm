@@ -36,7 +36,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         'ntp-hostname:s'          => { name => 'ntp_hostname' },
         'ntp-port:s'              => { name => 'ntp_port', default => 123 },

@@ -242,7 +242,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'vm-id:s'                 => { name => 'vm_id' },
         'vm-name:s'               => { name => 'vm_name' },
