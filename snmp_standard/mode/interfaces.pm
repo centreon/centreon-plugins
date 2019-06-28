@@ -776,7 +776,6 @@ sub new {
     $self->{no_interfaceid_options} = defined($options{no_interfaceid_options}) && $options{no_interfaceid_options} =~ /^[01]$/ ? 
         $options{no_interfaceid_options} : 0;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'add-global'              => { name => 'add_global' },
         'add-status'              => { name => 'add_status' },

@@ -89,7 +89,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "query:s@"          => { name => 'query' },
         "query-range:s@"    => { name => 'query_range' },

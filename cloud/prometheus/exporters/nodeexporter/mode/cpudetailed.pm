@@ -218,7 +218,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "instance:s"            => { name => 'instance', default => 'instance=~".*"' },
         "cpu:s"                 => { name => 'cpu', default => 'cpu=~".*"' },

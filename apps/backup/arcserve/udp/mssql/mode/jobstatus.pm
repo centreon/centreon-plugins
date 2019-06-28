@@ -107,7 +107,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         'filter-server-name:s'    => { name => 'filter_server_name' },
         'filter-type:s'           => { name => 'filter_type' },

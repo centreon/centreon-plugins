@@ -105,7 +105,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "namespace:s"           => { name => 'namespace', default => 'namespace=~".*"' },
         "phase:s"               => { name => 'phase', default => 'phase=~".*"' },
