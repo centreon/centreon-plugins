@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'open-files', nlabel => 'system.open.files.count', set => {
+        { label => 'files-open', nlabel => 'system.files.open.count', set => {
                 key_values => [ { name => 'openfiles' } ],
                 output_template => 'current open files: %s',
                 perfdatas => [
@@ -175,7 +175,7 @@ Filter PID (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'open-files'.
+Can be: 'files-open'.
 
 =back
 
