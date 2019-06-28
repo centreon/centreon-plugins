@@ -16,6 +16,8 @@
  * Plugin added: PDU Schleifenbauer Gateway SNMP
  * Plugin added: Ansible Tower
  * Plugin added: Dell ME4 Rest API
+ * Plugin added: Avaya AES SNMP
+ * Plugin added: Arcseve UDP MSSQL
  * Mode added: [oracle] 'librarycacheusage'
  * Mode added: [oracle] 'dictionarycacheusage'
  * Mode added: [oracle] 'redologusage'
