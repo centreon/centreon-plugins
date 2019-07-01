@@ -142,7 +142,7 @@ sub get_session_cookie {
     my $form_post = { username => $self->{username}, password => $self->{password} };
     my $encoded;
     eval {
-        $encoded = encode_json($form_post);
+        $encoded = JSON::XS->new->utf8->encode($form_post);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
@@ -157,13 +157,14 @@ sub get_session_cookie {
         url_path => $self->{api_path} . $login_url,
         query_form_post => $encoded
     );
-    my ($cookies) = $self->{http}->get_header(name => 'Set-Cookie');
+    my (@cookies) = $self->{http}->get_header(name => 'Set-Cookie');
 
     my $message = '';
     my $session = '';
-    foreach my $cookie (@{$cookies}) {
-        $message = $1 if ($cookie =~ /velocloud.message=(.*);/);
-        $session = $1 if ($cookie =~ /velocloud.session=(.*);/);
+    
+    foreach my $cookie (@cookies) {
+        $message = $1 if ($cookie =~ /^velocloud\.message=(.+?);/);
+        $session = $1 if ($cookie =~ /^velocloud\.session=(.+?);/);
     }
 
     if (!defined($session)) {
@@ -184,10 +185,9 @@ sub get_entreprise_id {
 
     my $decoded;
     eval {
-        $decoded = decode_json($content);
+        $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
@@ -197,20 +197,10 @@ sub get_entreprise_id {
 
 sub request_api {
     my ($self, %options) = @_;
-
-    if (!defined($self->{session_cookie})) {
-        $self->get_session_cookie();
-    }
-
-    $self->settings();
-
-    if (!defined($self->{entreprise_id})) {
-        $self->get_entreprise_id();
-    }
     
     my $encoded_form_post;
     eval {
-        $encoded_form_post = encode_json($options{query_form_post});
+        $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
@@ -229,10 +219,9 @@ sub request_api {
 
     my $decoded;
     eval {
-        $decoded = decode_json($content);
+        $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
@@ -242,10 +231,20 @@ sub request_api {
 
 sub list_edges {
     my ($self, %options) = @_;
+
+    if (!defined($self->{session_cookie})) {
+        $self->get_session_cookie();
+    }
+
+    $self->settings();
+
+    if (!defined($self->{entreprise_id})) {
+        $self->get_entreprise_id();
+    }
     
     my $response = $self->request_api(
         method => 'POST',
-        url_path => '/enterprise/getEnterpriseEdges',
+        url_path => $self->{api_path} . '/enterprise/getEnterpriseEdges',
         query_form_post => { enterpriseId => $self->{entreprise_id} }
     );
     
@@ -256,7 +255,7 @@ sub DESTROY {
     my $self = shift;
 
     if (defined($self->{session_cookie})) {
-        $self->request_api(method => 'POST', url_path => $self->{api_path} . '/logout');
+        $self->{http}->request(method => 'POST', url_path => $self->{api_path} . '/logout');
     }
 }
 

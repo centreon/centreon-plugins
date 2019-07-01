@@ -52,7 +52,7 @@ sub run {
     $self->manage_selection(%options);
     foreach my $edge (@{$self->{edges}}) {
         $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][edge_state = %s][service_state = %s][ha_state = %s][activation_state = %s]",
-            $edge->{id}, $edge->{name}, $edge->{edgeState}, $edge->{serviceState}, $edge->{haState}, $edge->{activationState});
+            $edge->{id}, $edge->{name}, $edge->{edgeState}, $edge->{serviceState}, $edge->{haState}, $edge->{activationState}));
     }
     
     $self->{output}->output_add(severity => 'OK',
