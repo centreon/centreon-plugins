@@ -31,6 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+        'discovery'     => 'cloud::vmware::velocloud::restapi::mode::discovery',
+        'edge-status'   => 'cloud::vmware::velocloud::restapi::mode::edgestatus',
+        'link-status'   => 'cloud::vmware::velocloud::restapi::mode::linkstatus',
         'list-edges'    => 'cloud::vmware::velocloud::restapi::mode::listedges',
     );
 

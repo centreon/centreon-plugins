@@ -51,8 +51,10 @@ sub run {
   
     $self->manage_selection(%options);
     foreach my $edge (@{$self->{edges}}) {
-        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][edge_state = %s][service_state = %s][ha_state = %s][activation_state = %s]",
-            $edge->{id}, $edge->{name}, $edge->{edgeState}, $edge->{serviceState}, $edge->{haState}, $edge->{activationState}));
+        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][description = %s][edge_state = %s]" .
+            "[service_state = %s][ha_state = %s][activation_state = %s]",
+            $edge->{id}, $edge->{name}, $edge->{description}, $edge->{edgeState}, $edge->{serviceState},
+            $edge->{haState}, $edge->{activationState}));
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -64,7 +66,8 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['id', 'name', 'edge_state', 'service_state', 'ha_state', 'activation_state']);
+    $self->{output}->add_disco_format(elements => ['id', 'name', 'description', 'edge_state', 'service_state',
+        'ha_state', 'activation_state']);
 }
 
 sub disco_show {
@@ -75,6 +78,7 @@ sub disco_show {
         $self->{output}->add_disco_entry(
             id => $edge->{id},
             name => $edge->{name},
+            description => $edge->{description},
             edge_state => $edge->{edgeState},
             service_state => $edge->{serviceState},
             ha_state => $edge->{haState},
