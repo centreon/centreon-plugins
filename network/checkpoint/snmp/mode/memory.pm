@@ -128,18 +128,18 @@ sub manage_selection {
                                                     $oid_memTotalReal64, $oid_memActiveReal64, $oid_memFreeReal64],
                                            nothing_quit => 1);
 
-    my $free_bytes_swap = $results->{$oid_memTotalVirtual64} - $results->{$oid_memActiveVirtual64};
-
     $self->{memory} = {prct_used => $results->{$oid_memActiveReal64} * 100 / $results->{$oid_memTotalReal64},
                        used => $results->{$oid_memActiveReal64},
                        free => $results->{$oid_memFreeReal64},
                        total => $results->{$oid_memTotalReal64},
                       };
 
-    $self->{swap} = {prct_used => $results->{$oid_memActiveVirtual64} * 100 / $results->{$oid_memTotalVirtual64},
-                     used => $results->{$oid_memActiveVirtual64},
-                     free => $free_bytes_swap,
-                     total => $results->{$oid_memTotalVirtual64},
+    $self->{swap} = {prct_used => ($results->{$oid_memActiveVirtual64} - $results->{$oid_memActiveReal64}) * 100 /
+                                  ($results->{$oid_memTotalVirtual64} - $results->{$oid_memTotalReal64}),
+                     used => $results->{$oid_memActiveVirtual64} - $results->{$oid_memActiveReal64},
+                     free => $results->{$oid_memTotalVirtual64} - $results->{$oid_memTotalReal64} -
+                             ($results->{$oid_memActiveVirtual64} - $results->{$oid_memActiveReal64}),
+                     total => $results->{$oid_memTotalVirtual64} - $results->{$oid_memTotalReal64},
                     };
 
     $self->{malloc} = {failed_mallocs => $results->{$oid_fwKmemFailedAlloc}};
