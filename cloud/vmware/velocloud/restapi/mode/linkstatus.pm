@@ -69,19 +69,21 @@ sub set_counters {
             }
         },
         { label => 'traffic-in', nlabel => 'link.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in' }, { name => 'id' } ],
+                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'id' } ],
+                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_in_absolute', template => '%.2f',
+                    { value => 'traffic_in_per_second', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'id_absolute' },
                 ],
             }
         },
         { label => 'traffic-out', nlabel => 'link.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out' }, { name => 'id' } ],
+                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'id' } ],
+                per_second => 1, output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_out_absolute', template => '%.2f',
+                    { value => 'traffic_out_per_second', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'id_absolute' },
                 ],
             }
