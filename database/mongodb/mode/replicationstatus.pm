@@ -107,7 +107,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'lag', nlabel => 'replication.lag.seconds', set => {
+        { label => 'replication-lag', nlabel => 'replication.lag.seconds', set => {
                 key_values => [  { name => 'lag' }, { name => 'name' } ],
                 output_template => 'Replication Lag: %s s',
                 perfdatas => [
@@ -130,7 +130,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
@@ -239,12 +238,12 @@ Set critical threshold for members status (Default: '%{health} !~ /up/').
 Can used special variables like: %{name}, %{state}, %{health},
 %{slave_delay}, %{priority}.
 
-=item B<--warning-instance-lag>
+=item B<--warning-instance-replication-lag-seconds>
 
 Threshold warning for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).
 
-=item B<--critical-instance-lag>
+=item B<--critical-instance-replication-lag-seconds>
 
 Threshold critical for replication lag between primary and secondary members.
 Must not be over 0 (between minus slaveDelay and 0).

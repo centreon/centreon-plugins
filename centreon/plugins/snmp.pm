@@ -313,7 +313,8 @@ sub get_leef {
                 next;
             }
 
-            if ($self->{snmp_autoreduce} == 1 && ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == -24)) {
+            if ($self->{snmp_autoreduce} == 1 && 
+                ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
                 next if ($self->autoreduce_leef(current => $entry) == 0);
             }
             my $msg = 'SNMP GET Request : ' . $self->{session}->{ErrorStr};    
@@ -462,7 +463,8 @@ sub get_multiple_table {
                 next;
             }
             
-            if ($self->{snmp_autoreduce} == 1 && ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == -24)) {
+            if ($self->{snmp_autoreduce} == 1 && 
+                ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
                 next if ($self->autoreduce_multiple_table(repeat_count => \$repeat_count) == 0);
             }
             
@@ -607,7 +609,8 @@ sub get_table {
                 # We are at the end with snmpv1. We quit.
                 last;
             }
-            if ($self->{snmp_autoreduce} == 1 && ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == -24)) {
+            if ($self->{snmp_autoreduce} == 1 && 
+                ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
                 next if ($self->autoreduce_table(repeat_count => \$repeat_count) == 0);
             }
             

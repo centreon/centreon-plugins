@@ -23,7 +23,6 @@ package apps::openweathermap::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
-use DateTime;
 use JSON::XS;
 
 sub new {
@@ -84,17 +83,13 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'api.openweathermap.org';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/data/2.5';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
-        $self->{output}->option_exit();
-    }
     if (!defined($self->{api_token}) || $self->{api_token} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --api-token option.");
         $self->{output}->option_exit();
@@ -124,24 +119,6 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub get_connection_info {
-    my ($self, %options) = @_;
-
-    return $self->{hostname} . ":" . $self->{port};
-}
-
-sub get_hostname {
-    my ($self, %options) = @_;
-
-    return $self->{hostname};
-}
-
-sub get_port {
-    my ($self, %options) = @_;
-
-    return $self->{port};
-}
-
 sub set_token {
     my ($self, %options) = @_;
     push @{$self->{get_param}}, 'APPID=' . $self->{api_token};
@@ -153,15 +130,13 @@ sub request_api {
     $self->set_token();
     $self->settings;
 
-    $self->{output}->output_add(long_msg => "Query URL: '" . $self->{proto} . "://" . $self->{hostname} .
-        $self->{url_path} . $options{url_path} . "'", debug => 1);
-
     foreach my $get_param (@{$options{get_param}}) {
         push @{$self->{get_param}}, $get_param;
     }
-    my $content = $self->{http}->request(url_path => $self->{url_path} . $options{url_path},
-                                         get_param => \@{$self->{get_param}}
-                                        );
+    my $content = $self->{http}->request(
+        url_path => $self->{url_path} . $options{url_path},
+        get_param => \@{$self->{get_param}}
+    );
 
     my $decoded;
     eval {
@@ -171,7 +146,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
-    if (!defined($decoded->{cod}) || $decoded->{cod} != 200) {
+    if (!defined($decoded->{code}) || $decoded->{code} != 200) {
         $self->{output}->output_add(long_msg => "Error message : " . $decoded->{errorDetails}, debug => 1);
         $self->{output}->add_option_msg(short_msg => "API return error code '" . $decoded->{result} . "' (add --debug option for detailed message)");
         $self->{output}->option_exit();
@@ -185,21 +160,21 @@ __END__
 
 =head1 NAME
 
-Rudder Rest API
+OpenWeatherMap Rest API
 
 =head1 SYNOPSIS
 
-Rudder Rest API custom mode
+OpenWeatherMap Rest API custom mode
 
 =head1 REST API OPTIONS
 
-Rudder Rest API
+OpenWeatherMap Rest API
 
 =over 8
 
 =item B<--hostname>
 
-Rudder API hostname (api.openweathermap.org
+OpenWeatherMap API hostname (Default: 'api.openweathermap.org')
 
 =item B<--port>
 

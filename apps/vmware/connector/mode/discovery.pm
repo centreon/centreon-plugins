@@ -31,7 +31,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "resource-type:s"   => { name => 'resource_type' },
         "prettify"          => { name => 'prettify' },
@@ -76,6 +75,15 @@ __END__
 Resources discovery.
 
 =over 8
+
+=item B<--resource-type>
+
+Choose the type of resources
+to discover (Can be: 'esx', 'vm') (Mandatory).
+
+=item B<--prettify>
+
+Prettify JSON output.
 
 =back
 

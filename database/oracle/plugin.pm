@@ -38,12 +38,16 @@ sub new {
         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
+        'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+        'fra-usage'                => 'database::oracle::mode::frausage',
         'invalid-object'           => 'database::oracle::mode::invalidobject',
+        'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
         'long-queries'             => 'database::oracle::mode::longqueries',
         'password-expiration'      => 'database::oracle::mode::passwordexpiration',
         'process-usage'            => 'database::oracle::mode::processusage',
+        'redolog-usage'            => 'database::oracle::mode::redologusage',
         'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
         'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
         'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
@@ -57,7 +61,8 @@ sub new {
         'undo-usage'               => 'database::oracle::mode::undotablespace',
     );
 
-	$self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+    $self->{sql_modes}{dbi} = 'database::oracle::dbi';
+    $self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
 						 
     return $self;
 }
@@ -66,10 +71,10 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(arguments => {
-            'hostname:s@'   => { name => 'hostname' },
-            'port:s@'       => { name => 'port' },
-            'sid:s'         => { name => 'sid' },
-            'servicename:s' => { name => 'servicename' },
+        'hostname:s@'   => { name => 'hostname' },
+        'port:s@'       => { name => 'port' },
+        'sid:s'         => { name => 'sid' },
+        'servicename:s' => { name => 'servicename' },
     });
 
     $self->{options}->parse_options();

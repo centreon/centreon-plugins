@@ -29,6 +29,12 @@ use Digest::MD5 qw(md5_hex);
 sub custom_cpu_calc {
     my ($self, %options) = @_;
 
+    return -10 if (!defined($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}}));
+    if (!defined($options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}})) {
+        $self->{error_msg} = "Buffer creation";
+        return -1;
+    }
+
     if (!defined($self->{instance_mode}->{total_cpu})) {
         $self->{instance_mode}->{total_cpu} = 0;        
         foreach (keys %{$options{new_datas}}) {
@@ -70,7 +76,7 @@ sub set_counters {
         { name => 'global', type => 0, cb_prefix_output => 'prefix_cpu_output', skipped_code => { -10 => 1 } },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'user', set => {
+        { label => 'user', nlabel => 'cpu.user.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawUser' },
                 manual_keys => 1, 
@@ -81,7 +87,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'nice', set => {
+        { label => 'nice', nlabel => 'cpu.nice.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawNice' },
                 manual_keys => 1, 
@@ -92,7 +98,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'system', set => {
+        { label => 'system', nlabel => 'cpu.system.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawSystem' },
                 manual_keys => 1, 
@@ -103,7 +109,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'idle', set => {
+        { label => 'idle', nlabel => 'cpu.idle.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawIdle' },
                 manual_keys => 1, 
@@ -114,7 +120,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'wait', set => {
+        { label => 'wait', nlabel => 'cpu.wait.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawWait' },
                 manual_keys => 1, 
@@ -125,7 +131,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'kernel', set => {
+        { label => 'kernel', nlabel => 'cpu.kernel.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawKernel' },
                 manual_keys => 1, 
@@ -136,7 +142,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'interrupt', set => {
+        { label => 'interrupt', nlabel => 'cpu.interrupt.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawInterrupt' },
                 manual_keys => 1, 
@@ -147,7 +153,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'softirq', set => {
+        { label => 'softirq', nlabel => 'cpu.softirq.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawSoftIRQ' },
                 manual_keys => 1, 
@@ -158,7 +164,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'steal', set => {
+        { label => 'steal', nlabel => 'cpu.steal.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawSteal' },
                 manual_keys => 1, 
@@ -169,7 +175,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'guest', set => {
+        { label => 'guest', nlabel => 'cpu.guest.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawGuest' },
                 manual_keys => 1, 
@@ -180,7 +186,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'guestnice', set => {
+        { label => 'guestnice', nlabel => 'cpu.guestnice.utilization.percentage', set => {
                 key_values => [],
                 closure_custom_calc => $self->can('custom_cpu_calc'), closure_custom_calc_extra_options => { label_ref => 'ssCpuRawGuestNice' },
                 manual_keys => 1, 
@@ -205,7 +211,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
     });
 

@@ -66,7 +66,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
     });
     
@@ -86,6 +85,7 @@ sub manage_selection {
     $options{sql}->connect();
     $options{sql}->query(query => $query);
     my @result = $options{sql}->fetchrow_array();
+    $options{sql}->disconnect();
     
     $self->{global} = {
         physical_reads => $result[0], 

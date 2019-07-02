@@ -31,7 +31,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "namespace:s"           => { name => 'namespace' },
         "type:s"                => { name => 'type' },
@@ -112,6 +111,26 @@ __END__
 Resources discovery.
 
 =over 8
+
+=item B<--namespace>
+
+Specify resources namespace.
+
+=item B<--type>
+
+Specify resources type.
+
+=item B<--resource-group>
+
+Specify resources resource group.
+
+=item B<--location>
+
+Specify resources location.
+
+=item B<--prettify>
+
+Prettify JSON output.
 
 =back
 

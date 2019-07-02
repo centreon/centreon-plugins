@@ -74,7 +74,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "ok-status:s"       => { name => 'ok_status', default => '%{status} =~ /ok/' },
         "unknown-status:s"  => { name => 'unknown_status', default => '' },

@@ -36,7 +36,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'requests', set => {
+        { label => 'requests', nlabel => 'requests.total.persecond', set => {
                 key_values => [ { name => 'requests', diff => 1 } ],
                 output_template => 'Requests: %.2f/s',
                 per_second => 1,
@@ -48,7 +48,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{namespaces} = [
-        { label => 'requests-2xx', set => {
+        { label => 'requests-2xx', nlabel => 'namespace.requests.2xx.persecond', set => {
                 key_values => [ { name => 'requests_2xx', diff => 1 } ],
                 output_template => 'Requests 2xx: %.2f/s',
                 per_second => 1,
@@ -58,7 +58,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'requests-3xx', set => {
+        { label => 'requests-3xx', nlabel => 'namespace.requests.2xx.persecond', set => {
                 key_values => [ { name => 'requests_3xx', diff => 1 } ],
                 output_template => 'Requests 3xx: %.2f/s',
                 per_second => 1,
@@ -68,7 +68,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'requests-4xx', set => {
+        { label => 'requests-4xx', nlabel => 'namespace.requests.4xx.persecond', set => {
                 key_values => [ { name => 'requests_4xx', diff => 1 } ],
                 output_template => 'Requests 4xx: %.2f/s',
                 per_second => 1,
@@ -78,7 +78,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'requests-5xx', set => {
+        { label => 'requests-5xx', nlabel => 'namespace.requests.5xx.persecond', set => {
                 key_values => [ { name => 'requests_5xx', diff => 1 } ],
                 output_template => 'Requests 5xx: %.2f/s',
                 per_second => 1,
@@ -102,9 +102,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-counters:s"     => { name => 'filter_counters' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "metric-overload:s@"    => { name => 'metric_overload' },
     });
@@ -139,8 +137,12 @@ sub manage_selection {
 
     $self->{global} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{requests_total} . '",' .
-                                                            $self->{extra_filter} . '}, "__name__", "requests_total", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{requests_total} . '",' .
+                $self->{extra_filter} . '}, "__name__", "requests_total", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         $self->{global}->{requests} = ${$result->{value}}[1];

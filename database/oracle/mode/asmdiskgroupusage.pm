@@ -213,7 +213,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "unknown-status:s"          => { name => 'unknown_status', default => '' },
         "warning-status:s"          => { name => 'warning_status', default => '' },
@@ -245,6 +244,7 @@ sub manage_selection {
     my $query = q{SELECT name, state, type, total_mb, usable_file_mb, offline_disks, FREE_MB FROM V$ASM_DISKGROUP};
     $options{sql}->query(query => $query);
     my $result = $options{sql}->fetchall_arrayref();
+    $options{sql}->disconnect();
     
     $self->{dg} = {};
     foreach my $row (@$result) {
@@ -252,7 +252,7 @@ sub manage_selection {
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.", debug => 1);
             next;
         }
 

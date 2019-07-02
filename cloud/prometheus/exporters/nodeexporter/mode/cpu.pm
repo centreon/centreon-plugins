@@ -40,7 +40,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_cpu} = [
-        { label => 'node-usage', set => {
+        { label => 'node-usage', nlabel => 'node.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'node_average' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
@@ -51,7 +51,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{cpu} = [
-        { label => 'cpu-usage', set => {
+        { label => 'cpu-usage', nlabel => 'core.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
                 output_template => 'Usage: %.2f %%',
                 perfdatas => [
@@ -92,15 +92,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
-                                  "cpu:s"                   => { name => 'cpu', default => 'cpu=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                  "filter-counters:s"       => { name => 'filter_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+        "instance:s"            => { name => 'instance', default => 'instance=~".*"' },
+        "cpu:s"                 => { name => 'cpu', default => 'cpu=~".*"' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -140,12 +137,16 @@ sub manage_selection {
 
     $self->{nodes} = {};
 
-    my $results = $options{custom}->query_range(queries => [ '(1 - irate({__name__=~"' . $self->{metrics}->{cpu} . '",' . 
-                                                            'mode="idle",' .
-                                                            $self->{option_results}->{instance} . ',' .
-                                                            $self->{option_results}->{cpu} .
-                                                            $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100' ],
-                                                timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
+    my $results = $options{custom}->query_range(
+        queries => [
+            '(1 - irate({__name__=~"' . $self->{metrics}->{cpu} . '",' . 
+                'mode="idle",' .
+                $self->{option_results}->{instance} . ',' .
+                $self->{option_results}->{cpu} .
+                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100'
+        ],
+        timeframe => $self->{prom_timeframe}, step => $self->{prom_step}
+    );
 
     foreach my $result (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});

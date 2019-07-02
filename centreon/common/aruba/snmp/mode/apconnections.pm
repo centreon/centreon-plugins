@@ -89,7 +89,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "filter-ip-address:s"  => { name => 'filter_ip_address' },
         "filter-bssid:s"  => { name => 'filter_bssid' },

@@ -29,21 +29,36 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
-    $self->{output}->perfdata_add(label => 'desired' . $extra_label,
-                                  value => $self->{result_values}->{desired});
-    $self->{output}->perfdata_add(label => 'current' . $extra_label,
-                                  value => $self->{result_values}->{current});
-    $self->{output}->perfdata_add(label => 'available' . $extra_label,
-                                  value => $self->{result_values}->{available});
-    $self->{output}->perfdata_add(label => 'unavailable' . $extra_label,
-                                  value => $self->{result_values}->{unavailable});
-    $self->{output}->perfdata_add(label => 'up_to_date' . $extra_label,
-                                  value => $self->{result_values}->{up_to_date});
+    $self->{output}->perfdata_add(
+        label => 'desired',
+        nlabel => 'deployment.replicas.desired.count',
+        value => $self->{result_values}->{desired},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'current',
+        nlabel => 'deployment.replicas.current.count',
+        value => $self->{result_values}->{current},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'available',
+        nlabel => 'deployment.replicas.available.count',
+        value => $self->{result_values}->{available},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'unavailable',
+        nlabel => 'deployment.replicas.unavailable.count',
+        value => $self->{result_values}->{unavailable},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
+    $self->{output}->perfdata_add(
+        label => 'up_to_date',
+        nlabel => 'deployment.replicas.uptodate.count',
+        value => $self->{result_values}->{up_to_date},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
 }
 
 sub custom_status_output {
@@ -102,15 +117,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "deployment:s"            => { name => 'deployment', default => 'deployment=~".*"' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '%{up_to_date} < %{desired}' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{available} < %{desired}' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                });
+    $options{options}->add_options(arguments => {
+        "deployment:s"          => { name => 'deployment', default => 'deployment=~".*"' },
+        "warning-status:s"      => { name => 'warning_status', default => '%{up_to_date} < %{desired}' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{available} < %{desired}' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -153,21 +166,25 @@ sub manage_selection {
 
     $self->{deployments} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{desired} . '",' .
-                                                            $self->{option_results}->{deployment} .
-                                                            $self->{extra_filter} . '}, "__name__", "desired", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{current} . '",' .
-                                                            $self->{option_results}->{deployment} .
-                                                            $self->{extra_filter} . '}, "__name__", "current", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{available} . '",' .
-                                                            $self->{option_results}->{deployment} .
-                                                            $self->{extra_filter} . '}, "__name__", "available", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{unavailable} . '",' .
-                                                            $self->{option_results}->{deployment} .
-                                                            $self->{extra_filter} . '}, "__name__", "unavailable", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{up_to_date} . '",' .
-                                                            $self->{option_results}->{deployment} .
-                                                            $self->{extra_filter} . '}, "__name__", "up_to_date", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{desired} . '",' .
+                $self->{option_results}->{deployment} .
+                $self->{extra_filter} . '}, "__name__", "desired", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{current} . '",' .
+                $self->{option_results}->{deployment} .
+                $self->{extra_filter} . '}, "__name__", "current", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{available} . '",' .
+                $self->{option_results}->{deployment} .
+                $self->{extra_filter} . '}, "__name__", "available", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{unavailable} . '",' .
+                $self->{option_results}->{deployment} .
+                $self->{extra_filter} . '}, "__name__", "unavailable", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{up_to_date} . '",' .
+                $self->{option_results}->{deployment} .
+                $self->{extra_filter} . '}, "__name__", "up_to_date", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         $self->{deployments}->{$result->{metric}->{$self->{labels}->{deployment}}}->{display} = $result->{metric}->{$self->{labels}->{deployment}};

@@ -93,7 +93,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory', nlabel => 'memory.usage.bytes' set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'total' }  ],
                 closure_custom_calc => \&custom_usage_calc,
                 closure_custom_output => \&custom_usage_output,
@@ -115,7 +115,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "units:s"   => { name => 'units', default => '%' },
         "free"      => { name => 'free' },

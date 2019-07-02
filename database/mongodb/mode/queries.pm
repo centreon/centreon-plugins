@@ -34,7 +34,7 @@ sub set_counters {
     ];
    
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'queries.persecond', set => {
+        { label => 'total', nlabel => 'queries.total.persecond', set => {
                 key_values => [ { name => 'total', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Total : %d',
@@ -79,7 +79,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {});
 
     return $self;
@@ -119,13 +118,13 @@ Check number of queries executed (absolute and per second).
 =item B<--warning-queries-*-persecond>
 
 Threshold warning.
-Can be: 'insert', 'query', 'update',
+Can be: 'total', 'insert', 'query', 'update',
 'delete', 'getmore', 'command'
 
 =item B<--critical-queries-*-persecond>
 
 Threshold critical.
-Can be: 'insert', 'query', 'update',
+Can be: 'total', 'insert', 'query', 'update',
 'delete', 'getmore', 'command'
 
 =item B<--warning-queries-*-count>

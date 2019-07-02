@@ -177,7 +177,11 @@ sub check_error {
     my ($self, %options) = @_;
     
     # 500-599 an error. 400 is an attribute not present
-    if ($options{response}->status() >= 500 || $options{response}->status() == 401 || $options{response}->status() == 408) {
+    my $status = $options{response}->status();
+    if ($status >= 500 || 
+        $status == 401 ||
+        $status == 403 ||
+        $status == 408) {
         $self->{output}->add_option_msg(short_msg => "protocol issue: " . $options{response}->error_text());
         $self->{output}->option_exit();
     }

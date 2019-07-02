@@ -348,6 +348,7 @@ sub ec2_list_resources {
                 InstanceType => $instance->{InstanceType},
                 State => $instance->{State}->{Name},
                 Tags => join(",", @instance_tags),
+                KeyName => $instance->{KeyName},
             };
             
         }

@@ -64,19 +64,21 @@ sub custom_ready_perfdata {
     my ($self, %options) = @_;
 
     my $value_perf = $self->{result_values}->{ready};
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     my %total_options = ();
     if ($self->{result_values}->{total} > 0 && $self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'containers_ready' . $extra_label,
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $total_options{total});
+    $self->{output}->perfdata_add(
+        label => 'containers_ready',
+        nlabel => 'containers.ready.count',
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $total_options{total},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
 }
 
 sub custom_ready_threshold {
@@ -87,8 +89,10 @@ sub custom_ready_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_ready};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                                         { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+                                                  { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
@@ -147,7 +151,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'total-restarts-count', set => {
+        { label => 'total-restarts-count', nlabel => 'restarts.total.count', set => {
                 key_values => [ { name => 'restarts_total' }, { name => 'display' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
@@ -166,7 +170,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'restarts-count', set => {
+        { label => 'restarts-count', nlabel => 'containers.restarts.count', set => {
                 key_values => [ { name => 'restarts' }, { name => 'perf' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
@@ -201,7 +205,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "filter-name:s"                 => { name => 'filter_name' },
         "filter-namespace:s"            => { name => 'filter_namespace' },

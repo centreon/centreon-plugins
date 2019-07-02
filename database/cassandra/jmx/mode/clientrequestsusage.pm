@@ -61,7 +61,7 @@ sub set_counters {
                 ],
             }
         },
-         label => 'failures', nlabel => 'client.request.failure.count', set => {
+        { label => 'failures', nlabel => 'client.request.failure.count', set => {
                 key_values => [ { name => 'Failures_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Failures : %s',
                 perfdatas => [
@@ -78,7 +78,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "filter-name:s"       => { name => 'filter_name' },
     });

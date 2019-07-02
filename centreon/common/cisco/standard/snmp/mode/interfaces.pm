@@ -35,22 +35,21 @@ sub set_oids_errors {
     $self->{oid_ifInCrc} = '.1.3.6.1.4.1.9.2.2.1.1.12';
 }
 
-sub set_counters {
+sub set_counters_errors {
     my ($self, %options) = @_;
 
-    $self->{maps_counters} = { int => {}, global => {} };
+    $self->SUPER::set_counters_errors(%options);
     
-    $self->{maps_counters}->{int}->{'045_in-crc'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
-    
-    $self->SUPER::set_counters(%options);
+    push @{$self->{maps_counters}->{int}}, 
+        { label => 'in-crc', filter => 'add_errors', nlabel => 'interface.packets.in.crc.count', set => {
+                key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+            }
+        },
+    ;
 }
 
 sub new {
@@ -78,11 +77,11 @@ sub load_errors {
 sub add_result_errors {
     my ($self, %options) = @_;
     
-    $self->{interface_selected}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
 }
 
 1;

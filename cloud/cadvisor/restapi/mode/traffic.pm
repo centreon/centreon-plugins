@@ -63,7 +63,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "container-id:s"              => { name => 'container_id' },
         "container-name:s"            => { name => 'container_name' },

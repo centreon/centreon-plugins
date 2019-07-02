@@ -90,7 +90,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "warning-sync-status:s"   => { name => 'warning_sync_status', default => '%{sync_status} =~ /Running with autonomy|Free running/i' },

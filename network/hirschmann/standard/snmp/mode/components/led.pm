@@ -99,7 +99,7 @@ sub check {
     } else {
         return ;
     }
-    
+
     check_led($self, mapping => $mapping);
 }
 

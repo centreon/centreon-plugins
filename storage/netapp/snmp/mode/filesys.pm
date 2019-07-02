@@ -165,12 +165,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "units:s"               => { name => 'units', default => '%' },
-        "free"                  => { name => 'free' },
-        "filter-name:s"         => { name => 'filter_name' },
-        "filter-type:s"         => { name => 'filter_type' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-type:s'     => { name => 'filter_type' },
+        'filter-vserver:s'  => { name => 'filter_vserver' },
     });
 
     return $self;
@@ -193,6 +193,7 @@ my $mapping2 = {
     dfPerCentInodeCapacity  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.9' },
     df64TotalKBytes         => { oid => '.1.3.6.1.4.1.789.1.5.4.1.29' },
     df64UsedKBytes          => { oid => '.1.3.6.1.4.1.789.1.5.4.1.30' },
+    dfVserver               => { oid => '.1.3.6.1.4.1.789.1.5.4.1.34' },
     dfCompressSavedPercent  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.38' },
     dfDedupeSavedPercent    => { oid => '.1.3.6.1.4.1.789.1.5.4.1.40' },
 };
@@ -206,6 +207,7 @@ sub manage_selection {
         $mapping2->{dfPerCentInodeCapacity}->{oid},
         $mapping2->{dfCompressSavedPercent}->{oid},
         $mapping2->{dfDedupeSavedPercent}->{oid},
+        $mapping2->{dfVserver}->{oid},
     );
     if (!$options{snmp}->is_snmpv1()) {
         push @oids, $mapping2->{df64TotalKBytes}->{oid};
@@ -215,7 +217,14 @@ sub manage_selection {
 
     my $results;
     if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '') {
-        $results = $options{snmp}->get_multiple_table(oids => [{oid => $mapping->{dfType}->{oid}}, {oid => $mapping2->{dfFileSys}->{oid}}], return_type => 1, nothing_quit => 1);
+        $results = $options{snmp}->get_multiple_table(
+            oids => [
+                { oid => $mapping->{dfType}->{oid} }, 
+                { oid => $mapping2->{dfFileSys}->{oid} }
+            ],
+            return_type => 1,
+            nothing_quit => 1
+        );
     } else {
         $results = $options{snmp}->get_table(oid => $mapping2->{dfFileSys}->{oid}, nothing_quit => 1);
     }
@@ -244,19 +253,25 @@ sub manage_selection {
 
     $self->{fs} = {};
     $options{snmp}->load(oids => \@oids, instances => \@fs_selected);
-    my $result2 = $options{snmp}->get_leef(nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     foreach my $instance (sort @fs_selected) {
-        $self->{fs}->{$instance} = { display => $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance}};
-        $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{dfKBytesTotal}->{oid} . '.' . $instance} * 1024;
-        $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{dfKBytesUsed}->{oid} . '.' . $instance} * 1024;
-        if (defined($result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance}) && $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} > 0) {
-            $self->{fs}->{$instance}->{total} = $result2->{$mapping2->{df64TotalKBytes}->{oid} . '.' . $instance} * 1024;
-            $self->{fs}->{$instance}->{used} = $result2->{$mapping2->{df64UsedKBytes}->{oid} . '.' . $instance} * 1024;
+        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $instance);
+        
+        $self->{fs}->{$instance} = {
+            display => defined($result2->{dfVserver}) && $result2->{dfVserver} ne '' ? 
+                $result2->{dfVserver} . ':' . $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance} : 
+                $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance}
+        };
+        $self->{fs}->{$instance}->{total} = $result2->{dfKBytesTotal} * 1024;
+        $self->{fs}->{$instance}->{used} = $result2->{dfKBytesUsed} * 1024;
+        if (defined($result2->{df64TotalKBytes}) && $result2->{df64TotalKBytes} > 0) {
+            $self->{fs}->{$instance}->{total} = $result2->{df64TotalKBytes} * 1024;
+            $self->{fs}->{$instance}->{used} = $result2->{df64UsedKBytes} * 1024;
         }
-        $self->{fs}->{$instance}->{dfCompressSavedPercent} = $result2->{$mapping2->{dfCompressSavedPercent}->{oid} . '.' . $instance};
-        $self->{fs}->{$instance}->{dfDedupeSavedPercent} = $result2->{$mapping2->{dfDedupeSavedPercent}->{oid} . '.' . $instance};
+        $self->{fs}->{$instance}->{dfCompressSavedPercent} = $result2->{dfCompressSavedPercent};
+        $self->{fs}->{$instance}->{dfDedupeSavedPercent} = $result2->{dfDedupeSavedPercent};
         if ($self->{fs}->{$instance}->{total} > 0) {
-            $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{$mapping2->{dfPerCentInodeCapacity}->{oid} . '.' . $instance};
+            $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{dfPerCentInodeCapacity};
         }
     }
 }
@@ -292,6 +307,10 @@ Thresholds are on free space left.
 =item B<--filter-name>
 
 Filter by filesystem name (can be a regexp).
+
+=item B<--filter-vserver>
+
+Filter by vserver name (can be a regexp).
 
 =item B<--filter-type>
 

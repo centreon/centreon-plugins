@@ -220,7 +220,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "filter-mailbox:s"      => { name => 'filter_mailbox' },
         "warning-status:s"      => { name => 'warning_status', default => '%{used} > %{issue_warning_quota}' },
