@@ -39,6 +39,7 @@ sub new {
                                   "memcached:s"           => { name => 'memcached' },
                                   "redis-server:s"        => { name => 'redis_server' },
                                   'redis-attribute:s%'    => { name => 'redis_attribute' },
+                                  "redis-db:s"            => { name => 'redis_db', default => 0 },
                                   "memexpiration:s"       => { name => 'memexpiration', default => 86400 },
                                   "statefile-dir:s"       => { name => 'statefile_dir', default => $default_dir },
                                   "statefile-suffix:s"    => { name => 'statefile_suffix', default => '' },
@@ -86,6 +87,9 @@ sub check_options {
             $self->{redis_cnx} = Redis->new(server => $options{option_results}->{redis_server}, 
                                             eval $self->{redis_attributes});
         };
+        if (defined($self->{redis_cnx}) && $options{option_results}->{redis_db} > 0) {
+            $self->{redis_cnx}->select($options{option_results}->{redis_db});
+        }
     }
     
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
@@ -267,6 +271,10 @@ Redis server to use (only one server).
 =item B<--redis-attribute>
 
 Set Redis Options (--redis-attribute="cnx_timeout=5").
+
+=item B<--redis-db>
+
+Set Redis Database Index (Default: 0).
 
 =item B<--memexpiration>
 
