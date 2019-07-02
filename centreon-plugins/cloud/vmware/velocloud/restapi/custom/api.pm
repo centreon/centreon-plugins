@@ -167,7 +167,7 @@ sub get_session_cookie {
         $session = $1 if ($cookie =~ /^velocloud\.session=(.+?);/);
     }
 
-    if (!defined($session)) {
+    if (!defined($session) || $session eq '') {
         $self->{output}->add_option_msg(short_msg => "Cannot get session cookie: " . $message);
         $self->{output}->option_exit();
     }
@@ -177,6 +177,12 @@ sub get_session_cookie {
 
 sub get_entreprise_id {
     my ($self, %options) = @_;
+
+    if (!defined($self->{session_cookie})) {
+        $self->get_session_cookie();
+    }
+
+    $self->settings();
     
     my $content = $self->{http}->request(
         method => 'POST',
@@ -197,6 +203,12 @@ sub get_entreprise_id {
 
 sub request_api {
     my ($self, %options) = @_;
+
+    if (!defined($self->{session_cookie})) {
+        $self->get_session_cookie();
+    }
+
+    $self->settings();
     
     my $encoded_form_post;
     eval {
@@ -225,18 +237,17 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
+    if (ref($decoded) ne 'ARRAY' && defined($decoded->{error})) {
+        $self->{output}->add_option_msg(short_msg => "API returned error code '" . $decoded->{error}->{code} .
+            "', message '" . $decoded->{error}->{message} . "'");
+        $self->{output}->option_exit();
+    }
 
     return $decoded;
 }
 
 sub list_edges {
     my ($self, %options) = @_;
-
-    if (!defined($self->{session_cookie})) {
-        $self->get_session_cookie();
-    }
-
-    $self->settings();
 
     if (!defined($self->{entreprise_id})) {
         $self->get_entreprise_id();
@@ -246,6 +257,18 @@ sub list_edges {
         method => 'POST',
         url_path => $self->{api_path} . '/enterprise/getEnterpriseEdges',
         query_form_post => { enterpriseId => $self->{entreprise_id} }
+    );
+    
+    return $response;
+}
+
+sub list_links {
+    my ($self, %options) = @_;
+    
+    my $response = $self->request_api(
+        method => 'POST',
+        url_path => $self->{api_path} . '/metrics/getEdgeLinkMetrics',
+        query_form_post => { id => $options{edge_id} }
     );
     
     return $response;
