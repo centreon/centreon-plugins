@@ -142,7 +142,7 @@ sub manage_selection {
     $self->{swap} = {
         prct_used => ($results->{$oid_memActiveVirtual64} - $results->{$oid_memActiveReal64}) * 100 / ($results->{$oid_memTotalVirtual64} - $results->{$oid_memTotalReal64}),
         used => $results->{$oid_memActiveVirtual64} - $results->{$oid_memActiveReal64},
-        free => $results->{$oid_memTotalVirtual64} - $results->{$oid_memTotalReal64} - ($results->{$oid_memActiveVirtual64} - $results->{$oid_memActiveReal64})
+        free => $results->{$oid_memTotalVirtual64} - $results->{$oid_memTotalReal64} - ($results->{$oid_memActiveVirtual64} - $results->{$oid_memActiveReal64}),
         total => $results->{$oid_memTotalVirtual64} - $results->{$oid_memTotalReal64}
     };
 
