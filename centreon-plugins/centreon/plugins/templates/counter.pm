@@ -475,9 +475,7 @@ sub run_multiple_instances {
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
             my $instance = $id;
-            if ($use_new_perfdata) {
-                $instance = $options{instance_parent} . ($self->{output}->get_instance_perfdata_separator()) . $id;
-            if ($multiple_parent == 1 && $multiple == 1) {
+            if ($use_new_perfdata || ($multiple_parent == 1 && $multiple == 1)) {
                 $instance = $options{instance_parent} . ($self->{output}->get_instance_perfdata_separator()) . $id;
             } elsif ($multiple_parent == 1 && $multiple == 0) {
                 $instance = $options{instance_parent};
