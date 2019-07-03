@@ -63,9 +63,9 @@ my $mapping3 = {
 my $oid_channelEntry = '.1.3.6.1.4.1.674.10893.1.20.130.2.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_channelEntry, start => $mapping->{channelName}->{oid}, end => $mapping->{channelState}->{oid} }, 
+    push @{$self->{request}}, { oid => $oid_channelEntry, start => $mapping->{channelName}->{oid}, end => $mapping->{channelState}->{oid} }, 
         { oid => $mapping2->{channelComponentStatus}->{oid} },
         { oid => $mapping3->{channelBusType}->{oid} } ;
 }
@@ -75,7 +75,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking connectors (channels)");
     $self->{components}->{connector} = {name => 'connectors', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'connector'));
+    return if ($self->check_filter(section => 'connector'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping2->{channelComponentStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping2->{channelComponentStatus}->{oid}\.(.*)$/);
@@ -85,7 +85,7 @@ sub check {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{channelBusType}->{oid}}, instance => $instance);
         $result3->{channelBusType} = defined($result3->{channelBusType}) ? $result3->{channelBusType} : '-';
         
-        next if ($self->check_exclude(section => 'connector', instance => $instance));
+        next if ($self->check_filter(section => 'connector', instance => $instance));
         
         $self->{components}->{connector}->{total}++;
 
@@ -93,7 +93,7 @@ sub check {
                                     $result->{channelName}, $result2->{channelComponentStatus}, $instance, 
                                     $result->{channelState}, $result3->{channelBusType} 
                                     ));
-        my $exit = $self->get_severity(section => 'connector', value => $result2->{channelComponentStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'connector', value => $result2->{channelComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Connector '%s' status is '%s'",

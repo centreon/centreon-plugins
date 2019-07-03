@@ -57,9 +57,9 @@ my $mapping4 = {
 my $oid_processorDeviceTableEntry = '.1.3.6.1.4.1.674.10892.1.1100.30.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{processorDeviceStatus}->{oid} }, 
+    push @{$self->{request}}, { oid => $mapping->{processorDeviceStatus}->{oid} }, 
         { oid => $oid_processorDeviceTableEntry, start => $mapping2->{processorDeviceManufacturerName}->{oid}, end => $mapping2->{processorDeviceStatusState}->{oid} }, 
         { oid => $mapping3->{processorDeviceCurrentSpeed}->{oid} }, { oid => $mapping4->{processorDeviceBrandName}->{oid} };
 }
@@ -69,7 +69,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking processor units");
     $self->{components}->{cpu} = {name => 'CPUs', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cpu'));
+    return if ($self->check_filter(section => 'cpu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{processorDeviceStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping->{processorDeviceStatus}->{oid}\.(.*)$/);
@@ -79,7 +79,7 @@ sub check {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{processorDeviceCurrentSpeed}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{processorDeviceBrandName}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'cpu', instance => $instance));
+        next if ($self->check_filter(section => 'cpu', instance => $instance));
         
         $self->{components}->{cpu}->{total}++;
 
@@ -89,7 +89,7 @@ sub check {
                                     defined($result4->{processorDeviceBrandName}) ? $result4->{processorDeviceBrandName} : '-',
                                     $result2->{processorDeviceStatusState}, $result3->{processorDeviceCurrentSpeed}
                                     ));
-        my $exit = $self->get_severity(section => 'cpu', value => $result->{processorDeviceStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'cpu', value => $result->{processorDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Cpu '%s' status is '%s'",

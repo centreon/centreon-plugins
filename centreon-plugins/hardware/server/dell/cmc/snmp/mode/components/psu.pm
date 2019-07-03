@@ -40,9 +40,9 @@ my $mapping = {
 my $oid_drsCMCPSUTableEntry = '.1.3.6.1.4.1.674.10892.2.4.2.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_drsCMCPSUTableEntry };
+    push @{$self->{request}}, { oid => $oid_drsCMCPSUTableEntry };
 }
 
 sub check {
@@ -50,14 +50,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_drsCMCPSUTableEntry}})) {
         next if ($oid !~ /^$mapping->{drsPSUMonitoringCapable}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_drsCMCPSUTableEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         next if ($result->{drsPSUMonitoringCapable} !~ /basic/i);
         $self->{components}->{psu}->{total}++;
 
