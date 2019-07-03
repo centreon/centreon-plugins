@@ -39,6 +39,7 @@ sub new {
         'link-status'       => 'cloud::vmware::velocloud::restapi::mode::linkstatus',
         'link-usage'        => 'cloud::vmware::velocloud::restapi::mode::linkusage',
         'list-edges'        => 'cloud::vmware::velocloud::restapi::mode::listedges',
+        'list-links'        => 'cloud::vmware::velocloud::restapi::mode::listlinks',
     );
 
     $self->{custom_modes}{api} = 'cloud::vmware::velocloud::restapi::custom::api';
