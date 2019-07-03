@@ -24,6 +24,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
+use DateTime;
 
 sub new {
     my ($class, %options) = @_;
@@ -48,6 +49,7 @@ sub new {
             "password:s"    => { name => 'password' },
             "operator-user" => { name => 'operator_user' },
             "api-path:s"    => { name => 'api_path' },
+            "timeframe:s"   => { name => 'timeframe' },
             "timeout:s"     => { name => 'timeout' },
         });
     }
@@ -220,11 +222,11 @@ sub request_api {
     }
 
     $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' .
-        $self->{port} . $options{url_path} . "'", debug => 1);
+        $self->{port} . $self->{api_path} . $options{path} . "'", debug => 1);
 
     my $content = $self->{http}->request(
         method => $options{method},
-        url_path => $options{url_path},
+        url_path => $self->{api_path} . $options{path},
         query_form_post => $encoded_form_post,
         critical_status => '', warning_status => '', unknown_status => ''
     );
@@ -255,7 +257,7 @@ sub list_edges {
     
     my $response = $self->request_api(
         method => 'POST',
-        url_path => $self->{api_path} . '/enterprise/getEnterpriseEdges',
+        path => '/enterprise/getEnterpriseEdges',
         query_form_post => { enterpriseId => $self->{entreprise_id} }
     );
     
@@ -264,14 +266,112 @@ sub list_edges {
 
 sub list_links {
     my ($self, %options) = @_;
-    
-    my $response = $self->request_api(
+
+    if (!defined($self->{entreprise_id})) {
+        $self->get_entreprise_id();
+    }
+
+    my $results = $self->request_api(
         method => 'POST',
-        url_path => $self->{api_path} . '/metrics/getEdgeLinkMetrics',
-        query_form_post => { id => $options{edge_id} }
+        path => '/metrics/getEdgeLinkMetrics',
+        query_form_post => {
+            enterpriseId => $self->{entreprise_id},
+            edgeId => $options{edge_id},
+            metrics => [ 'bytesRx' ],
+        }
     );
-    
-    return $response;
+
+    return $results;
+}
+
+sub get_links_metrics {
+    my ($self, %options) = @_;
+
+    if (!defined($self->{entreprise_id})) {
+        $self->get_entreprise_id();
+    }
+
+    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
+
+    my $results = $self->request_api(
+        method => 'POST',
+        path => '/metrics/getEdgeLinkMetrics',
+        query_form_post => {
+            enterpriseId => $self->{entreprise_id},
+            edgeId => $options{edge_id},
+            metrics => [ 'bytesRx', 'bytesTx', 'bestJitterMsRx', 'bestJitterMsTx',
+                'bestLatencyMsRx', 'bestLatencyMsTx', 'bestLossPctRx', 'bestLossPctTx' ],
+            interval => {
+                start => $start_time
+            },
+        }
+    );
+
+    return $results;
+}
+
+sub get_apps_metrics {
+    my ($self, %options) = @_;
+
+    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
+
+    my $results = $self->request_api(
+        method => 'POST',
+        path => '/metrics/getEdgeAppMetrics',
+        query_form_post => {
+            enterpriseId => $self->{entreprise_id},
+            edgeId => $options{edge_id},
+            metrics => [ 'bytesRx', 'bytesTx', 'packetsRx', 'packetsTx' ],
+            interval => {
+                start => $start_time
+            },
+        }
+    );
+
+    return $results;
+}
+
+sub get_links_qoe {
+    my ($self, %options) = @_;
+
+    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
+
+    my $results = $self->request_api(
+        method => 'POST',
+        path => '/linkQualityEvent/getLinkQualityEvents',
+        query_form_post => {
+            enterpriseId => $self->{entreprise_id},
+            edgeId => $options{edge_id},
+            debug => 'false',
+            individualScores => 'false',
+            maxSamples => '15',
+            interval => {
+                start => $start_time
+            },
+        }
+    );
+
+    return $results;
+}
+
+sub get_categories_metrics {
+    my ($self, %options) = @_;
+
+    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
+
+    my $results = $self->request_api(
+        method => 'POST',
+        path => '/metrics/getEdgeCategoryMetrics',
+        query_form_post => { 
+            id => $options{edge_id},
+            metrics => [ 'bytesRx', 'bytesTx', 'packetsRx', 'packetsTx' ],
+            interval => {
+                start => $start_time
+            },
+        }
+    );
+
+    return $results;
 }
 
 sub DESTROY {
@@ -325,6 +425,10 @@ Set if the user is an operator.
 =item B<--api-path>
 
 API base url path (Default: '/portal/rest').
+
+=item B<--timeframe>
+
+Set timeframe in seconds (Default: 900).
 
 =item B<--timeout>
 

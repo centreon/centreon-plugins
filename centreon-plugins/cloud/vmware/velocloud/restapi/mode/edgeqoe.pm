@@ -18,52 +18,82 @@
 # limitations under the License.
 #
 
-package cloud::vmware::velocloud::restapi::mode::linkstatus;
+package cloud::vmware::velocloud::restapi::mode::edgeqoe;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    return sprintf("Status is '%s', VPN State is '%s'",
-        $self->{result_values}->{state}, $self->{result_values}->{vpn_state});
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{vpn_state} = $options{new_datas}->{$self->{instance} . '_vpn_state'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    
-    return 0;
-}
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
-          message_multiple => 'All edges links status are ok', indent_long_output => '    ',
+          message_multiple => 'All edges links QOE are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'links', display_long => 1, cb_prefix_output => 'prefix_link_output',
-                  message_multiple => 'All links status are ok', type => 1 },
+                  message_multiple => 'All links QOE are ok', type => 1 },
             ]
         }
     ];
 
+    $self->{maps_counters}->{global} = [
+        { label => 'qoe-voice', nlabel => 'qoe.voice.count', set => {
+                key_values => [ { name => 'voice' } ],
+                output_template => 'Voice QOE: %s',
+                perfdatas => [
+                    { value => 'voice_absolute', template => '%s',
+                      min => 0, max => 10, label_extra_instance => 1  },
+                ],
+            }
+        },
+        { label => 'qoe-video', nlabel => 'qoe.video.count', set => {
+                key_values => [ { name => 'video' } ],
+                output_template => 'Video QOE: %s',
+                perfdatas => [
+                    { value => 'video_absolute', template => '%s',
+                      min => 0, max => 10, label_extra_instance => 1  },
+                ],
+            }
+        },
+        { label => 'qoe-transactional', nlabel => 'qoe.transactional.count', set => {
+                key_values => [ { name => 'transactional' } ],
+                output_template => 'Transactional QOE: %s',
+                perfdatas => [
+                    { value => 'transactional_absolute', template => '%s',
+                      min => 0, max => 10, label_extra_instance => 1  },
+                ],
+            }
+        },
+    ];
     $self->{maps_counters}->{links} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'state' }, { name => 'vpn_state' },
-                    { name => 'display' }, { name => 'id' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+        { label => 'qoe-voice', nlabel => 'link.qoe.voice.count', set => {
+                key_values => [ { name => 'voice' }, { name => 'display' }, { name => 'id' } ],
+                output_template => 'Voice QOE: %s',
+                perfdatas => [
+                    { value => 'voice_absolute', template => '%s',
+                      min => 0, max => 10, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'qoe-video', nlabel => 'link.qoe.video.count', set => {
+                key_values => [ { name => 'video' }, { name => 'display' }, { name => 'id' } ],
+                output_template => 'Video QOE: %s',
+                perfdatas => [
+                    { value => 'video_absolute', template => '%s',
+                      min => 0, max => 10, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'qoe-transactional', nlabel => 'link.qoe.transactional.count', set => {
+                key_values => [ { name => 'transactional' }, { name => 'display' }, { name => 'id' } ],
+                output_template => 'Transactional QOE: %s',
+                perfdatas => [
+                    { value => 'transactional_absolute', template => '%s',
+                      min => 0, max => 10, label_extra_instance => 1 },
+                ],
             }
         },
     ];
@@ -95,8 +125,6 @@ sub new {
     $options{options}->add_options(arguments => {
         "filter-edge-name:s"    => { name => 'filter_edge_name' },
         "filter-link-name:s"    => { name => 'filter_link_name' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
     });
    
     return $self;
@@ -128,12 +156,26 @@ sub manage_selection {
         $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
         $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
 
-        my $links = $options{custom}->get_links_metrics(
+        my $links = $options{custom}->list_links(
+            edge_id => $edge->{id}
+        );
+
+        my $qoes = $options{custom}->get_links_qoe(
             edge_id => $edge->{id},
             timeframe => $self->{timeframe}
         );
 
+        next if (ref($qoes) ne 'HASH');
+        
+        $self->{edges}->{$edge->{name}}->{global} = {
+            voice => $qoes->{overallLinkQuality}->{score}->{0},
+            video => $qoes->{overallLinkQuality}->{score}->{1},
+            transactional => $qoes->{overallLinkQuality}->{score}->{2},
+        };
+        
         foreach my $link (@{$links}) {
+            next if (!defined($qoes->{$link->{link}->{internalId}}));
+            
             if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
                 $link->{link}->{displayName} !~ /$self->{option_results}->{filter_link_name}/) {
                 $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
@@ -143,8 +185,9 @@ sub manage_selection {
             $self->{edges}->{$edge->{name}}->{links}->{$link->{link}->{displayName}} = {
                 id => $link->{linkId},
                 display => $link->{link}->{displayName},
-                state => $link->{link}->{state},
-                vpn_state => $link->{link}->{vpnState},
+                voice => $qoes->{$link->{link}->{internalId}}->{score}->{0},
+                video => $qoes->{$link->{link}->{internalId}}->{score}->{1},
+                transactional => $qoes->{$link->{link}->{internalId}}->{score}->{2},
             };
         }
     }
@@ -161,7 +204,7 @@ __END__
 
 =head1 MODE
 
-Check edge links status.
+Check links QOE before and global QOE after VeloCloud Enhancements.
 
 =over 8
 
@@ -173,15 +216,15 @@ Filter edge by name (Can be a regexp).
 
 Filter link by name (Can be a regexp).
 
-=item B<--warning-status>
+=item B<--warning-*>
 
-Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}.
+Threshold warning.
+Can be: 'qoe-voice', 'qoe-video', 'qoe-transactional'.
 
-=item B<--critical-status>
+=item B<--critical-*>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}.
+Threshold critical.
+Can be: 'qoe-voice', 'qoe-video', 'qoe-transactional'.
 
 =back
 
