@@ -118,7 +118,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "paging-state-buggy"      => { name => 'paging_state_buggy' },
+        'paging-state-buggy'    => { name => 'paging_state_buggy' },
     });
     
     return $self;
@@ -186,13 +186,16 @@ sub manage_selection {
             $self->{global}->{nactive}++;
             
             my $swap_name = $results->{$aix_swap_pool}->{$aix_swap_name . "." . $_};
+            my $used = ($results->{$aix_swap_pool}->{$aix_swap_usage . "." . $_} * $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} / 100) 
+                * 1024 * 1024;
+            my $total = $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} * 1024 * 1024;
             $self->{swap}->{$swap_name} = {
                 display => $swap_name,
-                used => $results->{$aix_swap_pool}->{$aix_swap_usage . "." . $_},
-                total => $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} * 1024 * 1024,
+                used => $used,
+                total => $total,
             };
-            $self->{global}->{used} += $self->{swap}->{$swap_name}->{used};
-            $self->{global}->{total} += $self->{swap}->{$swap_name}->{total};
+            $self->{global}->{used} += $used;
+            $self->{global}->{total} += $total;
         }
     }
 }
