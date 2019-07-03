@@ -40,6 +40,8 @@ sub new {
                         'list-storages'     => 'snmp_standard::mode::liststorages',
                         'memory'            => 'snmp_standard::mode::memory',
                         'storage'           => 'snmp_standard::mode::storage',
+                        'swap'              => 'snmp_standard::mode::swap',
+                        'time'              => 'snmp_standard::mode::ntp',
                         'uptime'            => 'snmp_standard::mode::uptime',
                         'vpn-status'        => 'network::checkpoint::snmp::mode::vpnstatus',
                         'vrrp-status'       => 'snmp_standard::mode::vrrp',
