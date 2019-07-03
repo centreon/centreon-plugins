@@ -81,7 +81,6 @@ sub new {
 
     $options{options}->add_options(arguments => {
         "filter-name:s"         => { name => 'filter_name' },
-        "filter-id:s"           => { name => 'filter_id' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },
     });
@@ -107,11 +106,6 @@ sub manage_selection {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $edge->{name} . "'.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-            $edge->{id} !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
             next;
         }
 
@@ -143,10 +137,6 @@ Check edge status.
 =item B<--filter-name>
 
 Filter edge by name (Can be a regexp).
-
-=item B<--filter-id>
-
-Filter edge by id (Can be a regexp).
 
 =item B<--warning-status>
 
