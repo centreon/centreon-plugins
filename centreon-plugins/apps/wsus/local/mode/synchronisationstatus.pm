@@ -347,15 +347,10 @@ Can used special variables like: %{status}.
 Set critical threshold for current synchronisation status (Default: '%{status} !~ /Succeeded/').
 Can used special variables like: %{status}.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning thresholds.
-Can be: 'progress' (%), 'duration' (s).
-
-=item B<--critical-*>
-
-Critical thresholds.
-Can be: 'progress' (%), 'duration' (s).
+Thresholds.
+Can be: 'last-synchronisation-duration' (s), 'synchronisation-progress' (%).
 
 =item B<--filter-counters>
 
