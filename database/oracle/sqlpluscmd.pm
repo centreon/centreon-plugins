@@ -157,9 +157,9 @@ sub check_options {
     if ($self->{local_connexion} == 0) {
         if (defined($self->{option_results}->{hostname})) {
             my $port = defined($self->{option_results}->{port}) ? $self->{option_results}->{port}[0] : 1521;
-            $connection_string .= "\@//" . $self->{option_results}->{hostname}[0] . ":" . $port . "/" . (defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
+            $connection_string .= "\@//" . $self->{option_results}->{hostname}[0] . ':' . $port . '/' . ((defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
         } else {
-            $connection_string .= "\@" . (defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
+            $connection_string .= "\@" . ((defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
         }
     } else {
         $self->{output}->output_add(long_msg => "*** LOCAL CONNEXION MODE****", debug => 1);
