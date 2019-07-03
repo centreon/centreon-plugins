@@ -26,7 +26,8 @@ use network::alcatel::omniswitch::snmp::mode::components::resources qw(%oids);
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(backplane|chassis|container|fan|module|other|port|psu|sensor|stack|unknown)$';
+    $self->{regexp_threshold_overload_check_section_option} = 
+        '^(?:backplane|chassis|container|fan|module|other|port|psu|sensor|stack|unknown)\.(?:oper|admin|status)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
