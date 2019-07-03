@@ -45,6 +45,10 @@ sub set_system {
             ['nonRecoverable', 'CRITICAL'], # nonRecoverableUpper # nonRecoverableLower
             ['failed', 'CRITICAL']
         ],
+        physicaldisk_smartalert => [
+            ['yes', 'WARNING'],
+            ['no', 'OK'],
+        ],
     };
     
     $self->{components_path} = 'hardware::server::dell::openmanage::snmp::mode::components';
