@@ -450,6 +450,7 @@ sub run_multiple_instances {
     my ($self, %options) = @_;
     
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
+    my $use_new_perfdata = $self->{output}->use_new_perfdata();
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
     my $indent_long_output = defined($options{indent_long_output}) ? $options{indent_long_output} : '';
     my $no_message_multiple = 1;
@@ -474,6 +475,8 @@ sub run_multiple_instances {
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
             my $instance = $id;
+            if ($use_new_perfdata) {
+                $instance = $options{instance_parent} . ($self->{output}->get_instance_perfdata_separator()) . $id;
             if ($multiple_parent == 1 && $multiple == 1) {
                 $instance = $options{instance_parent} . ($self->{output}->get_instance_perfdata_separator()) . $id;
             } elsif ($multiple_parent == 1 && $multiple == 0) {
