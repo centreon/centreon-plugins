@@ -31,10 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'discovery'     => 'cloud::vmware::velocloud::restapi::mode::discovery',
-        'edge-status'   => 'cloud::vmware::velocloud::restapi::mode::edgestatus',
-        'link-status'   => 'cloud::vmware::velocloud::restapi::mode::linkstatus',
-        'list-edges'    => 'cloud::vmware::velocloud::restapi::mode::listedges',
+        'application-usage' => 'cloud::vmware::velocloud::restapi::mode::applicationusage',
+        'category-usage'    => 'cloud::vmware::velocloud::restapi::mode::categoryusage',
+        'discovery'         => 'cloud::vmware::velocloud::restapi::mode::discovery',
+        'edge-qoe'          => 'cloud::vmware::velocloud::restapi::mode::edgeqoe',
+        'edge-status'       => 'cloud::vmware::velocloud::restapi::mode::edgestatus',
+        'link-status'       => 'cloud::vmware::velocloud::restapi::mode::linkstatus',
+        'link-usage'        => 'cloud::vmware::velocloud::restapi::mode::linkusage',
+        'list-edges'        => 'cloud::vmware::velocloud::restapi::mode::listedges',
     );
 
     $self->{custom_modes}{api} = 'cloud::vmware::velocloud::restapi::custom::api';
