@@ -46,9 +46,9 @@ my $mapping = {
 my $oid_drsStatusNowGroup = '.1.3.6.1.4.1.674.10892.2.3.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_drsStatusNowGroup, start => $mapping->{drsIOMCurrStatus}->{oid}, end => $mapping->{drsCMCCurrStatus}->{oid} };
+    push @{$self->{request}}, { oid => $oid_drsStatusNowGroup, start => $mapping->{drsIOMCurrStatus}->{oid}, end => $mapping->{drsCMCCurrStatus}->{oid} };
 }
 
 sub check {
@@ -56,7 +56,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking health");
     $self->{components}->{health} = {name => 'health', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'health'));
+    return if ($self->check_filter(section => 'health'));
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_drsStatusNowGroup}, instance => '0');
     foreach my $probe (keys %{$mapping}) {
@@ -64,7 +64,7 @@ sub check {
         $mapping->{$probe}->{oid} =~ /\.(\d+)$/;
         my $instance = $1;
 
-        next if ($self->check_exclude(section => 'health', instance => $instance));
+        next if ($self->check_filter(section => 'health', instance => $instance));
         $self->{components}->{health}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("%s is %s [instance: %s].",
