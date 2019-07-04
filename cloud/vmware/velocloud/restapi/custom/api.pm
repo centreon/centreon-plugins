@@ -124,6 +124,9 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
+    $self->{option_results}->{unknown_status} = '';
+    $self->{option_results}->{warning_status} = '';
+    $self->{option_results}->{critical_status} = '';
 }
 
 sub settings {

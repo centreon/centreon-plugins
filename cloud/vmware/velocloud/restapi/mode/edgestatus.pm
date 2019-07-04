@@ -43,7 +43,7 @@ sub custom_status_calc {
     $self->{result_values}->{service_state} = $options{new_datas}->{$self->{instance} . '_service_state'};
     $self->{result_values}->{ha_state} = $options{new_datas}->{$self->{instance} . '_ha_state'};
     $self->{result_values}->{activation_state} = $options{new_datas}->{$self->{instance} . '_activation_state'};
-
+    
     return 0;
 }
 
@@ -56,7 +56,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{edges} = [
-        { label => 'status', set => {
+        { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'edge_state' }, { name => 'service_state' }, { name => 'ha_state' },
                     { name => 'activation_state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
@@ -80,9 +80,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s"         => { name => 'filter_name' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'filter-name:s'         => { name => 'filter_name' },
+        'unknown-status:s'      => { name => 'unknown_status', default => '%{edge_state} =~ /NEVER_ACTIVATED/' },
+        'warning-status:s'      => { name => 'warning_status', default => '' },
+        'critical-status:s'     => { name => 'critical_status', default => '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/' },
     });
 
     return $self;
@@ -92,7 +93,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -138,6 +139,12 @@ Check edge status.
 
 Filter edge by name (Can be a regexp).
 
+=item B<--unknown-status>
+
+Set unknown threshold for status (Default: '%{edge_state} =~ /NEVER_ACTIVATED/').
+Can used special variables like: %{edge_state}, %{service_state},
+%{ha_state}, %{activation_state}.
+
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
@@ -146,7 +153,7 @@ Can used special variables like: %{edge_state}, %{service_state},
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
+Set critical threshold for status (Default: '%{edge_state} !~ /CONNECTED/ && %{edge_state} !~ /NEVER_ACTIVATED/').
 Can used special variables like: %{edge_state}, %{service_state},
 %{ha_state}, %{activation_state}.
 

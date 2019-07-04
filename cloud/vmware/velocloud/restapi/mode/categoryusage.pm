@@ -167,6 +167,11 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No edge found.");
         $self->{output}->option_exit();
     }
+    foreach (keys %{$self->{edges}}) {
+        last if (defined($self->{edges}->{$_}->{categories}));
+        $self->{output}->add_option_msg(short_msg => "No category found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
