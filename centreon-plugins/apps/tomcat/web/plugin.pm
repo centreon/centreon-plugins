@@ -31,14 +31,11 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-			'applications'          => 'apps::tomcat::web::mode::applications',
-			'list-application'	=> 'apps::tomcat::web::mode::listapplication',
-			'sessions'              => 'apps::tomcat::web::mode::sessions',
-			'threads'               => 'apps::tomcat::web::mode::threads',
-			'requestinfo'           => 'apps::tomcat::web::mode::requestinfo',
-			'memory'                => 'apps::tomcat::web::mode::memory',
-			'traffic'               => 'apps::tomcat::web::mode::traffic',
-			);
+        'applications'      => 'apps::tomcat::web::mode::applications',
+        'connectors'        => 'apps::tomcat::web::mode::connectors',
+        'list-application'  => 'apps::tomcat::web::mode::listapplication',
+        'memory'            => 'apps::tomcat::web::mode::memory',
+    );
 
 	return $self;
 }

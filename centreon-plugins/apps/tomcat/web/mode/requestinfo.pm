@@ -35,31 +35,18 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"                 => { name => 'hostname' },
-        "port:s"                     => { name => 'port', default => '8080' },
-        "proto:s"                    => { name => 'proto' },
-        "credentials"                => { name => 'credentials' },
-        "basic"                      => { name => 'basic' },
-        "username:s"                 => { name => 'username' },
-        "password:s"                 => { name => 'password' },
-        "timeout:s"                  => { name => 'timeout' },
-        "urlpath:s"                  => { name => 'url_path', default => '/manager/status?XML=true' },
-        "name:s"                     => { name => 'name' },
-        "regexp"                     => { name => 'use_regexp' },
-        "regexp-isensitive"          => { name => 'use_regexpi' },
-        "warning-maxtime:s"          => { name => 'warning_maxtime' },
-        "critical-maxtime:s"         => { name => 'critical_maxtime' },
-        "warning-processingtime:s"   => { name => 'warning_processingtime' },
-        "critical-processingtime:s"  => { name => 'critical_processingtime' },
-        "warning-requestcount:s"     => { name => 'warning_requestcount' },
-        "critical-requestcount:s"    => { name => 'critical_requestcount' },
-        "warning-errorcount:s"       => { name => 'warning_errorcount' },
-        "critical-errorcount:s"      => { name => 'critical_errorcount' },
+        'hostname:s'    => { name => 'hostname' },
+        'port:s'        => { name => 'port', default => '8080' },
+        'proto:s'       => { name => 'proto' },
+        'credentials'   => { name => 'credentials' },
+        'basic'         => { name => 'basic' },
+        'username:s'    => { name => 'username' },
+        'password:s'    => { name => 'password' },
+        'timeout:s'     => { name => 'timeout' },
+        'urlpath:s'     => { name => 'url_path', default => '/manager/status?XML=true' },
+        'filter-name:s' => { name => 'filter_name' },
     });
 
-    $self->{result} = {};
-    $self->{hostname} = undef;
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
@@ -114,12 +101,7 @@ sub check_options {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-my %xpath_to_check = (
-    requestInfo_maxTime         => '/status/connector/requestInfo/@maxTime',            #
-    requestInfo_processingTime  => '/status/connector/requestInfo/@processingTime',     #to last
-    requestInfo_requestCount    => '/status/connector/requestInfo/@requestCount',       #to last
-    requestInfo_errorCount      => '/status/connector/requestInfo/@errorCount',         #to last
-);
+
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -371,17 +353,9 @@ Threshold for HTTP timeout
 
 Path to the Tomcat Manager XML (Default: '/manager/status?XML=true')
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the filter name (empty means 'check all contexts')
-
-=item B<--regexp>
-
-Allows to use regexp to filter (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Filter the connector name (can be regexp)
 
 =item B<--warning-maxtime>
 

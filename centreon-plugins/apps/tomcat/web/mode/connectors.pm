@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::tomcat::web::mode::traffic;
+package apps::tomcat::web::mode::connectors;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,69 +28,6 @@ use centreon::plugins::http;
 use Digest::MD5 qw(md5_hex);
 use XML::XPath;
 use URI::Escape;
-
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'connector', type => 1, cb_prefix_output => 'prefix_connector_output', message_multiple => 'All connector traffics are ok' },
-    ];
-
-    $self->{maps_counters}->{connector} = [
-        { label => 'in', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-                closure_custom_output => $self->can('custom_traffic_output'),
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-            }
-        },
-        { label => 'out', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
-                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-                closure_custom_output => $self->can('custom_traffic_output'),
-                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-            }
-        },
-    ];
-}
-
-sub custom_traffic_perfdata {
-    my ($self, %options) = @_;
-
-    my ($warning, $critical);
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
-    }
-
-    $self->{output}->perfdata_add(
-        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-        value => sprintf("%.2f", $self->{result_values}->{traffic}),
-        warning => $warning,
-        critical => $critical,
-        min => 0, max => $self->{result_values}->{speed}
-    );
-}
-
-sub custom_traffic_threshold {
-    my ($self, %options) = @_;
-
-    my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    }
-    return $exit;
-}
 
 sub custom_traffic_output {
     my ($self, %options) = @_;
@@ -118,8 +55,114 @@ sub custom_traffic_calc {
     if (defined($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
         $self->{result_values}->{speed} = $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    } elsif (defined($options{extra_options}->{type}) && $options{extra_options}->{type} eq 'prct') {
+        return -10;
     }
     return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'connector', type => 1, cb_prefix_output => 'prefix_connector_output', message_multiple => 'All connectors are ok', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{connector} = [
+        { label => 'threads-current', nlabel => 'connector.threads.current.count', set => {
+                key_values => [ { name => 'currentThreadCount' }, { name => 'maxThreads' }, { name => 'display' } ],
+                output_template => 'Threads Current : %s',
+                perfdatas => [
+                    { label => 'threads_current', value => 'currentThreadCount_absolute', template => '%.2f', min => 0, max => 'maxThreads_absolute',
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'threads-busy', nlabel => 'connector.threads.busy.count', set => {
+                key_values => [ { name => 'currentThreadsBusy' }, { name => 'maxThreads' }, { name => 'display' } ],
+                output_template => 'Threads Busy : %s',
+                perfdatas => [
+                    { label => 'threads_busy', value => 'currentThreadsBusy_absolute', template => '%.2f', min => 0, max => 'maxThreads_absolute',
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'traffic-in', nlabel => 'connector.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                threshold_use => 'traffic',
+                perfdatas => [
+                    { label => 'traffic_in', value => 'traffic', template => '%.2f', min => 0, max => 'speed',
+                      unit => 'b/s', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'traffic-in-prct', display_ok => 0, nlabel => 'connector.traffic.in.percent', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in', type => 'prct' },
+                output_template => 'Traffic In Used : %.2f %%',
+                output_use => 'traffic_prct', threshold_use => 'traffic_prct',
+                perfdatas => [
+                    { label => 'traffic_in_prct', value => 'traffic_prct', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1 },
+                ],
+            }
+        },
+         { label => 'traffic-out', nlabel => 'connector.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                threshold_use => 'traffic',
+                perfdatas => [
+                    { label => 'traffic_out', value => 'traffic', template => '%.2f', min => 0, max => 'speed',
+                      unit => 'b/s', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'traffic-out-prct', display_ok => 0, nlabel => 'connector.traffic.out.percent', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out', type => 'prct' },
+                output_template => 'Traffic Out Used : %.2f %%',
+                output_use => 'traffic_prct', threshold_use => 'traffic_prct',
+                perfdatas => [
+                    { label => 'traffic_out_prct', value => 'traffic_prct', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'requests-processingtime-total', nlabel => 'connector.requests.processingtime.total.milliseconds', set => {
+                key_values => [ { name => 'requestInfo_processingTime', diff => 1 }, { name => 'display' } ],
+                output_template => 'Requests Total Processing Time : %s ms',
+                perfdatas => [
+                    { label => 'requests_processingtime_total', value => 'requestInfo_processingTime_absolute', template => '%s', min => 0,
+                      unit => 'ms', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'requests-errors', nlabel => 'connector.requests.errors.count', set => {
+                key_values => [ { name => 'requestInfo_errorCount', diff => 1 }, { name => 'display' } ],
+                output_template => 'Requests Errors : %s',
+                perfdatas => [
+                    { label => 'requests_errors', value => 'requestInfo_errorCount_absolute', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'requests-total', nlabel => 'connector.requests.total.count', set => {
+                key_values => [ { name => 'requestInfo_requestCount', diff => 1 }, { name => 'display' } ],
+                output_template => 'Requests Total : %s',
+                perfdatas => [
+                    { label => 'requests_total', value => 'requestInfo_requestCount_absolute', template => '%s', min => 0,
+                      label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
 }
 
 sub prefix_connector_output {
@@ -134,19 +177,18 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"            => { name => 'hostname' },
-        "port:s"                => { name => 'port', default => '8080' },
-        "proto:s"               => { name => 'proto' },
-        "credentials"           => { name => 'credentials' },
-        "basic"                 => { name => 'basic' },
-        "username:s"            => { name => 'username' },
-        "password:s"            => { name => 'password' },
-        "timeout:s"             => { name => 'timeout' },
-        "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
-        "filter-name:s"         => { name => 'filter_name' },
-        "speed-in:s"            => { name => 'speed_in' },
-        "speed-out:s"           => { name => 'speed_out' },
-        "units-traffic:s"       => { name => 'units_traffic', default => '%' },
+        'hostname:s'    => { name => 'hostname' },
+        'port:s'        => { name => 'port', default => '8080' },
+        'proto:s'       => { name => 'proto' },
+        'credentials'   => { name => 'credentials' },
+        'basic'         => { name => 'basic' },
+        'username:s'    => { name => 'username' },
+        'password:s'    => { name => 'password' },
+        'timeout:s'     => { name => 'timeout' },
+        'urlpath:s'     => { name => 'url_path', default => '/manager/status?XML=true' },
+        'filter-name:s' => { name => 'filter_name' },
+        'speed-in:s'    => { name => 'speed_in' },
+        'speed-out:s'   => { name => 'speed_out' },
     });
 
     $self->{http} = centreon::plugins::http->new(%options);
@@ -161,13 +203,20 @@ sub check_options {
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
     }
-    
+
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
 my %xpath_to_check = (
-    in  => '/status/connector/requestInfo/@bytesReceived',
-    out => '/status/connector/requestInfo/@bytesSent',
+    requestInfo_maxTime         => '/status/connector/requestInfo/@maxTime',
+    requestInfo_processingTime  => '/status/connector/requestInfo/@processingTime',
+    requestInfo_requestCount    => '/status/connector/requestInfo/@requestCount',
+    requestInfo_errorCount      => '/status/connector/requestInfo/@errorCount',
+    maxThreads                  => '/status/connector/threadInfo/@maxThreads',
+    currentThreadCount          => '/status/connector/threadInfo/@currentThreadCount',
+    currentThreadsBusy          => '/status/connector/threadInfo/@currentThreadsBusy',
+    in                          => '/status/connector/requestInfo/@bytesReceived',
+    out                         => '/status/connector/requestInfo/@bytesSent',
 );
 
 sub manage_selection {
@@ -233,21 +282,17 @@ sub manage_selection {
                 next;
             }
 
-            next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-                && $connector_name !~ /$self->{option_results}->{name}/i);
-            next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-                && $connector_name !~ /$self->{option_results}->{name}/);
-            next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-                && $connector_name ne $self->{option_results}->{name});
-
             $self->{connector}->{$connector_name} = { display => $connector_name } if (!defined($self->{connector}->{$connector_name}));
             my $value = $node->string_value();
             if ($value =~ /^"?([0-9.]+)"?$/) {
-                $self->{connector}->{$connector_name}->{$label} = $1 * 8;
+                $self->{connector}->{$connector_name}->{$label} = $1;
+                if ($label =~ /^in|out/) {
+                    $self->{connector}->{$connector_name}->{$label} *= 8;
+                }
             }
         }
     }
-    
+
     if (scalar(keys %{$self->{connector}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No information found.");
         $self->{output}->option_exit();
@@ -264,7 +309,7 @@ __END__
 
 =head1 MODE
 
-Check Tomcat Application Servers Traffic for each Connector
+Check Tomcat Application Servers Connectors
 
 =over 8
 
@@ -310,21 +355,15 @@ Path to the Tomcat Manager XML (Default: '/manager/status?XML=true')
 
 =item B<--filter-name>
 
-Filter by context name (can be a regexp).
+Filter by connector name (can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'in', 'out'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'in', 'out'.
-
-=item B<--units-traffic>
-
-Units of thresholds for the traffic (Default: '%') ('%', 'b/s').
+Thresholds.
+Can be: 'traffic-in' (b), 'traffic-in-prct' (%),
+'traffic-out' (b), 'traffic-out-prct' (%),
+'threads-current', 'threads-busy', 'requests-processingtime-total' (ms),
+'requests-errors', 'requests-total'.
 
 =item B<--speed-in>
 
