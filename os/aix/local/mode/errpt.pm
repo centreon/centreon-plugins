@@ -31,28 +31,27 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'errpt' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '' },
-                                  "error-type:s"      => { name => 'error_type' },
-                                  "error-class:s"     => { name => 'error_class' },
-                                  "error-id:s"        => { name => 'error_id' },
-                                  "retention:s"       => { name => 'retention' },
-                                  "timezone:s"        => { name => 'timezone' },
-                                  "description"       => { name => 'description' },
-                                  "filter-resource:s" => { name => 'filter_resource' },
-                                  "filter-id:s"	      => { name => 'filter_id' },
-                                  "exclude-id:s"      => { name => 'exclude_id' },	
-                                });
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'errpt' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '' },
+        'error-type:s'      => { name => 'error_type' },
+        'error-class:s'     => { name => 'error_class' },
+        'error-id:s'        => { name => 'error_id' },
+        'retention:s'       => { name => 'retention' },
+        'timezone:s'        => { name => 'timezone' },
+        'description'       => { name => 'description' },
+        'filter-resource:s' => { name => 'filter_resource' },
+        'filter-id:s'	    => { name => 'filter_id' },
+        'exclude-id:s'      => { name => 'exclude_id' },	
+    });
     $self->{result} = {};
     return $self;
 }
@@ -154,7 +153,7 @@ sub run {
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
                  $identifier !~ /$self->{option_results}->{filter_id}/);
         $total_error++;
-        if (defined($self->{option_results}->{description})) {
+        if (defined($description)) {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
                                                 $timestamp, $resource_name, $description));           
         } else {
