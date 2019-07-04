@@ -44,6 +44,7 @@ sub custom_memory_output {
         $self->{result_values}->{prct_free_absolute});
     return $msg;
 }
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -239,7 +240,7 @@ Can used special variables like: %{status}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'cpu', 'clients', 
 'mem-usage' (B), 'mem-usage-free' (B), 'mem-usage-prct' (%).
 
