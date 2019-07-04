@@ -76,7 +76,7 @@ sub check {
                 $result->{cpqRackCommonEnclosureFWRev}
             )
         );
-        my $exit = $self->get_severity(label => 'default', section => 'enclosure', value => $$result->{cpqRackCommonEnclosureCondition});
+        my $exit = $self->get_severity(label => 'default', section => 'enclosure', value => $result->{cpqRackCommonEnclosureCondition});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Enclosure '%s' overall health condition is %s", $instance, $result->{cpqRackCommonEnclosureCondition}));
