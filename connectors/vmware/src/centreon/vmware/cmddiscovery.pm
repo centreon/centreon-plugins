@@ -98,6 +98,7 @@ sub run {
         next if (!defined($childs));
 
         foreach my $child (@{$childs}) {
+            next if (!$child->childEntity);
             my %types = map { $_ => 1 } @{$child->childType};
             next if (!defined($types{ComputeResource}));
             my @properties = ('name', 'host');
@@ -106,6 +107,8 @@ sub run {
             next if (!defined($clusters));
 
             foreach my $cluster (@{$clusters}) {
+                next if (!$cluster->host);
+
                 my @properties = ('name', 'vm', 'config.virtualNicManagerInfo.netConfig', 'config.product.version',
                     'config.product.productLineId', 'hardware.systemInfo.vendor', 'hardware.systemInfo.model',
                     'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState');
