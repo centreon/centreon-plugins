@@ -1,3 +1,7 @@
+2019-07-04 Colin Gagnaire <cgagnaire@centreon.com> - 3.0.3
+ * Fix: Datacenter with no cluster causes discovery to crash
+ * Fix: Cluster with no ESX causes discovery to crash
+
 2019-06-06 Colin Gagnaire <cgagnaire@centreon.com> - 3.0.2
  * Fix: ESX with no VMs causes VM discovery to crash
  * Fix: VM with no folder causes VM discovery to crash
