@@ -28,7 +28,7 @@ sub load {
 
     #-Service- -State- -HTTP_State- HTTP_Port -HTTPS_State- HTTPS_Port -Version- -----------------API_URL------------------
     #Enabled   Active  Disabled          8008 Enabled             8080 1.5.3     https://xxxx:8080/api/v1
-    push @{$self->{commands}}, 'echo "===showwsapi===', 'showwsapi';
+    push @{$self->{commands}}, 'echo "===showwsapi==="', 'showwsapi';
 }
 
 sub check {

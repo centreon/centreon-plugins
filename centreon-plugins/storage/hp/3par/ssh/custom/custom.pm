@@ -108,9 +108,10 @@ sub execute_command {
     }
 
     return centreon::plugins::misc::execute(
+        ssh_pipe => 1,
         output => $self->{output},
         options => $self->{option_results},
-        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands} . "; exit\n",
+        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands},
         command_path => $self->{option_results}->{command_path},
         command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
     );

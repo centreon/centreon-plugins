@@ -33,7 +33,7 @@ sub load {
     #...
     # 10 normal
     # 11 normal 
-    push @{$self->{commands}}, 'echo "===showdisk===', 'showpd -showcols Id,State';
+    push @{$self->{commands}}, 'echo "===showdisk==="', 'showpd -showcols Id,State';
 }
 
 sub check {

@@ -38,7 +38,7 @@ sub load {
     #0:3:1      peer offline                -       B4B52FA71D43 free       IP   IP0       -             -
     #1:0:1 initiator   ready 50002ACFF70047C0   50002AC1010047C0 disk      SAS  DP-1       -             -
     #1:0:2 initiator   ready 50002ACFF70047C0   50002AC1020047C0 disk      SAS  DP-2       -             -
-    push @{$self->{commands}}, 'echo "===showport===', 'showport';
+    push @{$self->{commands}}, 'echo "===showport==="', 'showport';
 }
 
 sub check {
