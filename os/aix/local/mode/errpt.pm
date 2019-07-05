@@ -157,7 +157,7 @@ sub run {
                  $identifier !~ /$self->{option_results}->{filter_id}/);
         $total_error++;
         
-        if (defined($self->{options}->{format_date}) && $options{options}->{format_date} eq '') {
+        if (defined($self->{options}->{format_date})) {
             my @temp_date = unpack("(A2)*", $timestamp);
             my $month = $temp_date[0];
             my $day = $temp_date[1];
@@ -267,6 +267,11 @@ Filter error code (can use a regexp).
 
 Filter on specific error code (can be a comma separated list).
 
+=item B<--format-date>
+
+Print the date to format 20YY/mm/dd HH:MM instead of mmddHHMMYY.
+
 =back
 
 =cut
+
