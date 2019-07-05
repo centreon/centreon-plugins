@@ -59,7 +59,7 @@ Pour utiliser la fonctionnalité 'memcached', vous devez installer le module CPA
 Utilisation basique
 *******************
 
-Nous allons utiliser un exemple basique pour montrer comment superviser un système. J'ai terminé partie installation et je veux superviser un système Linux par SNMP.
+Nous allons utiliser un exemple basique pour montrer comment superviser un système. J'ai terminé la partie installation et je veux superviser un système Linux par SNMP.
 Tout d'abord, j'ai besoin de trouver le plugin à utiliser dans la liste :
 ::
 
@@ -485,7 +485,7 @@ Vous pouvez renseigner le serveur memcached avec l'option ``--memcached``:
   Un fichier local est utilisé si le serveur memcached ne répond pas.
 
 --------------------------------------------
-Qu'est-ce que l'option ``--dyn-mode`` fait ?
+Quel est l'usage de l'option ``--dyn-mode`` ?
 --------------------------------------------
 
 Avec cette option, vous pouvez utiliser un mode avec un plugin. Cela est couramment utilisé pour les bases de données.
@@ -849,7 +849,7 @@ Pour résoudre le problème, vous devez privilégier le contrôle via NRPE.
 Pas d'accès en SNMP v3
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Tout d'abord, vous devez valider la connexion SNMP v3 avec snmpwalk. Lorsque cela fonctionne, vous renseignez les options SNMP v3 en ligne de commande.
+Tout d'abord, vous devez valider la connexion SNMP v3 avec snmpwalk. Lorsque cela fonctionne, renseignez alors les options SNMP v3 en ligne de commande.
 L'association entre les options 'snmpwalk' et les options "centreon-plugins" :
 
 * -a => ``--authprotocol``
@@ -892,7 +892,7 @@ Le problème peut être:
 * Un module CPAN prérequis est manquant. Vous devez l'installer.
 * Le module CPAN ne peut pas être chargé en raison de son chemin d'accès. Les modules Perl doivent être installés dans des chemins spécifiques.
 
-Je ne peux pas vois les messages d'aide
+Je ne peux pas voir les messages d'aide
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Les fichiers "centreon-plugins" doivent être sous format Unix (pas de retour à la ligne Windows). Vous pouvez les modifier avec la commande suivante :
@@ -1010,7 +1010,7 @@ Le résultat de la commande :
 Comment modifier la sortie ?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Il existe une section pour modifier la sortie globallement. Il est aussi possible de surcharger une métrique spécifiquement :
+Il existe une section pour modifier la sortie de manière globale. Il est aussi possible de surcharger une métrique spécifiquement :
 ::
 
     {
@@ -1135,7 +1135,7 @@ Le résultat de la commande :
 Multi-service plugin
 --------------------
 
-Ce mode permet de compiler/aggréger le résultat de plusieurs checks dans un seul. Il peut aussi être utilisé pour réaliser des aggregation dans des groupes logiques, il a été pensé pour récupérer au travers de réseaux bas débit des résultats de contrôle sur des Centreon distants, mais il peut aussi permettre d'éviter de checker deux fois les ressources dans deux Centreon différents.
+Ce mode permet de compiler/aggréger le résultat de plusieurs checks dans un seul. Il peut aussi être utilisé pour réaliser des aggregations dans des groupes logiques, il a été pensé pour récupérer au travers de réseaux bas débit des résultats de contrôle sur des Centreon distants, mais il peut aussi permettre d'éviter de vérifier deux fois les ressources dans deux Centreon différents.
 
 Format du fichier de configuration
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1166,7 +1166,7 @@ Format du fichier de configuration
     }
 
 * mode (obligatoire) : valeurs possibles: 'sqlmatching' or 'exactmatch'. Liés au format du bloc "selection" ;
-* selection (obligatoire) : Lorsque le mode 'sqlmatching' est choisis, on va alors définir les filtres comme ci-dessus (host/service_name_filter). Au contraire, si l'on utilise le mode "exactmatch", alors on passe des clés valeurs correspondant à la correspondant host/service. (Exemple avec deux aggregation logqies "groups" esx-status/load ci-dessous) 
+* selection (obligatoire) : Lorsque le mode 'sqlmatching' est choisi, on va alors définir les filtres comme ci-dessus (host/service_name_filter). Au contraire, si l'on utilise le mode "exactmatch", alors on passe des clés valeurs correspondant à host/service. (Exemple avec deux aggregations logiques "groups" esx-status/load ci-dessous) 
 
 ::
 
@@ -1187,7 +1187,7 @@ Format du fichier de configuration
     },
 
 * counters (optionnel) : Contiens trois booléens, à configurer en 'true' ou 'false' selon les compteurs que l'on veut utiliser et considérer (totalservices, totalhosts, groups).
-* formatting (optionnel) : Contiens trois clés/valeurs, 'groups_global_msg' pour définir un statut global lorsque tout va bien, 'host_service_separator' pour choisir le séparateur entre le nom de l'hôte et celui du service dans les éléments de l'output, 'display_details' afin de définir si le plugin doit détailler les hôtes et/ou services en erreur dans l'output étendu (mode verbose)
+* formatting (optionnel) : Contient trois clés/valeurs, 'groups_global_msg' pour définir un statut global lorsque tout va bien, 'host_service_separator' pour choisir le séparateur entre le nom de l'hôte et celui du service dans les éléments de l'output, 'display_details' afin de définir si le plugin doit détailler les hôtes et/ou services en erreur dans l'output étendu (mode verbose)
 
 Ligne de commande, output, seuils
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
