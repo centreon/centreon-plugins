@@ -28,7 +28,7 @@ sub load {
 
     #-Service- -State- --SLP-- SLPPort -HTTP-- HTTPPort -HTTPS- HTTPSPort PGVer CIMVer
     #Enabled   Active  Enabled     427 Enabled     5988 Enabled      5989 2.9.1 3.2.2 
-    push @{$self->{commands}}, 'echo "===showcim===', 'showcim';
+    push @{$self->{commands}}, 'echo "===showcim==="', 'showcim';
 }
 
 sub check {
