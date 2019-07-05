@@ -35,7 +35,8 @@ sub new {
                          'list-storages'    => 'os::aix::local::mode::liststorages',
                          'storage'          => 'os::aix::local::mode::storage',
                          'inodes'           => 'os::aix::local::mode::inodes',
-                         'lvsync'         => 'os::aix::local::mode::lvsync',
+                         'lvsync'           => 'os::aix::local::mode::lvsync',
+                         'process'          => 'os::aix::local::mode::process',
                          );
 
     return $self;
