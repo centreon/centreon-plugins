@@ -101,7 +101,7 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsTotalMajorRFactorExceeded', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Rfactor Exceeded : %s',
                 perfdatas => [
-                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceededabsolute', template => '%s',
+                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceeded_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
