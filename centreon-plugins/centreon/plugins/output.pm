@@ -188,7 +188,7 @@ sub output_add {
 sub perfdata_add {
     my ($self, %options) = @_;
     my $perfdata = {
-        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => ''
+        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => '', mode => $self->{mode},
     };
     foreach (keys %options) {
         next if (!defined($options{$_}));
@@ -397,7 +397,7 @@ sub output_openmetrics {
         if ($label =~ /^(.*?)#(.*)$/) {
             ($perf->{instance}, $label) = ($1, $2);
         }
-        my ($bucket, $append) = ('{plugin="' . $self->{plugin} . '",mode="' . $self->{mode} . '"', '');
+        my ($bucket, $append) = ('{plugin="' . $self->{plugin} . '",mode="' . $perf->{mode} . '"', '');
         foreach ('unit', 'warning', 'critical', 'min', 'max', 'instance') {
             if (defined($perf->{$_}) && $perf->{$_} ne '') {
                 $bucket .= ',' . $_ . '="' . $perf->{$_} . '"';
@@ -495,6 +495,7 @@ sub display {
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     $force_long_output = 1 if (defined($self->{option_results}->{debug}));
 
+    return if ($self->{nodisplay} == 1);
     if (defined($self->{option_results}->{output_file})) {
         if (!open (STDOUT, '>', $self->{option_results}->{output_file})) {
             $self->output_add(severity => 'UNKNOWN',
