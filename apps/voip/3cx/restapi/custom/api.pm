@@ -256,7 +256,7 @@ sub internal_update_checker {
     if(ref($status) eq 'HASH') {
         $status = $status->{tcxUpdate};
         if(ref($status) ne 'ARRAY') {
-            # See above not about strange content
+            # See above note about strange content
             $status = JSON::XS->new->utf8->decode($status);
         }
     }
