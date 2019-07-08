@@ -141,7 +141,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-inventory"  => { name => 'filter_inventory' },
+        'filter-inventory:s' => { name => 'filter_inventory' },
     });
 
     return $self;
