@@ -29,7 +29,7 @@ use Digest::MD5 qw(md5_hex);
 
 my %errors_service = (0 => 'OK', 1 => 'WARNING', 2 => 'CRITICAL', 3 => 'UNKNOWN');
 my %errors_host = (0 => 'UP', 1 => 'DOWN');
-my %errors_hash = ('UP' => 'OK', 'DOWN' => 'WARNING');
+my %errors_hash = ('UP' => 'OK', 'DOWN' => 'CRITICAL');
 
 sub new {
     my ($class, %options) = @_;
