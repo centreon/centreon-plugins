@@ -253,9 +253,9 @@ sub internal_update_checker {
     my ($self, %options) = @_;
     
     my $status = $self->request_api(method => 'GET', url_path =>'/api/UpdateChecker/GetFromParams', eval_content => 1);
-    if(ref($status) eq 'HASH') {
+    if (ref($status) eq 'HASH') {
         $status = $status->{tcxUpdate};
-        if(ref($status) ne 'ARRAY') {
+        if (ref($status) ne 'ARRAY') {
             # See above note about strange content
             $status = JSON::XS->new->utf8->decode($status);
         }
