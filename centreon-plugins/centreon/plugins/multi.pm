@@ -110,6 +110,12 @@ Check multiple modes at once. You cannot set specific thresholds or filter optio
 Which modes to select (separated by coma).
 Example for linux: --modes-exec=cpu,memory,storage,interfaces
 
+=item B<--option-mode>
+
+Set options for a specifi mode (can be multiple).
+Example interfaces and storage snmp:
+--option-mode='interfaces,--statefile-dir=/tmp' --option-mode='interfaces,--add-traffic' --option-mode='storage,--statefile-dir=/tmp'
+
 =back
 
 =cut
