@@ -33,8 +33,8 @@ sub new {
     %{$self->{modes}} = ( 
         'scrape-metrics' => 'apps::monitoring::openmetrics::mode::scrapemetrics',
     );
-    $self->{custom_modes}{web} = 'apps::monitoring::openmetrics::custom::web';
-    $self->{custom_modes}{file} = 'apps::monitoring::openmetrics::custom::file';
+    $self->{custom_modes}{web} = 'centreon::common::monitoring::openmetrics::custom::web';
+    $self->{custom_modes}{file} = 'centreon::common::monitoring::openmetrics::custom::file';
     return $self;
 }
 

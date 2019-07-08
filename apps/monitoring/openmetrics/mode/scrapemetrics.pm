@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use centreon::common::monitoring::openmetrics::scrape;
 
 sub new {
     my ($class, %options) = @_;
@@ -62,32 +63,17 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->scrape;
-
-    my $nometrics = 1;
-    foreach my $line (split /\n/, $response) {
-        $self->{metrics}->{$1}->{type} = $2 if ($line =~ /^#\sTYPE\s(\w+)\s(.*)$/);
-        $self->{metrics}->{$1}->{help} = $2 if ($line =~ /^#\sHELP\s(\w+)\s(.*)$/);
-
-        next if ($line !~ /^[\d\/\s]*([\w.]+)(.*)?\s([\d.+-e]+)$/);
-        my ($metric, $dimensions, $value) = ($1, $2, $3);
-        next if (defined($self->{option_results}->{filter_metrics}) && $self->{option_results}->{filter_metrics} ne '' &&
-            $metric !~ /$self->{option_results}->{filter_metrics}/);
-
-        $dimensions =~ s/[{}]//g;
-        $dimensions =~ s/"/'/g;
-        my %dimensions = map { (split /=/) } split /,/, $dimensions;
-
-        push @{$self->{metrics}->{$metric}->{data}}, {
-            value => centreon::plugins::misc::expand_exponential(value => $value),
-            dimensions => \%dimensions,
-            dimensions_string => $dimensions };
-    }
+    $self->{metrics} = centreon::common::monitoring::openmetrics::scrape::parse(%options);
     
     my @exits;
     my $short_msg = 'All metrics are ok';
+    
+    my $nometrics = 1;
 
     foreach my $metric (keys %{$self->{metrics}}) {
+        next if (defined($self->{option_results}->{filter_metrics}) && $self->{option_results}->{filter_metrics} ne '' &&
+            $metric !~ /$self->{option_results}->{filter_metrics}/);
+        
         foreach my $data (@{$self->{metrics}->{$metric}->{data}}) {
             next if (defined($self->{option_results}->{instance}) &&
                 !defined($data->{dimensions}->{$self->{option_results}->{instance}}) ||
