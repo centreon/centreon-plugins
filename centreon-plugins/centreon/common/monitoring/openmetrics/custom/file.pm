@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::openmetrics::custom::file;
+package centreon::common::monitoring::openmetrics::custom::file;
 
 use strict;
 use warnings;
