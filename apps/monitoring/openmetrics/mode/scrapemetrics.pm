@@ -69,7 +69,7 @@ sub run {
         $self->{metrics}->{$1}->{type} = $2 if ($line =~ /^#\sTYPE\s(\w+)\s(.*)$/);
         $self->{metrics}->{$1}->{help} = $2 if ($line =~ /^#\sHELP\s(\w+)\s(.*)$/);
 
-        next if ($line !~ /^(\w+)(.*)?\s([\d.+-e]+)$/);
+        next if ($line !~ /^[\d\/\s]*([\w.]+)(.*)?\s([\d.+-e]+)$/);
         my ($metric, $dimensions, $value) = ($1, $2, $3);
         next if (defined($self->{option_results}->{filter_metrics}) && $self->{option_results}->{filter_metrics} ne '' &&
             $metric !~ /$self->{option_results}->{filter_metrics}/);
