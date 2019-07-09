@@ -204,6 +204,7 @@ sub disconnect {
     if (defined($self->{instance})) {
         $self->{statement_handle} = undef;
         $self->{instance}->disconnect();
+        $self->{instance} = undef;
     }
 }
     
@@ -211,6 +212,8 @@ sub connect {
     my ($self, %options) = @_;
     my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
 
+    return if (defined($self->{instance}));
+    
     # Set ENV
     if (defined($self->{env})) {
         foreach (keys %{$self->{env}}) {
