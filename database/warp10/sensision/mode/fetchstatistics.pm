@@ -95,6 +95,25 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'datapoints-count', nlabel => 'fetch.datapoints.count', set => {
+                key_values => [ { name => 'datapoints', diff => 1 }, { name => 'display' } ],
+                output_template => 'Datapoints: %d',
+                perfdatas => [
+                    { value => 'datapoints_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'datapoints-persecond', nlabel => 'fetch.datapoints.persecond', set => {
+                key_values => [ { name => 'datapoints', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Datapoints (per second): %.2f',
+                perfdatas => [
+                    { value => 'datapoints_per_second', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
     ];
 }
 
@@ -135,6 +154,10 @@ sub manage_selection {
     }
     foreach my $fetch (@{$self->{metrics}->{'warp.fetch.bytes.keys'}->{data}}) {
         $self->{fetchs}->{$fetch->{dimensions}->{app}}->{bytes_keys} = $fetch->{value};
+        $self->{fetchs}->{$fetch->{dimensions}->{app}}->{display} = $fetch->{dimensions}->{app};
+    }
+    foreach my $fetch (@{$self->{metrics}->{'warp.fetch.datapoints'}->{data}}) {
+        $self->{fetchs}->{$fetch->{dimensions}->{app}}->{datapoints} = $fetch->{value};
         $self->{fetchs}->{$fetch->{dimensions}->{app}}->{display} = $fetch->{dimensions}->{app};
     }
 
