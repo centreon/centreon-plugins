@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::monitoring::openmetrics::scrape;
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -35,8 +36,8 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{fetchs} = [
-        { label => 'calls', nlabel => 'fetch.calls.count', set => {
-                key_values => [ { name => 'calls' }, { name => 'display' } ],
+        { label => 'calls-count', nlabel => 'fetch.calls.count', set => {
+                key_values => [ { name => 'calls', diff => 1 }, { name => 'display' } ],
                 output_template => 'Calls: %d',
                 perfdatas => [
                     { value => 'calls_absolute', template => '%d',
@@ -44,8 +45,18 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'bytes-values', nlabel => 'fetch.bytes.values.bytes', set => {
-                key_values => [ { name => 'bytes_values' }, { name => 'display' } ],
+        { label => 'calls-persecond', nlabel => 'fetch.calls.persecond', set => {
+                key_values => [ { name => 'calls', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Calls (per second): %.2f',
+                perfdatas => [
+                    { value => 'calls_per_second', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'bytes-values-count', nlabel => 'fetch.bytes.values.bytes', set => {
+                key_values => [ { name => 'bytes_values', diff => 1 }, { name => 'display' } ],
                 output_template => 'Bytes Values: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
@@ -54,13 +65,33 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'bytes-keys', nlabel => 'fetch.bytes.keys.bytes', set => {
-                key_values => [ { name => 'bytes_keys' }, { name => 'display' } ],
+        { label => 'bytes-values-persecond', nlabel => 'fetch.bytes.values.bytespersecond', set => {
+                key_values => [ { name => 'bytes_values', diff => 1 }, { name => 'display' } ],
+                output_change_bytes => 1, per_second => 1,
+                output_template => 'Bytes Values (per second): %s%s/s',
+                perfdatas => [
+                    { value => 'bytes_values_per_second', template => '%s',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'bytes-keys-count', nlabel => 'fetch.bytes.keys.bytes', set => {
+                key_values => [ { name => 'bytes_keys', diff => 1 }, { name => 'display' } ],
                 output_template => 'Bytes Keys: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { value => 'bytes_keys_absolute', template => '%s',
                       min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'bytes-keys-persecond', nlabel => 'fetch.bytes.keys.bytespersecond', set => {
+                key_values => [ { name => 'bytes_keys', diff => 1 }, { name => 'display' } ],
+                output_change_bytes => 1, per_second => 1,
+                output_template => 'Bytes Keys (per second): %s%s/s',
+                perfdatas => [
+                    { value => 'bytes_keys_per_second', template => '%s',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -75,7 +106,7 @@ sub prefix_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -87,6 +118,10 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    $self->{cache_name} = "warp10_" . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     $self->{metrics} = centreon::common::monitoring::openmetrics::scrape::parse(%options);
 
@@ -134,12 +169,12 @@ Filter app name (can be a regexp).
 Only display some counters (regexp can be used).
 Example: --filter-counters='calls'
 
-=item B<--warning-*>
+=item B<--warning-*-count/persecond>
 
 Threshold warning.
 Can be: 'calls', 'bytes-values', 'bytes-keys'.
 
-=item B<--critical-*>
+=item B<--critical-*-count/persecond>
 
 Threshold critical.
 Can be: 'calls', 'bytes-values', 'bytes-keys'.

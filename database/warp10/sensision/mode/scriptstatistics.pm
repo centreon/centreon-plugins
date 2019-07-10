@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::monitoring::openmetrics::scrape;
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -37,7 +38,7 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'time-total', nlabel => 'time.total.microseconds', set => {
-                key_values => [ { name => 'time' } ],
+                key_values => [ { name => 'time', diff => 1 } ],
                 output_template => 'Time Spent: %d us',
                 perfdatas => [
                     { value => 'time_absolute', template => '%d',
@@ -45,8 +46,8 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'requests', nlabel => 'requests.count', set => {
-                key_values => [ { name => 'requests' } ],
+        { label => 'requests-count', nlabel => 'requests.count', set => {
+                key_values => [ { name => 'requests', diff => 1 } ],
                 output_template => 'Requests: %d',
                 perfdatas => [
                     { value => 'requests_absolute', template => '%d',
@@ -54,8 +55,18 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'ops', nlabel => 'ops.count', set => {
-                key_values => [ { name => 'ops' } ],
+        { label => 'requests-persecond', nlabel => 'requests.persecond', set => {
+                key_values => [ { name => 'requests', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Requests (per second): %.2f',
+                perfdatas => [
+                    { value => 'requests_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'ops-count', nlabel => 'ops.count', set => {
+                key_values => [ { name => 'ops', diff => 1 } ],
                 output_template => 'Ops: %d',
                 perfdatas => [
                     { value => 'ops_absolute', template => '%d',
@@ -63,8 +74,18 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'errors', nlabel => 'errors.count', set => {
-                key_values => [ { name => 'errors' } ],
+        { label => 'ops-persecond', nlabel => 'ops.persecond', set => {
+                key_values => [ { name => 'ops', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Ops (per second): %.2f',
+                perfdatas => [
+                    { value => 'ops_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'errors-count', nlabel => 'errors.count', set => {
+                key_values => [ { name => 'errors', diff => 1 } ],
                 output_template => 'Errors: %d',
                 perfdatas => [
                     { value => 'errors_absolute', template => '%d',
@@ -72,8 +93,18 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'bootstrap-loads', nlabel => 'bootstrap.loads.count', set => {
-                key_values => [ { name => 'bootstrap_loads' } ],
+        { label => 'errors-persecond', nlabel => 'errors.persecond', set => {
+                key_values => [ { name => 'errors', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Errors (per second): %.2f',
+                perfdatas => [
+                    { value => 'errors_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'bootstrap-loads-count', nlabel => 'bootstrap.loads.count', set => {
+                key_values => [ { name => 'bootstrap_loads', diff => 1 } ],
                 output_template => 'Bootstrap Loads: %d',
                 perfdatas => [
                     { value => 'bootstrap_loads_absolute', template => '%d',
@@ -81,10 +112,20 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'bootstrap-loads-persecond', nlabel => 'bootstrap.loads.persecond', set => {
+                key_values => [ { name => 'bootstrap_loads', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Bootstrap Loads (per second): %.2f',
+                perfdatas => [
+                    { value => 'bootstrap_loads_per_second', template => '%.2f',
+                      min => 0 },
+                ],
+            }
+        },
     ];
     $self->{maps_counters}->{functions} = [
         { label => 'time', nlabel => 'function.time.microseconds', set => {
-                key_values => [ { name => 'time' }, { name => 'display' } ],
+                key_values => [ { name => 'time', diff => 1 }, { name => 'display' } ],
                 output_template => 'Time Spent: %d us',
                 perfdatas => [
                     { value => 'time_absolute', template => '%d',
@@ -92,11 +133,21 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'uses', nlabel => 'function.uses.count', set => {
-                key_values => [ { name => 'count' }, { name => 'display' } ],
+        { label => 'uses-count', nlabel => 'function.uses.count', set => {
+                key_values => [ { name => 'count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Uses: %d',
                 perfdatas => [
                     { value => 'count_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'uses-persecond', nlabel => 'function.uses.persecond', set => {
+                key_values => [ { name => 'count', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'Uses (per second): %.2f',
+                perfdatas => [
+                    { value => 'count_per_second', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -112,7 +163,7 @@ sub prefix_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -124,6 +175,10 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
+
+    $self->{cache_name} = "warp10_" . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     $self->{functions} = {};
     $self->{metrics} = centreon::common::monitoring::openmetrics::scrape::parse(%options);
@@ -176,17 +231,17 @@ Filter function name (can be a regexp).
 Only display some counters (regexp can be used).
 Example: --filter-counters='^time$|uses'
 
-=item B<--warning-*>
+=item B<--warning-*-count/persecond>
 
 Threshold warning.
-Can be: 'time-total', 'requests', 'ops',
-'errors', 'bootstrap-loads', 'time', 'uses'.
+Can be: 'time-total' (delta), 'requests', 'ops',
+'errors', 'bootstrap-loads', 'time' (delta), 'uses'.
 
-=item B<--critical-*>
+=item B<--critical-*-count/persecond>
 
 Threshold critical.
-Can be: 'time-total', 'requests', 'ops',
-'errors', 'bootstrap-loads', 'time', 'uses'.
+Can be: 'time-total' (delta), 'requests', 'ops',
+'errors', 'bootstrap-loads', 'time' (delta), 'uses'.
 
 =back
 
