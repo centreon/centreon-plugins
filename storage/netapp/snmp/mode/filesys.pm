@@ -256,7 +256,13 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     foreach my $instance (sort @fs_selected) {
         my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $instance);
-        
+
+        if (defined($result2->{dfVserver}) && defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
+            $result2->{dfVserver} !~ /$self->{option_results}->{filter_vserver}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $instance . "': no matching filter vserver.", debug => 1);
+            next;
+        }
+
         $self->{fs}->{$instance} = {
             display => defined($result2->{dfVserver}) && $result2->{dfVserver} ne '' ? 
                 $result2->{dfVserver} . ':' . $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance} : 
