@@ -254,11 +254,11 @@ Select the unit for performance data and thresholds. May be 's' for seconds, 'm'
 
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold for snapshot's age.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold for snapshot's age.
 
 =back
 
