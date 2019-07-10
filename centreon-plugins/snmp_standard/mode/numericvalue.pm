@@ -38,6 +38,7 @@ sub new {
         'counter-per-seconds'     => { name => 'counter_per_seconds' },
         'warning:s'               => { name => 'warning' },
         'critical:s'              => { name => 'critical' },
+        'extracted-pattern:s'     => { name => 'extracted_pattern' },
         'format:s'                => { name => 'format' },
         'format-custom:s'         => { name => 'format_custom' },
         'format-scale'            => { name => 'format_scale' },
@@ -86,7 +87,7 @@ sub add_data {
     foreach (['oid_type', 'gauge'], ['counter_per_seconds'], ['format', 'current value is %s'], 
              ['format_custom', ''], ['format_scale'],
              ['perfdata_unit', ''], ['perfdata_name', 'value'],
-             ['perfdata_min', ''], ['perfdata_max', '']) {
+             ['perfdata_min', ''], ['perfdata_max', ''], ['extracted_pattern', '']) {
         if (defined($options{data}->{$_->[0]})) {
             $entry->{$_->[0]} = $options{data}->{$_->[0]};
         } elsif (defined($_->[1])) {
@@ -108,8 +109,10 @@ sub check_options {
 
     ($self->{entries}, $self->{oids}) = ([], []);
     if (defined($self->{option_results}->{config_json}) && $self->{option_results}->{config_json} ne '') {
-        centreon::plugins::misc::mymodule_load(module => 'JSON',
-                                               error_msg => "Cannot load module 'JSON'.");
+        centreon::plugins::misc::mymodule_load(
+            module => 'JSON',
+            error_msg => "Cannot load module 'JSON'."
+        );
         my $json = JSON->new;
         my $content;
         eval {
@@ -143,11 +146,27 @@ sub check_data {
     my ($self, %options) = @_;
     
     if (!defined($self->{results}->{$options{entry}->{oid}})) {
-        $self->{output}->output_add(severity => "UNKNOWN",
-                                    short_msg => "Cannot find oid:" . $options{entry}->{oid});
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot find oid:' . $options{entry}->{oid}
+        );
         return ;
     }
+
     my $value = $self->{results}->{$options{entry}->{oid}};
+    if (defined($options{entry}->{extracted_pattern}) && $options{entry}->{extracted_pattern} ne '') {
+        if ($value =~ /$options{entry}->{extracted_pattern}/ && defined($1)) {
+            $value = $1;
+        }
+    }
+    if ($value !~ /^\d+(\.\d+)?$/) {
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'oid value is not numeric (' . $value . ')'
+        );
+        return ;
+    }
+    
     if ($options{entry}->{oid_type} =~ /^counter$/i)  {
         my $old_timestamp = $self->{statefile_cache}->get(name => 'timestamp');
         my $old_value = $self->{statefile_cache}->get(name => 'value-' . $options{num});
@@ -255,6 +274,10 @@ Can be 'counter' also. 'counter' will use a retention file.
 =item B<--counter-per-seconds>
 
 Convert counter value on a value per seconds (only with type 'counter').
+
+=item B<--extracted-pattern>
+
+Set pattern to extracted a number.
 
 =item B<--format>
 
