@@ -50,7 +50,8 @@ sub new {
         'description'       => { name => 'description' },
         'filter-resource:s' => { name => 'filter_resource' },
         'filter-id:s'	    => { name => 'filter_id' },
-        'exclude-id:s'      => { name => 'exclude_id' },	
+        'exclude-id:s'      => { name => 'exclude_id' },
+        'format-date'       => { name => 'format_date' },
     });
     $self->{result} = {};
     return $self;
@@ -61,7 +62,7 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (defined($self->{option_results}->{exclude_id}) && defined($self->{option_results}->{error_id})) {
-    	$self->{output}->add_option_msg(short_msg => "Please use --error-id OR --exclude-id, these options are mutually exclusives");
+        $self->{output}->add_option_msg(short_msg => "Please use --error-id OR --exclude-id, these options are mutually exclusives");
     	$self->{output}->option_exit();
     }
 }
@@ -111,12 +112,14 @@ sub manage_selection {
     
     $extra_options .= $self->{option_results}->{command_options};
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $extra_options);
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $extra_options
+    );
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
@@ -152,13 +155,20 @@ sub run {
                  $resource_name !~ /$self->{option_results}->{filter_resource}/);
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
                  $identifier !~ /$self->{option_results}->{filter_id}/);
+
+        my $output_date = $split_error[0];
+        if (defined($self->{options}->{format_date})) {
+            my ($month, $day, $hour, $minute, $year) = unpack("(A2)*", $output_date);
+            $output_date = sprintf("20%s/%s/%s %s:%s", $year, $month, $day, $hour, $minute);
+        }
+        
         $total_error++;
         if (defined($description)) {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
-                                                $timestamp, $resource_name, $description));           
+                                                $output_date, $resource_name, $description));           
         } else {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
-                                                $timestamp, $resource_name));
+                                                $output_date, $resource_name));
         }
     }
 
@@ -249,6 +259,10 @@ Filter error code (can use a regexp).
 =item B<--exclude-id>
 
 Filter on specific error code (can be a comma separated list).
+
+=item B<--format-date>
+
+Print the date to format 20YY/mm/dd HH:MM instead of mmddHHMMYY.
 
 =back
 
