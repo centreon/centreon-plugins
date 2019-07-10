@@ -172,12 +172,13 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
+    my $total = $result->{memTotal};
     $self->{global} = {
-        total => $result->{memTotal},
+        total => $total,
         free => $result->{memFree},
-        used => $result->{memTotal} - $result->{memFree},
-        prct_free => $result->{memFree} * 100 / $result->{memMax},
-        prct_used => ($result->{memTotal} - $result->{memFree}) * 100 / $result->{memMax},
+        used => $total - $result->{memFree},
+        prct_free => $result->{memFree} * 100 / $total,
+        prct_used => ($result->{memTotal} - $result->{memFree}) * 100 / $total,
     };
 };
 
