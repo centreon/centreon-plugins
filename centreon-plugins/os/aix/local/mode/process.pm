@@ -263,6 +263,10 @@ Can used special variables like: %{ppid}, %{state}, %{elapsed}, %{cmd}, %{args}
 Set critical threshold for status (Default: '').
 Can used special variables like: %{ppid}, %{state}, %{elapsed}, %{cmd}, %{args}
 
+=item B<--warning-*> B<--critical-*>
+
+Thresholds. Can be: 'total'.
+
 =back
 
 =cut
