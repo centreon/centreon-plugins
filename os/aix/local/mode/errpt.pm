@@ -151,6 +151,8 @@ sub run {
         my $resource_name = $split_error[2];
         my $description = $self->{result}->{$errpt_error}->{description};
         
+        my $output_date ;
+        
         next if (defined($self->{option_results}->{filter_resource}) && $self->{option_results}->{filter_resource} ne '' &&
                  $resource_name !~ /$self->{option_results}->{filter_resource}/);
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
@@ -163,6 +165,20 @@ sub run {
         }
         
         $total_error++;
+        
+        if (defined($self->{options}->{format_date})) {
+            my @temp_date = unpack("(A2)*", $timestamp);
+            my $month = $temp_date[0];
+            my $day = $temp_date[1];
+            my $hour = $temp_date[2];
+            my $minute = $temp_date[3];
+            my $year = $temp_date[4];
+            
+            $output_date = sprintf("20%s/%s/%s %s:%s", $year, $month, $day, $hour, $minute);
+        } else {
+            $output_date = $timestamp;
+        }
+        
         if (defined($description)) {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
                                                 $output_date, $resource_name, $description));           
@@ -267,3 +283,4 @@ Print the date to format 20YY/mm/dd HH:MM instead of mmddHHMMYY.
 =back
 
 =cut
+
