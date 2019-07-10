@@ -157,7 +157,7 @@ sub run {
                  $identifier !~ /$self->{option_results}->{filter_id}/);
 
         my $output_date = $split_error[0];
-        if (defined($self->{options}->{format_date})) {
+        if (defined($self->{option_results}->{format_date})) {
             my ($month, $day, $hour, $minute, $year) = unpack("(A2)*", $output_date);
             $output_date = sprintf("20%s/%s/%s %s:%s", $year, $month, $day, $hour, $minute);
         }
