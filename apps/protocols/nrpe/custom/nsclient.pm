@@ -142,6 +142,7 @@ sub output_perf {
 
     my $result = 'UNKNOWN';
     $result = $errors_num{$options{result}} if ($options{result} =~ /[0-3]/);
+    $result = $options{result}if ($options{result} =~ /\w+/);
 
     my %result = (
         code => $result,
