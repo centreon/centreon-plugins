@@ -116,6 +116,10 @@ Database Server Port.
 
 An alternative to hostname+port. <server> will be looked up in the file freetds.conf.
 
+=item B<--database>
+
+Select database .
+
 =back
 
 =cut
