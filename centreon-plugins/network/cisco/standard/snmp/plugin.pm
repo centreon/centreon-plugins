@@ -46,6 +46,7 @@ sub new {
         'spanning-tree'        => 'snmp_standard::mode::spanningtree',
         'stack'                => 'centreon::common::cisco::standard::snmp::mode::stack',
         'uptime'               => 'snmp_standard::mode::uptime',
+        'voice-call'           => 'centreon::common::cisco::standard::snmp::mode::voicecall',
     );
 
     return $self;
