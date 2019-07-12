@@ -243,7 +243,7 @@ sub manage_selection {
         push @oids, $mapping2->{df64UsedKBytes}->{oid};
     }
 
-    $self->get_vserver_state();
+    $self->get_vserver_state(%options);
 
     my $results;
     if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '') {
