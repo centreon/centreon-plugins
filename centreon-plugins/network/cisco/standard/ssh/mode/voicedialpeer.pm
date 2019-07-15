@@ -30,6 +30,9 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = 'operation state: ' . $self->{result_values}->{oper} . ' [admin state: ' . $self->{result_values}->{admin} . ']';
+    if ($self->{result_values}->{keepalive} ne '') {
+        $msg .= '[keepalive: ' . $self->{result_values}->{keepalive} . ']';
+    }
     return $msg;
 }
 
@@ -50,11 +53,19 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'total-operational-up', nlabel => 'peers.total.operational.up.count', display_ok => 0, set => {
+                key_values => [ { name => 'oper_up' } ],
+                output_template => 'peers operational up %s',
+                perfdatas => [
+                    { value => 'oper_up_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
     ];
 
     $self->{maps_counters}->{voice_peers} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'admin' }, { name => 'oper' }, { name => 'display' } ],
+                key_values => [ { name => 'admin' }, { name => 'oper' }, { name => 'keepalive' }, { name => 'display' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -103,34 +114,37 @@ sub manage_selection {
     #   incoming called-number = `.T',
     #connections/maximum = 0/unlimited,
     #    bandwidth/maximum = 0/unlimited,
+    #    voice class sip options-keepalive dial-peer action = busyout,
     #...
     #VoiceOverIpPeer200
     #...
+    #    voice class sip options-keepalive dial-peer action = active,
+    #...
 
+    $self->{global} = { total => 0, oper_up => 0, oper_down => 0 };
     $self->{voice_peers} = {};
     while ($result =~ /^(\S+)\n(.*?)(?=\n\S+\n|\Z$)/msg) {
         my ($display, $content) = ($1, $2);
-        next if ($content !~ /Admin\s+state\s+is\s+(\S+),\s*Operation\s+state\s+is\s+(\S+)/msi);
+        next if ($content !~ /Admin\s+state\s+is\s+(\S+),\s*Operation\s+state\s+is\s+(\S+?),/msi);
 
+        my ($admin, $oper) = ($1, $2);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $display !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
             next;
         }
 
+        my $keepalive = '';
+        $keepalive = $1 if ($content =~ /options-keepalive\s+dial-peer\s+action\s+=\s+(\S+?),/msi);
         $self->{voice_peers}->{$display} = {
             display => $display,
-            admin => $1,
-            oper => $2,
+            admin => $admin,
+            oper => $oper,
+            keepalive => $keepalive,
         };
+        $self->{global}->{total}++;
+        $self->{global}->{'oper_' . $oper}++;
     }
-
-    if (scalar(keys %{$self->{voice_peers}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No voice dial peer found.");
-        $self->{output}->option_exit();
-    }
-
-    $self->{global} = { total => scalar(keys %{$self->{voice_peers}}) };
 }
 
 1;
@@ -150,22 +164,22 @@ Filter name (can be a regexp).
 =item B<--unknown-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{admin}, %{oper}, %{display}
+Can used special variables like: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{admin}, %{oper}, %{display}
+Can used special variables like: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admin} eq "up" and %{oper} eq "down"').
-Can used special variables like: %{admin}, %{oper}, %{display}
+Can used special variables like: %{admin}, %{oper}, %{keepalive}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total-entries'.
+Can be: 'total', 'total-operational-up'.
 
 =back
 
