@@ -107,7 +107,7 @@ sub check_options {
         }
     }
     if (!defined($self->{option_results}->{curl_opt})) {
-        $self->{option_results}->{curl_opt} = ['URLOPT_SSL_VERIFYPEER => 0'];
+        $self->{option_results}->{curl_opt} = ['CURLOPT_SSL_VERIFYPEER => 0'];
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
