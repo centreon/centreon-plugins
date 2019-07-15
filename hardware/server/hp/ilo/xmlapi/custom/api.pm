@@ -107,7 +107,7 @@ sub check_options {
         }
     }
     if (!defined($self->{option_results}->{curl_opt})) {
-        $self->{option_results}->{curl_opt} = ['CURLOPT_SSL_VERIFYPEER => 0'];
+        $self->{option_results}->{curl_opt} = ['CURLOPT_SSL_VERIFYPEER => 0', 'CURLOPT_SSL_VERIFYHOST => 0'];
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
@@ -179,6 +179,7 @@ sub get_ilo3_data {
 
     $self->{http}->add_header(key => 'TE', value => 'chunked');
     $self->{http}->add_header(key => 'Connection', value => 'Close');
+    $self->{http}->add_header(key => 'Content-Type', value => 'text/xml');
     
     $self->{content} = $self->{http}->request(
         method => 'POST', proto => 'https', url_path => '/ribcl',
