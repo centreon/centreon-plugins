@@ -76,12 +76,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "type:s"	      => { name => 'type' },
-                                    "name:s@"	      => { name => 'name' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "type:s"	        => { name => 'type' },
+        "name:s@"	        => { name => 'name' },
+        "filter-metric:s"   => { name => 'filter_metric' },
+    });
     
     return $self;
 }
