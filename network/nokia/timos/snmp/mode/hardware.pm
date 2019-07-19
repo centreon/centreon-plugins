@@ -201,7 +201,7 @@ sub check {
                                             $result->{tmnxHwName}, $result->{tmnxHwTemperature}));
         }
         $self->{output}->perfdata_add(
-            label => 'temperature' . , unit => 'C',
+            label => 'temperature', unit => 'C',
             nlabel => 'hardware.entity.temperature.celsius',
             instances => $result->{tmnxHwName},
             value => $result->{tmnxHwTemperature},
