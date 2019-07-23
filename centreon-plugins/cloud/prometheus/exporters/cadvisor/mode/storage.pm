@@ -47,7 +47,7 @@ sub custom_usage_perfdata {
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
-        min => 0, max => $self->{result_values}->{total}
+        min => 0, max => $self->{result_values}->{total},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
 }
