@@ -93,7 +93,7 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("fru '%s' state is %s [instance: %s, type: %s, offline reason: %s]", 
                                     $name, $result->{jnxFruState}, 
                                     $instance, $map_fru_type{$type}, $result->{jnxFruOfflineReason}));
-        my $exit = $self->get_severity(section => 'fru', value => $result->{jnxFruState});
+        my $exit = $self->get_severity(section => 'fru', instance => $instance, value => $result->{jnxFruState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fru '%s' state is %s [offline reason: %s]", $name, $result->{jnxFruState},

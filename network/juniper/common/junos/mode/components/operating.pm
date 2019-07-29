@@ -44,18 +44,22 @@ sub check {
         jnxOperatingState => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.6', map => \%map_operating_states },
     };
 
-    my $results = $self->{snmp}->get_table(oid => $self->{oids_operating}->{jnxOperatingEntry}, start => $mapping->{jnxOperatingState}->{oid}, end => $mapping->{jnxOperatingState}->{oid});
+    my $results = $self->{snmp}->get_table(oid => $self->{oids_operating}->{jnxOperatingEntry},
+        start => $mapping->{jnxOperatingState}->{oid}, end => $mapping->{jnxOperatingState}->{oid});
     
-    foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_operating}->{jnxOperatingEntry}, oid_name => $self->{oids_operating}->{jnxOperatingDescr})) {
+    foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_operating}->{jnxOperatingEntry},
+        oid_name => $self->{oids_operating}->{jnxOperatingDescr})) {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
-        my $desc = $self->get_cache(oid_entry => $self->{oids_operating}->{jnxOperatingEntry}, oid_name => $self->{oids_operating}->{jnxOperatingDescr}, instance => $instance);
+        my $desc = $self->get_cache(oid_entry => $self->{oids_operating}->{jnxOperatingEntry},
+            oid_name => $self->{oids_operating}->{jnxOperatingDescr}, instance => $instance);
 
         next if ($self->check_filter(section => 'operating', instance => $instance, name => $desc));
         $self->{components}->{operating}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("operating '%s' state is %s [instance: %s]", 
                                                         $desc, $result->{jnxOperatingState}, $instance));
-        my $exit = $self->get_severity(section => 'operating', value => $result->{jnxOperatingState});
+        my $exit = $self->get_severity(section => 'operating', instance => $instance,
+            value => $result->{jnxOperatingState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Operating '%s' state is %s", 
