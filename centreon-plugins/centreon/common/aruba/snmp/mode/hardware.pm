@@ -63,9 +63,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1, no_absent => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -76,7 +74,7 @@ __END__
 
 =head1 MODE
 
-Check hardware (modules, fans, power supplies).
+Check hardware (modules, fans, power supplies) (WLSX-SYSTEMEXT-MIB).
 
 =over 8
 
