@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'Status: ' . $self->{result_values}->{status};
+    my $msg = "Status is '" . $self->{result_values}->{status} . "'";
     return $msg;
 }
 
@@ -49,7 +49,8 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All access points are ok', skipped_code => { -10 => 1 } },
+        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output',
+          message_multiple => 'All access points are ok', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{ap} = [
@@ -63,7 +64,7 @@ sub set_counters {
         },
         { label => 'clients', nlabel => 'clients.current.count', set => {
                 key_values => [ { name => 'clients' }, { name => 'display' } ],
-                output_template => 'Current Clients %s',
+                output_template => 'Current Clients: %s',
                 perfdatas => [
                     { label => 'clients', value => 'clients_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -72,7 +73,7 @@ sub set_counters {
         },
         { label => 'cpu', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
-                output_template => 'Cpu %.2f %%',
+                output_template => 'Cpu: %.2f%%',
                 perfdatas => [
                     { label => 'cpu', value => 'cpu_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -80,7 +81,8 @@ sub set_counters {
             }
         },
         { label => 'mem-usage', nlabel => 'memory.usage.bytes', set => {
-                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' },
+                    { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { label => 'mem_used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
@@ -89,7 +91,8 @@ sub set_counters {
             }
         },
         { label => 'mem-usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' },
+                    { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
                     { label => 'mem_free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
@@ -99,7 +102,7 @@ sub set_counters {
         },
         { label => 'mem-usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
-                output_template => 'Memory Used : %.2f %%',
+                output_template => 'Memory Used: %.2f %%',
                 perfdatas => [
                     { label => 'mem_used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -133,10 +136,12 @@ sub check_options {
 sub prefix_ap_output {
     my ($self, %options) = @_;
     
-    return "Access point '" . $options{instance_value}->{display} . "' ";
+    return "Access Point '" . $options{instance_value}->{display} . "' ";
 }
 
-my $map_ap_status = { 1 => 'up', 2 => 'down' };
+my $map_ap_status = {
+    1 => 'up', 2 => 'down'
+};
 
 my $mapping = {
     aiAPName            => { oid => '.1.3.6.1.4.1.14823.2.3.3.1.2.1.1.2' },
@@ -154,7 +159,8 @@ sub manage_selection {
 
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oid_aiAccessPointEntry, start => $mapping->{aiAPName}->{oid} },
+            { oid => $oid_aiAccessPointEntry, start => $mapping->{aiAPName}->{oid},
+              end => $mapping->{aiAPStatus}->{oid} },
             { oid => $oid_aiClientAPIPAddress },
          ], 
          nothing_quit => 1
