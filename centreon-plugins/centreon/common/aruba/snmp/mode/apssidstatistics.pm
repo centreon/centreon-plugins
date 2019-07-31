@@ -32,12 +32,24 @@ sub set_counters {
         { name => 'ap', type => 3, cb_prefix_output => 'prefix_output_ap', cb_long_output => 'long_output',
           message_multiple => 'All AP BSSID are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', type => 0 },
                 { name => 'essid', display_long => 1, cb_prefix_output => 'prefix_output_essid',
                   message_multiple => 'All ESSID are ok', type => 1 },
                 { name => 'bssid', display_long => 1, cb_prefix_output => 'prefix_output_bssid',
                   message_multiple => 'All BSSID are ok', type => 1 },
             ]
         }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'stations-associated', nlabel => 'stations.associated.count', set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'Stations Associated: %d',
+                perfdatas => [
+                    { value => 'total_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
     ];
     
     $self->{maps_counters}->{essid} = [
@@ -166,7 +178,6 @@ sub manage_selection {
         nothing_quit => 1
     );
     
-    $self->{global}->{connected} = 0;
     $self->{ap} = {};
     
     foreach my $oid (keys %{$snmp_result->{$oid_wlsxWlanAPBssidTable}}) {
@@ -207,6 +218,7 @@ sub manage_selection {
             next;
         }
     
+        $self->{ap}->{$result->{wlanAPName}}->{global}->{total} += $result->{wlanAPBssidNumAssociatedStations};
         $self->{ap}->{$result->{wlanAPName}}->{wlanAPName} = $result->{wlanAPName};
         $self->{ap}->{$result->{wlanAPName}}->{wlanAPMacAddress} = $result->{wlanAPMacAddress};
         $self->{ap}->{$result->{wlanAPName}}->{essid}->{$result->{wlanAPESSID}}->{wlanAPEssidNumAssociatedStations} += $result->{wlanAPBssidNumAssociatedStations};
