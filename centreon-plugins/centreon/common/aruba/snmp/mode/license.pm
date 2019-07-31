@@ -90,7 +90,8 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "warning-status:s"  => { name => 'warning_status' },
-        "critical-status:s" => { name => 'critical_status', default => '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)' },
+        "critical-status:s" => { name => 'critical_status',
+            default => '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)' },
     });
 
     return $self;
