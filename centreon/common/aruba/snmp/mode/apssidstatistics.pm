@@ -41,7 +41,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{essid} = [
-        { label => 'stations-associated', nlabel => 'essid.stations.associated.count', set => {
+        { label => 'essid-stations-associated', nlabel => 'essid.stations.associated.count', set => {
                 key_values => [ { name => 'wlanAPEssidNumAssociatedStations' }, { name => 'wlanAPESSID' } ],
                 output_template => 'Associated Stations: %d',
                 perfdatas => [
@@ -53,7 +53,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{bssid} = [
-        { label => 'stations-associated', nlabel => 'bssid.stations.associated.count', set => {
+        { label => 'bssid-stations-associated', nlabel => 'bssid.stations.associated.count', set => {
                 key_values => [ { name => 'wlanAPBssidNumAssociatedStations' }, { name => 'wlanAPBSSID' },
                     { name => 'wlanAPESSID' } ],
                 output_template => 'Associated Stations: %d',

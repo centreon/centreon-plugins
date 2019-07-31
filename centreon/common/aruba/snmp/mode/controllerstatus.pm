@@ -60,7 +60,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'current', nlabel => 'controllers.current.count', set => {
+        { label => 'connected-current', nlabel => 'controllers.connected.current.count', set => {
                 key_values => [ { name => 'current' } ],
                 output_template => 'Total controllers: %d',
                 perfdatas => [
@@ -192,22 +192,21 @@ __END__
 =head1 MODE
 
 Check controller status (WLSX-SYSTEMEXT-MIB).
+(Works only on master controller).
 
 =over 8
 
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'connected-current' (global), 'uptime',
-'controller-bootstrap', 'reboot', 'status' (per AP).
+Can be: 'connected-current' (global), 'status' (per controller).
 'status' can use special variables like: %{name},
 %{status}, %{ip}, %{role}, %{location} (Default: '')
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'connected-current' (global), 'uptime',
-'controller-bootstrap', 'reboot', 'status' (per AP).
+Can be: 'connected-current' (global), 'status' (per controller).
 'status' can use special variables like: %{name},
 %{status}, %{ip}, %{role}, %{location} (Default: '%{status} !~ /active/i')
 
