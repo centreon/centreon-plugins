@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'ap-usage'   => 'network::aruba::instant::snmp::mode::apusage',
+        'ap-usage'      => 'network::aruba::instant::snmp::mode::apusage',
+        'ssid-status'   => 'network::aruba::instant::snmp::mode::ssidstatus',
     );
 
     return $self;
