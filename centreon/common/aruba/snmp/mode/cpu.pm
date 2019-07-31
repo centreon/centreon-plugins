@@ -39,7 +39,7 @@ sub set_counters {
                 output_template => 'Utilization %.2f%%',
                 perfdatas => [
                     { label => 'utilization', value => 'sysExtProcessorLoad_absolute', template => '%.2f',  min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                      unit => '%', label_extra_instance => 1, instance_use => 'sysExtProcessorDescr_absolute' },
                 ],
             }
         },
