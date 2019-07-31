@@ -25,26 +25,34 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use Time::Local;
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Status is '%s' [Ip: %s][Group: %s][Location: %s]",
-        $self->{result_values}->{status},
-        $self->{result_values}->{ip},
-        $self->{result_values}->{group},
-        $self->{result_values}->{location});
+    my $msg = sprintf("Status is '%s', Expires in '%s' [%s]",
+        $self->{result_values}->{flag},
+        $self->{result_values}->{expires_human},
+        $self->{result_values}->{expires_date});
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_wlanAPName'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_wlanAPStatus'};
-    $self->{result_values}->{ip} = $options{new_datas}->{$self->{instance} . '_wlanAPIpAddress'};
-    $self->{result_values}->{group} = $options{new_datas}->{$self->{instance} . '_wlanAPGroupName'};
-    $self->{result_values}->{location} = $options{new_datas}->{$self->{instance} . '_wlanAPLocation'};
+    
+    $self->{result_values}->{key} = $options{new_datas}->{$self->{instance} . '_sysExtLicenseKey'};
+    $self->{result_values}->{flag} = $options{new_datas}->{$self->{instance} . '_sysExtLicenseFlags'};
+    $self->{result_values}->{service} = $options{new_datas}->{$self->{instance} . '_sysExtLicenseService'};
+    $self->{result_values}->{expires} = $options{new_datas}->{$self->{instance} . '_sysExtLicenseExpires'};
+    $self->{result_values}->{expires_date} = $options{new_datas}->{$self->{instance} . '_sysExtLicenseExpires'};
+    $self->{result_values}->{expires_human} = 'Never';
+    
+    if ($self->{result_values}->{expires} !~ /Never/) {
+        my ($year, $mon, $mday, $hour, $min, $sec) = split(/[\s\-:]+/, $self->{result_values}->{expires});
+        $self->{result_values}->{expires} = timelocal($sec, $min, $hour, $mday, $mon - 1, $year) - time();
+        $self->{result_values}->{expires_human} = centreon::plugins::misc::change_seconds(value => $self->{result_values}->{expires});
+        $self->{result_values}->{expires_human} = $self->{result_values}->{expires} = 0 if ($self->{result_values}->{expires} < 0);
+    }
     return 0;
 }
 
@@ -55,42 +63,15 @@ sub set_counters {
         { name => 'license', type => 1, cb_prefix_output => 'prefix_output',
           message_multiple => 'All licenses status are ok' },
     ];
-
+    
     $self->{maps_counters}->{license} = [
-        { label => 'status', set => {
-                key_values => [ { name => 'wlanAPName' }, { name => 'wlanAPIpAddress' }, { name => 'wlanAPGroupName' },
-                    { name => 'wlanAPLocation' }, { name => 'wlanAPStatus' } ],
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'sysExtLicenseKey' }, { name => 'sysExtLicenseFlags' },
+                    { name => 'sysExtLicenseService' }, { name => 'sysExtLicenseExpires' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        },
-        { label => 'uptime', nlabel => 'accesspoint.uptime.seconds', set => {
-                key_values => [ { name => 'wlanAPUpTime' }, { name => 'wlanAPName' } ],
-                output_template => 'Uptime: %ss',
-                perfdatas => [
-                    { value => 'wlanAPUpTime_absolute', template => '%s',
-                      unit => 's', label_extra_instance => 1, instance_use => 'wlanAPName_absolute' },
-                ],
-            }
-        },
-        { label => 'controller-bootstrap', nlabel => 'accesspoint.controller.bootstrap.count', set => {
-                key_values => [ { name => 'wlanAPNumBootstraps' }, { name => 'wlanAPName' } ],
-                output_template => 'Controller Bootstrap Count: %d',
-                perfdatas => [
-                    { value => 'wlanAPNumBootstraps_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'wlanAPName_absolute' },
-                ],
-            }
-        },
-        { label => 'reboot', nlabel => 'accesspoint.reboot.count', set => {
-                key_values => [ { name => 'wlanAPNumReboots' }, { name => 'wlanAPName' } ],
-                output_template => 'Reboot Count: %d',
-                perfdatas => [
-                    { value => 'wlanAPNumReboots_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'wlanAPName_absolute' },
-                ],
             }
         },
     ];
@@ -99,7 +80,7 @@ sub set_counters {
 sub prefix_output {
     my ($self, %options) = @_;
 
-    return "License '" . $options{instance_value}->{sysExtLicenseKey} . "' ";
+    return "License '" . $options{instance_value}->{sysExtLicenseService} . "' ";
 }
 
 sub new {
@@ -109,7 +90,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "warning-status:s"  => { name => 'warning_status' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /up/i' },
+        "critical-status:s" => { name => 'critical_status', default => '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)' },
     });
 
     return $self;
@@ -122,17 +103,18 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-my %map_status = (
-    1 => 'up', 2 => 'down'
+my %map_flags = (
+    'E' => 'enabled', 'A' => 'auto-generated', 'R' => 'reboot-required'
 );
 
 my $oid_wlsxSysExtSwitchLicenseTable = '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1';
 
 my $mapping = {
     sysExtLicenseKey => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1.2' },
+    sysExtLicenseInstalled => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1.3' },
     sysExtLicenseExpires => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1.4' },
-    sysExtLicenseService=> { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1.6' },
-    # wlanAPStatus => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.20', map => \%map_status },
+    sysExtLicenseFlags => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1.5', map => \%map_flags },
+    sysExtLicenseService => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.20.1.6' },
 };
 
 sub manage_selection {
@@ -144,6 +126,10 @@ sub manage_selection {
         end => $mapping->{sysExtLicenseService}->{oid},
         nothing_quit => 1
     );
+
+    foreach my $oid (keys %{$snmp_result}) {
+        $snmp_result->{$oid} = centreon::plugins::misc::trim($snmp_result->{$oid});
+    }
     
     $self->{license} = {};
     
@@ -157,10 +143,8 @@ sub manage_selection {
             instance => $instance
         );
 
-        $self->{license}->{$result->{sysExtLicenseKey}} = { %{$result} };
+        $self->{license}->{$result->{sysExtLicenseService}} = { %{$result} };
     }
-    use Data::Dumper;
-    print Dumper $self->{license};
     
     if (scalar(keys %{$self->{license}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No license found.");
@@ -178,21 +162,17 @@ Check license (WLSX-SYSTEMEXT-MIB).
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-status>
 
 Threshold warning.
-Can be: 'connected-current' (global), 'uptime',
-'controller-bootstrap', 'reboot', 'status' (per AP).
-'status' can use special variables like: %{name},
-%{status}, %{ip}, %{group}, %{location} (Default: '')
+Can use special variables like:%{key},
+%{service}, %{flag}, %{expires} (Default: '')
 
-=item B<--critical-*>
+=item B<--critical-status>
 
 Threshold critical.
-Can be: 'connected-current' (global), 'uptime',
-'controller-bootstrap', 'reboot', 'status' (per AP).
-'status' can use special variables like: %{name},
-%{status}, %{ip}, %{group}, %{location} (Default: '%{status} !~ /up/i')
+Can use special variables like: %{key},
+%{service}, %{flag}, %{expires} (Default: '%{flag} !~ /enabled/i || (%{expires} ne "Never" && %{expires} < 86400)')
 
 =back
 
