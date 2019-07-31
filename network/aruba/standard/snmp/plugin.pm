@@ -37,6 +37,7 @@ sub new {
         'ap-users'              => 'centreon::common::aruba::snmp::mode::apusers', # Deprecated
         'controller-status'     => 'centreon::common::aruba::snmp::mode::controllerstatus',
         'cpu'                   => 'centreon::common::aruba::snmp::mode::cpu',
+        'discovery'             => 'centreon::common::aruba::snmp::mode::discovery',
         'hardware'              => 'centreon::common::aruba::snmp::mode::hardware',
         'interfaces'            => 'snmp_standard::mode::interfaces',
         'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
