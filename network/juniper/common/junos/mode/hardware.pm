@@ -30,7 +30,7 @@ sub set_system {
     my ($self, %options) = @_;
     
     $self->{regexp_threshold_overload_check_section_option} = '^(fru|operating|alarm)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(fru-temperature)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(operating-temperature|operating-cpu|operating-buffer|operating-heap)$';
     
     $self->{cb_hook1} = 'init_cache';
     $self->{cb_hook2} = 'snmp_execute';
