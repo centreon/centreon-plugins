@@ -37,6 +37,13 @@ sub connect_oracle {
     );
 }
 
+sub check_options {
+    my ($self, %options) = @_;
+
+    $self->{container} = defined($self->{option_results}->{container}[0]) ? $self->{option_results}->{container}[0] : undef;
+    return $self->SUPER::check_options(%options);
+}
+
 sub connect {
     my ($self, %options) = @_;
     my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
@@ -76,8 +83,11 @@ sub connect {
         }
         return (-1, $err_msg);
     }
-    
+
     $self->set_version();
+    if (defined($self->{container}) and $self->{container} ne '') {
+        $self->query(query => "alter session set container=$self->{container}");
+    }
     return 0;
 }
 

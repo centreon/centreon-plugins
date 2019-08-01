@@ -75,6 +75,7 @@ sub init {
         'port:s@'       => { name => 'port' },
         'sid:s'         => { name => 'sid' },
         'servicename:s' => { name => 'servicename' },
+        'container:s'   => { name => 'container' },
     });
 
     $self->{options}->parse_options();
@@ -99,9 +100,11 @@ sub init {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';service_name=' . $options_result->{servicename};
 	            $self->{sqldefault}->{sqlpluscmd}[$i]->{service_name} = $options_result->{servicename};
             }
+            $self->{sqldefault}->{dbi}[$i]->{container} = $options_result->{container};
+            $self->{sqldefault}->{sqlpluscmd}[$i]->{container} = $options_result->{container};
         }
     }
-    $self->SUPER::init(%options);    
+    $self->SUPER::init(%options);
 }
 
 1;
@@ -129,6 +132,10 @@ Database SID.
 =item B<--servicename>
 
 Database Service Name.
+
+=item B<--container>
+
+Change container (does an alter session set container command).
 
 =back
 
