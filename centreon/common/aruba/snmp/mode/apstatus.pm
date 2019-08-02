@@ -129,7 +129,6 @@ sub new {
         "filter-ip:s"       => { name => 'filter_ip' },
         "filter-name:s"     => { name => 'filter_name' },
         "filter-group:s"    => { name => 'filter_group' },
-        "filter-location:s" => { name => 'filter_location' },
         "warning-status:s"  => { name => 'warning_status' },
         "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /up/i' },
     });
@@ -150,10 +149,12 @@ my %map_status = (
 
 my $oid_wlsxWlanAPTable = '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1';
 
-my $mapping = {
+my $mapping_info = {
     wlanAPIpAddress => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.2' },
     wlanAPName => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.3' },
     wlanAPGroupName=> { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.4' },
+};
+my $mapping_stat = {
     wlanAPUpTime => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.12' },
     wlanAPLocation => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.14' },
     wlanAPStatus => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.20', map => \%map_status },
@@ -164,23 +165,23 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_table(
-        oid => $oid_wlsxWlanAPTable,
-        start => $mapping->{wlanAPIpAddress}->{oid},
-        end => $mapping->{wlanAPNumReboots}->{oid},
-        nothing_quit => 1
-    );
-    
     $self->{global}->{connected} = 0;
     $self->{ap} = {};
     
-    foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping->{wlanAPIpAddress}->{oid}\.(.*)/);
+    my $snmp_info = $options{snmp}->get_table(
+        oid => $oid_wlsxWlanAPTable,
+        start => $mapping_info->{wlanAPIpAddress}->{oid},
+        end => $mapping_info->{wlanAPGroupName}->{oid},
+        nothing_quit => 1
+    );
+
+    foreach my $oid (keys %{$snmp_info}) {
+        next if ($oid !~ /^$mapping_info->{wlanAPIpAddress}->{oid}\.(.*)/);
         my $instance = $1;
         
         my $result = $options{snmp}->map_instance(
-            mapping => $mapping,
-            results => $snmp_result,
+            mapping => $mapping_info,
+            results => $snmp_info,
             instance => $instance
         );
         
@@ -199,19 +200,41 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{wlanAPGroupName} . "': no matching filter group.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_location}) && $self->{option_results}->{filter_location} ne '' &&
-            $result->{wlanAPLocation} !~ /$self->{option_results}->{filter_location}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{wlanAPLocation} . "': no matching filter location.", debug => 1);
-            next;
-        }
         
-        $self->{ap}->{$result->{wlanAPName}} = { %{$result}, wlanAPUpTime => $result->{wlanAPUpTime} / 100 };
-        $self->{global}->{connected}++;
+        $self->{ap}->{$instance} = { %{$result} };
     }
     
     if (scalar(keys %{$self->{ap}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No AP found.");
         $self->{output}->option_exit();
+    }
+    
+    $options{snmp}->load(
+        oids => [
+            $mapping_stat->{wlanAPUpTime}->{oid},
+            $mapping_stat->{wlanAPLocation}->{oid},
+            $mapping_stat->{wlanAPStatus}->{oid},
+            $mapping_stat->{wlanAPNumBootstraps}->{oid},
+            $mapping_stat->{wlanAPNumReboots}->{oid},
+        ],
+        instances => [ keys %{$self->{ap}} ],
+        instance_regexp => '^(.*)$'
+    );
+
+    my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping_stat->{wlanAPUpTime}->{oid}\.(.*)/);
+        my $instance = $1;
+        
+        my $result = $options{snmp}->map_instance(
+            mapping => $mapping_stat,
+            results => $snmp_result,
+            instance => $instance
+        );
+        
+        $self->{ap}->{$instance} = { %{$self->{ap}->{$instance}}, %{$result}, wlanAPUpTime => $result->{wlanAPUpTime} / 100 };
+        $self->{global}->{connected}++;
     }
 }
 
@@ -243,7 +266,7 @@ Can be: 'connected-current' (global), 'uptime',
 
 =item B<--filter-*>
 
-Filter by 'ip', 'name', 'group', 'location' (regexp can be used).
+Filter by 'ip', 'name', 'group' (regexp can be used).
 
 =back
 
