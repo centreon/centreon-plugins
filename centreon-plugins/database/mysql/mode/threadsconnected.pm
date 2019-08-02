@@ -86,7 +86,16 @@ sub manage_selection {
     }
 
     my $infos = {};
-    if ($options{sql}->is_version_minimum(version => '5.1.12')) {
+    if ($options{sql}->is_version_minimum(version => '5.7.6')) {
+         $options{sql}->query(query => q{
+            SELECT 'max_connections' as name, @@GLOBAL.max_connections as value
+            UNION
+            SELECT VARIABLE_NAME as name, VARIABLE_VALUE as value FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_connected'
+        });
+        while (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value;
+        }
+    } elsif ($options{sql}->is_version_minimum(version => '5.1.12')) {
         $options{sql}->query(query => q{
             SELECT 'max_connections' as name, @@GLOBAL.max_connections as value
             UNION
