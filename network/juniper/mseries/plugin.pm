@@ -35,9 +35,10 @@ sub new {
         'bgp-peer-prefix-statistics'    => 'network::juniper::common::junos::mode::bgppeerprefixstatistics',
         'cpu-routing'                   => 'network::juniper::common::junos::mode::cpurouting', # routing engine
         'hardware'                      => 'network::juniper::common::junos::mode::hardware',
-        'interfaces'                    => 'snmp_standard::mode::interfaces', 
+        'interfaces'                    => 'network::juniper::common::junos::mode::interfaces', 
         'ldp-session-status'            => 'network::juniper::common::junos::mode::ldpsessionstatus',
         'lsp-status'                    => 'network::juniper::common::junos::mode::lspstatus',
+        'list-bgp-peers'                => 'network::juniper::common::junos::mode::listbgppeers',
         'list-interfaces'               => 'snmp_standard::mode::listinterfaces',
         'list-storages'                 => 'snmp_standard::mode::liststorages',
         'memory-routing'                => 'network::juniper::common::junos::mode::memoryrouting', # routing engine

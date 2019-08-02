@@ -25,19 +25,170 @@ use base qw(snmp_standard::mode::interfaces);
 use strict;
 use warnings;
 
+sub set_oids_errors {
+    my ($self, %options) = @_;
+    
+    $self->{oid_ifInDiscards} = '.1.3.6.1.2.1.2.2.1.13';
+    $self->{oid_ifInErrors} = '.1.3.6.1.2.1.2.2.1.14';
+    $self->{oid_ifOutDiscards} = '.1.3.6.1.2.1.2.2.1.19';
+    $self->{oid_ifOutErrors} = '.1.3.6.1.2.1.2.2.1.20';
+    $self->{oid_dot3StatsFCSErrors} = '.1.3.6.1.2.1.10.7.2.1.3';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->SUPER::set_counters(%options);
+    
+    push @{$self->{maps_counters}->{int}}, 
+        { label => 'fcs-errors', filter => 'add_errors', nlabel => 'interface.fcs.errors.count', set => {
+                key_values => [ { name => 'fcserror', diff => 1 }, { name => 'display' } ],
+                output_template => 'FCS Errors : %d',
+                perfdatas => [
+                    { value => 'fcserror_absolute', template => '%d',
+                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ;
+
+    push @{$self->{maps_counters}->{int}},
+        { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
+                key_values => [ { name => 'input_power' }, { name => 'display' } ],
+                output_template => 'Input Power : %s dBm',
+                perfdatas => [
+                    { value => 'input_power_absolute', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'bias-current', filter => 'add_optical', nlabel => 'interface.bias.current.milliampere', set => {
+                key_values => [ { name => 'bias_current' }, { name => 'display' } ],
+                output_template => 'Bias Current : %s mA',
+                perfdatas => [
+                    { value => 'bias_current_absolute', template => '%s',
+                      unit => 'mA', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
+                key_values => [ { name => 'output_power' }, { name => 'display' } ],
+                output_template => 'Output Power : %s dBm',
+                perfdatas => [
+                    { value => 'output_power_absolute', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'module-temperature', filter => 'add_optical', nlabel => 'interface.module.temperature.celsius', set => {
+                key_values => [ { name => 'module_temperature' }, { name => 'display' } ],
+                output_template => 'Module Temperature : %.2f C',
+                perfdatas => [
+                    { value => 'module_temperature_absolute', template => '%.2f',
+                      unit => 'C', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
+    $options{options}->add_options(arguments => {
+            'add-optical'   => { name => 'add_optical' },
+        }
+    );
+    
     return $self;
 }
 
-sub add_result_status {
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{checking} = '';
+    foreach (('add_global', 'add_status', 'add_errors', 'add_traffic', 'add_cast', 'add_speed', 'add_volume', 'add_optical')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{checking} .= $_;
+        }
+    }
+}
+
+sub load_errors {
     my ($self, %options) = @_;
     
-    $self->{int}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : 'unknown';
-    $self->{int}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : 'unknown';
+    $self->set_oids_errors();
+    $self->{snmp}->load(
+        oids => [
+            $self->{oid_ifInDiscards},
+            $self->{oid_ifInErrors},
+            $self->{oid_ifOutDiscards},
+            $self->{oid_ifOutErrors},
+            $self->{oid_dot3StatsFCSErrors}
+        ],
+        instances => $self->{array_interface_selected}
+    );
+}
+
+sub add_result_errors {
+    my ($self, %options) = @_;
+    
+    $self->{int}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{fcserror} = $self->{results}->{$self->{oid_dot3StatsFCSErrors} . '.' . $options{instance}};
+}
+
+my $oid_jnxDomCurrentRxLaserPower = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.5';
+my $oid_jnxDomCurrentTxLaserBiasCurrent = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.6';
+my $oid_jnxDomCurrentTxLaserOutputPower = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.7';
+my $oid_jnxDomCurrentModuleTemperature = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.8';
+
+sub custom_load {
+    my ($self, %options) = @_;
+    
+    return if (!defined($self->{option_results}->{add_optical}));
+    
+    $self->{snmp}->load(
+        oids => [ 
+            $oid_jnxDomCurrentRxLaserPower,
+            $oid_jnxDomCurrentTxLaserBiasCurrent,
+            $oid_jnxDomCurrentTxLaserOutputPower,
+            $oid_jnxDomCurrentModuleTemperature
+        ], 
+        instances => $self->{array_interface_selected}
+    );
+}
+
+sub custom_add_result {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{add_optical}));
+    
+    $self->{int}->{$options{instance}}->{input_power} = undef;
+    if (defined($self->{results}->{$oid_jnxDomCurrentRxLaserPower . '.' . $options{instance}}) &&
+        $self->{results}->{$oid_jnxDomCurrentRxLaserPower . '.' . $options{instance}} != 0) {
+        $self->{int}->{$options{instance}}->{input_power} = $self->{results}->{$oid_jnxDomCurrentRxLaserPower . '.' . $options{instance}} / 100;
+    }    
+    $self->{int}->{$options{instance}}->{bias_current} = undef;
+    if (defined($self->{results}->{$oid_jnxDomCurrentTxLaserBiasCurrent . '.' . $options{instance}}) &&
+        $self->{results}->{$oid_jnxDomCurrentTxLaserBiasCurrent . '.' . $options{instance}} != 0) {
+        $self->{int}->{$options{instance}}->{bias_current} = $self->{results}->{$oid_jnxDomCurrentTxLaserBiasCurrent . '.' . $options{instance}} / 100;
+    }    
+    $self->{int}->{$options{instance}}->{output_power} = undef;
+    if (defined($self->{results}->{$oid_jnxDomCurrentTxLaserOutputPower . '.' . $options{instance}}) &&
+        $self->{results}->{$oid_jnxDomCurrentTxLaserOutputPower . '.' . $options{instance}} != 0) {
+        $self->{int}->{$options{instance}}->{output_power} = $self->{results}->{$oid_jnxDomCurrentTxLaserOutputPower . '.' . $options{instance}} / 100;
+    }
+    $self->{int}->{$options{instance}}->{module_temperature} = undef;
+    if (defined($self->{results}->{$oid_jnxDomCurrentModuleTemperature . '.' . $options{instance}}) &&
+        $self->{results}->{$oid_jnxDomCurrentModuleTemperature . '.' . $options{instance}} != 0) {
+        $self->{int}->{$options{instance}}->{module_temperature} = $self->{results}->{$oid_jnxDomCurrentModuleTemperature . '.' . $options{instance}};
+    }
 }
 
 1;
@@ -57,6 +208,10 @@ Check global port statistics (By default if no --add-* option is set).
 =item B<--add-status>
 
 Check interface status.
+
+=item B<--add-duplex-status>
+
+Check duplex status (with --warning-status and --critical-status).
 
 =item B<--add-traffic>
 
@@ -78,31 +233,59 @@ Check interface speed.
 
 Check interface data volume between two checks (not supposed to be graphed, useful for BI reporting).
 
+=item B<--add-optical>
+
+Check interface optical metrics.
+
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+
+=item B<--warning-errors>
+
+Set warning threshold for all error counters.
+
+=item B<--critical-errors>
+
+Set critical threshold for all error counters.
 
 =item B<--warning-*>
 
-Threshold warning.
+Threshold warning (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
+
+And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
+'in-overflow' (%), 'in-unknownop' (%), 'in-lengtherror' (%), 'in-codeerror' (%), 'in-carriererror' (%),
+'in-jabber' (%), 'in-drop' (%), 'out-tooshort' (%), 'out-toolong' (%), 'out-underrun' (%),
+'out-collision' (%), 'out-excessivecollision' (%), 'out-multiplecollision' (%), 'out-singlecollision' (%),
+'out-excessivedeferred' (%),'out-deferred' (%), 'out-latecollision' (%), 'out-totalcollision' (%),
+'out-drop' (%), 'out-jabber' (%), 'out-fcserror' (%), 'out-fragment' (%),
+'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--critical-*>
 
-Threshold critical.
+Threshold critical (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
+
+And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
+'in-overflow' (%), 'in-unknownop' (%), 'in-lengtherror' (%), 'in-codeerror' (%), 'in-carriererror' (%),
+'in-jabber' (%), 'in-drop' (%), 'out-tooshort' (%), 'out-toolong' (%), 'out-underrun' (%),
+'out-collision' (%), 'out-excessivecollision' (%), 'out-multiplecollision' (%), 'out-singlecollision' (%),
+'out-excessivedeferred' (%),'out-deferred' (%), 'out-latecollision' (%), 'out-totalcollision' (%),
+'out-drop' (%), 'out-jabber' (%), 'out-fcserror' (%), 'out-fragment' (%),
+'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
 
@@ -150,11 +333,11 @@ Time in minutes before reloading cache file (default: 180).
 
 =item B<--oid-filter>
 
-Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to filter interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-display>
 
-Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName).
+Choose OID used to display interface (default: ifName) (values: ifDesc, ifAlias, ifName, IpAddr).
 
 =item B<--oid-extra-display>
 
