@@ -65,13 +65,13 @@ sub custom_status_output {
     if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
         $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
     }
-    
+
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{opstatus} = $options{new_datas}->{$self->{instance} . '_opstatus'};
     $self->{result_values}->{admstatus} = $options{new_datas}->{$self->{instance} . '_admstatus'};
     $self->{result_values}->{duplexstatus} = $options{new_datas}->{$self->{instance} . '_duplexstatus'};

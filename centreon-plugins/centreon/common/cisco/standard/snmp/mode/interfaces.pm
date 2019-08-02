@@ -25,6 +25,67 @@ use base qw(snmp_standard::mode::interfaces);
 use strict;
 use warnings;
 
+sub custom_status_output {
+    my ($self, %options) = @_;
+    my $msg = 'Status : ' . $self->{result_values}->{opstatus} . ' (admin: ' . $self->{result_values}->{admstatus} . ')';
+    if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
+        $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
+    }
+    if (defined($self->{instance_mode}->{option_results}->{add_err_disable})) {
+        $msg .= ' (error disable: ' . $self->{result_values}->{errdisable} . ')';
+    }
+    
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->SUPER::custom_status_calc(%options);
+    $self->{result_values}->{errdisable} = $options{new_datas}->{$self->{instance} . '_errdisable'};
+    return 0;
+}
+
+sub set_key_values_status {
+    my ($self, %options) = @_;
+
+    return [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'duplexstatus' }, { name => 'errdisable' }, { name => 'display' } ];
+}
+
+sub set_oids_status {
+    my ($self, %options) = @_;
+
+    $self->SUPER::set_oids_status(%options);
+    $self->{oid_cErrDisableIfStatusCause} = '.1.3.6.1.4.1.9.9.548.1.3.1.1.2';
+    $self->{oid_cErrDisableIfStatusCause_mapping} = {
+        1 => 'udld', 2 => 'bpduGuard', 3 => 'channelMisconfig',
+        4 => 'pagpFlap', 5 => 'dtpFlap', 6 => 'linkFlap',
+        7 => 'l2ptGuard', 8 => 'dot1xSecurityViolation',
+        9 => 'portSecurityViolation', 10 => 'gbicInvalid',
+        11 => 'dhcpRateLimit', 12 => 'unicastFlood',
+        13 => 'vmps', 14 => 'stormControl', 15 => 'inlinePower',
+        16 => 'arpInspection', 17 => 'portLoopback',
+        18 => 'packetBuffer', 19 => 'macLimit', 20 => 'linkMonitorFailure',
+        21 => 'oamRemoteFailure', 22 => 'dot1adIncompEtype', 23 => 'dot1adIncompTunnel',
+        24 => 'sfpConfigMismatch', 25 => 'communityLimit', 26 => 'invalidPolicy',
+        27 => 'lsGroup', 28 => 'ekey', 29 => 'portModeFailure',
+        30 => 'pppoeIaRateLimit', 31 => 'oamRemoteCriticalEvent',
+        32 => 'oamRemoteDyingGasp', 33 => 'oamRemoteLinkFault',
+        34 => 'mvrp', 35 => 'tranceiverIncomp', 36 => 'other',
+        37 => 'portReinitLimitReached', 38 => 'adminRxBBCreditPerfBufIncomp',
+        39 => 'ficonNotEnabled', 40 => 'adminModeIncomp', 41 => 'adminSpeedIncomp',
+        42 => 'adminRxBBCreditIncomp', 43 => 'adminRxBufSizeIncomp',
+        44 => 'eppFailure', 45 => 'osmEPortUp', 46 => 'osmNonEPortUp',
+        47 => 'udldUniDir', 48 => 'udldTxRxLoop', 49 => 'udldNeighbourMismatch',
+        50 => 'udldEmptyEcho', 51 => 'udldAggrasiveModeLinkFailed',
+        52 => 'excessivePortInterrupts', 53 => 'channelErrDisabled',
+        54 => 'hwProgFailed', 55 => 'internalHandshakeFailed',
+        56 => 'stpInconsistencyOnVpcPeerLink', 57 => 'stpPortStateFailure',
+        58 => 'ipConflict', 59 => 'multipleMSapIdsRcvd', 
+        60 => 'oneHundredPdusWithoutAck', 61 => 'ipQosCompatCheckFailure',
+    };
+}
+
 sub set_oids_errors {
     my ($self, %options) = @_;
     
@@ -56,7 +117,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
+    $options{options}->add_options(arguments => {
+        'add-err-disable'   => { name => 'add_err_disable' },
+    });
+
     return $self;
 }
 
@@ -74,6 +139,15 @@ sub load_errors {
     );
 }
 
+sub load_status {
+    my ($self, %options) = @_;
+
+    $self->SUPER::load_status(%options);
+    if (defined($self->{option_results}->{add_err_disable})) {
+        $self->{snmp_errdisable_result} = $self->{snmp}->get_table(oid => $self->{oid_cErrDisableIfStatusCause});
+    }    
+}
+
 sub add_result_errors {
     my ($self, %options) = @_;
     
@@ -82,6 +156,31 @@ sub add_result_errors {
     $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
+}
+
+sub add_result_status {
+    my ($self, %options) = @_;
+
+    $self->SUPER::add_result_status(%options);
+
+    $self->{int}->{$options{instance}}->{errdisable} = '';
+    if (defined($self->{option_results}->{add_err_disable})) {
+        my $append = '';
+        # ifIndex.vlanIndex (if physical interface, vlanIndex = 0)
+        foreach (keys %{$self->{snmp_errdisable_result}}) {
+            next if (! /^$self->{oid_cErrDisableIfStatusCause}\.$options{instance}\.(.*)/);
+            if ($1 == 0) {
+                $self->{int}->{$options{instance}}->{errdisable} = $self->{oid_cErrDisableIfStatusCause_mapping}->{ $self->{snmp_errdisable_result}->{$_} };
+                last;
+            }
+            
+            $self->{int}->{$options{instance}}->{errdisable} .= $append . 'vlan' . $1 . ':' . $self->{oid_cErrDisableIfStatusCause_mapping}->{ $self->{snmp_errdisable_result}->{$_} };
+            $append = ',';
+        }
+    }
+
+    $self->{int}->{$options{instance}}->{errdisable} = '-'
+        if ($self->{int}->{$options{instance}}->{errdisable} eq '');
 }
 
 1;
@@ -106,6 +205,10 @@ Check interface status.
 
 Check duplex status (with --warning-status and --critical-status).
 
+=item B<--add-err-disable>
+
+Check error disable (with --warning-status and --critical-status).
+
 =item B<--add-traffic>
 
 Check interface traffic.
@@ -129,24 +232,16 @@ Check interface data volume between two checks (not supposed to be graphed, usef
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{errdisable}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{admstatus} eq "up" and %{opstatus} ne "up"').
-Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{display}
+Can used special variables like: %{admstatus}, %{opstatus}, %{duplexstatus}, %{errdisable}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-crc', 'in-error', 'in-discard', 'out-error', 'out-discard',
-'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
-'speed' (b/s).
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
 'in-traffic', 'out-traffic', 'in-crc', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
