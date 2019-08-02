@@ -263,7 +263,7 @@ sub check_memory_enhanced_pool {
             instances => [keys %$physical_array],
             instance_regexp => '^(.*)$'
         );
-        $snmp_result = $self->{snmp}->get_leef(nothing_quit => 1);
+        $snmp_result = $self->{snmp}->get_leef();
         foreach (keys %{$self->{memory}}) {
             if (defined($snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} })) {
                 $self->{memory}->{$_}->{display} = 
