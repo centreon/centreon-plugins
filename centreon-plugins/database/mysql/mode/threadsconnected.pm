@@ -84,15 +84,26 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
     }
-    
-    $options{sql}->query(query => q{
-        SELECT 'max_connections' as name, @@GLOBAL.max_connections as value
-        UNION
-        SELECT VARIABLE_NAME as name, VARIABLE_VALUE as value fROM information_schema.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Threads_connected'
-    });
+
     my $infos = {};
-    while (my ($name, $value) = $options{sql}->fetchrow_array()) {
-        $infos->{lc($name)} = $value;
+    if ($options{sql}->is_version_minimum(version => '5.1.12')) {
+        $options{sql}->query(query => q{
+            SELECT 'max_connections' as name, @@GLOBAL.max_connections as value
+            UNION
+            SELECT VARIABLE_NAME as name, VARIABLE_VALUE as value FROM information_schema.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Threads_connected'
+        });
+        while (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value;
+        }
+    } else {
+        $options{sql}->query(query => q{SELECT 'max_connections' as name, @@GLOBAL.max_connections as value});
+        if (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value 
+        }
+        $options{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Threads_connected'});
+        if (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value 
+        }
     }
 
     if (scalar(keys %$infos) == 0) {
