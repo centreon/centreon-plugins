@@ -30,10 +30,12 @@ sub set_version {
     
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
     # MariaDB: 5.5.5-10.1.36-MariaDB
-    if ($self->{version} =~ /^(.*.)-(.*?)-MariaDB/i) {
+    if ($self->{version} =~ /^(.*)-(.*?)-MariaDB/i) {
+        $self->{version} = $2;
+    } elsif ($self->{version} =~ /^(.*)-MariaDB/i) {
         $self->{version} = $1;
-        $self->{mariadb_version} = $2;
     }
+
 }
 
 1;
