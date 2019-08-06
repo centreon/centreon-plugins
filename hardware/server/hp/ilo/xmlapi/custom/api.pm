@@ -102,7 +102,7 @@ sub check_options {
         $self->{option_results}->{ssl_opt} = ['SSL_verify_mode => SSL_VERIFY_NONE'];
         $self->{ssl_opts} = 'SSL_verify_mode => SSL_VERIFY_NONE';
     } else {
-        foreach (keys @{$self->{option_results}->{ssl_opt}}) {
+        foreach (0.. $#{$self->{option_results}->{ssl_opt}}) {
             $self->{ssl_opts} .= "$_, ";
         }
     }
