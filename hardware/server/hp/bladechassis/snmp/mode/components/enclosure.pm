@@ -23,41 +23,64 @@ package hardware::server::hp::bladechassis::snmp::mode::components::enclosure;
 use strict;
 use warnings;
 
-my %map_conditions = (
+my $map_conditions = {
     1 => 'other', 
     2 => 'ok', 
     3 => 'degraded', 
     4 => 'failed',
-);
+};
+
+my $mapping = {
+    cpqRackCommonEnclosureSparePartNumber   => { oid => '.1.3.6.1.4.1.232.22.2.3.1.1.1.6' },
+    cpqRackCommonEnclosureSerialNum         => { oid => '.1.3.6.1.4.1.232.22.2.3.1.1.1.7' },
+    cpqRackCommonEnclosureFWRev             => { oid => '.1.3.6.1.4.1.232.22.2.3.1.1.1.8' },
+    cpqRackCommonEnclosureCondition         => { oid => '.1.3.6.1.4.1.232.22.2.3.1.1.1.16', map => $map_conditions },
+};
 
 sub check {
     my ($self) = @_;
-
-    my $oid_cpqRackCommonEnclosurePartNumber = '.1.3.6.1.4.1.232.22.2.3.1.1.1.5.1';
-    my $oid_cpqRackCommonEnclosureSparePartNumber = '.1.3.6.1.4.1.232.22.2.3.1.1.1.6.1';
-    my $oid_cpqRackCommonEnclosureSerialNum = '.1.3.6.1.4.1.232.22.2.3.1.1.1.7.1';
-    my $oid_cpqRackCommonEnclosureFWRev = '.1.3.6.1.4.1.232.22.2.3.1.1.1.8.1';
-    my $oid_cpqRackCommonEnclosureCondition = '.1.3.6.1.4.1.232.22.2.3.1.1.1.16.1';
     
     $self->{components}->{enclosure} = {name => 'enclosure', total => 0, skip => 0};
-    $self->{output}->output_add(long_msg => "Checking enclosure");
-    return if ($self->check_exclude(section => 'enclosure'));
-  
-    my $result = $self->{snmp}->get_leef(oids => [$oid_cpqRackCommonEnclosurePartNumber, $oid_cpqRackCommonEnclosureSparePartNumber, 
-                                                  $oid_cpqRackCommonEnclosureSerialNum, $oid_cpqRackCommonEnclosureFWRev,
-                                                  $oid_cpqRackCommonEnclosureCondition], nothing_quit => 1);  
-    $self->{components}->{enclosure}->{total}++;
-    
-    $self->{output}->output_add(long_msg => sprintf("Enclosure overall health condition is %s [part: %s, spare: %s, sn: %s, fw: %s].", 
-                                $map_conditions{$result->{$oid_cpqRackCommonEnclosureCondition}},
-                                $result->{$oid_cpqRackCommonEnclosurePartNumber},
-                                $result->{$oid_cpqRackCommonEnclosureSparePartNumber},
-                                $result->{$oid_cpqRackCommonEnclosureSerialNum},
-                                $result->{$oid_cpqRackCommonEnclosureFWRev}));
-    my $exit = $self->get_severity(section => 'enclosure', value => $map_conditions{$result->{$oid_cpqRackCommonEnclosureCondition}});
-    if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Enclosure overall health condition is %s", $map_conditions{$result->{$oid_cpqRackCommonEnclosureCondition}}));
+    $self->{output}->output_add(long_msg => "checking enclosure");
+    return if ($self->check_filter(section => 'enclosure'));
+
+    my $oid_cpqRackCommonEnclosurePartNumber = '.1.3.6.1.4.1.232.22.2.3.1.1.1.5';
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_cpqRackCommonEnclosurePartNumber);
+    return if (scalar(keys %$snmp_result) <= 0);
+
+    my @get_oids = ();
+    my @oids_end = ();
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
+        $key =~ /^$oid_cpqRackCommonEnclosurePartNumber\.(.*)$/;
+        my $oid_end = $1;
+        push @oids_end, $oid_end;
+        push @get_oids, map($_->{oid} . '.' . $oid_end, values(%$mapping));
+    }
+
+	my $snmp_result2 = $self->{snmp}->get_leef(oids => \@get_oids);
+    foreach (@oids_end) {
+        my $instance = $_;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result2, instance => $instance);
+        
+        next if ($self->check_filter(section => 'enclosure', instance => $instance));
+		
+        $self->{components}->{enclosure}->{total}++;
+        
+        $self->{output}->output_add(long_msg => 
+            sprintf("enclosure '%s' overall health condition is %s [part: %s, spare: %s, sn: %s, fw: %s].",
+                $instance,
+                $result->{cpqRackCommonEnclosureCondition},
+                $snmp_result->{$oid_cpqRackCommonEnclosurePartNumber . '.' . $instance},
+                $result->{cpqRackCommonEnclosureSparePartNumber},
+                $result->{cpqRackCommonEnclosureSerialNum},
+                $result->{cpqRackCommonEnclosureFWRev}
+            )
+        );
+        my $exit = $self->get_severity(label => 'default', section => 'enclosure', value => $result->{cpqRackCommonEnclosureCondition});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Enclosure '%s' overall health condition is %s", $instance, $result->{cpqRackCommonEnclosureCondition}));
+        }
     }
 }
 

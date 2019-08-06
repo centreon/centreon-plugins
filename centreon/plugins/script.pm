@@ -28,7 +28,7 @@ use FindBin;
 use Pod::Usage;
 use Pod::Find qw(pod_where);
 
-my %handlers = (DIE => {});
+my %handlers = (DIE => {}, ALRM => {});
 
 my $global_version = '(dev)';
 my $alternative_fatpacker = 0;
@@ -45,18 +45,18 @@ sub new {
     # Avoid to destroy because it keeps a ref on the object. 
     # A problem if we execute it multiple times in the same perl execution
     # Use prepare_destroy
-    $self->set_signal_handlers;
+    $self->set_signal_handlers();
     return $self;
 }
 
 sub prepare_destroy {
     my ($self) = @_;
 
-    delete $handlers{DIE}->{$self};
+    %handlers = undef;
 }
 
 sub set_signal_handlers {
-    my $self = shift;
+    my ($self) = @_;
 
     $SIG{__DIE__} = \&class_handle_DIE;
     $handlers{DIE}->{$self} = sub { $self->handle_DIE($_[0]) };
@@ -70,12 +70,25 @@ sub class_handle_DIE {
     }
 }
 
+sub class_handle_ALRM {
+    foreach (keys %{$handlers{ALRM}}) {
+        &{$handlers{ALRM}->{$_}}();
+    }
+}
+
 sub handle_DIE {
     my ($self, $msg) = @_;
 
     return unless defined $^S and $^S == 0; # Ignore errors in eval
     $self->{output}->add_option_msg(short_msg => $msg);
     $self->{output}->die_exit();
+}
+
+sub handle_ALRM {
+    my ($self) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'script global timeout');
+    $self->{output}->option_exit();
 }
 
 sub get_global_version {
@@ -85,9 +98,7 @@ sub get_global_version {
 sub get_plugin {
     my ($self) = @_;
     
-    ######
     # Need to load global 'Output' and 'Options'
-    ######
     if ($alternative_fatpacker == 0) {
         require centreon::plugins::options;
         $self->{options} = centreon::plugins::options->new();
@@ -105,20 +116,28 @@ sub get_plugin {
         'ignore-warn-msg'   => { name => 'ignore_warn_msg' },
         'version'           => { name => 'version' },
         'runas:s'           => { name => 'runas' },
+        'global-timeout:s'  => { name => 'global_timeout' },
         'environment:s%'    => { name => 'environment' },
         'convert-args:s'    => { name => 'convert_args' },
     });
 
     $self->{options}->parse_options();
 
-    $self->{plugin} = $self->{options}->get_option(argument => 'plugin' );
-    $self->{list_plugin} = $self->{options}->get_option(argument => 'list_plugin' );
-    $self->{help} = $self->{options}->get_option(argument => 'help' );
-    $self->{version} = $self->{options}->get_option(argument => 'version' );
-    $self->{runas} = $self->{options}->get_option(argument => 'runas' );
-    $self->{environment} = $self->{options}->get_option(argument => 'environment' );
-    $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg' );
-    $self->{convert_args} = $self->{options}->get_option(argument => 'convert_args' );
+    $self->{plugin} = $self->{options}->get_option(argument => 'plugin');
+    $self->{list_plugin} = $self->{options}->get_option(argument => 'list_plugin');
+    $self->{help} = $self->{options}->get_option(argument => 'help');
+    $self->{version} = $self->{options}->get_option(argument => 'version');
+    $self->{runas} = $self->{options}->get_option(argument => 'runas');
+    $self->{environment} = $self->{options}->get_option(argument => 'environment');
+    $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg');
+    $self->{convert_args} = $self->{options}->get_option(argument => 'convert_args');
+    
+    my $global_timeout = $self->{options}->get_option(argument => 'global_timeout');
+    if (defined($global_timeout) && $global_timeout =~ /(\d+)/) {
+        $SIG{ALRM} = \&class_handle_ALRM;
+        $handlers{ALRM}->{$self} = sub { $self->handle_ALRM() };
+        alarm($1);
+    }
 
     $self->{output}->plugin(name => $self->{plugin});
     $self->{output}->check_options(option_results => $self->{options}->get_options());
@@ -146,13 +165,13 @@ sub display_local_help {
         open STDOUT, '>', \$stdout;
         
         if ($alternative_fatpacker == 0) {
-            pod2usage(-exitval => "NOEXIT", -input => pod_where({-inc => 1}, __PACKAGE__));
+            pod2usage(-exitval => 'NOEXIT', -input => pod_where({-inc => 1}, __PACKAGE__));
         } else {
-            my $pp = __PACKAGE__ . ".pm";
+            my $pp = __PACKAGE__ . '.pm';
             $pp =~ s{::}{/}g;
             my $content_class = $INC{$pp}->{$pp};
             open my $str_fh, '<', \$content_class;
-            pod2usage(-exitval => "NOEXIT", -input => $str_fh);
+            pod2usage(-exitval => 'NOEXIT', -input => $str_fh);
             close $str_fh;
         }
     }
@@ -165,7 +184,7 @@ sub check_directory {
     
     opendir(my $dh, $directory) || return ;
     while (my $filename = readdir $dh) {
-        $self->check_directory($directory . "/" . $filename) if ($filename !~ /^\./ && -d $directory . "/" . $filename);
+        $self->check_directory($directory . '/' . $filename) if ($filename !~ /^\./ && -d $directory . '/' . $filename);
         if ($filename eq 'plugin.pm') {
             my $stdout = '';
             
@@ -202,7 +221,7 @@ sub check_plugin_option {
     my ($self) = @_;
     
     if (defined($self->{version})) {
-        $self->{output}->add_option_msg(short_msg => "Global Version: " . $global_version);
+        $self->{output}->add_option_msg(short_msg => 'Global Version: ' . $global_version);
         $self->{output}->option_exit(nolabel => 1);
     }
     
@@ -231,7 +250,7 @@ sub display_list_plugin {
         foreach my $key (@$integrated_plugins) {
             # Need to load it to get the description
             centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $key, 
-                                                   error_msg => "Cannot load module --plugin.");
+                                                   error_msg => 'Cannot load module --plugin.');
                                                
             my $name = $key;
             $name =~ s/\.pm//g;
@@ -244,7 +263,7 @@ sub display_list_plugin {
                 open STDOUT, '>', \$stdout;
                 my $content_class = $INC{$key}->{$key};
                 open my $str_fh, '<', \$content_class;
-                pod2usage(-exitval => "NOEXIT", -input => $str_fh, -verbose => 99, -sections => "PLUGIN DESCRIPTION");
+                pod2usage(-exitval => 'NOEXIT', -input => $str_fh, -verbose => 99, -sections => 'PLUGIN DESCRIPTION');
                 close $str_fh;
                 $self->{output}->add_option_msg(long_msg => $stdout);
             }
@@ -302,15 +321,16 @@ sub check_relaunch {
 
     if ($need_restart == 1) {
         if (scalar(@args) <= 0) {
-            unshift @args, @ARGV, "--plugin=" . $self->{plugin}
+            unshift @args, @ARGV, '--plugin=' . $self->{plugin}
         }
 
         my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $cmd,
-                                                 arguments => [@args],
-                                                 timeout => 30,
-                                                 wait_exit => 1
-                                                 );
+            command => $cmd,
+            arguments => [@args],
+            timeout => 30,
+            wait_exit => 1
+        );
+
         if ($exit_code <= -1000) {
             if ($exit_code == -1000) {
                 $self->{output}->output_add(severity => 'UNKNOWN', 
@@ -351,10 +371,12 @@ sub run {
     
     (undef, $self->{plugin}) = 
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
-                                               error_msg => "Cannot load module --plugin.");
+                                               error_msg => 'Cannot load module --plugin.');
     my $plugin = $self->{plugin}->new(options => $self->{options}, output => $self->{output});
-    $plugin->init(help => $self->{help},
-                  version => $self->{version});
+    $plugin->init(
+        help => $self->{help},
+        version => $self->{version}
+    );
     $plugin->run();
 }
 
@@ -397,6 +419,10 @@ Perl warn messages are ignored (not displayed).
 =item B<--runas>
 
 Run the script as a different user (prefer to use directly the good user).
+
+=item B<--global-timeout>
+
+Set script timeout.
 
 =item B<--environment>
 

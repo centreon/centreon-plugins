@@ -205,7 +205,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "timeout:s"             => { name => 'timeout', default => 30 },
         "command:s"             => { name => 'command', default => 'powershell.exe' },
@@ -348,15 +347,10 @@ Can used special variables like: %{status}.
 Set critical threshold for current synchronisation status (Default: '%{status} !~ /Succeeded/').
 Can used special variables like: %{status}.
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Warning thresholds.
-Can be: 'progress' (%), 'duration' (s).
-
-=item B<--critical-*>
-
-Critical thresholds.
-Can be: 'progress' (%), 'duration' (s).
+Thresholds.
+Can be: 'last-synchronisation-duration' (s), 'synchronisation-progress' (%).
 
 =item B<--filter-counters>
 

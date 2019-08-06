@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'hardware'         => 'storage::hp::eva::cli::mode::hardware',
-                         'storage-usage'    => 'storage::hp::eva::cli::mode::storageusage',
-                        );
+        'hardware'         => 'storage::hp::eva::cli::mode::hardware',
+        'storage-usage'    => 'storage::hp::eva::cli::mode::storageusage',
+    );
     $self->{custom_modes}{api} = 'storage::hp::eva::cli::custom::api';
     
     return $self;

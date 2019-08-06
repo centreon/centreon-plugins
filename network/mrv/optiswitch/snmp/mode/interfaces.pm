@@ -46,45 +46,48 @@ sub custom_status_calc {
     return 0;
 }
 
-sub set_counters {
+sub set_counters_global {
     my ($self, %options) = @_;
-    
-    $self->{maps_counters} = { int => {}, global => {} } if (!defined($self->{maps_counters}));
 
-    $self->{maps_counters}->{global}->{'005_total-link-up'} = { filter => 'add_global',
-        set => {
-            key_values => [ { name => 'global_link_up' }, { name => 'total_port' } ],
-            output_template => 'LinkStatus Up : %s', output_error_template => 'LinkStatus Up : %s',
-            output_use => 'global_link_up_absolute',  threshold_use => 'global_link_up_absolute',
-            perfdatas => [
-                { label => 'total_link_up', value => 'global_link_up_absolute', template => '%s',
-                  min => 0, max => 'total_port_absolute' },
-           ],
-        }
-    };
-    $self->{maps_counters}->{global}->{'006_total-link-down'} = { filter => 'add_global',
-        set => {
-            key_values => [ { name => 'global_link_down' }, { name => 'total_port' } ],
-            output_template => 'LinkStatus Down : %s', output_error_template => 'LinkStatus Down : %s',
-            output_use => 'global_link_down_absolute',  threshold_use => 'global_link_down_absolute',
-            perfdatas => [
-                { label => 'total_link_down', value => 'global_link_down_absolute', template => '%s',
-                  min => 0, max => 'total_port_absolute' },
-           ],
-        }
-    };
-    
-    $self->{maps_counters}->{int}->{'045_in-crc'} = { filter => 'add_errors',
-        set => {
-            key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
-            closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
-            closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
-            closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_errors_threshold'),
-        }
-    };
+    $self->SUPER::set_counters_global(%options);
 
-    $self->SUPER::set_counters(%options);
+    push @{$self->{maps_counters}->{global}}, 
+        { label => 'total-link-up', filter => 'add_global', nlabel => 'total.interfaces.link.up.count', set => {
+                key_values => [ { name => 'global_link_up' }, { name => 'total_port' } ],
+                output_template => 'LinkStatus Up : %s', output_error_template => 'LinkStatus Up : %s',
+                output_use => 'global_link_up_absolute',  threshold_use => 'global_link_up_absolute',
+                perfdatas => [
+                    { label => 'total_link_up', value => 'global_link_up_absolute', template => '%s',
+                      min => 0, max => 'total_port_absolute' },
+                ],
+            }
+        },
+        { label => 'total-link-down', filter => 'add_global', nlabel => 'total.interfaces.link.down.count', set => {
+                key_values => [ { name => 'global_link_down' }, { name => 'total_port' } ],
+                output_template => 'LinkStatus Down : %s', output_error_template => 'LinkStatus Down : %s',
+                output_use => 'global_link_down_absolute',  threshold_use => 'global_link_down_absolute',
+                perfdatas => [
+                    { label => 'total_link_down', value => 'global_link_down_absolute', template => '%s',
+                      min => 0, max => 'total_port_absolute' },
+               ],
+            }
+        },
+    ;
+}
+
+sub set_counters_errors {
+    my ($self, %options) = @_;
+
+    push @{$self->{maps_counters}->{int}}, 
+        { label => 'in-crc', filter => 'add_errors', nlabel => 'interface.packets.in.crc.count', set => {
+                key_values => [ { name => 'incrc', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'crc' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Crc : %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+            }
+        },
+    ;
 }
 
 sub set_key_values_status {
@@ -343,36 +346,36 @@ sub add_result_global {
 sub add_result_status {
     my ($self, %options) = @_;
     
-    $self->{interface_selected}->{$options{instance}}->{linkstatus} = defined($self->{results}->{$self->{oid_linkstatus} . '.' . $options{instance}}) ? $self->{oid_linkstatus_mapping}->{$self->{results}->{$self->{oid_linkstatus} . '.' . $options{instance}}} : undef;
-    $self->{interface_selected}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
-    $self->{interface_selected}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
-    $self->{interface_selected}->{$options{instance}}->{duplexstatus} = defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
+    $self->{int}->{$options{instance}}->{linkstatus} = defined($self->{results}->{$self->{oid_linkstatus} . '.' . $options{instance}}) ? $self->{oid_linkstatus_mapping}->{$self->{results}->{$self->{oid_linkstatus} . '.' . $options{instance}}} : undef;
+    $self->{int}->{$options{instance}}->{opstatus} = defined($self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}) ? $self->{oid_opstatus_mapping}->{$self->{results}->{$self->{oid_opstatus} . '.' . $options{instance}}} : undef;
+    $self->{int}->{$options{instance}}->{admstatus} = defined($self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}) ? $self->{oid_adminstatus_mapping}->{$self->{results}->{$self->{oid_adminstatus} . '.' . $options{instance}}} : undef;
+    $self->{int}->{$options{instance}}->{duplexstatus} = defined($self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}) ? $self->{oid_duplexstatus_mapping}->{$self->{results}->{$self->{oid_duplexstatus} . '.' . $options{instance}}} : 'n/a';
 }
 
 sub add_result_traffic {
     my ($self, %options) = @_;
     
-    $self->{interface_selected}->{$options{instance}}->{mode_traffic} = 64;
-    $self->{interface_selected}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{in} *= 8 if (defined($self->{interface_selected}->{$options{instance}}->{in}));
-    $self->{interface_selected}->{$options{instance}}->{out} *= 8 if (defined($self->{interface_selected}->{$options{instance}}->{out}));
-    $self->{interface_selected}->{$options{instance}}->{speed_in} = 0;
-    $self->{interface_selected}->{$options{instance}}->{speed_out} = 0;
+    $self->{int}->{$options{instance}}->{mode_traffic} = 64;
+    $self->{int}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{in} *= 8 if (defined($self->{int}->{$options{instance}}->{in}));
+    $self->{int}->{$options{instance}}->{out} *= 8 if (defined($self->{int}->{$options{instance}}->{out}));
+    $self->{int}->{$options{instance}}->{speed_in} = 0;
+    $self->{int}->{$options{instance}}->{speed_out} = 0;
     if ($self->{get_speed} == 0) {
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
-            $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed} * 1000000;
-            $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed} * 1000000;
+            $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed} * 1000000;
+            $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed} * 1000000;
         }
-        $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
-        $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
+        $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
+        $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     } else {
         my $interface_speed = 0;
         $interface_speed = $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} * 1000000;        
-        $self->{interface_selected}->{$options{instance}}->{speed_in} = $interface_speed;
-        $self->{interface_selected}->{$options{instance}}->{speed_out} = $interface_speed;
-        $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
-        $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
+        $self->{int}->{$options{instance}}->{speed_in} = $interface_speed;
+        $self->{int}->{$options{instance}}->{speed_out} = $interface_speed;
+        $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
+        $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     }
 }
     
@@ -381,27 +384,27 @@ sub add_result_cast {
     
     my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
     if (defined($iucast) && $iucast =~ /[1-9]/) {
-        $self->{interface_selected}->{$options{instance}}->{iucast} = $iucast;
-        $self->{interface_selected}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}} : 0;
-        $self->{interface_selected}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}} : 0;
-        $self->{interface_selected}->{$options{instance}}->{oucast} = $self->{results}->{$self->{oid_ifHCOutUcastPkts} . '.' . $options{instance}};
-        $self->{interface_selected}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}} : 0;
-        $self->{interface_selected}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}} : 0;
-        $self->{interface_selected}->{$options{instance}}->{mode_cast} = 64;
+        $self->{int}->{$options{instance}}->{iucast} = $iucast;
+        $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInMulticastPkts} . '.' . $options{instance}} : 0;
+        $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCInBroadcastPkts} . '.' . $options{instance}} : 0;
+        $self->{int}->{$options{instance}}->{oucast} = $self->{results}->{$self->{oid_ifHCOutUcastPkts} . '.' . $options{instance}};
+        $self->{int}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutMulticastPkts} . '.' . $options{instance}} : 0;
+        $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifHCOutBroadcastPkts} . '.' . $options{instance}} : 0;
+        $self->{int}->{$options{instance}}->{mode_cast} = 64;
     }
     
     foreach (('iucast', 'imcast', 'ibcast', 'oucast', 'omcast', 'obcast')) {
-        $self->{interface_selected}->{$options{instance}}->{$_} = 0 if (!defined($self->{interface_selected}->{$options{instance}}->{$_}));
+        $self->{int}->{$options{instance}}->{$_} = 0 if (!defined($self->{int}->{$options{instance}}->{$_}));
     }
     
-    $self->{interface_selected}->{$options{instance}}->{total_in_packets} = $self->{interface_selected}->{$options{instance}}->{iucast} + $self->{interface_selected}->{$options{instance}}->{imcast} + $self->{interface_selected}->{$options{instance}}->{ibcast};
-    $self->{interface_selected}->{$options{instance}}->{total_out_packets} = $self->{interface_selected}->{$options{instance}}->{oucast} + $self->{interface_selected}->{$options{instance}}->{omcast} + $self->{interface_selected}->{$options{instance}}->{obcast};
+    $self->{int}->{$options{instance}}->{total_in_packets} = $self->{int}->{$options{instance}}->{iucast} + $self->{int}->{$options{instance}}->{imcast} + $self->{int}->{$options{instance}}->{ibcast};
+    $self->{int}->{$options{instance}}->{total_out_packets} = $self->{int}->{$options{instance}}->{oucast} + $self->{int}->{$options{instance}}->{omcast} + $self->{int}->{$options{instance}}->{obcast};
 }
 
 sub add_result_errors {
     my ($self, %options) = @_;
 
-    $self->{interface_selected}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{incrc} = $self->{results}->{$self->{oid_ifInCrc} . '.' . $options{instance}};
 }
 
 sub add_result_speed {
@@ -410,14 +413,14 @@ sub add_result_speed {
     my $interface_speed = 0;
     $interface_speed = $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} * 1000000;
     
-    $self->{interface_selected}->{$options{instance}}->{speed} = $interface_speed;
+    $self->{int}->{$options{instance}}->{speed} = $interface_speed;
 }
 
 sub add_result_volume {
     my ($self, %options) = @_;
     
-    $self->{interface_selected}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
-    $self->{interface_selected}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in64} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out64} . '.' . $options{instance}};
 }
 
 1;

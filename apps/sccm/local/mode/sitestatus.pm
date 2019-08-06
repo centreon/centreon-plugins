@@ -110,16 +110,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
-        "timeout:s"             => { name => 'timeout', default => 30 },
-        "command:s"             => { name => 'command', default => 'powershell.exe' },
-        "command-path:s"        => { name => 'command_path' },
-        "command-options:s"     => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        "no-ps"                 => { name => 'no_ps' },
-        "ps-exec-only"          => { name => 'ps_exec_only' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'timeout:s'             => { name => 'timeout', default => 30 },
+        'command:s'             => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'        => { name => 'command_path' },
+        'command-options:s'     => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'                 => { name => 'no_ps' },
+        'ps-exec-only'          => { name => 'ps_exec_only' },
+        'warning-status:s'      => { name => 'warning_status', default => '' },
+        'critical-status:s'     => { name => 'critical_status', default => '' },
     });
     
     return $self;
@@ -140,11 +139,13 @@ sub manage_selection {
     );
     
     $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $stdout);
@@ -161,15 +162,31 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    foreach my $site (@{$decoded}) {
-        $self->{sites}->{$site->{SiteCode}} = {
-            display => $site->{SiteCode},
-            SiteName => $site->{SiteName},
-            Type => $map_type{$site->{Type}},
-            Mode => $map_mode{$site->{Mode}},
-            Status => $map_status{$site->{Status}},
-            SecondarySiteCMUpdateStatus => $site->{SecondarySiteCMUpdateStatus},
+    if (ref($decoded) eq "ARRAY") {
+        foreach my $site (@{$decoded}) {
+            $self->{sites}->{$site->{SiteCode}} = {
+                display => $site->{SiteCode},
+                SiteName => $site->{SiteName},
+                Type => $map_type{$site->{Type}},
+                Mode => $map_mode{$site->{Mode}},
+                Status => $map_status{$site->{Status}},
+                SecondarySiteCMUpdateStatus => $site->{SecondarySiteCMUpdateStatus},
+            };
+        }
+    } else {
+        $self->{sites}->{$decoded->{SiteCode}} = {
+            display => $decoded->{SiteCode},
+            SiteName => $decoded->{SiteName},
+            Type => $map_type{$decoded->{Type}},
+            Mode => $map_mode{$decoded->{Mode}},
+            Status => $map_status{$decoded->{Status}},
+            SecondarySiteCMUpdateStatus => $decoded->{SecondarySiteCMUpdateStatus},
         };
+    }
+
+    if (scalar(keys %{$self->{sites}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No sites found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -210,13 +227,13 @@ Print powershell output.
 
 =item B<--warning-status>
 
-Set warning threshold for current synchronisation status (Default: '')
-Can used special variables like: %{status}.
+Set warning threshold for current synchronisation status (Default: '').
+Can used special variables like: %{status}, %{mode}, %{type}, %{name}.
 
 =item B<--critical-status>
 
 Set critical threshold for current synchronisation status (Default: '').
-Can used special variables like: %{status}.
+Can used special variables like: %{status}, %{mode}, %{type}, %{name}.
 
 =back
 

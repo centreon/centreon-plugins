@@ -44,16 +44,16 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global_http', type => 0, , cb_prefix_output => 'prefix_http_output', skipped_code => { -10 => 1 } },
-        { name => 'global_icq', type => 0, , cb_prefix_output => 'prefix_icq_output', skipped_code => { -10 => 1 } },
-        { name => 'global', type => 0, , cb_prefix_output => 'prefix_server_output', skipped_code => { -10 => 1 } }
+        { name => 'global_http', type => 0, cb_prefix_output => 'prefix_http_output', skipped_code => { -10 => 1 } },
+        { name => 'global_icp', type => 0, cb_prefix_output => 'prefix_icp_output', skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_server_output', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{global_http} = [
          { label => 'http-hits-rate', set => {
                 key_values => [ { name => 'cacheProtoClientHttpRequests', diff => 1 }, { name => 'cacheHttpHits', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_data_calc'),
-                output_template => 'hits rate : %.2f %%', output_use => 'hits_prct',
+                output_template => 'hits rate : %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
                 perfdatas => [
                     { label => 'http_hits_rate', value => 'hits_prct', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
@@ -90,23 +90,23 @@ sub set_counters {
         },
     ];
 
-    $self->{maps_counters}->{global_icq} = [
-        { label => 'icq-traffic-in', set => {
+    $self->{maps_counters}->{global_icp} = [
+        { label => 'icp-traffic-in', set => {
                 key_values => [ { name => 'cacheIcpKbRecv', diff => 1 } ],
                 output_template => 'traffic in : %s %s/s',
                 per_second => 1, output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'icq_traffic_in', value => 'cacheIcpKbRecv_per_second', template => '%s',
+                    { label => 'icp_traffic_in', value => 'cacheIcpKbRecv_per_second', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
         },
-        { label => 'icq-traffic-out', set => {
+        { label => 'icp-traffic-out', set => {
                 key_values => [ { name => 'cacheIcpKbSent', diff => 1 } ],
                 output_template => 'traffic Out : %s %s/s',
                 per_second => 1, output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'icq_traffic_out', value => 'cacheIcpKbSent_per_second', template => '%s',
+                    { label => 'icp_traffic_out', value => 'cacheIcpKbSent_per_second', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -152,10 +152,10 @@ sub prefix_http_output {
     return "HTTP ";
 }
 
-sub prefix_icq_output {
+sub prefix_icp_output {
     my ($self, %options) = @_;
 
-    return "ICQ ";
+    return "ICP ";
 }
 
 sub prefix_server_output {
@@ -169,10 +169,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }
@@ -203,7 +201,7 @@ sub manage_selection {
         cacheHttpInKb => $snmp_result->{$oids{cacheHttpInKb}} * 1024 * 8,
         cacheHttpOutKb => $snmp_result->{$oids{cacheHttpOutKb}} * 1024 * 8,
     };
-    $self->{global_icq} = {
+    $self->{global_icp} = {
         cacheIcpKbSent => $snmp_result->{$oids{cacheIcpKbSent}} * 1024 * 8,
         cacheIcpKbRecv => $snmp_result->{$oids{cacheIcpKbRecv}} * 1024 * 8,
     };

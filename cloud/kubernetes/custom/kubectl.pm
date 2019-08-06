@@ -22,7 +22,6 @@ package cloud::kubernetes::custom::kubectl;
 
 use strict;
 use warnings;
-use DateTime;
 use JSON::XS;
 
 sub new {
@@ -133,7 +132,7 @@ sub execute {
 sub kubernetes_list_daemonsets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get daemonsets --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get daemonsets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -141,7 +140,7 @@ sub kubernetes_list_daemonsets {
 sub kubernetes_list_deployments {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get deployments --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get deployments --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -149,7 +148,7 @@ sub kubernetes_list_deployments {
 sub kubernetes_list_ingresses {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get ingresses --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get ingresses --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -157,7 +156,7 @@ sub kubernetes_list_ingresses {
 sub kubernetes_list_namespaces {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get namespaces --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get namespaces --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -165,7 +164,7 @@ sub kubernetes_list_namespaces {
 sub kubernetes_list_nodes {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get nodes --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get nodes --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -173,7 +172,7 @@ sub kubernetes_list_nodes {
 sub kubernetes_list_replicasets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get replicasets --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get replicasets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -181,7 +180,7 @@ sub kubernetes_list_replicasets {
 sub kubernetes_list_services {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get services --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get services --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -189,7 +188,7 @@ sub kubernetes_list_services {
 sub kubernetes_list_statefulsets {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get statefulsets --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get statefulsets --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }
@@ -197,7 +196,7 @@ sub kubernetes_list_statefulsets {
 sub kubernetes_list_pods {
     my ($self, %options) = @_;
 
-    my $response = $self->execute(cmd_options => 'get pods --all-namespaces --output=json');
+    my $response = $self->execute(cmd_options => 'get pods --all-namespaces --output=json --kubeconfig ' . $self->{config_file});
     
     return $response;
 }

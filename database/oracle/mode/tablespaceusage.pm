@@ -116,7 +116,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "filter-tablespace:s" => { name => 'filter_tablespace' },
         "units:s"             => { name => 'units', default => '%' },
@@ -348,6 +347,7 @@ sub manage_selection {
     }
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
+    $self->{sql}->disconnect();
 
     $self->{tablespace} = {};
 

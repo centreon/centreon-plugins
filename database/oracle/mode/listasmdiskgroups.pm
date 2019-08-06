@@ -31,7 +31,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
     });
 
@@ -58,6 +57,8 @@ SELECT name, state, type FROM V$ASM_DISKGROUP
             type => $row->[2],
         };
     }
+
+    $self->{sql}->disconnect();
 }
 
 sub run {

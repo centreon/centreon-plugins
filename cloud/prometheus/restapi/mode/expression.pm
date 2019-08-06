@@ -29,14 +29,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{instance};
-    }
-    
     foreach my $key (@{$self->{instance_mode}->{custom_keys}}) {
-        $self->{output}->perfdata_add(label => $key . $extra_label,
-                                      value => $self->{result_values}->{$key});
+        $self->{output}->perfdata_add(
+            label => $key,
+            nlabel => $key,
+            value => $self->{result_values}->{$key},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef
+        );
     }
 }
 
@@ -90,18 +89,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "query:s@"                => { name => 'query' },
-                                  "query-range:s@"          => { name => 'query_range' },
-                                  "instance:s"              => { name => 'instance' },
-                                  "aggregation:s"           => { name => 'aggregation', default => 'average' },
-                                  "output:s"                => { name => 'output' },
-                                  "multiple-output:s"       => { name => 'multiple_output' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        "query:s@"          => { name => 'query' },
+        "query-range:s@"    => { name => 'query_range' },
+        "instance:s"        => { name => 'instance' },
+        "aggregation:s"     => { name => 'aggregation', default => 'average' },
+        "output:s"          => { name => 'output' },
+        "multiple-output:s" => { name => 'multiple_output' },
+        "warning-status:s"  => { name => 'warning_status', default => '' },
+        "critical-status:s" => { name => 'critical_status', default => '' },
+    });
    
     return $self;
 }

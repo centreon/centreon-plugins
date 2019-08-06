@@ -95,7 +95,7 @@ sub check_options {
 
     if (defined($self->{option_results}->{aggregation})) {
         foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
-            if ($aggregation !~ /average|maximum|minimum|total/i) {
+            if ($aggregation !~ /average|maximum|minimum|total|count/i) {
                 $self->{output}->add_option_msg(short_msg => "Aggregation '" . $aggregation . "' is not handled");
                 $self->{output}->option_exit();
             }
@@ -280,9 +280,11 @@ sub azure_get_metrics_set_url {
     my $encoded_aggregations = $uri->encode(join(',', @{$options{aggregations}}));
     my $encoded_timespan = $uri->encode($options{start_time} . '/' . $options{end_time});
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" . $options{resource_group} .
-        "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} . "/" . $options{resource} . '/providers/microsoft.insights/metrics' .
-        "?api-version=" . $self->{api_version} . "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations . "&timespan=" . $encoded_timespan;
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
+        $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
+        "/" . $options{resource} . "/providers/microsoft.insights/metrics?api-version=" . $self->{api_version} .
+        "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations .
+        "&timespan=" . $encoded_timespan . "&interval=" . $options{interval};
 
     return $url; 
 }
@@ -608,6 +610,8 @@ Microsoft Azure Rest API
 To connect to the Azure Rest API, you must register an application.
 
 Follow the 'How-to guide' in https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
+
+The application needs the 'Monitoring Reader' role (See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
 
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'
 

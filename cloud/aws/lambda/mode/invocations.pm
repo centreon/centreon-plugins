@@ -25,60 +25,95 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my %metrics_mapping = (
+    'Duration' => {
+        'output' => 'Duration',
+        'label' => 'duration',
+        'nlabel' => 'lambda.function.duration.milliseconds',
+    },
+    'Invocations' => {
+        'output' => 'Invocations',
+        'label' => 'invocations',
+        'nlabel' => 'lambda.function.invocations.count',
+    },
+    'Errors' => {
+        'output' => 'Errors',
+        'label' => 'errors',
+        'nlabel' => 'lambda.function.errors.count',
+    },
+    'DeadLetterErrors' => {
+        'output' => 'Dead Letter Errors',
+        'label' => 'deadlettererrors',
+        'nlabel' => 'lambda.function.deadlettererrors.count',
+    },
+    'Throttles' => {
+        'output' => 'Throttles',
+        'label' => 'throttles',
+        'nlabel' => 'lambda.function.throttles.count',
+    },
+    'IteratorAge' => {
+        'output' => 'Iterator Age',
+        'label' => 'iteratorage',
+        'nlabel' => 'lambda.function.iteratorage.milliseconds',
+    }
+);
+
 sub prefix_metric_output {
     my ($self, %options) = @_;
     
-    return "Function '" . $options{instance_value}->{display} . "' " . $options{instance_value}->{stat} . " ";
+    return "Function '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_statistics_output {
+    my ($self, %options) = @_;
+    
+    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking Function '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All invocations metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+          message_multiple => 'All functions metrics are ok', indent_long_output => '    ',
+            group => [
+                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
-    foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
-        foreach my $metric ('Invocations', 'Errors', 'Dead Letter Error', 'Throttles') {
-            next if ($statistic =~ /minimum|maximum|average/);
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' } ],
-                                output_template => $metric . ': %.2f',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
-        foreach my $metric ('Duration') {
-            next if ($statistic =~ /sum/);
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' } ],
-                                output_template => $metric . ': %.2f ms',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
+    foreach my $metric (keys %metrics_mapping) {
+        my $entry = {
+            label => $metrics_mapping{$metric}->{label},
+            nlabel => $metrics_mapping{$metric}->{nlabel},
+            set => {
+                key_values => [ { name => $metric }, { name => 'display' } ],
+                output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
+                perfdatas => [
+                    { value => $metric . '_absolute', template => '%.2f', label_extra_instance => 1 }
+                ],
+            }
+        };
+        push @{$self->{maps_counters}->{statistics}}, $entry;
     }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "name:s@"	      => { name => 'name' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "name:s@"	      => { name => 'name' },
+        "filter-metric:s" => { name => 'filter_metric' },
+    });
     
     return $self;
 }
@@ -111,7 +146,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('Invocations', 'Errors', 'Throttles', 'Duration') {
+    foreach my $metric (keys %metrics_mapping) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
@@ -138,14 +173,14 @@ sub manage_selection {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) && !defined($self->{option_results}->{zeroed}));
 
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{display} = $instance;
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{stat} = lc($statistic);
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{$metric . "_" . lc($statistic)} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{display} = $instance;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
 
-    if (scalar(keys %{$self->{metric}}) <= 0) {
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
     }
@@ -161,9 +196,9 @@ Check Lambda invocations metrics.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::lambda::plugin --custommode=paws --mode=invocations --region='eu-west-1'
---name='myFunction' --filter-metric='Duration' --statistic='average' --critical-duration-average='10' --verbose
+--name='myFunction' --filter-metric='Duration' --statistic='average' --critical-duration='10' --verbose
 
-See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/lam-metricscollected.html' for more informations.
+See 'https://docs.aws.amazon.com/lambda/latest/dg/monitoring-functions-metrics.html' for more informations.
 
 Default statistic: 'sum', 'average'.
 
@@ -175,18 +210,19 @@ Set the function name (Required) (Can be multiple).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'Invocations', 'Errors', 'Throttles', 'Duration') 
+Filter metrics (Can be: 'Duration', 'Invocations', 'Errors',
+'DeadLetterErrors', 'Throttles', 'IteratorAge') 
 (Can be a regexp).
 
-=item B<--warning-$metric$-$statistic$>
+=item B<--warning-*>
 
-Thresholds warning ($metric$ can be: 'invocations', 'errors', 'throttles', 'duration', 
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds warning (Can be: 'invocations', 'errors',
+'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
-=item B<--critical-$metric$-$statistic$>
+=item B<--critical-*>
 
-Thresholds critical ($metric$ can be: 'invocations', 'errors', 'throttles', 'duration', 
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds critical (Can be: 'invocations', 'errors',
+'throttles', 'duration', 'deadlettererrors', 'iteratorage').
 
 =back
 

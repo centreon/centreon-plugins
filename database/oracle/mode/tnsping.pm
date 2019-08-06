@@ -32,7 +32,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "warning:s"       => { name => 'warning', },
@@ -71,6 +70,7 @@ sub run {
                                     short_msg => sprintf("Connection established to listener '%s'.", $sid));
     }
  
+    $self->{sql}->disconnect();
     $self->{output}->display();
     $self->{output}->exit();
 }

@@ -30,20 +30,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "hostname:s"            => { name => 'hostname' },
-        "port:s"                => { name => 'port', default => '8080' },
-        "proto:s"               => { name => 'proto' },
-        "credentials"           => { name => 'credentials' },
-        "basic"                 => { name => 'basic' },
-        "username:s"            => { name => 'username' },
-        "password:s"            => { name => 'password' },
-        "timeout:s"             => { name => 'timeout' },
-        "urlpath:s"             => { name => 'url_path', default => '/manager/text/list' },
-        "filter-name:s"         => { name => 'filter_name', },
-        "filter-state:s"        => { name => 'filter_state', },
-        "filter-path:s"         => { name => 'filter_path', },
+        'hostname:s'     => { name => 'hostname' },
+        'port:s'         => { name => 'port', default => '8080' },
+        'proto:s'        => { name => 'proto' },
+        'credentials'    => { name => 'credentials' },
+        'basic'          => { name => 'basic' },
+        'username:s'     => { name => 'username' },
+        'password:s'     => { name => 'password' },
+        'timeout:s'      => { name => 'timeout' },
+        'urlpath:s'      => { name => 'url_path', default => '/manager/text/list' },
+        'filter-name:s'  => { name => 'filter_name', },
+        'filter-state:s' => { name => 'filter_state', },
+        'filter-path:s'  => { name => 'filter_path', },
     });
 
     $self->{result} = {};
@@ -111,9 +110,10 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         state => $self->{result}->{$name}->{state}
-                                         );
+        $self->{output}->add_disco_entry(
+            name => $name,
+            state => $self->{result}->{$name}->{state}
+        );
     }
 }
 

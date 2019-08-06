@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'connection-time', nlabel => 'database.connection.time.milliseconds', set => {
+        { label => 'connection-time', nlabel => 'connection.time.milliseconds', set => {
                 key_values => [ { name => 'connection_time' } ],
                 output_template => 'Connection established in %d ms',
                 perfdatas => [
@@ -51,7 +51,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {});
 
     return $self;
@@ -84,11 +83,11 @@ Check database connection time.
 
 =over 8
 
-=item B<--warning-database-connection-time-milliseconds>
+=item B<--warning-connection-time-milliseconds>
 
 Threshold warning in milliseconds.
 
-=item B<--critical-database-connection-time-milliseconds>>
+=item B<--critical-connection-time-milliseconds>>
 
 Threshold critical in milliseconds.
 

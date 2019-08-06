@@ -225,11 +225,11 @@ Specify https if needed (Default: 'http')
 
 =item B<--username>
 
-Storeonce username.
+VTOM username.
 
 =item B<--password>
 
-Storeonce password.
+VTOM password.
 
 =item B<--timeout>
 

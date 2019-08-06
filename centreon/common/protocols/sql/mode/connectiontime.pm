@@ -32,12 +32,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"       => { name => 'warning', },
-                                  "critical:s"      => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning:s"       => { name => 'warning', },
+        "critical:s"      => { name => 'critical', },
+    });
 
     return $self;
 }
@@ -63,7 +61,8 @@ sub run {
 
     my $now = Time::HiRes::time();
     my ($exit, $msg_error) = $self->{sql}->connect(dontquit => 1);
-    my $now2 = Time::HiRes::time();    
+    my $now2 = Time::HiRes::time();
+    $self->{sql}->disconnect();
  
     if ($exit == -1) {
         $self->{output}->output_add(severity => 'CRITICAL',

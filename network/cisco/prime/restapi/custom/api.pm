@@ -222,11 +222,11 @@ Cisco Prime API Path (Default: '/webacs/api/v1/data/').
 
 =item B<--username>
 
-Storeonce username.
+Cisco Prime username.
 
 =item B<--password>
 
-Storeonce password.
+Cisco Prime password.
 
 =item B<--timeout>
 

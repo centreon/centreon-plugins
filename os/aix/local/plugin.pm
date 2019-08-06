@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'errpt'            => 'os::aix::local::mode::errpt',
-                         'list-storages'    => 'os::aix::local::mode::liststorages',
-                         'storage'          => 'os::aix::local::mode::storage',
-                         'inodes'           => 'os::aix::local::mode::inodes',
-                         'lvsync'         => 'os::aix::local::mode::lvsync',
-                         );
+        'errpt'         => 'os::aix::local::mode::errpt',
+        'inodes'        => 'os::aix::local::mode::inodes',
+        'list-storages' => 'os::aix::local::mode::liststorages',
+        'lvsync'        => 'os::aix::local::mode::lvsync',
+        'process'       => 'os::aix::local::mode::process',
+        'storage'       => 'os::aix::local::mode::storage',
+    );
 
     return $self;
 }

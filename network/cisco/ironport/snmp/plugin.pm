@@ -33,10 +33,11 @@ sub new {
     %{$self->{modes}} = (
         'cpu'              => 'centreon::common::cisco::ironport::snmp::mode::cpu',
         'hardware'         => 'centreon::common::cisco::ironport::snmp::mode::hardware',
-        'keys-expire'      => 'centreon::common::cisco::ironport::snmp::mode::keysexpire',
+        'mail-usage'       => 'centreon::common::cisco::ironport::snmp::mode::mailusage',
         'interfaces'       => 'snmp_standard::mode::interfaces', 
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'centreon::common::cisco::ironport::snmp::mode::memory',
+        'proxy-usage'      => 'centreon::common::cisco::ironport::snmp::mode::proxyusage',
     );
 
     return $self;

@@ -58,7 +58,7 @@ sub set_counters {
         },
         { label => 'temperature', nlabel => 'temperature.celsius', set => {
                 key_values => [ { name => 'temperature' } ],
-                output_template => 'Temperature: %d C°',
+                output_template => 'Temperature: %d C',
                 perfdatas => [
                     { label => 'temperature', value => 'temperature_absolute', template => '%d',
                       unit => 'C' }
@@ -106,7 +106,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "city-name:s"           => { name => 'city_name' },
         "warning-weather:s"     => { name => 'warning_weather', default => '' },
@@ -126,10 +125,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{city} = {};
-
-    my $results = $options{custom}->request_api(url_path => "/weather?",
-                                                get_param => ["q=" . $self->{option_results}->{city_name}]);
+    my $results = $options{custom}->request_api(
+        url_path => "/weather?",
+        get_param => ["q=" . $self->{option_results}->{city_name}]
+    );
 
     $self->{city} = {
         wind => $results->{wind}->{speed},
@@ -138,11 +137,6 @@ sub manage_selection {
         clouds => $results->{clouds}->{all},
         weather => @{$results->{weather}->[0]}{main}
     };
-
-    if (scalar(keys %{$self->{city}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No city found.");
-        $self->{output}->option_exit();
-    }
 }
 
 1;
@@ -157,28 +151,37 @@ Check city weather
 
 =item B<--city-name>
 
-Filter node name (regexp can be used)
+City name (e.g London or ISO 3166 code like London,uk) 
 
 =item B<--warning-weather>
 
-Set warning threshold on node compliance.
+Set warning threshold for weather string desc (Default: '').
+Can used special variables like: %{weather}
 
 =item B<--critical-weather>
 
-Set critical threshold on node compliance.
-
-=item B<--warning-status>
-
-Set warning threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
-
-=item B<--critical-status>
-
-Set critical threshold for status of rule compliance (Default: '').
-Can used special variables like: %{rule}, %{compliance}
-
+Set critical threshold for weather string desc (Default: '').
+Can used special variables like:  %{weather}
 Example :
-  --critical-status='%{rule} eq "Global configuration for all nodes" && %{compliance} < 95'
+  --critical-weather='%{weather} eq "Clouds'
+
+=item B<--warning-*>
+
+Set warning threshold for each metric gathered 
+Can be : 
+    - temperature (Celsius)
+    - humidity (%)
+    - clouds (% coverage)
+    - wind (speed m/s)
+
+=item B<--critical-*>
+
+Set critical threshold for each metric gathered 
+Can be : 
+    - temperature (Celsius)
+    - humidity (%)
+    - clouds (% coverage)
+    - wind (speed m/s)
 
 =back
 

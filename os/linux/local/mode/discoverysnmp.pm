@@ -33,10 +33,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "subnet:s"              => { name => 'subnet' },
-        "snmp-port:s"           => { name => 'snmp_port' },
+        "snmp-port:s"           => { name => 'snmp_port', default => 161 },
         "snmp-version:s@"       => { name => 'snmp_version' },
         "snmp-community:s@"     => { name => 'snmp_community' },
         "snmp-timeout:s"        => { name => 'snmp_timeout', default => 1 },
@@ -55,10 +54,6 @@ sub check_options {
     if (!defined($self->{option_results}->{subnet}) ||
         $self->{option_results}->{subnet} !~ /(\d+)\.(\d+)\.(\d+)\.(\d+)\/(\d+)/) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --subnet option (<ip>/<cidr>).");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{snmp_port}) || $self->{option_results}->{snmp_port} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --snmp-port option.");
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{snmp_community}) || $self->{option_results}->{snmp_community} eq '') {
@@ -195,6 +190,31 @@ __END__
 Resources discovery.
 
 =over 8
+
+=item B<--subnet>
+
+Specify subnet from which discover
+resources (Must be <ip>/<cidr> format) (Mandatory).
+
+=item B<--snmp-port>
+
+Specify SNMP port (Default: 161).
+
+=item B<--snmp-version>
+
+Specify SNMP version (Can be multiple) (Mandatory).
+
+=item B<--snmp-community>
+
+Specify SNMP community (Can be multiple) (Mandatory).
+
+=item B<--snmp-timeout>
+
+Specify SNMP timeout in second (Default: 1).
+
+=item B<--prettify>
+
+Prettify JSON output.
 
 =back
 

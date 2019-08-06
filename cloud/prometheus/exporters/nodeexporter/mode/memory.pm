@@ -30,19 +30,22 @@ sub custom_usage_perfdata {
 
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        nlabel => 'memory.usage.bytes', 
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
 }
 
 sub custom_usage_threshold {
@@ -53,8 +56,9 @@ sub custom_usage_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                                         { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value,
+                                               threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                              { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -100,7 +104,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'buffer', set => {
+        { label => 'buffer', nlabel => 'buffer.usage.bytes', set => {
                 key_values => [ { name => 'buffer' }, { name => 'display' } ],
                 output_template => 'Buffer: %.2f %s',
                 output_change_bytes => 1,
@@ -110,7 +114,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cached', set => {
+        { label => 'cached', nlabel => 'cache.usage.bytes', set => {
                 key_values => [ { name => 'cached' }, { name => 'display' } ],
                 output_template => 'Cached: %.2f %s',
                 output_change_bytes => 1,
@@ -134,7 +138,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
         "units:s"                 => { name => 'units', default => '%' },
@@ -180,18 +183,22 @@ sub manage_selection {
 
     $self->{nodes} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{total} . '",' .
-                                                            $self->{option_results}->{instance} .
-                                                            $self->{extra_filter} . '}, "__name__", "total", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{available} . '",' .
-                                                            $self->{option_results}->{instance} .
-                                                            $self->{extra_filter} . '}, "__name__", "available", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",' .
-                                                            $self->{option_results}->{instance} .
-                                                            $self->{extra_filter} . '}, "__name__", "cached", "", "")',
-                                                        'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",' .
-                                                            $self->{option_results}->{instance} .
-                                                            $self->{extra_filter} . '}, "__name__", "buffer", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{total} . '",' .
+                $self->{option_results}->{instance} .
+                $self->{extra_filter} . '}, "__name__", "total", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{available} . '",' .
+                $self->{option_results}->{instance} .
+                $self->{extra_filter} . '}, "__name__", "available", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{cached} . '",' .
+                $self->{option_results}->{instance} .
+                $self->{extra_filter} . '}, "__name__", "cached", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{buffer} . '",' .
+                $self->{option_results}->{instance} .
+                $self->{extra_filter} . '}, "__name__", "buffer", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{instance}}}->{display} = $result->{metric}->{$self->{labels}->{instance}};

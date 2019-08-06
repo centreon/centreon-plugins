@@ -57,7 +57,8 @@ sub snmp_execute {
         oids => [{ oid => $mapping->{branch_sensors}->{hwgste} }, { oid => $mapping->{branch_sensors}->{hwgste2} }]
     );
     $self->{branch} = 'hwgste';
-    if (defined($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) && scalar($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) > 0) {
+    if (defined($self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }) && 
+        scalar(keys %{$self->{results}->{ $mapping->{branch_sensors}->{hwgste2} }}) > 0) {
         $self->{branch} = 'hwgste2';
     }
 }
@@ -67,7 +68,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
     });
     

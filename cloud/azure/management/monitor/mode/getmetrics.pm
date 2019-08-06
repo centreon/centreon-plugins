@@ -29,27 +29,30 @@ use Data::Dumper;
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(label => $self->{result_values}->{perf_label},
-                                  value => $self->{result_values}->{value},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
-                                 );
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{perf_label},
+        value => $self->{result_values}->{value},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
+    );
 
 }
 
 sub custom_metric_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{value},
-                                                  threshold => [ { label => 'critical-metric', exit_litteral => 'critical' },
-                                                                 { label => 'warning-metric', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{value},
+        threshold => [ { label => 'critical-metric', exit_litteral => 'critical' },
+                       { label => 'warning-metric', exit_litteral => 'warning' } ]);
     return $exit;
 }
 
 sub custom_metric_output {
     my ($self, %options) = @_;
 
-    my $msg = "Metric '" . $self->{result_values}->{label}  . "' of resource '" . $self->{result_values}->{display}  . "' value is " . $self->{result_values}->{value};
+    my $msg = "Metric '" . $self->{result_values}->{name}  . "' of resource '" . $self->{result_values}->{display} .
+        "' and aggregation '" . $self->{result_values}->{aggregation} . "' value is " . $self->{result_values}->{value};
     return $msg;
 }
 
@@ -57,6 +60,7 @@ sub custom_metric_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_value'};
+    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{label} = $options{new_datas}->{$self->{instance} . '_label'};
     $self->{result_values}->{aggregation} = $options{new_datas}->{$self->{instance} . '_aggregation'};
     $self->{result_values}->{perf_label} = $options{new_datas}->{$self->{instance} . '_perf_label'};
@@ -68,12 +72,12 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metrics', type => 0 },
+        { name => 'metrics', type => 1, message_multiple => 'All metrics are ok' },
     ];
     
     $self->{maps_counters}->{metrics} = [
         { label => 'metric', set => {
-                key_values => [ { name => 'value' }, { name => 'label' }, { name => 'aggregation' },
+                key_values => [ { name => 'value' }, { name => 'name' }, { name => 'label' }, { name => 'aggregation' },
                     { name => 'perf_label' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
@@ -89,15 +93,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource:s"            => { name => 'resource' },
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "resource-type:s"       => { name => 'resource_type' },
-                                    "resource-namespace:s"  => { name => 'resource_namespace' },
-                                    "metric:s@"             => { name => 'metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "resource:s"            => { name => 'resource' },
+        "resource-group:s"      => { name => 'resource_group' },
+        "resource-type:s"       => { name => 'resource_type' },
+        "resource-namespace:s"  => { name => 'resource_namespace' },
+        "metric:s@"             => { name => 'metric' },
+    });
     
     return $self;
 }
@@ -107,7 +109,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{resource})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group and --resource-type options or --resource <id>.");
+        $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group, --resource-type and --resource-namespace options or --resource <id>.");
         $self->{output}->option_exit();
     }
 
@@ -165,8 +167,9 @@ sub manage_selection {
         foreach my $aggregation (('minimum', 'maximum', 'average', 'total')) {
             next if (!defined($results->{$label}->{$aggregation}));
      
-            $self->{metrics} = {
+            $self->{metrics}->{$label . '_' . $aggregation} = {
                 display => $self->{az_resource},
+                name => $results->{$label}->{name},
                 label => $label,
                 aggregation => $aggregation,
                 value => $results->{$label}->{$aggregation},
@@ -215,7 +218,7 @@ Set resource type (Required if resource's name is used).
 
 =item B<--metric>
 
-Set monitor metrics (Required).
+Set monitor metrics (Required) (Can be multiple).
 
 =item B<--warning-metric>
 

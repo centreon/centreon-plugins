@@ -34,7 +34,7 @@ sub set_counters {
     ];
    
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'queries.persecond', set => {
+        { label => 'total', nlabel => 'queries.total.persecond', set => {
                 key_values => [ { name => 'Queries', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Total : %d',
@@ -82,7 +82,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
     });
 

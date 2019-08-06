@@ -33,7 +33,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.2';
     $options{options}->add_options(arguments => {
         "service-soap:s"        => { name => 'service_soap' },
         "data:s"                => { name => 'data' },

@@ -115,7 +115,8 @@ my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_entSensorValueEntry }, { oid => $oid_entSensorThresholdEntry };
+    push @{$self->{request}}, { oid => $oid_entSensorValueEntry, end => $mapping->{entSensorStatus}->{oid} }, 
+        { oid => $oid_entSensorThresholdEntry, end => $mapping2->{entSensorThresholdValue}->{oid} };
 }
 
 sub get_default_warning_threshold {
@@ -204,7 +205,6 @@ sub check {
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 
            $result->{entSensorValue} * (10 ** ($result->{entSensorScale}) * (10 ** -($result->{entSensorPrecision}))) : undef;
-        $result->{entSensorValue} = sprintf("%.2f", $result->{entSensorValue});
         
         $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance: %s] [value: %s %s]", 
                                     $sensor_descr, $result->{entSensorStatus},

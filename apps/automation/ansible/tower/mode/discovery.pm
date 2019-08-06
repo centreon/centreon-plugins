@@ -31,8 +31,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
+        "group"     => { name => 'group' },
+        "inventory" => { name => 'inventory' },
         "prettify"  => { name => 'prettify' },
     });
 
@@ -52,7 +53,10 @@ sub run {
 
     $disco_stats->{start_time} = time();
 
-    my $hosts = $options{custom}->tower_list_host();
+    my $hosts = $options{custom}->tower_list_hosts(
+        group => $self->{option_results}->{group},
+        inventory => $self->{option_results}->{inventory}
+    );
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
@@ -99,6 +103,18 @@ __END__
 Resources discovery.
 
 =over 8
+
+=item B<--group>
+
+Specify host group.
+
+=item B<--inventory>
+
+Specify host inventory.
+
+=item B<--prettify>
+
+Prettify JSON output.
 
 =back
 

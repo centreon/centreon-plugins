@@ -29,8 +29,8 @@ use centreon::plugins::statefile;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(fru|operating)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(fru-temperature)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(fru|operating|alarm)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(operating-temperature|operating-cpu|operating-buffer|operating-heap)$';
     
     $self->{cb_hook1} = 'init_cache';
     $self->{cb_hook2} = 'snmp_execute';
@@ -58,10 +58,15 @@ sub set_system {
             ['down', 'CRITICAL'],
             ['standby', 'OK'],
         ],
+        alarm => [
+            ['other', 'OK'],
+            ['off', 'OK'],
+            ['on', 'CRITICAL'],
+        ],
     };
     
     $self->{components_path} = 'network::juniper::common::junos::mode::components';
-    $self->{components_module} = ['fru', 'operating'];
+    $self->{components_module} = ['fru', 'operating', 'alarm'];
 }
 
 sub snmp_execute {
@@ -77,11 +82,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-                                });
+    $options{options}->add_options(arguments => {
+        'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
+    });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);    
     return $self;
@@ -163,7 +166,7 @@ sub get_type {
     my $result = $options{snmp}->get_leef(oids => [$oid_jnxBoxDescr]);
     
     $self->{env_type} = defined($result->{$oid_jnxBoxDescr}) ? $result->{$oid_jnxBoxDescr} : 'unknown';
-    $self->{output}->output_add(long_msg => sprintf("Environment type: %s", $self->{env_type}));
+    $self->{output}->output_add(long_msg => sprintf("environment type: %s", $self->{env_type}));
 }
 
 sub load_components {
@@ -204,7 +207,11 @@ Check Hardware (JUNIPER-MIB) (frus, operating).
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fru', 'operating'.
+Can be: 'fru', 'operating', 'alarm'.
+
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter, absent-problem and threshold options).
 
 =item B<--filter>
 

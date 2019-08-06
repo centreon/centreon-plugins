@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'reading', set => {
+        { label => 'reading', nlabel => 'connections.reading.count', set => {
                 key_values => [ { name => 'reading' } ],
                 output_template => 'Reading: %d',
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'waiting', set => {
+        { label => 'waiting', nlabel => 'connections.waiting.count', set => {
                 key_values => [ { name => 'waiting' } ],
                 output_template => 'Waiting: %d',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'writing', set => {
+        { label => 'writing', nlabel => 'connections.writing.count', set => {
                 key_values => [ { name => 'writing' } ],
                 output_template => 'Writing: %d',
                 perfdatas => [
@@ -61,7 +61,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'active', set => {
+        { label => 'active', nlabel => 'connections.active.count', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active: %d',
                 perfdatas => [
@@ -70,7 +70,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'accepted', set => {
+        { label => 'accepted', nlabel => 'connections.accepted.persecond', set => {
                 key_values => [ { name => 'accepted', diff => 1 } ],
                 output_template => 'Accepted: %.2f/s',
                 per_second => 1,
@@ -80,7 +80,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'handled', set => {
+        { label => 'handled', nlabel => 'connections.handled.persecond', set => {
                 key_values => [ { name => 'handled', diff => 1 } ],
                 output_template => 'Handled: %.2f/s',
                 per_second => 1,
@@ -104,9 +104,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-counters:s"     => { name => 'filter_counters' },
         "extra-filter:s@"       => { name => 'extra_filter' },
         "metric-overload:s@"    => { name => 'metric_overload' },
     });
@@ -141,10 +139,14 @@ sub manage_selection {
 
     $self->{global} = {};
 
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{connections} . '",' .
-                                                            $self->{extra_filter} . '}, "__name__", "connections", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{connections_total} . '",' .
-                                                            $self->{extra_filter} . '}, "__name__", "connections_total", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{connections} . '",' .
+                $self->{extra_filter} . '}, "__name__", "connections", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{connections_total} . '",' .
+                $self->{extra_filter} . '}, "__name__", "connections_total", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         $self->{global}->{$result->{metric}->{state}} = ${$result->{value}}[1];

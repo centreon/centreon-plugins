@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
@@ -69,17 +68,15 @@ sub prefix_vpns_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /^down$/i' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s'       => { name => 'filter_name' },
+        'warning-status:s'    => { name => 'warning_status', default => '' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{status} =~ /^down$/i' },
+    });
+
     return $self;
 }
 
@@ -139,10 +136,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No VPNs found.");
         $self->{output}->option_exit();
     }
-    
-    $self->{cache_name} = "barracuda_cloudgen_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
 
 1;

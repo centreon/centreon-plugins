@@ -27,9 +27,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{package} = parent package caller
-    # $options{options} = options object
-    # $options{output} = output object
     $self->{options} = $options{options};
     $self->{output} = $options{output};
     
@@ -62,9 +59,9 @@ sub new {
 
 sub init {
     my ($self, %options) = @_;
-    # $options{version} = string version
-    # $options{help} = string help
 
+    # add meta mode
+    $self->{modes}->{multi} = 'centreon::plugins::multi';
     if (defined($options{help}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->{options}->display_help();
         $self->{output}->option_exit();
@@ -119,7 +116,11 @@ sub init {
     $self->{option_results} = $self->{options}->get_options();
 
     $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
-    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+    $self->{mode}->check_options(
+        option_results => $self->{option_results},
+        default => $self->{default},
+        modes => $self->{modes} # for meta mode multi
+    );
 }
 
 sub load_password_mgr {
@@ -171,9 +172,13 @@ sub list_mode {
     my $self = shift;
     $self->{options}->display_help();
     
-    $self->{output}->add_option_msg(long_msg => "Modes Available:");
+    $self->{output}->add_option_msg(long_msg => 'Modes Meta:');
+    $self->{output}->add_option_msg(long_msg => '   multi');
+    $self->{output}->add_option_msg(long_msg => '');
+    $self->{output}->add_option_msg(long_msg => 'Modes Available:');
     foreach (sort keys %{$self->{modes}}) {
-        $self->{output}->add_option_msg(long_msg => "   " . $_);
+        next if ($_ eq 'multi');
+        $self->{output}->add_option_msg(long_msg => '   ' . $_);
     }
     $self->{output}->option_exit(nolabel => 1);
 }

@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'arp'                  => 'snmp_standard::mode::arp',
         'configuration'        => 'centreon::common::cisco::standard::snmp::mode::configuration',
         'cpu'                  => 'centreon::common::cisco::standard::snmp::mode::cpu',
         'environment'          => 'centreon::common::cisco::standard::snmp::mode::environment',
@@ -45,6 +46,7 @@ sub new {
         'spanning-tree'        => 'snmp_standard::mode::spanningtree',
         'stack'                => 'centreon::common::cisco::standard::snmp::mode::stack',
         'uptime'               => 'snmp_standard::mode::uptime',
+        'voice-call'           => 'centreon::common::cisco::standard::snmp::mode::voicecall',
     );
 
     return $self;

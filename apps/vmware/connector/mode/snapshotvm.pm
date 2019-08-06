@@ -31,26 +31,28 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "vm-hostname:s"         => { name => 'vm_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "scope-host:s"          => { name => 'scope_host' },
-        "filter-description:s"  => { name => 'filter_description' },
-        "filter-os:s"           => { name => 'filter_os' },
-        "filter-uuid:s"         => { name => 'filter_uuid' },
-        "display-description"   => { name => 'display_description' },
-        "check-consolidation"   => { name => 'check_consolidation' },
-        "nopoweredon-skip"      => { name => 'nopoweredon_skip' },
-        "warning:s"             => { name => 'warning' },
-        "critical:s"            => { name => 'critical' },
-        "disconnect-status:s"   => { name => 'disconnect_status', default => 'unknown' },
+        'vm-hostname:s'         => { name => 'vm_hostname' },
+        'filter'                => { name => 'filter' },
+        'scope-datacenter:s'    => { name => 'scope_datacenter' },
+        'scope-cluster:s'       => { name => 'scope_cluster' },
+        'scope-host:s'          => { name => 'scope_host' },
+        'filter-description:s'  => { name => 'filter_description' },
+        'filter-os:s'           => { name => 'filter_os' },
+        'filter-uuid:s'         => { name => 'filter_uuid' },
+        'display-description'   => { name => 'display_description' },
+        'check-consolidation'   => { name => 'check_consolidation' },
+        'nopoweredon-skip'      => { name => 'nopoweredon_skip' },
+        'warning:s'             => { name => 'warning' },
+        'critical:s'            => { name => 'critical' },
+        'disconnect-status:s'   => { name => 'disconnect_status', default => 'unknown' },
+        'unit:s'                => { name => 'unit', default => 's' },
     });
     
     return $self;
 }
+
+my $unitdiv = { s => ['seconds', 1], w => ['weeks', 604800], d => ['days', 86400], h => ['hours', 3600], m => ['minutes', 60] };
 
 sub check_options {
     my ($self, %options) = @_;
@@ -68,6 +70,10 @@ sub check_options {
     if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status option '" . $self->{option_results}->{disconnect_status} . "'.");
         $self->{output}->option_exit();
+    }
+
+    if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
+        $self->{option_results}->{unit} = 's';
     }
 }
 
@@ -120,7 +126,7 @@ sub run {
             
             my $diff_time = time() - $create_time;
             my $days = int($diff_time / 60 / 60 / 24);
-            my $exit = $self->{perfdata}->threshold_check(value => $diff_time, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+            my $exit = $self->{perfdata}->threshold_check(value => ($diff_time / $unitdiv->{$self->{option_results}->{unit}}->[1]), threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
             
             my $prefix_msg = "'$vm_name'";
             if (defined($self->{display_description}) && defined($response->{data}->{$vm_id}->{'config.annotation'}) &&
@@ -151,19 +157,35 @@ sub run {
         min => 0
     );
     if (scalar(keys %{$vm_errors{warning}}) > 0) {
-        $self->{output}->output_add(severity => 'WARNING',
-                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{option_results}->{warning} / 86400), 
-                                                         join('] [', sort keys %{$vm_errors{warning}})));
+        $self->{output}->output_add(
+            severity => 'WARNING',
+            short_msg => sprintf(
+                'Snapshots for VM older than %d %s: [%s]',
+                $self->{option_results}->{warning},
+                $unitdiv->{$self->{option_results}->{unit}}->[0],
+                join('] [', sort keys %{$vm_errors{warning}})
+            )
+        );
     }
     if (scalar(keys %{$vm_errors{critical}}) > 0) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf('Snapshots for VM older than %d days: [%s]', ($self->{option_results}->{critical} / 86400), 
-                                                         join('] [', sort keys %{$vm_errors{critical}})));
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => sprintf(
+                'Snapshots for VM older than %d %s: [%s]',
+                $self->{option_results}->{critical}, 
+                $unitdiv->{$self->{option_results}->{unit}}->[0],
+                join('] [', sort keys %{$vm_errors{critical}})
+            )
+        );
     }
     if (scalar(keys %vm_consolidate) > 0) {
-         $self->{output}->output_add(severity => 'CRITICAL',
-                                     short_msg => sprintf('VMs need consolidation: [%s]',
-                                                          join('] [', sort keys %vm_consolidate)));
+         $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => sprintf(
+                'VMs need consolidation: [%s]',
+                join('] [', sort keys %vm_consolidate)
+            )
+        );
     }
     
     $self->{output}->display();
@@ -225,13 +247,18 @@ Status if VM disconnected (default: 'unknown').
 
 Skip check if VM is not poweredOn.
 
+=item B<--unit>
+
+Select the unit for performance data and thresholds. May be 's' for seconds, 'm' for minutes,
+'h' for hours, 'd' for days, 'w' for weeks. Default is seconds
+
 =item B<--warning>
 
-Threshold warning in seconds.
+Warning threshold for snapshot's age.
 
 =item B<--critical>
 
-Threshold critical in seconds.
+Critical threshold for snapshot's age.
 
 =back
 

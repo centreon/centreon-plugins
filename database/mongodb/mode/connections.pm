@@ -58,7 +58,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-created', nlabel => 'connections.persecond', set => {
+        { label => 'total-created', nlabel => 'connections.created.persecond', set => {
                 key_values => [ { name => 'totalCreated', diff => 1 } ],
                 output_template => 'Created: %.2f/s',
                 per_second => 1,
@@ -81,7 +81,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {});
 
     return $self;
@@ -141,11 +140,11 @@ Threshold warning for connections usage (current over available)
 
 Threshold critical for connections usage (current over available)
 
-=item B<--warning-connections-persecond>
+=item B<--warning-connections-created-persecond>
 
 Threshold warning for connections created per second.
 
-=item B<--critical-connections-persecond>
+=item B<--critical-connections-created-persecond>
 
 Threshold critical for connections created per second.
 

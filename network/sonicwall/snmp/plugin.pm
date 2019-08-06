@@ -31,11 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::sonicwall::snmp::mode::cpu',
-                         'memory'           => 'network::sonicwall::snmp::mode::memory',
-                         'connections'      => 'network::sonicwall::snmp::mode::connections',
-			 'vpn'		    => 'network::sonicwall::snmp::mode::vpn',
-                         );
+        'connections'       => 'network::sonicwall::snmp::mode::connections',
+        'cpu'               => 'network::sonicwall::snmp::mode::cpu',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'memory'            => 'network::sonicwall::snmp::mode::memory',
+        'vpn'               => 'network::sonicwall::snmp::mode::vpn',
+    );
 
     return $self;
 }

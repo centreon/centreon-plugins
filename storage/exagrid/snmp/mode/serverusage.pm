@@ -128,7 +128,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /warning/i' },
@@ -170,9 +169,9 @@ sub manage_selection {
     $self->{server} = { 
         status => $result->{egServerAlarmState},
         retention_total => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000,
-        retention_used => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egLandingSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000,
-        landing_total => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000,
-        landing_used => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egRetentionSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000,
+        retention_used => $result->{egRetentionSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egRetentionSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000,
+        landing_total => $result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000,
+        landing_used => $result->{egLandingSpaceConfiguredWholeGigabytes} * 1000 * 1000 * 1000 - $result->{egLandingSpaceAvailableWholeGigabytes} * 1000 * 1000 * 1000,
     };
 }
 
