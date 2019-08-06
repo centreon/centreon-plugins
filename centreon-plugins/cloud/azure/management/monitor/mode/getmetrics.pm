@@ -177,7 +177,6 @@ sub manage_selection {
             };
         }
     }
-    print Dumper $self->{metrics};
 
     $self->{output}->output_add(long_msg => sprintf("Raw data:\n%s", Dumper($raw_results)), debug => 1);
 }
