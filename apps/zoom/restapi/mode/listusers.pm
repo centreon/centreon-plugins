@@ -46,7 +46,7 @@ sub manage_selection {
     my @users;
 
     my $page = 1;
-    while (my $results = $options{custom}->request_api(url_path => '/users?page_size=4&page_number=' . $page)) {
+    while (my $results = $options{custom}->request_api(url_path => '/users?page_size=30&page_number=' . $page)) {
         push @users, @{$results->{users}};
         ($results->{page_number} < $results->{page_count}) ? $page++ : last;
     }
