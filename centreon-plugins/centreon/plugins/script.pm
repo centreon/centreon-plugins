@@ -243,15 +243,17 @@ sub check_plugin_option {
 sub display_list_plugin {
     my ($self) = @_;
     $self->{plugins_result} = {};
-    
+
     if ($alternative_fatpacker == 1) {
         my $integrated_plugins = $self->fatpacker_find_plugin();
         
-        foreach my $key (@$integrated_plugins) {
+        foreach my $key (sort @$integrated_plugins) {
             # Need to load it to get the description
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $key, 
-                                                   error_msg => 'Cannot load module --plugin.');
-                                               
+            centreon::plugins::misc::mymodule_load(
+                output => $self->{output}, module => $key, 
+                error_msg => 'Cannot load module --plugin.'
+            );
+
             my $name = $key;
             $name =~ s/\.pm//g;
             $name =~ s/\//::/g;
@@ -273,7 +275,7 @@ sub display_list_plugin {
     
     # Search file 'plugin.pm'
     $self->check_directory($FindBin::Bin);
-    foreach my $key (keys %{$self->{plugins_result}}) {
+    foreach my $key (sort keys %{$self->{plugins_result}}) {
         my $name = $key;
         $name =~ s/^$FindBin::Bin\/(.*)\.pm/$1/;
         $name =~ s/\//::/g;
