@@ -86,7 +86,7 @@ sub manage_selection {
     }
 
     my $infos = {};
-    if ($options{sql}->is_version_minimum(version => '5.7.6')) {
+    if (!$options{sql}->is_mariadb() && $options{sql}->is_version_minimum(version => '5.7.6')) {
          $options{sql}->query(query => q{
             SELECT 'max_connections' as name, @@GLOBAL.max_connections as value
             UNION

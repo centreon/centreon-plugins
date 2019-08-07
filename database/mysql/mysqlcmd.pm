@@ -43,14 +43,14 @@ sub new {
         $options{output}->option_exit();
     }
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    { "mysql-cmd:s"              => { name => 'mysql_cmd', default => '/usr/bin/mysql' },
-                      "host:s@"                  => { name => 'host' },
-                      "port:s@"                  => { name => 'port' },
-                      "username:s@"              => { name => 'username' },
-                      "password:s@"              => { name => 'password' },
-                      "socket:s@"                => { name => 'socket' },
-                      "sql-errors-exit:s"        => { name => 'sql_errors_exit', default => 'unknown' },
+        $options{options}->add_options(arguments => {
+            'mysql-cmd:s'       => { name => 'mysql_cmd', default => '/usr/bin/mysql' },
+            'host:s@'           => { name => 'host' },
+            'port:s@'           => { name => 'port' },
+            'username:s@'       => { name => 'username' },
+            'password:s@'       => { name => 'password' },
+            'socket:s@'         => { name => 'socket' },
+            'sql-errors-exit:s' => { name => 'sql_errors_exit', default => 'unknown' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'MYSQLCMD OPTIONS', once => 1);
@@ -112,7 +112,7 @@ sub check_options {
     $self->{mysql_cmd} = $self->{option_results}->{mysql_cmd};
  
     if (!defined($self->{host}) || $self->{host} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify host argument.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify host argument.');
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
     
@@ -184,12 +184,13 @@ sub command_execution {
     my ($self, %options) = @_;
     
     my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $self->{mysql_cmd},
-                                                 arguments =>  [@{$self->{args}}, '-e', $options{request}],
-                                                 timeout => 30,
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
+        command => $self->{mysql_cmd},
+        arguments =>  [@{$self->{args}}, '-e', $options{request}],
+        timeout => 30,
+        wait_exit => 1,
+        redirect_stderr => 1
+    );
+
     if ($exit_code <= -1000) {
         if ($exit_code == -1000) {
             $self->{output}->output_add(severity => 'UNKNOWN', 
@@ -204,7 +205,24 @@ sub command_execution {
 
 sub disconnect {}
 
-# Connection initializer
+sub is_mariadb {
+    my ($self) = @_;
+
+    return $self->{is_mariadb};
+}
+
+sub set_version {
+    my ($self, %options) = @_;
+
+    $self->{is_mariadb} = 0;
+    $self->{version} = $options{version};
+    # MariaDB: 5.5.5-10.1.36-MariaDB or 10.1.36-MariaDB
+    if ($self->{version} =~ /([0-9\.]*?)-MariaDB/i) {
+        $self->{version} = $1;
+        $self->{is_mariadb} = 1;
+    }
+}
+
 sub connect {
     my ($self, %options) = @_;
     my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
@@ -212,14 +230,14 @@ sub connect {
     (my $exit_code, $self->{stdout}) = $self->command_execution(request => "SHOW VARIABLES LIKE 'version'");
     if ($exit_code != 0) {
         if ($dontquit == 0) {
-            $self->{output}->add_option_msg(short_msg => "Cannot connect: " . $self->{stdout});
+            $self->{output}->add_option_msg(short_msg => 'Cannot connect: ' . $self->{stdout});
             $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
         }
-        return (-1, "Cannot connect: " . $self->{stdout});
+        return (-1, 'Cannot connect: ' . $self->{stdout});
     }
-    
+
     my $row = $self->fetchrow_hashref();
-    $self->{version} = $row->{Value};
+    $self->set_version(version => $row->{Value});
 
     return 0;
 }
@@ -284,7 +302,7 @@ sub query {
     (my $exit_code, $self->{stdout}) = $self->command_execution(request => $options{query});
     
     if ($exit_code != 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{stdout});
+        $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $self->{stdout});
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
