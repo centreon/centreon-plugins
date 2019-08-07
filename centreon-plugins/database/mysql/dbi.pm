@@ -25,14 +25,21 @@ use base qw(centreon::plugins::dbi);
 use strict;
 use warnings;
 
+sub is_mariadb {
+    my ($self) = @_;
+
+    return $self->{is_mariadb};
+}
+
 sub set_version {
     my ($self) = @_;
-    
+
+    $self->{is_mariadb} = 0;
     $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
-    # MariaDB: 5.5.5-10.1.36-MariaDB
-    if ($self->{version} =~ /^(.*.)-(.*?)-MariaDB/i) {
+    # MariaDB: 5.5.5-10.1.36-MariaDB or 10.1.36-MariaDB
+    if ($self->{version} =~ /([0-9\.]*?)-MariaDB/i) {
         $self->{version} = $1;
-        $self->{mariadb_version} = $2;
+        $self->{is_mariadb} = 1;
     }
 }
 
