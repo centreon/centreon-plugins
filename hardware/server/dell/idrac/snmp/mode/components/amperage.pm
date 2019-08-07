@@ -63,6 +63,7 @@ sub check {
             $divisor = 10;
         } elsif ($result->{amperageProbeType} =~ /amperageProbeTypeIsPowerSupplyWatts|amperageProbeTypeIsSystemWatts/) {
             $unit = 'W';
+            $divisor = 1;
         }
         $result->{amperageProbeReading} = (defined($result->{amperageProbeReading})) ? $result->{amperageProbeReading} / $divisor : 'unknown';
         $self->{output}->output_add(long_msg => sprintf("amperage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
