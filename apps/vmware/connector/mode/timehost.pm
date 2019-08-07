@@ -65,7 +65,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'time', set => {
+        { label => 'time', nlabel => 'host.time.offset.seconds', set => {
                 key_values => [ { name => 'offset' }, { name => 'date' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_time_output'),
                 perfdatas => [
@@ -88,7 +88,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "esx-hostname:s"        => { name => 'esx_hostname' },
         "filter"                => { name => 'filter' },

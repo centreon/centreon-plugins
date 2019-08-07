@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cluster} = [
-        { label => 'svmotion', set => {
+        { label => 'svmotion', nlabel => 'cluster.operations.svmotion.current.count', set => {
                 key_values => [ { name => 'numSVMotion', diff => 1  }, { name => 'display' } ],
                 output_template => 'SVMotion %s',
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'vmotion', set => {
+        { label => 'vmotion', nlabel => 'cluster.operations.vmotion.current.count', set => {
                 key_values => [ { name => 'numVMotion', diff => 1  }, { name => 'display' } ],
                 output_template => 'VMotion %s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'clone', set => {
+        { label => 'clone', nlabel => 'cluster.operations.clone.current.count', set => {
                 key_values => [ { name => 'numClone', diff => 1  }, { name => 'display' } ],
                 output_template => 'Clone %s',
                 perfdatas => [
@@ -75,7 +75,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "cluster:s"               => { name => 'cluster' },
         "filter"                  => { name => 'filter' },

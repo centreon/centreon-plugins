@@ -28,23 +28,20 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{package} = parent package caller
-    # $options{options} = options object
-    # $options{output} = output object
     $self->{options} = $options{options};
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-                                   arguments => {
-                                                'mode:s'          => { name => 'mode_name' },
-                                                'dyn-mode:s'      => { name => 'dynmode_name' },
-                                                'list-mode'       => { name => 'list_mode' },
-                                                'custommode:s'    => { name => 'custommode_name' },
-                                                'list-custommode' => { name => 'list_custommode' },
-                                                'multiple'        => { name => 'multiple' },
-                                                'sanity-options'  => { name => 'sanity_options' }, # keep it for 6 month before remove it
-                                                }
-                                  );
+        arguments => {
+            'mode:s'          => { name => 'mode_name' },
+            'dyn-mode:s'      => { name => 'dynmode_name' },
+            'list-mode'       => { name => 'list_mode' },
+            'custommode:s'    => { name => 'custommode_name' },
+            'list-custommode' => { name => 'list_custommode' },
+            'multiple'        => { name => 'multiple' },
+            'sanity-options'  => { name => 'sanity_options' }, # keep it for 6 month before remove it
+        }
+    );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
     %{$self->{custom_modes}} = ();
@@ -62,6 +59,7 @@ sub new {
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
     $self->{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL OPTIONS');
+    $self->{output}->mode(name => $self->{mode_name});
 
     return $self;
 }
@@ -77,9 +75,9 @@ sub load_custom_mode {
 
 sub init {
     my ($self, %options) = @_;
-    # $options{version} = string version
-    # $options{help} = string help
 
+    # add meta mode
+    $self->{modes}->{multi} = 'centreon::plugins::multi';
     if (defined($options{help}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->{options}->display_help();
         $self->{output}->option_exit();
@@ -152,7 +150,11 @@ sub init {
         $self->{custommode_current}->set_options(option_results => $self->{option_results});
         push @{$self->{custommode_stored}}, $self->{custommode_current};
     }
-    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+    $self->{mode}->check_options(
+        option_results => $self->{option_results},
+        default => $self->{default},
+        modes => $self->{modes} # for meta mode multi
+    );
 }
 
 sub load_password_mgr {
@@ -196,7 +198,6 @@ sub run {
 sub is_mode {
     my ($self, %options) = @_;
     
-    # $options->{mode} = mode
     if (!defined($self->{modes}{$options{mode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{mode} . "' doesn't exist (use --list-mode option to show available modes).");
         $self->{output}->option_exit();
@@ -206,7 +207,6 @@ sub is_mode {
 sub is_custommode {
     my ($self, %options) = @_;
     
-    # $options->{custommode} = mode
     if (!defined($self->{custom_modes}{$options{custommode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{custommode} . "' doesn't exist (use --list-custommode option to show available modes).");
         $self->{output}->option_exit();
@@ -223,9 +223,13 @@ sub list_mode {
     my $self = shift;
     $self->{options}->display_help();
     
-    $self->{output}->add_option_msg(long_msg => "Modes Available:");
+    $self->{output}->add_option_msg(long_msg => 'Modes Meta:');
+    $self->{output}->add_option_msg(long_msg => '   multi');
+    $self->{output}->add_option_msg(long_msg => '');
+    $self->{output}->add_option_msg(long_msg => 'Modes Available:');
     foreach (sort keys %{$self->{modes}}) {
-        $self->{output}->add_option_msg(long_msg => "   " . $_);
+        next if ($_ eq 'multi');
+        $self->{output}->add_option_msg(long_msg => '   ' . $_);
     }
     $self->{output}->option_exit(nolabel => 1);
 }

@@ -168,12 +168,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-ssid:s"   => { name => 'filter_ssid' },
-                                  "filter-ap:s"     => { name => 'filter_ap' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-ssid:s'   => { name => 'filter_ssid' },
+        'filter-ap:s'     => { name => 'filter_ap' },
+    });
     
     return $self;
 }

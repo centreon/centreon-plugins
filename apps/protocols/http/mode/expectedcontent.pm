@@ -26,6 +26,38 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use Time::HiRes qw(gettimeofday tv_interval);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_content_threshold {
+    my ($self, %options) = @_;
+
+    $self->{instance_mode}->{content_status} = catalog_status_threshold($self, %options);
+    return $self->{instance_mode}->{content_status};
+}
+
+
+sub custom_content_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'HTTP test(s)';
+    if (!$self->{output}->is_status(value => $self->{instance_mode}->{content_status}, compare => 'ok', litteral => 1)) {
+        my $filter = $self->{instance_mode}->{option_results}->{lc($self->{instance_mode}->{content_status}) . '_content'};
+        $filter =~ s/\$self->\{result_values\}->/%/g;
+        $msg = sprintf("Content test [filter: '%s']", $filter);
+    }
+    
+    return $msg;
+}
+
+sub custom_content_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{content} = $options{new_datas}->{$self->{instance} . '_content'};
+    $self->{result_values}->{code} = $options{new_datas}->{$self->{instance} . '_code'};
+    $self->{result_values}->{header} = $options{new_datas}->{$self->{instance} . '_header'};
+    $self->{result_values}->{first_header} = $options{new_datas}->{$self->{instance} . '_first_header'};
+    return 0;
+}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -35,6 +67,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
+        { label => 'content', threshold => 0, set => {
+                key_values => [ { name => 'content' }, { name => 'code' }, { name => 'first_header' }, { name => 'header' } ],
+                closure_custom_output => $self->can('custom_content_output'),
+                closure_custom_calc => $self->can('custom_content_calc'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check =>  $self->can('custom_content_threshold'),
+            }
+        },
         { label => 'size', display_ok => 0, set => {
                 key_values => [ { name => 'size' } ],
                 output_template => 'Content size : %s',
@@ -67,27 +107,21 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.2';
     $options{options}->add_options(arguments => {
         "hostname:s"            => { name => 'hostname' },
-        "http-peer-addr:s"      => { name => 'http_peer_addr' },
         "port:s"                => { name => 'port', },
         "method:s"              => { name => 'method' },
         "proto:s"               => { name => 'proto' },
         "urlpath:s"             => { name => 'url_path' },
         "credentials"           => { name => 'credentials' },
         "basic"                 => { name => 'basic' },
-        "ntlm"                  => { name => 'ntlm' }, # Deprecated
         "ntlmv2"                => { name => 'ntlmv2' },
         "username:s"            => { name => 'username' },
         "password:s"            => { name => 'password' },
-        "proxyurl:s"            => { name => 'proxyurl' },
-        "proxypac:s"            => { name => 'proxypac' },
         "expected-string:s"     => { name => 'expected_string' },
+        "extracted-pattern:s"   => { name => 'extracted_pattern' },
         "timeout:s"             => { name => 'timeout' },
         "no-follow"             => { name => 'no_follow', },
-        "ssl:s"                 => { name => 'ssl', },
-        "ssl-opt:s@"            => { name => 'ssl_opt' },
         "cert-file:s"           => { name => 'cert_file' },
         "key-file:s"            => { name => 'key_file' },
         "cacert-file:s"         => { name => 'cacert_file' },
@@ -100,9 +134,12 @@ sub new {
         "unknown-status:s"      => { name => 'unknown_status' },
         "warning-status:s"      => { name => 'warning_status' },
         "critical-status:s"     => { name => 'critical_status' },
+        "unknown-content:s"     => { name => 'unknown_content', default => '' },
+        "warning-content:s"     => { name => 'warning_content', default => '' },
+        "critical-content:s"    => { name => 'critical_content', default => '' },
     });
     
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -110,11 +147,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{expected_string})) {
-        $self->{output}->add_option_msg(short_msg => "You need to specify --expected-string option.");
-        $self->{output}->option_exit();
+    # Legacy compat
+    if (defined($self->{option_results}->{expected_string}) && $self->{option_results}->{expected_string} ne '') {
+        $self->{option_results}->{critical_content} = "%{content} !~ /$self->{option_results}->{expected_string}/mi";
     }
+
     $self->{http}->set_options(%{$self->{option_results}});
+    $self->change_macros(macros => ['warning_content', 'critical_content', 'unknown_content']);
 }
 
 sub manage_selection {
@@ -123,25 +162,25 @@ sub manage_selection {
     my $timing0 = [gettimeofday];
     my $webcontent = $self->{http}->request();
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-    
-    $self->{global} = { time => $timeelapsed };
-    
-    $self->{output}->output_add(long_msg => $webcontent);
+        
+    $self->{global} = { 
+        time => $timeelapsed, 
+        content => $webcontent,
+        code => $self->{http}->get_code(),
+        header => $self->{http}->get_header(),
+        first_header => $self->{http}->get_first_header(),
+    };
 
-    if ($webcontent =~ /$self->{option_results}->{expected_string}/mi) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("'%s' is present in content.", $self->{option_results}->{expected_string}));
-    } else {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("'%s' is not present in content.", $self->{option_results}->{expected_string}));
+    if (defined($self->{option_results}->{extracted_pattern}) && $self->{option_results}->{extracted_pattern} ne '' &&
+        $webcontent =~ /$self->{option_results}->{extracted_pattern}/mi) {
+        my $extracted = $1;
+        if (defined($extracted) && $extracted =~ /(\d+([\.,]\d+)?)/) {
+            $extracted =~ s/,/\./;
+            $self->{global}->{extracted} = $extracted,
+        }
     }
-    
-    my $extracted = $1;
-    if (defined($extracted) && $extracted =~ /(\d+([\.,]\d+)?)/) {
-        $extracted = $1;
-        $extracted =~ s/,/\./;
-        $self->{global}->{extracted} = $extracted;
-    }
+
+    $self->{output}->output_add(long_msg => $webcontent);
 
     # Size check
     {
@@ -165,21 +204,9 @@ Check Webpage content
 
 IP Addr/FQDN of the Webserver host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used by Webserver
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
 
 =item B<--method>
 
@@ -225,10 +252,6 @@ Threshold for HTTP timeout (Default: 5)
 
 Do not follow http redirect
 
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
-
 =item B<--cert-file>
 
 Specify certificate to send to the webserver
@@ -264,6 +287,10 @@ Set POST params (Multiple option. Example: --post-param='key=value')
 =item B<--cookies-file>
 
 Save cookies in a file (Example: '/tmp/lwp_cookies.dat')
+
+=item B<--extracted-pattern>
+
+Set pattern to extracted a number (used --warning-extracted and --critical-extracted option).
 
 =item B<--unknown-status>
 
@@ -301,9 +328,20 @@ Threshold warning for extracted value
 
 Threshold critical for extracted value
 
-=item B<--expected-string>
+=item B<--unknown-content>
 
-Specify String to check on the Webpage
+Set warning threshold for content page (Default: '').
+Can used special variables like: %{content}, %{header}, %{first_header}, %{code}
+
+=item B<--warning-content>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{content}, %{header}, %{first_header}, %{code}
+
+=item B<--critical-content>
+
+Set critical threshold for content page (Default: '').
+Can used special variables like: %{content}, %{header}, %{first_header}, %{code}
 
 =back
 

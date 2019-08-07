@@ -55,13 +55,13 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu_alarms', type => 2, cb_long_output => 'cpu_long_output', message_multiple => '0 cpu limit problem(s) detected', format_output => '%s cpu limit problem(s) detected', display_counter_problem => { label => 'cpu_alerts', min => 0 },
+        { name => 'cpu_alarms', type => 2, cb_long_output => 'cpu_long_output', message_multiple => '0 cpu limit problem(s) detected', format_output => '%s cpu limit problem(s) detected', display_counter_problem => { label => 'cpu_alerts', nlabel => 'vm.limit.cpu.alerts.count', min => 0 },
           group => [ { name => 'cpu_alarm', cb_prefix_output => 'prefix_vm_output', skipped_code => { -11 => 1 } } ] 
         },
-        { name => 'memory_alarms', type => 2,cb_long_output => 'memory_long_output',  message_multiple => '0 memory limit problem(s) detected', format_output => '%s memory limit problem(s) detected', display_counter_problem => { label => 'memory_alerts', min => 0 },
+        { name => 'memory_alarms', type => 2,cb_long_output => 'memory_long_output',  message_multiple => '0 memory limit problem(s) detected', format_output => '%s memory limit problem(s) detected', display_counter_problem => { label => 'memory_alerts', nlabel => 'vm.limit.memory.alerts.count', min => 0 },
           group => [ { name => 'memory_alarm', cb_prefix_output => 'prefix_vm_output', skipped_code => { -11 => 1 } } ] 
         },
-        { name => 'disk_alarms', type => 2, cb_long_output => 'disk_long_output', message_multiple => '0 disk limit problem(s) detected', format_output => '%s disk limit problem(s) detected', display_counter_problem => { label => 'disk_alerts', min => 0 },
+        { name => 'disk_alarms', type => 2, cb_long_output => 'disk_long_output', message_multiple => '0 disk limit problem(s) detected', format_output => '%s disk limit problem(s) detected', display_counter_problem => { label => 'disk_alerts', nlabel => 'vm.limit.disk.alerts.count', min => 0 },
           group => [ { name => 'disk_alarm', cb_prefix_output => 'prefix_vm_output', skipped_code => { -11 => 1 } } ] 
         },
     ];
@@ -133,12 +133,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "vm-hostname:s"         => { name => 'vm_hostname' },
         "filter"                => { name => 'filter' },
         "filter-description:s"  => { name => 'filter_description' },
         "filter-os:s"           => { name => 'filter_os' },
+        "filter-uuid:s"         => { name => 'filter_uuid' },
         "display-description"   => { name => 'display_description' },
         "check-disk-limit"      => { name => 'check_disk_limit' },
         "warning-disk-status:s"     => { name => 'warning_disk_status', default => '' },

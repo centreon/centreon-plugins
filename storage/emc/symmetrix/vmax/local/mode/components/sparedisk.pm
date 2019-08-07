@@ -53,10 +53,13 @@ sub check {
                                                     $value));
     }
     
-    $self->{output}->perfdata_add(label => "disk_spare_non_available",
-                                  value => $value,
-                                  warning => $warn,
-                                  critical => $crit, min => 0);
+    $self->{output}->perfdata_add(
+        label => "disk_spare_non_available",
+        nlabel => 'hardware.sparedisk.unavailable.count',
+        value => $value,
+        warning => $warn,
+        critical => $crit, min => 0
+    );
 }
 
 1;

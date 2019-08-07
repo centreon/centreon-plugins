@@ -36,8 +36,23 @@ sub get_powershell {
     
     $ps .= '
 try {
-    $ErrorActionPreference = "Stop"    
+    $ErrorActionPreference = "Stop"
+';
+    if (defined($options{password}) && $options{password} ne '') {
+        $ps .= '
+    $username = "' . $options{mailbox}  . '"
+    $password = "' . $options{password}  . '"
+    $secstr = New-Object -TypeName System.Security.SecureString
+    $password.ToCharArray() | ForEach-Object {$secstr.AppendChar($_)}
+    $cred = new-object -typename System.Management.Automation.PSCredential -argumentlist $username, $secstr
+    $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -MailboxCredential $cred
+';
+    } else {
+        $ps .= '
     $results = Test-OutlookWebServices -WarningAction:SilentlyContinue -Identity "' . $options{mailbox} . '"
+';
+    }
+    $ps .= '
 } catch {
     Write-Host $Error[0].Exception
     exit 1

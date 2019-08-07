@@ -97,12 +97,15 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("storage device '%s' temperature is %s C", $result->{storageDeviceName}, $result->{storageDeviceTemperature}));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $result->{storageDeviceName}, unit => 'C', 
-                                      value => $result->{storageDeviceTemperature},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      max => $result->{storageDeviceTemperatureLimit},
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.device.temperature.celsius',
+            instances => $result->{storageDeviceName},
+            value => $result->{storageDeviceTemperature},
+            warning => $warn,
+            critical => $crit,
+            max => $result->{storageDeviceTemperatureLimit},
+        );
     }
 }
 

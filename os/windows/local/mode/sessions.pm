@@ -35,35 +35,44 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'sessions-created', set => {
+        { label => 'sessions-created', nlabel => 'sessions.created.total.count', set => {
                 key_values => [ { name => 'sessions_created', diff => 1 } ],
-                output_template => 'Created : %s',
+                output_template => 'created : %s',
                 perfdatas => [
                     { label => 'sessions_created', value => 'sessions_created_absolute', template => '%s', min => 0 },
                 ],
             }
         },
-        { label => 'sessions-disconnected', set => {
+        { label => 'sessions-disconnected', nlabel => 'sessions.disconnected.total.count', set => {
                 key_values => [ { name => 'sessions_disconnected', diff => 1 } ],
-                output_template => 'Disconnected : %s',
+                output_template => 'disconnected : %s',
                 perfdatas => [
                     { label => 'sessions_disconnected', value => 'sessions_disconnected_absolute', template => '%s', min => 0 },
                 ],
             }
         },
-        { label => 'sessions-reconnected', set => {
+        { label => 'sessions-reconnected', nlabel => 'sessions.reconnected.total.count', set => {
                 key_values => [ { name => 'sessions_reconnected', diff => 1 } ],
-                output_template => 'Reconnected : %s',
+                output_template => 'reconnected : %s',
                 perfdatas => [
                     { label => 'sessions_reconnected', value => 'sessions_reconnected_absolute', template => '%s', min => 0 },
                 ],
             }
         },
-        { label => 'sessions-active', set => {
+        { label => 'sessions-active', nlabel => 'sessions.active.current.count', set => {
                 key_values => [ { name => 'sessions_active' } ],
-                output_template => 'Active : %s',
+                output_template => 'current active : %s',
                 perfdatas => [
                     { label => 'sessions_active', value => 'sessions_active_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-disconnected-current', nlabel => 'sessions.disconnected.current.count', set => {
+                key_values => [ { name => 'sessions_disconnected_current' } ],
+                output_template => 'current disconnected : %s',
+                perfdatas => [
+                    { label => 'sessions_disconnected_current', value => 'sessions_disconnected_current_absolute', 
+                      template => '%s', min => 0 },
                 ],
             }
         },
@@ -81,17 +90,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "command:s"               => { name => 'command', default => 'qwinsta' },
-                                  "command-path:s"          => { name => 'command_path' },
-                                  "command-options:s"       => { name => 'command_options', default => '/COUNTER' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "filter-sessionname:s"    => { name => 'filter_sessionname' },
-                                  "config:s"                => { name => 'config' },
-                                  "language:s"              => { name => 'language', default => 'en' },
-                                });
+    $options{options}->add_options(arguments => {
+        'command:s'             => { name => 'command', default => 'qwinsta' },
+        'command-path:s'        => { name => 'command_path' },
+        'command-options:s'     => { name => 'command_options', default => '/COUNTER' },
+        'timeout:s'             => { name => 'timeout', default => 30 },
+        'filter-sessionname:s'  => { name => 'filter_sessionname' },
+        'config:s'              => { name => 'config' },
+        'language:s'            => { name => 'language', default => 'en' },
+    });
     
     return $self;
 }
@@ -204,16 +211,18 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $config = $self->read_config();
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     
     my $datas = $self->read_qwinsta(stdout => $stdout, config => $config);
     my $counters = $self->read_qwinsta_counters(stdout => $stdout, config => $config);
 
-    my $active = 0;
+    my ($active, $disconnected) = (0, 0);
     foreach my $session (@$datas) {
         if (defined($self->{option_results}->{filter_sessionname}) && $self->{option_results}->{filter_sessionname} ne '' &&
             $session->{$config->{header_sessionname}} !~ /$self->{option_results}->{filter_sessionname}/) {
@@ -221,21 +230,24 @@ sub manage_selection {
             next;
         }
         
-        my $matching = 0;
+        my ($matching_active, $matching_discon) = (0, 0);
         foreach my $label (keys %$session) {
-            $matching = 1 if ($label =~ /$config->{header_state}/ && 
-                $session->{$label} =~ /$config->{activestate}/);            
+            $matching_active = 1 if ($label =~ /$config->{header_state}/ && 
+                $session->{$label} =~ /$config->{activestate}/);
+            $matching_discon = 1 if ($label =~ /$config->{header_state}/ && 
+                $session->{$label} =~ /$config->{disconnectedstate}/);  
         }
         
-        if ($matching == 1) {
-            $active++;
+        if ($matching_active == 1 || $matching_discon == 1) {
+            $active++ if ($matching_active == 1);
+            $disconnected++ if ($matching_discon == 1);
             my $output = '';
             $output .= " [$_ => $session->{$_}]" for (sort keys %$session);
             $self->{output}->output_add(long_msg => $output);
         }
     }
 
-    $self->{global} = { %$counters, sessions_active => $active };
+    $self->{global} = { %$counters, sessions_active => $active, sessions_disconnected_current => $disconnected };
 
     $self->{cache_name} = "windows_" . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
@@ -282,17 +294,11 @@ Timeout in seconds for the command (Default: 30).
 
 Filter session name (can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'sessions-created', 'sessions-disconnected', 
-'sessions-reconnected', 'sessions-active'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'sessions-created', 'sessions-disconnected', 
-'sessions-reconnected', 'sessions-active'.
+'sessions-reconnected', 'sessions-active', 'sessions-disconnected-current'.
 
 =back
 

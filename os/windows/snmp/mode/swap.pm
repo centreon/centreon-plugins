@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "warning:s"               => { name => 'warning' },
@@ -123,6 +122,7 @@ sub run {
                                             $swap_free_value . " " . $swap_free_unit, 100 - $prct_used));
 
     $self->{output}->perfdata_add(label => "used", unit => 'B',
+                                  nlabel => 'swap.usage.bytes',
                                   value => $swap_used,
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),

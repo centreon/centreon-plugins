@@ -57,7 +57,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'reverseproxy.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %.2f %%',
                 perfdatas => [
@@ -66,7 +66,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'reverseproxy.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory' }, { name => 'display' } ],
                 output_template => 'Memory Usage : %s %s',
                 output_change_bytes => 1,
@@ -76,7 +76,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'nbchilds', set => {
+        { label => 'nbchilds', nlabel => 'reverseproxy.child.count', set => {
                 key_values => [ { name => 'nbchilds' }, { name => 'display' } ],
                 output_template => 'Num childs : %s',
                 perfdatas => [
@@ -93,7 +93,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "filter-name:s"           => { name => 'filter_name' },

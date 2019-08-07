@@ -68,11 +68,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fan '%s' is '%s' %%", $result->{apEnvMonFanStatusDescr}, $result->{apEnvMonFanStatusValue}));
         }
-        $self->{output}->perfdata_add(label => 'fan_' . $result->{apEnvMonFanStatusDescr}, unit => '%', 
-                                      value => $result->{apEnvMonFanStatusValue},
-                                      warning => $warn,
-                                      critical => $crit, min => 0, max => 100
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'fan', unit => '%',
+            nlabel => 'hardware.fan.speed.percentage',
+            instances => $result->{apEnvMonFanStatusDescr},
+            value => $result->{apEnvMonFanStatusValue},
+            warning => $warn,
+            critical => $crit, min => 0, max => 100
+        );
     }
 }
 

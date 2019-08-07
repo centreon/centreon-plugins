@@ -27,6 +27,11 @@ use warnings;
 use centreon::plugins::values;
 use centreon::plugins::misc;
 
+my $sort_subs = {
+    num => sub { $a <=> $b },
+    cmp => sub { $a cmp $b },
+};
+
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -61,6 +66,16 @@ sub set_counters {
     #};    
 }
 
+sub get_callback {
+    my ($self, %options) = @_;
+
+    if (defined($options{method_name})) {
+        return $self->can($options{method_name});
+    }
+    
+    return undef;
+}
+
 sub call_object_callback {
     my ($self, %options) = @_;
     
@@ -74,17 +89,41 @@ sub call_object_callback {
     return undef;
 }
 
+sub get_threshold_prefix {
+    my ($self, %options) = @_;
+    
+    my $prefix = '';
+    END_LOOP: foreach (@{$self->{maps_counters_type}}) {
+        if ($_->{name} eq $options{name}) {
+            $prefix = 'instance-' if ($_->{type} == 1);
+            last;
+        }
+        
+        if ($_->{type} == 3) {
+            foreach (@{$_->{group}}) {
+                if ($_->{name} eq $options{name}) {
+                    $prefix = 'instance-' if ($_->{type} == 0);
+                    $prefix = 'subinstance-' if ($_->{type} == 1);
+                    last END_LOOP;
+                }
+            }
+        }
+    }
+
+    return $prefix;
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
     $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-counters:s" => { name => 'filter_counters' },
-                                "list-counters"     => { name => 'list_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-counters:s'     => { name => 'filter_counters' },
+        'display-ok-counters:s' => { name => 'display_ok_counters' },
+        'list-counters'         => { name => 'list_counters' },
+    });
     $self->{statefile_value} = undef;
     if (defined($options{statefile}) && $options{statefile}) {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'centreon::plugins::statefile',
@@ -93,23 +132,40 @@ sub new {
     }
     
     $self->{maps_counters} = {} if (!defined($self->{maps_counters}));
-    $self->set_counters();
+    $self->set_counters(%options);
     
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
+            my $label = $_->{label};
+            my $thlabel = $label;
+            if ($self->{output}->use_new_perfdata() && defined($_->{nlabel})) {
+                $label = $_->{nlabel};
+                $thlabel = $self->get_threshold_prefix(name => $key) . $label;
+            }
+            $thlabel =~ s/\./-/g;
+            
             if (!defined($_->{threshold}) || $_->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
-                                                    'warning-' . $_->{label} . ':s'     => { name => 'warning-' . $_->{label} },
-                                                    'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label} },
-                                               });
+                    'warning-' . $thlabel . ':s'     => { name => 'warning-' . $thlabel },
+                    'critical-' . $thlabel . ':s'    => { name => 'critical-' . $thlabel },
+                });
+
+                if (defined($_->{nlabel})) {
+                    $options{options}->add_options(arguments => {
+                        'warning-' . $_->{label} . ':s'     => { name => 'warning-' . $_->{label}, redirect => 'warning-' . $thlabel },
+                        'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label}, redirect => 'critical-' . $thlabel },
+                    });
+                }
             }
-            $_->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
-                                                       output => $self->{output}, perfdata => $self->{perfdata},
-                                                       label => $_->{label});
+            $_->{obj} = centreon::plugins::values->new(
+                statefile => $self->{statefile_value},
+                output => $self->{output}, perfdata => $self->{perfdata},
+                label => $_->{label}, nlabel => $_->{nlabel}, thlabel => $thlabel,
+            );
             $_->{obj}->set(%{$_->{set}});
         }
     }
-                                
+
     return $self;
 }
 
@@ -118,13 +174,18 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (defined($self->{option_results}->{list_counters})) {
-        my $list_counter = "Counter list:";
+        my $list_counter = 'counter list:';
+        my $th_counter = '';
         foreach my $key (keys %{$self->{maps_counters}}) {
             foreach (@{$self->{maps_counters}->{$key}}) {
+                my $label = $_->{label};
+                $label =~ s/-//g;
                 $list_counter .= " " . $_->{label};
+                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";  
             }
         }
         $self->{output}->output_add(short_msg => $list_counter);
+        $self->{output}->output_add(long_msg => 'configuration: ' . $th_counter); 
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
         $self->{output}->exit();
     }
@@ -174,7 +235,9 @@ sub run_global {
         push @exits, $exit2;
 
         my $output = $obj->output();
-        if (!defined($_->{display_ok}) || $_->{display_ok} != 0) {
+        if (!defined($_->{display_ok}) || $_->{display_ok} != 0 ||
+            (defined($self->{option_results}->{display_ok_counters}) && $self->{option_results}->{display_ok_counters} ne '' &&
+             $_->{label} =~ /$self->{option_results}->{display_ok_counters}/)) {
             $long_msg .= $long_msg_append . $output;
             $long_msg_append = $message_separator;
         }
@@ -225,6 +288,7 @@ sub run_instances {
     my ($self, %options) = @_;
     
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
+    my $cb_init_counters = $self->get_callback(method_name => $options{config}->{cb_init_counters});
     my $display_status_lo = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
     my $no_message_multiple = 1;
@@ -238,15 +302,19 @@ sub run_instances {
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
 
-    foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
+    my $sort_method = 'cmp';
+    $sort_method = $options{config}->{sort_method}
+        if (defined($options{config}->{sort_method}));
+    foreach my $id (sort { $sort_subs->{$sort_method}->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
             my $obj = $_->{obj};
-            
+
             next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
-            
+            next if ($cb_init_counters && $self->$cb_init_counters(%$_) == 1);
+
             $no_message_multiple = 0;
             $obj->set(instance => $id);
         
@@ -262,7 +330,9 @@ sub run_instances {
             push @exits, $exit2;
 
             my $output = $obj->output();
-            if (!defined($_->{display_ok}) || $_->{display_ok} != 0) {
+            if (!defined($_->{display_ok}) || $_->{display_ok} != 0 ||
+                (defined($self->{option_results}->{display_ok_counters}) && $self->{option_results}->{display_ok_counters} ne '' &&
+                 $_->{label} =~ /$self->{option_results}->{display_ok_counters}/)) {
                 $long_msg .= $long_msg_append . $output;
                 $long_msg_append = $message_separator;
             }
@@ -366,9 +436,13 @@ sub run_group {
     }
     
     if (defined($options{config}->{display_counter_problem})) {
-        $self->{output}->perfdata_add(label => $options{config}->{display_counter_problem}->{label}, unit => $options{config}->{display_counter_problem}->{unit},
-                                      value => $total_problems,
-                                      min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max});
+        $self->{output}->perfdata_add(
+            label => $options{config}->{display_counter_problem}->{label},
+            nlabel => $options{config}->{display_counter_problem}->{nlabel},
+            unit => $options{config}->{display_counter_problem}->{unit},
+            value => $total_problems,
+            min => $options{config}->{display_counter_problem}->{min}, max => $options{config}->{display_counter_problem}->{max}
+        );
     }
 }
 
@@ -376,6 +450,7 @@ sub run_multiple_instances {
     my ($self, %options) = @_;
     
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
+    my $use_new_perfdata = $self->{output}->use_new_perfdata();
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
     my $indent_long_output = defined($options{indent_long_output}) ? $options{indent_long_output} : '';
     my $no_message_multiple = 1;
@@ -386,9 +461,11 @@ sub run_multiple_instances {
     }
     
     my $message_separator = defined($options{config}->{message_separator}) ? 
-        $options{config}->{message_separator}: ', ';
-
-    foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
+        $options{config}->{message_separator} : ', ';
+    my $sort_method = 'cmp';
+    $sort_method = $options{config}->{sort_method}
+        if (defined($options{config}->{sort_method}));
+    foreach my $id (sort { $sort_subs->{$sort_method}->() } keys %{$self->{$options{config}->{name}}}) {
         my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
         my @exits = ();
         foreach (@{$self->{maps_counters}->{$options{config}->{name}}}) {
@@ -398,8 +475,8 @@ sub run_multiple_instances {
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
             my $instance = $id;
-            if ($multiple_parent == 1 && $multiple == 1) {
-                $instance = $options{instance_parent} . "_" . $id;
+            if ($use_new_perfdata || ($multiple_parent == 1 && $multiple == 1)) {
+                $instance = $options{instance_parent} . ($self->{output}->get_instance_perfdata_separator()) . $id;
             } elsif ($multiple_parent == 1 && $multiple == 0) {
                 $instance = $options{instance_parent};
             }

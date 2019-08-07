@@ -1,5 +1,9 @@
 # centreon-plugins
 
+[![License](https://img.shields.io/badge/License-APACHE2-brightgreen.svg)](https://github.com/centreon/centreon-plugins/blob/master/LICENSE.txt)
+[![GitHub stars](https://img.shields.io/github/stars/centreon/centreon-plugins.svg)](https://github.com/centreon/centreon-plugins/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/centreon/centreon-plugins.svg)](https://github.com/centreon/centreon-plugins/network)
+
 “centreon-plugins” is a free and open source project to monitor systems. The project can be used with Centreon and all monitoring softwares compatible with Nagios plugins.
 
 You can monitor many systems:

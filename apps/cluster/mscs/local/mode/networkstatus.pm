@@ -72,13 +72,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-name:s"           => { name => 'filter_name' },
                                 "unknown-status:s"        => { name => 'unknown_status', default => '%{state} =~ /unknown/' },
                                 "warning-status:s"        => { name => 'warning_status', default => '' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /down|paritioned|unavailable/' },
+                                "critical-status:s"       => { name => 'critical_status', default => '%{state} =~ /down|partitioned|unavailable/' },
                                 });
 
     return $self;
@@ -95,7 +94,7 @@ my %map_state = (
     -1 => 'unknown',
     0 => 'unavailable',
     1 => 'down',
-    2 => 'paritioned',
+    2 => 'partitioned',
     3 => 'up',
 );
 
@@ -153,7 +152,7 @@ Can used special variables like: %{state}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} =~ /down|paritioned|unavailable/').
+Set critical threshold for status (Default: '%{state} =~ /down|partitioned|unavailable/').
 Can used special variables like: %{state}, %{display}
 
 =back

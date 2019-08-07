@@ -40,7 +40,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global_cpu} = [
-        { label => 'node-wait', set => {
+        { label => 'node-wait', nlabel => 'node.cpu.wait.utilization.percentage', set => {
                 key_values => [ { name => 'iowait' } ],
                 output_template => 'Wait: %.2f %%',
                 perfdatas => [
@@ -49,7 +49,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'node-user', set => {
+        { label => 'node-user', nlabel => 'node.cpu.user.utilization.percentage', set => {
                 key_values => [ { name => 'user' } ],
                 output_template => 'User: %.2f %%',
                 perfdatas => [
@@ -58,7 +58,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'node-softirq', set => {
+        { label => 'node-softirq', nlabel => 'node.cpu.softirq.utilization.percentage', set => {
                 key_values => [ { name => 'softirq' } ],
                 output_template => 'Soft Irq: %.2f %%',
                 perfdatas => [
@@ -67,7 +67,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'node-interrupt', set => {
+        { label => 'node-interrupt', nlabel => 'node.cpu.interrupt.utilization.percentage', set => {
                 key_values => [ { name => 'irq' } ],
                 output_template => 'Interrupt: %.2f %%',
                 perfdatas => [
@@ -76,7 +76,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'node-idle', set => {
+        { label => 'node-idle', nlabel => 'node.cpu.idle.utilization.percentage', set => {
                 key_values => [ { name => 'idle' } ],
                 output_template => 'Idle: %.2f %%',
                 perfdatas => [
@@ -85,7 +85,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'node-steal', set => {
+        { label => 'node-steal', nlabel => 'node.cpu.steal.utilization.percentage', set => {
                 key_values => [ { name => 'steal' } ],
                 output_template => 'Steal: %.2f %%',
                 perfdatas => [
@@ -94,7 +94,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'node-system', set => {
+        { label => 'node-system', nlabel => 'node.cpu.system.utilization.percentage', set => {
                 key_values => [ { name => 'system' } ],
                 output_template => 'System: %.2f %%',
                 perfdatas => [
@@ -103,7 +103,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'node-nice', set => {
+        { label => 'node-nice', nlabel => 'node.cpu.nice.utilization.percentage', set => {
                 key_values => [ { name => 'nice' } ],
                 output_template => 'Nice: %.2f %%',
                 perfdatas => [
@@ -114,7 +114,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{cpu} = [
-        { label => 'cpu-wait', set => {
+        { label => 'cpu-wait', nlabel => 'core.cpu.wait.utilization.percentage', set => {
                 key_values => [ { name => 'iowait' }, { name => 'display' } ],
                 output_template => 'Wait: %.2f %%',
                 perfdatas => [
@@ -123,7 +123,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-user', set => {
+        { label => 'cpu-user', nlabel => 'core.cpu.user.utilization.percentage', set => {
                 key_values => [ { name => 'user' }, { name => 'display' } ],
                 output_template => 'User: %.2f %%',
                 perfdatas => [
@@ -132,7 +132,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-softirq', set => {
+        { label => 'cpu-softirq', nlabel => 'core.cpu.softirq.utilization.percentage', set => {
                 key_values => [ { name => 'softirq' }, { name => 'display' } ],
                 output_template => 'Soft Irq: %.2f %%',
                 perfdatas => [
@@ -141,7 +141,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-interrupt', set => {
+        { label => 'cpu-interrupt', nlabel => 'core.cpu.interrupt.utilization.percentage', set => {
                 key_values => [ { name => 'irq' }, { name => 'display' } ],
                 output_template => 'Interrupt: %.2f %%',
                 perfdatas => [
@@ -150,7 +150,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-idle', set => {
+        { label => 'cpu-idle', nlabel => 'core.cpu.idle.utilization.percentage', set => {
                 key_values => [ { name => 'idle' }, { name => 'display' } ],
                 output_template => 'Idle: %.2f %%',
                 perfdatas => [
@@ -159,7 +159,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-steal', set => {
+        { label => 'cpu-steal', nlabel => 'core.cpu.steal.utilization.percentage', set => {
                 key_values => [ { name => 'steal' }, { name => 'display' } ],
                 output_template => 'Steal: %.2f %%',
                 perfdatas => [
@@ -168,7 +168,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-system', set => {
+        { label => 'cpu-system', nlabel => 'core.cpu.system.utilization.percentage', set => {
                 key_values => [ { name => 'system' }, { name => 'display' } ],
                 output_template => 'System: %.2f %%',
                 perfdatas => [
@@ -177,7 +177,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-nice', set => {
+        { label => 'cpu-nice', nlabel => 'core.cpu.nice.utilization.percentage', set => {
                 key_values => [ { name => 'nice' }, { name => 'display' } ],
                 output_template => 'Nice: %.2f %%',
                 perfdatas => [
@@ -218,16 +218,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "instance:s"              => { name => 'instance', default => 'instance=~".*"' },
-                                  "cpu:s"                   => { name => 'cpu', default => 'cpu=~".*"' },
-                                  "type:s"                  => { name => 'type', default => 'mode=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                  "filter-counters:s"       => { name => 'filter_counters' },
-                                });
+    $options{options}->add_options(arguments => {
+        "instance:s"            => { name => 'instance', default => 'instance=~".*"' },
+        "cpu:s"                 => { name => 'cpu', default => 'cpu=~".*"' },
+        "type:s"                => { name => 'type', default => 'mode=~".*"' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -267,12 +264,16 @@ sub manage_selection {
 
     $self->{nodes} = {};
 
-    my $results = $options{custom}->query_range(queries => [ '(irate({__name__=~"' . $self->{metrics}->{cpu} . '",' .
-                                                            $self->{option_results}->{instance} . ',' .
-                                                            $self->{option_results}->{cpu} . ',' .
-                                                            $self->{option_results}->{type} .
-                                                            $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100' ],
-                                                timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
+    my $results = $options{custom}->query_range(
+        queries => [
+            '(irate({__name__=~"' . $self->{metrics}->{cpu} . '",' .
+                $self->{option_results}->{instance} . ',' .
+                $self->{option_results}->{cpu} . ',' .
+                $self->{option_results}->{type} .
+                $self->{extra_filter} . '}[' . $self->{prom_step} . '])) * 100'
+        ],
+        timeframe => $self->{prom_timeframe}, step => $self->{prom_step}
+    );
 
     foreach my $result (@{$results}) {
         my $average = $options{custom}->compute(aggregation => 'average', values => $result->{values});
@@ -320,17 +321,17 @@ Filter on a specific type (Must be a PromQL filter, Default: 'mode=~".*"')
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'node-idle', 'node-wait', 'node-irq', 'node-nice',
+Can be: 'node-idle', 'node-wait', 'node-interrupt', 'node-nice',
 'node-softirq', 'node-steal', 'node-system', 'node-user',
-'cpu-idle', 'cpu-wait', 'cpu-irq', 'cpu-nice', 'cpu-softirq',
+'cpu-idle', 'cpu-wait', 'cpu-interrupt', 'cpu-nice', 'cpu-softirq',
 'cpu-steal', 'cpu-system', 'cpu-user'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'node-idle', 'node-wait', 'node-irq', 'node-nice',
+Can be: 'node-idle', 'node-wait', 'node-interrupt', 'node-nice',
 'node-softirq', 'node-steal', 'node-system', 'node-user',
-'cpu-idle', 'cpu-wait', 'cpu-irq', 'cpu-nice', 'cpu-softirq',
+'cpu-idle', 'cpu-wait', 'cpu-interrupt', 'cpu-nice', 'cpu-softirq',
 'cpu-steal', 'cpu-system', 'cpu-user'.
 
 =item B<--extra-filter>

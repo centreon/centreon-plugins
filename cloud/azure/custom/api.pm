@@ -44,27 +44,25 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                        "subscription:s"            => { name => 'subscription' },
-                        "tenant:s"                  => { name => 'tenant' },
-                        "client-id:s"               => { name => 'client_id' },
-                        "client-secret:s"           => { name => 'client_secret' },
-                        "login-endpoint:s"          => { name => 'login_endpoint' },
-                        "management-endpoint:s"     => { name => 'management_endpoint' },
-                        "timeframe:s"               => { name => 'timeframe' },
-                        "interval:s"                => { name => 'interval' },
-                        "aggregation:s@"            => { name => 'aggregation' },
-                        "zeroed"                    => { name => 'zeroed' },
-                        "timeout:s"                 => { name => 'timeout' },
-                        "proxyurl:s"                => { name => 'proxyurl' },
-                    });
+        $options{options}->add_options(arguments => {
+            "subscription:s"            => { name => 'subscription' },
+            "tenant:s"                  => { name => 'tenant' },
+            "client-id:s"               => { name => 'client_id' },
+            "client-secret:s"           => { name => 'client_secret' },
+            "login-endpoint:s"          => { name => 'login_endpoint' },
+            "management-endpoint:s"     => { name => 'management_endpoint' },
+            "timeframe:s"               => { name => 'timeframe' },
+            "interval:s"                => { name => 'interval' },
+            "aggregation:s@"            => { name => 'aggregation' },
+            "zeroed"                    => { name => 'zeroed' },
+            "timeout:s"                 => { name => 'timeout' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
     
     return $self;
@@ -97,7 +95,7 @@ sub check_options {
 
     if (defined($self->{option_results}->{aggregation})) {
         foreach my $aggregation (@{$self->{option_results}->{aggregation}}) {
-            if ($aggregation !~ /average|maximum|minimum|total/i) {
+            if ($aggregation !~ /average|maximum|minimum|total|count/i) {
                 $self->{output}->add_option_msg(short_msg => "Aggregation '" . $aggregation . "' is not handled");
                 $self->{output}->option_exit();
             }
@@ -105,8 +103,6 @@ sub check_options {
     }
 
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{timeframe} = (defined($self->{option_results}->{timeframe})) ? $self->{option_results}->{timeframe} : undef;
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
     $self->{subscription} = (defined($self->{option_results}->{subscription})) ? $self->{option_results}->{subscription} : undef;
@@ -147,8 +143,6 @@ sub build_options_for_httplib {
     my ($self, %options) = @_;
 
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 500';
@@ -187,18 +181,23 @@ sub get_access_token {
                                              full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token',
                                              hostname => '');
 
+        if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
+            $self->{output}->add_option_msg(short_msg => "Login endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->option_exit();
+        }
+
         my $decoded;
         eval {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
             $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+            $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
             $self->{output}->option_exit();
         }
         if (defined($decoded->{error})) {
             $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error_description}, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Login endpoint API return error code '" . $decoded->{error} . "' (add --debug option for detailed message)");
+            $self->{output}->add_option_msg(short_msg => "Login endpoint API returns error code '" . $decoded->{error} . "' (add --debug option for detailed message)");
             $self->{output}->option_exit();
         }
 
@@ -223,18 +222,28 @@ sub request_api {
 
     my $content = $self->{http}->request(%options);
     
+    if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
+        $self->{output}->add_option_msg(short_msg => "Management endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->option_exit();
+    }
+    
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
         $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
     if (defined($decoded->{error})) {
         $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Management endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
+        $self->{output}->add_option_msg(short_msg => "Management endpoint API returns error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
+    if (defined($decoded->{code})) {
+        $self->{output}->output_add(long_msg => "Message : " . $decoded->{message}, debug => 1);
+        $self->{output}->add_option_msg(short_msg => "Management endpoint API returns code '" . $decoded->{code} . "' (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
 
@@ -271,9 +280,11 @@ sub azure_get_metrics_set_url {
     my $encoded_aggregations = $uri->encode(join(',', @{$options{aggregations}}));
     my $encoded_timespan = $uri->encode($options{start_time} . '/' . $options{end_time});
 
-    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" . $options{resource_group} .
-        "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} . "/" . $options{resource} . '/providers/microsoft.insights/metrics' .
-        "?api-version=" . $self->{api_version} . "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations . "&timespan=" . $encoded_timespan;
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
+        $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
+        "/" . $options{resource} . "/providers/microsoft.insights/metrics?api-version=" . $self->{api_version} .
+        "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations .
+        "&timespan=" . $encoded_timespan . "&interval=" . $options{interval};
 
     return $url; 
 }
@@ -600,6 +611,8 @@ To connect to the Azure Rest API, you must register an application.
 
 Follow the 'How-to guide' in https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal
 
+The application needs the 'Monitoring Reader' role (See https://docs.microsoft.com/en-us/azure/azure-monitor/platform/roles-permissions-security#monitoring-reader).
+
 This custom mode is using the 'OAuth 2.0 Client Credentials Grant Flow'
 
 For futher informations, visit https://docs.microsoft.com/en-us/azure/active-directory/develop/v1-oauth2-client-creds-grant-flow
@@ -650,10 +663,6 @@ does not return value when not defined.
 =item B<--timeout>
 
 Set timeout in seconds (Default: 10).
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =back
 

@@ -28,11 +28,11 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = "AS:'" . $self->{result_values}->{as} . "' ";
+    my $msg = "AS:'" . $self->{result_values}->{as} . "'";
     $msg .= " Local: '" . $self->{result_values}->{local} . "'";
     $msg .= " Remote: '" . $self->{result_values}->{remote} . "'";
     $msg .= " Peer State: '" . $self->{result_values}->{peerstate} . "'";
-    $msg .= " Admin State : '" . $self->{result_values}->{adminstate} . "'";
+    $msg .= " Admin State: '" . $self->{result_values}->{adminstate} . "'";
 
     return $msg;
 }
@@ -54,7 +54,8 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'peers', type => 1, cb_prefix_output => 'prefix_peers_output', message_multiple => 'All BGP peers are ok' },
+        { name => 'peers', type => 1, cb_prefix_output => 'prefix_peers_output',
+          message_multiple => 'All BGP peers are ok' },
     ];
     $self->{maps_counters}->{peers} = [
         { label => 'status', threshold => 0, set => {
@@ -66,7 +67,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'updates', set => {
+        { label => 'updates', nlabel => 'bgppeer.update.seconds', set => {
                 key_values => [ { name => 'seconds' }, { name => 'display' } ],
                 output_template => 'Last update : %ss',
                 perfdatas => [
@@ -81,7 +82,7 @@ sub set_counters {
 sub prefix_peers_output {
     my ($self, %options) = @_;
 
-    return "Peer: '" . $options{instance_value}->{display} . "' ";
+    return "Peer '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -89,14 +90,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-peer:s"         => { name => 'filter_peer' },
-                                "filter-as:s"           => { name => 'filter_as' },
-                                "warning-status:s"      => { name => 'warning_status', default => '' },
-                                "critical-status:s"     => { name => 'critical_status', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-peer:s"         => { name => 'filter_peer' },
+        "filter-as:s"           => { name => 'filter_as' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status',
+            default => '%{adminstate} =~ /start/ && %{peerstate} !~ /established/' },
+    });
 
     return $self;
 }
@@ -144,30 +144,45 @@ sub manage_selection {
     foreach my $oid (keys %{$result}) {
         next if ($oid !~ /^$mapping->{bgpPeerState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $mapped_value = $options{snmp}->map_instance(mapping => $mapping, results => $result, instance => $instance);
+        my $mapped_value = $options{snmp}->map_instance(
+            mapping => $mapping,
+            results => $result,
+            instance => $instance
+        );
 
         my $local_addr = $mapped_value->{bgpPeerLocalAddr} . ':' . $mapped_value->{bgpPeerLocalPort};
         my $remote_addr = $mapped_value->{bgpPeerRemoteAddr} . ':' . $mapped_value->{bgpPeerRemotePort};
 
         if (defined($self->{option_results}->{filter_peer}) && $self->{option_results}->{filter_peer} ne '' &&
             $instance !~ /$self->{option_results}->{filter_peer}/) {
-            $self->{output}->output_add(long_msg => "skipping peer '" . $instance . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(
+                long_msg => "skipping peer '" . $instance . "': no matching filter.",
+                debug => 1
+            );
             next;
         }
         if (defined($self->{option_results}->{filter_as}) && $self->{option_results}->{filter_as} ne '' &&
             $instance !~ /$self->{option_results}->{filter_as}/) {
-            $self->{output}->output_add(long_msg => "skipping AS '" . $mapped_value->{bgpPeerRemoteAs} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(
+                long_msg => "skipping AS '" . $mapped_value->{bgpPeerRemoteAs} . "': no matching filter.",
+                debug => 1
+            );
             next;
         }
 
-        $self->{peers}->{$instance} = { adminstate => $mapped_value->{bgpPeerAdminStatus}, local => $local_addr,
-                                        peerstate => $mapped_value->{bgpPeerState}, remote => $remote_addr,
-                                        seconds => $mapped_value->{bgpPeerInUpdateElpasedTime}, as => $mapped_value->{bgpPeerRemoteAs},
-                                        display => $instance };
+        $self->{peers}->{$instance} = {
+            adminstate => $mapped_value->{bgpPeerAdminStatus},
+            local => $local_addr,
+            peerstate => $mapped_value->{bgpPeerState},
+            remote => $remote_addr,
+            seconds => $mapped_value->{bgpPeerInUpdateElpasedTime},
+            as => $mapped_value->{bgpPeerRemoteAs},
+            display => $instance
+        };
     }
 
     if (scalar(keys %{$self->{peers}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No peers detected, check your filter ? ');
+        $self->{output}->add_option_msg(short_msg => 'No peers found');
         $self->{output}->option_exit();
     }
 }
@@ -178,7 +193,7 @@ __END__
 
 =head1 MODE
 
-Check BGP basic infos (BGP4-MIB.mib and rfc4273)
+Check BGP peer state (BGP4-MIB.mib and rfc4273)
 
 =over 8
 
@@ -200,12 +215,17 @@ Critical threshold on last update (seconds)
 
 =item B<--warning-status>
 
-Specify admin and peer state that trigger a warning. Can use %{adminstate} and %{peerstate}
-e.g --warning-status "%{adminstate} =~ /stop"
+Specify admin and peer state that trigger a warning.
+Can use special variables like %{adminstate}, %{peerstate},
+%{local}, %{remote}, %{as}, %{display}
+(Default: '')
 
 =item B<--critical-status>
 
-Specify admin and peer state that trigger a critical. Can use %{adminstate} and %{peerstate}
+Specify admin and peer state that trigger a critical.
+Can use special variables like %{adminstate}, %{peerstate},
+%{local}, %{remote}, %{as}, %{display}
+(Default: '%{adminstate} =~ /start/ && %{peerstate} !~ /established/')
 
 =back
 

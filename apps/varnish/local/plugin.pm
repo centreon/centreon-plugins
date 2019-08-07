@@ -30,27 +30,9 @@ sub new {
 	bless $self, $class;
 
 	$self->{version} = '0.1';
-	%{$self->{modes}} = (
-			'connections'       => 'apps::varnish::local::mode::connections',
-			'clients'	    => 'apps::varnish::local::mode::clients',
-			'cache'             => 'apps::varnish::local::mode::cache',
-			'backend'           => 'apps::varnish::local::mode::backend',
-			'sessions'          => 'apps::varnish::local::mode::sessions',
-			'fetch'             => 'apps::varnish::local::mode::fetch',
-			'workers'           => 'apps::varnish::local::mode::workers',
-			'totals'            => 'apps::varnish::local::mode::totals',
-			'objects'           => 'apps::varnish::local::mode::objects',
-			'uptime'            => 'apps::varnish::local::mode::uptime',
-			'bans'              => 'apps::varnish::local::mode::bans',
-			'dns'               => 'apps::varnish::local::mode::dns',
-			'shm'               => 'apps::varnish::local::mode::shm',
-			'vcl'               => 'apps::varnish::local::mode::vcl',
-			'n'                 => 'apps::varnish::local::mode::n',
-			'sms'               => 'apps::varnish::local::mode::sms',
-			'hcb'               => 'apps::varnish::local::mode::hcb',
-			'esi'               => 'apps::varnish::local::mode::esi',
-			'threads'	    => 'apps::varnish::local::mode::threads',
-			);
+	%{$self->{modes}} = (        
+        'stats' => 'apps::varnish::local::mode::stats',
+    );
 
 	return $self;
 }

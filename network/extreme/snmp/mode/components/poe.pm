@@ -87,11 +87,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Poe '%s' is '%s' W", $instance, $result2->{extremePethSlotMeasuredPower}));
         }
-        $self->{output}->perfdata_add(label => 'poe_power_' . $instance, unit => 'W', 
-                                      value => $result2->{extremePethSlotMeasuredPower},
-                                      warning => $warn,
-                                      critical => $crit, min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'poe_power', unit => 'W',
+            nlabel => 'hardware.poe.power.watt',
+            instances => $instance,
+            value => $result2->{extremePethSlotMeasuredPower},
+            warning => $warn,
+            critical => $crit, min => 0
+        );
     }
 }
 

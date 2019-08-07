@@ -46,22 +46,21 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "connector-hostname:s@"    => { name => 'connector_hostname' },
-                      "connector-port:s@"        => { name => 'connector_port' },
-                      "vsphere-address:s@"       => { name => 'vsphere_address' },
-                      "vsphere-username:s@"      => { name => 'vsphere_username' },
-                      "vsphere-password:s@"      => { name => 'vsphere_password' },
-                      "container:s@"             => { name => 'container' },
-                      "timeout:s@"               => { name => 'timeout' },
-                      "sampling-period:s@"       => { name => 'sampling_period' },
-                      "time-shift:s@"            => { name => 'time_shift' },
-                      "case-insensitive"         => { name => 'case_insensitive' },
-                      "unknown-connector-status:s"  => { name => 'unknown_connector_status' },
-                      "warning-connector-status:s"  => { name => 'warning_connector_status' },
-                      "critical-connector-status:s" => { name => 'critical_connector_status' },
-                    });
+        $options{options}->add_options(arguments => {
+            'connector-hostname:s@'    => { name => 'connector_hostname' },
+            'connector-port:s@'        => { name => 'connector_port' },
+            'vsphere-address:s@'       => { name => 'vsphere_address' },
+            'vsphere-username:s@'      => { name => 'vsphere_username' },
+            'vsphere-password:s@'      => { name => 'vsphere_password' },
+            'container:s@'             => { name => 'container' },
+            'timeout:s@'               => { name => 'timeout' },
+            'sampling-period:s@'       => { name => 'sampling_period' },
+            'time-shift:s@'            => { name => 'time_shift' },
+            'case-insensitive'         => { name => 'case_insensitive' },
+            'unknown-connector-status:s'  => { name => 'unknown_connector_status' },
+            'warning-connector-status:s'  => { name => 'warning_connector_status' },
+            'critical-connector-status:s' => { name => 'critical_connector_status' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CONNECTOR OPTIONS', once => 1);
 
@@ -122,7 +121,7 @@ sub check_options {
     $self->{connector_port} = 5700 if ($self->{connector_port} eq '');
     $self->{container} = 'default' if ($self->{container} eq '');
     if (!defined($self->{connector_hostname}) || $self->{connector_hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
+        $self->{output}->add_option_msg(short_msg => 'Please set option --connector-hostname.');
         $self->{output}->option_exit();
     }
     if (defined($self->{timeout}) && $self->{timeout} =~ /^\d+$/ &&
@@ -162,8 +161,9 @@ sub connector_response {
         $self->{output}->option_exit();
     }
     
-    my $json = $1;    
+    my $json = $1;
     eval {
+        $self->{output}->output_add(long_msg => $json, debug => 1);
         $self->{result} = JSON->new->utf8->decode($json);
     };
     if ($@) {
@@ -176,11 +176,11 @@ sub connector_response_status {
     my ($self, %options) = @_;
     
     if (!defined($self->{result})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get response (timeout received)");
+        $self->{output}->add_option_msg(short_msg => 'Cannot get response (timeout received)');
         $self->{output}->option_exit();
     }
     if (!defined($self->{result}->{code})) {
-        $self->{output}->add_option_msg(short_msg => "response format incorrect - need connector vmware version >= 3.x.x");
+        $self->{output}->add_option_msg(short_msg => 'response format incorrect - need connector vmware version >= 3.x.x');
         $self->{output}->option_exit();
     }
     
@@ -271,6 +271,7 @@ sub execute {
     $self->{json_send}->{vsphere_password} = $self->{vsphere_password};
     $self->{json_send}->{sampling_period} = $self->{sampling_period};
     $self->{json_send}->{time_shift} = $self->{time_shift};
+    $self->{json_send}->{case_insensitive} = $self->{case_insensitive};
     
     # Init
     my $context = zmq_init();

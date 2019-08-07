@@ -38,24 +38,31 @@ sub new {
         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
+        'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+        'fra-usage'                => 'database::oracle::mode::frausage',
         'invalid-object'           => 'database::oracle::mode::invalidobject',
+        'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
+        'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
         'long-queries'             => 'database::oracle::mode::longqueries',
+        'password-expiration'      => 'database::oracle::mode::passwordexpiration',
         'process-usage'            => 'database::oracle::mode::processusage',
+        'redolog-usage'            => 'database::oracle::mode::redologusage',
         'rman-backup-problems'     => 'database::oracle::mode::rmanbackupproblems',
         'rman-backup-age'          => 'database::oracle::mode::rmanbackupage',
         'rman-online-backup-age'   => 'database::oracle::mode::rmanonlinebackupage',
         'rollback-segment-usage'   => 'database::oracle::mode::rollbacksegmentusage',
-        'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-        'temp-usage'               => 'database::oracle::mode::temptablespace',
-        'undo-usage'               => 'database::oracle::mode::undotablespace',
         'session-usage'            => 'database::oracle::mode::sessionusage',
         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
-        'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',                         
+        'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',
+        'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
+        'temp-usage'               => 'database::oracle::mode::temptablespace',
         'tnsping'                  => 'database::oracle::mode::tnsping',
+        'undo-usage'               => 'database::oracle::mode::undotablespace',
     );
 
-	$self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+    $self->{sql_modes}{dbi} = 'database::oracle::dbi';
+    $self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
 						 
     return $self;
 }
@@ -63,13 +70,14 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(
-                                   arguments => {
-                                                'hostname:s@'   => { name => 'hostname' },
-                                                'port:s@'       => { name => 'port' },
-                                                'sid:s'         => { name => 'sid' },
-                                                }
-                                  );
+    $self->{options}->add_options(arguments => {
+        'hostname:s@'   => { name => 'hostname' },
+        'port:s@'       => { name => 'port' },
+        'sid:s'         => { name => 'sid' },
+        'servicename:s' => { name => 'servicename' },
+        'container:s'   => { name => 'container' },
+    });
+
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();
@@ -84,13 +92,19 @@ sub init {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';port=' . $options_result->{port}[$i];
                 $self->{sqldefault}->{sqlpluscmd}[$i]->{port} = $options_result->{port}[$i];
             }
-            if ((defined($options_result->{sid})) && ($options_result->{sid} ne '')) {
+            if (defined($options_result->{sid}) && $options_result->{sid} ne '') {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';sid=' . $options_result->{sid};
 	            $self->{sqldefault}->{sqlpluscmd}[$i]->{sid} = $options_result->{sid};
             }
+            if (defined($options_result->{servicename}) && $options_result->{servicename} ne '') {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';service_name=' . $options_result->{servicename};
+	            $self->{sqldefault}->{sqlpluscmd}[$i]->{service_name} = $options_result->{servicename};
+            }
+            $self->{sqldefault}->{dbi}[$i]->{container} = $options_result->{container};
+            $self->{sqldefault}->{sqlpluscmd}[$i]->{container} = $options_result->{container};
         }
     }
-    $self->SUPER::init(%options);    
+    $self->SUPER::init(%options);
 }
 
 1;
@@ -113,7 +127,15 @@ Database Server Port.
 
 =item B<--sid>
 
-Database SID (SERVICE_NAME).
+Database SID.
+
+=item B<--servicename>
+
+Database Service Name.
+
+=item B<--container>
+
+Change container (does an alter session set container command).
 
 =back
 

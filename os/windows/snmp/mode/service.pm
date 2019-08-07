@@ -43,7 +43,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "warning:s"          => { name => 'warning', },
@@ -83,7 +82,7 @@ sub run {
     my $oid_svSvcName  = '.1.3.6.1.4.1.77.1.2.3.1.1';
     my $oid_svSvcInstalledState  = '.1.3.6.1.4.1.77.1.2.3.1.2';
     my $oid_svSvcOperatingState  = '.1.3.6.1.4.1.77.1.2.3.1.3';
-    my $result = $self->{snmp}->get_table(oid => $oid_svSvcEntry);
+    my $result = $self->{snmp}->get_table(oid => $oid_svSvcEntry, start => $oid_svSvcName, end => $oid_svSvcOperatingState);
     
     my %services_match = ();
     $self->{output}->output_add(severity => 'OK',

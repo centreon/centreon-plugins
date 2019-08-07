@@ -28,7 +28,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
     
     if ($self->{stdout} =~ /^System Temperatures.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         #Sensor         Status    Temp LowHard LowSoft LowWarn HighWarn HighSoft HighHard
@@ -40,7 +40,7 @@ sub check {
             my $sensor_status = defined($2) ? $2 : 'unknown';
             my $sensor_name = defined($1) ? $1 : 'unknown';
             
-            next if ($self->check_exclude(section => 'temperature', instance => $sensor_name));
+            next if ($self->check_filter(section => 'temperature', instance => $sensor_name));
             
             $self->{components}->{temperature}->{total}++;
             $self->{output}->output_add(long_msg => "System Temperature Sensor '" . $sensor_name . "' is " . $sensor_status);

@@ -109,11 +109,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Temperature '%s' is %s degree centigrade", $result->{temperatureProbeLocationName}, $result->{temperatureProbeReading}));
             }
-            $self->{output}->perfdata_add(label => 'temp_' . $result->{temperatureProbeLocationName}, unit => 'C', 
-                                          value => $result->{temperatureProbeReading},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temp', unit => 'C',
+                nlabel => 'hardware.probe.temperature.celsius',
+                instances => $result->{temperatureProbeLocationName},
+                value => $result->{temperatureProbeReading},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }

@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'     => 'storage::hp::lefthand::snmp::mode::hardware',
-                         'volume-usage' => 'storage::hp::lefthand::snmp::mode::volumeusage',
-                         );
+        'hardware'     => 'storage::hp::lefthand::snmp::mode::hardware',
+        'volume-usage' => 'storage::hp::lefthand::snmp::mode::volumeusage',
+    );
 
     return $self;
 }

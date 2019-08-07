@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{ccache} = [
-        { label => 'used', set => {
+        { label => 'used', nlabel => 'ccache.utilization.percentage', set => {
                 key_values => [ { name => 'Capacity_Value' }, { name => 'Size_Value' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
@@ -45,7 +45,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'hits', set => {
+        { label => 'hits', nlabel => 'ccache.hits.percentage', set => {
                 key_values => [ { name => 'Requests_Count', diff => 1 }, { name => 'Hits_Count', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_hits_calc'),
                 output_template => 'Hits = %.2f %%', output_use => 'hits_prct', threshold_use => 'hits_prct',
@@ -104,7 +104,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "filter-name:s"       => { name => 'filter_name' },
     });

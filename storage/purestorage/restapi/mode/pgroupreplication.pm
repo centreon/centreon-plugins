@@ -92,12 +92,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                    "timezone:s"            => { name => 'timezone', default => 'GMT' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+        'timezone:s'    => { name => 'timezone', default => 'GMT' },
+    });
     
     return $self;
 }
@@ -150,6 +148,11 @@ sub manage_selection {
             duration_seconds => $completed_time - $created_time,
             duration_human => centreon::plugins::misc::change_seconds(value => $completed_time - $created_time),
         };
+    }
+
+    if (scalar(keys %{$self->{pgroup}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No replication group found.");
+        $self->{output}->option_exit();
     }
 }
 

@@ -72,11 +72,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Voltage '%s' is %.2f mV", $instance, $result->{raisecomVoltValue}));
         }
-        $self->{output}->perfdata_add(label => 'volt_' . $instance, unit => 'mV',
-                                      value => $result->{raisecomVoltValue},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'volt', unit => 'mV',
+            nlabel => 'hardware.voltage.volt',
+            instances => $instance,
+            value => $result->{raisecomVoltValue},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

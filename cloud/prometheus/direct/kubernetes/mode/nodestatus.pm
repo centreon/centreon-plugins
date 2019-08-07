@@ -49,19 +49,22 @@ sub custom_usage_perfdata {
 
     my $label = 'allocated_pods';
     my $value_perf = $self->{result_values}->{allocated};
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+    
     my %total_options = ();
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
-        $total_options{total} = $self->{result_values}->{capacity};
+        $total_options{total} = $self->{result_values}->{allocatable};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label,
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{capacity});
+    $self->{output}->perfdata_add(
+        label => $label,
+        nlabel => 'pods.allocated.count',
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{allocatable},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+    );
 }
 
 sub custom_usage_threshold {
@@ -72,16 +75,21 @@ sub custom_usage_threshold {
     if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_allocated};
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                                         { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+                                                  { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Pods Allocation Capacity : %s, Allocated : %s (%.2f%%)",
-                   $self->{result_values}->{capacity}, $self->{result_values}->{allocated}, $self->{result_values}->{prct_allocated});
+    my $msg = sprintf("Pods Capacity: %s, Allocatable: %s, Allocated: %s (%.2f%%)",
+        $self->{result_values}->{capacity},
+        $self->{result_values}->{allocatable},
+        $self->{result_values}->{allocated},
+        $self->{result_values}->{prct_allocated});
     return $msg;
 }
 
@@ -91,19 +99,18 @@ sub custom_usage_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{capacity} = $options{new_datas}->{$self->{instance} . '_capacity'};    
     $self->{result_values}->{allocatable} = $options{new_datas}->{$self->{instance} . '_allocatable'};
-    $self->{result_values}->{allocated} = $self->{result_values}->{capacity} - $self->{result_values}->{allocatable};
-    $self->{result_values}->{prct_allocated} = ($self->{result_values}->{capacity} > 0) ? $self->{result_values}->{allocated} * 100 / $self->{result_values}->{capacity} : 0;
+    $self->{result_values}->{allocated} = $options{new_datas}->{$self->{instance} . '_allocated'};
+    $self->{result_values}->{prct_allocated} = ($self->{result_values}->{allocatable} > 0) ? $self->{result_values}->{allocated} * 100 / $self->{result_values}->{allocatable} : 0;
     
     return 0;
 }
-
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output', message_multiple => 'All nodes status are ok',
-            message_separator => ' - ', skipped_code => { -11 => 1 } },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_node_output',
+          message_multiple => 'All nodes status are ok', message_separator => ' - ', skipped_code => { -11 => 1 } },
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -116,7 +123,8 @@ sub set_counters {
             }
         },
         { label => 'allocated-pods', set => {
-                key_values => [ { name => 'capacity' }, { name => 'allocatable' }, { name => 'display' } ],
+                key_values => [ { name => 'capacity' }, { name => 'allocatable' }, { name => 'allocated' },
+                    { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
@@ -137,16 +145,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "node:s"                  => { name => 'node', default => 'node=~".*"' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /Ready/ || %{schedulable} =~ /false/' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                  "units:s"                 => { name => 'units', default => ''  },
-                                });
+    $options{options}->add_options(arguments => {
+        "node:s"                => { name => 'node', default => 'node=~".*"' },
+        "warning-status:s"      => { name => 'warning_status' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{status} !~ /Ready/ || %{schedulable} =~ /false/' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+        "units:s"               => { name => 'units', default => ''  },
+    });
    
     return $self;
 }
@@ -160,6 +166,7 @@ sub check_options {
         'unschedulable' => '^kube_node_spec_unschedulable$',
         'capacity' => '^kube_node_status_capacity_pods$',
         'allocatable' => '^kube_node_status_allocatable_pods$',
+        'allocated' => '^kubelet_running_pod_count$',
     };
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
@@ -188,19 +195,26 @@ sub manage_selection {
 
     $self->{nodes} = {};
     
-    my $results = $options{custom}->query(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{status} . '",' .
-                                                            $self->{option_results}->{node} . ',' .
-                                                            'status="true"' .
-                                                            $self->{extra_filter} . '}, "__name__", "status", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{unschedulable} . '",' .
-                                                            $self->{option_results}->{node} .
-                                                            $self->{extra_filter} . '}, "__name__", "unschedulable", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{capacity} . '",' .
-                                                            $self->{option_results}->{node} .
-                                                            $self->{extra_filter} . '}, "__name__", "capacity", "", "")',
-                                                       'label_replace({__name__=~"' . $self->{metrics}->{allocatable} . '",' .
-                                                            $self->{option_results}->{node} .
-                                                            $self->{extra_filter} . '}, "__name__", "allocatable", "", "")' ]);
+    my $results = $options{custom}->query(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{status} . '",' .
+                $self->{option_results}->{node} . ',' .
+                'status="true"' .
+                $self->{extra_filter} . '}, "__name__", "status", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{unschedulable} . '",' .
+                $self->{option_results}->{node} .
+                $self->{extra_filter} . '}, "__name__", "unschedulable", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{capacity} . '",' .
+                $self->{option_results}->{node} .
+                $self->{extra_filter} . '}, "__name__", "capacity", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{allocatable} . '",' .
+                $self->{option_results}->{node} .
+                $self->{extra_filter} . '}, "__name__", "allocatable", "", "")',
+            'label_replace({__name__=~"' . $self->{metrics}->{allocated} . '",' .
+                $self->{option_results}->{node} .
+                $self->{extra_filter} . '}, "__name__", "allocated", "", "")'
+        ]
+    );
 
     foreach my $result (@{$results}) {
         $self->{nodes}->{$result->{metric}->{$self->{labels}->{node}}}->{display} = $result->{metric}->{$self->{labels}->{node}};
@@ -268,6 +282,7 @@ Default :
     - unschedulable: ^kube_node_spec_unschedulable$
     - capacity: ^kube_node_status_capacity_pods$
     - allocatable: ^kube_node_status_allocatable_pods$
+    - allocated: ^kubelet_running_pod_count$
 
 =item B<--filter-counters>
 

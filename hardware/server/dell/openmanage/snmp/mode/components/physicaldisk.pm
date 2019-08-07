@@ -77,9 +77,9 @@ my $mapping5 = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{arrayDiskName}->{oid} }, { oid => $mapping2->{arrayDiskState}->{oid} },
+    push @{$self->{request}}, { oid => $mapping->{arrayDiskName}->{oid} }, { oid => $mapping2->{arrayDiskState}->{oid} },
         { oid => $mapping3->{arrayDiskSpareState}->{oid} }, { oid => $mapping4->{arrayDiskComponentStatus}->{oid} },
         { oid => $mapping5->{arrayDiskSmartAlertIndication}->{oid} };
 }
@@ -90,7 +90,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking physical disks");
     $self->{components}->{physicaldisk} = {name => 'physical disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'physicaldisk'));
+    return if ($self->check_filter(section => 'physicaldisk'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping4->{arrayDiskComponentStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping4->{arrayDiskComponentStatus}->{oid}\.(.*)$/);
@@ -101,7 +101,7 @@ sub check {
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{arrayDiskComponentStatus}->{oid}}, instance => $instance);
         my $result5 = $self->{snmp}->map_instance(mapping => $mapping5, results => $self->{results}->{$mapping5->{arrayDiskSmartAlertIndication}->{oid}}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'physicaldisk', instance => $instance));
+        next if ($self->check_filter(section => 'physicaldisk', instance => $instance));
         
         $self->{components}->{physicaldisk}->{total}++;
 
@@ -110,7 +110,7 @@ sub check {
                                     $result2->{arrayDiskState}, $result3->{arrayDiskSpareState}, 
                                     defined($result5->{arrayDiskSmartAlertIndication}) ? $result5->{arrayDiskSmartAlertIndication} : '-'
                                     ));
-        my $exit = $self->get_severity(section => 'physicaldisk', value => $result4->{arrayDiskComponentStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'physicaldisk', value => $result4->{arrayDiskComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Physical Disk '%s' status is '%s'",

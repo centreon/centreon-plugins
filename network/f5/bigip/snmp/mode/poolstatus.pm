@@ -35,12 +35,11 @@ my $thresholds = {
         ['gray', 'UNKNOWN'],
     ],
 };
-my $instance_mode;
 
 sub custom_threshold_output {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'pool', value => $self->{result_values}->{AvailState});
+    return $self->{instance_mode}->get_severity(section => 'pool', value => $self->{result_values}->{AvailState});
 }
 
 sub custom_status_calc {
@@ -89,12 +88,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"           => { name => 'filter_name' },
+        "threshold-overload:s@"   => { name => 'threshold_overload' },
+    });
     
     return $self;
 }
@@ -102,9 +99,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
-    
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*?),(.*)$/) {

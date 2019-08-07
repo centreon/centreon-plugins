@@ -25,14 +25,12 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use IO::Socket;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                  "host:s"               => { name => 'host', default => '127.0.0.1' },

@@ -37,9 +37,9 @@ my $mapping = {
 my $oid_rPDUPowerSupplyDevice = '.1.3.6.1.4.1.318.1.1.12.4.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_rPDUPowerSupplyDevice };
+    push @{$self->{request}}, { oid => $oid_rPDUPowerSupplyDevice };
 }
 
 sub check {

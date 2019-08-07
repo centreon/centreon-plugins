@@ -49,7 +49,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-on', set => {
+        { label => 'total-on', nlabel => 'host.vm.poweredon.current.count', set => {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
@@ -58,7 +58,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-off', set => {
+        { label => 'total-off', nlabel => 'host.vm.poweredoff.current.count', set => {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
@@ -67,7 +67,7 @@ sub set_counters {
                 ],
             }
         },
-         { label => 'total-suspended', set => {
+         { label => 'total-suspended', nlabel => 'host.vm.suspended.current.count', set => {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
@@ -87,7 +87,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'on', set => {
+        { label => 'on', nlabel => 'host.vm.poweredon.current.count', set => {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
@@ -96,7 +96,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'off', set => {
+        { label => 'off', nlabel => 'host.vm.poweredoff.current.count', set => {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
@@ -105,7 +105,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'suspended', set => {
+        { label => 'suspended', nlabel => 'host.vm.suspended.current.count', set => {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
@@ -128,7 +128,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "esx-hostname:s"        => { name => 'esx_hostname' },
         "filter"                => { name => 'filter' },

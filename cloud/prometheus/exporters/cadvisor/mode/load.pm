@@ -29,11 +29,12 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output', message_multiple => 'All containers load are ok' },
+        { name => 'containers', type => 1, cb_prefix_output => 'prefix_containers_output',
+          message_multiple => 'All containers load are ok' },
     ];
 
     $self->{maps_counters}->{containers} = [
-        { label => 'load', set => {
+        { label => 'load', nlabel => 'container.load.count', set => {
                 key_values => [ { name => 'load' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Load: %.2f',
                 output_change_bytes => 1,
@@ -57,14 +58,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "container:s"             => { name => 'container', default => 'container_name!~".*POD.*"' },
-                                  "pod:s"                   => { name => 'pod', default => 'pod_name=~".*"' },
-                                  "extra-filter:s@"         => { name => 'extra_filter' },
-                                  "metric-overload:s@"      => { name => 'metric_overload' },
-                                });
+    $options{options}->add_options(arguments => {
+        "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
+        "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },
+        "extra-filter:s@"       => { name => 'extra_filter' },
+        "metric-overload:s@"    => { name => 'metric_overload' },
+    });
    
     return $self;
 }
@@ -74,7 +73,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
     
     $self->{metrics} = {
-        'load'      => '^container_cpu_load_average_10s$',
+        'load' => '^container_cpu_load_average_10s$',
     };
     foreach my $metric (@{$self->{option_results}->{metric_overload}}) {
         next if ($metric !~ /(.*),(.*)/);
@@ -104,11 +103,16 @@ sub manage_selection {
 
     $self->{containers} = {};
 
-    my $results = $options{custom}->query_range(queries => [ 'label_replace({__name__=~"' . $self->{metrics}->{load} . '",' .
-                                                                $self->{option_results}->{container} . ',' .
-                                                                $self->{option_results}->{pod} .
-                                                                $self->{extra_filter} . '}, "__name__", "load", "", "")' ],
-                                                timeframe => $self->{prom_timeframe}, step => $self->{prom_step});
+    my $results = $options{custom}->query_range(
+        queries => [
+            'label_replace({__name__=~"' . $self->{metrics}->{load} . '",' .
+                $self->{option_results}->{container} . ',' .
+                $self->{option_results}->{pod} .
+                $self->{extra_filter} . '}, "__name__", "load", "", "")'
+        ],
+        timeframe => $self->{prom_timeframe},
+        step => $self->{prom_step}
+    );
 
     foreach my $result (@{$results}) {
         next if (!defined($result->{metric}->{$self->{labels}->{pod}}) || !defined($result->{metric}->{$self->{labels}->{container}}));

@@ -65,7 +65,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{datastore} = [
-        { label => 'read-latency', set => {
+        { label => 'read-latency', nlabel => 'host.datastore.latency.read.milliseconds', set => {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
                 output_template => 'read : %s ms',
                 perfdatas => [
@@ -74,7 +74,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write-latency', set => {
+        { label => 'write-latency', nlabel => 'host.datastore.latency.write.milliseconds', set => {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'write : %s ms',
                 perfdatas => [
@@ -109,7 +109,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "esx-hostname:s"        => { name => 'esx_hostname' },
         "filter"                => { name => 'filter' },

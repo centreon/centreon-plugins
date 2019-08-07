@@ -73,12 +73,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} !~ /Online/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{status} !~ /Online/i' },
+    });
+
     return $self;
 }
 
@@ -86,8 +85,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros('warning_status', 'critical_status');
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 my %map_status = (

@@ -46,16 +46,17 @@ sub new {
     }
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-                "sqlplus-cmd:s"     => { name => 'sqlplus_cmd'},
-                "oracle-home:s"     => { name => 'oracle_home' },
-                "tnsadmin-home:s"   => { name => 'tnsadmin_home' },
-                "tnsnames-sid:s"    => { name => 'tnsnames_sid'},
-                "username:s"        => { name => 'username' },
-                "password:s"        => { name => 'password' },
-                "local-connexion"   => { name => 'local_connexion', default => 0 }, 
-                "sysdba"            => { name => 'sysdba', default => 0 }, 
-                "sql-errors-exit:s" => { name => 'sql_errors_exit', default => 'unknown' },
-                "tempdir:s"         => { name => 'tempdir', default => '/tmp' },
+                "sqlplus-cmd:s"             => { name => 'sqlplus_cmd'},
+                "oracle-home:s"             => { name => 'oracle_home' },
+                "tnsadmin-home:s"           => { name => 'tnsadmin_home' },
+                "tnsnames-sid:s"            => { name => 'tnsnames_sid'},
+                "tnsnames-servicename:s"    => { name => 'tnsnames_servicename'},
+                "username:s"                => { name => 'username' },
+                "password:s"                => { name => 'password' },
+                "local-connexion"           => { name => 'local_connexion', default => 0 }, 
+                "sysdba"                    => { name => 'sysdba', default => 0 }, 
+                "sql-errors-exit:s"         => { name => 'sql_errors_exit', default => 'unknown' },
+                "tempdir:s"                 => { name => 'tempdir', default => '/tmp' },
             }
         );
     }
@@ -108,18 +109,20 @@ sub check_options {
     # return 1 = ok still data_source
     # return 0 = no data_source left
 
-    $self->{sid} = defined($self->{option_results}->{sid}[0]) ? $self->{option_results}->{sid}[0]: $self->{option_results}->{tnsnames_sid};
+    $self->{sid} = defined($self->{option_results}->{sid}[0]) ? $self->{option_results}->{sid}[0] : $self->{option_results}->{tnsnames_sid};
+    $self->{service_name} = defined($self->{option_results}->{service_name}[0]) ? $self->{option_results}->{service_name}[0] : $self->{option_results}->{tnsnames_servicename};
     $self->{oracle_home} = defined($self->{option_results}->{oracle_home}) ? $self->{option_results}->{oracle_home} : $ENV{'ORACLE_HOME'};
     $self->{tnsadmin_home} = defined($self->{option_results}->{tnsadmin_home}) ? $self->{option_results}->{tnsadmin_home} : $ENV{'TNSADMIN'};
     $self->{local_connexion} = $self->{option_results}->{local_connexion};
     $self->{sqlplus_cmd} = $self->{option_results}->{sqlplus_cmd};
+    $self->{container} = defined($self->{option_results}->{container}[0]) ? $self->{option_results}->{container}[0] : undef;
         
     $self->{output}->output_add(long_msg => "*** DEBUG MODE****\n", debug => 1);
     $self->{output}->output_add(long_msg => Data::Dumper::Dumper($self->{option_results}), debug => 1);
  
-    # check the SID prerequisite option
-    if (!defined($self->{sid}) || $self->{sid} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify sid argument.");
+    if ((!defined($self->{sid}) || $self->{sid} eq '') &&
+        (!defined($self->{service_name}) || $self->{service_name} eq '')) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify sid or servicename argument.");
         $self->{output}->option_exit(exit_litteral => $self->{option_results}->{sql_errors_exit});
     }
     
@@ -131,12 +134,12 @@ sub check_options {
     
     # construct the TNSADMIN variable if not available
     if(!defined($self->{tnsadmin_home})) {
-        $self->{tnsadmin_home} = $self->{oracle_home}."/network/admin";
+        $self->{tnsadmin_home} = $self->{oracle_home} . "/network/admin";
     }
     
     # check the SQLPLUS command to use
     if(!$self->{sqlplus_cmd}) {
-         $self->{sqlplus_cmd} = $self->{oracle_home}."/bin/sqlplus";
+        $self->{sqlplus_cmd} = $self->{oracle_home} . "/bin/sqlplus";
     }
     
     $self->{args} = ['-L', '-S'];
@@ -155,17 +158,25 @@ sub check_options {
     if ($self->{local_connexion} == 0) {
         if (defined($self->{option_results}->{hostname})) {
             my $port = defined($self->{option_results}->{port}) ? $self->{option_results}->{port}[0] : 1521;
-            $connection_string .= "\@//" . $self->{option_results}->{hostname}[0] . ":" . $port . "/" . $self->{sid};
+            $connection_string .= "\@//" . $self->{option_results}->{hostname}[0] . ':' . $port . '/' . ((defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
         } else {
-            $connection_string .= "\@" . $self->{sid};
+            $connection_string .= "\@" . ((defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
         }
     } else {
         $self->{output}->output_add(long_msg => "*** LOCAL CONNEXION MODE****", debug => 1);
-        $ENV{ORACLE_SID} = $self->{sid};
+        if (defined($self->{sid}) && $self->{sid} ne '') {
+            $ENV{ORACLE_SID} = $self->{sid};
+        } else {
+            $ENV{TWO_TASK} = '/' . $self->{service_name};
+        }
     }
     
     # register a false data_source to be compliant with tnsping mode
-    $self->{data_source} = "sid=" . $self->{sid};
+    if (defined($self->{sid}) && $self->{sid} ne '') {
+        $self->{data_source} = "sid=" . $self->{sid};
+    } else {
+        $self->{data_source} = "service_name=" . $self->{service_name};
+    }
     
     push @{$self->{args}}, $connection_string;
     
@@ -259,6 +270,8 @@ exit;";
     return ($exit_code, $stdout); 
 }
 
+sub disconnect {}
+
 # Connection initializer
 sub connect {
     my ($self, %options) = @_;
@@ -274,8 +287,10 @@ sub connect {
     }
     
     $self->{version} = $self->fetchrow_array();
-    
     $self->{output}->output_add(long_msg => "VERSION: " . $self->{version}, debug => 1);
+    if (defined($self->{container}) and $self->{container} ne '') {
+        $self->query(query => "alter session set container=$self->{container}");
+    }
     return 0;
 }
 
@@ -415,7 +430,11 @@ Oracle TNS Admin Home. Where to locate tnsnames.ora file (default: ${ORACLE_HOME
 
 =item B<--tnsnames-sid>
 
-Oracle SID defined in tnsnames.ora. 
+Oracle SID defined in tnsnames.ora.
+
+=item B<--tnsnames-servicename>
+
+Oracle Service Name defined in tnsnames.ora. 
 
 =item B<--username>
 

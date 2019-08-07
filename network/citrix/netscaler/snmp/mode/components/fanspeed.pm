@@ -60,11 +60,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fan '%s' speed is %s rpm", $result->{sysHealthCounterName}, $result->{sysHealthCounterValue}));
         }
-        $self->{output}->perfdata_add(label => 'speed_' . $result->{sysHealthCounterName}, unit => 'rpm', 
-                                      value => $result->{sysHealthCounterValue},
-                                      warning => $warn,
-                                      critical => $crit, min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'speed', unit => 'rpm',
+            nlabel => 'hardware.fan.speed.rpm',
+            instances => $result->{sysHealthCounterName},
+            value => $result->{sysHealthCounterValue},
+            warning => $warn,
+            critical => $crit, min => 0
+        );
     }
 }
 

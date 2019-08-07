@@ -59,11 +59,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' is %s degree centigrade", $result->{slHdwTempSensorName}, $result->{s5ChasTmpSnrTmpValue}));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => 'C', 
-                                      value => $result->{s5ChasTmpSnrTmpValue},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $instance, 
+            value => $result->{s5ChasTmpSnrTmpValue},
+            warning => $warn,
+            critical => $crit,
+        );
     }
 }
 

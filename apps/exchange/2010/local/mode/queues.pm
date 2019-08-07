@@ -32,7 +32,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "remote-host:s"       => { name => 'remote_host', },
@@ -144,12 +143,12 @@ Print powershell output.
 =item B<--warning>
 
 Set warning threshold.
-Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}
+Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}, %{messagecount}
 
 =item B<--critical>
 
 Set critical threshold (Default: '%{status} !~ /Ready|Active/i').
-Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}
+Can used special variables like: %{status}, %{identity}, %{isvalid}, %{deliverytype}, %{messagecount}
 
 =back
 

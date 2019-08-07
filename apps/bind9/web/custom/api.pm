@@ -45,9 +45,7 @@ sub new {
             "port:s"     => { name => 'port' },
             "proto:s"    => { name => 'proto' },
             "url-path:s" => { name => 'url_path' },
-            "proxyurl:s" => { name => 'proxyurl' },
             "timeout:s"  => { name => 'timeout' },
-            "ssl-opt:s@" => { name => 'ssl_opt' },
             "unknown-status:s"  => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
             "warning-status:s"  => { name => 'warning_status' },
             "critical-status:s" => { name => 'critical_status' },
@@ -57,7 +55,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
@@ -97,7 +95,6 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8080;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'http';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? $self->{option_results}->{proxyurl} : undef;
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? $self->{option_results}->{url_path} : '/';
     $self->{unknown_status} = (defined($self->{option_results}->{unknown_status})) ? $self->{option_results}->{unknown_status} : undef;
     $self->{warning_status} = (defined($self->{option_results}->{warning_status})) ? $self->{option_results}->{warning_status} : undef;
@@ -124,7 +121,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
     $self->{option_results}->{url_path} = $self->{url_path};
     $self->{option_results}->{unknown_status} = $self->{unknown_status};
     $self->{option_results}->{warning_status} = $self->{warning_status};
@@ -160,8 +156,7 @@ sub request {
     $self->settings();
     my $response = $self->{http}->request();
     
-    my $headers = $self->{http}->get_header();
-    my $content_type = $headers->header('Content-Type');
+    my ($content_type) = $self->{http}->get_header(name => 'Content-Type');
     if (!defined($content_type) || $content_type !~ /(xml|json)/i) {
         $self->{output}->add_option_msg(short_msg => "content-type not set");
         $self->{output}->option_exit();
@@ -444,17 +439,9 @@ Specify https if needed (Default: 'http')
 
 Statistics Channel API Path (Default: '/').
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--timeout>
 
 Set HTTP timeout
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

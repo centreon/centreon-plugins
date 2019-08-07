@@ -98,7 +98,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "vm-hostname:s"         => { name => 'vm_hostname' },
         "filter"                => { name => 'filter' },
@@ -107,6 +106,7 @@ sub new {
         "scope-host:s"          => { name => 'scope_host' },
         "filter-description:s"  => { name => 'filter_description' },
         "filter-os:s"           => { name => 'filter_os' },
+        "filter-uuid:s"         => { name => 'filter_uuid' },
         "display-description"   => { name => 'display_description' },
         "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },

@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "vm-hostname:s"           => { name => 'vm_hostname' },
         "filter"                  => { name => 'filter' },
@@ -39,6 +38,7 @@ sub new {
         "scope-host:s"            => { name => 'scope_host' },
         "filter-description:s"    => { name => 'filter_description' },
         "filter-os:s"             => { name => 'filter_os' },
+        "filter-uuid:s"           => { name => 'filter_uuid' },
         "display-description"     => { name => 'display_description' },
         "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
         "tools-notinstalled-status:s"   => { name => 'tools_notinstalled_status', default => 'critical' },
@@ -155,15 +155,24 @@ sub run {
     
     if ($multiple == 1) {
         my $total = scalar(keys %not_up2date) + scalar(keys %not_running) + scalar(keys %not_installed);
-        $self->{output}->perfdata_add(label => 'not_updated',
-                                      value => scalar(keys %not_up2date),
-                                      min => 0, max => $total);
-        $self->{output}->perfdata_add(label => 'not_running',
-                                      value => scalar(keys %not_running),
-                                      min => 0, max => $total);
-        $self->{output}->perfdata_add(label => 'not_installed',
-                                      value => scalar(keys %not_installed),
-                                      min => 0, max => $total);
+        $self->{output}->perfdata_add(
+            label => 'not_updated',
+            nlabel => 'vm.tools.notupdated.current.count',
+            value => scalar(keys %not_up2date),
+            min => 0, max => $total
+        );
+        $self->{output}->perfdata_add(
+            label => 'not_running',
+            nlabel => 'vm.tools.notrunning.current.count',
+            value => scalar(keys %not_running),
+            min => 0, max => $total
+        );
+        $self->{output}->perfdata_add(
+            label => 'not_installed',
+            nlabel => 'vm.tools.notinstalled.current.count',
+            value => scalar(keys %not_installed),
+            min => 0, max => $total
+        );
     }
     
     $self->{output}->display();

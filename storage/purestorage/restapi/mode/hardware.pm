@@ -54,7 +54,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                 });
@@ -150,11 +149,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("entity '%s' temperature is %s C", $entry->{name}, $entry->{temperature}));
             }
-            $self->{output}->perfdata_add(label => 'temperature_' . $entry->{name}, unit => 'C', 
-                                          value => $entry->{temperature},
-                                          warning => $warn,
-                                          critical => $crit, min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temperature', unit => 'C',
+                nlabel => 'hardware.entity.temperature.celsius',
+                instances => $entry->{name},
+                value => $entry->{temperature},
+                warning => $warn,
+                critical => $crit, min => 0
+            );
         }
     }
 }

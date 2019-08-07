@@ -49,7 +49,7 @@ sub set_counters {
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output',  message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -66,7 +66,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_cpu} = [
-        { label => 'total-cpu', set => {
+        { label => 'total-cpu', nlabel => 'vm.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_average' } ],
                 output_template => '%s %%',
                 perfdatas => [
@@ -75,7 +75,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-cpu-mhz', set => {
+        { label => 'total-cpu-mhz', nlabel => 'vm.cpu.utilization.mhz', set => {
                 key_values => [ { name => 'cpu_average_mhz' } ],
                 output_template => '%s MHz',
                 perfdatas => [
@@ -84,7 +84,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-ready', set => {
+        { label => 'cpu-ready',  nlabel => 'vm.cpu.ready.percentage', set => {
                 key_values => [ { name => 'cpu_ready' } ],
                 output_template => 'ready %s %%',
                 perfdatas => [
@@ -96,7 +96,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cpu} = [
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'vm.core.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
                 output_template => 'usage : %s MHz',
                 perfdatas => [
@@ -148,7 +148,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "vm-hostname:s"         => { name => 'vm_hostname' },
         "filter"                => { name => 'filter' },
@@ -158,6 +157,7 @@ sub new {
         "display-description"   => { name => 'display_description' },
         "filter-description:s"  => { name => 'filter_description' },
         "filter-os:s"           => { name => 'filter_os' },
+        "filter-uuid:s"         => { name => 'filter_uuid' },
         "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
         "warning-status:s"      => { name => 'warning_status', default => '' },
         "critical-status:s"     => { name => 'critical_status', default => '' },

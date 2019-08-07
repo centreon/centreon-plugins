@@ -49,7 +49,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-read', set => {
+        { label => 'total-read', nlabel => 'datastore.read.usage.bytespersecond', set => {
                 key_values => [ { name => 'read' } ],
                 output_template => 'Total rate of reading data: %s %s/s',
                 output_change_bytes => 1,
@@ -59,13 +59,13 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-write', set => {
+        { label => 'total-write', nlabel => 'datastore.write.usage.bytespersecond', set => {
                 key_values => [ { name => 'write' } ],
                 output_template => 'Total rate of writing data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'total_write_rate', value => 'write_absolute', template => '%s',
-                      min => 0 },
+                      unit => 'B/s', min => 0 },
                 ],
             }
         },
@@ -80,7 +80,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'read', set => {
+        { label => 'read', nlabel => 'datastore.read.usage.bytespersecond', set => {
                 key_values => [ { name => 'read' } ],
                 output_template => 'rate of reading data: %s %s/s',
                 output_change_bytes => 1,
@@ -90,13 +90,13 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'write', set => {
+        { label => 'write', nlabel => 'datastore.write.usage.bytespersecond', set => {
                 key_values => [ { name => 'write' } ],
                 output_template => 'rate of writing data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'write_rate', value => 'write_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1 },
+                      unit => 'B/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -114,7 +114,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "datastore-name:s"      => { name => 'datastore_name' },
         "filter"                => { name => 'filter' },
@@ -147,10 +146,10 @@ sub manage_selection {
         $self->{datastore}->{$ds_name} = {
             display => $ds_name, 
             accessible => $response->{data}->{$ds_id}->{accessible},
-            read => $response->{data}->{$ds_id}->{'datastore.write.average'},
-            write => $response->{data}->{$ds_id}->{'datastore.read.average'},
+            read => $response->{data}->{$ds_id}->{'datastore.read.average'},
+            write => $response->{data}->{$ds_id}->{'datastore.write.average'},
         };
-        $self->{global}->{read} += $response->{data}->{$ds_id}->{'datastore.write.average'} if (defined($response->{data}->{$ds_id}->{'datastore.write.average'}));
+        $self->{global}->{read} += $response->{data}->{$ds_id}->{'datastore.read.average'} if (defined($response->{data}->{$ds_id}->{'datastore.read.average'}));
         $self->{global}->{write} += $response->{data}->{$ds_id}->{'datastore.write.average'} if (defined($response->{data}->{$ds_id}->{'datastore.write.average'}));
     }    
 }

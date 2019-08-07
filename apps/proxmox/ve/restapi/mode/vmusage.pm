@@ -56,22 +56,21 @@ sub custom_cpu_calc {
 sub custom_memory_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    $self->{output}->perfdata_add(label => 'memory_used' . $extra_label, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'memory_used', unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_memory_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -104,22 +103,21 @@ sub custom_memory_calc {
 sub custom_swap_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    $self->{output}->perfdata_add(label => 'swap_used' . $extra_label, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'swap_used', unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_swap_threshold {
     my ($self, %options) = @_;
 
     my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -244,18 +242,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "vm-id:s"                 => { name => 'vm_id' },
-                                  "vm-name:s"               => { name => 'vm_name' },
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "use-name"                => { name => 'use_name' },
-                                  "warning-vm-status:s"     => { name => 'warning_vm_status', default => '' },
-                                  "critical-vm-status:s"    => { name => 'critical_vm_status', default => '' },
-                                });
-   $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
-   return $self;
+    $options{options}->add_options(arguments => {
+        'vm-id:s'                 => { name => 'vm_id' },
+        'vm-name:s'               => { name => 'vm_name' },
+        'filter-name:s'           => { name => 'filter_name' },
+        'use-name'                => { name => 'use_name' },
+        'warning-vm-status:s'     => { name => 'warning_vm_status', default => '' },
+        'critical-vm-status:s'    => { name => 'critical_vm_status', default => '' },
+    });
+    $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
+    return $self;
 }
 
 sub check_options {

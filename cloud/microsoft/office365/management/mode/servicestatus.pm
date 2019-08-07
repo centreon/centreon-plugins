@@ -101,14 +101,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-service-name:s"     => { name => 'filter_service_name' },
-                                    "filter-feature-name:s"     => { name => 'filter_feature_name' },
-                                    "warning-status:s"          => { name => 'warning_status' },
-                                    "critical-status:s"         => { name => 'critical_status', default => '%{status} !~ /Normal/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-service-name:s"     => { name => 'filter_service_name' },
+        "filter-feature-name:s"     => { name => 'filter_feature_name' },
+        "warning-status:s"          => { name => 'warning_status' },
+        "critical-status:s"         => { name => 'critical_status', default => '%{status} !~ /Normal|Service Restored/i' },
+    });
     
     return $self;
 }
@@ -176,7 +174,7 @@ Can used special variables like: %{service_name}, %{feature_name}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} !~ /Normal/i').
+Set critical threshold for status (Default: '%{status} !~ /Normal|Service Restored/i').
 Can used special variables like: %{service_name}, %{feature_name}, %{status}
 
 =back

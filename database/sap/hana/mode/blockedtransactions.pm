@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'global', type => 0 },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'blocked-transactions', set => {
+        { label => 'blocked-transactions', nlabel => 'transactions.blocked.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Current Total Blocked Transactions : %s',
                 perfdatas => [
@@ -48,7 +48,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                 });

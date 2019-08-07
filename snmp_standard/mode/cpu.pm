@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu_avg} = [
-        { label => 'average', set => {
+        { label => 'average', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'average' }, { name => 'count' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
@@ -46,7 +46,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu_core} = [
-        { label => 'core', set => {
+        { label => 'core', nlabel => 'core.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'usage : %.2f %%',
                 perfdatas => [
@@ -76,10 +76,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }

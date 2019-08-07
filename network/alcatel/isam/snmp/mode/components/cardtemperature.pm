@@ -59,12 +59,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Card '%s' temperature is %s C", $name, $temperature));
         }
-        $self->{output}->perfdata_add(label => 'cardtemperature_' . $name, 
-                                      unit => 'C', 
-                                      value => $temperature,
-                                      warning => $warn,
-                                      critical => $crit
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'cardtemperature', unit => 'C',
+            nlabel => 'hardware.card.temperature.celsius',
+            instances => $name,
+            value => $temperature,
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

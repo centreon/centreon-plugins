@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'ssid', type => 1, cb_prefix_output => 'prefix_ssid_output', message_multiple => 'All users by SSID are ok' },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'users.current.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Users : %s',
                 perfdatas => [
@@ -44,7 +44,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{ssid} = [
-        { label => 'ssid', set => {
+        { label => 'ssid', nlabel => 'ssid.users.current.count', set => {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'users : %s',
                 perfdatas => [
@@ -67,7 +67,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "filter-ssid:s"   => { name => 'filter_ssid' },

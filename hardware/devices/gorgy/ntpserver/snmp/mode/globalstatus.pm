@@ -90,14 +90,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning-sync-status:s"   => { name => 'warning_sync_status', default => '%{sync_status} =~ /Running with autonomy|Free running/i' },
-                                  "critical-sync-status:s"  => { name => 'critical_sync_status', default => '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i' },
-                                  "warning-timebase-status:s"   => { name => 'warning_timebase_status', default => '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i' },
-                                  "critical-timebase-status:s"  => { name => 'critical_timebase_status', default => '%{timebase_status} =~ /^XO$/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-sync-status:s'      => { name => 'warning_sync_status', default => '%{sync_status} =~ /Running with autonomy|Free running/i' },
+        'critical-sync-status:s'     => { name => 'critical_sync_status', default => '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i' },
+        'warning-timebase-status:s'  => { name => 'warning_timebase_status', default => '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i' },
+        'critical-timebase-status:s' => { name => 'critical_timebase_status', default => '%{timebase_status} =~ /^XO$/i' },
+    });
     
     return $self;
 }
@@ -141,18 +139,22 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [
-                                                    $mapping->{currentSyncState}->{oid} . '.0',
-                                                    $mapping->{timeBaseState}->{oid} . '.0',
-                                                    $mapping->{powerDownFlags}->{oid} . '.0',
-                                                    $mapping->{ntpRequestsNumber}->{oid} . '.0',
-                                               ],
-                                               nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $mapping->{currentSyncState}->{oid} . '.0',
+            $mapping->{timeBaseState}->{oid} . '.0',
+            $mapping->{powerDownFlags}->{oid} . '.0',
+            $mapping->{ntpRequestsNumber}->{oid} . '.0',
+        ],
+        nothing_quit => 1
+    );
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
-    $self->{global} = { sync_status     => $result->{currentSyncState}, 
-                        timebase_status => $result->{timeBaseState}, 
-                        ntp_requests    => $result->{ntpRequestsNumber} };
-    
+    $self->{global} = {
+        sync_status     => $result->{currentSyncState}, 
+        timebase_status => $result->{timeBaseState}, 
+        ntp_requests    => $result->{ntpRequestsNumber}
+    };
+
     $self->{cache_name} = "gorgy_ntpserver_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }

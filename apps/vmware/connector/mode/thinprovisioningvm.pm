@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "vm-hostname:s"           => { name => 'vm_hostname' },
         "filter"                  => { name => 'filter' },
@@ -38,7 +37,8 @@ sub new {
         "scope-cluster:s"         => { name => 'scope_cluster' },
         "scope-host:s"            => { name => 'scope_host' },
         "filter-description:s"    => { name => 'filter_description' },
-        "filter-os:s"           => { name => 'filter_os' },
+        "filter-os:s"             => { name => 'filter_os' },
+        "filter-uuid:s"           => { name => 'filter_uuid' },
         "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
         "nopoweredon-skip"        => { name => 'nopoweredon_skip' },
         "display-description"     => { name => 'display_description' },

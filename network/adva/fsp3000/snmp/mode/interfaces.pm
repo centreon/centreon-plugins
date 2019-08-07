@@ -36,71 +36,69 @@ sub set_oids_traffic {
     $self->{currentEthRxHighSpeed1dayBytes} = '.1.3.6.1.4.1.2544.1.11.2.6.2.89.1.4'; # in B
 }
 
+sub set_counters_traffic {
+    my ($self, %options) = @_;
+
+    push @{$self->{maps_counters}->{int}}, 
+        { label => 'traffic-in', filter => 'add_traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in_15min', diff => 1 }, { name => 'traffic_in_1day', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+        { label => 'traffic-out', filter => 'add_traffic', nlabel => 'interface.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out_15min', diff => 1 }, { name => 'traffic_out_1day', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+    ;
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
-    $self->{maps_counters} = { int => {}, global => {} };
-    $self->{maps_counters}->{int}->{'030_traffic-in'} = { filter => 'add_traffic',
-        set => {
-            key_values => [ { name => 'traffic_in_15min', diff => 1 }, { name => 'traffic_in_1day', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-            per_second => 1,
-            closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
-            closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
-            closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-        }
-    };
-    $self->{maps_counters}->{int}->{'031_traffic-out'} = { filter => 'add_traffic',
-        set => {
-            key_values => [ { name => 'traffic_out_15min', diff => 1 }, { name => 'traffic_out_1day', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-            per_second => 1,
-            closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
-            closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
-            closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-            closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
-        }
-    };
-    $self->{maps_counters}->{int}->{'090_laser-temp'} = { filter => 'add_optical',
-        set => {
-            key_values => [ { name => 'laser_temp' }, { name => 'display' } ],
-            output_template => 'Laser Temperature : %.2f C', output_error_template => 'Laser Temperature : %.2f',
-            perfdatas => [
-                { label => 'laser_temp', value => 'laser_temp_absolute', template => '%.2f',
-                  unit => 'C', label_extra_instance => 1, instance_use => 'display_absolute' },
-            ],
-        }
-    };
-    $self->{maps_counters}->{int}->{'091_input-power'} = { filter => 'add_optical',
-        set => {
-            key_values => [ { name => 'input_power' }, { name => 'display' } ],
-            output_template => 'Input Power : %s dBm', output_error_template => 'Input Power : %s',
-            perfdatas => [
-                { label => 'input_power', value => 'input_power_absolute', template => '%s',
-                  unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
-            ],
-        }
-    };
-    $self->{maps_counters}->{int}->{'091_output-power'} = { filter => 'add_optical',
-        set => {
-            key_values => [ { name => 'output_power' }, { name => 'display' } ],
-            output_template => 'Output Power : %s dBm', output_error_template => 'Output Power : %s',
-            perfdatas => [
-                { label => 'output_power', value => 'output_power_absolute', template => '%s',
-                  unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
-            ],
-        }
-    };
-    
     $self->SUPER::set_counters(%options);
+
+    push @{$self->{maps_counters}->{int}}, 
+        { label => 'laser-temp', filter => 'add_optical', nlabel => 'interface.laser.temperature.celsius', set => {
+                key_values => [ { name => 'laser_temp' }, { name => 'display' } ],
+                output_template => 'Laser Temperature : %.2f C', output_error_template => 'Laser Temperature : %.2f',
+                perfdatas => [
+                    { label => 'laser_temp', value => 'laser_temp_absolute', template => '%.2f',
+                      unit => 'C', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
+                key_values => [ { name => 'input_power' }, { name => 'display' } ],
+                output_template => 'Input Power : %s dBm', output_error_template => 'Input Power : %s',
+                perfdatas => [
+                    { label => 'input_power', value => 'input_power_absolute', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
+                key_values => [ { name => 'output_power' }, { name => 'display' } ],
+                output_template => 'Output Power : %s dBm', output_error_template => 'Output Power : %s',
+                perfdatas => [
+                    { label => 'output_power', value => 'output_power_absolute', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ;
 }
 
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
     
     my ($warning, $critical);
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
@@ -111,11 +109,15 @@ sub custom_traffic_perfdata {
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
     
-    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    $self->{output}->perfdata_add(
+        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        nlabel => $self->{nlabel},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
 }
 
 sub custom_traffic_threshold {
@@ -123,9 +125,9 @@ sub custom_traffic_threshold {
     
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -173,13 +175,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_set_traffic => 1, no_errors => 1, no_cast => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "add-optical"   => { name => 'add_optical' },
-                                }
+    $options{options}->add_options(arguments => {
+            'add-optical'   => { name => 'add_optical' },
+        }
     );
     
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->{checking} = '';
+    foreach (('add_global', 'add_status', 'add_traffic', 'add_speed', 'add_volume', 'add_optical')) {
+        if (defined($self->{option_results}->{$_})) {
+            $self->{checking} .= $_;
+        }
+    }
 }
 
 my $oid_opticalIfDiagLaserTemp = '.1.3.6.1.4.1.2544.1.11.2.4.3.5.1.2';
@@ -197,24 +210,24 @@ sub custom_load {
 
 sub custom_add_result {
     my ($self, %options) = @_;
-    
+
     return if (!defined($self->{option_results}->{add_optical}));
-    $self->{interface_selected}->{$options{instance}}->{laser_temp} = undef;
+    $self->{int}->{$options{instance}}->{laser_temp} = undef;
     if (defined($self->{results}->{$oid_opticalIfDiagLaserTemp . '.' . $options{instance}}) &&
         $self->{results}->{$oid_opticalIfDiagLaserTemp . '.' . $options{instance}} != -2147483648) {
-        $self->{interface_selected}->{$options{instance}}->{laser_temp} = $self->{results}->{$oid_opticalIfDiagLaserTemp . '.' . $options{instance}} * 0.1;
+        $self->{int}->{$options{instance}}->{laser_temp} = $self->{results}->{$oid_opticalIfDiagLaserTemp . '.' . $options{instance}} * 0.1;
     }
     
-    $self->{interface_selected}->{$options{instance}}->{input_power} = undef;
+    $self->{int}->{$options{instance}}->{input_power} = undef;
     if (defined($self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}}) &&
         $self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}} != -65535) {
-        $self->{interface_selected}->{$options{instance}}->{input_power} = $self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}} / 10;
+        $self->{int}->{$options{instance}}->{input_power} = $self->{results}->{$oid_opticalIfDiagInputPower . '.' . $options{instance}} / 10;
     }
     
-    $self->{interface_selected}->{$options{instance}}->{output_power} = undef;
+    $self->{int}->{$options{instance}}->{output_power} = undef;
     if (defined($self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}}) &&
         $self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}} != -65535) {
-        $self->{interface_selected}->{$options{instance}}->{output_power} = $self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}} / 10;
+        $self->{int}->{$options{instance}}->{output_power} = $self->{results}->{$oid_opticalIfDiagOutputPower . '.' . $options{instance}} / 10;
     }
 }
 
@@ -235,26 +248,26 @@ sub load_traffic {
 sub add_result_traffic {
     my ($self, %options) = @_;
     
-    $self->{interface_selected}->{$options{instance}}->{traffic_in_15min} = 
+    $self->{int}->{$options{instance}}->{traffic_in_15min} = 
         defined($self->{results}->{$self->{currentEthRxHighSpeed15minBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRxHighSpeed15minBytes} . '.' . $options{instance}} * 8 :
             (defined($self->{results}->{$self->{currentEthRx15minBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRx15minBytes} . '.' . $options{instance}} * 8 : undef);
-    $self->{interface_selected}->{$options{instance}}->{traffic_in_1day} = 
+    $self->{int}->{$options{instance}}->{traffic_in_1day} = 
         defined($self->{results}->{$self->{currentEthRxHighSpeed1dayBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRxHighSpeed1dayBytes} . '.' . $options{instance}} * 8 :
             (defined($self->{results}->{$self->{currentEthRx1dayBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthRx1dayBytes} . '.' . $options{instance}} * 8 : undef);
-    $self->{interface_selected}->{$options{instance}}->{traffic_out_15min} = 
+    $self->{int}->{$options{instance}}->{traffic_out_15min} = 
         defined($self->{results}->{$self->{currentEthTx15minBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthTx15minBytes} . '.' . $options{instance}} * 8 : undef;
-    $self->{interface_selected}->{$options{instance}}->{traffic_out_1day} = 
+    $self->{int}->{$options{instance}}->{traffic_out_1day} = 
         defined($self->{results}->{$self->{currentEthTx1dayBytes} . '.' . $options{instance}}) ? $self->{results}->{$self->{currentEthTx1dayBytes} . '.' . $options{instance}} * 8 : undef;
     
-    $self->{interface_selected}->{$options{instance}}->{speed_in} = 0;
-    $self->{interface_selected}->{$options{instance}}->{speed_out} = 0;
+    $self->{int}->{$options{instance}}->{speed_in} = 0;
+    $self->{int}->{$options{instance}}->{speed_out} = 0;
     if ($self->{get_speed} == 0) {
         if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
-            $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed} * 1000000;
-            $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed} * 1000000;
+            $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed} * 1000000;
+            $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed} * 1000000;
         }
-        $self->{interface_selected}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
-        $self->{interface_selected}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
+        $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
+        $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     }
 }
 

@@ -92,8 +92,11 @@ sub custom_dropped_calc {
     $self->{result_values}->{dropped} = $options{new_datas}->{$self->{instance} . '_dropped_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{packets} = $options{new_datas}->{$self->{instance} . '_packets_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{label_ref} = $options{extra_options}->{label_ref};
-    $self->{result_values}->{dropped_prct} = $self->{result_values}->{dropped} * 100 / $self->{result_values}->{packets};
-
+    $self->{result_values}->{dropped_prct} = 0;
+    if ($self->{result_values}->{packets} > 0) {
+        $self->{result_values}->{dropped_prct} = $self->{result_values}->{dropped} * 100 / $self->{result_values}->{packets};
+    }
+    
     return 0;
 }
 
@@ -123,7 +126,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global_host} = [
-        { label => 'host-traffic-in', set => {
+        { label => 'host-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'host traffic in : %s %s/s',
                 output_change_bytes => 2,
@@ -133,7 +136,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'host-traffic-out', set => {
+        { label => 'host-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'host traffic out : %s %s/s',
                 output_change_bytes => 2,
@@ -146,7 +149,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{vswitch} = [
-        { label => 'vswitch-traffic-in', set => {
+        { label => 'vswitch-traffic-in', nlabel => 'host.vswitch.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_in' } ],
                 output_template => 'traffic in : %s %s/s',
                 output_change_bytes => 2,
@@ -156,7 +159,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'vswitch-traffic-out', set => {
+        { label => 'vswitch-traffic-out', nlabel => 'host.vswitch.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'traffic_out' } ],
                 output_template => 'traffic out : %s %s/s',
                 output_change_bytes => 2,
@@ -177,7 +180,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'link-traffic-in', set => {
+        { label => 'link-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
                 key_values => [ { name => 'display' }, { name => 'traffic_in' }, { name => 'speed' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -188,7 +191,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-traffic-out', set => {
+        { label => 'link-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
                 key_values => [ { name => 'display' }, { name => 'traffic_out' }, { name => 'speed' } ],
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -199,7 +202,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-dropped-in', set => {
+        { label => 'link-dropped-in', nlabel => 'host.packets.in.dropped.percentage', set => {
                 key_values => [ { name => 'display' }, { name => 'packets_in' }, { name => 'dropped_in' } ],
                 closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_dropped_output'),
@@ -210,7 +213,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'link-dropped-out', set => {
+        { label => 'link-dropped-out', nlabel => 'host.packets.out.dropped.percentage', set => {
                 key_values => [ { name => 'display' }, { name => 'packets_out' }, { name => 'dropped_out' } ],
                 closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_dropped_output'),
@@ -253,7 +256,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "esx-hostname:s"        => { name => 'esx_hostname' },
         "nic-name:s"            => { name => 'nic_name' },
