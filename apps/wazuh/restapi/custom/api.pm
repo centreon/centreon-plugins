@@ -162,7 +162,7 @@ sub request {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
+        $self->{output}->add_option_msg(short_msg => 'Cannot decode json response');
         $self->{output}->option_exit();
     }
     if ($decoded->{error} != 0) {
