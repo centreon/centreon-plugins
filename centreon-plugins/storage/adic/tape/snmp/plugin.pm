@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::quantum::scalar::snmp::plugin;
+package storage::adic::tape::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'hardware' => 'storage::quantum::scalar::snmp::mode::hardware',
+        'hardware' => 'centreon::common::adic::tape::snmp::mode::hardware'
     );
 
     return $self;
@@ -43,6 +43,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Quantum Scalar in SNMP.
+Check Adic tape library in SNMP.
+Buyed by Quantum in 2006. To be tested for some Quantum scalar (i6000, i500, ...).
 
 =cut
