@@ -18,31 +18,26 @@
 # limitations under the License.
 #
 
-package storage::quantum::scalar::snmp::plugin;
+package storage::quantum::scalar::snmp::mode::components::resources;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use Exporter;
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
+our $map_rassubsytem_status;
+our $map_sensor_status;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'hardware' => 'storage::quantum::scalar::snmp::mode::hardware',
-    );
+our @ISA = qw(Exporter);
+our @EXPORT_OK = qw($map_rassubsytem_status $map_sensor_status);
 
-    return $self;
-}
+$map_rassubsytem_status = {
+    0 => 'unknown', 1 => 'redFailure', 2 => 'orangeDegraded',
+    3 => 'yellowWarning', 4 => 'blueAttention',
+    5 => 'greenInformation', 6 => 'greenGood',
+};
+
+$map_sensor_status = {
+    0 => 'unknown', 1 => 'normal', 2 => 'warning', 3 => 'critical',
+};
 
 1;
-
-__END__
-
-=head1 PLUGIN DESCRIPTION
-
-Check Quantum Scalar in SNMP.
-
-=cut
