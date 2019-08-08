@@ -115,7 +115,6 @@ sub manage_selection {
             next;
         }
 
-
         my $status = lc($_->{status});
         $self->{agent}->{$_->{id}} = {
             display => $_->{name},
@@ -140,7 +139,7 @@ Check wazuh agents.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^iops$'
+Example: --filter-counters='^status$'
 
 =item B<--filter-name>
 
@@ -155,7 +154,6 @@ Can used special variables like: %{status}, %{node_name}, %{display}
 
 Set critical threshold for status (Default: '').
 Can used special variables like: %{status}, %{node_name}, %{display}
-
 
 =item B<--warning-*> B<--critical-*>
 

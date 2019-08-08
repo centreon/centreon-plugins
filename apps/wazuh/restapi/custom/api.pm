@@ -103,6 +103,18 @@ sub check_options {
     return 1;
 }
 
+sub get_hostname {
+    my ($self, %options) = @_;
+
+    return $self->{hostname};
+}
+
+sub get_port {
+    my ($self, %options) = @_;
+
+    return $self->{port};
+}
+
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 

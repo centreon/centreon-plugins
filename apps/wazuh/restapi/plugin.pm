@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'agents' => 'apps::wazuh::restapi::mode::agents',
+        'agents'  => 'apps::wazuh::restapi::mode::agents',
+        'manager' => 'apps::wazuh::restapi::mode::manager',
     );
 
     $self->{custom_modes}{api} = 'apps::wazuh::restapi::custom::api';
