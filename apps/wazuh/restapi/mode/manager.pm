@@ -59,7 +59,7 @@ sub set_counters {
     }
     
     $self->{maps_counters}->{process} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'process-status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
@@ -89,10 +89,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-process:s'    => { name => 'filter_process' },
-        'filter-log:s'        => { name => 'filter_log' },
-        'warning-status:s'    => { name => 'warning_status', default => '' },
-        'critical-status:s'   => { name => 'critical_status', default => '' },
+        'filter-process:s' => { name => 'filter_process' },
+        'filter-log:s'     => { name => 'filter_log' },
+        'warning-process-status:s'  => { name => 'warning_process_status', default => '' },
+        'critical-process-status:s' => { name => 'critical_process_status', default => '' },
     });
     
     return $self;
@@ -102,7 +102,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->change_macros(macros => ['warning_process_status', 'critical_process_status']);
 }
 
 sub prefix_global_output {
@@ -190,12 +190,12 @@ Filter process name (can be a regexp).
 
 Filter log name (can be a regexp).
 
-=item B<--warning-status>
+=item B<--warning-process-status>
 
 Set warning threshold for status (Default: '').
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-status>
+=item B<--critical-process-status>
 
 Set critical threshold for status (Default: '').
 Can used special variables like: %{status}, %{display}
