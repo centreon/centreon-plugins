@@ -116,23 +116,25 @@ sub manage_selection {
         my $name = $result->{wgIpsecTunnelLocalAddr} . ':' . $result->{wgIpsecTunnelPeerAddr};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{jnxIkeTunMonRemoteIdValue} . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.", debug => 1);
             next;
         }
 
         $self->{tunnel}->{$instance} = { display => $name };
     }
-
-    $options{snmp}->load(oids => [
-            map($_->{oid}, values(%$mapping2))
-        ],
-        instances => [keys %{$self->{tunnel}}], instance_regexp => '^(.*)$');
-    $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    foreach (keys %{$self->{tunnel}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
-        $result->{wgIpsecTunnelInKbytes} *= 1024 * 8;
-        $result->{wgIpsecTunnelOutKbytes} *= 1024 * 8;
-        $self->{tunnel}->{$_} = { %{$self->{tunnel}->{$_}}, %$result };
+    
+    if (scalar(keys %{$self->{tunnel}}) > 0) {
+        $options{snmp}->load(oids => [
+                map($_->{oid}, values(%$mapping2))
+            ],
+            instances => [keys %{$self->{tunnel}}], instance_regexp => '^(.*)$');
+        $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+        foreach (keys %{$self->{tunnel}}) {
+            my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
+            $result->{wgIpsecTunnelInKbytes} *= 1024 * 8;
+            $result->{wgIpsecTunnelOutKbytes} *= 1024 * 8;
+            $self->{tunnel}->{$_} = { %{$self->{tunnel}->{$_}}, %$result };
+        }
     }
 
     $self->{global} = { total => scalar(keys %{$self->{tunnel}}) };
