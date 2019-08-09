@@ -113,7 +113,7 @@ sub manage_selection {
         next if (!/$mapping->{wgIpsecTunnelLocalAddr}->{oid}\.(.*)/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        my $name = inet_ntoa($result->{wgIpsecTunnelLocalAddr}) . ':' . inet_ntoa($result->{wgIpsecTunnelPeerAddr});
+        my $name = $result->{wgIpsecTunnelLocalAddr} . ':' . $result->{wgIpsecTunnelPeerAddr};
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $result->{jnxIkeTunMonRemoteIdValue} . "': no matching filter name.", debug => 1);
