@@ -268,7 +268,7 @@ sub run {
     $self->{output}->output_add(long_msg => $self->{soap_response}, debug => 1);
     if (!defined($self->{option_results}->{lookup}) ||
         scalar(@{$self->{option_results}->{lookup}}) == 0 ||
-        $self->{option_results}->{lookup} eq ''
+        $self->{option_results}->{lookup}->[0] eq ''
     ) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "SOAP request success");
