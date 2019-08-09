@@ -53,7 +53,7 @@ sub set_counters {
                 per_second => 1, output_change_bytes => 2,
                 perfdatas => [
                     { value => 'wgIpsecTunnelInKbytes_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 per_second => 1, output_change_bytes => 2,
                 perfdatas => [
                     { value => 'wgIpsecTunnelOutKbytes_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
