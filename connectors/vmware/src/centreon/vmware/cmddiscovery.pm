@@ -100,7 +100,9 @@ sub run {
         foreach my $child (@{$childs}) {
             next if (!$child->childEntity);
             my %types = map { $_ => 1 } @{$child->childType};
-            next if (!defined($types{ComputeResource}));
+            my %entities = map { $_->type => 1 } @{$child->childEntity};
+            next if (!defined($types{ComputeResource}) || (!defined($entities{ClusterComputeResource}) &&
+                !defined($entities{ComputeResource})));
             my @properties = ('name', 'host');
         
             my $clusters = centreon::vmware::common::get_views($self->{connector}, \@{$child->childEntity}, \@properties);
