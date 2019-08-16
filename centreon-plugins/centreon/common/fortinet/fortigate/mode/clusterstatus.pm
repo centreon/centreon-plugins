@@ -206,15 +206,11 @@ Check cluster status (FORTINET-FORTIGATE-MIB).
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Set warning thresholds.
-Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
-
-=item B<--critical-*>
-
-Set critical thresholds.
-Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
+Set thresholds.
+Can be: 'total-nodes', 'synchronized', 'not-synchronized',
+'total-checksums'.
 
 =item B<--warning-status>
 
