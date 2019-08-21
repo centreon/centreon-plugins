@@ -98,11 +98,11 @@ my @load_modules = (
 
 sub new {
     my $class = shift;
-    my $self = $class->SUPER::new("centreon_vmware");
+    my $self = $class->SUPER::new('centreon_vmware');
 
     bless $self, $class;
     $self->add_options(
-        "config-extra=s" => \$self->{opt_extra},
+        'config-extra=s' => \$self->{opt_extra},
     );
 
     %{$self->{centreon_vmware_default_config}} =
@@ -115,6 +115,7 @@ sub new {
             dynamic_timeout_kill => 86400,
             refresh_keeper_session => 15,
             port => 5700,
+            ipc_file => '/tmp/centreon_vmware/routing.ipc',
             case_insensitive => 0,
             vsphere_server => {
                 #'default' => {'url' => 'https://XXXXXX/sdk',
@@ -545,7 +546,7 @@ sub run {
 
     zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard    
     zmq_bind($frontend, 'tcp://*:' . $centreon_vmware->{centreon_vmware_config}->{port});
-    $centreon_vmware->bind_ipc(socket => $frontend, ipc_file => '/tmp/centreon_vmware/routing.ipc');
+    $centreon_vmware->bind_ipc(socket => $frontend, ipc_file => $centreon_vmware->{centreon_vmware_config}->{ipc_file});
 
     foreach (keys %{$centreon_vmware->{centreon_vmware_config}->{vsphere_server}}) {
         $centreon_vmware->{counter_stats}->{$_} = 0;

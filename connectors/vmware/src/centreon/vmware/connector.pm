@@ -54,6 +54,7 @@ sub new {
     $connector->{modules_registry} = $options{modules_registry};
     $connector->{logger} = $options{logger};
     $connector->{whoaim} = $options{name};
+    $connector->{config_ipc_file} = $options{config}->{ipc_file};
     $connector->{config_child_timeout} = $options{config}->{timeout};
     $connector->{config_stop_child_timeout} = $options{config}->{timeout_kill};
     $connector->{config_vsphere_session_heartbeat} = $options{config}->{refresh_keeper_session};
@@ -178,7 +179,7 @@ sub reqclient {
             $self->{modules_registry}->{$result->{command}}->initArgs(arguments => $result);
             $self->{modules_registry}->{$result->{command}}->run();
             
-            centreon::vmware::common::response(token => 'RESPSERVER2', endpoint => $backend, reinit => 'ipc:///tmp/centreon_vmware/routing.ipc');
+            centreon::vmware::common::response(token => 'RESPSERVER2', endpoint => $backend, reinit => 'ipc://' . $self->{config_ipc_file});
             zmq_close($backend);
             exit(0);
         }
@@ -219,7 +220,7 @@ sub run {
     $backend = zmq_socket($context, ZMQ_DEALER);
     zmq_setsockopt($backend, ZMQ_IDENTITY, "server-" . $connector->{whoaim});
     zmq_setsockopt($backend, ZMQ_LINGER, 0); # we discard  
-    zmq_connect($backend, 'ipc:///tmp/centreon_vmware/routing.ipc');
+    zmq_connect($backend, 'ipc://' . $connector->{config_ipc_file});
     centreon::vmware::common::response(token => 'READY', endpoint => $backend, force_response => '');
     
     # Initialize poll set
