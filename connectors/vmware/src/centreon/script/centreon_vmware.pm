@@ -516,7 +516,7 @@ sub bind_ipc {
     if (zmq_bind($options{socket}, 'ipc://' . $options{ipc_file}) == -1) {
         $self->{logger}->writeLogError("Cannot bind ipc '$options{ipc_file}': $!");
         # try create dir
-        $self->{logger}->writeLogError("Maybe dirctory not exist. We try to create it!!!");
+        $self->{logger}->writeLogError("Maybe directory does not exist. Attempting to create it!!!");
         if (!mkdir(dirname($options{ipc_file}))) {
             zmq_close($options{socket});
             exit(1);
