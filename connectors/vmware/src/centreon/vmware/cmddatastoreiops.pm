@@ -146,21 +146,24 @@ sub run {
         my $cluster_views = centreon::vmware::common::search_entities(command => $self, view_type => 'ComputeResource', properties => ['name', 'datastore'], filter => undef);
         my $clusters = {};
         foreach my $cluster_view (@$cluster_views) {
-            $clusters->{view} = $cluster_view;
+            $clusters->{$cluster_view->{name}} = {};
             foreach (@{$cluster_view->{datastore}}) {
                 if (defined($ds_vsan->{$_->{value}})) {
-                    $clusters->{ds_vsan} = $_->{value};
+                    $clusters->{$cluster_view->{name}}->{ds_vsan} = $_->{value};
                     last;
                 }
             }
 
-            centreon::vmware::common::vsan_get_performances(
+            next if (!defined($clusters->{$cluster_view->{name}}->{ds_vsan}));
+            my $result = centreon::vmware::common::vsan_get_performances(
+                vsan_performance_mgr => $vsan_performance_mgr,
                 cluster => $cluster_view,
                 entityRefId => 'virtual-machine:*',
                 labels => ['iopsRead', 'iopsWrite'],
                 interval => $interval_sec,
                 time_shift => $self->{time_shift}
             );
+            use Data::Dumper; print Data::Dumper::Dumper($result);
         }
     }
 

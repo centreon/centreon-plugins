@@ -707,16 +707,28 @@ sub vsan_get_performances {
     my $querySpec = VsanPerfQuerySpec->new(
         entityRefId => $options{entityRefId}, # for example: 'virtual-machine:*'
         labels => $options{labels}, # for example: ['iopsRead, iopsWrite']
-        startTime = $startTime,
-        endTime = $endTime,
+        startTime => $startTime,
+        endTime => $endTime,
     );
     my $values = $options{vsan_performance_mgr}->VsanPerfQueryPerf(
         querySpecs => [$querySpec],
         cluster => $options{cluster},
     );
 
-    use Data::Dumper;
-    print Data::Dumper::Dumper($values);
+    my $result = {};
+    foreach (@$values) {
+        $result->{$_->{entityRefId}} = {};
+        foreach my $perf (@{$_->{value}}) {
+            my ($counter, $i) = (0, 0);
+            foreach my $val (split /,/, $perf->{values}) {
+                $counter += $val;
+                $i++;
+            }
+            $result->{$_->{entityRefId}}->{$perf->{metricId}->{label}} = $counter / $i;
+        }
+    }
+
+    return $result;
 }
 
 1;
