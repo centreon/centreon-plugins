@@ -111,20 +111,20 @@ sub run {
         return ;
     }
 
-    @properties = ('name', 'config.uuid', 'runtime.connectionState', 'runtime.powerState');
+    @properties = ('name', 'summary.config.instanceUuid', 'runtime.connectionState', 'runtime.powerState');
     my $result2 = centreon::vmware::common::get_views($self->{connector}, \@vm_array, \@properties);
     return if (!defined($result2));
 
     # Remove disconnected or not running vm
     my ($moref_vm, $uuid_vm) = ({}, {});
     for(my $i = $#{$result2}; $i >= 0; --$i) {
-        if (!centreon::vmware::common::is_connected(state => ${$result2}[$i]->{'runtime.connectionState'}->val) || 
-            !centreon::vmware::common::is_running(power => ${$result2}[$i]->{'runtime.powerState'}->val)) {
+        if (!centreon::vmware::common::is_connected(state => $result2->[$i]->{'runtime.connectionState'}->val) || 
+            !centreon::vmware::common::is_running(power => $result2->[$i]->{'runtime.powerState'}->val)) {
             splice @$result2, $i, 1;
             next;
         }
 
-        $uuid_vm->{$result2->[$i]->{config.uuid}} = $result2->[$i]->{mo_ref}->{value};
+        $uuid_vm->{$result2->[$i]->{'summary.config.instanceUuid'}} = $result2->[$i]->{mo_ref}->{value};
         $moref_vm->{$result2->[$i]->{mo_ref}->{value}} = $result2->[$i]->{name};
     }
     
@@ -151,7 +151,7 @@ sub run {
             $clusters->{$cluster_view->{name}} = {};
             foreach (@{$cluster_view->{datastore}}) {
                 if (defined($ds_vsan->{$_->{value}})) {
-                    $clusters->{$cluster_view->{name}}->{ds_vsan} = $_->{value};
+                    $clusters->{$cluster_view->{name}}->{ds_vsan} = $ds_vsan->{$_->{value}};
                     last;
                 }
             }
@@ -175,8 +175,8 @@ sub run {
                 next if (! /virtual-machine:(.*)/);
                 next if (!defined($uuid_vm->{$1}));
                 my $moref = $uuid_vm->{$1};
-                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'vm-' . $moref . '_disk.numberRead.summation'} = $result->{$_}->{iopsRead};
-                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'vm-' . $moref . '_disk.numberWrite.summation'} = $result->{$_}->{iopsWrite};
+                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{$moref . '_disk.numberRead.summation'} = $result->{$_}->{iopsRead};
+                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{$moref . '_disk.numberWrite.summation'} = $result->{$_}->{iopsWrite};
                 $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'disk.numberRead.summation'} += $result->{$_}->{iopsRead};
                 $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'disk.numberWrite.summation'} += $result->{$_}->{iopsWrite};
             }
@@ -226,7 +226,7 @@ sub run {
             type => 'read',
             detail => $datastore_lun{$_}, 
             ref_vm => $moref_vm,
-            data => $data
+            data_vm => $data->{$_}->{vm}
         );
         $self->vm_iops_details(
             label => 'disk.numberWrite.summation', 
