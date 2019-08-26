@@ -103,21 +103,26 @@ sub vmware_error {
 }
 
 sub connect_vsphere {
-    my ($logger, $whoaim, $timeout_vsphere, $session1, $service_url, $username, $password) = @_;
-    $logger->writeLogInfo("'$whoaim' Vsphere connection in progress");
+    my (%options) = @_;
+    
+    $options{logger}->writeLogInfo("'$options{whoaim}' Vsphere connection in progress");
     eval {
         $SIG{ALRM} = sub { die('TIMEOUT'); };
-        alarm($timeout_vsphere);
-        $$session1 = Vim->new(service_url => $service_url);
-        $$session1->login(
-                user_name => $username,
-                password => $password);
+        alarm($options{connect_timeout});
+        $options{connector}->{session1} = Vim->new(service_url => $options{url});
+        $options{connector}->{session1}->login(
+            user_name => $options{username},
+            password => $options{password}
+        );
+        
+        get_vsan_vim(%options) if ($options{vsan_enabled} == 1);
+        
         alarm(0);
     };
     if ($@) {
-        $logger->writeLogError("'$whoaim' No response from VirtualCenter server") if($@ =~ /TIMEOUT/);
-        $logger->writeLogError("'$whoaim' You need to upgrade HTTP::Message!") if($@ =~ /HTTP::Message/);
-        $logger->writeLogError("'$whoaim' Login to VirtualCenter server failed: $@");
+        $options{logger}->writeLogError("'$options{whoaim}' No response from VirtualCenter server") if($@ =~ /TIMEOUT/);
+        $options{logger}->writeLogError("'$options{whoaim}' You need to upgrade HTTP::Message!") if($@ =~ /HTTP::Message/);
+        $options{logger}->writeLogError("'$options{whoaim}' Login to VirtualCenter server failed: $@");
         return 1;
     }
 #    eval {
@@ -624,6 +629,94 @@ sub stats_info {
         $data->{$container} = { requests => $options{counters}->{$container} };
     }
     set_response(data => $data);
+}
+
+#
+# Vsan
+#
+
+sub load_vsanmgmt_binding_files {
+    my (%options) = @_;
+
+    my @stub = ();
+    local $/;
+    for (@{$options{files}}) {
+        open(STUB, $options{path} . '/' . $_) or die $!;
+        push @stub, split /\n####+?\n/, <STUB>;
+        close STUB or die $!;
+    }
+    for (@stub) {
+        my ($package) = /\bpackage\s+(\w+)/;
+        $VIMRuntime::stub_class{$package} = $_ if (defined($package));
+    }
+    eval $VIMRuntime::stub_class{'VimService'};
+}
+
+sub get_vsan_vim {
+    my (%options) = @_;
+
+    require URI::URL;
+    my $session_id = $options{connector}->{session1}->get_session_id();
+    my $url = URI::URL->new($options{connector}->{session1}->get_service_url());
+    my $api_type = $options{connector}->{session1}->get_service_content()->about->apiType;
+    
+    my $service_url_path = "sdk/vimService";
+    my $path = "vsanHealth";
+    if ($api_type eq "HostAgent") {
+        $service_url_path = "sdk";
+        $path = "vsan";
+    }
+
+    $options{connector}->{vsan_vim} = Vim->new(
+        service_url =>
+        'https://' . $url->host . '/' . $service_url_path,
+        server => $url->host,
+        protocol => "https",
+        path => $path,
+        port => '443'
+    );
+
+    $options{connector}->{vsan_vim}->{vim_service} = VimService->new($options{connector}->{vsan_vim}->{service_url});
+    $options{connector}->{vsan_vim}->{vim_service}->load_session_id($session_id);
+    $options{connector}->{vsan_vim}->unset_logout_on_disconnect;
+}
+
+sub vsan_create_mo_view {
+    my (%options) = @_;
+
+    my $moref = ManagedObjectReference->new(
+        type => $options{type},
+        value => $options{value},
+    );
+    my $view_type = $moref->type;
+    my $mo_view = $view_type->new($moref, $options{vsan_vim});
+    return $mo_view;
+}
+
+sub vsan_get_performances {
+    my (%options) = @_;
+    
+    my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
+    my $tstamp = time();
+    my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
+    my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+    (@t) = gmtime($tstamp);
+    my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+    my $querySpec = VsanPerfQuerySpec->new(
+        entityRefId => $options{entityRefId}, # for example: 'virtual-machine:*'
+        labels => $options{labels}, # for example: ['iopsRead, iopsWrite']
+        startTime = $startTime,
+        endTime = $endTime,
+    );
+    my $values = $options{vsan_performance_mgr}->VsanPerfQueryPerf(
+        querySpecs => [$querySpec],
+        cluster => $options{cluster},
+    );
+
+    use Data::Dumper;
+    print Data::Dumper::Dumper($values);
 }
 
 1;

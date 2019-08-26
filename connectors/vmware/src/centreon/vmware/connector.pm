@@ -54,6 +54,7 @@ sub new {
     $connector->{modules_registry} = $options{modules_registry};
     $connector->{logger} = $options{logger};
     $connector->{whoaim} = $options{name};
+    $connector->{vsan_enabled} = $options{vsan_enabled};
     $connector->{config_ipc_file} = $options{config}->{ipc_file};
     $connector->{config_child_timeout} = $options{config}->{timeout};
     $connector->{config_stop_child_timeout} = $options{config}->{timeout_kill};
@@ -272,13 +273,17 @@ sub run {
         }
         
         if ($connector->{vsphere_connected} == 0) {
-            if (!centreon::vmware::common::connect_vsphere($connector->{logger},
-                                                           $connector->{whoaim},
-                                                           $connector->{config_vsphere_connect_timeout},
-                                                           \$connector->{session1},
-                                                           $connector->{config_vsphere_url}, 
-                                                           $connector->{config_vsphere_user},
-                                                           $connector->{config_vsphere_pass})) {
+            if (!centreon::vmware::common::connect_vsphere(
+                logger => $connector->{logger},
+                whoaim => $connector->{whoaim},
+                connect_timeout => $connector->{config_vsphere_connect_timeout},
+                connector => $connector,
+                url => $connector->{config_vsphere_url}, 
+                username => $connector->{config_vsphere_user},
+                password => $connector->{config_vsphere_pass},
+                vsan_enabled => $connector->{vsan_enabled},
+                )
+               ) {
                 $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' Vsphere connection ok");
                 $connector->{logger}->writeLogInfo("'" . $connector->{whoaim} . "' Create perf counters cache in progress");
                 if (!centreon::vmware::common::cache_perf_counters($connector)) {

@@ -54,7 +54,7 @@ BEGIN {
 use base qw(centreon::vmware::script);
 use vars qw(%centreon_vmware_config);
 
-my $VERSION = "3.0.3";
+my $VERSION = "3.1.0";
 my %handlers = (TERM => {}, HUP => {}, CHLD => {});
 
 my @load_modules = (
@@ -124,7 +124,8 @@ sub new {
                 #'testvc' =>  {'url' => 'https://XXXXXX/sdk',
                 #              'username' => 'XXXXX',
                 #              'password' => 'XXXXXX'}
-            }
+            },
+            vsan_sdk_path => '/usr/share/perl5/VMware',
         );
 
     $self->{return_child} = {};
@@ -157,6 +158,15 @@ sub init {
 
     ##### Load modules
     $self->load_module(@load_modules);
+
+    $self->{vsan_enabled} = 0;
+    eval {
+        centreon::vmware::common::load_vsanmgmt_binding_files(
+            path => $self->{centreon_vmware_config}->{vsan_sdk_path},
+            files => ['VIM25VsanmgmtStub.pm', 'VIM25VsanmgmtRuntime.pm'],
+        );
+        $self->{vsan_enabled} = 1;
+    };
 
     ##### credstore check #####
     if (defined($self->{centreon_vmware_config}->{credstore_use}) && defined($self->{centreon_vmware_config}->{credstore_file}) &&
@@ -497,10 +507,13 @@ sub create_vsphere_child {
         return -1;
     }
     if ($child_vpshere_pid == 0) {
-        my $connector = centreon::vmware::connector->new(name => $self->{whoaim},
-                                                         modules_registry => $self->{modules_registry},
-                                                         config => $self->{centreon_vmware_config},
-                                                         logger => $self->{logger});
+        my $connector = centreon::vmware::connector->new(
+            name => $self->{whoaim},
+            modules_registry => $self->{modules_registry},
+            config => $self->{centreon_vmware_config},
+            logger => $self->{logger},
+            vsan_enabled => $self->{vsan_enabled},
+        );
         $connector->run();
         exit(0);
     }

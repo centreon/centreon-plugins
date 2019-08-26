@@ -28,7 +28,7 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    
+
     $self->{logger} = $options{logger};
     $self->{global_case_insensitive} = defined($options{case_insensitive}) ? $options{case_insensitive} : 0;
     
@@ -60,9 +60,19 @@ sub handle_ALRM {
     exit(0);
 }
 
+sub is_vsan_enabled {
+    my ($self, %options) = @_;
+
+    if ($self->{connector}->{vsan_enabled} == 1) {
+        return 1;
+    }
+
+    return 0;
+}
+
 sub set_connector {
     my ($self, %options) = @_;
-    
+
     $self->{connector} = $options{connector};
     $self->set_signal_handlers();
     alarm(300);

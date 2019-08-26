@@ -54,19 +54,25 @@ sub run {
     }
 
     my $filters = $self->build_filter(label => 'name', search_option => 'datastore_name', is_regexp => 'filter');
-    my @properties = ('summary.accessible', 'summary.name', 'vm', 'info');
+    my @properties = ('summary.accessible', 'summary.name', 'summary.type', 'vm', 'info');
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => $filters);
     return if (!defined($result));
-    
+
+    my $ds_vsan = {};
+
     my $data = {};
     #my %uuid_list = ();
     my %disk_name = ();
     my %datastore_lun = ();
     my $ds_checked = 0;
     foreach (@$result) {
-        $data->{$_->{'summary.name'}} = { name => $_->{'summary.name'}, accessible => $_->{'summary.accessible'} };
+        $data->{$_->{'summary.name'}} = { name => $_->{'summary.name'}, accessible => $_->{'summary.accessible'}, type => $_->{'summary.type'} };
         next if (centreon::vmware::common::is_accessible(accessible => $_->{'summary.accessible'}) == 0);
-    
+
+        if ($_->{'summary.type'} eq 'vsan') {
+            $ds_vsan->{$_->{mo_ref}->{value}} = $_->{'summary.name'};
+            $ds_checked = 1;
+        }
         if ($_->info->isa('VmfsDatastoreInfo')) {
             #$uuid_list{$_->volume->uuid} = $_->volume->name;
             # Not need. We are on Datastore level (not LUN level)
@@ -82,12 +88,12 @@ sub run {
             # Zero disk Info
         #}
     }
-    
+
     if ($ds_checked == 0) {
         centreon::vmware::common::set_response(code => 100, short_message => "No Vmfs datastore(s) checked. Cannot get iops from Nas datastore(s)");
         return ;
     }
-    
+
     my @vm_array = ();
     my %added_vm = ();
     foreach my $entity_view (@$result) {
@@ -108,7 +114,7 @@ sub run {
     @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
     my $result2 = centreon::vmware::common::get_views($self->{connector}, \@vm_array, \@properties);
     return if (!defined($result2));
-    
+
     # Remove disconnected or not running vm
     my %ref_ids_vm = ();
     for(my $i = $#{$result2}; $i >= 0; --$i) {
@@ -125,21 +131,52 @@ sub run {
         return ;
     }
 
-    # Vsphere >= 4.1
-    my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
-                        $result2, 
-                        [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
-                        {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
-                        $self->{connector}->{perfcounter_speriod},
-                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
-                        skip_undef_counter => 1, multiples => 1);                  
-    
-    return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
-
     my $interval_sec = $self->{connector}->{perfcounter_speriod};
     if (defined($self->{sampling_period}) && $self->{sampling_period} ne '') {
         $interval_sec = $self->{sampling_period};
     }
+
+    # VSAN part
+    if ($self->is_vsan_enabled() && scalar(keys(%$ds_vsan)) > 0) {
+        my $vsan_performance_mgr = centreon::vmware::common::vsan_create_mo_view(
+            vsan_vim => $self->{connector}->{vsan_vim},
+            type => 'VsanPerformanceManager',
+            value => 'vsan-performance-manager',
+        );
+        my $cluster_views = centreon::vmware::common::search_entities(command => $self, view_type => 'ComputeResource', properties => ['name', 'datastore'], filter => undef);
+        my $clusters = {};
+        foreach my $cluster_view (@$cluster_views) {
+            $clusters->{view} = $cluster_view;
+            foreach (@{$cluster_view->{datastore}}) {
+                if (defined($ds_vsan->{$_->{value}})) {
+                    $clusters->{ds_vsan} = $_->{value};
+                    last;
+                }
+            }
+
+            centreon::vmware::common::vsan_get_performances(
+                cluster => $cluster_view,
+                entityRefId => 'virtual-machine:*',
+                labels => ['iopsRead', 'iopsWrite'],
+                interval => $interval_sec,
+                time_shift => $self->{time_shift}
+            );
+        }
+    }
+
+    # Vsphere >= 4.1
+    my $values = centreon::vmware::common::generic_performance_values_historic(
+        $self->{connector},
+        $result2, 
+        [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
+        {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
+        $self->{connector}->{perfcounter_speriod},
+        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
+        skip_undef_counter => 1, multiples => 1
+    );                  
+    
+    return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
+
     foreach (keys %$values) {
         my ($vm_id, $id, $disk_name) = split(/:/);
         
@@ -163,16 +200,20 @@ sub run {
         $data->{$_}->{'disk.numberWrite.summation'} = $total_write_counter;
         $data->{$_}->{vm} = {};
         
-        $self->vm_iops_details(label => 'disk.numberRead.summation', 
-                               type => 'read',
-                               detail => $datastore_lun{$_}, 
-                               ref_vm => \%ref_ids_vm,
-                               data => $data);
-        $self->vm_iops_details(label => 'disk.numberWrite.summation', 
-                               type => 'write',
-                               detail => $datastore_lun{$_}, 
-                               ref_vm => \%ref_ids_vm,
-                               data_vm => $data->{$_}->{vm});
+        $self->vm_iops_details(
+            label => 'disk.numberRead.summation', 
+            type => 'read',
+            detail => $datastore_lun{$_}, 
+            ref_vm => \%ref_ids_vm,
+            data => $data
+        );
+        $self->vm_iops_details(
+            label => 'disk.numberWrite.summation', 
+            type => 'write',
+            detail => $datastore_lun{$_}, 
+            ref_vm => \%ref_ids_vm,
+            data_vm => $data->{$_}->{vm}
+        );
     }
     
     centreon::vmware::common::set_response(data => $data);
