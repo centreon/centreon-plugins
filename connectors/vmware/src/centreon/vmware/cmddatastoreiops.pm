@@ -111,19 +111,21 @@ sub run {
         return ;
     }
 
-    @properties = ('name', 'runtime.connectionState', 'runtime.powerState');
+    @properties = ('name', 'config.uuid', 'runtime.connectionState', 'runtime.powerState');
     my $result2 = centreon::vmware::common::get_views($self->{connector}, \@vm_array, \@properties);
     return if (!defined($result2));
 
     # Remove disconnected or not running vm
-    my %ref_ids_vm = ();
+    my ($moref_vm, $uuid_vm) = ({}, {});
     for(my $i = $#{$result2}; $i >= 0; --$i) {
         if (!centreon::vmware::common::is_connected(state => ${$result2}[$i]->{'runtime.connectionState'}->val) || 
             !centreon::vmware::common::is_running(power => ${$result2}[$i]->{'runtime.powerState'}->val)) {
             splice @$result2, $i, 1;
             next;
         }
-        $ref_ids_vm{${$result2}[$i]->{mo_ref}->{value}} = ${$result2}[$i]->{name};
+
+        $uuid_vm->{$result2->[$i]->{config.uuid}} = $result2->[$i]->{mo_ref}->{value};
+        $moref_vm->{$result2->[$i]->{mo_ref}->{value}} = $result2->[$i]->{name};
     }
     
     if (scalar(@{$result2}) == 0) {
@@ -163,7 +165,21 @@ sub run {
                 interval => $interval_sec,
                 time_shift => $self->{time_shift}
             );
-            use Data::Dumper; print Data::Dumper::Dumper($result);
+            
+            $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} } = {
+                'disk.numberRead.summation' => 0,
+                'disk.numberWrite.summation' => 0,
+            };
+            # we recreate format: vm-{movalue}_disk.numberWrite.summation
+            foreach (keys %$result) {
+                next if (! /virtual-machine:(.*)/);
+                next if (!defined($uuid_vm->{$1}));
+                my $moref = $uuid_vm->{$1};
+                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'vm-' . $moref . '_disk.numberRead.summation'} = $result->{$_}->{iopsRead};
+                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'vm-' . $moref . '_disk.numberWrite.summation'} = $result->{$_}->{iopsWrite};
+                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'disk.numberRead.summation'} += $result->{$_}->{iopsRead};
+                $datastore_lun{ $clusters->{$cluster_view->{name}}->{ds_vsan} }->{'disk.numberWrite.summation'} += $result->{$_}->{iopsWrite};
+            }
         }
     }
 
@@ -171,8 +187,10 @@ sub run {
     my $values = centreon::vmware::common::generic_performance_values_historic(
         $self->{connector},
         $result2, 
-        [{'label' => 'disk.numberRead.summation', 'instances' => ['*']},
-        {'label' => 'disk.numberWrite.summation', 'instances' => ['*']}],
+        [
+            { label => 'disk.numberRead.summation', instances => ['*'] },
+            { label => 'disk.numberWrite.summation', instances => ['*'] }
+        ],
         $self->{connector}->{perfcounter_speriod},
         sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
         skip_undef_counter => 1, multiples => 1
@@ -207,14 +225,14 @@ sub run {
             label => 'disk.numberRead.summation', 
             type => 'read',
             detail => $datastore_lun{$_}, 
-            ref_vm => \%ref_ids_vm,
+            ref_vm => $moref_vm,
             data => $data
         );
         $self->vm_iops_details(
             label => 'disk.numberWrite.summation', 
             type => 'write',
             detail => $datastore_lun{$_}, 
-            ref_vm => \%ref_ids_vm,
+            ref_vm => $moref_vm,
             data_vm => $data->{$_}->{vm}
         );
     }
