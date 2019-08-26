@@ -114,6 +114,7 @@ sub new {
             timeout_kill => 30,
             dynamic_timeout_kill => 86400,
             refresh_keeper_session => 15,
+            bind => '*',
             port => 5700,
             ipc_file => '/tmp/centreon_vmware/routing.ipc',
             case_insensitive => 0,
@@ -558,7 +559,7 @@ sub run {
     }
 
     zmq_setsockopt($frontend, ZMQ_LINGER, 0); # we discard    
-    zmq_bind($frontend, 'tcp://*:' . $centreon_vmware->{centreon_vmware_config}->{port});
+    zmq_bind($frontend, 'tcp://' . $centreon_vmware->{centreon_vmware_config}->{bind} . ':' . $centreon_vmware->{centreon_vmware_config}->{port});
     $centreon_vmware->bind_ipc(socket => $frontend, ipc_file => $centreon_vmware->{centreon_vmware_config}->{ipc_file});
 
     foreach (keys %{$centreon_vmware->{centreon_vmware_config}->{vsphere_server}}) {
