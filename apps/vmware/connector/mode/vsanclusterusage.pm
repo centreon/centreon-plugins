@@ -142,7 +142,7 @@ sub manage_selection {
         my $cluster_name = $response->{data}->{$cluster_id}->{name};
         $self->{cluster}->{$cluster_name} = {
             display => $cluster_name,
-            %{$response->{data}->{$cluster_id}},
+            %{$response->{data}->{$cluster_id}->{cluster_domcompmgr}},
         };
     }    
 }
