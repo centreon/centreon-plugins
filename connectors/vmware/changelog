@@ -1,3 +1,8 @@
+2019-08-27 Quentin Garnier <qgarnier@centreon.com> - 3.1.0
+ * Enhancement: add 'status-cluster' and 'vsan-cluster-usage'
+ * Fix: Can listen only on localhost (issue #81)
+ * Fix: Can configure ipc_file location
+
 2019-07-04 Colin Gagnaire <cgagnaire@centreon.com> - 3.0.3
  * Fix: Datacenter with no cluster causes discovery to crash
  * Fix: Cluster with no ESX causes discovery to crash
