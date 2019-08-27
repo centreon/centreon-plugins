@@ -187,7 +187,7 @@ Example: --filter-counters='^av$'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds (in seconds).
-Can be: 'av', 'ips', 'avset', ipset'.
+Can be: 'av', 'ips', 'avet', ipset'.
 
 =back
 
