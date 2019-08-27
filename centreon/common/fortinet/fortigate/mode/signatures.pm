@@ -89,25 +89,25 @@ sub set_counters {
 sub prefix_av_output {
     my ($self, %options) = @_;
 
-    return "AV Signature ";
+    return 'AV Signature ';
 }
 
 sub prefix_avet_output {
     my ($self, %options) = @_;
 
-    return "AV Extended Signature ";
+    return 'AV Extended Signature ';
 }
 
 sub prefix_ips_output {
     my ($self, %options) = @_;
 
-    return "IPS Signature ";
+    return 'IPS Signature ';
 }
 
 sub prefix_ipset_output {
     my ($self, %options) = @_;
 
-    return "IPS Extended Signature ";
+    return 'IPS Extended Signature ';
 }
 
 sub new {
@@ -115,9 +115,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -152,17 +151,22 @@ sub manage_selection {
     my $avet_diff = $now - $avet_epoch;
     my $ipset_diff = $now - $ipset_epoch;
 
-    $self->{av} = { human => centreon::plugins::misc::change_seconds(value => $av_diff, start => 'h'),
-                    value => $av_diff };
-
-    $self->{ips} = { human => centreon::plugins::misc::change_seconds(value => $ips_diff, start => 'h'),
-                    value => $ips_diff };
-                     
-    $self->{avet} = { human => centreon::plugins::misc::change_seconds(value => $avet_diff, start => 'h'),
-                    value => $avet_diff };
-                    
-    $self->{ipset} = { human => centreon::plugins::misc::change_seconds(value => $ipset_diff, start => 'h'),
-                    value => $ipset_diff };
+    $self->{av} = {
+        human => centreon::plugins::misc::change_seconds(value => $av_diff, start => 'h'),
+        value => $av_diff
+    };
+    $self->{ips} = {
+        human => centreon::plugins::misc::change_seconds(value => $ips_diff, start => 'h'),
+        value => $ips_diff
+    };
+    $self->{avet} = {
+        human => centreon::plugins::misc::change_seconds(value => $avet_diff, start => 'h'),
+        value => $avet_diff
+    };
+    $self->{ipset} = {
+        human => centreon::plugins::misc::change_seconds(value => $ipset_diff, start => 'h'),
+        value => $ipset_diff
+    };
 }
 
 1;
@@ -180,15 +184,10 @@ Check last update/refresh of av and ips signatures
 Only display some counters (regexp can be used).
 Example: --filter-counters='^av$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning (in seconds).
-Can be: 'av', 'ips'
-
-=item B<--critical-*>
-
-Threshold critical (in seconds).
-Can be: 'av', 'ips'
+Thresholds (in seconds).
+Can be: 'av', 'ips', 'avset', ipset'.
 
 =back
 
