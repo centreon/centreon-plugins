@@ -52,14 +52,14 @@ sub run {
     my $filters = $self->build_filter(label => 'name', search_option => 'cluster_name', is_regexp => 'filter');
     my @properties = ('name', 'summary.overallStatus');
     if ($self->is_vsan_enabled()) {
-        $vsan_cluster_health = = centreon::vmware::common::vsan_create_mo_view(
+        $vsan_cluster_health = centreon::vmware::common::vsan_create_mo_view(
             vsan_vim => $self->{connector}->{vsan_vim},
             type => 'VsanVcClusterHealthSystem',
             value => 'vsan-cluster-health-system',
         );
         push @properties, 'configurationEx';
     }
-    my $views = centreon::vmware::common::search_entities(command => $self, view_type => '	ComputeResource', properties => \@properties, filter => $filters);
+    my $views = centreon::vmware::common::search_entities(command => $self, view_type => 'ComputeResource', properties => \@properties, filter => $filters);
     return if (!defined($views));
     
     my $data = {};
@@ -67,7 +67,7 @@ sub run {
         my $entity_value = $view->{mo_ref}->{value};
         $data->{$entity_value} = {
             name => $view->{name},
-            overall_status => $view->{'summary.overallStatus'}->val;
+            overall_status => $view->{'summary.overallStatus'}->val
         };
 
         if (defined($view->{configurationEx}->{vsanConfigInfo}) && $view->{configurationEx}->{vsanConfigInfo}->enabled == 1) {
@@ -77,7 +77,7 @@ sub run {
                 fetchFromCache =>  'false',
                 fields => ['clusterStatus'],
             );
-            $data->{$entity_value}->{vsan_cluster_status} = $summary->clusterStatus;
+            $data->{$entity_value}->{vsan_cluster_status} = $summary->clusterStatus->status;
         }
     }
     
