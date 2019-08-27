@@ -166,13 +166,16 @@ sub compat_threshold_counter {
     my ($self, %options) = @_;
 
     foreach ('warning', 'critical') {
-        next if (!defined($options{option_results}->{$_ . '-' . $options{compat}->{th}}) || $options{option_results}->{$_ . '-' . $options{compat}->{th}} eq '');
-        if (defined($options{compat}->{free})) {
-            $options{option_results}->{$_ . '-' . $options{compat}->{th} . '-free'} = $options{option_results}->{$_ . '-' . $options{compat}->{th}};
-            $options{option_results}->{$_ . '-' . $options{compat}->{th}} = undef;
-        } elsif (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
-            $options{option_results}->{$_ . '-' . $options{compat}->{th} . '-prct'} = $options{option_results}->{$_ . '-' . $options{compat}->{th}};
-            $options{option_results}->{$_ . '-' . $options{compat}->{th}} = undef;
+        foreach my $th (@{$options{compat}->{th}}) {
+            next if (!defined($options{option_results}->{$_ . '-' . $th->[0]}) || $options{option_results}->{$_ . '-' . $th->[0]} eq '');
+
+            if (defined($options{compat}->{free})) {
+                $options{option_results}->{$_ . '-' . $th->[1]->{free}} = $options{option_results}->{$_ . '-' . $th->[0]};
+                $options{option_results}->{$_ . '-' . $th->[0]} = undef;
+            } elsif (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
+                $options{option_results}->{$_ . '-' . $th->[1]->{prct}} = $options{option_results}->{$_ . '-' . $th->[0]};
+                $options{option_results}->{$_ . '-' . $th->[0]} = undef;
+            }
         }
     }
 }
@@ -181,8 +184,18 @@ sub check_options {
     my ($self, %options) = @_;
 
     # Compatibility
-    $self->compat_threshold_counter(%options, compat => { th => 'usage', units => $options{option_results}->{units}, free => $options{option_results}->{free}});
-    $self->compat_threshold_counter(%options, compat => { th => 'swap', units => $options{option_results}->{units}, free => $options{option_results}->{free}});
+    $self->compat_threshold_counter(%options, 
+        compat => { 
+            th => [ ['usage', { free => 'usage-free', prct => 'usage-prct'} ], [ 'memory-usage-bytes', { free => 'memory-free-bytes', prct => 'memory-usage-percentage' } ] ], 
+            units => $options{option_results}->{units}, free => $options{option_results}->{free}
+        }
+    );
+    $self->compat_threshold_counter(%options, 
+        compat => {
+            th => [ ['swap', { free => 'swap-free', prct => 'swap-prct' } ], [ 'swap-usage-bytes', { free => 'swap-free-bytes', prct => 'swap-usage-percentage' } ] ], 
+            units => $options{option_results}->{units}, free => $options{option_results}->{free}
+        }
+    );
     $self->SUPER::check_options(%options);
 }
 
