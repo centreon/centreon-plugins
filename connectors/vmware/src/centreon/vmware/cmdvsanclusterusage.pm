@@ -94,11 +94,12 @@ sub run {
         );
         $data->{$entity_value} = {
             name => $view->{name},
-            cluster_domcompmgr => %{$result->{'cluster-domcompmgr:' . $uuid}},
+            cluster_domcompmgr => {
+                %{$result->{'cluster-domcompmgr:' . $uuid}}
+            },
         };
     }
 
-    use Data::Dumper; print Data::Dumper::Dumper($data);
     centreon::vmware::common::set_response(data => $data);
 }
 
