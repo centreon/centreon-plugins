@@ -69,6 +69,7 @@ sub new {
         'tools-vm'             => 'apps::vmware::connector::mode::toolsvm',
         'uptime-host'          => 'apps::vmware::connector::mode::uptimehost',
         'vmoperation-cluster'  => 'apps::vmware::connector::mode::vmoperationcluster',
+        'vsan-cluster-usage'   => 'apps::vmware::connector::mode::vsanclusterusage',
     );
 
     $self->{custom_modes}{connector} = 'apps::vmware::connector::custom::connector';
