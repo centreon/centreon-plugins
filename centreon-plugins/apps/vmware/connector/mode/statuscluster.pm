@@ -31,7 +31,7 @@ sub custom_status_output {
 
     my $msg = 'status is ' . $self->{result_values}->{overall_status};
     if ($self->{result_values}->{vsan_status} ne '') {
-        $msg .= ' [vsan status: ' . $self->{result_values}->{vsan_status};
+        $msg .= ' [vsan status: ' . $self->{result_values}->{vsan_status} . ']';
     }
     return $msg;
 }
