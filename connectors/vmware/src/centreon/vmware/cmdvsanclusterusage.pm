@@ -71,13 +71,10 @@ sub run {
 
     my $data = {};
     foreach my $view (@$views) {
-        if (!defined($view->{configurationEx}->{vsanConfigInfo}) || $view->{configurationEx}->{vsanConfigInfo}->enabled != 1);
+        next if (!defined($view->{configurationEx}->{vsanConfigInfo}) || $view->{configurationEx}->{vsanConfigInfo}->enabled != 1);
 
         my $entity_value = $view->{mo_ref}->{value};
-        $data->{$entity_value} = {
-            name => $view->{name},
-        };
-
+        my $uuid = $view->{configurationEx}->{vsanConfigInfo}->{defaultConfig}->{uuid};
         my $result = centreon::vmware::common::vsan_get_performances(
             vsan_performance_mgr => $vsan_performance_mgr,
             cluster => $view,
@@ -95,10 +92,13 @@ sub run {
             interval => $interval_sec,
             time_shift => $self->{time_shift}
         );
-
-        use Data::Dumper; print Data::Dumper::Dumper($result);
+        $data->{$entity_value} = {
+            name => $view->{name},
+            cluster_domcompmgr => %{$result->{'cluster-domcompmgr:' . $uuid}},
+        };
     }
-    
+
+    use Data::Dumper; print Data::Dumper::Dumper($data);
     centreon::vmware::common::set_response(data => $data);
 }
 

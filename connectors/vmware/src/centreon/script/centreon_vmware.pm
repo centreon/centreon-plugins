@@ -95,7 +95,7 @@ my @load_modules = (
     'centreon::vmware::cmdtoolsvm',
     'centreon::vmware::cmduptimehost',
     'centreon::vmware::cmdvmoperationcluster',
-    'centreon::vmware::cmdvsancluserusage',
+    'centreon::vmware::cmdvsanclusterusage',
 );
 
 sub new {
