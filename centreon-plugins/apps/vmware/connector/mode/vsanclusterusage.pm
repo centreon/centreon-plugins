@@ -24,17 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    my $msg = 'status is ' . $self->{result_values}->{overall_status};
-    if ($self->{result_values}->{vsan_status} ne '') {
-        $msg .= ' [vsan status: ' . $self->{result_values}->{vsan_status} . ']';
-    }
-    return $msg;
-}
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -44,12 +33,70 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cluster} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'overall_status' }, { name => 'vsan_status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+        { label => 'backend-read-usage', nlabel => 'cluster.vsan.backend.read.usage.iops', set => {
+                key_values => [ { name => 'iopsRead' } ],
+                output_template => 'read IOPS: %s',
+                perfdatas => [
+                    { value => 'iopsRead_absolute', template => '%s', unit => 'iops', min => 0 },
+                ],
+            }
+        },
+        { label => 'backend-write-usage', nlabel => 'cluster.vsan.backend.write.usage.iops', set => {
+                key_values => [ { name => 'iopsWrite' } ],
+                output_template => 'write IOPS: %s',
+                perfdatas => [
+                    { value => 'iopsWrite_absolute', template => '%s', unit => 'iops', min => 0 },
+                ],
+            }
+        },
+        { label => 'backend-congestions', nlabel => 'cluster.vsan.backend.congestions.count', set => {
+                key_values => [ { name => 'congestion' } ],
+                output_template => 'congestions: %s',
+                perfdatas => [
+                    { value => 'congestion_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'backend-outstanding-io', nlabel => 'cluster.vsan.backend.outstanding.io.count', set => {
+                key_values => [ { name => 'oio' } ],
+                output_template => 'outstanding IO: %s',
+                perfdatas => [
+                    { value => 'oio_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'backend-throughput-read', nlabel => 'cluster.vsan.backend.throughput.read.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'throughputRead' } ],
+                output_template => 'read throughput: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'throughputRead_absolute', template => '%s', unit => 'B/s', min => 0 },
+                ],
+            }
+        },
+        { label => 'backend-throughput-write', nlabel => 'cluster.vsan.backend.throughput.write.bytespersecond', display_ok => 0, set => {
+                key_values => [ { name => 'throughputWrite' } ],
+                output_template => 'write throughput: %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'throughputWrite_absolute', template => '%s', unit => 'B/s', min => 0 },
+                ],
+            }
+        },
+        { label => 'backend-latency-read', nlabel => 'cluster.vsan.backend.latency.read.milliseconds', display_ok => 0, set => {
+                key_values => [ { name => 'latencyAvgRead' } ],
+                output_template => 'read latency: %s ms',
+                perfdatas => [
+                    { value => 'latencyAvgRead_absolute', template => '%s', unit => 'ms', min => 0 },
+                ],
+            }
+        },
+        { label => 'backend-latency-write', nlabel => 'cluster.vsan.backend.latency.write.milliseconds', display_ok => 0, set => {
+                key_values => [ { name => 'latencyAvgWrite' } ],
+                output_template => 'write latency: %s ms',
+                perfdatas => [
+                    { value => 'latencyAvgWrite_absolute', template => '%s', unit => 'ms', min => 0 },
+                ],
             }
         },
     ];
@@ -58,12 +105,12 @@ sub set_counters {
 sub prefix_cluster_output {
     my ($self, %options) = @_;
 
-    return "Cluster '" . $options{instance_value}->{display} . "' ";
+    return "Cluster '" . $options{instance_value}->{display} . "' vsan backend ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
@@ -94,9 +141,8 @@ sub manage_selection {
     foreach my $cluster_id (keys %{$response->{data}}) {
         my $cluster_name = $response->{data}->{$cluster_id}->{name};
         $self->{cluster}->{$cluster_name} = {
-            display => $cluster_name, 
-            overall_status => $response->{data}->{$cluster_id}->{overall_status},
-            vsan_status => defined($response->{data}->{$cluster_id}->{vsan_cluster_status}) ? $response->{data}->{$cluster_id}->{vsan_cluster_status} : '',
+            display => $cluster_name,
+            %{$response->{data}->{$cluster_id}},
         };
     }    
 }
@@ -123,6 +169,14 @@ Cluster name is a regexp.
 =item B<--scope-datacenter>
 
 Search in following datacenter(s) (can be a regexp).
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'backend-write-usage', 'backend-read-usage',
+'backend-outstanding-io', 'backend-congestions', 
+'backend-throughput-read', 'backend-throughput-write'
+.
 
 =back
 
