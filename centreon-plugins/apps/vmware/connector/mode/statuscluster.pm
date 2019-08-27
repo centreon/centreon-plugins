@@ -24,12 +24,15 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold custom_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status ' . $self->{result_values}->{status};
+    my $msg = 'status is ' . $self->{result_values}->{overall_status};
+    if ($self->{result_values}->{vsan_status} ne '') {
+        $msg .= ' [vsan status: ' . $self->{result_values}->{vsan_status};
+    }
     return $msg;
 }
 
@@ -43,7 +46,7 @@ sub set_counters {
     $self->{maps_counters}->{cluster} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'overall_status' }, { name => 'vsan_status' }, { name => 'display' } ],
-                closure_custom_calc => \&custom_status_calc,
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
@@ -55,7 +58,7 @@ sub set_counters {
 sub prefix_cluster_output {
     my ($self, %options) = @_;
 
-    return "Cluster '" . $options{instance_value}->{display} . "' : ";
+    return "Cluster '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -67,9 +70,9 @@ sub new {
         'cluster-name:s'        => { name => 'cluster_name' },
         'filter'                => { name => 'filter' },
         'scope-datacenter:s'    => { name => 'scope_datacenter' },
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{overall_status} =~ /gray/i' },
-        'warning-status:s'      => { name => 'warning_status', default => '%{overall_status} =~ /yellow/i' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{overall_status} =~ /red/i' },
+        'unknown-status:s'      => { name => 'unknown_status', default => '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i' },
+        'warning-status:s'      => { name => 'warning_status', default => '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i' },
+        'critical-status:s'     => { name => 'critical_status', default => '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i' },
     });
     
     return $self;
@@ -126,17 +129,17 @@ Search in following datacenter(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /gray/i').
+Set warning threshold for status (Default: '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i').
 Can used special variables like: %{overall_status}, %{vsan_status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i').
+Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i').
 Can used special variables like: %{overall_status}, %{vsan_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{overall_status} =~ /red/i').
+Set critical threshold for status (Default: '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i').
 Can used special variables like: %{overall_status}, %{vsan_status}
 
 =back
