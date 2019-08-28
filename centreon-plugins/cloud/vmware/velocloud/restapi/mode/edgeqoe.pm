@@ -157,7 +157,8 @@ sub manage_selection {
         $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
 
         my $links = $options{custom}->list_links(
-            edge_id => $edge->{id}
+            edge_id => $edge->{id},
+            timeframe => $self->{timeframe}
         );
 
         my $qoes = $options{custom}->get_links_qoe(
