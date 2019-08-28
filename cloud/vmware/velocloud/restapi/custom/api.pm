@@ -274,6 +274,8 @@ sub list_links {
         $self->get_entreprise_id();
     }
 
+    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
+
     my $results = $self->request_api(
         method => 'POST',
         path => '/metrics/getEdgeLinkMetrics',
@@ -281,6 +283,9 @@ sub list_links {
             enterpriseId => $self->{entreprise_id},
             edgeId => $options{edge_id},
             metrics => [ 'bytesRx' ],
+            interval => {
+                start => $start_time
+            },
         }
     );
 
