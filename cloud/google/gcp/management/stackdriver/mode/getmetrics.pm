@@ -154,7 +154,7 @@ sub manage_selection {
     $self->{metrics} = {};
 
     my ($results, $raw_results) = $options{custom}->gcp_get_metrics(
-	        dimension => $self->{gcp_dimension},
+            dimension => $self->{gcp_dimension},
             instance => $self->{gcp_instance},
             metric => $self->{gcp_metric},
             api => $self->{gcp_api},
@@ -205,7 +205,7 @@ Set stackdriver metric (Required).
 
 =item B<--dimension>
 
-Set dimension primary filter 
+Set dimension primary filter (Required).
 
 =item B<--instance>
 

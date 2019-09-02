@@ -283,7 +283,7 @@ sub gcp_get_metrics_set_url {
 
     my $uri = URI::Encode->new({encode_reserved => 1});
     my $encoded_filter = $uri->encode('metric.type = "' . $options{api} . '/' . $options{metric} . '"');
-    $encoded_filter .= $uri->encode(' AND ' . $options{dimension} . ' = starts_with(' . $options{instance} . ')') if (defined($options{instance}));
+    $encoded_filter .= $uri->encode(' AND ' . $options{dimension} . ' = starts_with(' . $options{instance} . ')');
     $encoded_filter .= ' AND ' . $uri->encode(join(' AND ', @{$options{extra_filters}})) if (defined($options{extra_filters}) && $options{extra_filters} ne '');
     my $encoded_start_time = $uri->encode($options{start_time});
     my $encoded_end_time = $uri->encode($options{end_time});
