@@ -91,6 +91,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        "dimension:s"           => { name => 'dimension' },
         "instance:s"            => { name => 'instance' },
         "metric:s"              => { name => 'metric' },
         "api:s"                 => { name => 'api' },
@@ -104,6 +105,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if (!defined($self->{option_results}->{dimension})) {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --dimension <name>.");
+        $self->{output}->option_exit();
+    }
     if (!defined($self->{option_results}->{instance})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance <name>.");
         $self->{output}->option_exit();
@@ -117,6 +122,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
+    $self->{gcp_dimension} = $self->{option_results}->{dimension};
     $self->{gcp_instance} = $self->{option_results}->{instance};
     $self->{gcp_metric} = $self->{option_results}->{metric};
     $self->{gcp_api} = $self->{option_results}->{api};
@@ -144,21 +150,22 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my ($results, $raw_results) = $options{custom}->gcp_get_metrics(
-        instance => $self->{gcp_instance},
-        metric => $self->{gcp_metric},
-        api => $self->{gcp_api},
-        extra_filters => $self->{gcp_extra_filters},
-        aggregations => $self->{gcp_aggregation},
-        timeframe => $self->{gcp_timeframe},
-    );
-    
+
     $self->{metrics} = {};
+
+    my ($results, $raw_results) = $options{custom}->gcp_get_metrics(
+	        dimension => $self->{gcp_dimension},
+            instance => $self->{gcp_instance},
+            metric => $self->{gcp_metric},
+            api => $self->{gcp_api},
+            extra_filters => $self->{gcp_extra_filters},
+            aggregations => $self->{gcp_aggregation},
+            timeframe => $self->{gcp_timeframe},
+        );
+
     foreach my $label (keys %{$results}) {
         foreach my $aggregation (('minimum', 'maximum', 'average', 'total')) {
             next if (!defined($results->{$label}->{$aggregation}));
-     
             $self->{metrics} = {
                 display => $self->{gcp_instance},
                 label => $label,
@@ -167,7 +174,7 @@ sub manage_selection {
                 perf_label => $label . '_' . $aggregation,
             };
         }
-    }
+    }       
 
     $self->{output}->output_add(long_msg => sprintf("Raw data:\n%s", Dumper($raw_results)), debug => 1);
 }
@@ -195,6 +202,10 @@ Set GCP API (Required).
 =item B<--metric>
 
 Set stackdriver metric (Required).
+
+=item B<--dimension>
+
+Set dimension primary filter 
 
 =item B<--instance>
 

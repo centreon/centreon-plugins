@@ -215,6 +215,7 @@ sub manage_selection {
     foreach my $instance (@{$self->{gcp_instance}}) {
         foreach my $metric (@{$self->{gcp_metrics}}) {
             ($metric_results, undef) = $options{custom}->gcp_get_metrics(
+                dimension => 'metric.labels.instance_name',
                 instance => $instance,
                 metric => $metric,
                 api => $self->{gcp_api},
