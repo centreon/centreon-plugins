@@ -96,7 +96,7 @@ sub set_counters {
                                 key_values => [ { name => $metric . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 closure_custom_calc => $self->can('custom_metric_calc'),
                                 closure_custom_calc_extra_options => { metric_perf => $metric_perf,
-                                    metric_label => $metric_label, metric_name => $metric_name, metric => $metric },
+                                metric_label => $metric_label, metric_name => $metric_name, metric => $metric },
                                 closure_custom_output => $self->can('custom_usage_output'),
                                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
                                 closure_custom_threshold_check => $self->can('custom_metric_threshold'),
@@ -174,6 +174,7 @@ sub manage_selection {
     foreach my $instance (@{$self->{gcp_instance}}) {
         foreach my $metric (@{$self->{gcp_metrics}}) {
             ($metric_results, undef) = $options{custom}->gcp_get_metrics(
+                dimension => 'metric.labels.instance_name',
                 instance => $instance,
                 metric => $metric,
                 api => $self->{gcp_api},
