@@ -106,11 +106,11 @@ sub check_options {
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
     $self->{key_file} = (defined($self->{option_results}->{key_file})) ? $self->{option_results}->{key_file} : undef;
     $self->{authorization_endpoint} = (defined($self->{option_results}->{authorization_endpoint})) ?
-        $self->{option_results}->{authorization_endpoint} : 'https://www.googleapis.com/oauth2/v4/token';
+    $self->{option_results}->{authorization_endpoint} : 'https://www.googleapis.com/oauth2/v4/token';
     $self->{monitoring_endpoint} = (defined($self->{option_results}->{monitoring_endpoint})) ?
-        $self->{option_results}->{monitoring_endpoint} : 'https://monitoring.googleapis.com/v3';
+    $self->{option_results}->{monitoring_endpoint} : 'https://monitoring.googleapis.com/v3';
     $self->{scope_endpoint} = (defined($self->{option_results}->{scope_endpoint})) ?
-        $self->{option_results}->{scope_endpoint} : 'https://www.googleapis.com/auth/cloud-platform';
+    $self->{option_results}->{scope_endpoint} : 'https://www.googleapis.com/auth/cloud-platform';
 
     if (!defined($self->{key_file}) || $self->{key_file} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --key-file option.");
@@ -283,7 +283,7 @@ sub gcp_get_metrics_set_url {
 
     my $uri = URI::Encode->new({encode_reserved => 1});
     my $encoded_filter = $uri->encode('metric.type = "' . $options{api} . '/' . $options{metric} . '"');
-    $encoded_filter .= $uri->encode(' AND metric.labels.instance_name = starts_with(' . $options{instance} . ')');
+    $encoded_filter .= $uri->encode(' AND ' . $options{dimension} . ' = starts_with(' . $options{instance} . ')');
     $encoded_filter .= ' AND ' . $uri->encode(join(' AND ', @{$options{extra_filters}})) if (defined($options{extra_filters}) && $options{extra_filters} ne '');
     my $encoded_start_time = $uri->encode($options{start_time});
     my $encoded_end_time = $uri->encode($options{end_time});
