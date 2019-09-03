@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { label => 'mem_used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
                       unit => 'B', cast_int => 1 },
                 ],
             }
@@ -69,8 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Memory Used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1 },
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
