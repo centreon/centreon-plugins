@@ -31,7 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'hardware'  => 'storage::emc::unisphere::restapi::mode::hardware',
+        'hardware'               => 'storage::emc::unisphere::restapi::mode::hardware',
+        'list-pools'             => 'storage::emc::unisphere::restapi::mode::listpools',
+        'list-storage-resources' => 'storage::emc::unisphere::restapi::mode::liststorageresources',
+        'pools'                  => 'storage::emc::unisphere::restapi::mode::pools',
+        'storage-resources'      => 'storage::emc::unisphere::restapi::mode::storageresources',
     );
 
     $self->{custom_modes}{api} = 'storage::emc::unisphere::restapi::custom::api';

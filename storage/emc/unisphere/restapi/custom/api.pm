@@ -149,14 +149,22 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    my $content = $self->{http}->request(
-        method => 'GET', 
-        url_path => $options{url_path},
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status},
-        cookies_file => '', # in memory
-    );
+    #my $content = $self->{http}->request(
+    #    method => defined($options{method}) ? $options{method} : 'GET', 
+    #    url_path => $options{url_path},
+    #    unknown_status => $self->{unknown_http_status},
+    #    warning_status => $self->{warning_http_status},
+    #    critical_status => $self->{critical_http_status},
+    #    cookies_file => '', # in memory
+    #);
+    my $content = do {
+            local $/ = undef;
+            if (!open my $fh, "<", "/tmp/sr.txt") {
+                $self->{output}->add_option_msg(short_msg => "Could not open file tmp pool : $!");
+                $self->{output}->option_exit();
+            }
+            <$fh>;
+    };
     
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");

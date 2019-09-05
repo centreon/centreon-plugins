@@ -60,7 +60,7 @@ sub check {
             );
         }
 
-        if ($result->{content}->{currentTemperature} =~ /[0-9]/) {
+        if (defined($result->{content}->{currentTemperature}) && $result->{content}->{currentTemperature} =~ /[0-9]/) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{content}->{currentTemperature});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
@@ -77,7 +77,7 @@ sub check {
             );
         }
 
-        if ($result->{content}->{currentPower} =~ /[0-9]/) {
+        if (defined($result->{content}->{currentPower}) && $result->{content}->{currentPower} =~ /[0-9]/) {
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'power', instance => $instance, value => $result->{content}->{currentPower});
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(
