@@ -109,12 +109,13 @@ sub check_options {
     # return 1 = ok still data_source
     # return 0 = no data_source left
 
-    $self->{sid} = defined($self->{option_results}->{sid}[0]) ? $self->{option_results}->{sid}[0]: $self->{option_results}->{tnsnames_sid};
-    $self->{service_name} = defined($self->{option_results}->{service_name}[0]) ? $self->{option_results}->{service_name}[0]: $self->{option_results}->{tnsnames_servicename};
+    $self->{sid} = defined($self->{option_results}->{sid}[0]) ? $self->{option_results}->{sid}[0] : $self->{option_results}->{tnsnames_sid};
+    $self->{service_name} = defined($self->{option_results}->{service_name}[0]) ? $self->{option_results}->{service_name}[0] : $self->{option_results}->{tnsnames_servicename};
     $self->{oracle_home} = defined($self->{option_results}->{oracle_home}) ? $self->{option_results}->{oracle_home} : $ENV{'ORACLE_HOME'};
     $self->{tnsadmin_home} = defined($self->{option_results}->{tnsadmin_home}) ? $self->{option_results}->{tnsadmin_home} : $ENV{'TNSADMIN'};
     $self->{local_connexion} = $self->{option_results}->{local_connexion};
     $self->{sqlplus_cmd} = $self->{option_results}->{sqlplus_cmd};
+    $self->{container} = defined($self->{option_results}->{container}[0]) ? $self->{option_results}->{container}[0] : undef;
         
     $self->{output}->output_add(long_msg => "*** DEBUG MODE****\n", debug => 1);
     $self->{output}->output_add(long_msg => Data::Dumper::Dumper($self->{option_results}), debug => 1);
@@ -157,9 +158,9 @@ sub check_options {
     if ($self->{local_connexion} == 0) {
         if (defined($self->{option_results}->{hostname})) {
             my $port = defined($self->{option_results}->{port}) ? $self->{option_results}->{port}[0] : 1521;
-            $connection_string .= "\@//" . $self->{option_results}->{hostname}[0] . ":" . $port . "/" . (defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
+            $connection_string .= "\@//" . $self->{option_results}->{hostname}[0] . ':' . $port . '/' . ((defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
         } else {
-            $connection_string .= "\@" . (defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
+            $connection_string .= "\@" . ((defined($self->{sid}) && $self->{sid} ne '') ? $self->{sid} : $self->{service_name});
         }
     } else {
         $self->{output}->output_add(long_msg => "*** LOCAL CONNEXION MODE****", debug => 1);
@@ -286,8 +287,10 @@ sub connect {
     }
     
     $self->{version} = $self->fetchrow_array();
-    
     $self->{output}->output_add(long_msg => "VERSION: " . $self->{version}, debug => 1);
+    if (defined($self->{container}) and $self->{container} ne '') {
+        $self->query(query => "alter session set container=$self->{container}");
+    }
     return 0;
 }
 

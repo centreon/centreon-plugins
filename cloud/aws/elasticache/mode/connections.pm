@@ -123,7 +123,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "name:s@"	      => { name => 'name' },
         "node-id:s" 	  => { name => 'node_id' },

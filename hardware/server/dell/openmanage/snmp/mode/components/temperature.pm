@@ -52,9 +52,9 @@ my $mapping = {
 my $oid_temperatureProbeTable = '.1.3.6.1.4.1.674.10892.1.700.20';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_temperatureProbeTable, start => $mapping->{temperatureProbeStatus}->{oid}, end => $mapping->{temperatureProbeLocationName}->{oid} };
+    push @{$self->{request}}, { oid => $oid_temperatureProbeTable, start => $mapping->{temperatureProbeStatus}->{oid}, end => $mapping->{temperatureProbeLocationName}->{oid} };
 }
 
 sub check {
@@ -62,14 +62,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_temperatureProbeTable}})) {
         next if ($oid !~ /^$mapping->{temperatureProbeStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_temperatureProbeTable}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
         
         $self->{components}->{temperature}->{total}++;
 
@@ -77,7 +77,7 @@ sub check {
                                     $instance, $result->{temperatureProbeStatus}, $instance, 
                                     $result->{temperatureProbeLocationName}, $result->{temperatureProbeReading}
                                     ));
-        my $exit = $self->get_severity(section => 'temperature', value => $result->{temperatureProbeStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'temperature', value => $result->{temperatureProbeStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' status is '%s'",

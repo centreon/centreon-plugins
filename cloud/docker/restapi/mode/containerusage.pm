@@ -188,7 +188,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "container-id:s"              => { name => 'container_id' },
@@ -250,7 +249,8 @@ sub manage_selection {
             write_io => $write_io,
             cpu_total_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{total_usage},
             cpu_system_usage => $result->{$container_id}->{Stats}->{cpu_stats}->{system_cpu_usage},
-            cpu_number => scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}),
+            cpu_number => defined($result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}) ?
+                scalar(@{$result->{$container_id}->{Stats}->{cpu_stats}->{cpu_usage}->{percpu_usage}}) : 1,
             memory_usage => $result->{$container_id}->{Stats}->{memory_stats}->{usage},
             memory_total => $result->{$container_id}->{Stats}->{memory_stats}->{limit},
         };

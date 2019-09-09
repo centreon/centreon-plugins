@@ -58,6 +58,9 @@ sub new {
     %{$self->{option_results}} = ();
 
     $self->{option_msg} = [];
+
+    $self->{nodisplay} = 0;
+    $self->{noexit_die} = 0;
     
     $self->{is_output_xml} = 0;
     $self->{is_output_json} = 0;
@@ -185,7 +188,7 @@ sub output_add {
 sub perfdata_add {
     my ($self, %options) = @_;
     my $perfdata = {
-        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => ''
+        label => '', value => '', unit => '', warning => '', critical => '', min => '', max => '', mode => $self->{mode},
     };
     foreach (keys %options) {
         next if (!defined($options{$_}));
@@ -376,6 +379,12 @@ sub output_xml {
 sub output_openmetrics {
     my ($self, %options) = @_;
 
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'Time::HiRes',
+        error_msg => "Cannot load module 'Time::HiRes'."
+    );
+
+    my $time_ms = int(Time::HiRes::time() * 1000);
     $self->change_perfdata();
     foreach my $perf (@{$self->{perfdatas}}) {
         next if (defined($self->{option_results}->{filter_perfdata}) &&
@@ -388,7 +397,7 @@ sub output_openmetrics {
         if ($label =~ /^(.*?)#(.*)$/) {
             ($perf->{instance}, $label) = ($1, $2);
         }
-        my ($bucket, $append) = ('{plugin="' . $self->{plugin} . '",mode="' . $self->{mode} . '"', '');
+        my ($bucket, $append) = ('{plugin="' . $self->{plugin} . '",mode="' . $perf->{mode} . '"', '');
         foreach ('unit', 'warning', 'critical', 'min', 'max', 'instance') {
             if (defined($perf->{$_}) && $perf->{$_} ne '') {
                 $bucket .= ',' . $_ . '="' . $perf->{$_} . '"';
@@ -396,7 +405,7 @@ sub output_openmetrics {
         }
         $bucket .= '}';
         
-        print $label . $bucket . ' ' . $perf->{value} . "\n";
+        print $label . $bucket . ' ' . $perf->{value} . ' ' . $time_ms . "\n";
     }
 }
 
@@ -448,6 +457,7 @@ sub output_txt {
     my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
 
+    return if ($self->{nodisplay} == 1);
     if (defined($self->{global_short_concat_outputs}->{UNQUALIFIED_YET})) {
         $self->output_add(severity => uc($options{exit_litteral}), short_msg => $self->{global_short_concat_outputs}->{UNQUALIFIED_YET});
     }
@@ -485,6 +495,7 @@ sub display {
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     $force_long_output = 1 if (defined($self->{option_results}->{debug}));
 
+    return if ($self->{nodisplay} == 1);
     if (defined($self->{option_results}->{output_file})) {
         if (!open (STDOUT, '>', $self->{option_results}->{output_file})) {
             $self->output_add(severity => 'UNKNOWN',
@@ -573,8 +584,10 @@ sub option_exit {
 
 sub exit {
     my ($self, %options) = @_;
-    # $options{exit_litteral} = exit
     
+    if ($self->{noexit_die} == 1) {
+        die 'exit';
+    }
     if (defined($options{exit_litteral})) {
         exit $self->{errors}->{uc($options{exit_litteral})};
     }
@@ -768,6 +781,15 @@ sub to_utf8 {
     }
     
     return centreon::plugins::misc::trim(Encode::decode('UTF-8', $value, $self->{perlqq}));
+}
+
+sub parameter {
+    my ($self, %options) = @_;
+
+    if (defined($options{attr})) {
+        $self->{$options{attr}} = $options{value};
+    }
+    return $self->{$options{attr}};
 }
 
 sub add_disco_entry {

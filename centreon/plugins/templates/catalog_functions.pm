@@ -38,17 +38,17 @@ sub catalog_status_threshold {
 
         my $label = $self->{label};
         $label =~ s/-/_/g;
-        if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{ok_status}") {
+        if (defined($self->{instance_mode}->{option_results}->{'ok_' . $label}) && $self->{instance_mode}->{option_results}->{'ok_' . $label} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{'ok_' . $label}") {
             $status = 'ok';
         } elsif (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
             eval "$self->{instance_mode}->{option_results}->{'critical_' . $label}") {
             $status = 'critical';
         } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{'warning_' . $label}") {
+            eval "$self->{instance_mode}->{option_results}->{'warning_' . $label}") {
             $status = 'warning';
         } elsif (defined($self->{instance_mode}->{option_results}->{'unknown_' . $label}) && $self->{instance_mode}->{option_results}->{'unknown_' . $label} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{'unknown_' . $label}") {
+            eval "$self->{instance_mode}->{option_results}->{'unknown_' . $label}") {
             $status = 'unknown';
         }
     };
@@ -63,7 +63,7 @@ sub catalog_status_calc {
     my ($self, %options) = @_;
 
     foreach (keys %{$options{new_datas}}) {
-        if (/^$self->{instance}_(.*)/) {
+        if (/^\Q$self->{instance}\E_(.*)/) {
             $self->{result_values}->{$1} = $options{new_datas}->{$_};
         }
     }

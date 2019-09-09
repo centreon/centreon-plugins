@@ -24,7 +24,7 @@ use strict;
 use warnings;
 
 my $mapping = {
-    mtxrHlTemperature => { oid => '.1.3.6.1.4.1.14988.1.1.3.10' },
+    mtxrHlTemperature => { oid => '.1.3.6.1.4.1.14988.1.1.3.10' }, # SoC or PCB according to Mikrotik support
     mtxrHlProcessorTemperature => { oid => '.1.3.6.1.4.1.14988.1.1.3.11' },
 };
 
@@ -43,12 +43,12 @@ sub check {
     
     if (defined($result->{mtxrHlTemperature}) && $result->{mtxrHlTemperature} =~ /[0-9]+/) {
         
-        $self->{output}->output_add(long_msg => sprintf("Temperature is '%s' C", $result->{mtxrHlTemperature} / 10));
+        $self->{output}->output_add(long_msg => sprintf("System temperature (SoC or PCB) is '%s' C", $result->{mtxrHlTemperature} / 10));
 
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => '1', value => $result->{mtxrHlTemperature} / 10);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature is '%s' C", $result->{mtxrHlTemperature} / 10));
+                                        short_msg => sprintf("System temperature (SoC or PCB) is '%s' C", $result->{mtxrHlTemperature} / 10));
         }
         $self->{output}->perfdata_add(
             label => 'temperature', unit => 'C',

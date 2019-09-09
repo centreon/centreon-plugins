@@ -55,9 +55,9 @@ my $mapping4 = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{controllerName}->{oid} }, { oid => $mapping2->{controllerComponentStatus}->{oid} },
+    push @{$self->{request}}, { oid => $mapping->{controllerName}->{oid} }, { oid => $mapping2->{controllerComponentStatus}->{oid} },
         { oid => $mapping3->{controllerState}->{oid} }, { oid => $mapping4->{controllerFWVersion}->{oid} };
 }
 
@@ -66,7 +66,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking controllers");
     $self->{components}->{controller} = {name => 'controllers', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'controller'));
+    return if ($self->check_filter(section => 'controller'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping2->{controllerComponentStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping2->{controllerComponentStatus}->{oid}\.(.*)$/);
@@ -76,7 +76,7 @@ sub check {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{controllerState}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{controllerFWVersion}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'controller', instance => $instance));
+        next if ($self->check_filter(section => 'controller', instance => $instance));
         
         $self->{components}->{controller}->{total}++;
 
@@ -84,7 +84,7 @@ sub check {
                                     $result->{controllerName}, $result2->{controllerComponentStatus}, $instance, 
                                     $result3->{controllerState}, $result4->{controllerFWVersion}
                                     ));
-        my $exit = $self->get_severity(section => 'controller', value => $result2->{controllerComponentStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'controller', value => $result2->{controllerComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Controller '%s' status is '%s'",

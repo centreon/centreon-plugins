@@ -23,8 +23,8 @@ package hardware::server::hp::ilo::xmlapi::custom::api;
 use strict;
 use warnings;
 use IO::Socket::SSL;
-use LWP::UserAgent;
 use XML::Simple;
+use centreon::plugins::http;
 
 sub new {
     my ($class, %options) = @_;
@@ -42,19 +42,19 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            "hostname:s"  => { name => 'hostname' },
-            "timeout:s"   => { name => 'timeout', default => 30 },
-            "port:s"      => { name => 'port', default => 443 },
-            "username:s"  => { name => 'username' },
-            "password:s"  => { name => 'password' },
-            'ssl-opt:s%'  => { name => 'ssl_opt' },
-            "force-ilo3"  => { name => 'force_ilo3' },
+            'hostname:s'  => { name => 'hostname' },
+            'timeout:s'   => { name => 'timeout', default => 30 },
+            'port:s'      => { name => 'port', default => 443 },
+            'username:s'  => { name => 'username' },
+            'password:s'  => { name => 'password' },
+            'force-ilo3'  => { name => 'force_ilo3' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'XML API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
+    $self->{http} = centreon::plugins::http->new(%options);
     
     return $self;
 }
@@ -99,13 +99,18 @@ sub check_options {
  
     $self->{ssl_opts} = '';
     if (!defined($self->{option_results}->{ssl_opt})) {
+        $self->{option_results}->{ssl_opt} = ['SSL_verify_mode => SSL_VERIFY_NONE'];
         $self->{ssl_opts} = 'SSL_verify_mode => SSL_VERIFY_NONE';
     } else {
-        foreach (keys %{$self->{option_results}->{ssl_opt}}) {
-            $self->{ssl_opts} .= "$_ => " . $self->{option_results}->{ssl_opt}->{$_} . ", ";
+        foreach (@{$self->{option_results}->{ssl_opt}}) {
+            $self->{ssl_opts} .= "$_, ";
         }
     }
+    if (!defined($self->{option_results}->{curl_opt})) {
+        $self->{option_results}->{curl_opt} = ['CURLOPT_SSL_VERIFYPEER => 0', 'CURLOPT_SSL_VERIFYHOST => 0'];
+    }
 
+    $self->{http}->set_options(%{$self->{option_results}});
     return 0;
 }
 
@@ -172,22 +177,14 @@ sub get_ilo3_data {
 </RIBCL>
 ";
 
-	my $ua = LWP::UserAgent->new(keep_alive => 0, protocols_allowed => ['http', 'https'], timeout => $self->{option_results}->{timeout});
-	my $req = HTTP::Request->new(POST => "https://" . $self->{option_results}->{hostname} . '/ribcl');
-	$req->content_length(length($xml_script));
-	$req->content($xml_script);
-	$req->header(TE => 'chunked');
-	$req->header(Connection => 'Close');
+    $self->{http}->add_header(key => 'TE', value => 'chunked');
+    $self->{http}->add_header(key => 'Connection', value => 'Close');
+    $self->{http}->add_header(key => 'Content-Type', value => 'text/xml');
     
-    my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_opts});
-    IO::Socket::SSL::set_default_context($context);
-    
-	my $response = $ua->request($req);
-	$self->{content} = $response->content;
-    if (!$response->is_success) {
-        $self->{output}->add_option_msg(short_msg => "Cannot get data: $response->status_line");
-        $self->{output}->option_exit();
-    }
+    $self->{content} = $self->{http}->request(
+        method => 'POST', proto => 'https', url_path => '/ribcl',
+        query_form_post => $xml_script,
+    );
 }
 
 sub check_ilo_error {
@@ -368,11 +365,6 @@ Set timeout (Default: 30).
 =item B<--force-ilo3>
 
 Don't try to find ILO version.
-
-=item B<--ssl-opt>
-
-Set SSL Options (--ssl-opt="SSL_version=SSLv3").
-Default: --ssl-opt="SSL_verify_mode=SSL_VERIFY_NONE"
 
 =back
 

@@ -49,12 +49,12 @@ my $mapping = {
 my $oid_rPDU2SensorTempHumidityStatusEntry = '.1.3.6.1.4.1.318.1.1.26.10.2.2.1';
 
 sub load {
-    my (%options) = @_;
-    
-    foreach (@{$options{request}}) {
+    my ($self) = @_;
+
+    foreach (@{$self->{request}}) {
         return if ($_->{oid} eq $oid_rPDU2SensorTempHumidityStatusEntry);
     }
-    push @{$options{request}}, { oid => $oid_rPDU2SensorTempHumidityStatusEntry };
+    push @{$self->{request}}, { oid => $oid_rPDU2SensorTempHumidityStatusEntry };
 }
 
 sub check {

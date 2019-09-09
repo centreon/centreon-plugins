@@ -140,17 +140,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-inventory"  => { name => 'filter_inventory' },
+        'filter-inventory:s' => { name => 'filter_inventory' },
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 }
 
 sub manage_selection {

@@ -282,7 +282,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
         "display-name:s"      => { name => 'display_name', default => '%{SvcDescription}.%{IfName}.%{SapEncapName}' },

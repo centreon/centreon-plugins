@@ -38,9 +38,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{globalSystemStatus}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{globalSystemStatus}->{oid} };
 }
 
 sub check {
@@ -48,21 +48,21 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking global system status");
     $self->{components}->{globalstatus} = {name => 'global system status', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'globalstatus'));
+    return if ($self->check_filter(section => 'globalstatus'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{globalSystemStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping->{globalSystemStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{globalSystemStatus}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'globalstatus', instance => $instance));
+        next if ($self->check_filter(section => 'globalstatus', instance => $instance));
         
         $self->{components}->{globalstatus}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Chassis '%s' global status is '%s' [instance: %s]",
                                     $instance, $result->{globalSystemStatus}, $instance
                                     ));
-        my $exit = $self->get_severity(section => 'globalstatus', value => $result->{globalSystemStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'globalstatus', value => $result->{globalSystemStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Chassis '%s' global status is '%s'",

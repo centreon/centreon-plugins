@@ -59,6 +59,7 @@ sub new {
         'service-host'         => 'apps::vmware::connector::mode::servicehost',
         'snapshot-vm'          => 'apps::vmware::connector::mode::snapshotvm',
         'stat-connectors'      => 'apps::vmware::connector::mode::statconnectors',
+        'status-cluster'       => 'apps::vmware::connector::mode::statuscluster',
         'status-host'          => 'apps::vmware::connector::mode::statushost',
         'status-vm'            => 'apps::vmware::connector::mode::statusvm',
         'swap-host'            => 'apps::vmware::connector::mode::swaphost',
@@ -68,6 +69,7 @@ sub new {
         'tools-vm'             => 'apps::vmware::connector::mode::toolsvm',
         'uptime-host'          => 'apps::vmware::connector::mode::uptimehost',
         'vmoperation-cluster'  => 'apps::vmware::connector::mode::vmoperationcluster',
+        'vsan-cluster-usage'   => 'apps::vmware::connector::mode::vsanclusterusage',
     );
 
     $self->{custom_modes}{connector} = 'apps::vmware::connector::custom::connector';

@@ -28,7 +28,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
     
     if ($self->{stdout} =~ /^Power Supplies.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         #Supply  Status          Underspeed  Overtemp  Overvolt  Undervolt  Overcurrent
@@ -40,7 +40,7 @@ sub check {
             my $ps_status = defined($2) ? $2 : 'unknown';
             my $ps_name = defined($1) ? $1 : 'unknown';
             
-            next if ($self->check_exclude(section => 'psu', instance => $ps_name));
+            next if ($self->check_filter(section => 'psu', instance => $ps_name));
             
             $self->{components}->{psu}->{total}++;
             $self->{output}->output_add(long_msg => "Power Supplies Sensor Status '" . $ps_name . "' is " . $ps_status);

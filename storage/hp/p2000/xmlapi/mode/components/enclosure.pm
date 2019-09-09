@@ -52,7 +52,7 @@ sub check {
         my $state = $health{$results->{$enc_id}->{'health-numeric'}};
         
         $self->{output}->output_add(long_msg => sprintf("enclosure '%s' status is %s [instance: %s] [reason: %s]",
-                                                        $enc_id, $state, $enc_id, $health{$results->{$enc_id}->{'health-reason'}})
+                                                        $enc_id, $state, $enc_id, $results->{$enc_id}->{'health-reason'})
                                     );
         my $exit = $self->get_severity(label => 'default', section => 'enclosure', value => $state);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

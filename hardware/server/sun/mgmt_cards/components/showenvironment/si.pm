@@ -28,7 +28,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking system indicator");
     $self->{components}->{si} = {name => 'system indicator', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'si'));
+    return if ($self->check_filter(section => 'si'));
     
     #--------------------------------------------------------
     #System Indicator Status:
@@ -55,7 +55,7 @@ sub check {
             my $si_name = defined($1) ? $1 : 'unknown';
             my $si_status = defined($2) ? $2 : 'unknown';
             
-            next if ($self->check_exclude(section => 'si', instance => $si_name));
+            next if ($self->check_filter(section => 'si', instance => $si_name));
             
             $self->{components}->{si}->{total}++;
             $self->{output}->output_add(long_msg => "System Indicator Status '$si_name' is " . $si_status);

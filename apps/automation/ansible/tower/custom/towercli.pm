@@ -22,7 +22,6 @@ package apps::automation::ansible::tower::custom::towercli;
 
 use strict;
 use warnings;
-use DateTime;
 use JSON::XS;
 
 sub new {

@@ -150,13 +150,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-ip-address:s"   => { name => 'filter_ip_address' },
-                                "filter-bssid:s"        => { name => 'filter_bssid' },
-                                "filter-essid:s"        => { name => 'filter_essid' },
-                                });
+    $options{options}->add_options(arguments => {
+        "filter-ip-address:s"   => { name => 'filter_ip_address' },
+        "filter-bssid:s"        => { name => 'filter_bssid' },
+        "filter-essid:s"        => { name => 'filter_essid' },
+    });
                                 
     return $self;
 }
@@ -177,11 +175,11 @@ my %map_role = (
     3 => 'standbymaster',
 );
 my $mapping = {
-    nUserUpTime                => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.5' },
-    nUserAuthenticationMethod  => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.6', map => \%map_auth_method },
+    nUserUpTime => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.5' },
+    nUserAuthenticationMethod => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.6', map => \%map_auth_method },
 };
 my $mapping2 = {
-    nUserApBSSID               => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.11' },
+    nUserApBSSID => { oid => '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1.11' },
 };
 
 my $oid_wlsxUserEntry = '.1.3.6.1.4.1.14823.2.2.1.4.1.2.1';
@@ -265,7 +263,7 @@ __END__
 
 =head1 MODE
 
-Check total users connected.
+Check total users connected (Deprecated).
 
 =over 8
 

@@ -41,6 +41,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{ua} = undef;
+    $self->{debug_handlers} = 0;
     
     return $self;
 }
@@ -125,7 +126,8 @@ sub request {
         }
     }
     
-    if ($self->{output}->is_debug()) {
+    if ($self->{output}->is_debug() && $self->{debug_handlers} == 0) {
+        $self->{debug_handlers} = 1;
         $self->{ua}->add_handler("request_send", sub {
             my ($response, $ua, $handler) = @_;
 
@@ -245,7 +247,6 @@ sub request {
                 $self->{response}->www_authenticate =~ /(\S+)/);
         }
 
-        $self->{output}->output_add(long_msg => $self->{response}->content, debug => 1);
         $self->{output}->output_add(severity => $status,
                                     short_msg => $short_msg);
         $self->{output}->display();

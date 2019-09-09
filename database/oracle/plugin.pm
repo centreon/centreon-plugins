@@ -39,8 +39,8 @@ sub new {
         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
         'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
-        'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
+        'fra-usage'                => 'database::oracle::mode::frausage',
         'invalid-object'           => 'database::oracle::mode::invalidobject',
         'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
@@ -56,12 +56,13 @@ sub new {
         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',
         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-        'temp-usage'               => 'database::oracle::mode::temptablespace',
+        'temp-tablespace'          => 'database::oracle::mode::temptablespace',
         'tnsping'                  => 'database::oracle::mode::tnsping',
-        'undo-usage'               => 'database::oracle::mode::undotablespace',
+        'undo-tablespace'          => 'database::oracle::mode::undotablespace',
     );
 
-	$self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+    $self->{sql_modes}{dbi} = 'database::oracle::dbi';
+    $self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
 						 
     return $self;
 }
@@ -74,6 +75,7 @@ sub init {
         'port:s@'       => { name => 'port' },
         'sid:s'         => { name => 'sid' },
         'servicename:s' => { name => 'servicename' },
+        'container:s'   => { name => 'container' },
     });
 
     $self->{options}->parse_options();
@@ -98,9 +100,11 @@ sub init {
                 $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';service_name=' . $options_result->{servicename};
 	            $self->{sqldefault}->{sqlpluscmd}[$i]->{service_name} = $options_result->{servicename};
             }
+            $self->{sqldefault}->{dbi}[$i]->{container} = $options_result->{container};
+            $self->{sqldefault}->{sqlpluscmd}[$i]->{container} = $options_result->{container};
         }
     }
-    $self->SUPER::init(%options);    
+    $self->SUPER::init(%options);
 }
 
 1;
@@ -128,6 +132,10 @@ Database SID.
 =item B<--servicename>
 
 Database Service Name.
+
+=item B<--container>
+
+Change container (does an alter session set container command).
 
 =back
 

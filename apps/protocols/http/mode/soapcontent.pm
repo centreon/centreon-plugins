@@ -33,42 +33,41 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.2';
     $options{options}->add_options(arguments => {
-        "service-soap:s"        => { name => 'service_soap' },
-        "data:s"                => { name => 'data' },
-        "lookup:s@"             => { name => 'lookup' },
-        "hostname:s"            => { name => 'hostname' },
-        "vhost:s"               => { name => 'vhost' },
-        "port:s"                => { name => 'port', },
-        "proto:s"               => { name => 'proto' },
-        "urlpath:s"             => { name => 'url_path' },
-        "credentials"           => { name => 'credentials' },
-        "basic"                 => { name => 'basic' },
-        "ntlmv2"                => { name => 'ntlmv2' },
-        "username:s"            => { name => 'username' },
-        "password:s"            => { name => 'password' },
-        "header:s@"             => { name => 'header' },
-        "timeout:s"             => { name => 'timeout', default => 10 },
-        "cert-file:s"           => { name => 'cert_file' },
-        "key-file:s"            => { name => 'key_file' },
-        "cacert-file:s"         => { name => 'cacert_file' },
-        "cert-pwd:s"            => { name => 'cert_pwd' },
-        "cert-pkcs12"           => { name => 'cert_pkcs12' },
-        "unknown-status:s"      => { name => 'unknown_status' },
-        "warning-status:s"      => { name => 'warning_status' },
-        "critical-status:s"     => { name => 'critical_status' },
-        "warning-numeric:s"       => { name => 'warning_numeric' },
-        "critical-numeric:s"      => { name => 'critical_numeric' },
-        "warning-string:s"        => { name => 'warning_string' },
-        "critical-string:s"       => { name => 'critical_string' },
-        "warning-time:s"          => { name => 'warning_time' },
-        "critical-time:s"         => { name => 'critical_time' },
-        "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
-        "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
-        "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
-        "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
-        "values-separator:s"      => { name => 'values_separator', default => ', ' },
+        'service-soap:s'        => { name => 'service_soap' },
+        'data:s'                => { name => 'data' },
+        'lookup:s@'             => { name => 'lookup' },
+        'hostname:s'            => { name => 'hostname' },
+        'vhost:s'               => { name => 'vhost' },
+        'port:s'                => { name => 'port', },
+        'proto:s'               => { name => 'proto' },
+        'urlpath:s'             => { name => 'url_path' },
+        'credentials'           => { name => 'credentials' },
+        'basic'                 => { name => 'basic' },
+        'ntlmv2'                => { name => 'ntlmv2' },
+        'username:s'            => { name => 'username' },
+        'password:s'            => { name => 'password' },
+        'header:s@'             => { name => 'header' },
+        'timeout:s'             => { name => 'timeout', default => 10 },
+        'cert-file:s'           => { name => 'cert_file' },
+        'key-file:s'            => { name => 'key_file' },
+        'cacert-file:s'         => { name => 'cacert_file' },
+        'cert-pwd:s'            => { name => 'cert_pwd' },
+        'cert-pkcs12'           => { name => 'cert_pkcs12' },
+        'unknown-status:s'      => { name => 'unknown_status' },
+        'warning-status:s'      => { name => 'warning_status' },
+        'critical-status:s'     => { name => 'critical_status' },
+        'warning-numeric:s'       => { name => 'warning_numeric' },
+        'critical-numeric:s'      => { name => 'critical_numeric' },
+        'warning-string:s'        => { name => 'warning_string' },
+        'critical-string:s'       => { name => 'critical_string' },
+        'warning-time:s'          => { name => 'warning_time' },
+        'critical-time:s'         => { name => 'critical_time' },
+        'threshold-value:s'       => { name => 'threshold_value', default => 'count' },
+        'format-ok:s'             => { name => 'format_ok', default => '%{count} element(s) found' },
+        'format-warning:s'        => { name => 'format_warning', default => '%{count} element(s) found' },
+        'format-critical:s'       => { name => 'format_critical', default => '%{count} element(s) found' },
+        'values-separator:s'      => { name => 'values_separator', default => ', ' },
     });
     $self->{count} = 0;
     $self->{count_ok} = 0;
@@ -217,11 +216,13 @@ sub lookup {
         $self->{'count_' . $exit}++;
     }
 
-    $self->{output}->perfdata_add(label => 'count',
-                                  value => $self->{count},
-                                  warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
-                                  critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'count',
+        value => $self->{count},
+        warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+        critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
+        min => 0
+    );
 
     my $count = 0;
     foreach my $value (@{$self->{values}}) {
@@ -233,10 +234,12 @@ sub lookup {
                 push @{$self->{'values_' . $exit}}, $value;
                 $self->{'count_' . $exit}++
             }
-            $self->{output}->perfdata_add(label => 'element_' . $count,
-                                          value => $value,
-                                          warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
-                                          critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef);
+            $self->{output}->perfdata_add(
+                label => 'element_' . $count,
+                value => $value,
+                warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+                critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef
+            );
         } else {
             if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' &&
                 $value =~ /$self->{option_results}->{critical_string}/) {
@@ -263,7 +266,10 @@ sub run {
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
 
     $self->{output}->output_add(long_msg => $self->{soap_response}, debug => 1);
-    if (!defined($self->{option_results}->{lookup}) || scalar(@{$self->{option_results}->{lookup}}) == 0) {
+    if (!defined($self->{option_results}->{lookup}) ||
+        scalar(@{$self->{option_results}->{lookup}}) == 0 ||
+        $self->{option_results}->{lookup}->[0] eq ''
+    ) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "SOAP request success");
     } else {
@@ -278,11 +284,13 @@ sub run {
     } else {
         $self->{output}->output_add(long_msg => sprintf("Response time %.3fs", $timeelapsed));
     }
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => "time", unit => 's',
+        value => sprintf('%.3f', $timeelapsed),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
+        min => 0
+    );
 
     $self->{output}->display();
     $self->{output}->exit();

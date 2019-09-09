@@ -33,9 +33,9 @@ my $list_oids = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_control };
+    push @{$self->{request}}, { oid => $oid_control };
 }
 
 sub check {
@@ -43,7 +43,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking sensors");
     $self->{components}->{sensors} = {name => 'sensors', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sensors'));
+    return if ($self->check_filter(section => 'sensors'));
 
     foreach my $i (sort keys %{$list_oids}) {
         if (!defined($self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'}) || 
@@ -56,7 +56,7 @@ sub check {
         my $name = $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i}) . '.0'};
         my $value = $self->{results}->{$oid_control}->{'.1.3.6.1.4.1.17095.3.' . ($list_oids->{$i} + 1) . '.0'};
         
-        next if ($self->check_exclude(section => 'sensors', instance => $name));
+        next if ($self->check_filter(section => 'sensors', instance => $name));
         $self->{components}->{sensors}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("sensor '%s' value is %s.", 
@@ -67,10 +67,12 @@ sub check {
                                         short_msg => sprintf("sensor '%s' value is %s", 
                                                              $name, $value));
         }
-        $self->{output}->perfdata_add(label => $name,
-                                      value => $value,
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => $name,
+            value => $value,
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

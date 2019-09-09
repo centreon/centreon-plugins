@@ -203,30 +203,29 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
-        "hostname:s"              => { name => 'hostname' },
-        "remote"                  => { name => 'remote' },
-        "ssh-option:s@"           => { name => 'ssh_option' },
-        "ssh-path:s"              => { name => 'ssh_path' },
-        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"               => { name => 'timeout', default => 30 },
-        "sudo"                    => { name => 'sudo' },
-        "command:s"               => { name => 'command', default => 'bpdbjobs' },
-        "command-path:s"          => { name => 'command_path' },
-        "command-options:s"       => { name => 'command_options', default => '-report -most_columns' },
-        "exec-only"               => { name => 'exec_only' },
-        "filter-policy-name:s"    => { name => 'filter_policy_name' },
-        "filter-type:s"           => { name => 'filter_type' },
-        "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
-        "filter-start-time:s"     => { name => 'filter_start_time' },
-        "ok-status:s"             => { name => 'ok_status', default => '%{status} == 0' },
-        "warning-status:s"        => { name => 'warning_status', default => '%{status} == 1' },
-        "critical-status:s"       => { name => 'critical_status', default => '%{status} > 1' },
-        "warning-long:s"          => { name => 'warning_long' },
-        "critical-long:s"         => { name => 'critical_long' },
-        "warning-frozen:s"        => { name => 'warning_frozen' },
-        "critical-frozen:s"       => { name => 'critical_frozen', default => '%{state} =~ /active|queue/ && %{kb} == 0' },
+        'hostname:s'              => { name => 'hostname' },
+        'remote'                  => { name => 'remote' },
+        'ssh-option:s@'           => { name => 'ssh_option' },
+        'ssh-path:s'              => { name => 'ssh_path' },
+        'ssh-command:s'           => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'               => { name => 'timeout', default => 30 },
+        'sudo'                    => { name => 'sudo' },
+        'command:s'               => { name => 'command', default => 'bpdbjobs' },
+        'command-path:s'          => { name => 'command_path' },
+        'command-options:s'       => { name => 'command_options', default => '-report -most_columns' },
+        'exec-only'               => { name => 'exec_only' },
+        'filter-policy-name:s'    => { name => 'filter_policy_name' },
+        'filter-type:s'           => { name => 'filter_type' },
+        'filter-end-time:s'       => { name => 'filter_end_time', default => 86400 },
+        'filter-start-time:s'     => { name => 'filter_start_time' },
+        'ok-status:s'             => { name => 'ok_status', default => '%{status} == 0' },
+        'warning-status:s'        => { name => 'warning_status', default => '%{status} == 1' },
+        'critical-status:s'       => { name => 'critical_status', default => '%{status} > 1' },
+        'warning-long:s'          => { name => 'warning_long' },
+        'critical-long:s'         => { name => 'critical_long' },
+        'warning-frozen:s'        => { name => 'warning_frozen' },
+        'critical-frozen:s'       => { name => 'critical_frozen', default => '%{state} =~ /active|queue/ && %{kb} == 0' },
     });
     
     return $self;
@@ -311,7 +310,7 @@ sub manage_selection {
             ($values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[8], $values[10], $values[14], $values[33]);
         
         $job_pname = defined($job_pname) && $job_pname ne '' ? $job_pname : 'unknown';
-        $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : undef;
+        $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : -1;
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
             $job_pname !~ /$self->{option_results}->{filter_policy_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter.", debug => 1);

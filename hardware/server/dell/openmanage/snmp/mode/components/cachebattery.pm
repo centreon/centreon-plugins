@@ -72,9 +72,9 @@ my $mapping4 = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{batteryState}->{oid} }, { oid => $mapping2->{batteryComponentStatus}->{oid} },
+    push @{$self->{request}}, { oid => $mapping->{batteryState}->{oid} }, { oid => $mapping2->{batteryComponentStatus}->{oid} },
         { oid => $mapping3->{batteryPredictedCapicity}->{oid} }, { oid => $mapping4->{batteryLearnState}->{oid} };
 }
 
@@ -83,7 +83,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking cache batteries");
     $self->{components}->{cachebattery} = {name => 'cache batteries', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'cachebattery'));
+    return if ($self->check_filter(section => 'cachebattery'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping2->{batteryComponentStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping2->{batteryComponentStatus}->{oid}\.(.*)$/);
@@ -95,7 +95,7 @@ sub check {
         $result4->{batteryLearnState} = defined($result4->{batteryLearnState}) ? $result4->{batteryLearnState} : '-';
         $result3->{batteryPredictedCapicity} = defined($result3->{batteryPredictedCapicity}) ? $result3->{batteryPredictedCapicity} : '-';
         
-        next if ($self->check_exclude(section => 'cachebattery', instance => $instance));
+        next if ($self->check_filter(section => 'cachebattery', instance => $instance));
         
         $self->{components}->{cachebattery}->{total}++;
 
@@ -103,7 +103,7 @@ sub check {
                                     $instance, $result2->{batteryComponentStatus}, $instance, 
                                     $result->{batteryState}, $result4->{batteryLearnState}, $result3->{batteryPredictedCapicity} 
                                     ));
-        my $exit = $self->get_severity(section => 'cachebattery', value => $result2->{batteryComponentStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'cachebattery', value => $result2->{batteryComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Cache battery '%s' status is '%s'",

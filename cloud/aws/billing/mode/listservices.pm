@@ -30,10 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -48,8 +45,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{dimensions} = $options{custom}->cloudwatch_list_metrics(region => $self->{aws_region},
-                                                                    namespace => 'AWS/Billing');
+    $self->{dimensions} = $options{custom}->cloudwatch_list_metrics(
+        region => $self->{aws_region},
+        namespace => 'AWS/Billing'
+    );
 }
 
 sub run {

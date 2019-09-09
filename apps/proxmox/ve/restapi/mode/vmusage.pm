@@ -242,18 +242,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "vm-id:s"                 => { name => 'vm_id' },
-                                  "vm-name:s"               => { name => 'vm_name' },
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "use-name"                => { name => 'use_name' },
-                                  "warning-vm-status:s"     => { name => 'warning_vm_status', default => '' },
-                                  "critical-vm-status:s"    => { name => 'critical_vm_status', default => '' },
-                                });
-   $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
-   return $self;
+    $options{options}->add_options(arguments => {
+        'vm-id:s'                 => { name => 'vm_id' },
+        'vm-name:s'               => { name => 'vm_name' },
+        'filter-name:s'           => { name => 'filter_name' },
+        'use-name'                => { name => 'use_name' },
+        'warning-vm-status:s'     => { name => 'warning_vm_status', default => '' },
+        'critical-vm-status:s'    => { name => 'critical_vm_status', default => '' },
+    });
+    $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
+    return $self;
 }
 
 sub check_options {

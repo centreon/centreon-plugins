@@ -74,45 +74,54 @@ sub check {
 
     my $mapping = {
         jnxFruState => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.8', map => \%map_fru_states },
-        jnxFruTemp => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.9' },
         jnxFruOfflineReason => { oid => '.1.3.6.1.4.1.2636.3.1.15.1.10', map => \%map_fru_offline },
     };
 
-    my $results = $self->{snmp}->get_table(oid => $self->{oids_fru}->{jnxFruEntry}, start => $mapping->{jnxFruState}->{oid}, end => $mapping->{jnxFruOfflineReason}->{oid});
+    my $results = $self->{snmp}->get_table(
+        oid => $self->{oids_fru}->{jnxFruEntry},
+        start => $mapping->{jnxFruState}->{oid},
+        end => $mapping->{jnxFruOfflineReason}->{oid}
+    );
 
-    foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruName})) {
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
-        my $name = $self->get_cache(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruName}, instance => $instance);
+    foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_fru}->{jnxFruEntry},
+        oid_name => $self->{oids_fru}->{jnxFruName})) {
+        my $result = $self->{snmp}->map_instance(
+            mapping => $mapping,
+            results => $results,
+            instance => $instance
+        );
+        my $name = $self->get_cache(
+            oid_entry => $self->{oids_fru}->{jnxFruEntry},
+            oid_name => $self->{oids_fru}->{jnxFruName},
+            instance => $instance
+        );
 
         next if ($self->check_filter(section => 'fru', instance => $instance, name => $name));
         next if ($result->{jnxFruState} =~ /empty/i && 
                  $self->absent_problem(section => 'fru', instance => $instance, name => $name));
         $self->{components}->{fru}->{total}++;
 
-        my $type = $self->get_cache(oid_entry => $self->{oids_fru}->{jnxFruEntry}, oid_name => $self->{oids_fru}->{jnxFruType}, instance => $instance);
-        $self->{output}->output_add(long_msg => sprintf("fru '%s' state is %s [instance: %s, type: %s, offline reason: %s]", 
-                                    $name, $result->{jnxFruState}, 
-                                    $instance, $map_fru_type{$type}, $result->{jnxFruOfflineReason}));
-        my $exit = $self->get_severity(section => 'fru', value => $result->{jnxFruState});
+        my $type = $self->get_cache(
+            oid_entry => $self->{oids_fru}->{jnxFruEntry},
+            oid_name => $self->{oids_fru}->{jnxFruType},
+            instance => $instance
+        );
+        $self->{output}->output_add(
+            long_msg => sprintf("fru '%s' state is %s [instance: %s, type: %s, offline reason: %s]", 
+                $name,
+                $result->{jnxFruState}, 
+                $instance,
+                $map_fru_type{$type},
+                $result->{jnxFruOfflineReason})
+        );
+        my $exit = $self->get_severity(section => 'fru', instance => $instance, value => $result->{jnxFruState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fru '%s' state is %s [offline reason: %s]", $name, $result->{jnxFruState},
-                                                             $result->{jnxFruOfflineReason}));
-        }
-        
-        if (defined($result->{jnxFruTemp}) && $result->{jnxFruTemp} != 0) {
-            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fru-temperature', instance => $instance, name => $name, value => $result->{jnxFruTemp});
-            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Fru '%s' temperature is %s degree centigrade", $name, $result->{jnxFruTemp}));
-            }
-            $self->{output}->perfdata_add(
-                label => "temp", unit => 'C',
-                nlabel => 'hardware.temperature.celsius',
-                instances => $name,
-                value => $result->{jnxFruTemp},
-                warning => $warn,
-                critical => $crit
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fru '%s' state is %s [offline reason: %s]",
+                    $name,
+                    $result->{jnxFruState},
+                    $result->{jnxFruOfflineReason})
             );
         }
     }

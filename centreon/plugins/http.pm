@@ -30,10 +30,10 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            "http-peer-addr:s"  => { name => 'http_peer_addr' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "proxypac:s"        => { name => 'proxypac' },
-            "http-backend:s"    => { name => 'http_backend', default => 'lwp' },
+            'http-peer-addr:s'  => { name => 'http_peer_addr' },
+            'proxyurl:s'        => { name => 'proxyurl' },
+            'proxypac:s'        => { name => 'proxypac' },
+            'http-backend:s'    => { name => 'http_backend', default => 'lwp' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
     }
@@ -85,6 +85,13 @@ sub check_options {
     if ($self->{http_backend} !~ /^\s*lwp|curl\s*$/i) {
         $self->{output}->add_option_msg(short_msg => "Unsupported http backend specified '" . $self->{http_backend} . "'.");
         $self->{output}->option_exit();
+    }
+
+    if (defined($options{request}->{curl_backend_options}) && 
+        $self->{http_backend} eq 'curl') {
+        foreach (keys %{$options{request}->{curl_backend_options}}) {
+            $options{request}->{$_} = $options{request}->{curl_backend_options}->{$_};
+        }
     }
 
     if (($options{request}->{proto} ne 'http') && ($options{request}->{proto} ne 'https')) {

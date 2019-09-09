@@ -32,24 +32,25 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'connection-time'              => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'databases-size'               => 'database::mysql::mode::databasessize',
-                         'innodb-bufferpool-hitrate'    => 'database::mysql::mode::innodbbufferpoolhitrate',
-                         'long-queries'                 => 'database::mysql::mode::longqueries',
-                         'myisam-keycache-hitrate'      => 'database::mysql::mode::myisamkeycachehitrate',
-                         'open-files'                   => 'database::mysql::mode::openfiles',
-                         'qcache-hitrate'               => 'database::mysql::mode::qcachehitrate',
-                         'queries'                      => 'database::mysql::mode::queries',
-                         'replication-master-slave'     => 'database::mysql::mode::replicationmasterslave',
-                         'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
-                         'slow-queries'                 => 'database::mysql::mode::slowqueries',
-                         'sql'                          => 'centreon::common::protocols::sql::mode::sql',
-                         'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
-                         'tables-size'                  => 'database::mysql::mode::tablessize',
-                         'threads-connected'            => 'database::mysql::mode::threadsconnected',
-                         'uptime'                       => 'database::mysql::mode::uptime',
-                        );
-                         
+        'connection-time'              => 'centreon::common::protocols::sql::mode::connectiontime',
+        'databases-size'               => 'database::mysql::mode::databasessize',
+        'innodb-bufferpool-hitrate'    => 'database::mysql::mode::innodbbufferpoolhitrate',
+        'long-queries'                 => 'database::mysql::mode::longqueries',
+        'myisam-keycache-hitrate'      => 'database::mysql::mode::myisamkeycachehitrate',
+        'open-files'                   => 'database::mysql::mode::openfiles',
+        'qcache-hitrate'               => 'database::mysql::mode::qcachehitrate',
+        'queries'                      => 'database::mysql::mode::queries',
+        'replication-master-slave'     => 'database::mysql::mode::replicationmasterslave',
+        'replication-master-master'    => 'database::mysql::mode::replicationmastermaster',
+        'slow-queries'                 => 'database::mysql::mode::slowqueries',
+        'sql'                          => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
+        'tables-size'                  => 'database::mysql::mode::tablessize',
+        'threads-connected'            => 'database::mysql::mode::threadsconnected',
+        'uptime'                       => 'database::mysql::mode::uptime',
+    );
+
+    $self->{sql_modes}{dbi} = 'database::mysql::dbi';
     $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
 
     return $self;
@@ -59,12 +60,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'host:s@'  => { name => 'db_host' },
-                                                'port:s@'  => { name => 'db_port' },
-                                                'socket:s@'  => { name => 'db_socket' },
-                                                }
-                                  );
+        arguments => {
+            'host:s@'  => { name => 'db_host' },
+            'port:s@'  => { name => 'db_port' },
+            'socket:s@'  => { name => 'db_socket' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();

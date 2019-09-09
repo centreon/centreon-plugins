@@ -31,24 +31,24 @@ my $mapping = {
 my $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry = '.1.3.6.1.4.1.674.10892.2.4.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry };
+    push @{$self->{request}}, { oid => $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry };
 }
 
 sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking chassis");
-    $self->{components}->{chassis} = {name => 'chassis', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'chassis'));
+    $self->{components}->{chassis} = { name => 'chassis', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'chassis'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry}})) {
         next if ($oid !~ /^$mapping->{drsWattsReading}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'chassis', instance => $instance));
+        next if ($self->check_filter(section => 'chassis', instance => $instance));
         $self->{components}->{chassis}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Chassis '%s': power %s W, current %s A [instance: %s].",

@@ -25,6 +25,44 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my %metrics_mapping = (
+    'HTTPCode_Backend_2XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 2XXs',
+        'label' => 'httpcode-backend-2xx',
+        'nlabel' => 'elb.httpcode.backend.2xx.count',
+    },
+    'HTTPCode_Backend_3XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 3XXs',
+        'label' => 'httpcode-backend-3xx',
+        'nlabel' => 'elb.httpcode.backend.3xx.count',
+    },
+    'HTTPCode_Backend_4XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 4XXs',
+        'label' => 'httpcode-backend-4xx',
+        'nlabel' => 'elb.httpcode.backend.4xx.count',
+    },
+    'HTTPCode_Backend_5XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 5XXs',
+        'label' => 'httpcode-backend-5xx',
+        'nlabel' => 'elb.httpcode.backend.5xx.count',
+    },
+    'HTTPCode_ELB_4XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'ELB HTTP 4XXs',
+        'label' => 'httpcode-elb-4xx',
+        'nlabel' => 'elb.httpcode.elb.4xx.count',
+    },
+    'HTTPCode_ELB_5XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'ELB HTTP 5XXs',
+        'label' => 'httpcode-elb-5xx',
+        'nlabel' => 'elb.httpcode.elb.5xx.count',
+    },
+    'BackendConnectionErrors' => {
+        'output' => 'Backend Connection Errors',
+        'label' => 'backendconnectionerrors',
+        'nlabel' => 'elb.backendconnectionerrors.count',
+    },
+);
+
 my %map_type = (
     "loadbalancer"      => "LoadBalancerName",
     "availabilityzone"  => "AvailabilityZone",
@@ -38,58 +76,66 @@ sub prefix_metric_output {
         $availability_zone = "[$options{instance_value}->{availability_zone}] ";
     }
     
-    return ucfirst($options{instance_value}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone . $options{instance_value}->{stat} . " ";
+    return ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone;
+}
+
+sub prefix_statistics_output {
+    my ($self, %options) = @_;
+    
+    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    my $availability_zone = "";
+    if (defined($options{instance_value}->{availability_zone}) && $options{instance_value}->{availability_zone} ne '') {
+        $availability_zone = "[$options{instance_value}->{availability_zone}] ";
+    }
+
+    return "Checking " . ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+        
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All http codes metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+          message_multiple => 'All elb metrics are ok', indent_long_output => '    ',
+            group => [
+                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
-    foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
-        foreach my $metric ('HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCode_Backend_4XX', 'HTTPCode_Backend_5XX', 'HTTPCode_ELB_4XX', 'HTTPCode_ELB_5XX') {
-            next if ($statistic =~ /minimum|maximum|average/); # Minimum, Maximum, and Average all return 1.
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
-                                output_template => $metric . ': %d',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%d', label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
-        foreach my $metric ('BackendConnectionErrors') {
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
-                                output_template => $metric . ': %d',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%d', label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
+    foreach my $metric (keys %metrics_mapping) {
+        my $entry = {
+            label => $metrics_mapping{$metric}->{label},
+            nlabel => $metrics_mapping{$metric}->{nlabel},
+            set => {
+                key_values => [ { name => $metric }, { name => 'display' } ],
+                output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
+                perfdatas => [
+                    { value => $metric . '_absolute', template => '%.2f', label_extra_instance => 1 }
+                ],
+            }
+        };
+        push @{$self->{maps_counters}->{statistics}}, $entry;
     }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "type:s"                => { name => 'type' },
-                                    "name:s@"               => { name => 'name' },
-                                    "availability-zone:s"   => { name => 'availability_zone' },
-                                    "filter-metric:s"       => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "type:s"                => { name => 'type' },
+        "name:s@"               => { name => 'name' },
+        "availability-zone:s"   => { name => 'availability_zone' },
+        "filter-metric:s"       => { name => 'filter_metric' },
+    });
     
     return $self;
 }
@@ -137,8 +183,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCode_Backend_4XX', 'HTTPCode_Backend_5XX',
-        'HTTPCode_ELB_4XX', 'HTTPCode_ELB_5XX', 'BackendConnectionErrors') {
+    foreach my $metric (keys %metrics_mapping) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
@@ -169,16 +214,15 @@ sub manage_selection {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) && !defined($self->{option_results}->{zeroed}));
 
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{display} = $instance;
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{type} = $self->{option_results}->{type};
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{stat} = lc($statistic);
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{availability_zone} = $self->{option_results}->{availability_zone};
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{$metric . "_" . lc($statistic)} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{display} = $instance;
+                $self->{metrics}->{$instance}->{availability_zone} = $self->{option_results}->{availability_zone};
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
-
-    if (scalar(keys %{$self->{metric}}) <= 0) {
+    
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
     }
@@ -194,9 +238,9 @@ Check ELB http codes.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::elb::plugin --custommode=paws --mode=http-codes --region='eu-west-1'
---type='loadbalancer' --name='elb-www-fr' --critical-httpcode-backend-4xx-sum='10' --verbose
+--type='loadbalancer' --name='elb-www-fr' --critical-httpcode-backend-4xx='10' --verbose
 
-See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/elb-metricscollected.html' for more informations.
+See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
 
 Default statistic: 'sum' / Most usefull statistics: 'sum'.
 
@@ -220,19 +264,17 @@ Filter metrics (Can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCod
 'HTTPCode_Backend_5XX', 'HTTPCode_ELB_4XX', 'HTTPCode_ELB_5XX', 'BackendConnectionErrors') 
 (Can be a regexp).
 
-=item B<--warning-$metric$-$statistic$>
+=item B<--warning-*>
 
-Thresholds warning ($metric$ can be: 'httpcode_backend_2xx', 'httpcode_backend_3xx',
-'httpcode_backend_4xx', 'httpcode_backend_5xx', 'httpcode_elb_4xx',
-'httpcode_elb_5xx', 'backendconnectionerrors',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds warning (Can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
+'httpcode-backend-4xx', 'httpcode-backend-5xx', 'httpcode-elb-4xx',
+'httpcode-elb-5xx', 'backendconnectionerrors')
 
-=item B<--critical-$metric$-$statistic$>
+=item B<--critical-*>
 
-Thresholds critical ($metric$ can be: 'httpcode_backend_2xx', 'httpcode_backend_3xx',
-'httpcode_backend_4xx', 'httpcode_backend_5xx', 'httpcode_elb_4xx',
-'httpcode_elb_5xx', 'backendconnectionerrors',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds critical (Can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
+'httpcode-backend-4xx', 'httpcode-backend-5xx', 'httpcode-elb-4xx',
+'httpcode-elb-5xx', 'backendconnectionerrors')
 
 =back
 

@@ -65,13 +65,13 @@ sub custom_status_output {
     if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
         $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
     }
-    
+
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{opstatus} = $options{new_datas}->{$self->{instance} . '_opstatus'};
     $self->{result_values}->{admstatus} = $options{new_datas}->{$self->{instance} . '_admstatus'};
     $self->{result_values}->{duplexstatus} = $options{new_datas}->{$self->{instance} . '_duplexstatus'};
@@ -776,7 +776,6 @@ sub new {
     $self->{no_interfaceid_options} = defined($options{no_interfaceid_options}) && $options{no_interfaceid_options} =~ /^[01]$/ ? 
         $options{no_interfaceid_options} : 0;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'add-global'              => { name => 'add_global' },
         'add-status'              => { name => 'add_status' },

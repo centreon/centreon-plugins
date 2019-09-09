@@ -121,7 +121,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
         "display-entity-name"     => { name => 'display_entity_name' },

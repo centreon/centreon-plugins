@@ -74,9 +74,9 @@ my $oid_powerSupplyTable = '.1.3.6.1.4.1.674.10892.1.600.12';
 my $oid_powerSupplyTableEntry = '.1.3.6.1.4.1.674.10892.1.600.12.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_powerSupplyTable, start => $mapping->{powerSupplyStatus}->{oid}, end => $mapping->{powerSupplyLocationName}->{oid} },
+    push @{$self->{request}}, { oid => $oid_powerSupplyTable, start => $mapping->{powerSupplyStatus}->{oid}, end => $mapping->{powerSupplyLocationName}->{oid} },
         { oid => $oid_powerSupplyTableEntry, start => $mapping2->{powerSupplySensorState}->{oid}, end => $mapping2->{powerSupplyConfigurationErrorType}->{oid} };
 }
 
@@ -85,7 +85,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'psu'));
+    return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_powerSupplyTable}})) {
         next if ($oid !~ /^$mapping->{powerSupplyStatus}->{oid}\.(.*)$/);
@@ -94,7 +94,7 @@ sub check {
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_powerSupplyTableEntry}, instance => $instance);
         $result2->{powerSupplyConfigurationErrorType} = defined($result2->{powerSupplyConfigurationErrorType}) ? $result2->{powerSupplyConfigurationErrorType} : '-';
         
-        next if ($self->check_exclude(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance));
         
         $self->{components}->{psu}->{total}++;
 
@@ -104,7 +104,7 @@ sub check {
                                     defined($result->{powerSupplyOutputWatts}) ? $result->{powerSupplyOutputWatts} : '-',
                                     $result2->{powerSupplySensorState}, $result2->{powerSupplyConfigurationErrorType}
                                     ));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{powerSupplyStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{powerSupplyStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Power supply '%s' status is '%s'",

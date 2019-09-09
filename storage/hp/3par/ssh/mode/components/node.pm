@@ -31,7 +31,7 @@ sub load {
     #1 OK      OK              
     #2 OK      OK              
     #3 OK      OK 
-    push @{$self->{commands}}, 'echo "===shownode===', 'shownode -state';
+    push @{$self->{commands}}, 'echo "===shownode==="', 'shownode -state';
 }
 
 sub check {

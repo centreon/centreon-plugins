@@ -75,16 +75,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "filter-msg:s"        => { name => 'filter_msg' },
-        "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /minor|warning/i' },
-        "critical-status:s"   => { name => 'critical_status', default => '%{severity} =~ /critical|major/i' },
-        "memory"              => { name => 'memory' },
+        'filter-msg:s'        => { name => 'filter_msg' },
+        'warning-status:s'    => { name => 'warning_status', default => '%{severity} =~ /minor|warning/i' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{severity} =~ /critical|major/i' },
+        'memory'              => { name => 'memory' },
     });
-    
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Date::Parse',
-                                           error_msg => "Cannot load module 'Date::Parse'.");
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -132,8 +129,8 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-	my $create_time = $result->{radwllMilOduAgnLastEventsTimeT};
-        $result->{radwllMilOduAgnLastEventsTimeT} = strftime("%d/%m/%Y %H:%M:%S",localtime($result->{radwllMilOduAgnLastEventsTimeT}));
+        my $create_time = $result->{radwllMilOduAgnLastEventsTimeT};
+        $result->{radwllMilOduAgnLastEventsTimeT} = strftime("%d/%m/%Y %H:%M:%S", localtime($result->{radwllMilOduAgnLastEventsTimeT}));
         if (!defined($create_time)) {
             $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
                                                    short_msg => "Can't get date '" . $result->{radwllMilOduAgnLastEventsTimeT} . "'");

@@ -28,6 +28,8 @@ use centreon::plugins::http;
 use URI::Encode;
 use JSON::XS;
 
+my %errors_num = (0 => 'OK', 1 => 'WARNING', 2 => 'CRITICAL', 3 => 'UNKNOWN');
+
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
@@ -52,6 +54,7 @@ sub new {
             "username:s"            => { name => 'username' },
             "password:s"            => { name => 'password' },
             "legacy-password:s"     => { name => 'legacy_password' },
+            "new-api"               => { name => 'new_api' },
             "timeout:s"             => { name => 'timeout' },
         });
     }
@@ -96,8 +99,6 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{legacy_password} = (defined($self->{option_results}->{legacy_password})) ? $self->{option_results}->{legacy_password} : undef;
-    $self->{credentials} = (defined($self->{option_results}->{credentials})) ? 1 : undef;
-    $self->{basic} = (defined($self->{option_results}->{basic})) ? 1 : undef;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -117,6 +118,13 @@ sub build_options_for_httplib {
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
     $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 300';
+
+    if (defined($self->{username})) {
+        $self->{option_results}->{username} = $self->{username};
+        $self->{option_results}->{password} = $self->{password};
+        $self->{option_results}->{credentials} = 1;
+        $self->{option_results}->{basic} = 1;
+    }
 }
 
 sub settings {
@@ -129,79 +137,50 @@ sub settings {
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-# Two kind of outputs.
-# 1-
-# {
-# 	"header": {
-# 		"source_id": ""
-# 	},
-# 	"payload": [{
-# 		"command": "check_centreon_plugins",
-# 		"lines": [{
-# 			"message": "OK: Reboot Pending : False | 'value1'=10;;;; 'value2'=10;;;;\r\nlong1\r\nlong2"
-# 		}],
-# 		"result": "OK"
-# 	}]
-# }
-# 2- Can be also "int_value".
-# {
-#   "header": {
-# 	    "source_id": ""
-# 	},
-# 	"payload": [{
-# 		"command": "check_drivesize",
-# 		"lines": [{
-# 			"message": "OK All 1 drive(s) are ok",
-# 			"perf": [{
-# 					"alias": "C",
-# 					"float_value": {
-# 						"critical": 44.690621566027403,
-# 						"maximum": 49.656246185302734,
-# 						"minimum": 0.00000000000000000,
-# 						"unit": "GB",
-# 						"value": 21.684593200683594,
-# 						"warning": 39.724996947683394
-# 					}
-# 				},
-# 				{
-# 					"alias": "C",
-# 					"float_value": {
-# 						"critical": 90.000000000000000,
-# 						"maximum": 100.00000000000000,
-# 						"minimum": 0.00000000000000000,
-# 						"unit": "%",
-# 						"value": 44.000000000000000,
-# 						"warning": 80.000000000000000
-# 					}
-# 				}
-# 			]
-# 		}],
-# 		"result": "OK"
-# 	}]
-# }
-
 sub output_perf {
     my ($self, %options) = @_;
 
+    my $result = 'UNKNOWN';
+    $result = $errors_num{$options{result}} if ($options{result} =~ /[0-3]/);
+    $result = $options{result}if ($options{result} =~ /\w+/);
+
     my %result = (
-        code => $options{result},
+        code => $result,
         message => $options{data}->{message}
     );
 
-    foreach (@{$options{data}->{perf}}) {
-        my $perf = defined($_->{float_value}) ? $_->{float_value} : $_->{int_value};
-        my $printf_format = '%d';
-        $printf_format = '%.3f' if (defined($_->{float_value}));
-        
-        push @{$result{perf}}, {
-            label => $_->{alias},
-            unit => $perf->{unit},
-            value => sprintf($printf_format, $perf->{value}),
-            warning => defined($perf->{warning}) ? sprintf($printf_format, $perf->{warning}) : undef,
-            critical => defined($perf->{critical}) ? sprintf($printf_format, $perf->{critical}) : undef,
-            min => defined($perf->{minimum}) ? sprintf($printf_format, $perf->{minimum}) : undef,
-            max => defined($perf->{maximum}) ? sprintf($printf_format, $perf->{maximum}) : undef,
-        };
+    if (defined($self->{option_results}->{new_api})) {
+        foreach (keys %{$options{data}->{perf}}) {
+            my $printf_format = '%d';
+            ($options{data}->{perf}->{$_}->{value} =~ /\.(\d\d\d)/);
+            $printf_format = '%.3f' if ($options{data}->{perf}->{$_}->{value} =~ /\.(\d\d\d)/ && $1 !~ /000/);
+            
+            push @{$result{perf}}, {
+                label => $_,
+                unit => $options{data}->{perf}->{$_}->{unit},
+                value => sprintf($printf_format, $options{data}->{perf}->{$_}->{value}),
+                warning => defined($options{data}->{perf}->{$_}->{warning}) ? sprintf($printf_format, $options{data}->{perf}->{$_}->{warning}) : undef,
+                critical => defined($options{data}->{perf}->{$_}->{critical}) ? sprintf($printf_format, $options{data}->{perf}->{$_}->{critical}) : undef,
+                min => defined($options{data}->{perf}->{$_}->{minimum}) ? sprintf($printf_format, $options{data}->{perf}->{$_}->{minimum}) : undef,
+                max => defined($options{data}->{perf}->{$_}->{maximum}) ? sprintf($printf_format, $options{data}->{perf}->{$_}->{maximum}) : undef,
+            };
+        }
+    } else {
+        foreach (@{$options{data}->{perf}}) {
+            my $perf = defined($_->{float_value}) ? $_->{float_value} : $_->{int_value};
+            my $printf_format = '%d';
+            $printf_format = '%.3f' if (defined($_->{float_value}));
+            
+            push @{$result{perf}}, {
+                label => $_->{alias},
+                unit => $perf->{unit},
+                value => sprintf($printf_format, $perf->{value}),
+                warning => defined($perf->{warning}) ? sprintf($printf_format, $perf->{warning}) : undef,
+                critical => defined($perf->{critical}) ? sprintf($printf_format, $perf->{critical}) : undef,
+                min => defined($perf->{minimum}) ? sprintf($printf_format, $perf->{minimum}) : undef,
+                max => defined($perf->{maximum}) ? sprintf($printf_format, $perf->{maximum}) : undef,
+            };
+        }
     }
     return \%result;
 }
@@ -230,7 +209,12 @@ sub format_result {
         $self->{output}->option_exit();
     }
 
-    my $entry = $decoded->{payload}->[0];
+    my $entry;
+    if (defined($self->{option_results}->{new_api})) {
+        $entry = $decoded;
+    } else {
+        $entry = $decoded->{payload}->[0];
+    }
     $entry->{lines}->[0]->{message} =~ s/\r//msg;
     if (defined($entry->{lines}->[0]->{perf})) {
         return $self->output_perf(result => $entry->{result}, data => $entry->{lines}->[0]);
@@ -244,6 +228,7 @@ sub request {
 
     $self->settings();
     
+    my $url = '';
     my $uri = URI::Encode->new({encode_reserved => 1});
     my ($encoded_args, $append) = ('', '');
     if (defined($options{arg})) {
@@ -253,7 +238,12 @@ sub request {
         }
     }
     
-    my ($content) = $self->{http}->request(url_path => '/query/' . $options{command} . '?' . $encoded_args);
+    if (defined($self->{option_results}->{new_api})) {
+        $url = '/api/v1/queries/' . $options{command} . '/commands/execute?' . $encoded_args
+    } else {
+        $url = '/query/' . $options{command} . '?' . $encoded_args
+    }
+    my ($content) = $self->{http}->request(url_path => $url);
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
@@ -291,29 +281,21 @@ Port used (Default: 8443)
 
 Specify https if needed (Default: 'https')
 
-=item B<--credentials>
-
-Specify this option if you access webpage with authentication
-
 =item B<--username>
 
-Specify username for authentication (Mandatory if --credentials is specified)
+Specify username for authentication (If basic authentication)
 
 =item B<--password>
 
-Specify password for authentication (Mandatory if --credentials is specified)
-
-=item B<--basic>
-
-Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
-
-Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
-
-(Use with --credentials)
+Specify password for authentication (If basic authentication)
 
 =item B<--legacy-password>
 
 Specify password for old authentication system.
+
+=item B<--new-api>
+
+Use new RestAPI (> 5.2.33).
 
 =item B<--timeout>
 

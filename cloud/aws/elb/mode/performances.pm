@@ -25,6 +25,19 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my %metrics_mapping = (
+    'RequestCount' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'Requests',
+        'label' => 'requestcount',
+        'nlabel' => 'elb.requestcount.count',
+    },
+    'Latency' => { # Minimum is typically not useful
+        'output' => 'Latency',
+        'label' => 'latency',
+        'nlabel' => 'elb.latency.seconds',
+    },
+);
+
 my %map_type = (
     "loadbalancer"      => "LoadBalancerName",
     "availabilityzone"  => "AvailabilityZone",
@@ -38,60 +51,67 @@ sub prefix_metric_output {
         $availability_zone = "[$options{instance_value}->{availability_zone}] ";
     }
     
-    return ucfirst($options{instance_value}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone . $options{instance_value}->{stat} . " ";
+    return ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone;
+}
+
+sub prefix_statistics_output {
+    my ($self, %options) = @_;
+    
+    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    my $availability_zone = "";
+    if (defined($options{instance_value}->{availability_zone}) && $options{instance_value}->{availability_zone} ne '') {
+        $availability_zone = "[$options{instance_value}->{availability_zone}] ";
+    }
+
+    return "Checking " . ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+        
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All performances metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+          message_multiple => 'All elb metrics are ok', indent_long_output => '    ',
+            group => [
+                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
-    foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
-        foreach my $metric ('RequestCount') {
-            next if ($statistic =~ /minimum|maximum|average/); # Minimum, Maximum, and Average all return 1.
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
-                                output_template => $metric . ': %d requests',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%d', unit => 'requests', label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
-        foreach my $metric ('Latency') {
-            next if ($statistic =~ /minimum|sum/); # Minimum is typically not useful
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
-                                output_template => $metric . ': %.2f sec',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
+    foreach my $metric (keys %metrics_mapping) {
+        my $entry = {
+            label => $metrics_mapping{$metric}->{label},
+            nlabel => $metrics_mapping{$metric}->{nlabel},
+            set => {
+                key_values => [ { name => $metric }, { name => 'display' } ],
+                output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
+                perfdatas => [
+                    { value => $metric . '_absolute', template => '%.2f', label_extra_instance => 1 }
+                ],
+            }
+        };
+        push @{$self->{maps_counters}->{statistics}}, $entry;
     }
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "type:s"                => { name => 'type' },
-                                    "name:s@"               => { name => 'name' },
-                                    "availability-zone:s"   => { name => 'availability_zone' },
-                                    "filter-metric:s"       => { name => 'filter_metric' },
-                                    "statistic:s@"          => { name => 'statistic' },
-                                });
+    $options{options}->add_options(arguments => {
+        "type:s"                => { name => 'type' },
+        "name:s@"               => { name => 'name' },
+        "availability-zone:s"   => { name => 'availability_zone' },
+        "filter-metric:s"       => { name => 'filter_metric' },
+        "statistic:s@"          => { name => 'statistic' },
+    });
     
     return $self;
 }
@@ -138,7 +158,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('RequestCount', 'Latency') {
+    foreach my $metric (keys %metrics_mapping) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
@@ -169,16 +189,15 @@ sub manage_selection {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) && !defined($self->{option_results}->{zeroed}));
 
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{display} = $instance;
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{type} = $self->{option_results}->{type};
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{stat} = lc($statistic);
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{availability_zone} = $self->{option_results}->{availability_zone};
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{$metric . "_" . lc($statistic)} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{display} = $instance;
+                $self->{metrics}->{$instance}->{availability_zone} = $self->{option_results}->{availability_zone};
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
 
-    if (scalar(keys %{$self->{metric}}) <= 0) {
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
     }
@@ -194,9 +213,9 @@ Check ELB performances.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::elb::plugin --custommode=paws --mode=performances --region='eu-west-1'
---type='loadbalancer' --name='elb-www-fr' --critical-requestcount-sum='10' --verbose
+--type='loadbalancer' --name='elb-www-fr' --critical-requestcount='10' --verbose
 
-See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/elb-metricscollected.html' for more informations.
+See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
 
 Default statistic: 'sum', 'average' / Most usefull statistics: RequestCount: 'sum', Latency: 'average'.
 
@@ -219,15 +238,13 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 Filter metrics (Can be: 'RequestCount', 'Latency') 
 (Can be a regexp).
 
-=item B<--warning-$metric$-$statistic$>
+=item B<--warning-*>
 
-Thresholds warning ($metric$ can be: 'requestcount', 'latency',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds warning (Can be: 'requestcount', 'latency').
 
-=item B<--critical-$metric$-$statistic$>
+=item B<--critical-*>
 
-Thresholds critical ($metric$ can be: 'requestcount', 'latency',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds critical (Can be: 'requestcount', 'latency').
 
 =back
 

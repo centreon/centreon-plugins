@@ -51,7 +51,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {});
 
     return $self;
@@ -84,11 +83,11 @@ Check database connection time.
 
 =over 8
 
-=item B<--warning-connection-time-milliseconds>
+=item B<--warning-connection-time>
 
 Threshold warning in milliseconds.
 
-=item B<--critical-connection-time-milliseconds>>
+=item B<--critical-connection-time>
 
 Threshold critical in milliseconds.
 

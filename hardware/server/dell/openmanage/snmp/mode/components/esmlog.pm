@@ -38,9 +38,9 @@ my $mapping = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{systemStateEventLogStatus}->{oid} };
+    push @{$self->{request}}, { oid => $mapping->{systemStateEventLogStatus}->{oid} };
 }
 
 sub check {
@@ -48,21 +48,21 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking ESM log filling");
     $self->{components}->{esmlog} = {name => 'ESM log', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'esmlog'));
+    return if ($self->check_filter(section => 'esmlog'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{systemStateEventLogStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping->{systemStateEventLogStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{systemStateEventLogStatus}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'globalstatus', instance => $instance));
+        next if ($self->check_filter(section => 'globalstatus', instance => $instance));
         
         $self->{components}->{esmlog}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("ESM '%s' log status is '%s' [instance: %s]",
                                     $instance, $result->{systemStateEventLogStatus}, $instance
                                     ));
-        my $exit = $self->get_severity(section => 'esmlog', value => $result->{systemStateEventLogStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'esmlog', value => $result->{systemStateEventLogStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("ESM '%s' log status is '%s'",

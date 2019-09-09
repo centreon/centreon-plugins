@@ -31,47 +31,46 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "oid:s"                   => { name => 'oid' },
-                                  "oid-leef:s"              => { name => 'oid_leef' },
-                                  "oid-table:s"             => { name => 'oid_table' },
-                                  "oid-instance:s"          => { name => 'oid_instance' },
-                                  "filter-table-value:s"    => { name => 'filter_table_value' },
-                                  "filter-table-instance:s" => { name => 'filter_table_instance' },
-                                  
-                                  "warning-regexp:s"        => { name => 'warning_regexp' },
-                                  "critical-regexp:s"       => { name => 'critical_regexp' },
-                                  "unknown-regexp:s"        => { name => 'unknown_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_iregexp' },
-                                  
-                                  "warning-absent:s@"       => { name => 'warning_absent' },
-                                  "critical-absent:s@"      => { name => 'critical_absent' },
-                                  "unknown-absent:s@"       => { name => 'unknown_absent' },
-                                  "warning-present:s@"      => { name => 'warning_present' },
-                                  "critical-present:s@"     => { name => 'critical_present' },
-                                  "unknown-present:s@"      => { name => 'unknown_present' },
-                                  
-                                  "format-ok:s"             => { name => 'format_ok', default => '%{filter_rows} value(s)' },
-                                  "format-warning:s"        => { name => 'format_warning', default => 'value(s): %{details_warning}' },
-                                  "format-critical:s"       => { name => 'format_critical', default => 'value(s): %{details_critical}' },
-                                  "format-unknown:s"        => { name => 'format_unknown', default => 'value(s): %{details_unknown}' },
-                                  
-                                  "format-details-ok:s"         => { name => 'format_details_ok', default => '%{value}' },
-                                  "format-details-warning:s"    => { name => 'format_details_warning', default => '%{value}' },
-                                  "format-details-critical:s"   => { name => 'format_details_critical', default => '%{value}' },
-                                  "format-details-unknown:s"    => { name => 'format_details_unknown', default => '%{value}' },
-                                  
-                                  "format-details-separator-ok:s"       => { name => 'format_details_separator_ok', default => ', ' },
-                                  "format-details-separator-warning:s"  => { name => 'format_details_separator_warning', default => ', ' },
-                                  "format-details-separator-critical:s" => { name => 'format_details_separator_critical', default => ', ' },
-                                  "format-details-separator-unknown:s"  => { name => 'format_details_separator_unknown', default => ', ' },
-                                  
-                                  "map-values:s"            => { name => 'map_values' },
-                                  "map-value-other:s"       => { name => 'map_value_other' },
-                                  "map-values-separator:s"  => { name => 'map_values_separator', default => ',' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'oid:s'                   => { name => 'oid' },
+        'oid-leef:s'              => { name => 'oid_leef' },
+        'oid-table:s'             => { name => 'oid_table' },
+        'oid-instance:s'          => { name => 'oid_instance' },
+        'filter-table-value:s'    => { name => 'filter_table_value' },
+        'filter-table-instance:s' => { name => 'filter_table_instance' },
+
+        'warning-regexp:s'        => { name => 'warning_regexp' },
+        'critical-regexp:s'       => { name => 'critical_regexp' },
+        'unknown-regexp:s'        => { name => 'unknown_regexp' },
+        'regexp-isensitive'       => { name => 'use_iregexp' },
+
+        'warning-absent:s@'       => { name => 'warning_absent' },
+        'critical-absent:s@'      => { name => 'critical_absent' },
+        'unknown-absent:s@'       => { name => 'unknown_absent' },
+        'warning-present:s@'      => { name => 'warning_present' },
+        'critical-present:s@'     => { name => 'critical_present' },
+        'unknown-present:s@'      => { name => 'unknown_present' },
+
+        'format-ok:s'             => { name => 'format_ok', default => '%{filter_rows} value(s)' },
+        'format-warning:s'        => { name => 'format_warning', default => 'value(s): %{details_warning}' },
+        'format-critical:s'       => { name => 'format_critical', default => 'value(s): %{details_critical}' },
+        'format-unknown:s'        => { name => 'format_unknown', default => 'value(s): %{details_unknown}' },
+
+        'format-details-ok:s'         => { name => 'format_details_ok', default => '%{value}' },
+        'format-details-warning:s'    => { name => 'format_details_warning', default => '%{value}' },
+        'format-details-critical:s'   => { name => 'format_details_critical', default => '%{value}' },
+        'format-details-unknown:s'    => { name => 'format_details_unknown', default => '%{value}' },
+
+        'format-details-separator-ok:s'       => { name => 'format_details_separator_ok', default => ', ' },
+        'format-details-separator-warning:s'  => { name => 'format_details_separator_warning', default => ', ' },
+        'format-details-separator-critical:s' => { name => 'format_details_separator_critical', default => ', ' },
+        'format-details-separator-unknown:s'  => { name => 'format_details_separator_unknown', default => ', ' },
+
+        'map-values:s'            => { name => 'map_values' },
+        'map-value-other:s'       => { name => 'map_value_other' },
+        'map-values-separator:s'  => { name => 'map_values_separator', default => ',' },
+        'convert-custom-values:s' => { name => 'convert_custom_values' },
+    });
 
     $self->{macros} = { ok => {}, warning => {}, critical => {}, unknown => {} };
     return $self;
@@ -84,7 +83,7 @@ sub check_options {
     $self->{option_results}->{oid_leef} = $self->{option_results}->{oid} if (defined($self->{option_results}->{oid}) && $self->{option_results}->{oid} ne '');
     if ((!defined($self->{option_results}->{oid_leef}) || $self->{option_results}->{oid_leef} eq '') &&
         (!defined($self->{option_results}->{oid_table}) || $self->{option_results}->{oid_table} eq '')) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify an OID with option --oid-leef or --oid-table.");
+       $self->{output}->add_option_msg(short_msg => 'Need to specify an OID with option --oid-leef or --oid-table.');
        $self->{output}->option_exit(); 
     }
     foreach (('oid_leef', 'oid_table', 'oid_instance')) {
@@ -111,7 +110,7 @@ sub get_instance_value {
     return $self->{results}->{$self->{option_results}->{oid_instance} . '.' . $options{instance}};
 }
 
-sub get_map_value {
+sub get_change_value {
     my ($self, %options) = @_;
     
     my $value = $options{value};
@@ -121,7 +120,11 @@ sub get_map_value {
     } elsif (defined($self->{option_results}->{map_value_other}) && $self->{option_results}->{map_value_other} ne '') {
         $value = $self->{option_results}->{map_value_other};
     }
-    
+
+    if (defined($self->{option_results}->{convert_custom_values}) && $self->{option_results}->{convert_custom_values} ne '') {
+        eval "\$value = $self->{option_results}->{convert_custom_values}";
+    }
+
     return $value;
 }
 
@@ -133,7 +136,7 @@ sub get_snmp_values {
         $self->{results} = $self->{snmp}->get_leef(oids => [$self->{option_results}->{oid_leef}], nothing_quit => 1);
         $self->{macros}->{rows} = 1;
         $self->{macros}->{filter_rows} = 1;
-        $self->{instances}->{0} = $self->get_map_value(value => $self->{results}->{$self->{option_results}->{oid_leef}});
+        $self->{instances}->{0} = $self->get_change_value(value => $self->{results}->{$self->{option_results}->{oid_leef}});
         return 0;
     }
     
@@ -146,8 +149,8 @@ sub get_snmp_values {
         
         $row++;
         my $instance = $self->get_instance_value(instance => $1);
-        my $value = $self->get_map_value(value => $self->{results}->{$_});
-        $self->{output}->output_add(long_msg => sprintf("[instance: %s][value: %s]", $_, $value), debug => 1);
+        my $value = $self->get_change_value(value => $self->{results}->{$_});
+        $self->{output}->output_add(long_msg => sprintf('[instance: %s][value: %s]', $_, $value), debug => 1);
         if (defined($self->{option_results}->{filter_table_value}) && $self->{option_results}->{filter_table_value} ne '' && 
             $value !~ /$self->{option_results}->{filter_table_value}/) {
             $self->{output}->output_add(long_msg => sprintf("skipping oid '%s' value '%s': not matching the filter", $_, $value), debug => 1);
@@ -377,6 +380,11 @@ Use to transform an integer value not defined in --map-values option.
 =item B<--map-values-separator>
 
 Separator uses between values (default: coma).
+
+=item B<--convert-custom-values>
+
+Custom code to convert values.
+Example to convert octetstring to macaddress: --convert-custom-values='join(":", unpack("(H2)*", $value))'
 
 =back
 

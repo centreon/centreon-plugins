@@ -43,11 +43,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "timeout:s"             => { name => 'timeout' },
+            "hostname:s"    => { name => 'hostname' },
+            "port:s"        => { name => 'port' },
+            "protocol:s"    => { name => 'protocol' },
+            "username:s"    => { name => 'username' },
+            "password:s"    => { name => 'password' },
+            "timeout:s"     => { name => 'timeout' },
+            "ssl-opt:s@"    => { name => 'ssl_opt' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DRIVER OPTIONS', once => 1);
@@ -85,9 +87,15 @@ sub check_options {
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'localhost';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 27017;
+    $self->{protocol} = (defined($self->{option_results}->{protocol})) ? $self->{option_results}->{protocol} : 'mongodb';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
+
+    foreach (@{$self->{option_results}->{ssl_opt}}) {
+        $_ =~ /(\w+)\s*=>\s*(\w+)/;
+        $self->{ssl_opts}->{$1} = $2;
+    }
 
     return 0;
 }
@@ -111,14 +119,15 @@ sub connect {
     my $encoded_username = $uri->encode($self->{username});
     my $encoded_password = $uri->encode($self->{password});
 
-    $uri = 'mongodb://';
+    $uri = $self->{protocol} . '://';
     $uri .= $encoded_username . ':' . $encoded_password . '@' if ($encoded_username ne '' && $encoded_password ne '');
     $uri .= $self->{hostname} if ($self->{hostname} ne '');
     $uri .= ':' . $self->{port} if ($self->{port} ne '');
 
     $self->{output}->output_add(long_msg => 'Connection URI: ' . $uri, debug => 1);
     
-    $self->{client} = MongoDB::MongoClient->new(host => $uri);
+    my $ssl = (defined($self->{ssl_opts})) ? $self->{ssl_opts} : 0;
+    $self->{client} = MongoDB::MongoClient->new(host => $uri, ssl => $ssl);
     $self->{client}->connect();
 
     eval {
@@ -201,6 +210,11 @@ MongoDB server hostname.
 
 Port used (Default: 27017)
 
+=item B<--protocol>
+
+Protocol used (Default: mongodb)
+DNS Seedlist Connection Format can be specified, i.e. 'mongodb+srv'
+
 =item B<--username>
 
 MongoDB username.
@@ -212,6 +226,10 @@ MongoDB password.
 =item B<--timeout>
 
 Set timeout in seconds (Default: 10).
+
+=item B<--ssl-opt>
+
+Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 

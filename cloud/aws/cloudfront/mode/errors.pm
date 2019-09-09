@@ -25,33 +25,68 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+my %metrics_mapping = (
+    'TotalErrorRate' => {
+        'output' => 'Total Error Rate',
+        'label' => 'errorrate-total',
+        'nlabel' => 'cloudfront.errorrate.total.percentage',
+    },
+    '4xxErrorRate' => {
+        'output' => '4xx Error Rate',
+        'label' => 'errorrate-4xx',
+        'nlabel' => 'cloudfront.errorrate.4xx.percentage',
+    },
+    '5xxErrorRate' => {
+        'output' => '5xx Error Rate',
+        'label' => 'errorrate-5xx',
+        'nlabel' => 'cloudfront.errorrate.5xx.percentage',
+    },
+);
+
 sub prefix_metric_output {
     my ($self, %options) = @_;
     
-    return "Instance '" . $options{instance_value}->{display} . "' " . $options{instance_value}->{stat} . " ";
+    return "Instance '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_statistics_output {
+    my ($self, %options) = @_;
+    
+    return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
+}
+
+sub long_output {
+    my ($self, %options) = @_;
+
+    return "Checking Instance '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All errors metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
+          message_multiple => 'All instances metrics are ok', indent_long_output => '    ',
+            group => [
+                { name => 'statistics', display_long => 1, cb_prefix_output => 'prefix_statistics_output',
+                  message_multiple => 'All metrics are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
     ];
 
-    foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
-        foreach my $metric ('TotalErrorRate', '4xxErrorRate', '5xxErrorRate') {
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' } ],
-                                output_template => $metric . ': %.2f %%',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', min => 0, max => 100, unit => '%',
-                                      label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
-            push @{$self->{maps_counters}->{metric}}, $entry;
-        }
+    foreach my $metric (keys %metrics_mapping) {
+        my $entry = {
+            label => $metrics_mapping{$metric}->{label},
+            nlabel => $metrics_mapping{$metric}->{nlabel},
+            set => {
+                key_values => [ { name => $metric }, { name => 'display' } ],
+                output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
+                perfdatas => [
+                    { value => $metric . '_absolute', template => '%.2f', label_extra_instance => 1 }
+                ],
+            }
+        };
+        push @{$self->{maps_counters}->{statistics}}, $entry;
     }
 }
 
@@ -60,12 +95,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "id:s@"	          => { name => 'id' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "id:s@"	          => { name => 'id' },
+        "filter-metric:s" => { name => 'filter_metric' },
+    });
     
     return $self;
 }
@@ -98,7 +131,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('TotalErrorRate', '4xxErrorRate', '5xxErrorRate') {
+    foreach my $metric (keys %metrics_mapping) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
@@ -125,15 +158,14 @@ sub manage_selection {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) && !defined($self->{option_results}->{zeroed}));
 
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{display} = $instance;
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{stat} = lc($statistic);
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{timeframe} = $self->{aws_timeframe};
-                $self->{metric}->{$instance . "_" . lc($statistic)}->{$metric . "_" . lc($statistic)} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{display} = $instance;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
 
-    if (scalar(keys %{$self->{metric}}) <= 0) {
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
     }
@@ -149,9 +181,10 @@ Check CloudFront instances errors.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::cloudfront::plugin --custommode=paws --mode=errors --region='eu-west-1'
---id='E8T734E1AF1L4' --statistic='sum' --critical-totalerrorsrate-sum='10' --verbose
+--id='E8T734E1AF1L4' --statistic='average' --critical-totalerrorsrate='10' --verbose
 
-See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cf-metricscollected.html' for more informations.
+See 'https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/monitoring-using-cloudwatch.html'
+for more informations.
 
 Default statistic: 'average' / Valid statistic: 'average'.
 
@@ -166,15 +199,15 @@ Set the instance id (Required) (Can be multiple).
 Filter metrics (Can be: 'TotalErrorRate', '4xxErrorRate', '5xxErrorRate') 
 (Can be a regexp).
 
-=item B<--warning-$metric$-$statistic$>
+=item B<--warning-*>
 
-Thresholds warning ($metric$ can be: 'totalerrorrate', '4xxerrorrate', '5xxerrorrate',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds warning (Can be: 'errorrate-total',
+'errorrate-4xx', 'errorrate-5xx').
 
-=item B<--critical-$metric$-$statistic$>
+=item B<--critical-*>
 
-Thresholds critical ($metric$ can be: 'totalerrorrate', '4xxerrorrate', '5xxerrorrate',
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds critical (Can be: 'errorrate-total',
+'errorrate-4xx', 'errorrate-5xx').
 
 =back
 

@@ -62,7 +62,7 @@ sub check {
     #  <PROPERTY name="status" type="string" size="8" draw="true" sort="string" display-name="Status">Warning</PROPERTY>
     #</OBJECT>
     foreach my $sensor_id (keys %$results) {
-        my ($value, $unit);
+        my ($value, $unit) = (undef, '');;
         ($value, $unit) = ($1, $2) if ($results->{$sensor_id}->{value} =~ /\s*([0-9\.,]+)\s*(\S*)\s*/);
         if (defined($results->{$sensor_id}->{'sensor-type'}) && defined($sensor_type{$results->{$sensor_id}->{'sensor-type'}})) {
             $unit = $sensor_type{$results->{$sensor_id}->{'sensor-type'}}->{unit};

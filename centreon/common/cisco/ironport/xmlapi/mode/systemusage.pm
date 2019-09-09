@@ -170,7 +170,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'hostname:s'    => { name => 'hostname' },
         'port:s'        => { name => 'port', },
@@ -181,7 +180,7 @@ sub new {
         'timeout:s'     => { name => 'timeout' },
         'unknown-http-status:s'     => { name => 'unknown_http_status' },
         'warning-http-status:s'     => { name => 'warning_http_status' },
-        'critical-http-status:s'    => { name => 'critical_http__status' },
+        'critical-http-status:s'    => { name => 'critical_http_status' },
         'warning-system-status:s'   => { name => 'warning_system_status', default => '' },
         'critical-system-status:s'  => { name => 'critical_system_status', default => '%{system_status} !~ /online/i' },
     });

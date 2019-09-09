@@ -52,7 +52,7 @@ sub new {
             'password:s@'        => { name => 'password' },
             'connect-options:s@' => { name => 'connect_options' },
             'sql-errors-exit:s'  => { name => 'sql_errors_exit', default => 'unknown' },
-            'timeout:i'          => { name => 'timeout' },
+            'timeout:s'          => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
@@ -92,7 +92,7 @@ sub class_handle_ALRM {
 
 sub handle_ALRM {
     my $self = shift;
-    
+
     $self->disconnect();
     $self->{output}->output_add(severity => $self->{sql_errors_exit},
                                 short_msg => 'Timeout');
@@ -204,6 +204,7 @@ sub disconnect {
     if (defined($self->{instance})) {
         $self->{statement_handle} = undef;
         $self->{instance}->disconnect();
+        $self->{instance} = undef;
     }
 }
     
@@ -211,6 +212,8 @@ sub connect {
     my ($self, %options) = @_;
     my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
 
+    return if (defined($self->{instance}));
+    
     # Set ENV
     if (defined($self->{env})) {
         foreach (keys %{$self->{env}}) {

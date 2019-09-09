@@ -174,13 +174,18 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (defined($self->{option_results}->{list_counters})) {
-        my $list_counter = "Counter list:";
+        my $list_counter = 'counter list:';
+        my $th_counter = '';
         foreach my $key (keys %{$self->{maps_counters}}) {
             foreach (@{$self->{maps_counters}->{$key}}) {
+                my $label = $_->{label};
+                $label =~ s/-//g;
                 $list_counter .= " " . $_->{label};
+                $th_counter .= " --warning-$_->{label}='\$_SERVICEWARNING" . uc($label) . "\$' --critical-$_->{label}='\$_SERVICECRITICAL" . uc($label) . "\$'";  
             }
         }
         $self->{output}->output_add(short_msg => $list_counter);
+        $self->{output}->output_add(long_msg => 'configuration: ' . $th_counter); 
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
         $self->{output}->exit();
     }
@@ -445,6 +450,7 @@ sub run_multiple_instances {
     my ($self, %options) = @_;
     
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
+    my $use_new_perfdata = $self->{output}->use_new_perfdata();
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
     my $indent_long_output = defined($options{indent_long_output}) ? $options{indent_long_output} : '';
     my $no_message_multiple = 1;
@@ -469,7 +475,7 @@ sub run_multiple_instances {
                 $_->{label} !~ /$self->{option_results}->{filter_counters}/);
             
             my $instance = $id;
-            if ($multiple_parent == 1 && $multiple == 1) {
+            if ($use_new_perfdata || ($multiple_parent == 1 && $multiple == 1)) {
                 $instance = $options{instance_parent} . ($self->{output}->get_instance_perfdata_separator()) . $id;
             } elsif ($multiple_parent == 1 && $multiple == 0) {
                 $instance = $options{instance_parent};

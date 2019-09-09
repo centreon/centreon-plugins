@@ -167,7 +167,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "instance:s@"           => { name => 'instance' },
         "filter-metric:s"       => { name => 'filter_metric' },
@@ -216,6 +215,7 @@ sub manage_selection {
     foreach my $instance (@{$self->{gcp_instance}}) {
         foreach my $metric (@{$self->{gcp_metrics}}) {
             ($metric_results, undef) = $options{custom}->gcp_get_metrics(
+                dimension => 'metric.labels.instance_name',
                 instance => $instance,
                 metric => $metric,
                 api => $self->{gcp_api},

@@ -50,9 +50,9 @@ my $mapping = {
 my $oid_sensorProbeHumidityEntry = '.1.3.6.1.4.1.3854.1.2.2.1.17.1';
 
 sub load {
-    my (%options) = @_;
-    
-    push @{$options{request}}, { oid => $oid_sensorProbeHumidityEntry, end => $mapping->{sensorProbeHumidityLowCritical}->{oid} };
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_sensorProbeHumidityEntry, end => $mapping->{sensorProbeHumidityLowCritical}->{oid} };
 }
 
 sub check {
@@ -60,14 +60,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking humidity");
     $self->{components}->{humidity} = {name => 'humidity', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'humidity'));
+    return if ($self->check_filter(section => 'humidity'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sensorProbeHumidityEntry}})) {
         next if ($oid !~ /^$mapping->{sensorProbeHumidityPercent}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_sensorProbeHumidityEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'humidity', instance => $instance));
+        next if ($self->check_filter(section => 'humidity', instance => $instance));
         if ($result->{sensorProbeHumidityOnline} =~ /Offline/i) {  
             $self->absent_problem(section => 'humidity', instance => $instance);
             next;

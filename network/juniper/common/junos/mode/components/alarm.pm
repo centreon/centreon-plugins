@@ -41,7 +41,7 @@ sub check_alarm {
              $options{name}, $options{value}, $options{instance}
         )
     );
-    my $exit = $self->get_severity(section => 'alarm', value => $options{value});
+    my $exit = $self->get_severity(section => 'alarm', instance => $options{instance}, value => $options{value});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
@@ -66,7 +66,7 @@ sub check {
 
     check_alarm($self, instance => 0, name => 'yellow', value => $map_alarm_states{$results->{$oid_jnxYellowAlarmState}})
         if (defined($results->{$oid_jnxYellowAlarmState}));
-    check_alarm($self, instance => 0, name => 'red', value => $map_alarm_states{$results->{$oid_jnxRedAlarmState}})
+    check_alarm($self, instance => 1, name => 'red', value => $map_alarm_states{$results->{$oid_jnxRedAlarmState}})
         if (defined($results->{$oid_jnxRedAlarmState}));
 }
 

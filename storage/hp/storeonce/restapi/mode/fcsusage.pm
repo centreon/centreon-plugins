@@ -94,7 +94,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "filter-name:s"       => { name => 'filter_name' },
         "warning-status:s"    => { name => 'warning_status', default => '%{is_online} == 1 and %{health} =~ /warning/i' },

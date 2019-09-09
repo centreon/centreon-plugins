@@ -194,9 +194,13 @@ sub request_api {
         warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
     );
 
-    # Some content may be strangely returned, for example : "[{\"Category\":\"provider\",\"Count\":1}]"
+    # Some content may be strangely returned, for example :
+    # 3CX <  16.0.2.910 : "[{\"Category\":\"provider\",\"Count\":1}]"
+    # 3CX >= 16.0.2.910 : {"tcxUpdate":"[{\"Category\":\"provider\",\"Count\":5},{\"Category\":\"sp150\",\"Count\":1}]","perPage":"[]"}
     if (defined($options{eval_content}) && $options{eval_content} == 1) {
-        $content = eval "$content";
+        if (my $evcontent = eval "$content") {
+            $content = $evcontent;
+        }
     }
 
     my $decoded;
@@ -249,6 +253,13 @@ sub internal_update_checker {
     my ($self, %options) = @_;
     
     my $status = $self->request_api(method => 'GET', url_path =>'/api/UpdateChecker/GetFromParams', eval_content => 1);
+    if (ref($status) eq 'HASH') {
+        $status = $status->{tcxUpdate};
+        if (ref($status) ne 'ARRAY') {
+            # See above note about strange content
+            $status = JSON::XS->new->utf8->decode($status);
+        }
+    }
     return $status;
 }
 

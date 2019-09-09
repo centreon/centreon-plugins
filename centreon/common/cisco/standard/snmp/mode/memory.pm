@@ -121,7 +121,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'filter-pool:s'     => { name => 'filter_pool' },
         'check-order:s'     => { name => 'check_order', default => 'enhanced_pool,pool,process,system_ext' },
@@ -226,11 +225,12 @@ sub check_memory_enhanced_pool {
         oids => $oids,
         return_type => 1
     );
-    
+
+    my $physical_array = {};
     foreach my $oid (keys %{$snmp_result}) {
-        next if ($oid !~ /^$mapping_enh_memory_pool->{cempMemPoolName}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping_enh_memory_pool, results => $snmp_result, instance => $instance);
+        next if ($oid !~ /^$mapping_enh_memory_pool->{cempMemPoolName}->{oid}\.(.*?)\.(.*)$/);
+        my ($physical_index, $mem_index) = ($1, $2);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_enh_memory_pool, results => $snmp_result, instance => $physical_index . '.' . $mem_index);
 
         $self->{checked_memory} = 1;
         if (defined($self->{option_results}->{filter_pool}) && $self->{option_results}->{filter_pool} ne '' &&
@@ -241,12 +241,35 @@ sub check_memory_enhanced_pool {
 
         my $used = defined($result->{cempMemPoolHCUsed}) ? $result->{cempMemPoolHCUsed} : $result->{cempMemPoolUsed};
         my $free = defined($result->{cempMemPoolHCFree}) ? $result->{cempMemPoolHCFree} : $result->{cempMemPoolFree};
-        $self->{memory}->{$instance} = {
+        if ($used + $free <= 0) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{cempMemPoolName} . "': no total.", debug => 1);
+            next;
+        }
+
+        $physical_array->{$physical_index} = 1;
+        $self->{memory}->{$physical_index . '.' . $mem_index} = {
             display => $result->{cempMemPoolName},
             total => $used + $free,
             used => $used,
             prct_used => -1,
+            physical_index => $physical_index,
         };
+    }
+
+    if (scalar(keys %$physical_array) > 0) {
+        my $oid_entPhysicalName = '.1.3.6.1.2.1.47.1.1.1.1.7';
+        $self->{snmp}->load(
+            oids => [$oid_entPhysicalName],
+            instances => [keys %$physical_array],
+            instance_regexp => '^(.*)$'
+        );
+        $snmp_result = $self->{snmp}->get_leef();
+        foreach (keys %{$self->{memory}}) {
+            if (defined($snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} })) {
+                $self->{memory}->{$_}->{display} = 
+                    $snmp_result->{ $oid_entPhysicalName . '.' . $self->{memory}->{$_}->{physical_index} } . '_' . $self->{memory}->{$_}->{display};
+            }
+        }
     }
 }
 

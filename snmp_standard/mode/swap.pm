@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 0,
+                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
                       unit => '%' },
                 ],
             }
@@ -80,7 +80,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         'no-swap:s' => { name => 'no_swap' },
     });

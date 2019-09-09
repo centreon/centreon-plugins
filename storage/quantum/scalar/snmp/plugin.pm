@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'centreon::common::adic::tape::snmp::mode::hardware',
-                         );
+        'hardware' => 'storage::quantum::scalar::snmp::mode::hardware',
+    );
 
     return $self;
 }
@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Quantum Scalar (i6000, i500, ...) in SNMP.
+Check Quantum Scalar in SNMP.
 
 =cut

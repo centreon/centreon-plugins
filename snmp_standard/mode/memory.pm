@@ -80,7 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 0,
+                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
                       unit => '%' },
                 ],
             }
@@ -139,7 +139,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'swap_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 0,
+                    { label => 'swap_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
                       unit => '%' },
                 ],
             }
@@ -152,11 +152,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         'units:s'   => { name => 'units', default => '%' },
         'free'      => { name => 'free' },
         'swap'      => { name => 'check_swap' },
+        'redhat'    => { name => 'redhat' },
     });
     
     return $self;
@@ -166,13 +166,16 @@ sub compat_threshold_counter {
     my ($self, %options) = @_;
 
     foreach ('warning', 'critical') {
-        next if (!defined($options{option_results}->{$_ . '-' . $options{compat}->{th}}) || $options{option_results}->{$_ . '-' . $options{compat}->{th}} eq '');
-        if (defined($options{compat}->{free})) {
-            $options{option_results}->{$_ . '-' . $options{compat}->{th} . '-free'} = $options{option_results}->{$_ . '-' . $options{compat}->{th}};
-            $options{option_results}->{$_ . '-' . $options{compat}->{th}} = undef;
-        } elsif (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
-            $options{option_results}->{$_ . '-' . $options{compat}->{th} . '-prct'} = $options{option_results}->{$_ . '-' . $options{compat}->{th}};
-            $options{option_results}->{$_ . '-' . $options{compat}->{th}} = undef;
+        foreach my $th (@{$options{compat}->{th}}) {
+            next if (!defined($options{option_results}->{$_ . '-' . $th->[0]}) || $options{option_results}->{$_ . '-' . $th->[0]} eq '');
+
+            if (defined($options{compat}->{free})) {
+                $options{option_results}->{$_ . '-' . $th->[1]->{free}} = $options{option_results}->{$_ . '-' . $th->[0]};
+                $options{option_results}->{$_ . '-' . $th->[0]} = undef;
+            } elsif (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
+                $options{option_results}->{$_ . '-' . $th->[1]->{prct}} = $options{option_results}->{$_ . '-' . $th->[0]};
+                $options{option_results}->{$_ . '-' . $th->[0]} = undef;
+            }
         }
     }
 }
@@ -181,8 +184,18 @@ sub check_options {
     my ($self, %options) = @_;
 
     # Compatibility
-    $self->compat_threshold_counter(%options, compat => { th => 'usage', units => $options{option_results}->{units}, free => $options{option_results}->{free}});
-    $self->compat_threshold_counter(%options, compat => { th => 'swap', units => $options{option_results}->{units}, free => $options{option_results}->{free}});
+    $self->compat_threshold_counter(%options, 
+        compat => { 
+            th => [ ['usage', { free => 'usage-free', prct => 'usage-prct'} ], [ 'memory-usage-bytes', { free => 'memory-free-bytes', prct => 'memory-usage-percentage' } ] ], 
+            units => $options{option_results}->{units}, free => $options{option_results}->{free}
+        }
+    );
+    $self->compat_threshold_counter(%options, 
+        compat => {
+            th => [ ['swap', { free => 'swap-free', prct => 'swap-prct' } ], [ 'swap-usage-bytes', { free => 'swap-free-bytes', prct => 'swap-usage-percentage' } ] ], 
+            units => $options{option_results}->{units}, free => $options{option_results}->{free}
+        }
+    );
     $self->SUPER::check_options(%options);
 }
 
@@ -209,8 +222,54 @@ sub memory_calc {
     my ($used, $free, $prct_used, $prct_free) = (0, 0, 0, 0);
 
     if ($total != 0) {
-        $used = $total - $available - $buffer - $cached;
-        $free = $total - $used;
+        #### procps-ng-3.3.10-23
+        ## Mem:
+        ## total = MemTotal in /proc/meminfo
+        ## used = total - free - buffer - cache
+        ## free = MemFree in /proc/meminfo
+        ## shared = Shmem in /proc/meminfo
+        ## buffers = Buffers in /proc/meminfo
+        ## cache = Cached and Slab in /proc/meminfo
+        ## available = MemAvailable in /proc/meminfo
+        ## Swap:
+        ## total = SwapTotal in /proc/meminfo
+        ## used = total - free
+        ## free = SwapFree in /proc/meminfo
+        #### net-snmp-5.7.2-38
+        ## memTotalSwap = SwapTotal in /proc/meminfo
+        ## memAvailSwap = SwapFree in /proc/meminfo
+        ## memTotalReal = MemTotal in /proc/meminfo
+        ## memAvailReal = MemFree in /proc/meminfo
+        ## memTotalFree = memAvailSwap + memAvailReal
+        ## memShared = MemShared in /proc/meminfo
+        ## memBuffer = Buffers in /proc/meminfo
+        ## memCached = Cached in /proc/meminfo (missing Slab)
+
+        #### procps-ng-3.3.10-26
+        ## Mem:
+        ## total = MemTotal in /proc/meminfo
+        ## used = total - free - buffer - cache
+        ## free = MemFree in /proc/meminfo
+        ## shared = Shmem in /proc/meminfo
+        ## buffers = Buffers in /proc/meminfo
+        ## cache = Cached and SReclaimable in /proc/meminfo (https://gitlab.com/procps-ng/procps/commit/05d751c4f076a2f0118b914c5e51cfbb4762ad8e)
+        ## available = MemAvailable in /proc/meminfo
+        ## Swap:
+        ## total = SwapTotal in /proc/meminfo
+        ## used = total - free
+        ## free = SwapFree in /proc/meminfo
+        #### net-snmp-5.7.2-43
+        ## memTotalSwap = SwapTotal in /proc/meminfo
+        ## memAvailSwap = SwapFree in /proc/meminfo
+        ## memTotalReal = MemTotal in /proc/meminfo
+        ## memAvailReal = MemFree + Buffers + Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
+        ## memTotalFree = memAvailSwap + memAvailReal
+        ## memShared = MemShared in /proc/meminfo
+        ## memBuffer = Buffers in /proc/meminfo
+        ## memCached = Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
+        
+        $used = (defined($self->{option_results}->{redhat})) ? $total - $available : $total - $available - $buffer - $cached;
+        $free = (defined($self->{option_results}->{redhat})) ? $available : $total - $used;
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
@@ -289,6 +348,16 @@ Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%), 
 'swap' (B), 'swap-free' (B), 'swap-prct' (%),
 'buffer' (B), 'cached' (B), 'shared' (B).
+
+=item B<--redhat>
+
+If using RedHat distribution with net-snmp >= 5.7.2-43.
+
+This version: used = memTotalReal - memAvailReal // free = memAvailReal
+
+Others versions: used = memTotalReal - memAvailReal - memBuffer - memCached // free = total - used
+
+(grep for '##' in this mode for more informations)
 
 =back
 
