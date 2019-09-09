@@ -90,7 +90,7 @@ sub set_counters {
             }
         },
         { label => 'usage-free', nlabel => 'pool.space.free.bytes', display_ok => 0, set => {
-                key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
+                key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { value => 'free_space_absolute', template => '%d', min => 0, max => 'total_space_absolute',
