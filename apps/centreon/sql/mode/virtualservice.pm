@@ -261,7 +261,7 @@ sub manage_selection {
         };
         foreach my $id (keys %{$config_data->{selection}}) {
             my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
-            $query .= "FROM $self->{option_results}->{database}.index_data, $self->{option_results}->{database}.metrics WHERE index_data.id = metrics.index_id ";
+            $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics WHERE index_data.id = metrics.index_id ";
             $query .= "AND index_data.service_description = '" . $config_data->{selection}->{$id}->{service_name} . "'";
             $query .= "AND index_data.host_name = '" . $config_data->{selection}->{$id}->{host_name} . "'" ;
             $query .= "AND metrics.metric_name = '" . $config_data->{selection}->{$id}->{metric_name} . "'";
@@ -282,7 +282,7 @@ sub manage_selection {
             name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
         my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
-        $query .= "FROM $self->{option_results}->{database}.index_data, $self->{option_results}->{database}.metrics WHERE index_data.id = metrics.index_id ";
+        $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics WHERE index_data.id = metrics.index_id ";
         $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "'" if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
         $query .= "AND index_data.host_name LIKE '" . $config_data->{filters}->{host} . "'" if (defined($config_data->{filters}->{host}) && ($config_data->{filters}->{host} ne ''));
         $query .= "AND metrics.metric_name LIKE '" . $config_data->{filters}->{metric} . "'" if (defined($config_data->{filters}->{metric}) && ($config_data->{filters}->{metric} ne ''));
@@ -370,6 +370,10 @@ e.g: display two curves of different service on the same graph
 e.g: aggregate multiple metrics (min,max,avg,sum) or custom operation
 
 =over 8
+
+=item B<--database>
+
+Specify the database (default: 'centreon_storage')
 
 =item B<--config-file>
 
