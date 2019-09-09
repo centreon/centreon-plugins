@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'         => 'snmp_standard::mode::hardwarefibrealliance',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         );
+        'hardware'         => 'snmp_standard::mode::hardwarefibrealliance',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+    );
 
     return $self;
 }

@@ -38,19 +38,22 @@ sub set_system {
     $self->{thresholds} = {
         # disk, enclosure, vdisk
         default => [
+            ['ok', 'OK'],
             ['degraded', 'WARNING'],
-            ['failed', 'CRITICAL'],
+            ['failed|fault', 'CRITICAL'],
             ['unknown|not available', 'UNKNOWN'],
         ],
         fru => [
+            ['ok', 'OK'],
             ['absent', 'WARNING'],
             ['fault', 'CRITICAL'],
             ['not available', 'UNKNOWN'],
         ],
         sensor => [
+            ['ok', 'OK'],
             ['warning|not installed|unavailable', 'WARNING'],
             ['error|unrecoverable', 'CRITICAL'],
-            ['nknown|unsupported', 'UNKNOWN'],
+            ['unknown|unsupported', 'UNKNOWN'],
         ],
     };
 
@@ -70,7 +73,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
     });
 

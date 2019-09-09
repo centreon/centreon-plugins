@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
@@ -172,19 +173,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
-        "filter-name:s"           => { name => 'filter_name' },
-        "filter-interface:s"      => { name => 'filter_interface' },
-        "filter-network:s"        => { name => 'filter_network' },
-        "filter-product:s"        => { name => 'filter_product' },
-        "warning-status:s"        => { name => 'warning_status', default => '' },
-        "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /offline/' },
-        "speed-in:s"              => { name => 'speed_in' },
-        "speed-out:s"             => { name => 'speed_out' },
-        "units-traffic:s"         => { name => 'units_traffic', default => '%' },
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-interface:s' => { name => 'filter_interface' },
+        'filter-network:s'   => { name => 'filter_network' },
+        'filter-product:s'   => { name => 'filter_product' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '%{status} =~ /offline/' },
+        'speed-in:s'         => { name => 'speed_in' },
+        'speed-out:s'        => { name => 'speed_out' },
+        'units-traffic:s'    => { name => 'units_traffic', default => '%' },
+        'cache-expires-on:s' => { name => 'cache_expires_on' },
     });
-    
+
+    $self->{cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -193,6 +195,10 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->{cache}->check_options(option_results => $self->{option_results});
+    if (defined($self->{option_results}->{cache_expires_on}) && $self->{option_results}->{cache_expires_on} =~ /(\d+)/) {
+        $self->{cache_expires_on} = $1; 
+    }
 }
 
 sub skip_global {
@@ -231,20 +237,51 @@ my $mapping2 = {
     devInterfaceRecvBytes   => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.7' },
 };
 
+sub get_devices_infos_snmp {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{devName}->{oid} },
+            { oid => $mapping2->{devInterfaceName}->{oid} },
+            { oid => $mapping->{devProductCode}->{oid} },
+            { oid => $mapping->{devNetworkName}->{oid} }
+        ], 
+        nothing_quit => 1
+    );
+
+    return $snmp_result;
+}
+
+sub get_devices_infos {
+    my ($self, %options) = @_;
+
+    my $snmp_result;
+    if (defined($self->{cache_expires_on})) {
+        my $has_cache_file = $self->{cache}->read(statefile => 'meraki_' . $self->{mode} . '_' . md5_hex($options{snmp}->get_hostname()));
+        my $timestamp = $self->{cache}->get(name => 'last_timestamp');
+        if ($has_cache_file == 0 || !defined($timestamp) || ((time() - $self->{cache_expires_on}) > $timestamp)) {
+            $snmp_result = $self->get_devices_infos_snmp(%options);
+            my $datas = { last_timestamp => time(), snmp => $snmp_result };
+            $self->{cache}->write(data => $datas);
+        } else {
+            $snmp_result = $self->{cache}->get(name => 'snmp');
+        }
+    } else {
+        $snmp_result = $self->get_devices_infos_snmp(%options);
+    }
+    
+    return $snmp_result;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{device} = {};
     $self->{interface} = {};
     $self->{global} = { total => 0 };
-    
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
-        { oid => $mapping->{devName}->{oid} },
-        { oid => $mapping2->{devInterfaceName}->{oid} },
-        { oid => $mapping->{devProductCode}->{oid} },
-        { oid => $mapping->{devNetworkName}->{oid} }
-    ], nothing_quit => 1);
-    
+
+    my $snmp_result = $self->get_devices_infos(%options);
     foreach my $oid (keys %{$snmp_result->{ $mapping->{devName}->{oid} }}) {
         $oid =~ /^$mapping->{devName}->{oid}\.(.*)$/;
         my $instance = $1;
@@ -347,6 +384,10 @@ Filter by network name (can be a regexp).
 =item B<--filter-interface>
 
 Filter interface name (can be a regexp).
+
+=item B<--cache-expires-on>
+
+Use cache file to speed up mode execution (X seconds before refresh cache file).
 
 =item B<--speed-in>
 

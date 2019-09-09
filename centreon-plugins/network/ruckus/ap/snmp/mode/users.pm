@@ -125,11 +125,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-ssid:s"   => { name => 'filter_ssid' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-ssid:s'   => { name => 'filter_ssid' },
+    });
     
     return $self;
 }
@@ -161,7 +159,13 @@ sub manage_selection {
         $self->{global}->{total} = 0 if ($self->{global}->{total} == -1);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
+
+        if (defined($self->{option_results}->{filter_ssid}) && $self->{option_results}->{filter_ssid} ne '' &&
+            $result->{ruckusWLANStatsSSID} !~ /$self->{option_results}->{filter_ssid}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{ruckusWLANStatsSSID} . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $self->{ssid}->{$result->{ruckusWLANStatsSSID}} = { display => $result->{ruckusWLANStatsSSID}, total => $result->{ruckusWLANStatsNumSta} };
         $self->{global}->{total} += $result->{ruckusWLANStatsNumSta};
     }

@@ -84,7 +84,7 @@ sub set_counters {
                     key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                     output_template => 'Used : %.2f %%',
                     perfdatas => [
-                        { label => 'used_prct', value => 'prct_used_absolute', template => '%d', min => 0, max => 0,
+                        { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
                           unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
                     ],
                 }
@@ -97,7 +97,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "filter-name:s"       => { name => 'filter_name' },
         "warning-status:s"    => { name => 'warning_status', default => '' },

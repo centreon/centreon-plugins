@@ -47,7 +47,7 @@ sub load {
     #            PCM 0 inlet      27 C       10 C       50 C Within Tolerance
     #          PCM 0 hotspot      21 C       10 C       65 C Within Tolerance
     #         Node Input PWR    87.6 W      0.0 W    264.0 W Within Tolerance
-    push @{$self->{commands}}, 'echo "===shownodeenv===', 'shownodeenv';
+    push @{$self->{commands}}, 'echo "===shownodeenv==="', 'shownodeenv';
 }
 
 sub check {

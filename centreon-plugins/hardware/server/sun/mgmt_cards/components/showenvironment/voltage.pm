@@ -28,7 +28,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking voltages");
     $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'voltage'));
+    return if ($self->check_filter(section => 'voltage'));
     
     if ($self->{stdout} =~ /^Voltage sensors.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         #Sensor         Status       Voltage LowSoft LowWarn HighWarn HighSoft
@@ -41,7 +41,7 @@ sub check {
             my $voltage_status = defined($2) ? $2 : 'unknown';
             my $voltage_name = defined($1) ? $1 : 'unknown';
             
-            next if ($self->check_exclude(section => 'voltage', instance => $voltage_name));
+            next if ($self->check_filter(section => 'voltage', instance => $voltage_name));
             
             $self->{components}->{voltage}->{total}++;
             $self->{output}->output_add(long_msg => "Voltage Sensor status '" . $voltage_name . "' is " . $voltage_status);

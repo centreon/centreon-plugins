@@ -31,7 +31,7 @@ sub load {
     # 0,1  1   682372-001 5CQLQA1434W2ED OK      OK      OK     
     # 2,3  0   682372-001 5CQLQA1433Y0KS OK      OK      OK     
     # 2,3  1   682372-001 5CQLQX1XX3E056 OK      OK      OK  
-    push @{$self->{commands}}, 'echo "===showpsu===', 'shownode -ps';
+    push @{$self->{commands}}, 'echo "===showpsu==="', 'shownode -ps';
 }
 
 sub check {

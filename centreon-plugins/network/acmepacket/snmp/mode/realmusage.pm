@@ -101,7 +101,7 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsTotalMajorRFactorExceeded', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Rfactor Exceeded : %s',
                 perfdatas => [
-                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceededabsolute', template => '%s',
+                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceeded_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -120,7 +120,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "filter-name:s"           => { name => 'filter_name' },

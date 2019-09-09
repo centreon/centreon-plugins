@@ -31,20 +31,20 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'snmp_standard::mode::cpu',
-                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-                         'box-service'      => 'network::barracuda::cloudgen::snmp::mode::boxservice',
-                         'hardware'         => 'network::barracuda::cloudgen::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-vpns'        => 'network::barracuda::cloudgen::snmp::mode::listvpns',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'memory'           => 'snmp_standard::mode::memory',
-                         'server-service'   => 'network::barracuda::cloudgen::snmp::mode::serverservice',
-                         'storage'          => 'snmp_standard::mode::storage',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         'vpn-status'       => 'network::barracuda::cloudgen::snmp::mode::vpnstatus',
-                         );
+        'cpu'              => 'snmp_standard::mode::cpu',
+        'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+        'box-service'      => 'network::barracuda::cloudgen::snmp::mode::boxservice',
+        'hardware'         => 'network::barracuda::cloudgen::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-vpns'        => 'network::barracuda::cloudgen::snmp::mode::listvpns',
+        'load'             => 'snmp_standard::mode::loadaverage',
+        'memory'           => 'snmp_standard::mode::memory',
+        'server-service'   => 'network::barracuda::cloudgen::snmp::mode::serverservice',
+        'storage'          => 'snmp_standard::mode::storage',
+        'uptime'           => 'snmp_standard::mode::uptime',
+        'vpn-status'       => 'network::barracuda::cloudgen::snmp::mode::vpnstatus',
+    );
 
     return $self;
 }

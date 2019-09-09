@@ -47,7 +47,7 @@ sub custom_usage_perfdata {
         value => $value_perf,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
-        min => 0, max => $self->{result_values}->{total}
+        min => 0, max => $self->{result_values}->{total},
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
     );
 }
@@ -151,7 +151,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "container:s"           => { name => 'container', default => 'container_name!~".*POD.*"' },
         "pod:s"                 => { name => 'pod', default => 'pod_name=~".*"' },

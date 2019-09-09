@@ -131,7 +131,7 @@ sub cb_debug {
     if ($type == $uservar->{constant_cb}->(name => 'CURLINFO_SSL_DATA_IN')) {
         $msg = sprintf("=> Recv SSL data: %s", $data);
     }
-    
+
     $uservar->{output}->output_add(long_msg => $msg, debug => 1);
     return 0;
 }
@@ -313,9 +313,9 @@ sub request {
             $content_type_forced = 1;
         }
     }
-    
+
     $self->set_method(%options, content_type_forced => $content_type_forced, headers => $headers);
-    
+
     if (scalar(@$headers) > 0) {
         $self->{curl_easy}->pushopt($self->{constant_cb}->(name => 'CURLOPT_HTTPHEADER'), $headers);
     }
@@ -341,7 +341,7 @@ sub request {
         $self->{output}->add_option_msg(short_msg => 'curl perform error : ' . $@);
         $self->{output}->option_exit();
     }
-    
+
     $self->{response_code} = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_RESPONSE_CODE'));
     
     # Check response

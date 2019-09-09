@@ -113,7 +113,7 @@ sub threshold_check {
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{thlabel};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{thlabel};
     
-    my $first = ${${$self->{key_values}}[0]}{name};
+    my $first = defined($self->{key_values}->[0]) ? $self->{key_values}->[0]->{name} : '';
     my $value;
 
     if (!defined($self->{threshold_use})) {

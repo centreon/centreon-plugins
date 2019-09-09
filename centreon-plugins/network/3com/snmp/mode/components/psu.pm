@@ -37,9 +37,9 @@ my $mapping = {
 my $oid_hwdevMPowerStatusEntry = '.1.3.6.1.4.1.43.45.1.2.23.1.9.1.2.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_hwdevMPowerStatusEntry };
+    push @{$self->{request}}, { oid => $oid_hwdevMPowerStatusEntry };
 }
 
 sub check {
@@ -62,7 +62,7 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is '%s' [instance: %s]", 
                                     $instance, $result->{hwDevMPowerStatus}, 
                                     $instance));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{hwDevMPowerStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{hwDevMPowerStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Power supply '%s' status is %s", 

@@ -31,7 +31,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "skip-no-backup"          => { name => 'skip_no_backup', },
         "filter-type:s"           => { name => 'filter_type', },

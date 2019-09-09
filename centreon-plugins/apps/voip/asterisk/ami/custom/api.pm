@@ -124,7 +124,11 @@ sub read_ami_protocol_end {
         if ($options{response} eq 'Follows') {
             return 1 if ($options{message} =~ /^--END COMMAND--/ms);
         } else {
-            return 1 if ($options{message} =~ /^Message: (.*)(\r\n)/ms);
+            if ($options{message} =~ /^Message:\s+Command\s+output\s+follows/i) {
+                return 1 if ($options{message} =~ /\n\n/ms);
+            } elsif ($options{message} =~ /^Message: (.*)(\n)/ms) {
+                return 1;
+            }
         }
     }
     
@@ -135,13 +139,20 @@ sub read_ami_protocol {
     my ($self, %options) = @_;
     
     my $select = IO::Select->new($self->{cnx_ami});
-    # Two types of message:
+    # Three types of message:
     #    Response: Error
     #    Message: Authentication failed
     #
     #    Response: Follows
     #    ...
     #    --END COMMAND--
+    #
+    #    Response: Success
+    #    Message: Command output follows
+    #    output: xxxx
+    #    output: xxxx
+    #    ...
+    #
     
     my ($response, $read_msg);
     my $message = '';
@@ -152,8 +163,9 @@ sub read_ami_protocol {
         }
 
         my $status = $self->{cnx_ami}->recv($read_msg, 4096);
+        $read_msg =~ s/\r//msg;
         if (!defined($response)) {
-            next if ($read_msg !~ /^Response: (.*?)(?:\r\n|\n)(.*)/ms);
+            next if ($read_msg !~ /^Response: (.*?)(?:\n)(.*)/ms);
             ($response, $message) = ($1, $2);
         } else {
             $message .= $read_msg;
@@ -161,8 +173,8 @@ sub read_ami_protocol {
         
         last if ($self->read_ami_protocol_end(response => $response, message => $message));
     }
-    
-    $message =~ s/\r//msg;
+
+    $message =~ s/^Output:\s+//mig;
     if ($response !~ /Success|Follows/) {
         $message =~ s/\n+$//msg;
         $message =~ s/\n/ -- /msg;

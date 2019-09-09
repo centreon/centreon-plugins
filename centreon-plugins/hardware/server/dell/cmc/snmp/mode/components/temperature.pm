@@ -32,9 +32,9 @@ my $mapping = {
 my $oid_drsChassisStatusGroup = '.1.3.6.1.4.1.674.10892.2.3';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_drsChassisStatusGroup, start => $mapping->{drsChassisFrontPanelAmbientTemperature}->{oid}, end => $mapping->{drsCMCProcessorTemperature}->{oid} };
+    push @{$self->{request}}, { oid => $oid_drsChassisStatusGroup, start => $mapping->{drsChassisFrontPanelAmbientTemperature}->{oid}, end => $mapping->{drsCMCProcessorTemperature}->{oid} };
 }
 
 sub check {
@@ -42,14 +42,14 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
     
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_drsChassisStatusGroup}, instance => '0');
     
     foreach my $probe (keys %{$mapping}) {
         next if (!defined($result->{$probe}));
 
-        next if ($self->check_exclude(section => 'temperature', instance => $mapping->{$probe}->{instance}));    
+        next if ($self->check_filter(section => 'temperature', instance => $mapping->{$probe}->{instance}));    
         $self->{components}->{temperature}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("%s is %dC [instance: %s].", 

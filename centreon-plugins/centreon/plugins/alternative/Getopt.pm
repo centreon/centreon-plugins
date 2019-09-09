@@ -55,7 +55,7 @@ sub get_assigned_value {
 
 sub GetOptions {
     my (%opts) = @_;
-    
+
     my $search_str = ',' . join(',', keys %opts) . ',';
     my $num_args = scalar(@ARGV);
     for (my $i = 0; $i < $num_args;) {

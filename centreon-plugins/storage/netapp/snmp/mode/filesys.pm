@@ -165,27 +165,30 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'units:s'           => { name => 'units', default => '%' },
-        'free'              => { name => 'free' },
-        'filter-name:s'     => { name => 'filter_name' },
-        'filter-type:s'     => { name => 'filter_type' },
-        'filter-vserver:s'  => { name => 'filter_vserver' },
+        'units:s'                => { name => 'units', default => '%' },
+        'free'                   => { name => 'free' },
+        'filter-name:s'          => { name => 'filter_name' },
+        'filter-type:s'          => { name => 'filter_type' },
+        'filter-vserver:s'       => { name => 'filter_vserver' },
+        'filter-vserver-state:s' => { name => 'filter_vserver_state' },
     });
 
     return $self;
 }
 
-my %map_types = (
+my $map_types = {
     1 => 'traditionalVolume',
     2 => 'flexibleVolume',
     3 => 'aggregate',
     4 => 'stripedAggregate',
     5 => 'stripedVolume'
-);
+};
+my $map_vserver_state = {
+    0 => 'running', 1 => 'stopped', 2 => 'starting', 3 => 'stopping'
+};
 my $mapping = {
-    dfType      => { oid => '.1.3.6.1.4.1.789.1.5.4.1.23', map => \%map_types },
+    dfType      => { oid => '.1.3.6.1.4.1.789.1.5.4.1.23', map => $map_types },
 };
 my $mapping2 = {
     dfFileSys               => { oid => '.1.3.6.1.4.1.789.1.5.4.1.2' },
@@ -198,6 +201,31 @@ my $mapping2 = {
     dfCompressSavedPercent  => { oid => '.1.3.6.1.4.1.789.1.5.4.1.38' },
     dfDedupeSavedPercent    => { oid => '.1.3.6.1.4.1.789.1.5.4.1.40' },
 };
+my $mapping3 = {
+    vserverName     => { oid => '.1.3.6.1.4.1.789.1.27.1.1.2' },
+    vserverState    => { oid => '.1.3.6.1.4.1.789.1.27.1.1.16', map => $map_vserver_state },
+};
+
+sub get_vserver_state {
+    my ($self, %options) = @_;
+
+    return if (!defined($self->{option_results}->{filter_vserver_state}) || $self->{option_results}->{filter_vserver} eq '');
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping3->{vserverName}->{oid} }, 
+            { oid => $mapping3->{vserverState}->{oid} }
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
+    
+    $self->{vserver} = {};
+    foreach (keys %$snmp_result) {
+        next if (! /^$mapping3->{vserverName}->{oid}\.(.*)/);
+        my $result = $options{snmp}->map_instance(mapping => $mapping3, results => $snmp_result, instance => $1);
+        $self->{vserver}->{$result->{vserverName}} = $result->{vserverState};
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -213,8 +241,9 @@ sub manage_selection {
     if (!$options{snmp}->is_snmpv1()) {
         push @oids, $mapping2->{df64TotalKBytes}->{oid};
         push @oids, $mapping2->{df64UsedKBytes}->{oid};
-
     }
+
+    $self->get_vserver_state(%options);
 
     my $results;
     if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '') {
@@ -240,7 +269,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $map_types{$results->{$mapping->{dfType}->{oid} . '.' . $instance}} !~ /$self->{option_results}->{filter_type}/) {
+            $map_types->{$results->{$mapping->{dfType}->{oid} . '.' . $instance}} !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter type.", debug => 1);
             next;
         }
@@ -257,7 +286,19 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
     foreach my $instance (sort @fs_selected) {
         my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $instance);
-        
+
+        if (defined($result2->{dfVserver}) && $result2->{dfVserver} ne '' && 
+            defined($self->{option_results}->{filter_vserver_state}) && $self->{option_results}->{filter_vserver_state} ne '' &&
+            $self->{vserver}->{$result2->{dfVserver}} !~ /$self->{option_results}->{filter_vserver_state}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $instance . "': no matching filter vserver state.", debug => 1);
+            next;
+        }
+        if (defined($result2->{dfVserver}) && defined($self->{option_results}->{filter_vserver}) && $self->{option_results}->{filter_vserver} ne '' &&
+            $result2->{dfVserver} !~ /$self->{option_results}->{filter_vserver}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $instance . "': no matching filter vserver.", debug => 1);
+            next;
+        }
+
         $self->{fs}->{$instance} = {
             display => defined($result2->{dfVserver}) && $result2->{dfVserver} ne '' ? 
                 $result2->{dfVserver} . ':' . $results->{$mapping2->{dfFileSys}->{oid} . '.' . $instance} : 
@@ -312,6 +353,10 @@ Filter by filesystem name (can be a regexp).
 =item B<--filter-vserver>
 
 Filter by vserver name (can be a regexp).
+
+=item B<--filter-vserver-state>
+
+Filter by vserver state (can be a regexp).
 
 =item B<--filter-type>
 

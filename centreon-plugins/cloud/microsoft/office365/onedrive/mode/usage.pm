@@ -247,7 +247,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "filter-url:s"          => { name => 'filter_url' },
         "filter-owner:s"        => { name => 'filter_owner' },

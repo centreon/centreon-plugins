@@ -24,50 +24,18 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("status is '%s' [Hostname: %s] [Role: %s]",
+    my $msg = sprintf("status is '%s' [Hostname: %s] [Role: %s] [Checksum: %s]",
         $self->{result_values}->{sync_status},
         $self->{result_values}->{hostname},
-        $self->{result_values}->{role});
+        $self->{result_values}->{role},
+        $self->{result_values}->{checksum},
+    );
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{serial} = $options{new_datas}->{$self->{instance} . '_serial'};
-    $self->{result_values}->{hostname} = $options{new_datas}->{$self->{instance} . '_hostname'};
-    $self->{result_values}->{sync_status} = $options{new_datas}->{$self->{instance} . '_sync_status'};
-    $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_role'};
-    return 0;
 }
 
 sub prefix_status_output {
@@ -117,14 +85,22 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'total-checksums', display_ok => 0, set => {
+                key_values => [ { name => 'total_checksums' } ],
+                output_template => 'Total Checksums: %d',
+                perfdatas => [
+                    { label => 'total_checksums', value => 'total_checksums_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
     ];        
     $self->{maps_counters}->{nodes} = [
         { label => 'node', threshold => 0, set => {
-                key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' }, { name => 'checksum' } ],
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -135,13 +111,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "warning-status:s"  => { name => 'warning_status', default => '' },
-                                    "critical-status:s" => { name => 'critical_status', default => '%{sync_status} =~ /not synchronized/' },
-                                    "one-node-status:s" => { name => 'one_node_status' }, # not used, use --opt-exit instead
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{sync_status} =~ /not synchronized/' },
+        'one-node-status:s' => { name => 'one_node_status' }, # not used, use --opt-exit instead
+    });
 
     return $self;
 }
@@ -164,10 +138,11 @@ my %map_sync_status = (
 );
 
 my $mapping = {
-    fgHaStatsSerial => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.2' },
-    fgHaStatsHostname => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.11' },
-    fgHaStatsSyncStatus => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.12', map => \%map_sync_status },
-    fgHaStatsMasterSerial => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' },
+    fgHaStatsSerial         => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.2' },
+    fgHaStatsHostname       => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.11' },
+    fgHaStatsSyncStatus     => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.12', map => \%map_sync_status },
+    fgHaStatsGlobalChecksum => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.15' },
+    fgHaStatsMasterSerial   => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' },
 };
 my $oid_fgHaStatsEntry = '.1.3.6.1.4.1.12356.101.13.2.1.1';
 
@@ -188,28 +163,33 @@ sub manage_selection {
 
     $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode{$mode->{$oid_fgHaSystemMode}});
 
-    $self->{results} = $options{snmp}->get_table(oid => $oid_fgHaStatsEntry,
-                                                 nothing_quit => 1);
+    $self->{results} = $options{snmp}->get_table(
+        oid => $oid_fgHaStatsEntry,
+        nothing_quit => 1
+    );
 
     $self->{global} = { synchronized => 0, not_synchronized => 0, total_nodes => 0 };
-
+    my $checksums = {};
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
         my $instance = $1;
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
 
+        $checksums->{$result->{fgHaStatsGlobalChecksum}} = 1;
         $self->{nodes}->{$instance} = {
             serial => $result->{fgHaStatsSerial},
             hostname => $result->{fgHaStatsHostname},
             sync_status => $result->{fgHaStatsSyncStatus},
             role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? "master" : "slave",
+            checksum => $result->{fgHaStatsGlobalChecksum},
         };
         $result->{fgHaStatsSyncStatus} =~ s/ /_/;
         $self->{global}->{$result->{fgHaStatsSyncStatus}}++;
         $self->{global}->{total_nodes}++;
     }
 
+    $self->{global}->{total_checksums} = scalar(keys %$checksums);
     if (scalar(keys %{$self->{nodes}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No cluster nodes found');
         $self->{output}->option_exit();
@@ -226,15 +206,11 @@ Check cluster status (FORTINET-FORTIGATE-MIB).
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Set warning thresholds.
-Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
-
-=item B<--critical-*>
-
-Set critical thresholds.
-Can be: 'total-nodes', 'synchronized', 'not-synchronized'.
+Set thresholds.
+Can be: 'total-nodes', 'synchronized', 'not-synchronized',
+'total-checksums'.
 
 =item B<--warning-status>
 
@@ -249,4 +225,3 @@ Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}
 =back
 
 =cut
-    

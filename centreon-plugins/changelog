@@ -1,25 +1,39 @@
-2019-XX-XX Quentin Garnier <qgarnier@centreon.com>
+2019-07-04 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: RabbitMQ Rest API
+ * Plugin added: VMware VeloCloud Rest API
+ * Plugin added: InfluxDB
+ * Plugin added: MongoDB
+ * Plugin added: Aruba Instant SNMP
  * Plugin added: Cisco ACI APIC Rest API
  * Plugin added: OpenLDAP
  * Plugin added: SCCM
  * Plugin added: Cisco ESA XML API
- * Plugin added: MongoDB
+ * Plugin added: Protocol NRPE
  * Plugin added: Ovirt Rest API
  * Plugin added: Keepalived SNMP
  * Plugin added: Openweathermap Rest API
  * Plugin added: 3CX Rest API
  * Plugin added: Atto FiberBridge SNMP
  * Plugin added: Buffalo TeraStation SNMP
+ * Plugin added: PDU Schleifenbauer Gateway SNMP
+ * Plugin added: Ansible Tower
+ * Plugin added: Dell ME4 Rest API
+ * Plugin added: Avaya AES SNMP
+ * Plugin added: Arcseve UDP MSSQL
  * Mode added: [oracle] 'librarycacheusage'
  * Mode added: [oracle] 'dictionarycacheusage'
  * Mode added: [oracle] 'redologusage'
  * Enhancement: [haproxy/snmp] manage oss mib (#1475)
  * Enhancement: [oracle] Fix segfault with last DBD::Oracle
+ * Break: [elasticsearch] plugin refactoring
  * Break: [pdu/apc] modes refactoring
  * Break: [pdu/eaton] modes refactoring
  * Break: [apps/lmsensors] modes refactoring
  * Break: [cisco/standard] 'cpu', 'memory' refactoring
  * Break: [3par/ssh] modes refactoring
+ * Break: [mysql] 'threads-connected' refactoring
+ * Break: [snmp_standard] 'swap' refactoring
+ * Fix: Ctrl+F "Fix" on commits page
 
 2019-04-12 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Google Cloud Platform Compute Engine API

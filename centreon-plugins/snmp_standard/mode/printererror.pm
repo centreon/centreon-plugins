@@ -74,12 +74,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
-        "ok-status:s"       => { name => 'ok_status', default => '%{status} =~ /ok/' },
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '%{status} =~ /.*/' },
-        "critical-status:s" => { name => 'critical_status', default => '' },
+        'ok-status:s'       => { name => 'ok_status', default => '%{status} =~ /ok/' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /.*/' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
     return $self;
@@ -122,7 +121,10 @@ sub manage_selection {
         my $instance = $1;
         # 16 bits value
         my $value = unpack('S', $result->{$_});
-        
+        if (!defined($value)) {
+            $value = ord($result->{$_});
+        }
+
         $self->{printer}->{$instance} = { display => $instance, errors => {} };
         my $i = 0;
         foreach my $key (keys %errors_printer) {        

@@ -31,7 +31,7 @@ sub load {
 #     0,1  1   0 6CQUBA1HN5063G OK             100 n/a       No      No     
 #     2,3  0   0 6CQUBA1HN484RB OK             100 n/a       No      No     
 #     2,3  1   0 6CQUBA1HN484R9 OK             100 n/a       No      No     
-    push @{$self->{commands}}, 'echo "===showbattery===', 'showbattery';
+    push @{$self->{commands}}, 'echo "===showbattery==="', 'showbattery';
 }
 
 sub check {

@@ -47,6 +47,7 @@ sub new {
         'list-storages'     => 'os::linux::local::mode::liststorages',
         'memory'            => 'os::linux::local::mode::memory',
         'mountpoint'        => 'os::linux::local::mode::mountpoint',
+        'open-files'        => 'os::linux::local::mode::openfiles',
         'ntp'               => 'os::linux::local::mode::ntp',
         'packet-errors'     => 'os::linux::local::mode::packeterrors',
         'paging'            => 'os::linux::local::mode::paging',

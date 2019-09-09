@@ -145,10 +145,11 @@ sub get_access_token {
 
     if ($has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10)) {
         my $uri = URI::Encode->new({encode_reserved => 1});
+        my $encoded_client_secret = $uri->encode($self->{client_secret});
         my $encoded_graph_endpoint = $uri->encode($self->{graph_endpoint} . '/.default');
         my $post_data = 'grant_type=client_credentials' . 
             '&client_id=' . $self->{client_id} .
-            '&client_secret=' . $self->{client_secret} .
+            '&client_secret=' . $encoded_client_secret .
             '&scope=' . $encoded_graph_endpoint;
         
         $self->settings();

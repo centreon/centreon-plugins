@@ -46,7 +46,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     foreach my $name (keys %$counters) {
         $options{options}->add_options(arguments =>
                                 { 

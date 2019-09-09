@@ -45,15 +45,14 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port'},
-            "proto:s"               => { name => 'proto' },
-            "api-username:s"        => { name => 'api_username' },
-            "api-password:s"        => { name => 'api_password' },
-            "realm:s"               => { name => 'realm' },
-            "timeout:s"             => { name => 'timeout' },
-            "timeout:s"             => { name => 'timeout', default => 30 },
-            "reload-cache-time:s"   => { name => 'reload_cache_time', default => 7200 },
+            'hostname:s'            => { name => 'hostname' },
+            'port:s'                => { name => 'port'},
+            'proto:s'               => { name => 'proto' },
+            'api-username:s'        => { name => 'api_username' },
+            'api-password:s'        => { name => 'api_password' },
+            'realm:s'               => { name => 'realm' },
+            'timeout:s'             => { name => 'timeout' },
+            'reload-cache-time:s'   => { name => 'reload_cache_time', default => 7200 },
         });
     }
     
@@ -96,7 +95,6 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8006;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
-    $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
     $self->{realm} = (defined($self->{option_results}->{realm})) ? $self->{option_results}->{realm} : 'pam';
@@ -137,11 +135,10 @@ sub build_options_for_httplib {
     $self->{option_results}->{hostname} = $self->{hostname};
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
-    $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '';
+    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 300';
 }
 
 sub settings {

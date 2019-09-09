@@ -179,7 +179,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "app-guid:s"                    => { name => 'app_guid' },
         "warning-app-state:s"           => { name => 'warning_app_state' },

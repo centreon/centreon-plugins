@@ -28,23 +28,24 @@ use warnings;
 sub prefix_charges_output {
     my ($self, %options) = @_;
 
-    return "Service '" . $self->{option_results}->{service} . "' ";
+    return "Service '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'estimatedcharges', type => 0, cb_prefix_output => 'prefix_charges_output' },
+        { name => 'services', type => 1, cb_prefix_output => 'prefix_charges_output',
+          message_multiple => 'All services estimated charges are ok' },
     ];
 
-    $self->{maps_counters}->{estimatedcharges} = [
-        { label => 'billing', set => {
+    $self->{maps_counters}->{services} = [
+        { label => 'billing', nlabel => 'billing.estimatedcharges.usd', set => {
                 key_values => [ { name => 'estimated_charges' }, { name => 'display' } ],
-                output_template => 'estimated charges: %.2f USD',
+                output_template => 'Estimated Charges: %.2f USD',
                 perfdatas => [
-                    { label => 'billing', value => 'estimated_charges_absolute', template => '%.2f',
-                      unit => 'USD' },
+                    { value => 'estimated_charges_absolute', template => '%.2f', unit => 'USD',
+                      label_extra_instance => 1 },
                 ],
             }
         },
@@ -53,15 +54,13 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                    "service:s"      => { name => 'service' },
-                                    "currency:s"      => { name => 'currency', default => 'USD' },
-                                });
+    $options{options}->add_options(arguments => {
+        "service:s@"    => { name => 'service' },
+        "currency:s"    => { name => 'currency', default => 'USD' },
+    });
 
     return $self;
 }
@@ -87,20 +86,25 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $metric_results = $options{custom}->cloudwatch_get_metrics(
-        region => $self->{option_results}->{region},
-        namespace => 'AWS/Billing',
-        dimensions => [ { Name => 'ServiceName', Value => $self->{option_results}->{service} }, { Name => 'Currency',  Value => $self->{option_results}->{currency} } ],
-        metrics => ['EstimatedCharges'],
-        statistics => ['Maximum'],
-        timeframe => $self->{aws_timeframe},
-        period => $self->{aws_period},
-    );
+    foreach my $service (@{$self->{option_results}->{service}}) {
+        my $metric_results = $options{custom}->cloudwatch_get_metrics(
+            region => $self->{option_results}->{region},
+            namespace => 'AWS/Billing',
+            dimensions => [
+                { Name => 'ServiceName', Value => $service },
+                { Name => 'Currency',  Value => $self->{option_results}->{currency} }
+            ],
+            metrics => ['EstimatedCharges'],
+            statistics => ['Maximum'],
+            timeframe => $self->{aws_timeframe},
+            period => $self->{aws_period},
+        );
 
-    $self->{estimatedcharges}->{estimated_charges} = $metric_results->{'EstimatedCharges'}->{'maximum'} if defined($metric_results->{'EstimatedCharges'}->{'maximum'});
-    $self->{estimatedcharges}->{display} = $self->{option_results}->{service};
+        $self->{services}->{$service}->{estimated_charges} = $metric_results->{'EstimatedCharges'}->{'maximum'} if defined($metric_results->{'EstimatedCharges'}->{'maximum'});
+        $self->{services}->{$service}->{display} = $service;
+    }
 
-    if (scalar(keys %{$self->{estimatedcharges}}) <= 0) {
+    if (scalar(keys %{$self->{services}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No value.');
         $self->{output}->option_exit();
     }
@@ -124,7 +128,7 @@ See 'https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/billing-metr
 
 =item B<--service>
 
-Set the Amazon service (Required).
+Set the Amazon service (Required) (Can be multiple).
 
 =item B<--warning-billing>
 

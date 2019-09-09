@@ -31,15 +31,20 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'ap-connections'   => 'centreon::common::aruba::snmp::mode::apconnections',
-                         'ap-users'         => 'centreon::common::aruba::snmp::mode::apusers',
-                         'cpu'              => 'centreon::common::aruba::snmp::mode::cpu',
-                         'hardware'         => 'centreon::common::aruba::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'centreon::common::aruba::snmp::mode::memory',
-                         'storage'          => 'centreon::common::aruba::snmp::mode::storage',
-                         );
+        'ap-connections'        => 'centreon::common::aruba::snmp::mode::apconnections', # Deprecated
+        'ap-ssid-statistics'    => 'centreon::common::aruba::snmp::mode::apssidstatistics',
+        'ap-status'             => 'centreon::common::aruba::snmp::mode::apstatus',
+        'ap-users'              => 'centreon::common::aruba::snmp::mode::apusers', # Deprecated
+        'controller-status'     => 'centreon::common::aruba::snmp::mode::controllerstatus',
+        'cpu'                   => 'centreon::common::aruba::snmp::mode::cpu',
+        'discovery'             => 'centreon::common::aruba::snmp::mode::discovery',
+        'hardware'              => 'centreon::common::aruba::snmp::mode::hardware',
+        'interfaces'            => 'snmp_standard::mode::interfaces',
+        'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
+        'license'               => 'centreon::common::aruba::snmp::mode::license',
+        'memory'                => 'centreon::common::aruba::snmp::mode::memory',
+        'storage'               => 'centreon::common::aruba::snmp::mode::storage',
+    );
 
     return $self;
 }

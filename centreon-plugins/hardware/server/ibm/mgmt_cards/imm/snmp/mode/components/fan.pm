@@ -33,7 +33,7 @@ my $oid_fanEntry = '.1.3.6.1.4.1.2.3.51.3.1.3.2.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_fanEntry };
+    push @{$self->{request}}, { oid => $oid_fanEntry, start => $mapping->{fanDescr}->{oid}, end => $mapping->{fanSpeed}->{oid} };
 }
 
 sub check {

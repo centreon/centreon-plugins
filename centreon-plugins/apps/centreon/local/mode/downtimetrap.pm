@@ -55,7 +55,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                  "oid-trap:s"           => { name => 'oid_trap', default => '.1.3.6.1.4.1.50000.1.1' },

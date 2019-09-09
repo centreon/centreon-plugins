@@ -31,9 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'temperature'   => 'network::ucopia::wlc::snmp::mode::temperature',
-                        'users'         => 'network::ucopia::wlc::snmp::mode::users',
-                        );
+        'system'    => 'network::ucopia::wlc::snmp::mode::system',
+    );
 
     return $self;
 }

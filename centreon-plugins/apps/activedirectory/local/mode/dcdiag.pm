@@ -34,19 +34,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "config:s"            => { name => 'config' },
-                                  "language:s"          => { name => 'language', default => 'en' },
-                                  "dfsr"                => { name => 'dfsr' },
-                                  "noeventlog"          => { name => 'noeventlog' },
-                                  "nomachineaccount"    => { name => 'nomachineaccount' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                });
+    $options{options}->add_options(arguments => { 
+        'config:s'          => { name => 'config' },
+        'language:s'        => { name => 'language', default => 'en' },
+        'dfsr'              => { name => 'dfsr' },
+        'noeventlog'        => { name => 'noeventlog' },
+        'nomachineaccount'  => { name => 'nomachineaccount' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+    });
+
     $self->{os_is2003} = 0;
     $self->{os_is2008} = 0;
     $self->{os_is2012} = 0;
+    $self->{os_is2016} = 0;
     
     $self->{msg} = { global => undef, ok => undef, warning => undef, critical => undef };
     return $self;
@@ -72,12 +72,15 @@ sub check_version {
     # 5.1, 5.2 => XP/2003
     # 6.0, 6.1 => Vista/7/2008
     # 6.2, 6.3 => 2012
+    # 10.0 => 2016, 2019
     if ($ver_major == 5 && ($ver_minor == 1 || $ver_minor == 2)) {
         $self->{os_is2003} = 1;
     } elsif ($ver_major == 6 && ($ver_minor == 0 || $ver_minor == 1)) {
         $self->{os_is2008} = 1;
     } elsif ($ver_major == 6 && ($ver_minor == 2 || $ver_minor == 3)) {
         $self->{os_is2012} = 1;
+    } elsif ($ver_major == 10 && $ver_minor == 0) {
+        $self->{os_is2016} = 1;
     } else {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => 'OS version ' . $ver_major . '.' . $ver_minor . ' not managed.');
@@ -136,19 +139,21 @@ sub dcdiag {
     my $dcdiag_cmd = 'dcdiag /test:services /test:replications /test:advertising /test:fsmocheck /test:ridmanager';
     $dcdiag_cmd .= ' /test:machineaccount' if (!defined($self->{option_results}->{nomachineaccount}));
     $dcdiag_cmd .= ' /test:frssysvol' if ($self->{os_is2003} == 1);
-    $dcdiag_cmd .= ' /test:sysvolcheck' if ($self->{os_is2008} == 1 || $self->{os_is2012} == 1);
+    $dcdiag_cmd .= ' /test:sysvolcheck' if ($self->{os_is2008} == 1 || $self->{os_is2012} == 1 || $self->{os_is2016} == 1);
     
     if (!defined($self->{option_results}->{noeventlog})) {
         $dcdiag_cmd .= ' /test:frsevent /test:kccevent' if ($self->{os_is2003} == 1);
-        $dcdiag_cmd .= ' /test:frsevent /test:kccevent' if (($self->{os_is2008} == 1 || $self->{os_is2012} == 1) && !defined($self->{option_results}->{dfsr}));
-        $dcdiag_cmd .= ' /test:dfsrevent /test:kccevent' if (($self->{os_is2008} == 1 || $self->{os_is2012} == 1) && defined($self->{option_results}->{dfsr}));
+        $dcdiag_cmd .= ' /test:frsevent /test:kccevent' if (($self->{os_is2008} == 1 || $self->{os_is2012} == 1 || $self->{os_is2016} == 1) && !defined($self->{option_results}->{dfsr}));
+        $dcdiag_cmd .= ' /test:dfsrevent /test:kccevent' if (($self->{os_is2008} == 1 || $self->{os_is2012} == 1 || $self->{os_is2016} == 1) && defined($self->{option_results}->{dfsr}));
     }
     
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $dcdiag_cmd,
-                                                            command_path => undef,
-                                                            command_options => undef);
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $dcdiag_cmd,
+        command_path => undef,
+        command_options => undef
+    );
     
     my $match = 0;
     while ($stdout =~ /$self->{msg}->{global}/imsg) {

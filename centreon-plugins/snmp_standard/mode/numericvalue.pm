@@ -32,24 +32,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "oid:s"                   => { name => 'oid' },
-                                  "oid-type:s"              => { name => 'oid_type' },
-                                  "counter-per-seconds"     => { name => 'counter_per_seconds' },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "format:s"                => { name => 'format' },
-                                  "format-custom:s"         => { name => 'format_custom' },
-                                  "format-scale"            => { name => 'format_scale' },
-                                  "format-scale-type:s"     => { name => 'format_scale_type' },
-                                  "perfdata-unit:s"         => { name => 'perfdata_unit' },
-                                  "perfdata-name:s"         => { name => 'perfdata_name' },
-                                  "perfdata-min:s"          => { name => 'perfdata_min' },
-                                  "perfdata-max:s"          => { name => 'perfdata_max' },
-                                  "config-json:s"           => { name => 'config_json' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'oid:s'                   => { name => 'oid' },
+        'oid-type:s'              => { name => 'oid_type' },
+        'counter-per-seconds'     => { name => 'counter_per_seconds' },
+        'warning:s'               => { name => 'warning' },
+        'critical:s'              => { name => 'critical' },
+        'extracted-pattern:s'     => { name => 'extracted_pattern' },
+        'format:s'                => { name => 'format' },
+        'format-custom:s'         => { name => 'format_custom' },
+        'format-scale'            => { name => 'format_scale' },
+        'format-scale-type:s'     => { name => 'format_scale_type' },
+        'perfdata-unit:s'         => { name => 'perfdata_unit' },
+        'perfdata-name:s'         => { name => 'perfdata_name' },
+        'perfdata-min:s'          => { name => 'perfdata_min' },
+        'perfdata-max:s'          => { name => 'perfdata_max' },
+        'config-json:s'           => { name => 'config_json' },
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{use_statefile} = 0;
     return $self;
@@ -87,7 +87,7 @@ sub add_data {
     foreach (['oid_type', 'gauge'], ['counter_per_seconds'], ['format', 'current value is %s'], 
              ['format_custom', ''], ['format_scale'],
              ['perfdata_unit', ''], ['perfdata_name', 'value'],
-             ['perfdata_min', ''], ['perfdata_max', '']) {
+             ['perfdata_min', ''], ['perfdata_max', ''], ['extracted_pattern', '']) {
         if (defined($options{data}->{$_->[0]})) {
             $entry->{$_->[0]} = $options{data}->{$_->[0]};
         } elsif (defined($_->[1])) {
@@ -109,8 +109,10 @@ sub check_options {
 
     ($self->{entries}, $self->{oids}) = ([], []);
     if (defined($self->{option_results}->{config_json}) && $self->{option_results}->{config_json} ne '') {
-        centreon::plugins::misc::mymodule_load(module => 'JSON',
-                                               error_msg => "Cannot load module 'JSON'.");
+        centreon::plugins::misc::mymodule_load(
+            module => 'JSON',
+            error_msg => "Cannot load module 'JSON'."
+        );
         my $json = JSON->new;
         my $content;
         eval {
@@ -144,11 +146,27 @@ sub check_data {
     my ($self, %options) = @_;
     
     if (!defined($self->{results}->{$options{entry}->{oid}})) {
-        $self->{output}->output_add(severity => "UNKNOWN",
-                                    short_msg => "Cannot find oid:" . $options{entry}->{oid});
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot find oid:' . $options{entry}->{oid}
+        );
         return ;
     }
+
     my $value = $self->{results}->{$options{entry}->{oid}};
+    if (defined($options{entry}->{extracted_pattern}) && $options{entry}->{extracted_pattern} ne '') {
+        if ($value =~ /$options{entry}->{extracted_pattern}/ && defined($1)) {
+            $value = $1;
+        }
+    }
+    if ($value !~ /^\d+(\.\d+)?$/) {
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'oid value is not numeric (' . $value . ')'
+        );
+        return ;
+    }
+    
     if ($options{entry}->{oid_type} =~ /^counter$/i)  {
         my $old_timestamp = $self->{statefile_cache}->get(name => 'timestamp');
         my $old_value = $self->{statefile_cache}->get(name => 'value-' . $options{num});
@@ -204,7 +222,7 @@ sub run {
     
     if ($self->{use_statefile} == 1) {
         $self->{cache_datas} = {};
-        $self->{statefile_cache}->read(statefile => "snmpstandard_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex(join('-', @{$self->{request_oids}})));
+        $self->{statefile_cache}->read(statefile => 'snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . md5_hex(join('-', @{$self->{request_oids}})));
     }
 
     $self->{results} = $options{snmp}->get_leef(oids => $self->{request_oids}, nothing_quit => 1);
@@ -256,6 +274,10 @@ Can be 'counter' also. 'counter' will use a retention file.
 =item B<--counter-per-seconds>
 
 Convert counter value on a value per seconds (only with type 'counter').
+
+=item B<--extracted-pattern>
+
+Set pattern to extracted a number.
 
 =item B<--format>
 

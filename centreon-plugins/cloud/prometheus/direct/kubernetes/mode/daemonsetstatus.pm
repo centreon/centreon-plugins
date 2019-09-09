@@ -134,7 +134,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         "daemonset:s"           => { name => 'daemonset', default => 'daemonset=~".*"' },
         "warning-status:s"      => { name => 'warning_status', default => '%{up_to_date} < %{desired}' },

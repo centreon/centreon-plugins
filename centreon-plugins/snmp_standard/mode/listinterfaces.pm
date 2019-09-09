@@ -94,7 +94,6 @@ sub new {
     bless $self, $class;
     
     $self->{no_speed} = defined($options{no_speed}) && $options{no_speed} =~ /^[01]$/ ? $options{no_speed} : 0;
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments => { 
         "name"                    => { name => 'use_name' },
         "interface:s"             => { name => 'interface' },

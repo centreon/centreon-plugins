@@ -29,15 +29,19 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output { 
     my ($self, %options) = @_;
 
-    my $msg = 'health : ' . $self->{result_values}->{health};
+    my $msg = '';
+    if ($self->{result_values}->{service} !~ /^Has[A-Z]/) {
+        $msg .= 'error ';
+    }
+    $msg .= ': ' . $self->{result_values}->{error};
     return $msg;
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{error} = $options{new_datas}->{$self->{instance} . '_error'};
+    $self->{result_values}->{service} = $options{new_datas}->{$self->{instance} . '_service'};
     return 0;
 }
 
@@ -72,7 +76,7 @@ sub set_counters {
 
     $self->{maps_counters}->{service} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'health' }, { name => 'display' } ],
+                key_values => [ { name => 'error' }, { name => 'service' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -85,7 +89,7 @@ sub set_counters {
 sub prefix_service_output {
     my ($self, %options) = @_;
 
-    return "Service '" . $options{instance_value}->{display} . "' ";
+    return "3CX '" . $options{instance_value}->{service} ."' ";
 }
 
 sub new {
@@ -97,7 +101,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "unknown-status:s"  => { name => 'unknown_status', default => '' },
         "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{health} =~ /false/' },
+        "critical-status:s" => { name => 'critical_status', default => '%{error} =~ /true/' },
     });
 
     return $self;
@@ -123,27 +127,27 @@ sub manage_selection {
     foreach my $item (keys %$single) {
         # As of 3CX 15.5 / 16, we have Firewall, Phones, Trunks
         $self->{service}->{$item} = { 
-            display => $item, 
-            health => $single->{$item} ? 'true' : 'false',
+            service => $item, 
+            error => $single->{$item} ? 'false' : 'true',
         };
     }
     # As per 3CX support, $single->{Trunks} does not trigger if TrunksRegistered != TrunksTotal,
     # but only if "trunk is unsupported", so let's workaround
     $self->{service}->{HasUnregisteredTrunks} = { 
-        display => 'HasUnregisteredTrunks', 
-        health => ($system->{TrunksRegistered} < $system->{TrunksTotal}) ? 'false' : 'true',
+        service => 'HasUnregisteredTrunks', 
+        error => ($system->{TrunksRegistered} < $system->{TrunksTotal}) ? 'true' : 'false',
     };
     $self->{service}->{HasNotRunningServices} = {
-        display => 'HasNotRunningServices',
-        health => $system->{HasNotRunningServices} ? 'false' : 'true',
+        service => 'HasNotRunningServices',
+        error => $system->{HasNotRunningServices} ? 'true' : 'false',
     };
     $self->{service}->{HasUnregisteredSystemExtensions} = {
-        display => 'HasUnregisteredSystemExtensions', 
-        health => $system->{HasUnregisteredSystemExtensions} ? 'false' : 'true',
+        service => 'HasUnregisteredSystemExtensions', 
+        error => $system->{HasUnregisteredSystemExtensions} ? 'true' : 'false',
     };
     $self->{service}->{HasUpdatesAvailable} = {
-        display => 'HasUpdatesAvailable', 
-        health => scalar(@$update) ? 'false' : 'true',
+        service => 'HasUpdatesAvailable', 
+        error => scalar(@$update) ? 'true' : 'false',
     };
     
     $self->{global} = {
@@ -165,17 +169,17 @@ Check system health
 =item B<--unknown-status>
 
 Set unknown threshold for status.
-Can used special variables like: %{health}, %{display}
+Can used special variables like: %{error}, %{service}
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{health}, %{display}
+Can used special variables like: %{error}, %{service}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{health} =~ /false/').
-Can used special variables like: %{health}, %{display}
+Set critical threshold for status (Default: '%{error} =~ /false/').
+Can used special variables like: %{error}, %{service}
 
 =item B<--warning-*> B<--critical-*>
 
