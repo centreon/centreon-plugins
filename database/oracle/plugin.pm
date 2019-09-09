@@ -58,7 +58,7 @@ sub new {
         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
         'temp-tablespace'          => 'database::oracle::mode::temptablespace',
         'tnsping'                  => 'database::oracle::mode::tnsping',
-        'undo-usage'               => 'database::oracle::mode::undotablespace',
+        'undo-tablespace'          => 'database::oracle::mode::undotablespace',
     );
 
     $self->{sql_modes}{dbi} = 'database::oracle::dbi';
