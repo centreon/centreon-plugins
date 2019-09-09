@@ -282,7 +282,7 @@ sub manage_selection {
             name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
         my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
-        $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics, $self->{option_results}->{database}services WHERE index_data.id = metrics.index_id AND services.service_id = index_data.service_id ";
+        $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics, $self->{option_results}->{database}services WHERE index_data.id = metrics.index_id AND services.service_id = index_data.service_id AND services.host_id = index_data.host_id ";
         $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "'" if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
         $query .= "AND index_data.host_name LIKE '" . $config_data->{filters}->{host} . "'" if (defined($config_data->{filters}->{host}) && ($config_data->{filters}->{host} ne ''));
         $query .= "AND metrics.metric_name LIKE '" . $config_data->{filters}->{metric} . "'" if (defined($config_data->{filters}->{metric}) && ($config_data->{filters}->{metric} ne ''));
