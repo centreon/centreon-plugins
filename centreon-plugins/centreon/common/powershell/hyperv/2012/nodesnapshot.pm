@@ -39,9 +39,9 @@ Try {
     $ErrorActionPreference = "Stop"
     $vms = Get-VM
     if ($vms.Length -gt 0) {
-        $snapshots = Get-VMSnapshot -VMName *
+        $snapshots = $vms | Get-VMSnapshot
     }
-    
+
     Foreach ($vm in $vms) {
         $i=0
         $note = $vm.Notes -replace "\r",""
