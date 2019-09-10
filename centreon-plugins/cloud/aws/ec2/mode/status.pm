@@ -106,13 +106,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "type:s"	            => { name => 'type' },
-                                    "name:s@"	            => { name => 'name' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /failed/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        "type:s"	            => { name => 'type' },
+        "name:s@"	            => { name => 'name' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /failed/i' },
+    });
     
     return $self;
 }

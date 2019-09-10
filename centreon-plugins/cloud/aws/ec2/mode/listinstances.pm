@@ -30,8 +30,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
@@ -53,7 +52,8 @@ sub run {
     $self->manage_selection(%options);
     foreach (@{$self->{instances}}) {
         next if ($_->{Type} !~ m/instance/);
-        $self->{output}->output_add(long_msg => sprintf("[Id = %s][AvailabilityZone = %s][InstanceType = %s][State = %s][Tags = %s][KeyName = %s]",
+        $self->{output}->output_add(
+            long_msg => sprintf("[Id = %s][AvailabilityZone = %s][InstanceType = %s][State = %s][Tags = %s][KeyName = %s]",
             $_->{Name}, $_->{AvailabilityZone}, $_->{InstanceType}, $_->{State}, $_->{Tags}, $_->{KeyName}));
     }
     
