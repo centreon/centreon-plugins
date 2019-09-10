@@ -47,55 +47,56 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'aws_instances', type => 1, cb_prefix_output => 'prefix_awsinstance_output', message_multiple => 'All instances are ok' },
+        { name => 'aws_instances', type => 1, cb_prefix_output => 'prefix_awsinstance_output',
+          message_multiple => 'All instances are ok' },
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-pending', set => {
+        { label => 'pending', nlabel => 'ec2.instances.status.pending.count', set => {
                 key_values => [ { name => 'pending' }  ],
-                output_template => "pending : %s",
+                output_template => "Pending : %s",
                 perfdatas => [
-                    { label => 'total_pending', value => 'pending_absolute', template => '%d', min => 0 },
+                    { value => 'pending_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-running', set => {
+        { label => 'running', nlabel => 'ec2.instances.status.running.count', set => {
                 key_values => [ { name => 'running' }  ],
-                output_template => "running : %s",
+                output_template => "Running : %s",
                 perfdatas => [
-                    { label => 'total_running', value => 'running_absolute', template => '%d', min => 0 },
+                    { value => 'running_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-shutting-down', set => {
+        { label => 'shuttingdown', nlabel => 'ec2.instances.status.shuttingdown.count', set => {
                 key_values => [ { name => 'shutting-down' }  ],
-                output_template => "shutting-down : %s",
+                output_template => "Shutting Down : %s",
                 perfdatas => [
-                    { label => 'total_shutting_down', value => 'shutting-down_absolute', template => '%d', min => 0 },
+                    { value => 'shutting-down_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-terminated', set => {
+        { label => 'terminated', nlabel => 'ec2.instances.status.terminated.count', set => {
                 key_values => [ { name => 'terminated' }  ],
-                output_template => "terminated : %s",
+                output_template => "Terminated : %s",
                 perfdatas => [
-                    { label => 'total_terminated', value => 'terminated_absolute', template => '%d', min => 0 },
+                    { value => 'terminated_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-stopping', set => {
+        { label => 'stopping', nlabel => 'ec2.instances.status.stopping.count', set => {
                 key_values => [ { name => 'stopping' }  ],
-                output_template => "stopping : %s",
+                output_template => "Stopping : %s",
                 perfdatas => [
-                    { label => 'total_stopping', value => 'stopping_absolute', template => '%d', min => 0 },
+                    { value => 'stopping_absolute', template => '%d', min => 0 },
                 ],
             }
         },
-        { label => 'total-stopped', set => {
+        { label => 'stopped', nlabel => 'ec2.instances.status.stopped.count', set => {
                 key_values => [ { name => 'stopped' }  ],
-                output_template => "stopped : %s",
+                output_template => "Stopped : %s",
                 perfdatas => [
-                    { label => 'total_stopped', value => 'stopped_absolute', template => '%d', min => 0 },
+                    { value => 'stopped_absolute', template => '%d', min => 0 },
                 ],
             }
         },
@@ -115,16 +116,15 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "region:s"            => { name => 'region' },
-                                "filter-instanceid:s" => { name => 'filter_instanceid' },
-                                "warning-status:s"    => { name => 'warning_status', default => '' },
-                                "critical-status:s"   => { name => 'critical_status', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        "region:s"            => { name => 'region' },
+        "filter-instanceid:s" => { name => 'filter_instanceid' },
+        "warning-status:s"    => { name => 'warning_status', default => '' },
+        "critical-status:s"   => { name => 'critical_status', default => '' },
+    });
     
     return $self;
 }
@@ -192,7 +192,7 @@ Check EC2 instances status.
 
 Example: 
 perl centreon_plugins.pl --plugin=cloud::aws::ec2::plugin --custommode=paws --mode=instances-status --region='eu-west-1'
---filter-instanceid='.*' --filter-counters='^total-running$' --critical-total-running='10' --verbose
+--filter-instanceid='.*' --filter-counters='^running$' --critical-running='10' --verbose
 
 See 'https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstanceStatus.html' for more informations.
 
@@ -201,7 +201,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/APIReference/API_DescribeInstance
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^total-running$'
+Example: --filter-counters='^running$'
 
 =item B<--filter-instanceid>
 
@@ -217,17 +217,11 @@ Can used special variables like: %{state}, %{display}
 Set critical threshold for status (Default: '').
 Can used special variables like: %{state}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
 Threshold warning.
-Can be: 'total-pending', 'total-running', 'total-shutting-down', 
-'total-terminated', 'total-stopping', 'total-stopped'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total-pending', 'total-running', 'total-shutting-down', 
-'total-terminated', 'total-stopping', 'total-stopped'.
+Can be: 'pending', 'running', 'shuttingdown', 
+'terminated', 'stopping', 'stopped'.
 
 =back
 
