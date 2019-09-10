@@ -115,8 +115,8 @@ sub manage_selection {
 
     foreach my $node (keys %{$nodes_stats->{nodes}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $node !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node . "': no matching filter.", debug => 1);
+            $nodes_stats->{nodes}->{$node}->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $nodes_stats->{nodes}->{$node}->{name} . "': no matching filter.", debug => 1);
             next;
         }
 
