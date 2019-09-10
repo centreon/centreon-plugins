@@ -23,6 +23,7 @@ package cloud::aws::custom::paws;
 use strict;
 use warnings;
 use Paws;
+use Paws::Net::LWPCaller;
 use DateTime;
 
 sub new {
@@ -48,6 +49,7 @@ sub new {
             "period:s"            => { name => 'period' },
             "statistic:s@"        => { name => 'statistic' },
             "zeroed"              => { name => 'zeroed' },
+            "proxyurl:s"          => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
@@ -83,6 +85,11 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
+    if (defined($self->{option_results}->{proxyurl}) && $self->{option_results}->{proxyurl} ne '') {
+        $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
+        $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
+    }
+
     if (defined($self->{option_results}->{aws_secret_key}) && $self->{option_results}->{aws_secret_key} ne '') {
         $ENV{AWS_SECRET_KEY} = $self->{option_results}->{aws_secret_key};
     }
@@ -112,7 +119,8 @@ sub cloudwatch_get_metrics {
     
     my $metric_results = {};
     eval {
-        my $cw = Paws->service('CloudWatch', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $options{region});
         my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601;
         my $end_time = DateTime->now->iso8601;
         
@@ -169,7 +177,8 @@ sub cloudwatch_get_alarms {
 
     my $alarm_results = [];
     eval {
-        my $cw = Paws->service('CloudWatch', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $options{region});
         my $alarms = $cw->DescribeAlarms();
         foreach my $alarm (@{$alarms->{MetricAlarms}}) {
             push @$alarm_results, {
@@ -193,7 +202,8 @@ sub cloudwatch_list_metrics {
     
     my $metric_results = [];
     eval {
-        my $cw = Paws->service('CloudWatch', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $options{region});
         my %cw_options = ();
         $cw_options{Namespace} = $options{namespace} if (defined($options{namespace}));
         $cw_options{MetricName} = $options{metric} if (defined($options{metric}));
@@ -227,7 +237,8 @@ sub ec2_get_instances_status {
     
     my $instance_results = {};
     eval {
-        my $ec2 = Paws->service('EC2', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
         my $instances = $ec2->DescribeInstanceStatus(DryRun => 0, IncludeAllInstances => 1);
         
         foreach (@{$instances->{InstanceStatuses}}) {
@@ -248,7 +259,8 @@ sub ec2_list_resources {
     
     my $resource_results = [];
     eval {
-        my $ec2 = Paws->service('EC2', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
         my $list_instances = $ec2->DescribeInstances(DryRun => 0);
         
         foreach my $reservation (@{$list_instances->{Reservations}}) {
@@ -291,7 +303,8 @@ sub asg_get_resources {
 
     my $autoscaling_groups = {};
     eval {
-        my $asg = Paws->service('AutoScaling', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $asg = Paws->service('AutoScaling', caller => $lwp_caller, region => $options{region});
         $autoscaling_groups = $asg->DescribeAutoScalingGroups();
     };
     if ($@) {
@@ -307,7 +320,8 @@ sub rds_get_instances_status {
     
     my $instance_results = {};
     eval {
-        my $rds = Paws->service('RDS', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
         my $instances = $rds->DescribeDBInstances();
         foreach (@{$instances->{DBInstances}}) {
             $instance_results->{$_->{DBInstanceIdentifier}} = { state => $_->{DBInstanceStatus} };
@@ -326,7 +340,8 @@ sub rds_list_instances {
     
     my $instance_results = [];
     eval {
-        my $rds = Paws->service('RDS', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
         my $list_instances = $rds->DescribeDBInstances();
         
         foreach my $instance (@{$list_instances->{DBInstances}}) {
@@ -352,7 +367,8 @@ sub rds_list_clusters {
     
     my $cluster_results = [];
     eval {
-        my $rds = Paws->service('RDS', region => $options{region});
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
         my $list_clusters = $rds->DescribeDBClusters();
         
         foreach my $cluster (@{$list_clusters->{DBClusters}}) {
@@ -416,6 +432,10 @@ Set cloudwatch statistics (Can be: 'minimum', 'maximum', 'average', 'sum').
 
 Set metrics value to 0 if none. Usefull when CloudWatch
 does not return value when not defined.
+
+=item B<--proxyurl>
+
+Proxy URL if any
 
 =back
 

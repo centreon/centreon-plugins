@@ -531,6 +531,10 @@ Command path (Default: none).
 
 Command options (Default: none).
 
+=item B<--proxyurl>
+
+Proxy URL if any
+
 =back
 
 =head1 DESCRIPTION
