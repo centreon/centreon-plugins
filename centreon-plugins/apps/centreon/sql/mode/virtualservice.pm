@@ -283,9 +283,9 @@ sub manage_selection {
         };
         my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
         $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics, $self->{option_results}->{database}services WHERE index_data.id = metrics.index_id AND services.service_id = index_data.service_id AND services.host_id = index_data.host_id ";
-        $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "'" if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
-        $query .= "AND index_data.host_name LIKE '" . $config_data->{filters}->{host} . "'" if (defined($config_data->{filters}->{host}) && ($config_data->{filters}->{host} ne ''));
-        $query .= "AND metrics.metric_name LIKE '" . $config_data->{filters}->{metric} . "'" if (defined($config_data->{filters}->{metric}) && ($config_data->{filters}->{metric} ne ''));
+        $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "' " if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
+        $query .= "AND index_data.host_name LIKE '" . $config_data->{filters}->{host} . "' " if (defined($config_data->{filters}->{host}) && ($config_data->{filters}->{host} ne ''));
+        $query .= "AND metrics.metric_name LIKE '" . $config_data->{filters}->{metric} . "' " if (defined($config_data->{filters}->{metric}) && ($config_data->{filters}->{metric} ne ''));
         $query .= "AND services.enabled = '1'";
         $self->{sql}->query(query => $query);
         while ((my $row = $self->{sql}->fetchrow_hashref())) {
@@ -311,14 +311,18 @@ sub manage_selection {
 
             next if (scalar(@{$self->{vmetrics}->{$vcurve}->{values}}) == 0);
 
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    sum(@{$self->{vmetrics}->{$vcurve}->{values}})/scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                sum(@{$self->{vmetrics}->{$vcurve}->{values}}) / scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
             $self->{vmetrics}->{$vcurve}->{aggregated_value} = eval "$self->{vmetrics}->{$vcurve}->{aggregated_value} $config_data->{virtualcurve}->{$vcurve}->{custom}" if (defined($config_data->{virtualcurve}->{$vcurve}->{custom}));
 
             $self->{vmetrics}->{$vcurve}->{unit} = (defined($config_data->{virtualcurve}->{$vcurve}->{unit})) ? $config_data->{virtualcurve}->{$vcurve}->{unit} : '';
@@ -326,11 +330,11 @@ sub manage_selection {
             $self->{vmetrics}->{$vcurve}->{max} = (defined($config_data->{virtualcurve}->{$vcurve}->{max})) ? $config_data->{virtualcurve}->{$vcurve}->{max} : '';
 
             if (defined($self->{option_results}->{'warning-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{warning})) {
-               $self->{perfdata}->threshold_validate(label => 'warning-global-'.$vcurve,
+               $self->{perfdata}->threshold_validate(label => 'warning-global-' . $vcurve,
                                                      value => (defined($self->{option_results}->{'warning-global'})) ? $self->{option_results}->{'warning-global'} : $config_data->{virtualcurve}->{$vcurve}->{warning});
             }
             if (defined($self->{option_results}->{'critical-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{critical})) {
-               $self->{perfdata}->threshold_validate(label => 'critical-global-'.$vcurve,
+               $self->{perfdata}->threshold_validate(label => 'critical-global-' . $vcurve,
                                                      value => (defined($self->{option_results}->{'critical-global'})) ? $self->{option_results}->{'critical-global'} : $config_data->{virtualcurve}->{$vcurve}->{critical});
             }
 
