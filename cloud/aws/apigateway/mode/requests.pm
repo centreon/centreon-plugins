@@ -28,18 +28,18 @@ use warnings;
 my %metrics_mapping = (
     'Count' => {
         'output' => 'Client Requests',
-        'label' => 'request-count',
-        'nlabel' => 'requests.count'
+        'label' => 'request-client',
+        'nlabel' => 'apigateway.requests.client.count'
     },
     '4XXError' => {
         'output' => 'HTTP 4XX Errors',
-        'label' => 'httpcode-4xx-errors',
-        'nlabel' => 'requests.httpcode.4xx.count'
+        'label' => 'requests-4xx-errors',
+        'nlabel' => 'apigateway.requests.errors.4xx.count'
     },
     '5XXError' => {
         'output' => 'HTTP 5XX Errors',
-        'label' => 'httpcode-5xx-errors',
-        'nlabel' => 'requests.httpcode.5xx.count'
+        'label' => 'requests-5xx-errors',
+        'nlabel' => 'apigateway.requests.errors.5xx.count'
     },
 );
 
@@ -191,12 +191,12 @@ Filter metrics (Can be: 'Count', '4XXError', '5XXError')
 =item B<--warning-*>
 
 Thresholds warning 
-star substitusion possibilities: request-count, httpcode-4xx-errors, httpcode-5xx-errors
+star substitusion possibilities: request-client, requests-4xx-errors, requests-5xx-errors
 
 =item B<--critical-*>
 
 Thresholds critical
-star substitusion possibilities: request-count, httpcode-4xx-errors, httpcode-5xx-errors
+star substitusion possibilities: request-client, requests-4xx-errors, requests-5xx-errors
 
 =back
 

@@ -28,54 +28,54 @@ use warnings;
 my %metrics_mapping = (
     'GetRecords.IteratorAgeMilliseconds' => {
         'output' => 'Get Records Iterator Age',
-        'label' => 'get-record-iterator-age',
-        'nlabel' => 'kinesis.stream.records.get.iteratorage.ms',
+        'label' => 'records-get-iteratorage',
+        'nlabel' => 'kinesis.stream.records.get.iteratorage.milliseconds',
         'perf_unit' => 'ms',
         'change_bytes' => '0',
         'stats' => { 'sum' => 'false' }
     },
     'GetRecords.Bytes' => {
         'output' => 'Get Records Bytes',
-        'label' => 'get-record-bytes',
-        'nlabel' => 'kinesis.stream.get.records.bytes',
+        'label' => 'records-get-volume',
+        'nlabel' => 'kinesis.stream.records.get.volume.bytes',
         'perf_unit' => 'B',
         'change_bytes' => '2',
     },
     'GetRecords.Latency' => {
         'output' => 'Get Records Latency',
-        'label' => 'get-record-latency',
-        'nlabel' => 'kinesis.stream.get.records.latency.ms',
+        'label' => 'records-get-latency',
+        'nlabel' => 'kinesis.stream.records.get.latency.milliseconds',
         'perf_unit' => 'ms',
         'change_bytes' => '0',
         'stats' => { 'sum' => 'false' }
     },
     'GetRecords.Success' => {
         'output' => 'Get Records Success',
-        'label' => 'get-record-success',
-        'nlabel' => 'kinesis.stream.get.records.success.count',
+        'label' => 'records-get-success',
+        'nlabel' => 'kinesis.stream.records.get.success.count',
         'perf_unit' => '',
         'change_bytes' => '0',
         'stats' => { 'average' => 'false' }
     },
     'PutRecord.Latency' => {
         'output' => 'Put Records Latency',
-        'label' => 'put-record-latency',
-        'nlabel' => 'kinesis.stream.put.records.latency.ms',
+        'label' => 'records-put-latency',
+        'nlabel' => 'kinesis.stream.records.put.latency.milliseconds',
         'perf_unit' => 'ms',
         'change_bytes' => '0',
         'stats' => { 'sum' => 'false' }
     },
     'PutRecord.Bytes' => {
         'output' => 'Put Records Bytes',
-        'label' => 'put-record-bytes',
-        'nlabel' => 'kinesis.stream.put.records.bytes',
+        'label' => 'records-put-volume',
+        'nlabel' => 'kinesis.stream.records.put.volume.bytes',
         'perf_unit' => 'B',
         'change_bytes' => '2'
     },
     'PutRecord.Success' => {
         'output' => 'Put Records Success',
-        'label' => 'put-record-success',
-        'nlabel' => 'kinesis.stream.put.records.success.count',
+        'label' => 'records-put-success',
+        'nlabel' => 'kinesis.stream.records.put.success.count',
         'perf_unit' => '',
         'change_bytes' => '0',
         'stats' => { 'average' => 'false' }
@@ -228,14 +228,14 @@ Filter metrics (Can be: 'GetRecords.IteratorAgeMilliseconds', 'GetRecords.Bytes'
 =item B<--warning-*>
 
 Thresholds warning
-can be: 'get-record-iterator-age', 'get-record-bytes', 'get-record-success', 'get-record-latency',
-'put-record-bytes', 'put-record-success', 'put-record-latency'
+can be: 'records-get-iteratorage', 'records-get-volume', 'records-get-latency', 'records-get-success',
+'records-put-volume', 'records-put-latency', 'records-get-success',
 
 =item B<--critical-*>
 
 Thresholds critical
-can be: 'get-record-iterator-age', 'get-record-bytes', 'get-record-success', 'get-record-latency',
-'put-record-bytes', 'put-record-success', 'put-record-latency'
+can be: 'records-get-iteratorage', 'records-get-volume', 'records-get-latency', 'records-get-success',
+'records-put-volume', 'records-put-latency', 'records-get-success',
 
 =back
 

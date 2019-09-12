@@ -31,14 +31,14 @@ my %metrics_mapping = (
         'output_unit' => 'ms',
         'perfdata_unit' => 'ms',
         'label' => 'client-latency',
-        'nlabel' => 'apigateway.client.latency.ms'
+        'nlabel' => 'apigateway.client.latency.milliseconds'
     },
     'IntegrationLatency' => {
         'output' => 'Integration Latency',
         'output_unit' => 'ms',
         'perfdata_unit' => 'ms',
         'label' => 'backend-latency',
-        'nlabel' => 'apigateway.backend.latency.ms'
+        'nlabel' => 'apigateway.backend.latency.milliseconds'
     },
 );
 
