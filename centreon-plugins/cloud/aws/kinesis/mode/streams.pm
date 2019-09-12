@@ -28,30 +28,30 @@ use warnings;
 my %metrics_mapping = (
     'IncomingBytes' => {
         'output' => 'Incoming Bytes',
-        'label' => 'incoming-bytes',
-        'nlabel' => 'kinesis.stream.incoming.bytes',
+        'label' => 'incoming-volume',
+        'nlabel' => 'kinesis.stream.incoming.volume.bytes',
         'perf_unit' => 'B',
         'change_bytes' => '2'
     },
     'IncomingRecords' => {
         'output' => 'Incoming Records',
         'label' => 'incoming-records',
-        'nlabel' => 'kinesis.stream.incoming.records',
+        'nlabel' => 'kinesis.stream.incoming.records.count',
         'perf_unit' => '',
         'change_bytes' => '0',
         'stats' => { 'average' => 'false' }
     },
     'OutgoingBytes' => {
         'output' => 'Outgoing Bytes',
-        'label' => 'outgoing-bytes',
-        'nlabel' => 'kinesis.stream.outgoing.bytes',
+        'label' => 'outgoing-volume',
+        'nlabel' => 'kinesis.stream.outgoing.volume.bytes',
         'perf_unit' => 'B',
         'change_bytes' => '2'
     },
     'OutgoingRecords' => {
         'output' => 'Outgoing Records',
         'label' => 'outgoing-records',
-        'nlabel' => 'kinesis.stream.outgoing.records',
+        'nlabel' => 'kinesis.stream.outgoing.records.count',
         'perf_unit' => '',
         'change_bytes' => '0',
         'stats' => { 'average' => 'false' }
@@ -205,12 +205,12 @@ Filter metrics (Can be: 'IncomingBytes', 'IncomingRecords', 'OutgoingBytes', 'Ou
 =item B<--warning-*>
 
 Thresholds warning
-can be: 'incoming-bytes', 'incoming-records', 'outgoing-bytes', 'outgoing-records'.
+can be: 'incoming-bytes', 'incoming-records', 'outgoing-volume', 'outgoing-volume'.
 
 =item B<--critical-*>
 
 Thresholds critical
-can be: 'incoming-bytes', 'incoming-records', 'outgoing-bytes', 'outgoing-records'.
+can be: 'incoming-bytes', 'incoming-records', 'outgoing-volume', 'outgoing-volume'.
 
 =back
 
