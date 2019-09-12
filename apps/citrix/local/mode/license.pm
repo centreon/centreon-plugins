@@ -29,12 +29,13 @@ use Win32::OLE;
 sub custom_license_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Licenses Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+    my $msg = sprintf("Licenses Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $self->{result_values}->{total_absolute},
+        $self->{result_values}->{used_absolute},
         $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute});
+        $self->{result_values}->{free_absolute},
+        $self->{result_values}->{prct_free_absolute}
+    );
     return $msg;
 }
 
