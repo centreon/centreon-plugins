@@ -135,11 +135,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, force_new_perfdata => 1,  %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "stream-name:s@"  => { name => 'stream_name' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "stream-name:s@"  => { name => 'stream_name' },
+        "filter-metric:s" => { name => 'filter_metric' },
+    });
     
     return $self;
 }
@@ -225,17 +224,13 @@ Set the stream name (Required) (Can be multiple).
 
 Filter metrics (Can be: 'GetRecords.IteratorAgeMilliseconds', 'GetRecords.Bytes', ) 
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds warning
-can be: 'records-get-iteratorage', 'records-get-volume', 'records-get-latency', 'records-get-success',
-'records-put-volume', 'records-put-latency', 'records-get-success',
-
-=item B<--critical-*>
-
-Thresholds critical
-can be: 'records-get-iteratorage', 'records-get-volume', 'records-get-latency', 'records-get-success',
-'records-put-volume', 'records-put-latency', 'records-get-success',
+can be: 'records-get-iteratorage', 'records-get-volume',
+'records-get-latency', 'records-get-success',
+'records-put-volume', 'records-put-latency',
+'records-get-success',
 
 =back
 

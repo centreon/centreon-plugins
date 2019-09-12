@@ -95,11 +95,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, force_new_perfdata => 1,  %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "api-name:s@"   => { name => 'api_name' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "api-name:s@"   => { name => 'api_name' },
+        "filter-metric:s" => { name => 'filter_metric' },
+    });
     
     return $self;
 }
@@ -185,14 +184,9 @@ Set the API name (Required) (Can be multiple).
 
 Filter metrics (Can be: 'Latency', 'IntegrationLatency') 
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds warning
-star substitution possibilities: client-latency, backend-latency
-
-=item B<--critical-*>
-
-Thresholds critical
 star substitution possibilities: client-latency, backend-latency
 
 =back

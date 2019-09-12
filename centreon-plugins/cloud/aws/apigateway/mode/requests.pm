@@ -28,17 +28,17 @@ use warnings;
 my %metrics_mapping = (
     'Count' => {
         'output' => 'Client Requests',
-        'label' => 'request-client',
+        'label' => 'requests-client',
         'nlabel' => 'apigateway.requests.client.count'
     },
     '4XXError' => {
         'output' => 'HTTP 4XX Errors',
-        'label' => 'requests-4xx-errors',
+        'label' => 'requests-errors-4xx',
         'nlabel' => 'apigateway.requests.errors.4xx.count'
     },
     '5XXError' => {
         'output' => 'HTTP 5XX Errors',
-        'label' => 'requests-5xx-errors',
+        'label' => 'requests-errors-5xx',
         'nlabel' => 'apigateway.requests.errors.5xx.count'
     },
 );
@@ -96,11 +96,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, force_new_perfdata => 1,  %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "api-name:s@"	  => { name => 'api_name' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "api-name:s@"	  => { name => 'api_name' },
+        "filter-metric:s" => { name => 'filter_metric' },
+    });
     
     return $self;
 }
@@ -188,15 +187,11 @@ Set the api name (Required) (Can be multiple).
 
 Filter metrics (Can be: 'Count', '4XXError', '5XXError') 
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds warning 
-star substitusion possibilities: request-client, requests-4xx-errors, requests-5xx-errors
-
-=item B<--critical-*>
-
-Thresholds critical
-star substitusion possibilities: request-client, requests-4xx-errors, requests-5xx-errors
+star substitusion possibilities: requests-client,
+requests-errors-4xx, requests-errors-5xx
 
 =back
 
