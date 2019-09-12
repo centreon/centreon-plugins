@@ -81,7 +81,7 @@ sub manage_selection {
     	$extra_options.= ' -j '.$self->{option_results}->{error_id};
     }
     if (defined($self->{option_results}->{exclude_id}) && $self->{option_results}->{exclude_id} ne ''){
-    	$extra_options.= ' -k '.$self->{option_results}->{exclude_id};
+    	$extra_options.= ' -k ' . $self->{option_results}->{exclude_id};
     }
     if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} ne ''){
         my $retention = time() - $self->{option_results}->{retention};
@@ -90,23 +90,23 @@ sub manage_selection {
         }
         my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($retention);
         $year = $year - 100;
-        if (length($sec)==1){
-            $sec = '0'.$sec;
+        if (length($sec) == 1){
+            $sec = '0' . $sec;
         }
-        if (length($min)==1){
-            $min = '0'.$min;
+        if (length($min) == 1){
+            $min = '0' . $min;
         }
-        if (length($hour)==1){
-            $hour = '0'.$hour;
+        if (length($hour) == 1){
+            $hour = '0' . $hour;
         }
-        if (length($mday)==1){
-            $mday = '0'.$mday;
+        if (length($mday) == 1){
+            $mday = '0' . $mday;
         }
         $mon = $mon + 1;
-        if (length($mon)==1){
-            $mon = '0'.$mon;
+        if (length($mon) == 1){
+            $mon = '0' . $mon;
         }
-        $retention = $mon.$mday.$hour.$min.$year;
+        $retention = $mon . $mday . $hour . $min . $year;
         $extra_options .= ' -s '.$retention;
     }
     
@@ -127,7 +127,7 @@ sub manage_selection {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
         
         my ($identifier, $timestamp, $resource_name, $description) = ($1, $2, $5, $6);
-        $self->{result}->{$timestamp.'~'.$identifier.'~'.$resource_name} = {description => $description};
+        $self->{result}->{ $timestamp . '~' . $identifier . '~' . $resource_name } = { description => $description };
     }
 }
 
@@ -140,12 +140,14 @@ sub run {
     }
     
     $self->manage_selection();
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("No error found%s.", $extra_message));
-    
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("No error found%s.", $extra_message)
+    );
+
     my $total_error = 0;
     foreach my $errpt_error (sort(keys %{$self->{result}})) {
-	    my @split_error = split ('~',$errpt_error);
+	    my @split_error = split ('~', $errpt_error);
 	    my $timestamp = $split_error[0];
         my $identifier = $split_error[1];
         my $resource_name = $split_error[2];
@@ -173,10 +175,12 @@ sub run {
     }
 
     if ($total_error != 0) {
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf("%s error(s) found(s)%s", $total_error, $extra_message));
+        $self->{output}->output_add(
+            severity => 'critical',
+            short_msg => sprintf("%s error(s) found(s)%s", $total_error, $extra_message)
+        );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
