@@ -111,11 +111,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, force_new_perfdata => 1,  %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "stream-name:s@"  => { name => 'stream_name' },
-                                    "filter-metric:s" => { name => 'filter_metric' },
-                                });
+    $options{options}->add_options(arguments => {
+        "stream-name:s@"  => { name => 'stream_name' },
+        "filter-metric:s" => { name => 'filter_metric' },
+    });
     
     return $self;
 }
@@ -200,17 +199,14 @@ Set the stream name (Required) (Can be multiple).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'IncomingBytes', 'IncomingRecords', 'OutgoingBytes', 'OutgoingRecords') 
+Filter metrics (Can be: 'IncomingBytes', 'IncomingRecords',
+'OutgoingBytes', 'OutgoingRecords') 
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds warning
-can be: 'incoming-bytes', 'incoming-records', 'outgoing-volume', 'outgoing-volume'.
-
-=item B<--critical-*>
-
-Thresholds critical
-can be: 'incoming-bytes', 'incoming-records', 'outgoing-volume', 'outgoing-volume'.
+can be: 'incoming-bytes', 'incoming-records',
+'outgoing-volume', 'outgoing-volume'.
 
 =back
 
