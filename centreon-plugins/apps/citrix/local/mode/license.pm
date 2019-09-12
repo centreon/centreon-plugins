@@ -51,8 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { label => 'mem_used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute' },
                 ],
             }
         },
@@ -60,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute', cast_int => 1 },
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute' },
                 ],
             }
         },
