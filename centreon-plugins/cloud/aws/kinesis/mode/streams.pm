@@ -112,8 +112,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "stream-name:s@"  => { name => 'stream_name' },
-        "filter-metric:s" => { name => 'filter_metric' },
+        'stream-name:s@'  => { name => 'stream_name' },
+        'filter-metric:s' => { name => 'filter_metric' },
     });
     
     return $self;

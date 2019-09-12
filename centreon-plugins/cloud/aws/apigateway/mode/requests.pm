@@ -97,8 +97,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "api-name:s@"	  => { name => 'api_name' },
-        "filter-metric:s" => { name => 'filter_metric' },
+        'api-name:s@'     => { name => 'api_name' },
+        'filter-metric:s' => { name => 'filter_metric' },
     });
     
     return $self;

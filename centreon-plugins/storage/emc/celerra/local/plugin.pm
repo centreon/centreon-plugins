@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'getreason'    => 'storage::emc::celerra::local::mode::getreason',
-                         );
+        'getreason'    => 'storage::emc::celerra::local::mode::getreason',
+    );
 
     return $self;
 }
