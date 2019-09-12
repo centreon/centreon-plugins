@@ -128,7 +128,14 @@ sub get_time_seconds {
     my ($seconds, $min, $lpart) = (pop @values, pop @values, pop @values);
     my $total_seconds_elapsed = $seconds + ($min * 60);
     if (defined($lpart)) {
-        my ($day, $hour) = split /-/, $lpart;
+        my $day;
+        my $hour;
+        if (index($lpart, '-') != -1) {
+            ($day, $hour) = split /-/, $lpart;
+        }
+        else {
+            $hour = $lpart;
+        }
         if (defined($hour)) {
             $total_seconds_elapsed += ($hour * 60 * 60);
         }
