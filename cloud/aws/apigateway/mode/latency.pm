@@ -150,11 +150,14 @@ sub manage_selection {
         );
         foreach my $metric (@{$self->{aws_metrics}}) {
             foreach my $statistic (@{$self->{aws_statistics}}) {
-                next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) && !defined($self->{option_results}->{zeroed}));
+                next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)})
+                    && !defined($self->{option_results}->{zeroed}));
+                    
                 $self->{metrics}->{$instance}->{display} = $instance;
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? 
-                                                                                                $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} =
+                    defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ?
+                    $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }
