@@ -46,15 +46,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "key-file:s"                => { name => 'key_file' },
-            "authorization-endpoint:s"  => { name => 'authorization_endpoint' },
-            "monitoring-endpoint:s"     => { name => 'monitoring_endpoint' },
-            "scope-endpoint:s"          => { name => 'scope_endpoint' },
-            "timeframe:s"               => { name => 'timeframe' },
-            "interval:s"                => { name => 'interval' },
-            "aggregation:s@"            => { name => 'aggregation' },
-            "zeroed"                    => { name => 'zeroed' },
-            "timeout:s"                 => { name => 'timeout' },
+            'key-file:s'                => { name => 'key_file' },
+            'authorization-endpoint:s'  => { name => 'authorization_endpoint' },
+            'monitoring-endpoint:s'     => { name => 'monitoring_endpoint' },
+            'scope-endpoint:s'          => { name => 'scope_endpoint' },
+            'timeframe:s'               => { name => 'timeframe' },
+            'interval:s'                => { name => 'interval' },
+            'aggregation:s@'            => { name => 'aggregation' },
+            'zeroed'                    => { name => 'zeroed' },
+            'timeout:s'                 => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -106,11 +106,11 @@ sub check_options {
     $self->{step} = (defined($self->{option_results}->{step})) ? $self->{option_results}->{step} : undef;
     $self->{key_file} = (defined($self->{option_results}->{key_file})) ? $self->{option_results}->{key_file} : undef;
     $self->{authorization_endpoint} = (defined($self->{option_results}->{authorization_endpoint})) ?
-    $self->{option_results}->{authorization_endpoint} : 'https://www.googleapis.com/oauth2/v4/token';
+        $self->{option_results}->{authorization_endpoint} : 'https://www.googleapis.com/oauth2/v4/token';
     $self->{monitoring_endpoint} = (defined($self->{option_results}->{monitoring_endpoint})) ?
-    $self->{option_results}->{monitoring_endpoint} : 'https://monitoring.googleapis.com/v3';
+        $self->{option_results}->{monitoring_endpoint} : 'https://monitoring.googleapis.com/v3';
     $self->{scope_endpoint} = (defined($self->{option_results}->{scope_endpoint})) ?
-    $self->{option_results}->{scope_endpoint} : 'https://www.googleapis.com/auth/cloud-platform';
+        $self->{option_results}->{scope_endpoint} : 'https://www.googleapis.com/auth/cloud-platform';
 
     if (!defined($self->{key_file}) || $self->{key_file} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --key-file option.");
@@ -153,8 +153,10 @@ sub get_access_token {
     if ($has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10)) {
         local $/ = undef;
         if (!open(FILE, "<", $self->{key_file})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => sprintf("Cannot read file '%s': %s", $self->{key_file}, $!));
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => sprintf("Cannot read file '%s': %s", $self->{key_file}, $!)
+            );
             $self->{output}->display();
             $self->{output}->exit();
         }
@@ -190,7 +192,10 @@ sub get_access_token {
                                              hostname => '');
 
         if (!defined($content) || $content eq '') {
-            $self->{output}->add_option_msg(short_msg => "Authorization endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+            $self->{output}->add_option_msg(
+                short_msg => "Authorization endpoint API returns empty content [code: '" . $self->{http}->get_code() .
+                    "'] [message: '" . $self->{http}->get_message() . "']"
+            );
             $self->{output}->option_exit();
         }
 
@@ -200,12 +205,17 @@ sub get_access_token {
         };
         if ($@) {
             $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Cannot decode json response (add --debug option to display returned content)");
+            $self->{output}->add_option_msg(
+                short_msg => "Cannot decode json response (add --debug option to display returned content)"
+            );
             $self->{output}->option_exit();
         }
         if (defined($decoded->{error})) {
             $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error_description}, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Authorization endpoint API return error code '" . $decoded->{error} . "' (add --debug option for detailed message)");
+            $self->{output}->add_option_msg(
+                short_msg => "Authorization endpoint API return error code '" . $decoded->{error} .
+                    "' (add --debug option for detailed message)"
+            );
             $self->{output}->option_exit();
         }
 
@@ -222,8 +232,10 @@ sub get_project_id {
 
     local $/ = undef;
     if (!open(FILE, "<", $self->{key_file})) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => sprintf("Cannot read file '%s': %s", $self->{key_file}, $!));
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => sprintf("Cannot read file '%s': %s", $self->{key_file}, $!)
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -256,7 +268,10 @@ sub request_api {
     my $content = $self->{http}->request(%options);
 
     if (!defined($content) || $content eq '') {
-        $self->{output}->add_option_msg(short_msg => "Monitoring endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
+        $self->{output}->add_option_msg(
+            short_msg => "Monitoring endpoint API returns empty content [code: '" . $self->{http}->get_code() .
+                "'] [message: '" . $self->{http}->get_message() . "']"
+        );
         $self->{output}->option_exit();
     }
 
@@ -266,12 +281,17 @@ sub request_api {
     };
     if ($@) {
         $self->{output}->output_add(long_msg => $content, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
+        $self->{output}->add_option_msg(
+            short_msg => "Cannot decode response (add --debug option to display returned content)"
+        );
         $self->{output}->option_exit();
     }
     if (defined($decoded->{error})) {
         $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}->{message}, debug => 1);
-        $self->{output}->add_option_msg(short_msg => "Monitoring endpoint API return error code '" . $decoded->{error}->{code} . "' (add --debug option for detailed message)");
+        $self->{output}->add_option_msg(
+            short_msg => "Monitoring endpoint API return error code '" . $decoded->{error}->{code} .
+                "' (add --debug option for detailed message)"
+        );
         $self->{output}->option_exit();
     }
 
@@ -284,7 +304,8 @@ sub gcp_get_metrics_set_url {
     my $uri = URI::Encode->new({encode_reserved => 1});
     my $encoded_filter = $uri->encode('metric.type = "' . $options{api} . '/' . $options{metric} . '"');
     $encoded_filter .= $uri->encode(' AND ' . $options{dimension} . ' = starts_with(' . $options{instance} . ')');
-    $encoded_filter .= ' AND ' . $uri->encode(join(' AND ', @{$options{extra_filters}})) if (defined($options{extra_filters}) && $options{extra_filters} ne '');
+    $encoded_filter .= ' AND ' . $uri->encode(join(' AND ', @{$options{extra_filters}}))
+        if (defined($options{extra_filters}) && $options{extra_filters} ne '');
     my $encoded_start_time = $uri->encode($options{start_time});
     my $encoded_end_time = $uri->encode($options{end_time});
     my $project_id = $self->get_project_id();
