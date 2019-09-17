@@ -239,7 +239,7 @@ sub check_rpdu2 {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
         { oid => $oid_rPDU2PhaseStatusEntry, end => $mapping_phase->{rPDU2PhaseStatusPower}->{oid} },
         { oid => $oid_rPDU2BankStatusEntry, end => $mapping_bank->{rPDU2BankStatusCurrent}->{oid} },
-        { oid => $oid_rPDU2DeviceStatusEntry, end => $mapping_bank->{rPDU2DeviceStatusPower}->{oid} },
+        { oid => $oid_rPDU2DeviceStatusEntry, end => $mapping_device->{rPDU2DeviceStatusPower}->{oid} },
     ]);
 
     foreach my $oid (keys %{$snmp_result->{$oid_rPDU2PhaseStatusEntry}}) {
@@ -256,7 +256,7 @@ sub check_rpdu2 {
     }
 
     foreach my $oid (keys %{$snmp_result->{$oid_rPDU2BankStatusEntry}}) {
-        next if ($oid !~ /^$mapping_phase->{rPDU2BankStatusLoadState}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping_bank->{rPDU2BankStatusLoadState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_bank, results => $snmp_result->{$oid_rPDU2BankStatusEntry}, instance => $instance);
 
