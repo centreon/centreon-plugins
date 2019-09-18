@@ -36,7 +36,11 @@ sub custom_peer_status_output {
 sub custom_ha_status_output { 
     my ($self, %options) = @_;
 
-    my $msg = sprintf("High availibility status is '%s'", $self->{result_values}->{ha_status});
+    my $msg = sprintf(
+        "High availibility status is '%s', mode is '%s'", 
+        $self->{result_values}->{ha_status},
+        $self->{result_values}->{ha_mode},
+    );
     return $msg;
 }
 
@@ -49,7 +53,7 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'ha-status', set => {
-                key_values => [ { name => 'ha_status' } ],
+                key_values => [ { name => 'ha_status' }, { name => 'ha_mode' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_ha_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -110,13 +114,15 @@ my $map_peer_status = {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
+    my $oid_sysHighAvailabilityMode = '.1.3.6.1.4.1.5951.4.1.1.6.0';
     my $oid_haPeerState = '.1.3.6.1.4.1.5951.4.1.1.23.3.0';
     my $oid_haCurState = '.1.3.6.1.4.1.5951.4.1.1.23.24.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_haPeerState, $oid_haCurState], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_sysHighAvailabilityMode, $oid_haPeerState, $oid_haCurState], nothing_quit => 1);
 
     $self->{global} = {
         peer_status => $map_peer_status->{$snmp_result->{$oid_haPeerState}},
+        ha_mode => $map_peer_status->{$snmp_result->{$oid_sysHighAvailabilityMode}},
         ha_status => $map_ha_status->{$snmp_result->{$oid_haCurState}},
     };
 }
@@ -133,23 +139,23 @@ Check high availability status.
 
 =item B<--unknown-ha-status>
 
-Set warning threshold for status. (Default: '%{ha_status} =~ /unknown/i').
+Set unknown threshold for status. (Default: '%{ha_status} =~ /unknown/i').
 Can use special variables like: %{ha_status}
 
 =item B<--warning-ha-status>
 
 Set warning threshold for status. (Default: '').
-Can use special variables like: %{ha_status}
+Can use special variables like: %{ha_status}, %{ha_mode}
 
 =item B<--critical-ha-status>
 
 Set critical threshold for status. (Default: '%{ha_status} =~ /down|partialFail|monitorFail|completeFail|partialFailSsl|routemonitorFail/i').
-Can use special variables like: %{ha_status}
+Can use special variables like: %{ha_status}, %{ha_mode}
 
 =item B<--unknown-peer-status>
 
-Set warning threshold for status. (Default: '%{peer_status} =~ /unknown/i').
-Can use special variables like: %{peer_status}
+Set unknown threshold for status. (Default: '%{peer_status} =~ /unknown/i').
+Can use special variables like: %{peer_status}, %{ha_mode}
 
 =item B<--warning-peer-status>
 
