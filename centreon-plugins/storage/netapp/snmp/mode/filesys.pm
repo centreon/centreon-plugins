@@ -24,12 +24,24 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+
+sub custom_vs_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf(
+        "vserver '%s' status : %s",
+        $self->{result_values}->{vserver_name},
+        $self->{result_values}->{vserver_status},
+    );
+    return $msg;
+}
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' },
+        { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{fs} = [
@@ -66,6 +78,14 @@ sub set_counters {
                     { label => 'dedupsaved', value => 'dfDedupeSavedPercent_absolute', template => '%d',
                        unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
+            }
+        },
+        { label => 'vserver-status', threshold => 0, set => {
+                key_values => [ { name => 'vserver_status' }, { name => 'vserver_name' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_vs_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -172,9 +192,19 @@ sub new {
         'filter-type:s'          => { name => 'filter_type' },
         'filter-vserver:s'       => { name => 'filter_vserver' },
         'filter-vserver-state:s' => { name => 'filter_vserver_state' },
+        'unknown-vserver-status:s'  => { name => 'unknown_vserver_status', default => '' },
+        'warning-vserver-status:s'  => { name => 'warning_vserver_status', default => '' },
+        'critical-vserver-status:s' => { name => 'critical_vserver_status', default => '' },
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_vserver_status', 'critical_vserver_status', 'unknown_vserver_status']);
 }
 
 my $map_types = {
@@ -315,6 +345,9 @@ sub manage_selection {
         if ($self->{fs}->{$instance}->{total} > 0) {
             $self->{fs}->{$instance}->{dfPerCentInodeCapacity} = $result2->{dfPerCentInodeCapacity};
         }
+
+        $self->{fs}->{$instance}->{vserver_name} = $result2->{dfVserver};
+        $self->{fs}->{$instance}->{vserver_status} = defined($result2->{dfVserver}) ? $self->{vserver}->{$result2->{dfVserver}} : undef;
     }
 }
 
@@ -327,6 +360,21 @@ __END__
 Check filesystem usage (volumes, snapshots and aggregates also).
 
 =over 8
+
+=item B<--unknown-vserver-status>
+
+Set unknown threshold for status (Default: '').
+Can used special variables like: %{vserver_status}, %{vserver_name}
+
+=item B<--warning-vserver-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{vserver_status}, %{vserver_name}
+
+=item B<--critical-vserver-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{vserver_status}, %{vserver_name}
 
 =item B<--warning-*>
 
