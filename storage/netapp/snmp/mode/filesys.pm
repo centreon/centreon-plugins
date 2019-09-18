@@ -239,14 +239,19 @@ my $mapping3 = {
 sub get_vserver_state {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{option_results}->{filter_vserver_state}) || $self->{option_results}->{filter_vserver} eq '');
+    return if (
+        (!defined($self->{option_results}->{filter_vserver_state}) || $self->{option_results}->{filter_vserver} eq '') &&
+        (!defined($self->{option_results}->{warning_vserver_status}) || $self->{option_results}->{warning_vserver_status} eq '') &&
+        (!defined($self->{option_results}->{critical_vserver_status}) || $self->{option_results}->{critical_vserver_status} eq '') &&
+        (!defined($self->{option_results}->{unknown_vserver_status}) || $self->{option_results}->{unknown_vserver_status} eq '')
+    );
+
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping3->{vserverName}->{oid} }, 
             { oid => $mapping3->{vserverState}->{oid} }
         ],
         return_type => 1,
-        nothing_quit => 1
     );
     
     $self->{vserver} = {};
