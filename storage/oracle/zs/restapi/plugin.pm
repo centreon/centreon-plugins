@@ -18,26 +18,24 @@
 # limitations under the License.
 #
 
-package storage::oracle::zs::snmp::plugin;
+package storage::oracle::zs::restapi::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_snmp);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
+    my ( $class, %options ) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'hardware'         => 'storage::oracle::zs::snmp::mode::hardware',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'list-shares'      => 'storage::oracle::zs::snmp::mode::listshares',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'share-usage'      => 'storage::oracle::zs::snmp::mode::shareusage',
+    $self->{version} = '0.1';
+    %{ $self->{modes} } = (
+        'hardware'  => 'storage::oracle::zs::restapi::mode::hardware',
+        'pools'     => 'storage::oracle::zs::restapi::mode::pools',
     );
 
+    $self->{custom_modes}{api} = 'storage::oracle::zs::restapi::custom::api';
     return $self;
 }
 
@@ -47,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Oracle ZFS Storage ZS in SNMP.
+Check Oracle ZFS Storage ZS in Rest API.
 
 =cut
