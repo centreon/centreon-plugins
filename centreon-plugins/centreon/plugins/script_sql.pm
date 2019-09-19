@@ -32,15 +32,16 @@ sub new {
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-    arguments => {
-            'mode:s'         => { name => 'mode_name' },
-            'dyn-mode:s'     => { name => 'dynmode_name' },
-            'list-mode'      => { name => 'list_mode' },
-            'mode-version:s' => { name => 'mode_version' },
-            'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
-            'list-sqlmode'   => { name => 'list_sqlmode' },
-            'multiple'       => { name => 'multiple' },
-            'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
+        arguments => {
+            'mode:s'            => { name => 'mode_name' },
+            'dyn-mode:s'        => { name => 'dynmode_name' },
+            'list-mode'         => { name => 'list_mode' },
+            'mode-version:s'    => { name => 'mode_version' },
+            'sqlmode:s'         => { name => 'sqlmode_name', default => 'dbi' },
+            'list-sqlmode'      => { name => 'list_sqlmode' },
+            'multiple'          => { name => 'multiple' },
+            'no-sanity-options' => { name => 'no_sanity_options' },
+            'pass-manager:s'    => { name => 'pass_manager' },
         }
     );
     $self->{version} = '1.0';
@@ -83,7 +84,7 @@ sub init {
     if (defined($self->{list_sqlmode})) {
         $self->list_sqlmode();
     }
-    $self->{options}->set_sanity();
+    $self->{options}->set_sanity() if (!defined($self->{no_sanity_options}));
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
@@ -291,6 +292,10 @@ List available sql modes.
 =item B<--multiple>
 
 Multiple database connections (some mode needs it).
+
+=item B<--pass-manager>
+
+Use a password manager.
 
 =back
 

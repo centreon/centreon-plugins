@@ -33,13 +33,14 @@ sub new {
     
     $self->{options}->add_options(
         arguments => {
-            'mode:s'          => { name => 'mode_name' },
-            'dyn-mode:s'      => { name => 'dynmode_name' },
-            'list-mode'       => { name => 'list_mode' },
-            'custommode:s'    => { name => 'custommode_name' },
-            'list-custommode' => { name => 'list_custommode' },
-            'multiple'        => { name => 'multiple' },
-            'sanity-options'  => { name => 'sanity_options' }, # keep it for 6 month before remove it
+            'mode:s'            => { name => 'mode_name' },
+            'dyn-mode:s'        => { name => 'dynmode_name' },
+            'list-mode'         => { name => 'list_mode' },
+            'custommode:s'      => { name => 'custommode_name' },
+            'list-custommode'   => { name => 'list_custommode' },
+            'multiple'          => { name => 'multiple' },
+            'no-sanity-options' => { name => 'no_sanity_options' },
+            'pass-manager:s'    => { name => 'pass_manager' },
         }
     );
     $self->{version} = '1.0';
@@ -68,8 +69,10 @@ sub load_custom_mode {
     my ($self, %options) = @_;
     
     $self->is_custommode(custommode => $self->{custommode_name});
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
-                                           error_msg => "Cannot load module --custommode.");
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
+        error_msg => 'Cannot load module --custommode.'
+    );
     $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
 }
 
@@ -91,7 +94,7 @@ sub init {
     if (defined($self->{list_custommode})) {
         $self->list_custommode();
     }
-    $self->{options}->set_sanity();
+    $self->{options}->set_sanity() if (!defined($self->{no_sanity_options}));
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
@@ -292,6 +295,10 @@ List available custom modes.
 =item B<--multiple>
 
 Multiple custom mode objects (some mode needs it).
+
+=item B<--pass-manager>
+
+Use a password manager.
 
 =back
 
