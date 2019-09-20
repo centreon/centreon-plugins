@@ -34,6 +34,7 @@ sub new {
         'cpu'              => 'snmp_standard::mode::cpu',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-processes'   => 'snmp_standard::mode::listprocesses',
         'list-services'    => 'os::windows::snmp::mode::listservices',
         'list-storages'    => 'snmp_standard::mode::liststorages',
         'memory'           => 'os::windows::snmp::mode::memory',

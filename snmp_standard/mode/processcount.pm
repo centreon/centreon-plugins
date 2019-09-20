@@ -39,31 +39,31 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "process-status:s"        => { name => 'process_status', default => 'running|runnable' },
-                                  "process-name:s"          => { name => 'process_name' },
-                                  "regexp-name"             => { name => 'regexp_name' },
-                                  "process-path:s"          => { name => 'process_path' },
-                                  "regexp-path"             => { name => 'regexp_path' },
-                                  "process-args:s"          => { name => 'process_args' },
-                                  "regexp-args"             => { name => 'regexp_args' },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "memory"                  => { name => 'memory' },
-                                  "warning-mem-each:s"      => { name => 'warning_mem_each' },
-                                  "critical-mem-each:s"     => { name => 'critical_mem_each' },
-                                  "warning-mem-total:s"     => { name => 'warning_mem_total' },
-                                  "critical-mem-total:s"    => { name => 'critical_mem_total' },
-                                  "warning-mem-avg:s"       => { name => 'warning_mem_avg' },
-                                  "critical-mem-avg:s"      => { name => 'critical_mem_avg' },
-                                  "cpu"                     => { name => 'cpu' },
-                                  "warning-cpu-total:s"     => { name => 'warning_cpu_total' },
-                                  "critical-cpu-total:s"    => { name => 'critical_cpu_total' },
-                                  "top"                     => { name => 'top' },
-                                  "top-num:s"               => { name => 'top_num', default => 5 },
-                                  "top-size:s"              => { name => 'top_size', default => 52428800 }, # 50MB
-                                });
+    $options{options}->add_options(arguments => { 
+        'process-status:s'        => { name => 'process_status', default => 'running|runnable' },
+        'process-name:s'          => { name => 'process_name' },
+        'regexp-name'             => { name => 'regexp_name' },
+        'process-path:s'          => { name => 'process_path' },
+        'regexp-path'             => { name => 'regexp_path' },
+        'process-args:s'          => { name => 'process_args' },
+        'regexp-args'             => { name => 'regexp_args' },
+        'warning:s'               => { name => 'warning' },
+        'critical:s'              => { name => 'critical' },
+        'memory'                  => { name => 'memory' },
+        'warning-mem-each:s'      => { name => 'warning_mem_each' },
+        'critical-mem-each:s'     => { name => 'critical_mem_each' },
+        'warning-mem-total:s'     => { name => 'warning_mem_total' },
+        'critical-mem-total:s'    => { name => 'critical_mem_total' },
+        'warning-mem-avg:s'       => { name => 'warning_mem_avg' },
+        'critical-mem-avg:s'      => { name => 'critical_mem_avg' },
+        'cpu'                     => { name => 'cpu' },
+        'warning-cpu-total:s'     => { name => 'warning_cpu_total' },
+        'critical-cpu-total:s'    => { name => 'critical_cpu_total' },
+        'top'                     => { name => 'top' },
+        'top-num:s'               => { name => 'top_num', default => 5 },
+        'top-size:s'              => { name => 'top_size', default => 52428800 }, # 50MB
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{filter4md5} = '';
     return $self;
