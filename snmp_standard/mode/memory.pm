@@ -157,6 +157,7 @@ sub new {
         'free'      => { name => 'free' },
         'swap'      => { name => 'check_swap' },
         'redhat'    => { name => 'redhat' },
+        'autodetect-redhat' => { name => 'autodetect_redhat' },
     });
     
     return $self;
@@ -200,17 +201,29 @@ sub check_options {
 }
 
 my $mapping = {
+    sysDescr     => { oid => '.1.3.6.1.2.1.1.1' },
     memTotalSwap => { oid => '.1.3.6.1.4.1.2021.4.3' },
     memAvailSwap => { oid => '.1.3.6.1.4.1.2021.4.4' },
     memTotalReal => { oid => '.1.3.6.1.4.1.2021.4.5' },
     memAvailReal => { oid => '.1.3.6.1.4.1.2021.4.6' },
     memTotalFree => { oid => '.1.3.6.1.4.1.2021.4.11' },
-    memShared => { oid => '.1.3.6.1.4.1.2021.4.13' },
-    memBuffer => { oid => '.1.3.6.1.4.1.2021.4.14' },
-    memCached => { oid => '.1.3.6.1.4.1.2021.4.15' },
+    memShared    => { oid => '.1.3.6.1.4.1.2021.4.13' },
+    memBuffer    => { oid => '.1.3.6.1.4.1.2021.4.14' },
+    memCached    => { oid => '.1.3.6.1.4.1.2021.4.15' },
 };
 
-my $oid_memory = '.1.3.6.1.4.1.2021.4';
+sub autodetect_rhel7 {
+    my ($self, %options) = @_;
+
+    # https://access.redhat.com/articles/3078#RHEL7
+    # rhel 7.6: "Linux dev 3.10.0-957.10.1.el7.x86_64 #1 SMP Mon Mar 18 15:06:45 UTC 2019 x86_64"
+    # rhel 7.7: "Linux dev 3.10.0-1062.1.1.el7.x86_64 #1 SMP Fri Sep 13 22:55:44 UTC 2019 x86_64"
+    return if (!defined($options{result}->{sysDescr}) || $options{result}->{sysDescr} !~ /3\.10\.0-(\d+)\..*?\.el7\./);
+    my $build = $1;
+    if ($build >= 1062) {
+        $self->{option_results}->{redhat} = 1;
+    }
+}
 
 sub memory_calc {
     my ($self, %options) = @_;
@@ -311,9 +324,12 @@ sub swap_calc {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{snmp}->get_table(oid => $oid_memory, end => $mapping->{memCached}->{oid});
+    my $results = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%$mapping)) ]
+    );
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
 
+    $self->autodetect_rhel7(result => $result) if (defined($self->{option_results}->{autodetect_redhat}));
     $self->memory_calc(result => $result);
     if (defined($self->{option_results}->{check_swap})) {
         $self->swap_calc(result => $result);
@@ -348,6 +364,10 @@ Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%), 
 'swap' (B), 'swap-free' (B), 'swap-prct' (%),
 'buffer' (B), 'cached' (B), 'shared' (B).
+
+=item B<--autodetect-redhat>
+
+Try to detect autodetect rhel 7.7 version and higher.
 
 =item B<--redhat>
 
