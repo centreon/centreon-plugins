@@ -131,8 +131,6 @@ sub settings {
     $self->{http}->add_header(key => 'Accept', value => 'application/json;charset=UTF-8');
     if (defined($self->{session_id})) {
         $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
-    } else {
-        $self->{http}->add_header(key => 'vmware-api-session-id', value => 'null');
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
