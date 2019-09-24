@@ -44,7 +44,8 @@ sub new {
         VPN => $self->can('discover_vpn'),
         KINESIS => $self->can('discover_kinesis_stream'),
         DYNAMODB => $self->can('discover_dynamodb_table'),
-        APIGATEWAY => $self->can('discover_api')
+        APIGATEWAY => $self->can('discover_api'),
+        S3 => $self->can('discover_s3_bucket')
     };
     
     return $self;
@@ -209,6 +210,25 @@ sub discover_kinesis_stream {
         $stream{type} = "kinesis_stream";
         $stream{name} = $stream;
         push @disco_data, \%stream;
+    }
+
+    return @disco_data;
+}
+
+sub discover_s3_bucket {
+    my (%options) = @_;
+
+    my @disco_data;
+
+    my $buckets = $options{custom}->discovery(region => $options{region},
+        service => 's3api', command => 'list-buckets');
+    
+    foreach my $bucket (@{$buckets->{Buckets}}) {
+        my %bucket;
+        $bucket{type} = "s3_bucket";
+        $bucket{name} = $bucket->{Name};
+        $bucket{creation_date} = $bucket->{CreationDate};
+        push @disco_data, \%bucket;
     }
 
     return @disco_data;
