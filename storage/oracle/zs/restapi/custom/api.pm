@@ -87,7 +87,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 25;
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 215;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : '';
@@ -193,7 +193,7 @@ Oracle ZFS hostname.
 
 =item B<--port>
 
-Port used (Default: 25)
+Port used (Default: 215)
 
 =item B<--proto>
 
