@@ -49,6 +49,9 @@ sub new {
             'username:s@'      => { name => 'username' },
             'password:s@'      => { name => 'password' },
             'timeout:s@'       => { name => 'timeout' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'P2000 OPTIONS', once => 1);
@@ -96,6 +99,9 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
         
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
@@ -164,9 +170,16 @@ sub DESTROY {
     my $self = shift;
     
     if ($self->{logon} == 1) {
-        $self->{http}->request(url_path => $self->{url_path} . 'exit',
-                               header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
-                                          'dataType: api', 'sessionKey: '. $self->{session_id}]);
+        $self->{http}->request(
+            url_path => $self->{url_path} . 'exit',
+            header => [
+                'Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                'dataType: api', 'sessionKey: '. $self->{session_id}
+            ],
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status},
+        );
     }
 }
 
@@ -177,10 +190,17 @@ sub get_infos {
     $self->login();
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
-    my $response = $self->{http}->request(url_path => $self->{url_path} . $cmd, 
-                                          header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
-                                                     'dataType: api', 'sessionKey: '. $self->{session_id}]);
-    
+    my $response = $self->{http}->request(
+        url_path => $self->{url_path} . $cmd, 
+        header => [
+            'Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+            'dataType: api', 'sessionKey: '. $self->{session_id}
+        ],
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status},
+    );
+
     eval {
         $xpath = XML::XPath->new(xml => $response);
         $nodeset = $xpath->find("//OBJECT[\@basetype='" . $options{base_type} . "']");
@@ -246,7 +266,12 @@ sub login {
     
     # Login First
     my $md5_hash = md5_hex($self->{username} . '_' . $self->{password});
-    my $response = $self->{http}->request(url_path => $self->{url_path} . 'login/' . $md5_hash);
+    my $response = $self->{http}->request(
+        url_path => $self->{url_path} . 'login/' . $md5_hash,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status},
+    );
     $self->check_login(content => $response);
 }
 
