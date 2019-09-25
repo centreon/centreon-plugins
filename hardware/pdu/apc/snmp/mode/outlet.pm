@@ -60,7 +60,7 @@ sub set_counters {
             }
         },
         { label => 'current', nlabel => 'outlet.current.ampere', set => {
-                key_values => [ { name => 'current' }, { name => 'display' } ],
+                key_values => [ { name => 'current', no_value => 0 }, { name => 'display' } ],
                 output_template => 'current : %s A',
                 perfdatas => [
                     { label => 'current',  template => '%s', value => 'current_absolute',
@@ -134,7 +134,12 @@ sub check_rpdu {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        $self->{outlet}->{$instance} = {
+        if (defined($self->{outlet}->{$result->{rPDUOutletStatusOutletName}})) {
+            $self->{output}->output_add(long_msg => "skipping instance '" . $result->{rPDUOutletStatusOutletName} . "' [$instance]: name duplicated");
+            next;
+        }
+
+        $self->{outlet}->{$result->{rPDUOutletStatusOutletName}} = {
             display => $result->{rPDUOutletStatusOutletName},
             status => $result->{rPDUOutletStatusOutletState},
             bank => $result->{rPDUOutletStatusOutletBank},
@@ -147,7 +152,49 @@ sub check_rpdu {
 sub check_rpdu2 {
     my ($self, %options) = @_;
 
-    # not implemented yet
+    my $map_rpdu2_status = {
+        1 => 'off',
+        2 => 'on',
+    };
+    my $map_rpdu2_phase = {
+        1 => 'seqPhase1ToNeutral', 2 => 'seqPhase2ToNeutral',
+        3 => 'seqPhase3ToNeutral', 4 => 'seqPhase1ToPhase2',
+        5 => 'seqPhase2ToPhase3',  6 => 'seqPhase3ToPhase1',
+    };
+    my $mapping = {
+        rPDU2OutletSwitchedPropertiesPhaseLayout => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.2.1.5', map => $map_rpdu2_phase },
+        rPDU2OutletSwitchedPropertiesBank => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.2.1.6' },
+        rPDU2OutletSwitchedStatusName     => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.3.1.3' },
+        rPDU2OutletSwitchedStatusState    => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.3.1.5', map => $map_rpdu2_status },
+    };
+
+    my $oid_rPDU2OutletSwitchedPropertiesEntry = '.1.3.6.1.4.1.318.1.1.26.9.2.2.1';
+    my $oid_rPDU2OutletSwitchedStatusEntry = '.1.3.6.1.4.1.318.1.1.26.9.2.3.1';
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_rPDU2OutletSwitchedPropertiesEntry, start => $mapping->{rPDU2OutletSwitchedPropertiesPhaseLayout}->{oid}, end => $mapping->{rPDU2OutletSwitchedPropertiesBank}->{oid} },
+            { oid => $oid_rPDU2OutletSwitchedStatusEntry, start => $mapping->{rPDU2OutletSwitchedStatusName}->{oid}, end => $mapping->{rPDU2OutletSwitchedStatusState}->{oid} },
+        ],
+        return_type => 1,
+    );
+
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{rPDU2OutletSwitchedStatusState}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        if (defined($self->{outlet}->{$result->{rPDU2OutletSwitchedStatusName}})) {
+            $self->{output}->output_add(long_msg => "skipping instance '" . $result->{rPDU2OutletSwitchedStatusName} . "' [$instance]: name duplicated");
+            next;
+        }
+
+        $self->{outlet}->{$result->{rPDU2OutletSwitchedStatusName}} = {
+            display => $result->{rPDU2OutletSwitchedStatusName},
+            status => $result->{rPDU2OutletSwitchedStatusState},
+            bank => $result->{rPDU2OutletSwitchedPropertiesBank},
+            phase => $result->{rPDU2OutletSwitchedPropertiesPhaseLayout},
+        };
+    }
 }
 
 sub manage_selection {
