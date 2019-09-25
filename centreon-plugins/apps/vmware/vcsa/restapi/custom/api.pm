@@ -208,7 +208,7 @@ sub request_api {
 
     # Maybe there is an issue with the session_id. So we retry.
     if ($self->{http}->get_code() != 200) {
-        $self->clean_session_id();
+        $self->clean_session_id(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
         $content = $self->{http}->request(%options, 
             warning_status => '', unknown_status => '', critical_status => ''
