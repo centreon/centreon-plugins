@@ -36,7 +36,7 @@ sub check {
         next if ($self->check_filter(section => 'chassis', instance => $instance));
         $self->{components}->{chassis}->{total}++;
 
-        my $status = $_->{faulted} ? 'faulted' : 'ok';
+        my $status = $chassis->{faulted} ? 'faulted' : 'ok';
         $self->{output}->output_add(
             long_msg => sprintf(
                 "chassis '%s' status is '%s' [instance = %s]",
