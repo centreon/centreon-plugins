@@ -117,10 +117,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-tablespace:s" => { name => 'filter_tablespace' },
-        "units:s"             => { name => 'units', default => '%' },
-        "free"                => { name => 'free' },
-        "skip"                => { name => 'skip' },
+        'filter-tablespace:s' => { name => 'filter_tablespace' },
+        'units:s'             => { name => 'units', default => '%' },
+        'free'                => { name => 'free' },
+        'skip'                => { name => 'skip' },
+        'notemp'              => { name => 'notemp' },
     });
 
     return $self;
@@ -134,77 +135,34 @@ sub prefix_tablespace_output {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
+
     $self->{sql} = $options{sql};
     $self->{sql}->connect();
-
+    
+    # request from check_oracle_health.
     my $query;
-    if ($self->{sql}->is_version_minimum(version => '11')) {
-        $query = q{
+    if ($self->{sql}->is_version_minimum(version => '9')) {
+        my $tbs_sql_undo = q{
             SELECT
-              tum.tablespace_name "Tablespace",
-              t.status "Status",
-              t.contents "Type",
-              t.extent_management "Extent Mgmt",
-              tum.used_space*t.block_size bytes,
-              tum.tablespace_size*t.block_size bytes_max
+                tablespace_name, bytes_expired
             FROM
-              DBA_TABLESPACE_USAGE_METRICS tum
-            INNER JOIN
-              dba_tablespaces t on tum.tablespace_name=t.tablespace_name
+                (
+                    SELECT
+                        a.tablespace_name,
+                        SUM (a.bytes) bytes_expired,
+                        a.status
+                    FROM
+                        dba_undo_extents a
+                    GROUP BY
+                        tablespace_name, status
+                )
             WHERE
-              t.contents<>'UNDO'
-              OR (t.contents='UNDO' AND t.tablespace_name =(SELECT value FROM v$parameter WHERE name='undo_tablespace'))
+                status = 'EXPIRED'
         };
-    } elsif ($self->{sql}->is_version_minimum(version => '9')) {
-        $query = q{
-            SELECT
-                a.tablespace_name         "Tablespace",
-                b.status                  "Status",
-                b.contents                "Type",
-                b.extent_management       "Extent Mgmt",
-                a.bytes                   bytes,
-                a.maxbytes                bytes_max,
-                c.bytes_free + NVL(d.bytes_expired,0)             bytes_free
-            FROM
-              (
-                SELECT
-                    a.tablespace_name,
-                    SUM(a.bytes)          bytes,
-                    SUM(DECODE(a.autoextensible, 'YES', CASE WHEN (a.bytes > a.maxbytes) THEN 0 ELSE a.maxbytes END, 'NO', a.bytes)) maxbytes
-                FROM
-                    dba_data_files a
-                GROUP BY
-                    tablespace_name
-              ) a,
-              sys.dba_tablespaces b,
-              (
-                SELECT
-                    a.tablespace_name,
-                    SUM(a.bytes) bytes_free
-                FROM
-                    dba_free_space a
-                GROUP BY
-                    tablespace_name
-              ) c,
-              (
-                SELECT
-                    a.tablespace_name,
-                    SUM(a.bytes) bytes_expired
-                FROM
-                    dba_undo_extents a
-                WHERE
-                    status = 'EXPIRED'
-                GROUP BY
-                    tablespace_name
-              ) d
-            WHERE
-                a.tablespace_name = c.tablespace_name (+)
-                AND a.tablespace_name = b.tablespace_name
-                AND a.tablespace_name = d.tablespace_name (+)
-                AND (b.contents = 'PERMANENT'
-                OR (b.contents <> 'PERMANENT'
-                AND a.tablespace_name=(select value from v$parameter where name='undo_tablespace')))
+        my $tbs_sql_undo_empty = q{
+            SELECT NULL AS tablespace_name, NULL AS bytes_expired FROM DUAL
+        };
+         my $tbs_sql_temp = q{
             UNION ALL
             SELECT
                 d.tablespace_name "Tablespace",
@@ -212,7 +170,7 @@ sub manage_selection {
                 b.contents "Type",
                 b.extent_management "Extent Mgmt",
                 sum(a.bytes_free + a.bytes_used) bytes,   -- allocated
-                SUM(DECODE(d.autoextensible, 'YES', CASE WHEN (d.bytes > d.maxbytes) THEN 0 ELSE d.maxbytes END, 'NO', d.bytes)) bytes_max,
+                SUM(DECODE(d.autoextensible, 'YES', d.maxbytes, 'NO', d.bytes)) bytes_max,
                 SUM(a.bytes_free + a.bytes_used - NVL(c.bytes_used, 0)) bytes_free
             FROM
                 sys.v_$TEMP_SPACE_HEADER a,
@@ -233,6 +191,58 @@ sub manage_selection {
             ORDER BY
                 1
         };
+
+        $query = sprintf(
+            q{
+                SELECT /*+ opt_param('optimizer_adaptive_features','false') */
+                    a.tablespace_name         "Tablespace",
+                    b.status                  "Status",
+                    b.contents                "Type",
+                    b.extent_management       "Extent Mgmt",
+                    a.bytes                   bytes,
+                    a.maxbytes                bytes_max,
+                    c.bytes_free + NVL(d.bytes_expired,0)             bytes_free
+                FROM
+                  (
+                    -- belegter und maximal verfuegbarer platz pro datafile
+                    -- nach tablespacenamen zusammengefasst
+                    -- => bytes
+                    -- => maxbytes
+                    SELECT
+                        a.tablespace_name,
+                        SUM(a.bytes)          bytes,
+                        SUM(DECODE(a.autoextensible, 'YES', a.maxbytes, 'NO', a.bytes)) maxbytes
+                    FROM
+                        dba_data_files a
+                    GROUP BY
+                        tablespace_name
+                  ) a,
+                  sys.dba_tablespaces b,
+                  (
+                    -- freier platz pro tablespace
+                    -- => bytes_free
+                    SELECT
+                        a.tablespace_name,
+                        SUM(a.bytes) bytes_free
+                    FROM
+                        dba_free_space a
+                    GROUP BY
+                        tablespace_name
+                  ) c,
+                  (
+                    %s
+                  ) d
+                WHERE
+                    a.tablespace_name = c.tablespace_name (+)
+                    AND a.tablespace_name = b.tablespace_name
+                    AND a.tablespace_name = d.tablespace_name (+)
+                    %s
+                %s
+            }, 
+            defined($self->{option_results}->{notemp}) ?  $tbs_sql_undo_empty : $tbs_sql_undo,
+            defined($self->{option_results}->{notemp}) ?  "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
+            defined($self->{option_results}->{notemp}) ?   "" : $tbs_sql_temp
+        );
     } elsif ($self->{sql}->is_version_minimum(version => '8')) {
         $query = q{SELECT
                 a.tablespace_name         "Tablespace",
@@ -305,7 +315,8 @@ sub manage_selection {
                 1
         };
     } else {
-        $query = q{SELECT
+        $query = q{
+            SELECT
                 a.tablespace_name         "Tablespace",
                 b.status                  "Status",
                 b.contents                "Type",
@@ -354,9 +365,13 @@ sub manage_selection {
     foreach my $row (@$result) {
         my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
 
+        if (defined($self->{option_results}->{notemp}) && ($type eq 'UNDO' || $type eq 'TEMPORARY')) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': temporary or undo.", debug => 1);
+            next;
+        }
         if (defined($self->{option_results}->{filter_tablespace}) && $self->{option_results}->{filter_tablespace} ne '' &&
             $name !~ /$self->{option_results}->{filter_tablespace}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
         if (!defined($bytes)) {
@@ -365,7 +380,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{skip}) && $status eq 'OFFLINE')  {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': tbs is offline", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': tbs is offline", debug => 1);
             next;
         }
 
@@ -431,6 +446,10 @@ Default is '%', can be 'B'
 =item B<--free>
 
 Perfdata show free space
+
+=item B<--notemp>
+
+skip temporary or undo tablespaces.
 
 =item B<--skip>
 
