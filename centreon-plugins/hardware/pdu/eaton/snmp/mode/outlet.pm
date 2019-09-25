@@ -34,29 +34,29 @@ sub set_counters {
 
     $self->{maps_counters}->{outlet} = [
         { label => 'current', nlabel => 'outlet.current.ampere', set => {
-                key_values => [ { name => 'outletCurrent', no_value => 0 } ],
+                key_values => [ { name => 'outletCurrent', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
                     { value => 'outletCurrent_absolute', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1 },
+                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'voltage', nlabel => 'outlet.voltage.volt', set => {
-                key_values => [ { name => 'outletVoltage', no_value => 0 } ],
+                key_values => [ { name => 'outletVoltage', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
                     { value => 'outletVoltage_absolute', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1 },
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'power', nlabel => 'outlet.power.watt', set => {
-                key_values => [ { name => 'outletWatts', no_value => 0 } ],
+                key_values => [ { name => 'outletWatts', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
                     { value => 'outletWatts_absolute', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1 },
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display_absolute'  },
                 ],
             }
         },
@@ -102,16 +102,19 @@ sub manage_selection {
     );
 
     foreach my $oid (keys %{$snmp_result}) {
-        $oid =~ /\.(\d+\.\d+)$/;
-        my $instance = $1;
-        next if (defined($self->{outlet}->{$instance}));
+        $oid =~ /\.(\d+)\.(\d+)$/;
+        my ($strapping_index, $outlet_index) = ($1, $2);
         
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        next if (defined($self->{outlet}->{$strapping_index . '.' . $outlet_index}));
+        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $strapping_index . '.' . $outlet_index);
         $result->{outletVoltage} *= 0.001 if (defined($result->{outletVoltage}));
         $result->{outletCurrent} *= 0.001 if (defined($result->{outletCurrent}));
-        my $display = $instance;
-        $display = $result->{outletName} if (defined($result->{outletName}) && $result->{outletName} ne '');
-        $self->{outlet}->{$display} = { display => $display, %$result };
+        my $display = $strapping_index . '.' . $outlet_index;
+        if (defined($result->{outletName}) && $result->{outletName} ne '') {
+            $display = $result->{outletName} . ' strapping ' . $strapping_index;
+        }
+        $self->{outlet}->{$strapping_index . '.' . $outlet_index} = { display => $display, %$result };
     }
 
     if (scalar(keys %{$self->{outlet}}) <= 0) {
