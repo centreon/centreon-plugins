@@ -328,6 +328,7 @@ sub request {
     $self->set_proxy(%options);
     $self->set_extra_curl_opt(%options);
 
+    $self->{response_body} = '';
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FILE'), parameter => \$self->{response_body});
     $self->{nheaders} = 0;
     $self->{response_headers} = [{}];
