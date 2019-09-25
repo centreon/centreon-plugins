@@ -218,6 +218,7 @@ sub check_rpdu2 {
     my ($self, %options) = @_;
 
     my $mapping_phase = {
+        rPDU2PhaseStatusModule      => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.2' },
         rPDU2PhaseStatusNumber      => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.3' },
         rPDU2PhaseStatusLoadState   => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.4', map => $map_rpdu2_status },
         rPDU2PhaseStatusCurrent     => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.5' }, 
@@ -247,8 +248,9 @@ sub check_rpdu2 {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_phase, results => $snmp_result->{$oid_rPDU2PhaseStatusEntry}, instance => $instance);
 
-        $self->{phase}->{$result->{rPDU2PhaseStatusNumber}} = {
-            display => $result->{rPDU2PhaseStatusNumber},
+        my $name = 'module ' . $result->{rPDU2PhaseStatusModule} . ' phase ' . $result->{rPDU2PhaseStatusNumber};
+        $self->{phase}->{$name} = {
+            display => $name,
             status => $result->{rPDU2PhaseStatusLoadState},
             current => $result->{rPDU2PhaseStatusCurrent} / 10,
             power => $result->{rPDU2PhaseStatusPower} * 10, # hundreth of kW. So * 10 for watt
