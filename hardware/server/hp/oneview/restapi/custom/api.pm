@@ -154,15 +154,15 @@ sub clean_session_id {
     my ($self, %options) = @_;
 
     my $datas = { last_timestamp => time() };
-    $options{statefile}->write(data => $datas);
+    $self->{cache}->write(data => $datas);
     $self->{session_id} = undef;
 }
 
 sub authenticate {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'hp_oneview_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
-    my $session_id = $options{statefile}->get(name => 'session_id');
+    my $has_cache_file = $self->{cache}->read(statefile => 'hp_oneview_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
+    my $session_id = $self->{cache}->get(name => 'session_id');
     
     if ($has_cache_file == 0 || !defined($session_id)) {
         my $json_request = { userName => $self->{api_username}, password => $self->{api_password} };
@@ -196,7 +196,7 @@ sub authenticate {
         }
 
         my $datas = { last_timestamp => time(), session_id => $session_id };
-        $options{statefile}->write(data => $datas);
+        $self->{cache}->write(data => $datas);
     }
 
     $self->{session_id} = $session_id;
@@ -207,7 +207,7 @@ sub request_api {
 
     $self->settings();
     if (!defined($self->{session_id})) {
-        $self->authenticate(statefile => $self->{cache});
+        $self->authenticate();
     }
     my $content = $self->{http}->request(
         %options, 
@@ -217,7 +217,7 @@ sub request_api {
     # Maybe there is an issue with the session_id. So we retry.
     if ($self->{http}->get_code() != 200) {
         $self->clean_session_id();
-        $self->authenticate(statefile => $self->{cache});
+        $self->authenticate();
         $content = $self->{http}->request(%options, 
             warning_status => '', unknown_status => '', critical_status => ''
         );
