@@ -56,9 +56,7 @@ sub new {
         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',
         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-        'temp-tablespace'          => 'database::oracle::mode::temptablespace',
         'tnsping'                  => 'database::oracle::mode::tnsping',
-        'undo-tablespace'          => 'database::oracle::mode::undotablespace',
     );
 
     $self->{sql_modes}{dbi} = 'database::oracle::dbi';
