@@ -29,7 +29,12 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output { 
     my ($self, %options) = @_;
 
-    my $msg = "status : '" . $self->{result_values}->{status} . "' [bank : " . $self->{result_values}->{bank} . ', phase : ' . $self->{result_values}->{phase} . ']';
+    my $msg = sprintf(
+        "status : '%s' %s%s",
+        $self->{result_values}->{status},
+        $self->{result_values}->{bank} ne '' ? '[bank: ' . $self->{result_values}->{bank} . '] ' : '',
+        '[phase: ' . $self->{result_values}->{phase} . ']',
+    );
     return $msg;
 }
 
@@ -183,15 +188,16 @@ sub check_rpdu2 {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        if (defined($self->{outlet}->{$result->{rPDU2OutletSwitchedStatusName}})) {
-            $self->{output}->output_add(long_msg => "skipping instance '" . $result->{rPDU2OutletSwitchedStatusName} . "' [$instance]: name duplicated");
+        my $name = $result->{rPDU2OutletSwitchedStatusName} . ' bank ' . $result->{rPDU2OutletSwitchedPropertiesBank};
+        if (defined($self->{outlet}->{$name})) {
+            $self->{output}->output_add(long_msg => "skipping instance '" . $name . "' [$instance]: name duplicated");
             next;
         }
 
-        $self->{outlet}->{$result->{rPDU2OutletSwitchedStatusName}} = {
-            display => $result->{rPDU2OutletSwitchedStatusName},
+        $self->{outlet}->{$name} = {
+            display => $name,
             status => $result->{rPDU2OutletSwitchedStatusState},
-            bank => $result->{rPDU2OutletSwitchedPropertiesBank},
+            bank => '',
             phase => $result->{rPDU2OutletSwitchedPropertiesPhaseLayout},
         };
     }
