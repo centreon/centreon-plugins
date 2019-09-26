@@ -385,12 +385,7 @@ sub manage_selection {
         }
 
         my ($percent_used, $percent_free, $used, $free, $size);
-        if ($self->{sql}->is_version_minimum(version => '11')) {
-            $percent_used = $bytes / $bytes_max * 100;
-            $size = $bytes_max;
-            $free = $bytes_max - $bytes;
-            $used = $bytes;
-        } elsif ((!defined($bytes_max)) || ($bytes_max == 0)) {
+        if ((!defined($bytes_max)) || ($bytes_max == 0)) {
             $percent_used = ($bytes - $bytes_free) / $bytes * 100;
             $size = $bytes;
             $free = $bytes_free;
