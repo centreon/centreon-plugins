@@ -158,6 +158,23 @@ sub clean_session_id {
     $self->{session_id} = undef;
 }
 
+sub decode_api_response {
+    my ($self, %options) = @_;
+
+    my $decoded = $self->json_decode(content => $options{content});
+    if (!defined($decoded)) {
+        $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
+    if (defined($decoded->{errorCode})) {
+        $self->clean_session_id();
+        $self->{output}->add_option_msg(short_msg => 'api error: ' . $decoded->{message});
+        $self->{output}->option_exit();
+    }
+
+    return $decoded;
+}
+
 sub authenticate {
     my ($self, %options) = @_;
 
@@ -201,6 +218,16 @@ sub authenticate {
 
     $self->{session_id} = $session_id;
     $self->{http}->add_header(key => 'Auth', value => $self->{session_id});
+    my $content = $self->{http}->request(
+        url_path => '/rest/version',
+        warning_status => '', unknown_status => '', critical_status => ''
+    );
+    my $decoded = $self->decode_api_response(content => $content);
+    if (!defined($decoded->{currentVersion})) {
+        $self->{output}->add_option_msg(short_msg => 'annot get api version');
+        $self->{output}->option_exit();
+    }
+    $self->{http}->add_header(key => 'X-Api-Version', value => $decoded->{currentVersion});
 }
 
 sub request_api {
@@ -224,18 +251,7 @@ sub request_api {
         );
     }
 
-    my $decoded = $self->json_decode(content => $content);
-    if (!defined($decoded)) {
-        $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
-        $self->{output}->option_exit();
-    }
-    if (defined($decoded->{errorCode})) {
-        $self->clean_session_id();
-        $self->{output}->add_option_msg(short_msg => 'api error: ' . $decoded->{message});
-        $self->{output}->option_exit();
-    }
-
-    return $decoded;
+    return $self->decode_api_response(content => $content);
 }
 
 1;
