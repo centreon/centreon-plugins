@@ -76,7 +76,7 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $options{sql}->connect();
-    if ($self->{sql}->is_version_minimum(version => '11')) {
+    if ($options{sql}->is_version_minimum(version => '11')) {
         $options{sql}->query(query => q{
             SELECT file_type, percent_space_used, percent_space_reclaimable
                 FROM v$recovery_area_usage
