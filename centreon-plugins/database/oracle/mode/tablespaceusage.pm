@@ -385,15 +385,18 @@ sub manage_selection {
         }
 
         my ($percent_used, $percent_free, $used, $free, $size);
-        if ((!defined($bytes_max)) || ($bytes_max == 0)) {
-            $percent_used = ($bytes - $bytes_free) / $bytes * 100;
-            $size = $bytes;
-            $free = $bytes_free;
-            $used = $size - $free;
-        } else {
+        if ((!defined($bytes_max)) || ($bytes_max eq '')) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': bytes max not defined.", debug => 1);
+            next;
+        } elsif ($bytes_max > $bytes) {
             $percent_used = ($bytes - $bytes_free) / $bytes_max * 100;
             $size = $bytes_max;
             $free = $bytes_free + ($bytes_max - $bytes);
+            $used = $size - $free;
+        } else {
+            $percent_used = ($bytes - $bytes_free) / $bytes * 100;
+            $size = $bytes;
+            $free = $bytes_free;
             $used = $size - $free;
         }
 
