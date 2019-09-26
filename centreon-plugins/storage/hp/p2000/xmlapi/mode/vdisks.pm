@@ -132,7 +132,7 @@ sub manage_selection {
         no_quit => 1,
     );
     if ($code == 0) {
-        ($results) = $self->{custom}->get_infos(
+        ($result) = $options{custom}->get_infos(
             cmd => 'show disk-groups', 
             base_type => 'disk-groups',
             key => 'name', 
