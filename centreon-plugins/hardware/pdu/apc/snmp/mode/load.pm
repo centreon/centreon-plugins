@@ -225,6 +225,7 @@ sub check_rpdu2 {
         rPDU2PhaseStatusPower       => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.7' },
     };
     my $mapping_bank = {
+        rPDU2BankStatusModule       => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.2' },
         rPDU2BankStatusNumber       => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.3' },
         rPDU2BankStatusLoadState    => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.4', map => $map_rpdu2_status },
         rPDU2BankStatusCurrent      => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.5' }, 
@@ -262,8 +263,9 @@ sub check_rpdu2 {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_bank, results => $snmp_result->{$oid_rPDU2BankStatusEntry}, instance => $instance);
 
-        $self->{bank}->{$result->{rPDU2BankStatusNumber}} = {
-            display => $result->{rPDU2BankStatusNumber},
+        my $name = 'module ' . $result->{rPDU2BankStatusModule} . ' num ' . $result->{rPDU2BankStatusNumber};
+        $self->{bank}->{$name} = {
+            display => $name,
             status => $result->{rPDU2BankStatusLoadState},
             current => $result->{rPDU2BankStatusCurrent} / 10,
         }
