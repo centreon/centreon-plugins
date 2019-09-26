@@ -124,12 +124,21 @@ sub prefix_vdisk_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($result) = $options{custom}->get_infos(
+    my ($result, $code) = $options{custom}->get_infos(
         cmd => 'show vdisks', 
         base_type => 'virtual-disks',
         key => 'name',
-        properties_name => '^(?:health-numeric|size-numeric|freespace-numeric)$'
+        properties_name => '^(?:health-numeric|size-numeric|freespace-numeric)$',
+        no_quit => 1,
     );
+    if ($code == 0) {
+        ($results) = $self->{custom}->get_infos(
+            cmd => 'show disk-groups', 
+            base_type => 'disk-groups',
+            key => 'name', 
+            properties_name => '^(?:health-numeric|size-numeric|freespace-numeric)$',
+        );
+    }
 
     my %health = (
         0 => 'ok',
