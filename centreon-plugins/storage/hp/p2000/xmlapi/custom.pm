@@ -190,15 +190,20 @@ sub get_infos {
     $self->login();
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
+    
+    my ($unknown_status, $warning_status, $critical_status) = ($self->{unknown_http_status}, $self->{warning_http_status}, $self->{critical_http_status});
+    if (defined($options{no_quit}) && $options{no_quit} == 1) {
+        ($unknown_status, $warning_status, $critical_status) = ('', '', '');
+    }
     my $response = $self->{http}->request(
         url_path => $self->{url_path} . $cmd, 
         header => [
             'Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
             'dataType: api', 'sessionKey: '. $self->{session_id}
         ],
-        unknown_status => $self->{unknown_http_status},
-        warning_status => $self->{warning_http_status},
-        critical_status => $self->{critical_http_status},
+        unknown_status => $unknown_status,
+        warning_status => $warning_status,
+        critical_status => $critical_status,
     );
 
     eval {
@@ -206,6 +211,7 @@ sub get_infos {
         $nodeset = $xpath->find("//OBJECT[\@basetype='" . $options{base_type} . "']");
     };
     if ($@) {
+        return ({}, 0) if (defined($options{no_quit}) && $options{no_quit} == 1);
         $self->{output}->add_option_msg(short_msg => "Cannot parse 'cmd' response: $@");
         $self->{output}->option_exit();
     }
