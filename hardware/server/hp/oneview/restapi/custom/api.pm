@@ -200,6 +200,7 @@ sub authenticate {
     }
 
     $self->{session_id} = $session_id;
+    $self->{http}->add_header(key => 'Auth', value => $self->{session_id});
 }
 
 sub request_api {
