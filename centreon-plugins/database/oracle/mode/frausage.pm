@@ -99,7 +99,7 @@ sub manage_selection {
         }
 
         $self->{file}->{$row->[0]} = { display => $row->[0] };
-        if ($self->{sql}->is_version_minimum(version => '11')) {
+        if ($options{sql}->is_version_minimum(version => '11')) {
             $self->{file}->{$row->[0]}->{percent_space_usage} = $row->[1];
             $self->{file}->{$row->[0]}->{percent_space_reclaimable} = $row->[2];
         } else {
