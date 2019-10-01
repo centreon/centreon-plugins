@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
+        'discovery'             => 'cloud::aws::elb::mode::discovery',
         'http-codes'            => 'cloud::aws::elb::mode::httpcodes',
         'performances'          => 'cloud::aws::elb::mode::performances',
         'queues'                => 'cloud::aws::elb::mode::queues',
