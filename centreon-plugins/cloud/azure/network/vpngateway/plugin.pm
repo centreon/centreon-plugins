@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'site-traffic'              => 'cloud::azure::network::vpngateway::mode::sitetraffic',
-        'tunnel-traffic'            => 'cloud::azure::network::vpngateway::mode::tunneltraffic',
-        'vpn-gateway-status'        => 'cloud::azure::network::vpngateway::mode::vpngatewaystatus',
+        'discovery'             => 'cloud::azure::network::vpngateway::mode::discovery',
+        'site-traffic'          => 'cloud::azure::network::vpngateway::mode::sitetraffic',
+        'tunnel-traffic'        => 'cloud::azure::network::vpngateway::mode::tunneltraffic',
+        'vpn-gateway-status'    => 'cloud::azure::network::vpngateway::mode::vpngatewaystatus',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -44,10 +45,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+    });
 
     $self->SUPER::init(%options);
 }

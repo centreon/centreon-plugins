@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'circuit-status'            => 'cloud::azure::network::expressroute::mode::circuitstatus',
-        'list-circuits'             => 'cloud::azure::network::expressroute::mode::listcircuits',
-        'traffic'                   => 'cloud::azure::network::expressroute::mode::traffic',
+        'circuit-status'    => 'cloud::azure::network::expressroute::mode::circuitstatus',
+        'discovery'         => 'cloud::azure::network::expressroute::mode::discovery',
+        'list-circuits'     => 'cloud::azure::network::expressroute::mode::listcircuits',
+        'traffic'           => 'cloud::azure::network::expressroute::mode::traffic',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -44,10 +45,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+    });
 
     $self->SUPER::init(%options);
 }

@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'cpu'                   => 'cloud::azure::compute::virtualmachine::mode::cpu',
-        'diskio'                => 'cloud::azure::compute::virtualmachine::mode::diskio',
-        'list-resources'        => 'cloud::azure::compute::virtualmachine::mode::listresources',
-        'network'               => 'cloud::azure::compute::virtualmachine::mode::network',
-        'vm-sizes'              => 'cloud::azure::compute::virtualmachine::mode::vmsizes',
-        'vms-state'             => 'cloud::azure::compute::virtualmachine::mode::vmsstate',
+        'cpu'               => 'cloud::azure::compute::virtualmachine::mode::cpu',
+        'discovery'         => 'cloud::azure::compute::virtualmachine::mode::discovery',
+        'diskio'            => 'cloud::azure::compute::virtualmachine::mode::diskio',
+        'list-resources'    => 'cloud::azure::compute::virtualmachine::mode::listresources',
+        'network'           => 'cloud::azure::compute::virtualmachine::mode::network',
+        'vm-sizes'          => 'cloud::azure::compute::virtualmachine::mode::vmsizes',
+        'vms-state'         => 'cloud::azure::compute::virtualmachine::mode::vmsstate',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -47,10 +48,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+    });
 
     $self->SUPER::init(%options);
 }
