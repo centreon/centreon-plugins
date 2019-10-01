@@ -29,6 +29,7 @@
  * Enhancement: [aws/paws] add proxyurl option
  * Break: [ucopia] modes refactoring
  * Break: [aws] metrics forced to new format for billing, cloudfront, elb, ec2, lambda breaks thresholds
+ * Break: [oracle] merged modes temp-tablespace and undo-tablespace into tablespace-usage
  * Fix: Ctrl+F "Fix" on commits page
 
 2019-07-04 Quentin Garnier <qgarnier@centreon.com>
