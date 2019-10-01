@@ -125,7 +125,17 @@ __END__
 
 Check web scenario availability metrics.
 
+(Data are delayed by a minimum of 3 hours)
+
 =over 8
+
+=item B<--scenario-id>
+
+Set ID of the scenario.
+
+=item B<--timeframe>
+
+Set timeframe in seconds (Default: 14400).
 
 =item B<--warning-*> B<--critical-*>
 
