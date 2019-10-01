@@ -45,6 +45,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    $self->{namespace} = $self->{option_results}->{namespace};
+    $self->{type} = $self->{option_results}->{type};
+    $self->{location} = $self->{option_results}->{location};
+    $self->{resource_group} = $self->{option_results}->{resource_group};
 }
 
 sub run {
@@ -56,10 +61,10 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $resources = $options{custom}->azure_list_resources(
-        namespace => $self->{option_results}->{namespace},
-        resource_type => $self->{option_results}->{type},
-        location => $self->{option_results}->{location},
-        resource_group => $self->{option_results}->{resource_group}
+        namespace => $self->{namespace},
+        resource_type => $self->{type},
+        location => $self->{location},
+        resource_group => $self->{resource_group}
     );
 
     $disco_stats->{end_time} = time();

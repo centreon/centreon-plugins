@@ -35,6 +35,7 @@ sub new {
         'blob-capacity'             => 'cloud::azure::storage::storageaccount::mode::blobcapacity',
         'blob-container-count'      => 'cloud::azure::storage::storageaccount::mode::blobcontainercount',
         'blob-count'                => 'cloud::azure::storage::storageaccount::mode::blobcount',
+        'discovery'                 => 'cloud::azure::storage::storageaccount::mode::discovery',
         'file-capacity'             => 'cloud::azure::storage::storageaccount::mode::filecapacity',
         'file-count'                => 'cloud::azure::storage::storageaccount::mode::filecount',
         'file-share-count'          => 'cloud::azure::storage::storageaccount::mode::filesharecount',
@@ -59,10 +60,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-01-01' },
+    });
 
     $self->SUPER::init(%options);
 }
