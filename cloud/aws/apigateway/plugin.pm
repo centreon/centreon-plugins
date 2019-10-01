@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'requests'           => 'cloud::aws::apigateway::mode::requests',
-        'latency'            => 'cloud::aws::apigateway::mode::latency',
+        'discovery'     => 'cloud::aws::apigateway::mode::discovery',
+        'latency'       => 'cloud::aws::apigateway::mode::latency',
+        'requests'      => 'cloud::aws::apigateway::mode::requests',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
+        'discovery'     => 'cloud::aws::kinesis::mode::discovery',
         'streams'       => 'cloud::aws::kinesis::mode::streams',
         'records-stats' => 'cloud::aws::kinesis::mode::recordsstats'
     );
