@@ -1,4 +1,4 @@
-2019-09-XX Quentin Garnier <qgarnier@centreon.com>
+2019-10-01 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Warp10 Sensision
  * Plugin added: OpenMetrics
  * Plugin added: AWS API Gateway Api
@@ -12,6 +12,13 @@
  * Plugin added: EMC Unisphere Rest API
  * Plugin added: Nitram UPS SNMP
  * Plugin added: Quanta.io Rest API
+ * Plugin added: HP OneView
+ * Plugin added: Geist
+ * Mode added: [oracle] 'fra-usage'
+ * Mode added: [oracle] 'tablespace-usage'
+ * Mode added: [hp p2000] 'vdisks'
+ * Mode added: [windows] 'list-services'
+ * Mode added: [os] 'list-processes'
  * Enhancement: [core] add global timeout option
  * Enhancement: [cisco/standard/snmp] add err disable interfaces
  * Enhancement: [oracle] add container option
