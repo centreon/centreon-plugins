@@ -257,9 +257,9 @@ sub manage_container {
                 %s
             %s
         }, 
-        defined($self->{option_results}->{notemp}) ?  $tbs_sql_undo_empty : $tbs_sql_undo,
-        defined($self->{option_results}->{notemp}) ?  "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
-        defined($self->{option_results}->{notemp}) ?   "" : $tbs_sql_temp
+        defined($self->{option_results}->{notemp}) ? $tbs_sql_undo_empty : $tbs_sql_undo,
+        defined($self->{option_results}->{notemp}) ? "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
+        defined($self->{option_results}->{notemp}) ?  "" : $tbs_sql_temp
     );
 
     $self->{sql}->query(query => $query);
@@ -419,9 +419,9 @@ sub manage_selection {
                     %s
                 %s
             }, 
-            defined($self->{option_results}->{notemp}) ?  $tbs_sql_undo_empty : $tbs_sql_undo,
-            defined($self->{option_results}->{notemp}) ?  "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
-            defined($self->{option_results}->{notemp}) ?   "" : $tbs_sql_temp
+            defined($self->{option_results}->{notemp}) ? $tbs_sql_undo_empty : $tbs_sql_undo,
+            defined($self->{option_results}->{notemp}) ? "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
+            defined($self->{option_results}->{notemp}) ? "" : $tbs_sql_temp
         );
     } elsif ($self->{sql}->is_version_minimum(version => '8')) {
         $query = q{SELECT
@@ -540,7 +540,6 @@ sub manage_selection {
     my $result = $self->{sql}->fetchall_arrayref();
 
     $self->{tablespace} = {};
-
     foreach my $row (@$result) {
         my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
 
