@@ -44,6 +44,7 @@ sub new {
         'invalid-object'           => 'database::oracle::mode::invalidobject',
         'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
+        'list-tablespaces'         => 'database::oracle::mode::listtablespaces',
         'long-queries'             => 'database::oracle::mode::longqueries',
         'password-expiration'      => 'database::oracle::mode::passwordexpiration',
         'process-usage'            => 'database::oracle::mode::processusage',

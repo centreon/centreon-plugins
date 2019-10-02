@@ -18,98 +18,14 @@
 # limitations under the License.
 #
 
-package database::oracle::mode::tablespaceusage;
+package database::oracle::mode::listtablespaces;
 
-use base qw(centreon::plugins::templates::counter);
+use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
 
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'tablespace', type => 1, cb_prefix_output => 'prefix_tablespace_output', message_multiple => 'All tablespaces are OK' },
-    ];
-
-    $self->{maps_counters}->{tablespace} = [
-        { label => 'tablespace', set => {
-                key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' }, { name => 'display' } ],
-                closure_custom_calc => \&custom_usage_calc,
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
-            }
-        },
-    ];
-}
-
-sub custom_usage_perfdata {
-    my ($self, %options) = @_;
-
-    my $label = 'tbs_' . $self->{result_values}->{display} . '_usage';
-    my $value_perf = $self->{result_values}->{used};
-    if (defined($self->{instance_mode}->{option_results}->{free})) {
-        $label = 'tbs_' . $self->{result_values}->{display} . '_free';
-        $value_perf = $self->{result_values}->{free};
-    }
-
-    my %total_options = ();
-    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
-        $total_options{total} = $self->{result_values}->{total};
-        $total_options{cast_int} = 1;
-    }
-
-    $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-        value => $value_perf,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
-        min => 0, max => $self->{result_values}->{total}
-    );
-}
-
-sub custom_usage_threshold {
-    my ($self, %options) = @_;
-
-    my ($exit, $threshold_value);
-    $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
-    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
-        $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
-    }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
-    return $exit;
-}
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
-}
-
-sub custom_usage_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_used'};
-    $self->{result_values}->{prct_used} = $options{new_datas}->{$self->{instance} . '_prct_used'};
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
-
-    $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-    
-    return 0;
-}
+my $order = ['name', 'total', 'free', 'used', 'prct_used', 'type', 'status'];
 
 sub new {
     my ($class, %options) = @_;
@@ -118,30 +34,25 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-tablespace:s' => { name => 'filter_tablespace' },
-        'units:s'             => { name => 'units', default => '%' },
-        'free'                => { name => 'free' },
-        'skip'                => { name => 'skip' },
         'notemp'              => { name => 'notemp' },
     });
 
     return $self;
 }
 
-sub prefix_tablespace_output {
+sub check_options {
     my ($self, %options) = @_;
-
-    return "Tablespace '" . $options{instance_value}->{display} . "' ";
+    $self->SUPER::init(%options);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{sql} = $options{sql};
-    $self->{sql}->connect();
+    $options{sql}->connect();
     
     # request from check_oracle_health.
     my $query;
-    if ($self->{sql}->is_version_minimum(version => '9')) {
+    if ($options{sql}->is_version_minimum(version => '9')) {
         my $tbs_sql_undo = q{
             SELECT
                 tablespace_name, bytes_expired
@@ -243,7 +154,7 @@ sub manage_selection {
             defined($self->{option_results}->{notemp}) ?  "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
             defined($self->{option_results}->{notemp}) ?   "" : $tbs_sql_temp
         );
-    } elsif ($self->{sql}->is_version_minimum(version => '8')) {
+    } elsif ($options{sql}->is_version_minimum(version => '8')) {
         $query = q{SELECT
                 a.tablespace_name         "Tablespace",
                 b.status                  "Status",
@@ -356,11 +267,11 @@ sub manage_selection {
                 AND a.tablespace_name = b.tablespace_name
         };
     }
-    $self->{sql}->query(query => $query);
+    $options{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
-    $self->{sql}->disconnect();
+    $options{sql}->disconnect();
 
-    $self->{tablespace} = {};
+    my $tablespaces = {};
 
     foreach my $row (@$result) {
         my ($name, $status, $type, $extentmgmt, $bytes, $bytes_max, $bytes_free) = @$row;
@@ -400,18 +311,52 @@ sub manage_selection {
             $used = $size - $free;
         }
 
-        $self->{tablespace}->{$name} = { 
+        $tablespaces->{$name} = { 
             used => $used,
             free => $free,
             total => $size,
             prct_used => $percent_used,
-            display => lc($name)
+            name => lc($name),
+            type => $type,
+            status => $status,
         };
     }
 
-    if (scalar(keys %{$self->{tablespace}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No tablespaces found.");
-        $self->{output}->option_exit();
+    return $tablespaces;
+}
+
+sub run {
+    my ($self, %options) = @_;
+
+    my $tablespaces = $self->manage_selection(%options);
+    foreach (sort keys %$tablespaces) {
+        my $entry = '';
+        foreach my $label (@$order) {
+            $entry .= '[' . $label . ' = ' . $tablespaces->{$_}->{$label} . '] ';
+        }
+        $self->{output}->output_add(long_msg => $entry);
+    }
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List tablespaces:'
+    );
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
+}
+
+sub disco_format {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_disco_format(elements => $order);
+}
+
+sub disco_show {
+    my ($self, %options) = @_;
+
+    my $tablespaces = $self->manage_selection(%options);
+    foreach (sort keys %$tablespaces) {
+        $self->{output}->add_disco_entry(%{$tablespaces->{$_}});
     }
 }
 
@@ -421,37 +366,17 @@ __END__
 
 =head1 MODE
 
-Check Oracle tablespaces usage.
+List oracle tablespaces.
 
 =over 8
 
-=item B<--warning-tablespace>
-
-Threshold warning.
-
-=item B<--critical-tablespace>
-
-Threshold critical.
-
 =item B<--filter-tablespace>
 
-Filter tablespace by name. Can be a regex
-
-=item B<--units>
-
-Default is '%', can be 'B'
-
-=item B<--free>
-
-Perfdata show free space
+Filter tablespace by name. Can be a regex.
 
 =item B<--notemp>
 
 skip temporary or undo tablespaces.
-
-=item B<--skip>
-
-Skip offline tablespaces.
 
 =back
 
