@@ -122,7 +122,7 @@ sub new {
         'free'                => { name => 'free' },
         'skip'                => { name => 'skip' },
         'notemp'              => { name => 'notemp' },
-        'container'           => { name => 'container' },
+        'add-container'       => { name => 'add_container' },
     });
 
     return $self;
@@ -137,133 +137,131 @@ sub prefix_tablespace_output {
 sub manage_container {
     my ($self, %options) = @_;
 
-    return if (!defined($self->{option_results}->{container}));
+    return if (!defined($self->{option_results}->{add_container}));
 
     # request from check_oracle_health.
-    my $query;
-    if ($self->{sql}->is_version_minimum(version => '9')) {
-        my $tbs_sql_undo = q{
-            -- freier platz durch expired extents
-            -- speziell fuer undo tablespaces
-            -- => bytes_expired
-            SELECT
-                tablespace_name, bytes_expired, con_id
-            FROM
-                (
-                    SELECT
-                        tablespace_name,
-                        SUM (bytes) bytes_expired,
-                        status,
-                        con_id
-                    FROM
-                        cdb_undo_extents
-                    GROUP BY
-                        con_id, tablespace_name, status
-                )
-            WHERE
-                status = 'EXPIRED'
-        };
-        my $tbs_sql_undo_empty = q{
-            SELECT NULL AS tablespace_name, NULL AS bytes_expired, NULL AS con_id FROM DUAL
-        };
-        my $tbs_sql_temp = q{
-            UNION ALL
-            SELECT
-                e.name||'_'||b.tablespace_name "Tablespace",
-                b.status "Status",
-                b.contents "Type",
-                b.extent_management "Extent Mgmt",
-                sum(a.bytes_free + a.bytes_used) bytes,   -- allocated
-                SUM(DECODE(d.autoextensible, 'YES', d.maxbytes, 'NO', d.bytes)) bytes_max,
-                SUM(a.bytes_free + a.bytes_used - NVL(c.bytes_used, 0)) bytes_free
-            FROM
-                sys.v_$TEMP_SPACE_HEADER a, -- has con_id
-                sys.cdb_tablespaces b, -- has con_id
-                sys.v_$Temp_extent_pool c,
-                cdb_temp_files d, -- has con_id
-                v$containers e
-            WHERE
-                a.file_id = c.file_id(+)
-                AND a.file_id = d.file_id
-                AND a.tablespace_name = c.tablespace_name(+)
-                AND a.tablespace_name = d.tablespace_name
-                AND a.tablespace_name = b.tablespace_name
-                AND a.con_id = c.con_id(+)
-                AND a.con_id = d.con_id
-                AND a.con_id = b.con_id
-                AND a.con_id = e.con_id
-            GROUP BY
-                e.name,
-                b.con_id,
-                b.status,
-                b.contents,
-                b.extent_management,
-                b.tablespace_name
-            ORDER BY
-                1
-        };
-
-        $query = sprintf(
-            q{
-                SELECT /*+ opt_param('optimizer_adaptive_features','false') */
-                    e.name||'_'||a.tablespace_name         "Tablespace",
-                    b.status                  "Status",
-                    b.contents                "Type",
-                    b.extent_management       "Extent Mgmt",
-                    a.bytes                   bytes,
-                    a.maxbytes                bytes_max,
-                    c.bytes_free + NVL(d.bytes_expired,0)             bytes_free
+    return if (!$self->{sql}->is_version_minimum(version => '9'));
+    
+    my $tbs_sql_undo = q{
+        -- freier platz durch expired extents
+        -- speziell fuer undo tablespaces
+        -- => bytes_expired
+        SELECT
+            tablespace_name, bytes_expired, con_id
+        FROM
+            (
+                SELECT
+                    tablespace_name,
+                    SUM (bytes) bytes_expired,
+                    status,
+                    con_id
                 FROM
-                  (
-                    -- belegter und maximal verfuegbarer platz pro datafile
-                    -- nach tablespacenamen zusammengefasst
-                    -- => bytes
-                    -- => maxbytes
-                    SELECT
-                        a.con_id,
-                        a.tablespace_name,
-                        SUM(a.bytes)          bytes,
-                        SUM(DECODE(a.autoextensible, 'YES', a.maxbytes, 'NO', a.bytes)) maxbytes
-                    FROM
-                        cdb_data_files a
-                    GROUP BY
-                        con_id, tablespace_name
-                  ) a,
-                  sys.cdb_tablespaces b,
-                  (
-                    -- freier platz pro tablespace
-                    -- => bytes_free
-                    SELECT
-                        a.con_id,
-                        a.tablespace_name,
-                        SUM(a.bytes) bytes_free
-                    FROM
-                        cdb_free_space a
-                    GROUP BY
-                        con_id, tablespace_name
-                  ) c,
-                  (
-                    %s
-                  ) d,
-                  v$containers e
-                WHERE
-                    a.tablespace_name = c.tablespace_name (+)
-                    AND a.tablespace_name = b.tablespace_name
-                    AND a.tablespace_name = d.tablespace_name (+)
-                    AND a.con_id = c.con_id(+)
-                    AND a.con_id = b.con_id
-                    AND a.con_id = d.con_id(+)
-                    AND a.con_id = e.con_id
-                    %s
+                    cdb_undo_extents
+                GROUP BY
+                    con_id, tablespace_name, status
+            )
+        WHERE
+            status = 'EXPIRED'
+    };
+    my $tbs_sql_undo_empty = q{
+        SELECT NULL AS tablespace_name, NULL AS bytes_expired, NULL AS con_id FROM DUAL
+    };
+    my $tbs_sql_temp = q{
+        UNION ALL
+        SELECT
+            e.name||'_'||b.tablespace_name "Tablespace",
+            b.status "Status",
+            b.contents "Type",
+            b.extent_management "Extent Mgmt",
+            sum(a.bytes_free + a.bytes_used) bytes,   -- allocated
+            SUM(DECODE(d.autoextensible, 'YES', d.maxbytes, 'NO', d.bytes)) bytes_max,
+            SUM(a.bytes_free + a.bytes_used - NVL(c.bytes_used, 0)) bytes_free
+        FROM
+            sys.v_$TEMP_SPACE_HEADER a, -- has con_id
+            sys.cdb_tablespaces b, -- has con_id
+            sys.v_$Temp_extent_pool c,
+            cdb_temp_files d, -- has con_id
+            v$containers e
+        WHERE
+            a.file_id = c.file_id(+)
+            AND a.file_id = d.file_id
+            AND a.tablespace_name = c.tablespace_name(+)
+            AND a.tablespace_name = d.tablespace_name
+            AND a.tablespace_name = b.tablespace_name
+            AND a.con_id = c.con_id(+)
+            AND a.con_id = d.con_id
+            AND a.con_id = b.con_id
+            AND a.con_id = e.con_id
+        GROUP BY
+            e.name,
+            b.con_id,
+            b.status,
+            b.contents,
+            b.extent_management,
+            b.tablespace_name
+        ORDER BY
+            1
+    };
+
+    my $query = sprintf(
+        q{
+            SELECT /*+ opt_param('optimizer_adaptive_features','false') */
+                e.name||'_'||a.tablespace_name         "Tablespace",
+                b.status                  "Status",
+                b.contents                "Type",
+                b.extent_management       "Extent Mgmt",
+                a.bytes                   bytes,
+                a.maxbytes                bytes_max,
+                c.bytes_free + NVL(d.bytes_expired,0)             bytes_free
+            FROM
+              (
+                -- belegter und maximal verfuegbarer platz pro datafile
+                -- nach tablespacenamen zusammengefasst
+                -- => bytes
+                -- => maxbytes
+                SELECT
+                    a.con_id,
+                    a.tablespace_name,
+                    SUM(a.bytes)          bytes,
+                    SUM(DECODE(a.autoextensible, 'YES', a.maxbytes, 'NO', a.bytes)) maxbytes
+                FROM
+                    cdb_data_files a
+                GROUP BY
+                    con_id, tablespace_name
+              ) a,
+              sys.cdb_tablespaces b,
+              (
+                -- freier platz pro tablespace
+                -- => bytes_free
+                SELECT
+                    a.con_id,
+                    a.tablespace_name,
+                    SUM(a.bytes) bytes_free
+                FROM
+                    cdb_free_space a
+                GROUP BY
+                    con_id, tablespace_name
+              ) c,
+              (
                 %s
-            }, 
-            defined($self->{option_results}->{notemp}) ?  $tbs_sql_undo_empty : $tbs_sql_undo,
-            defined($self->{option_results}->{notemp}) ?  "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
-            defined($self->{option_results}->{notemp}) ?   "" : $tbs_sql_temp
-        );
-    } else {
-        return ;
-    }
+              ) d,
+              v$containers e
+            WHERE
+                a.tablespace_name = c.tablespace_name (+)
+                AND a.tablespace_name = b.tablespace_name
+                AND a.tablespace_name = d.tablespace_name (+)
+                AND a.con_id = c.con_id(+)
+                AND a.con_id = b.con_id
+                AND a.con_id = d.con_id(+)
+                AND a.con_id = e.con_id
+                %s
+            %s
+        }, 
+        defined($self->{option_results}->{notemp}) ?  $tbs_sql_undo_empty : $tbs_sql_undo,
+        defined($self->{option_results}->{notemp}) ?  "AND (b.contents != 'TEMPORARY' AND b.contents != 'UNDO')" : '',
+        defined($self->{option_results}->{notemp}) ?   "" : $tbs_sql_temp
+    );
+
     $self->{sql}->query(query => $query);
     my $result = $self->{sql}->fetchall_arrayref();
 
@@ -633,7 +631,7 @@ Perfdata show free space
 
 skip temporary or undo tablespaces.
 
-=item B<--container>
+=item B<--add-container>
 
 Add tablespaces of container databases.
 
