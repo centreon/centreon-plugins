@@ -268,7 +268,7 @@ sub manage_selection {
         };
     }
     $options{sql}->query(query => $query);
-    my $result = $self->{sql}->fetchall_arrayref();
+    my $result = $options{sql}->fetchall_arrayref();
     $options{sql}->disconnect();
 
     my $tablespaces = {};
