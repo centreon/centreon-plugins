@@ -52,6 +52,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_updates_calc'),
                 closure_custom_output => $self->can('custom_updates_output'),
                 closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => sub { return 'ok'; }
             }
         },
     ];
@@ -60,10 +61,12 @@ sub set_counters {
 sub custom_updates_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Package '%s' [version: %s] [repository: %s]",
-                   $self->{result_values}->{package},
-                   $self->{result_values}->{version},
-                   $self->{result_values}->{repository});
+    my $msg = sprintf(
+        "Package '%s' [version: %s] [repository: %s]",
+        $self->{result_values}->{package},
+        $self->{result_values}->{version},
+        $self->{result_values}->{repository}
+    );
     return $msg;
 }
 
@@ -81,28 +84,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "remote"                  => { name => 'remote' },
-                                  "ssh-option:s@"           => { name => 'ssh_option' },
-                                  "ssh-path:s"              => { name => 'ssh_path' },
-                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "sudo"                    => { name => 'sudo' },
-                                  "command:s"               => { name => 'command', default => 'yum' },
-                                  "command-path:s"          => { name => 'command_path', },
-                                  "command-options:s"       => { name => 'command_options', default => 'check-update 2>&1' },
-                                  "filter-package:s"        => { name => 'filter_package' },
-                                  "filter-repository:s"     => { name => 'filter_repository' },
-                                });
+    $options{options}->add_options(arguments => {
+        'hostname:s'          => { name => 'hostname' },
+        'remote'              => { name => 'remote' },
+        'ssh-option:s@'       => { name => 'ssh_option' },
+        'ssh-path:s'          => { name => 'ssh_path' },
+        'ssh-command:s'       => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'           => { name => 'timeout', default => 30 },
+        'sudo'                => { name => 'sudo' },
+        'command:s'           => { name => 'command', default => 'yum' },
+        'command-path:s'      => { name => 'command_path', },
+        'command-options:s'   => { name => 'command_options', default => 'check-update 2>&1' },
+        'filter-package:s'    => { name => 'filter_package' },
+        'filter-repository:s' => { name => 'filter_repository' },
+    });
+
     $self->{result} = {};
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 sub manage_selection {
