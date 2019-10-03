@@ -35,8 +35,36 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'phases', type => 1, cb_prefix_output => 'prefix_output',
           message_multiple => 'All mains phases are ok', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'power-active-total', label => 'power.active.watt', set => {
+                key_values => [ { name => 'p3' } ],
+                output_template => 'Active Power: %.2f W',
+                perfdatas => [
+                    { value => 'p3_absolute', template => '%.2f', unit => 'W', min => 0 },
+                ],
+            }
+        },
+        { label => 'power-reactive-total', label => 'power.reactive.voltamperereactive', set => {
+                key_values => [ { name => 'q3' } ],
+                output_template => 'Reactive Power: %.2f VAR',
+                perfdatas => [
+                    { value => 'q3_absolute', template => '%.2f', unit => 'VAR', min => 0 },
+                ],
+            }
+        },
+        { label => 'power-apparent-total', label => 'power.apparent.voltampere', set => {
+                key_values => [ { name => 's3' } ],
+                output_template => 'Apparent Power: %.2f VA',
+                perfdatas => [
+                    { value => 's3_absolute', template => '%.2f', unit => 'VA', min => 0 },
+                ],
+            }
+        },
     ];
         
     $self->{maps_counters}->{phases} = [
@@ -76,15 +104,6 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-apparent', label => 'phase.power.apparent.voltampere', set => {
-                key_values => [ { name => 'sL' }, { name => 'display' } ],
-                output_template => 'Apparent Power: %.2f VA',
-                perfdatas => [
-                    { value => 'sL_absolute', template => '%.2f', unit => 'VA', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
         { label => 'power-active', label => 'phase.power.active.watt', set => {
                 key_values => [ { name => 'pL' }, { name => 'display' } ],
                 output_template => 'Active Power: %.2f W',
@@ -103,11 +122,11 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'energy-apparent', label => 'phase.energy.apparent.voltamperehours', set => {
-                key_values => [ { name => 'shL' }, { name => 'display' } ],
-                output_template => 'Apparent Energy: %.2f VAh',
+        { label => 'power-apparent', label => 'phase.power.apparent.voltampere', set => {
+                key_values => [ { name => 'sL' }, { name => 'display' } ],
+                output_template => 'Apparent Power: %.2f VA',
                 perfdatas => [
-                    { value => 'shL_absolute', template => '%.2f', unit => 'VAh', min => 0,
+                    { value => 'sL_absolute', template => '%.2f', unit => 'VA', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -126,6 +145,15 @@ sub set_counters {
                 output_template => 'Reactive Energy: %.2f VARh',
                 perfdatas => [
                     { value => 'qhL_absolute', template => '%.2f', unit => 'VARh', min => 0,
+                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'energy-apparent', label => 'phase.energy.apparent.voltamperehours', set => {
+                key_values => [ { name => 'shL' }, { name => 'display' } ],
+                output_template => 'Apparent Energy: %.2f VAh',
+                perfdatas => [
+                    { value => 'shL_absolute', template => '%.2f', unit => 'VAh', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -189,6 +217,8 @@ sub manage_selection {
         oid => $oid_main, start => $mapping->{uL}->{oid}, end => $mapping->{shL}->{oid},
     );
 
+    $self->{global} = { s3 => 0, p3 => 0, q3 => 0 };
+    $self->{phases} = {};
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{uL}->{oid}\.(.*)/);
         my $instance = $1;
@@ -207,6 +237,10 @@ sub manage_selection {
         $self->{phases}->{$instance}->{qhL} = $result->{qhL} / 100;
         $self->{phases}->{$instance}->{thdUL} = $result->{thdUL} / 100;
         $self->{phases}->{$instance}->{thdIL} = $result->{thdIL} / 100;
+
+        $self->{global}->{s3} += $result->{sL};
+        $self->{global}->{p3} += $result->{pL};
+        $self->{global}->{q3} += $result->{qL};
     }
 
     if (scalar(keys %{$self->{phases}}) <= 0) {
@@ -233,7 +267,8 @@ Example: --filter-counters='^power|energy$'
 =item B<--warning-*> B<--critical-*>
 
 Threshold warning.
-Can be: 'voltage', 'current', 'power-factor', 'cosphi', 'power-apparent',
+Can be: 'power-apparent-total', 'power-active-total', 'power-reactive-total',
+'voltage', 'current', 'power-factor', 'cosphi', 'power-apparent',
 'power-active', 'power-reactive', 'energy-apparent', 'energy-active',
 'energy-reactive', 'voltage-thd', 'current-thd'.
 
