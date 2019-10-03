@@ -46,7 +46,7 @@ sub set_counters {
     ];
         
     $self->{maps_counters}->{sensors} = [
-        { label => 'current-mixte', label => 'sensor.current.mixte.ampere', set => {
+        { label => 'current-mixte', nlabel => 'sensor.current.mixte.ampere', set => {
                 key_values => [ { name => 'TRMSsens' }, { name => 'display' } ],
                 output_template => 'Mixte Current: %.2f A',
                 perfdatas => [
@@ -55,7 +55,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-alternative', label => 'sensor.current.alternative.ampere', set => {
+        { label => 'current-alternative', nlabel => 'sensor.current.alternative.ampere', set => {
                 key_values => [ { name => 'ACsens' }, { name => 'display' } ],
                 output_template => 'Alternative Current: %.2f A',
                 perfdatas => [
@@ -64,7 +64,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-direct', label => 'sensor.current.direct.ampere', set => {
+        { label => 'current-direct', nlabel => 'sensor.current.direct.ampere', set => {
                 key_values => [ { name => 'DCsens' }, { name => 'display' } ],
                 output_template => 'Direct Current: %.2f A',
                 perfdatas => [
@@ -73,7 +73,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-active', label => 'sensor.power.active.watt', set => {
+        { label => 'power-active', nlabel => 'sensor.power.active.watt', set => {
                 key_values => [ { name => 'Psens' }, { name => 'display' } ],
                 output_template => 'Active Power: %.2f',
                 perfdatas => [
@@ -82,7 +82,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'energy-active', label => 'sensor.energy.active.watthours', set => {
+        { label => 'energy-active', nlabel => 'sensor.energy.active.watthours', set => {
                 key_values => [ { name => 'Whsens' }, { name => 'display' } ],
                 output_template => 'Active Energy: %.2f',
                 perfdatas => [
@@ -91,7 +91,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-factor', label => 'sensor.power.factor.ratio', set => {
+        { label => 'power-factor', nlabel => 'sensor.power.factor.ratio', set => {
                 key_values => [ { name => 'PowerFactorsens' }, { name => 'display' } ],
                 output_template => 'Power Factor: %.2f',
                 perfdatas => [
