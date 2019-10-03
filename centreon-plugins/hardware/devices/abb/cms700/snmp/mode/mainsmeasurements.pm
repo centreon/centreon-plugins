@@ -41,7 +41,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'power-active-total', label => 'power.active.watt', set => {
+        { label => 'power-active-total', nlabel => 'power.active.watt', set => {
                 key_values => [ { name => 'p3' } ],
                 output_template => 'Active Power: %.2f W',
                 perfdatas => [
@@ -49,7 +49,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-reactive-total', label => 'power.reactive.voltamperereactive', set => {
+        { label => 'power-reactive-total', nlabel => 'power.reactive.voltamperereactive', set => {
                 key_values => [ { name => 'q3' } ],
                 output_template => 'Reactive Power: %.2f VAR',
                 perfdatas => [
@@ -57,7 +57,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-apparent-total', label => 'power.apparent.voltampere', set => {
+        { label => 'power-apparent-total', nlabel => 'power.apparent.voltampere', set => {
                 key_values => [ { name => 's3' } ],
                 output_template => 'Apparent Power: %.2f VA',
                 perfdatas => [
@@ -68,7 +68,7 @@ sub set_counters {
     ];
         
     $self->{maps_counters}->{phases} = [
-        { label => 'voltage', label => 'phase.voltage.volt', set => {
+        { label => 'voltage', nlabel => 'phase.voltage.volt', set => {
                 key_values => [ { name => 'uL' }, { name => 'display' } ],
                 output_template => 'Voltage: %.2f V',
                 perfdatas => [
@@ -77,7 +77,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current', label => 'phase.current.ampere', set => {
+        { label => 'current', nlabel => 'phase.current.ampere', set => {
                 key_values => [ { name => 'iL' }, { name => 'display' } ],
                 output_template => 'Current: %.2f A',
                 perfdatas => [
@@ -86,7 +86,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-factor', label => 'phase.power.factor.ratio', set => {
+        { label => 'power-factor', nlabel => 'phase.power.factor.ratio', set => {
                 key_values => [ { name => 'pfL' }, { name => 'display' } ],
                 output_template => 'Power Factor: %.2f',
                 perfdatas => [
@@ -95,7 +95,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cosphi', label => 'phase.cosphi.ratio', set => {
+        { label => 'cosphi', nlabel => 'phase.cosphi.ratio', set => {
                 key_values => [ { name => 'cosP' }, { name => 'display' } ],
                 output_template => 'Cos Phi: %.2f',
                 perfdatas => [
@@ -104,7 +104,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-active', label => 'phase.power.active.watt', set => {
+        { label => 'power-active', nlabel => 'phase.power.active.watt', set => {
                 key_values => [ { name => 'pL' }, { name => 'display' } ],
                 output_template => 'Active Power: %.2f W',
                 perfdatas => [
@@ -113,7 +113,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-reactive', label => 'phase.power.reactive.voltamperereactive', set => {
+        { label => 'power-reactive', nlabel => 'phase.power.reactive.voltamperereactive', set => {
                 key_values => [ { name => 'qL' }, { name => 'display' } ],
                 output_template => 'Reactive Power: %.2f VAR',
                 perfdatas => [
@@ -122,7 +122,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'power-apparent', label => 'phase.power.apparent.voltampere', set => {
+        { label => 'power-apparent', nlabel => 'phase.power.apparent.voltampere', set => {
                 key_values => [ { name => 'sL' }, { name => 'display' } ],
                 output_template => 'Apparent Power: %.2f VA',
                 perfdatas => [
@@ -131,7 +131,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'energy-active', label => 'phase.energy.active.watthours', set => {
+        { label => 'energy-active', nlabel => 'phase.energy.active.watthours', set => {
                 key_values => [ { name => 'whL' }, { name => 'display' } ],
                 output_template => 'Active Energy: %.2f Wh',
                 perfdatas => [
@@ -140,7 +140,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'energy-reactive', label => 'phase.energy.reactive.voltamperereactivehours', set => {
+        { label => 'energy-reactive', nlabel => 'phase.energy.reactive.voltamperereactivehours', set => {
                 key_values => [ { name => 'qhL' }, { name => 'display' } ],
                 output_template => 'Reactive Energy: %.2f VARh',
                 perfdatas => [
@@ -149,7 +149,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'energy-apparent', label => 'phase.energy.apparent.voltamperehours', set => {
+        { label => 'energy-apparent', nlabel => 'phase.energy.apparent.voltamperehours', set => {
                 key_values => [ { name => 'shL' }, { name => 'display' } ],
                 output_template => 'Apparent Energy: %.2f VAh',
                 perfdatas => [
@@ -158,7 +158,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'voltage-thd', label => 'phase.voltage.thd.percentage', set => {
+        { label => 'voltage-thd', nlabel => 'phase.voltage.thd.percentage', set => {
                 key_values => [ { name => 'thdUL' }, { name => 'display' } ],
                 output_template => 'Voltage THD: %.2f %%',
                 perfdatas => [
@@ -167,7 +167,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-thd', label => 'phase.current.thd.percentage', set => {
+        { label => 'current-thd', nlabel => 'phase.current.thd.percentage', set => {
                 key_values => [ { name => 'thdIL' }, { name => 'display' } ],
                 output_template => 'Current THD: %.2f %%',
                 perfdatas => [
