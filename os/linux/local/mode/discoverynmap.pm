@@ -129,14 +129,15 @@ sub run {
 
     my $results = $self->decode_xml_response(
         response => $stdout,
-        ForceArray => ['host', 'port', 'address', 'hostname']
+        ForceArray => ['host', 'port', 'address', 'hostname', 'osmatch']
     );
 
     foreach my $entry (@{$results->{host}}) {
         my %host;
         $host{status} = $entry->{status}->{state};
-        $host{os} = $entry->{os}->{osmatch}->{name};
-        $host{type} = $self->define_type(desc => $entry->{os}->{osmatch}->{name});
+        $host{os} = $entry->{os}->{osmatch}[0]->{name};
+        $host{os_accuracy} = $entry->{os}->{osmatch}[0]->{accuracy};
+        $host{type} = $self->define_type(desc => $host{os});
         $host{ip} = undef;
         $host{addresses} = undef;
         $host{hostname} = undef;
