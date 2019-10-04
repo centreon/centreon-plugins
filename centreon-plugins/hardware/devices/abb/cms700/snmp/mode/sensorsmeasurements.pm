@@ -75,7 +75,7 @@ sub set_counters {
         },
         { label => 'power-active', nlabel => 'sensor.power.active.watt', set => {
                 key_values => [ { name => 'Psens' }, { name => 'display' } ],
-                output_template => 'Active Power: %.2f',
+                output_template => 'Active Power: %.2f W',
                 perfdatas => [
                     { value => 'Psens_absolute', template => '%.2f', unit => 'W', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -84,7 +84,7 @@ sub set_counters {
         },
         { label => 'energy-active', nlabel => 'sensor.energy.active.watthours', set => {
                 key_values => [ { name => 'Whsens' }, { name => 'display' } ],
-                output_template => 'Active Energy: %.2f',
+                output_template => 'Active Energy: %.2f Wh',
                 perfdatas => [
                     { value => 'Whsens_absolute', template => '%.2f', unit => 'Wh', min => 0,
                       label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -136,7 +136,6 @@ my $mapping = {
     Groupsens       => { oid => '.1.3.6.1.4.1.51055.1.22' },
     PowerFactorsens => { oid => '.1.3.6.1.4.1.51055.1.23' },
 };
-my $oid_main = '.1.3.6.1.4.1.51055.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -182,6 +181,7 @@ sub manage_selection {
     );
     my $snmp_result_data = $options{snmp}->get_leef(nothing_quit => 1);
     
+    $self->{sensors} = {};
     foreach my $oid (keys %$snmp_result_data) {
         next if ($oid !~ /^$mapping->{TRMSsens}->{oid}\.(.*)/);
         my $instance = $1;
@@ -192,7 +192,8 @@ sub manage_selection {
         );
 
         if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '' &&
-            (!defined($groups{$result->{Groupsens}}) || ($groups{$result->{Groupsens}} !~ /$self->{option_results}->{filter_group}/))) {
+            (!defined($groups{$result->{Groupsens}}) ||
+            ($groups{$result->{Groupsens}} !~ /$self->{option_results}->{filter_group}/))) {
             $self->{output}->output_add(long_msg => "skipping sensor '" . $sensors{$instance} . "'.", debug => 1);
             next;
         }
@@ -212,7 +213,8 @@ sub manage_selection {
         $self->{sensors}->{$instance}->{PowerFactorsens} = $result->{PowerFactorsens} / 100;
 
         $self->{sensors}->{$instance}->{Phasesens} = $result->{Phasesens};
-        $self->{sensors}->{$instance}->{Groupsens} = (defined($groups{$result->{Groupsens}})) ? $groups{$result->{Groupsens}} : '-';
+        $self->{sensors}->{$instance}->{Groupsens} =
+            (defined($groups{$result->{Groupsens}})) ? $groups{$result->{Groupsens}} : '-';
     }
     
     if (scalar(keys %{$self->{sensors}}) <= 0) {
