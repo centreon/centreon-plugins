@@ -35,7 +35,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, cb_init => 'skip_global' },
         { name => 'phases', type => 1, cb_prefix_output => 'prefix_output',
           message_multiple => 'All mains phases are ok', skipped_code => { -10 => 1 } },
     ];
@@ -179,12 +179,20 @@ sub set_counters {
     ];
 }
 
+sub skip_global {
+    my ($self, %options) = @_;
+
+    scalar(keys %{$self->{phases}}) > 1 ? return(0) : return(1);
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        "filter-phase:s" => { name => 'filter_phase' },
+    });
 
     return $self;
 }
@@ -224,6 +232,12 @@ sub manage_selection {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
+        if (defined($self->{option_results}->{filter_phase}) && $self->{option_results}->{filter_phase} ne '' &&
+            $instance !~ /$self->{option_results}->{filter_phase}/) {
+            $self->{output}->output_add(long_msg => "skipping sensor '" . $snmp_result->{$oid} . "'.", debug => 1);
+            next;
+        }
+
         $self->{phases}->{$instance}->{display} = 'L' . $instance;
         $self->{phases}->{$instance}->{uL} = $result->{uL} / 100;
         $self->{phases}->{$instance}->{iL} = $result->{iL} / 100;
@@ -258,6 +272,10 @@ __END__
 Check mains phases measurements.
 
 =over 8
+
+=item B<--filter-phase>
+
+Filter by phase (can be a regexp).
 
 =item B<--filter-counters>
 
