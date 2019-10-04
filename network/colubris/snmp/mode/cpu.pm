@@ -83,10 +83,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -97,8 +96,13 @@ sub manage_selection {
     my $oid_coUsInfoCpuUse5Sec = '.1.3.6.1.4.1.8744.5.21.1.1.6.0';
     my $oid_coUsInfoCpuUse10Sec = '.1.3.6.1.4.1.8744.5.21.1.1.7.0';
     my $oid_coUsInfoCpuUse20Sec = '.1.3.6.1.4.1.8744.5.21.1.1.8.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_coUsInfoCpuUseNow,
-        $oid_coUsInfoCpuUse5Sec, $oid_coUsInfoCpuUse10Sec, $oid_coUsInfoCpuUse20Sec], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_coUsInfoCpuUseNow, $oid_coUsInfoCpuUse5Sec,
+            $oid_coUsInfoCpuUse10Sec, $oid_coUsInfoCpuUse20Sec
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         usage_now => $snmp_result->{$oid_coUsInfoCpuUseNow},
