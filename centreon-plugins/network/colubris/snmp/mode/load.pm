@@ -71,9 +71,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }
@@ -84,8 +83,13 @@ sub manage_selection {
     my $oid_coUsInfoLoadAverage1Min = '.1.3.6.1.4.1.8744.5.21.1.1.5.0';
     my $oid_coUsInfoLoadAverage5Min = '.1.3.6.1.4.1.8744.5.21.1.1.6.0';
     my $oid_coUsInfoLoadAverage15Min = '.1.3.6.1.4.1.8744.5.21.1.1.7.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [$oid_coUsInfoLoadAverage1Min,
-        $oid_coUsInfoLoadAverage5Min, $oid_coUsInfoLoadAverage15Min], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_coUsInfoLoadAverage1Min,
+            $oid_coUsInfoLoadAverage5Min, $oid_coUsInfoLoadAverage15Min
+        ],
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
         load1 => $snmp_result->{$oid_coUsInfoLoadAverage1Min},

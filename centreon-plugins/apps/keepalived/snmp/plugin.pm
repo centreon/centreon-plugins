@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'vrrp-status'       => 'apps::keepalived::snmp::mode::vrrpstatus',
+        'vrrp-status'   => 'apps::keepalived::snmp::mode::vrrpstatus',
     );
 
     return $self;
