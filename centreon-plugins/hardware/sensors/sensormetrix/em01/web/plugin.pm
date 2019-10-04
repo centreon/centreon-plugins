@@ -31,14 +31,14 @@ sub new {
 
 	$self->{version} = '0.1';
 	%{$self->{modes}} = (
-            'contact'       => 'hardware::sensors::sensormetrix::em01::web::mode::contact',
-            'temperature'   => 'hardware::sensors::sensormetrix::em01::web::mode::temperature',
-            'humidity'      => 'hardware::sensors::sensormetrix::em01::web::mode::humidity',
-            'illumination'  => 'hardware::sensors::sensormetrix::em01::web::mode::illumination',
-            'flood'         => 'hardware::sensors::sensormetrix::em01::web::mode::flood',
-            'thermistor'    => 'hardware::sensors::sensormetrix::em01::web::mode::thermistor',
-            'voltage'       => 'hardware::sensors::sensormetrix::em01::web::mode::voltage',
-			);
+        'contact'       => 'hardware::sensors::sensormetrix::em01::web::mode::contact',
+        'temperature'   => 'hardware::sensors::sensormetrix::em01::web::mode::temperature',
+        'humidity'      => 'hardware::sensors::sensormetrix::em01::web::mode::humidity',
+        'illumination'  => 'hardware::sensors::sensormetrix::em01::web::mode::illumination',
+        'flood'         => 'hardware::sensors::sensormetrix::em01::web::mode::flood',
+        'thermistor'    => 'hardware::sensors::sensormetrix::em01::web::mode::thermistor',
+        'voltage'       => 'hardware::sensors::sensormetrix::em01::web::mode::voltage',
+    );
 
 	return $self;
 }

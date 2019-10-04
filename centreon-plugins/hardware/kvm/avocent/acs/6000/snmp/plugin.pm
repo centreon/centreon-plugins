@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'cpu-detailed'  => 'snmp_standard::mode::cpudetailed',
-                        'hardware'      => 'hardware::kvm::avocent::acs::6000::snmp::mode::hardware',
-                        'load'          => 'snmp_standard::mode::loadaverage',
-                        'memory'        => 'snmp_standard::mode::memory',
-                        );
+        'cpu-detailed'  => 'snmp_standard::mode::cpudetailed',
+        'hardware'      => 'hardware::kvm::avocent::acs::6000::snmp::mode::hardware',
+        'load'          => 'snmp_standard::mode::loadaverage',
+        'memory'        => 'snmp_standard::mode::memory',
+    );
 
     return $self;
 }

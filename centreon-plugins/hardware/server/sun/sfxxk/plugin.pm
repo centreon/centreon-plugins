@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'environment'   => 'hardware::server::sun::sfxxk::mode::environment',
-                         'boards'        => 'hardware::server::sun::sfxxk::mode::boards',
-                         'failover'      => 'hardware::server::sun::sfxxk::mode::failover',
-                         );
+        'boards'        => 'hardware::server::sun::sfxxk::mode::boards',
+        'environment'   => 'hardware::server::sun::sfxxk::mode::environment',
+        'failover'      => 'hardware::server::sun::sfxxk::mode::failover',
+    );
 
     return $self;
 }

@@ -31,19 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'events'        => 'cloud::ibm::softlayer::mode::events',
-                            'open-tickets'  => 'cloud::ibm::softlayer::mode::opentickets',
-                        );
+        'events'        => 'cloud::ibm::softlayer::mode::events',
+        'open-tickets'  => 'cloud::ibm::softlayer::mode::opentickets',
+    );
 
     $self->{custom_modes}{xmlapi} = 'cloud::ibm::softlayer::custom::xmlapi';
 
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;

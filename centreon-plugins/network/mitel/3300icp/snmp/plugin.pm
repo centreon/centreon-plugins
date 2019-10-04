@@ -32,13 +32,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-zaps'        => 'network::mitel::3300icp::snmp::mode::listzaps',
-                         'licenses'         => 'network::mitel::3300icp::snmp::mode::licenses',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         'zap-bandwidth'    => 'network::mitel::3300icp::snmp::mode::zapbandwidth',
-                         'zap-calls'        => 'network::mitel::3300icp::snmp::mode::zapcalls',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-zaps'        => 'network::mitel::3300icp::snmp::mode::listzaps',
+        'licenses'         => 'network::mitel::3300icp::snmp::mode::licenses',
+        'uptime'           => 'snmp_standard::mode::uptime',
+        'zap-bandwidth'    => 'network::mitel::3300icp::snmp::mode::zapbandwidth',
+        'zap-calls'        => 'network::mitel::3300icp::snmp::mode::zapcalls',
     );
 
     return $self;

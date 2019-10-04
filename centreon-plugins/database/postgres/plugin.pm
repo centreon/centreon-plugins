@@ -32,19 +32,20 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'backends'         => 'database::postgres::mode::backends',
-                         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'database-size'    => 'database::postgres::mode::databasesize',
-                         'hitratio'         => 'database::postgres::mode::hitratio',
-                         'locks'            => 'database::postgres::mode::locks',
-                         'list-databases'   => 'database::postgres::mode::listdatabases',
-                         'query-time'       => 'database::postgres::mode::querytime',
-                         'sql'              => 'centreon::common::protocols::sql::mode::sql',
-                         'statistics'       => 'database::postgres::mode::statistics',
-                         'tablespace'       => 'database::postgres::mode::tablespace',
-                         'timesync'         => 'database::postgres::mode::timesync',
-                         'vacuum'           => 'database::postgres::mode::vacuum',
-                         );
+        'backends'         => 'database::postgres::mode::backends',
+        'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
+        'database-size'    => 'database::postgres::mode::databasesize',
+        'hitratio'         => 'database::postgres::mode::hitratio',
+        'locks'            => 'database::postgres::mode::locks',
+        'list-databases'   => 'database::postgres::mode::listdatabases',
+        'query-time'       => 'database::postgres::mode::querytime',
+        'sql'              => 'centreon::common::protocols::sql::mode::sql',
+        'statistics'       => 'database::postgres::mode::statistics',
+        'tablespace'       => 'database::postgres::mode::tablespace',
+        'timesync'         => 'database::postgres::mode::timesync',
+        'vacuum'           => 'database::postgres::mode::vacuum',
+    );
+
     $self->{sql_modes}{psqlcmd} = 'database::postgres::psqlcmd';
     return $self;
 }
@@ -53,12 +54,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'host:s@'      => { name => 'db_host' },
-                                                'port:s@'      => { name => 'db_port' },
-                                                'database:s@'  => { name => 'db_name' },
-                                                }
-                                  );
+        arguments => {
+            'host:s@'      => { name => 'db_host' },
+            'port:s@'      => { name => 'db_port' },
+            'database:s@'  => { name => 'db_name' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();

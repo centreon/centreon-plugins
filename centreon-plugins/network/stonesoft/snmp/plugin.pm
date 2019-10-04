@@ -31,17 +31,17 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'memory'               => 'network::stonesoft::snmp::mode::memory',
-                         'cpu'                  => 'network::stonesoft::snmp::mode::cpu',
-                         'connections'          => 'network::stonesoft::snmp::mode::connections',
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
-                         'storage'              => 'network::stonesoft::snmp::mode::storage',
-                         'cluster-state'        => 'network::stonesoft::snmp::mode::clusterstate',
-                         'cluster-load'         => 'network::stonesoft::snmp::mode::clusterload',
-                         'rejected-packets'     => 'network::stonesoft::snmp::mode::rejectedpackets',
-                         'dropped-packets'      => 'network::stonesoft::snmp::mode::droppedpackets',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         );
+        'memory'               => 'network::stonesoft::snmp::mode::memory',
+        'cpu'                  => 'network::stonesoft::snmp::mode::cpu',
+        'connections'          => 'network::stonesoft::snmp::mode::connections',
+        'interfaces'           => 'snmp_standard::mode::interfaces', 
+        'storage'              => 'network::stonesoft::snmp::mode::storage',
+        'cluster-state'        => 'network::stonesoft::snmp::mode::clusterstate',
+        'cluster-load'         => 'network::stonesoft::snmp::mode::clusterload',
+        'rejected-packets'     => 'network::stonesoft::snmp::mode::rejectedpackets',
+        'dropped-packets'      => 'network::stonesoft::snmp::mode::droppedpackets',
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+    );
 
     return $self;
 }

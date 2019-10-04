@@ -31,10 +31,10 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'load'             => 'hardware::pdu::apc::snmp::mode::load',
-                         'hardware'         => 'hardware::pdu::apc::snmp::mode::hardware',
-                         'outlet'           => 'hardware::pdu::apc::snmp::mode::outlet',
-                         );
+        'load'             => 'hardware::pdu::apc::snmp::mode::load',
+        'hardware'         => 'hardware::pdu::apc::snmp::mode::hardware',
+        'outlet'           => 'hardware::pdu::apc::snmp::mode::outlet',
+    );
 
     return $self;
 }

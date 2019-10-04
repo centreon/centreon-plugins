@@ -31,12 +31,12 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'environment'      => 'hardware::ups::mge::snmp::mode::environment',
-                         'input-lines'      => 'hardware::ups::mge::snmp::mode::inputlines',
-                         'output-lines'     => 'hardware::ups::mge::snmp::mode::outputlines',
-                         'output-source'    => 'hardware::ups::mge::snmp::mode::outputsource',
-                         'battery-status'   => 'hardware::ups::mge::snmp::mode::batterystatus',
-                         );
+        'battery-status'   => 'hardware::ups::mge::snmp::mode::batterystatus',
+        'environment'      => 'hardware::ups::mge::snmp::mode::environment',
+        'input-lines'      => 'hardware::ups::mge::snmp::mode::inputlines',
+        'output-lines'     => 'hardware::ups::mge::snmp::mode::outputlines',
+        'output-source'    => 'hardware::ups::mge::snmp::mode::outputsource',
+    );
 
     return $self;
 }

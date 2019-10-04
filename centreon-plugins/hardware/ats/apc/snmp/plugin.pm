@@ -31,10 +31,10 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'device-status'    => 'hardware::ats::apc::snmp::mode::devicestatus',
-                         'input-lines'      => 'hardware::ats::apc::snmp::mode::inputlines',
-                         'output-lines'     => 'hardware::ats::apc::snmp::mode::outputlines',
-                         );
+        'device-status'    => 'hardware::ats::apc::snmp::mode::devicestatus',
+        'input-lines'      => 'hardware::ats::apc::snmp::mode::inputlines',
+        'output-lines'     => 'hardware::ats::apc::snmp::mode::outputlines',
+    );
 
     return $self;
 }
