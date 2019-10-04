@@ -18,7 +18,27 @@
 # limitations under the License.
 #
 
-package hardware::pdu::liebert::snmp::mode::receptacles;
+#
+# Copyright 2019 Centreon (http://www.centreon.com/)
+#
+# Centreon is a full-fledged industry-strength solution that meets
+# the needs in IT infrastructure and application monitoring for
+# service performance.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+package hardware::pdu::emerson::snmp::mode::receptacles;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -47,7 +67,7 @@ sub set_counters {
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'rcp', display_long => 1, cb_prefix_output => 'prefix_rcp_output',  message_multiple => 'All receptacles are ok', type => 1, skipped_code => { -10 => 1 } },
             ]
-        }    
+        }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -69,12 +89,30 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'line2neutral-apparent-power', nlabel => 'powersource.line2neutral.apparent.power.voltampere', set => {
+        { label => 'line2neutral-apparent-power', nlabel => 'receptaclebranch.line2neutral.apparent.power.voltampere', set => {
                 key_values => [ { name => 'lgpPduRbEntryAp' } ],
                 output_template => 'line-to-neutral apparent power : %s VA',
                 perfdatas => [
                     { template => '%s', value => 'lgpPduRbEntryAp_absolute',
                       unit => 'VA', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'current-neutral', nlabel => 'receptaclebranch.line2neutral.current.ampacrms', set => {
+                key_values => [ { name => 'lgpPduRbEntryEcHundredths' } ],
+                output_template => 'line-to-neutral current : %s Amp AC RMS',
+                perfdatas => [
+                    { value => 'lgpPduRbEntryEcHundredths_absolute', template => '%s',
+                      unit => 'AmpAcRMS', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'potential-neutral', nlabel => 'receptaclebranch.line2neutral.potential.voltrms', set => {
+                key_values => [ { name => 'lgpPduRbEntryEpLNTenths' } ],
+                output_template => 'line-to-neutral potential : %s VoltRMS',
+                perfdatas => [
+                    { value => 'lgpPduRbEntryEpLNTenths_absolute', template => '%s',
+                      unit => 'VoltRMS', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -146,8 +184,10 @@ sub manage_selection {
         lgpPduRbEntryUsrLabel       => { oid => '.1.3.6.1.4.1.476.1.42.3.8.40.20.1.8' },
         lgpPduRbEntrySysAssignLabel => { oid => '.1.3.6.1.4.1.476.1.42.3.8.40.20.1.20' },
         lgpPduRbEntryEnergyAccum    => { oid => '.1.3.6.1.4.1.476.1.42.3.8.40.20.1.85' }, # 0.1 Kilowatt-Hour
+        lgpPduRbEntryEpLNTenths     => { oid => '.1.3.6.1.4.1.476.1.42.3.8.40.20.1.100' },
         lgpPduRbEntryPwr            => { oid => '.1.3.6.1.4.1.476.1.42.3.8.40.20.1.115' }, # Watt
         lgpPduRbEntryAp             => { oid => '.1.3.6.1.4.1.476.1.42.3.8.40.20.1.120' }, # VA
+        lgpPduRbEntryEcHundredths   => { oid => '.1.3.6.1.4.1.476.1.42.3.8.40.20.1.130' },
     };
     my $mapping3 = {
         lgpPduRcpEntryUsrLabel           => { oid => '.1.3.6.1.4.1.476.1.42.3.8.50.20.1.10' },
@@ -162,7 +202,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_lgpPduEntry, start => $mapping->{lgpPduEntryUsrLabel}->{oid}, end => $mapping->{lgpPduEntrySysAssignLabel}->{oid} },
-            { oid => $oid_lgpPduRbEntry, start => $mapping2->{lgpPduRbEntryUsrLabel}->{oid}, end => $mapping2->{lgpPduRbEntryAp}->{oid} },
+            { oid => $oid_lgpPduRbEntry, start => $mapping2->{lgpPduRbEntryUsrLabel}->{oid}, end => $mapping2->{lgpPduRbEntryEcHundredths}->{oid} },
             { oid => $oid_lgpPduRcpEntry, start => $mapping3->{lgpPduRcpEntryUsrLabel}->{oid}, end => $mapping3->{lgpPduRcpEntryOperationCondition}->{oid} },
         ],
         nothing_quit => 1,
@@ -186,6 +226,8 @@ sub manage_selection {
         }
 
         $result2->{lgpPduRbEntryEnergyAccum} /= 10;
+        $result2->{lgpPduRbEntryEcHundredths} *= 0.01 if (defined($result2->{lgpPduRbEntryEcHundredths}));
+        $result2->{lgpPduRbEntryEpLNTenths} *= 0.1 if (defined($result2->{lgpPduRbEntryEpLNTenths}));
         $self->{rb}->{$name} = {
             display => $name,
             global => { %$result2 },

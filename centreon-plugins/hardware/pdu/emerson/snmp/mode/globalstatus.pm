@@ -65,13 +65,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /normalWithWarning/i' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /normalWithAlarm|abnormalOperation/i' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /normalWithWarning/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /normalWithAlarm|abnormalOperation/i' },
+    });
+
     return $self;
 }
 
@@ -105,10 +104,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{pdu} = {};
-    $self->{results} = $options{snmp}->get_table(oid => $oid_lgpPduEntry,
-                                                 start => $mapping->{lgpPduEntryUsrLabel}->{oid},
-                                                 end => $mapping->{lgpPduEntrySysStatus}->{oid},
-                                                 nothing_quit => 1);
+    $self->{results} = $options{snmp}->get_table(
+        oid => $oid_lgpPduEntry,
+        start => $mapping->{lgpPduEntryUsrLabel}->{oid},
+        end => $mapping->{lgpPduEntrySysStatus}->{oid},
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{lgpPduEntrySysStatus}->{oid}\.(.*)$/);
