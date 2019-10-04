@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'         => 'network::acmepacket::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-realm'       => 'network::acmepacket::snmp::mode::listrealm',
-                         'list-sip'         => 'network::acmepacket::snmp::mode::listsip',
-                         'realm-usage'      => 'network::acmepacket::snmp::mode::realmusage',
-                         'sip-usage'        => 'network::acmepacket::snmp::mode::sipusage',
-                         'system-usage'     => 'network::acmepacket::snmp::mode::systemusage',
-                         );
+        'hardware'         => 'network::acmepacket::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-realm'       => 'network::acmepacket::snmp::mode::listrealm',
+        'list-sip'         => 'network::acmepacket::snmp::mode::listsip',
+        'realm-usage'      => 'network::acmepacket::snmp::mode::realmusage',
+        'sip-usage'        => 'network::acmepacket::snmp::mode::sipusage',
+        'system-usage'     => 'network::acmepacket::snmp::mode::systemusage',
+    );
 
     return $self;
 }

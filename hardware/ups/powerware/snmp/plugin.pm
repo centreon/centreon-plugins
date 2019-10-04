@@ -31,13 +31,13 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'environment'      => 'hardware::ups::powerware::snmp::mode::environment',
-                         'input-lines'      => 'hardware::ups::powerware::snmp::mode::inputlines',
-                         'output-lines'     => 'hardware::ups::powerware::snmp::mode::outputlines',
-                         'output-source'    => 'hardware::ups::powerware::snmp::mode::outputsource',
-                         'alarms'           => 'hardware::ups::powerware::snmp::mode::alarms',
-                         'battery-status'   => 'hardware::ups::powerware::snmp::mode::batterystatus',
-                         );
+        'alarms'           => 'hardware::ups::powerware::snmp::mode::alarms',
+        'battery-status'   => 'hardware::ups::powerware::snmp::mode::batterystatus',
+        'environment'      => 'hardware::ups::powerware::snmp::mode::environment',
+        'input-lines'      => 'hardware::ups::powerware::snmp::mode::inputlines',
+        'output-lines'     => 'hardware::ups::powerware::snmp::mode::outputlines',
+        'output-source'    => 'hardware::ups::powerware::snmp::mode::outputsource',
+    );
 
     return $self;
 }

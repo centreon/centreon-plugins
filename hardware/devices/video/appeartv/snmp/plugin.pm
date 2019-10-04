@@ -31,8 +31,8 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'alarms'   => 'hardware::devices::video::appeartv::snmp::mode::alarms',
-                         );
+        'alarms'   => 'hardware::devices::video::appeartv::snmp::mode::alarms',
+    );
 
     return $self;
 }

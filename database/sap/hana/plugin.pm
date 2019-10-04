@@ -32,15 +32,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'blocked-transactions' => 'database::sap::hana::mode::blockedtransactions',
-                         'connected-users'      => 'database::sap::hana::mode::connectedusers',
-                         'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'disk-usage'           => 'database::sap::hana::mode::diskusage',
-                         'host-memory'          => 'database::sap::hana::mode::hostmemory',
-                         'host-cpu'             => 'database::sap::hana::mode::hostcpu',
-                         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
-                         'volume-usage'         => 'database::sap::hana::mode::volumeusage',
-                         );
+        'blocked-transactions' => 'database::sap::hana::mode::blockedtransactions',
+        'connected-users'      => 'database::sap::hana::mode::connectedusers',
+        'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
+        'disk-usage'           => 'database::sap::hana::mode::diskusage',
+        'host-memory'          => 'database::sap::hana::mode::hostmemory',
+        'host-cpu'             => 'database::sap::hana::mode::hostcpu',
+        'sql'                  => 'centreon::common::protocols::sql::mode::sql',
+        'volume-usage'         => 'database::sap::hana::mode::volumeusage',
+    );
 
     return $self;
 }
@@ -49,12 +49,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'servernode:s@' => { name => 'servernode' },
-                                                'port:s@'       => { name => 'port' },
-                                                'database:s'    => { name => 'database' },
-                                                }
-                                  );
+        arguments => {
+            'servernode:s@' => { name => 'servernode' },
+            'port:s@'       => { name => 'port' },
+            'database:s'    => { name => 'database' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();

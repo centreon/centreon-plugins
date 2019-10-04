@@ -33,21 +33,21 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'archivelevel0'    => 'database::informix::sql::mode::archivelevel0',
-                         'checkpoints'      => 'database::informix::sql::mode::checkpoints',
-                         'chunkstates'      => 'database::informix::sql::mode::chunkstates',
-                         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'global-cache'     => 'database::informix::sql::mode::globalcache',
-                         'list-dbspaces'    => 'database::informix::sql::mode::listdbspaces',
-                         'list-databases'   => 'database::informix::sql::mode::listdatabases',
-                         'lockoverflow'     => 'database::informix::sql::mode::lockoverflow',
-                         'longtxs'          => 'database::informix::sql::mode::longtxs',
-                         'dbspace-usage'    => 'database::informix::sql::mode::dbspacesusage',
-                         'logfile-usage'    => 'database::informix::sql::mode::logfilesusage',
-                         'sessions'         => 'database::informix::sql::mode::sessions',
-                         'table-locks'      => 'database::informix::sql::mode::tablelocks',
-                         'sql'              => 'centreon::common::protocols::sql::mode::sql',
-                         );
+        'archivelevel0'    => 'database::informix::sql::mode::archivelevel0',
+        'checkpoints'      => 'database::informix::sql::mode::checkpoints',
+        'chunkstates'      => 'database::informix::sql::mode::chunkstates',
+        'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
+        'global-cache'     => 'database::informix::sql::mode::globalcache',
+        'list-dbspaces'    => 'database::informix::sql::mode::listdbspaces',
+        'list-databases'   => 'database::informix::sql::mode::listdatabases',
+        'lockoverflow'     => 'database::informix::sql::mode::lockoverflow',
+        'longtxs'          => 'database::informix::sql::mode::longtxs',
+        'dbspace-usage'    => 'database::informix::sql::mode::dbspacesusage',
+        'logfile-usage'    => 'database::informix::sql::mode::logfilesusage',
+        'sessions'         => 'database::informix::sql::mode::sessions',
+        'table-locks'      => 'database::informix::sql::mode::tablelocks',
+        'sql'              => 'centreon::common::protocols::sql::mode::sql',
+    );
 
     return $self;
 }
@@ -56,12 +56,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'host:s@'      => { name => 'db_host' },
-                                                'port:s@'      => { name => 'db_port' },
-                                                'instance:s@'  => { name => 'db_instance' },
-                                                }
-                                  );
+        arguments => {
+            'host:s@'      => { name => 'db_host' },
+            'port:s@'      => { name => 'db_port' },
+            'instance:s@'  => { name => 'db_instance' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();

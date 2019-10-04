@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::server::dell::openmanage::snmp::mode::hardware',
-                         );
+        'hardware' => 'hardware::server::dell::openmanage::snmp::mode::hardware',
+    );
 
     return $self;
 }
