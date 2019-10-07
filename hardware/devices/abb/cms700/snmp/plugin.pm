@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'mains-measurements'    => 'hardware::devices::abb::cms700::snmp::mode::mainsmeasurements',
         'sensors-measurements'  => 'hardware::devices::abb::cms700::snmp::mode::sensorsmeasurements',
+        'list-sensors'          => 'hardware::devices::abb::cms700::snmp::mode::listsensors',
     );
 
     return $self;
