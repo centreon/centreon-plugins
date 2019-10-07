@@ -32,6 +32,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'hardware'      => 'hardware::server::hp::oneview::restapi::mode::hardware',
         'storage-pools' => 'hardware::server::hp::oneview::restapi::mode::storagepools',
     );
 
