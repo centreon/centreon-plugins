@@ -86,10 +86,13 @@ sub check_options {
     } elsif ($options{option_results}->{nrpe_use_ipv6}) {
         $self->{nrpe_params}->{Domain} = AF_INET6;
     }
-    
+
+    $self->{ssl_context} = '';
+    my $append = '';
     foreach (@{$options{option_results}->{ssl_opt}}) {
-        if ($_ ne '' && $_ =~ /(.*)\s*=>\s*(.*)/) {
-            $self->{ssl_context}->{$1} = $2;
+        if ($_ ne '' && $_ =~ /.*=>.*/) {
+            $self->{ssl_context} .= $append . $_;
+            $append = ', ';
         }
     }
 }
@@ -99,9 +102,8 @@ sub create_socket {
 
     my $socket;
     
-    if (defined($self->{ssl_context}) && $self->{ssl_context} ne '') {
-        IO::Socket::SSL::set_ctx_defaults(%{$self->{ssl_context}});
-        $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}});
+    if (scalar(keys %{$self->{ssl_context}}) > 0) {
+        $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}}, eval $self->{ssl_context});
         if (!$socket) {
             $self->{output}->add_option_msg(short_msg => "Failed to establish SSL connection: $!, ssl_error=$SSL_ERROR");
             $self->{output}->option_exit();
