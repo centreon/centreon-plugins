@@ -45,14 +45,14 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "nrpe-version:s"    => { name => 'nrpe_version', default => 2 },
-            "nrpe-port:s"       => { name => 'nrpe_port', default => 5666 },
-            "nrpe-payload:s"    => { name => 'nrpe_payload', default => 1024 },
-            "nrpe-bindaddr:s"   => { name => 'nrpe_bindaddr' },
-            "nrpe-use-ipv4"     => { name => 'nrpe_use_ipv4' },
-            "nrpe-use-ipv6"     => { name => 'nrpe_use_ipv6' },
-            "nrpe-timeout:s"    => { name => 'nrpe_timeout', default => 10 },
-            "ssl-opt:s@"        => { name => 'ssl_opt' },
+            'nrpe-version:s'    => { name => 'nrpe_version', default => 2 },
+            'nrpe-port:s'       => { name => 'nrpe_port', default => 5666 },
+            'nrpe-payload:s'    => { name => 'nrpe_payload', default => 1024 },
+            'nrpe-bindaddr:s'   => { name => 'nrpe_bindaddr' },
+            'nrpe-use-ipv4'     => { name => 'nrpe_use_ipv4' },
+            'nrpe-use-ipv6'     => { name => 'nrpe_use_ipv6' },
+            'nrpe-timeout:s'    => { name => 'nrpe_timeout', default => 10 },
+            'ssl-opt:s@'        => { name => 'ssl_opt' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'NRPE CLASS OPTIONS');
