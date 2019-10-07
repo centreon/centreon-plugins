@@ -408,7 +408,7 @@ Timeout in secondes (Default: 10).
 
 =item B<--ssl-opt>
 
-Set SSL Options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => 0"
+Set SSL Options (--ssl-opt="SSL_version => 'TLSv1'" --ssl-opt="SSL_verify_mode => 0"
 --ssl-opt="SSL_cipher_list => ALL").
 
 =back
