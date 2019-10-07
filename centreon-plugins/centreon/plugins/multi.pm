@@ -89,6 +89,7 @@ sub run {
         }
     }
 
+    $self->{output}->mode(name => 'multi');
     $self->{output}->parameter(attr => 'nodisplay', value => 0);
     $self->{output}->parameter(attr => 'noexit_die', value => 0);
     $self->{output}->display();
