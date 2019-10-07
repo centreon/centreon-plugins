@@ -386,6 +386,8 @@ sub output_openmetrics {
 
     my $time_ms = int(Time::HiRes::time() * 1000);
     $self->change_perfdata();
+    
+    $self->perfdata_add(nlabel => 'plugin.mode.status', value => $self->{errors}->{$self->{myerrors}->{$self->{global_status}}});
     foreach my $perf (@{$self->{perfdatas}}) {
         next if (defined($self->{option_results}->{filter_perfdata}) &&
                  $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -576,6 +578,10 @@ sub option_exit {
             $self->output_json(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1, force_long_output => 1);
             $self->exit(exit_litteral => $exit_litteral);
         }
+    } elsif (defined($self->{option_results}->{output_openmetrics})) {
+        $self->set_status(exit_litteral => $exit_litteral);
+        $self->output_openmetrics();
+        $self->exit(exit_litteral => $exit_litteral);
     }
 
     $self->output_txt(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1, force_long_output => 1);
