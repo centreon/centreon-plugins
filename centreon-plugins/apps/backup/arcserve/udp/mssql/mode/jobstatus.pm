@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_threshold {
@@ -218,10 +217,6 @@ Filter job server name (can be a regexp).
 =item B<--filter-type>
 
 Filter job type (can be a regexp).
-
-=item B<--filter-start-time>
-
-Filter job with start time greater than current time less value in seconds.
 
 =item B<--filter-end-time>
 
