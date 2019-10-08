@@ -192,6 +192,7 @@ sub authenticate {
         $options{statefile}->write(data => $datas);
     }
 
+    $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
     $self->{session_id} = $session_id;
 }
 
