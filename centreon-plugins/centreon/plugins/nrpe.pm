@@ -102,7 +102,7 @@ sub create_socket {
 
     my $socket;
     
-    if (scalar(keys %{$self->{ssl_context}}) > 0) {
+    if ($self->{ssl_context} ne '') {
         $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}}, eval $self->{ssl_context});
         if (!$socket) {
             $self->{output}->add_option_msg(short_msg => "Failed to establish SSL connection: $!, ssl_error=$SSL_ERROR");
