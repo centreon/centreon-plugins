@@ -177,21 +177,21 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "cem-host:s"      => { name => 'cem_host' },
-        "cem-user:s"      => { name => 'cem_user' },
-        "cem-password:s"  => { name => 'cem_password' },
-        "cem-port:s"      => { name => 'cem_port', default => 3033 },
-        "sdk-path-dll:s"  => { name => 'sdk_path_dll' },
-        "timeout:s"           => { name => 'timeout', default => 50 },
-        "command:s"           => { name => 'command', default => 'powershell.exe' },
-        "command-path:s"      => { name => 'command_path' },
-        "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        "no-ps"               => { name => 'no_ps' },
-        "ps-exec-only"        => { name => 'ps_exec_only' },
-        "ps-sc-filter:s"      => { name => 'ps_sc_filter' },
-        "ps-sc-volume:s"      => { name => 'ps_sc_volume' },
-        "units:s"             => { name => 'units', default => '%' },
-        "free"                => { name => 'free' },
+        'cem-host:s'      => { name => 'cem_host' },
+        'cem-user:s'      => { name => 'cem_user' },
+        'cem-password:s'  => { name => 'cem_password' },
+        'cem-port:s'      => { name => 'cem_port', default => 3033 },
+        'sdk-path-dll:s'  => { name => 'sdk_path_dll' },
+        'timeout:s'           => { name => 'timeout', default => 50 },
+        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'      => { name => 'command_path' },
+        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'               => { name => 'no_ps' },
+        'ps-exec-only'        => { name => 'ps_exec_only' },
+        'ps-sc-filter:s'      => { name => 'ps_sc_filter' },
+        'ps-sc-volume:s'      => { name => 'ps_sc_volume' },
+        'units:s'             => { name => 'units', default => '%' },
+        'free'                => { name => 'free' },
     });
 
     return $self;
@@ -214,21 +214,25 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::dell::compellent::volumeusage::get_powershell(cem_host => $self->{option_results}->{cem_host},
-                                                                            cem_user => $self->{option_results}->{cem_user},
-                                                                            cem_password => $self->{option_results}->{cem_password},
-                                                                            cem_port => $self->{option_results}->{cem_port},
-                                                                            sdk_path_dll => $self->{option_results}->{sdk_path_dll},
-                                                                            no_ps => $self->{option_results}->{no_ps},
-                                                                            filter_sc => $self->{option_results}->{ps_sc_filter},
-                                                                            filter_vol => $self->{option_results}->{ps_sc_volume});
-    
+    my $ps = centreon::common::powershell::dell::compellent::volumeusage::get_powershell(
+        cem_host => $self->{option_results}->{cem_host},
+        cem_user => $self->{option_results}->{cem_user},
+        cem_password => $self->{option_results}->{cem_password},
+        cem_port => $self->{option_results}->{cem_port},
+        sdk_path_dll => $self->{option_results}->{sdk_path_dll},
+        no_ps => $self->{option_results}->{no_ps},
+        filter_sc => $self->{option_results}->{ps_sc_filter},
+        filter_vol => $self->{option_results}->{ps_sc_volume}
+    );
+
     $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $stdout);
@@ -244,9 +248,11 @@ sub manage_selection {
             ($1, $2, $3, $4, $5, $6, $7, $8);
         my $name = $sc . '/' . $volume;
         
-        $self->{volume}->{$name} = { display => $name, total => $configured_space, type => 'volume',
-                                     used => $active_space + $raid_overhead + $replay_space,
-                                     overhead => $raid_overhead, replay => $replay_space};
+        $self->{volume}->{$name} = {
+            display => $name, total => $configured_space, type => 'volume',
+            used => $active_space + $raid_overhead + $replay_space,
+            overhead => $raid_overhead, replay => $replay_space
+        };
         $self->{sc}->{$sc} = { display => $sc, total => 0, used => 0, type => 'sc' } if (!defined($self->{sc}->{$sc}));
         $self->{sc}->{$sc}->{used} += $active_space + $raid_overhead + $replay_space;
     }

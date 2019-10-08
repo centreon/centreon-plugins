@@ -101,7 +101,6 @@ sub create_socket {
     my ($self, %options) = @_;
 
     my $socket;
-    
     if ($self->{ssl_context} ne '') {
         $socket = IO::Socket::SSL->new(%{$self->{nrpe_params}}, eval $self->{ssl_context});
         if (!$socket) {
