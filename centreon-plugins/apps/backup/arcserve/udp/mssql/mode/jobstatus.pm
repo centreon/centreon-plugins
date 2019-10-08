@@ -109,6 +109,7 @@ sub new {
     $options{options}->add_options(arguments => { 
         'filter-server-name:s'    => { name => 'filter_server_name' },
         'filter-type:s'           => { name => 'filter_type' },
+        'filter-start-time:s'     => { name => 'filter_start_time' },
         'filter-end-time:s'       => { name => 'filter_end_time', default => 86400 },
         'ok-status:s'             => { name => 'ok_status', default => '%{status} == 1' },
         'warning-status:s'        => { name => 'warning_status', default => '' },
@@ -217,6 +218,10 @@ Filter job server name (can be a regexp).
 =item B<--filter-type>
 
 Filter job type (can be a regexp).
+
+=item B<--filter-start-time>
+
+Filter job with start time greater than current time less value in seconds.
 
 =item B<--filter-end-time>
 
