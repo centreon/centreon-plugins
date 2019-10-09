@@ -129,9 +129,6 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
     $self->{http}->add_header(key => 'Accept', value => 'application/json;charset=UTF-8');
-    if (defined($self->{session_id})) {
-        $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
-    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -156,6 +153,7 @@ sub clean_session_id {
     my $datas = { last_timestamp => time() };
     $options{statefile}->write(data => $datas);
     $self->{session_id} = undef;
+    $self->{http}->add_header(key => 'vmware-api-session-id', value => undef);
 }
 
 sub authenticate {
@@ -163,7 +161,7 @@ sub authenticate {
 
     my $has_cache_file = $options{statefile}->read(statefile => 'vcsa_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $session_id = $options{statefile}->get(name => 'session_id');
-    
+
     if ($has_cache_file == 0 || !defined($session_id)) {
         my $content = $self->{http}->request(
             method => 'POST',
@@ -192,8 +190,8 @@ sub authenticate {
         $options{statefile}->write(data => $datas);
     }
 
-    $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
     $self->{session_id} = $session_id;
+    $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
 }
 
 sub request_api {
@@ -203,6 +201,7 @@ sub request_api {
     if (!defined($self->{session_id})) {
         $self->authenticate(statefile => $self->{cache});
     }
+    
     my $content = $self->{http}->request(%options, 
         warning_status => '', unknown_status => '', critical_status => ''
     );
