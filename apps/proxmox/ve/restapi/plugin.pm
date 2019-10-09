@@ -42,14 +42,7 @@ sub new {
                          );
 
     $self->{custom_modes}{api} = 'apps::proxmox::ve::restapi::custom::api';
-
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;
