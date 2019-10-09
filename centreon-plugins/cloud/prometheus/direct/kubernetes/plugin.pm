@@ -31,29 +31,22 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'container-status'          => 'cloud::prometheus::direct::kubernetes::mode::containerstatus',
-                        'daemonset-status'          => 'cloud::prometheus::direct::kubernetes::mode::daemonsetstatus',
-                        'deployment-status'         => 'cloud::prometheus::direct::kubernetes::mode::deploymentstatus',
-                        'list-containers'           => 'cloud::prometheus::direct::kubernetes::mode::listcontainers',
-                        'list-daemonsets'           => 'cloud::prometheus::direct::kubernetes::mode::listdaemonsets',
-                        'list-deployments'          => 'cloud::prometheus::direct::kubernetes::mode::listdeployments',
-                        'list-namespaces'           => 'cloud::prometheus::direct::kubernetes::mode::listnamespaces',
-                        'list-nodes'                => 'cloud::prometheus::direct::kubernetes::mode::listnodes',
-                        'list-services'             => 'cloud::prometheus::direct::kubernetes::mode::listservices',
-                        'namespace-status'          => 'cloud::prometheus::direct::kubernetes::mode::namespacestatus',
-                        'node-status'               => 'cloud::prometheus::direct::kubernetes::mode::nodestatus',
-                        );
+        'container-status'          => 'cloud::prometheus::direct::kubernetes::mode::containerstatus',
+        'daemonset-status'          => 'cloud::prometheus::direct::kubernetes::mode::daemonsetstatus',
+        'deployment-status'         => 'cloud::prometheus::direct::kubernetes::mode::deploymentstatus',
+        'list-containers'           => 'cloud::prometheus::direct::kubernetes::mode::listcontainers',
+        'list-daemonsets'           => 'cloud::prometheus::direct::kubernetes::mode::listdaemonsets',
+        'list-deployments'          => 'cloud::prometheus::direct::kubernetes::mode::listdeployments',
+        'list-namespaces'           => 'cloud::prometheus::direct::kubernetes::mode::listnamespaces',
+        'list-nodes'                => 'cloud::prometheus::direct::kubernetes::mode::listnodes',
+        'list-services'             => 'cloud::prometheus::direct::kubernetes::mode::listservices',
+        'namespace-status'          => 'cloud::prometheus::direct::kubernetes::mode::namespacestatus',
+        'node-status'               => 'cloud::prometheus::direct::kubernetes::mode::nodestatus',
+    );
 
     $self->{custom_modes}{api} = 'cloud::prometheus::restapi::custom::api';
     return $self;
 }
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
-}
-
 
 1;
 

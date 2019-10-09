@@ -31,21 +31,14 @@ sub new {
 
     $self->{version} = '0.3';
     %{$self->{modes}} = (
-                        'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
-                        'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
-                        'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
-                        );
+        'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
+        'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
+        'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
+    );
 
     $self->{custom_modes}{api} = 'cloud::docker::restapi::custom::api';
     return $self;
 }
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
-}
-
 
 1;
 

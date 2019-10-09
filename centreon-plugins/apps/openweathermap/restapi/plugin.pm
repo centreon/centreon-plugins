@@ -31,17 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'city-weather'                => 'apps::openweathermap::restapi::mode::cityweather',
+        'city-weather' => 'apps::openweathermap::restapi::mode::cityweather',
     );
 
     $self->{custom_modes}{api} = 'apps::openweathermap::restapi::custom::api';
-    return $self;
-}
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
+    return $self;²
 }
 
 1;

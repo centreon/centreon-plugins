@@ -50,12 +50,6 @@ sub new {
     return $self;
 }
 
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
-}
-
 1;
 
 __END__
