@@ -30,14 +30,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning"          => { name => 'warning', },
-                                  "critical"         => { name => 'critical', },
-                                  "services:s"       => { name => 'services', },
-                                  "auto"             => { name => 'auto', },
-                                  "exclude:s"        => { name => 'exclude', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning'    => { name => 'warning' },
+        'critical'   => { name => 'critical' },
+        'services:s' => { name => 'services' },
+        'auto'       => { name => 'auto' },
+        'exclude:s'  => { name => 'exclude' },
+    });
+
     $self->{service_rules} = {};
     $self->{wql_filter} = '';
     $self->{threshold} = 'CRITICAL';
@@ -97,10 +97,12 @@ sub check_options {
 sub check_auto {
     my ($self, %options) = @_;
     
-    $self->{result} = $self->{wsman}->request(uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
-                                              wql_filter => "Select Name, State From Win32_Service Where StartMode = 'Auto'",
-                                              result_type => 'hash',
-                                              hash_key => 'Name');
+    $self->{result} = $self->{wsman}->request(
+        uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
+        wql_filter => "Select Name, State From Win32_Service Where StartMode = 'Auto'",
+        result_type => 'hash',
+        hash_key => 'Name'
+    );
     foreach my $name (sort(keys %{$self->{result}})) {
         if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $self->{result}->{$name}->{Name} =~ /$self->{option_results}->{exclude}/) {
             $self->{output}->output_add(long_msg => "Skipping Service '" . $self->{result}->{$name}->{Name} . "'");
@@ -118,10 +120,12 @@ sub check_auto {
 sub check {
     my ($self, %options) = @_;
     
-    $self->{result} = $self->{wsman}->request(uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
-                                              wql_filter => 'Select Name, State From Win32_Service Where ' . $self->{wql_filter},
-                                              result_type => 'hash',
-                                              hash_key => 'Name');
+    $self->{result} = $self->{wsman}->request(
+        uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
+        wql_filter => 'Select Name, State From Win32_Service Where ' . $self->{wql_filter},
+        result_type => 'hash',
+        hash_key => 'Name'
+    );
     foreach my $name (sort(keys %{$self->{service_rules}})) {
         if (!defined($self->{result}->{$name})) {
             $self->{output}->output_add(severity => 'UNKNOWN',
@@ -144,7 +148,6 @@ sub check {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{wsman} = wsman object
     $self->{wsman} = $options{wsman};
     
     $self->{output}->output_add(severity => 'OK',

@@ -37,11 +37,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'ntp-hostname:s'          => { name => 'ntp_hostname' },
-        'ntp-port:s'              => { name => 'ntp_port', default => 123 },
-        'warning:s'               => { name => 'warning' },
-        'critical:s'              => { name => 'critical' },
-        'timeout:s'               => { name => 'timeout', default => 30 },
+        'ntp-hostname:s' => { name => 'ntp_hostname' },
+        'ntp-port:s'     => { name => 'ntp_port', default => 123 },
+        'warning:s'      => { name => 'warning' },
+        'critical:s'     => { name => 'critical' },
+        'timeout:s'      => { name => 'timeout', default => 30 },
     });
 
     return $self;
