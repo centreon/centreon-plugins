@@ -31,16 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'                  => 'network::juniper::common::ive::mode::cpu',
-                         'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
-                         'disk'                 => 'network::juniper::common::ive::mode::disk',
-                         'logfile'              => 'network::juniper::common::ive::mode::logfile',
-                         'users'                => 'network::juniper::common::ive::mode::users',
-                         'interfaces'           => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'memory'               => 'snmp_standard::mode::memory',
-                         'swap'                 => 'snmp_standard::mode::swap',
-                         );
+        'cpu'                  => 'network::juniper::common::ive::mode::cpu',
+        'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
+        'disk'                 => 'network::juniper::common::ive::mode::disk',
+        'logfile'              => 'network::juniper::common::ive::mode::logfile',
+        'users'                => 'network::juniper::common::ive::mode::users',
+        'interfaces'           => 'snmp_standard::mode::interfaces',
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'memory'               => 'snmp_standard::mode::memory',
+        'swap'                 => 'snmp_standard::mode::swap',
+    );
 
     return $self;
 }

@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'alarms'               => 'network::silverpeak::snmp::mode::alarms',
-                            'interfaces'           => 'snmp_standard::mode::interfaces', 
-                            'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                            'status'               => 'network::silverpeak::snmp::mode::status',
-                            'uptime'               => 'network::silverpeak::snmp::mode::uptime',
-                         );
+        'alarms'          => 'network::silverpeak::snmp::mode::alarms',
+        'interfaces'      => 'snmp_standard::mode::interfaces', 
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'status'          => 'network::silverpeak::snmp::mode::status',
+        'uptime'          => 'network::silverpeak::snmp::mode::uptime',
+    );
 
     return $self;
 }

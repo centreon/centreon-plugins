@@ -31,23 +31,23 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'bgp-usage'        => 'network::nokia::timos::snmp::mode::bgpusage',
-                         'cpu'              => 'network::nokia::timos::snmp::mode::cpu',
-                         'hardware'         => 'network::nokia::timos::snmp::mode::hardware',
-                         'l2tp-usage'       => 'network::nokia::timos::snmp::mode::l2tpusage',
-                         'ldp-usage'        => 'network::nokia::timos::snmp::mode::ldpusage',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'isis-usage'       => 'network::nokia::timos::snmp::mode::isisusage',
-                         'list-bgp'         => 'network::nokia::timos::snmp::mode::listbgp',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-isis'        => 'network::nokia::timos::snmp::mode::listisis',
-                         'list-ldp'         => 'network::nokia::timos::snmp::mode::listldp',
-                         'list-sap'         => 'network::nokia::timos::snmp::mode::listsap',
-                         'list-vrtr'        => 'network::nokia::timos::snmp::mode::listvrtr',
-                         'memory'           => 'network::nokia::timos::snmp::mode::memory',
-                         'sap-usage'        => 'network::nokia::timos::snmp::mode::sapusage',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         );
+        'bgp-usage'        => 'network::nokia::timos::snmp::mode::bgpusage',
+        'cpu'              => 'network::nokia::timos::snmp::mode::cpu',
+        'hardware'         => 'network::nokia::timos::snmp::mode::hardware',
+        'l2tp-usage'       => 'network::nokia::timos::snmp::mode::l2tpusage',
+        'ldp-usage'        => 'network::nokia::timos::snmp::mode::ldpusage',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'isis-usage'       => 'network::nokia::timos::snmp::mode::isisusage',
+        'list-bgp'         => 'network::nokia::timos::snmp::mode::listbgp',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-isis'        => 'network::nokia::timos::snmp::mode::listisis',
+        'list-ldp'         => 'network::nokia::timos::snmp::mode::listldp',
+        'list-sap'         => 'network::nokia::timos::snmp::mode::listsap',
+        'list-vrtr'        => 'network::nokia::timos::snmp::mode::listvrtr',
+        'memory'           => 'network::nokia::timos::snmp::mode::memory',
+        'sap-usage'        => 'network::nokia::timos::snmp::mode::sapusage',
+        'uptime'           => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

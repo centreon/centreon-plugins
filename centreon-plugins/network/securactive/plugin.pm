@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         # Business Critical Application
-                         'list-bca' => 'network::securactive::mode::listbca',
-                         'bca' => 'network::securactive::mode::bca',
-                         # Business Critical Network
-                         'list-bcn' => 'network::securactive::mode::listbcn',
-                         'bcn' => 'network::securactive::mode::bcn',
-                         );
+        # Business Critical Application
+        'list-bca' => 'network::securactive::mode::listbca',
+        'bca'      => 'network::securactive::mode::bca',
+        # Business Critical Network
+        'list-bcn' => 'network::securactive::mode::listbcn',
+        'bcn'      => 'network::securactive::mode::bcn',
+    );
 
     return $self;
 }

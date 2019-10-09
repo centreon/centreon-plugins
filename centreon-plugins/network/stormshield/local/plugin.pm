@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'qos-usage'    => 'network::stormshield::local::mode::qosusage',
-                         );
+        'qos-usage'    => 'network::stormshield::local::mode::qosusage',
+    );
 
     return $self;
 }

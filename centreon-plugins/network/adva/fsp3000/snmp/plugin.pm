@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'alarms'           => 'network::adva::fsp3000::snmp::mode::alarms',
-                         'interfaces'       => 'network::adva::fsp3000::snmp::mode::interfaces',
-                         'list-interfaces'  => 'network::adva::fsp3000::snmp::mode::listinterfaces',
-                         'memory'           => 'snmp_standard::mode::memory',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         );
+        'alarms'           => 'network::adva::fsp3000::snmp::mode::alarms',
+        'interfaces'       => 'network::adva::fsp3000::snmp::mode::interfaces',
+        'list-interfaces'  => 'network::adva::fsp3000::snmp::mode::listinterfaces',
+        'memory'           => 'snmp_standard::mode::memory',
+        'uptime'           => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

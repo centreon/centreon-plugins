@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'disk-usage'       => 'network::citrix::sdx::snmp::mode::diskusage',
-                         'hardware'         => 'network::citrix::sdx::snmp::mode::hardware',
-                         'sr-usage'         => 'network::citrix::sdx::snmp::mode::srusage',
-                         'xen-usage'        => 'network::citrix::sdx::snmp::mode::xenusage',
-                         );
+        'disk-usage'       => 'network::citrix::sdx::snmp::mode::diskusage',
+        'hardware'         => 'network::citrix::sdx::snmp::mode::hardware',
+        'sr-usage'         => 'network::citrix::sdx::snmp::mode::srusage',
+        'xen-usage'        => 'network::citrix::sdx::snmp::mode::xenusage',
+    );
 
     return $self;
 }

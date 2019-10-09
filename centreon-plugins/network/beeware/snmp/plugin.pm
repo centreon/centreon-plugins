@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'list-reverse-proxy'   => 'network::beeware::snmp::mode::listreverseproxy',
-                         'reverse-proxy-usage'  => 'network::beeware::snmp::mode::reverseproxyusage',
-                         );
+        'list-reverse-proxy'   => 'network::beeware::snmp::mode::listreverseproxy',
+        'reverse-proxy-usage'  => 'network::beeware::snmp::mode::reverseproxyusage',
+    );
 
     return $self;
 }

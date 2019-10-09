@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                          'cpu'             => 'centreon::common::force10::snmp::mode::cpu',
-                          'hardware'        => 'centreon::common::force10::snmp::mode::hardware',
-                          'interfaces'      => 'snmp_standard::mode::interfaces',
-                          'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-                          'memory'          => 'centreon::common::force10::snmp::mode::memory',
-                         );
+        'cpu'             => 'centreon::common::force10::snmp::mode::cpu',
+        'hardware'        => 'centreon::common::force10::snmp::mode::hardware',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'centreon::common::force10::snmp::mode::memory',
+    );
 
     return $self;
 }
