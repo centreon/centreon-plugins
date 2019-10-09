@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'sensors' => 'hardware::sensors::netbotz::snmp::mode::sensors',
-                         );
+        'sensors' => 'hardware::sensors::netbotz::snmp::mode::sensors',
+    );
 
     return $self;
 }

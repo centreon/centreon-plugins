@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::extreme::snmp::mode::cpu',
-                         'hardware'         => 'network::extreme::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::extreme::snmp::mode::memory',
-                         'stack'            => 'network::extreme::snmp::mode::stack',
-                         );
+        'cpu'              => 'network::extreme::snmp::mode::cpu',
+        'hardware'         => 'network::extreme::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::extreme::snmp::mode::memory',
+        'stack'            => 'network::extreme::snmp::mode::stack',
+    );
 
     return $self;
 }

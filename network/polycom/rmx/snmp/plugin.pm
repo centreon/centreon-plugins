@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu-detailed'             => 'snmp_standard::mode::cpudetailed',
-                         'hardware'                 => 'network::polycom::rmx::snmp::mode::hardware',
-                         'load'                     => 'snmp_standard::mode::loadaverage',
-                         'memory'                   => 'snmp_standard::mode::memory',
-                         'videoconferencing-usage'  => 'network::polycom::rmx::snmp::mode::videoconferencingusage',
-                         );
+        'cpu-detailed'             => 'snmp_standard::mode::cpudetailed',
+        'hardware'                 => 'network::polycom::rmx::snmp::mode::hardware',
+        'load'                     => 'snmp_standard::mode::loadaverage',
+        'memory'                   => 'snmp_standard::mode::memory',
+        'videoconferencing-usage'  => 'network::polycom::rmx::snmp::mode::videoconferencingusage',
+    );
 
     return $self;
 }

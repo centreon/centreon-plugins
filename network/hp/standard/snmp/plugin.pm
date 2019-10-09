@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'                  => 'centreon::common::h3c::snmp::mode::cpu',
-                         'hardware'             => 'centreon::common::h3c::snmp::mode::hardware',
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
-                         'memory'               => 'centreon::common::h3c::snmp::mode::memory',
-                         'spanning-tree'        => 'snmp_standard::mode::spanningtree',
-                         'uptime'               => 'snmp_standard::mode::uptime',
-                         );
+        'cpu'                  => 'centreon::common::h3c::snmp::mode::cpu',
+        'hardware'             => 'centreon::common::h3c::snmp::mode::hardware',
+        'interfaces'           => 'snmp_standard::mode::interfaces', 
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
+        'memory'               => 'centreon::common::h3c::snmp::mode::memory',
+        'spanning-tree'        => 'snmp_standard::mode::spanningtree',
+        'uptime'               => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

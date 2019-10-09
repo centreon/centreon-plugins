@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'                  => 'centreon::common::cisco::smallbusiness::snmp::mode::cpu',
-                         'environment'          => 'centreon::common::cisco::smallbusiness::snmp::mode::environment',
-                         'interfaces'           => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
-                         'spanning-tree'        => 'snmp_standard::mode::spanningtree',
-                         );
+        'cpu'                  => 'centreon::common::cisco::smallbusiness::snmp::mode::cpu',
+        'environment'          => 'centreon::common::cisco::smallbusiness::snmp::mode::environment',
+        'interfaces'           => 'snmp_standard::mode::interfaces',
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
+        'spanning-tree'        => 'snmp_standard::mode::spanningtree',
+    );
 
     return $self;
 }
