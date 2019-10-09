@@ -32,16 +32,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning-time:s"    => { name => 'warning_time' },
-                                  "critical-time:s"   => { name => 'critical_time' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "command:s"         => { name => 'command' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options' },
-                                  "manage-returns:s"  => { name => 'manage_returns', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-time:s'    => { name => 'warning_time' },
+        'critical-time:s'   => { name => 'critical_time' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'command:s'         => { name => 'command' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options' },
+        'manage-returns:s'  => { name => 'manage_returns', default => '' },
+    });
+
     $self->{manage_returns} = {};
     return $self;
 }
@@ -83,12 +83,14 @@ sub run {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                no_quit => 1);
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options},
+        no_quit => 1
+    );
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
     
     my $long_msg = $stdout;
@@ -107,8 +109,10 @@ sub run {
     }
     
     if (defined($exit_code)) {
-        $self->{output}->perfdata_add(label => "code",
-                                      value => $exit_code);
+        $self->{output}->perfdata_add(
+            label => 'code',
+            value => $exit_code
+        );
     }
     
     my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
@@ -118,11 +122,13 @@ sub run {
                                     short_msg => sprintf("Response time %.3fs", $timeelapsed));
     }
 
-    $self->{output}->perfdata_add(label => 'time', unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_time'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_time'),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'time', unit => 's',
+        value => sprintf('%.3f', $timeelapsed),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_time'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_time'),
+        min => 0
+    );
     
     $self->{output}->display();
     $self->{output}->exit();

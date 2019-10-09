@@ -32,21 +32,21 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'kstat' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-n sys 2>&1' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'kstat' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-n sys 2>&1' },
+        'warning:s'         => { name => 'warning' },
+        'critical:s'        => { name => 'critical' },
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{hostname} = undef;
     return $self;
@@ -75,12 +75,14 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     $self->{statefile_cache}->read(statefile => 'cache_solaris_local_' . $self->{hostname}  . '_' .  $self->{mode});
     my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
     my $datas = {};
@@ -128,11 +130,13 @@ sub run {
             $self->{output}->output_add(severity => $exit_code,
                                         short_msg => sprintf("CPU %d %.2f%%", $cpu_number, $cpu_ratio_usetime));
         }
-        $self->{output}->perfdata_add(label => 'cpu_' . $cpu_number, unit => '%',
-                                      value => sprintf("%.2f", $cpu_ratio_usetime),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            label => 'cpu_' . $cpu_number, unit => '%',
+            value => sprintf("%.2f", $cpu_ratio_usetime),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0, max => 100
+        );
     }
 
 	$self->{statefile_cache}->write(data => $datas);
