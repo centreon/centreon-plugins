@@ -86,15 +86,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-counters:s" => { name => 'filter_counters' },
-                                "warning-sync-status:s"        => { name => 'warning_sync_status', default => '' },
-                                "critical-sync-status:s"       => { name => 'critical_sync_status', default => '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/' },
-                                "warning-failover-status:s"        => { name => 'warning_failover_status', default => '' },
-                                "critical-failover-status:s"       => { name => 'critical_failover_status', default => '%{failoverstatus} =~ /unknown/' },
-                                });
-                                
+    $options{options}->add_options(arguments => {
+        'warning-sync-status:s'      => { name => 'warning_sync_status', default => '' },
+        'critical-sync-status:s'     => { name => 'critical_sync_status', default => '%{syncstatus} =~ /unknown|syncFailed|syncDisconnected|incompatibleVersion/' },
+        'warning-failover-status:s'  => { name => 'warning_failover_status', default => '' },
+        'critical-failover-status:s' => { name => 'critical_failover_status', default => '%{failoverstatus} =~ /unknown/' },
+    });
+
     return $self;
 }
 
@@ -139,32 +137,40 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{snmp}->get_leef(oids => [$mapping->{sysAttrFailoverIsRedundant}->{oid} . '.0',
-                                                   $mapping->{sysAttrModeMaint}->{oid} . '.0',
-                                                   $mapping->{sysCmSyncStatusId}->{oid} . '.0',
-                                                   $mapping->{sysCmFailoverStatusId}->{oid} . '.0'],
-                                         nothing_quit => 1);
-    my $result2 = $options{snmp}->map_instance(mapping => $mapping, results => $result, instance => '0');
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $mapping->{sysAttrFailoverIsRedundant}->{oid} . '.0',
+            $mapping->{sysAttrModeMaint}->{oid} . '.0',
+            $mapping->{sysCmSyncStatusId}->{oid} . '.0',
+            $mapping->{sysCmFailoverStatusId}->{oid} . '.0'
+        ],
+        nothing_quit => 1
+    );
+    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
     
-    if ($result2->{sysAttrModeMaint} eq 'true') {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'maintenance mode is active');
+    if ($result->{sysAttrModeMaint} eq 'true') {
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'maintenance mode is active'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
-    if ($result2->{sysAttrFailoverIsRedundant} eq 'false') {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'failover mode is disable');
+    if ($result->{sysAttrFailoverIsRedundant} eq 'false') {
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'failover mode is disable'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
     
     $self->{global} = { 
-        syncstatus => $result2->{sysCmSyncStatusId},
-        failoverstatus => $result2->{sysCmFailoverStatusId},
+        syncstatus => $result->{sysCmSyncStatusId},
+        failoverstatus => $result->{sysCmFailoverStatusId},
     };
 }
-    
+
 1;
 
 __END__

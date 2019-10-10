@@ -82,7 +82,6 @@ sub manage_selection {
         }
 
         $results->{$name} = {
-            display => $name,
             status => $result->{AvailState},
             state => $result->{EnabledState},
         };
@@ -108,7 +107,7 @@ sub run {
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Pools:');
+                                short_msg => 'List pools:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
