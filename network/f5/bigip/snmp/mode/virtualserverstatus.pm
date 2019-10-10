@@ -24,29 +24,18 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
-my $thresholds = {
-    vs => [
-        ['none', 'CRITICAL'],
-        ['green', 'OK'],
-        ['yellow', 'WARNING'],
-        ['red', 'CRITICAL'],
-        ['blue', 'UNKNOWN'],
-        ['gray', 'UNKNOWN'],
-    ],
-};
-
-sub custom_threshold_output {
+sub custom_status_output {
     my ($self, %options) = @_;
-    
-    return $self->{instance_mode}->get_severity(section => 'vs', value => $self->{result_values}->{AvailState});
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{AvailState} = $options{new_datas}->{$self->{instance} . '_AvailState'};
-    return 0;
+    my $msg = sprintf(
+        'status: %s [state: %s] [reason: %s]',
+        $self->{result_values}->{status},
+        $self->{result_values}->{enabled},
+        $self->{result_values}->{reason},
+    );
+    return $msg;
 }
 
 sub set_counters {
@@ -57,12 +46,11 @@ sub set_counters {
     ];
     $self->{maps_counters}->{vs} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'AvailState' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
-                output_template => 'Status : %s', output_error_template => 'Status : %s',
-                output_use => 'AvailState',
+                key_values => [ { name => 'enabled' }, { name => 'status' }, { name => 'reason' },{ name => 'display' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -71,7 +59,7 @@ sub set_counters {
 sub prefix_vs_output {
     my ($self, %options) = @_;
     
-    return "Virtual Server '" . $options{instance_value}->{Name} . "' ";
+    return "Virtual Server '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -80,8 +68,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"           => { name => 'filter_name' },
-        "threshold-overload:s@"   => { name => 'threshold_overload' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{enabled} eq "enabled" and %{status} eq "yellow"' },
+        'critical-status:s' => { name => 'critical_status', default => '%{enabled} eq "enabled" and %{status} eq "red"' },
     });
     
     return $self;
@@ -90,70 +80,29 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-        
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $status, $filter) = ($1, $2, $3);
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
-    }
+
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
-    }
-    foreach (@{$thresholds->{$options{section}}}) {           
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
-}
+my $map_vs_status = {
+    0 => 'none', 1 => 'green',
+    2 => 'yellow', 3 => 'red',
+    4 => 'blue', 5 => 'gray',
+};
+my $map_vs_enabled = {
+    0 => 'none', 1 => 'enabled',
+    2 => 'disabled', 3 => 'disabledbyparent',
+};
 
-my %map_vs_status = (
-    0 => 'none',
-    1 => 'green',
-    2 => 'yellow',
-    3 => 'red',
-    4 => 'blue', # unknown
-    5 => 'gray',
-);
-my %map_vs_enabled = (
-    0 => 'none',
-    1 => 'enabled',
-    2 => 'disabled',
-    3 => 'disabledbyparent',
-);
-
-# New OIDS
 my $mapping = {
     new => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2', map => \%map_vs_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.3', map => \%map_vs_enabled },
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.2', map => $map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.3', map => $map_vs_enabled },
         StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.13.2.1.5' },
     },
     old => {
-        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.22', map => \%map_vs_status },
-        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.23', map => \%map_vs_enabled },
+        AvailState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.22', map => $map_vs_status },
+        EnabledState => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.23', map => $map_vs_enabled },
         StatusReason => { oid => '.1.3.6.1.4.1.3375.2.2.10.1.2.1.25' },
     },
 };
@@ -163,10 +112,13 @@ my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [
-        { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{StatusReason}->{oid} },
-        { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{StatusReason}->{oid} },
-    ], nothing_quit => 1);
+    $self->{results} = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{StatusReason}->{oid} },
+            { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{StatusReason}->{oid} },
+        ],
+        nothing_quit => 1
+    );
     
     my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
     if (!defined($self->{results}->{$oid_ltmVsStatusEntry}) || scalar(keys %{$self->{results}->{$oid_ltmVsStatusEntry}}) == 0)  {
@@ -175,28 +127,24 @@ sub manage_selection {
     
     $self->{vs} = {};
     foreach my $oid (keys %{$self->{results}->{$branch}}) {
-        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $instance);
+        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*?)\.(.*)$/);
+        my ($num, $index) = ($1, $2);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $self->{results}->{$branch}, instance => $num . '.' . $index);
         
-        $result->{Name} = '';
-        foreach (split /\./, $instance) {
-            $result->{Name} .= chr if ($_ >= 32 && $_ <= 126);
-        }
-        $result->{Name} =~ s/^.//;
-
+        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{Name} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': no matching filter name.");
-            next;
-        }
-        if ($result->{EnabledState} !~ /enabled/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{Name} . "': state is '$result->{EnabledState}'.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.", debug => 1);
             next;
         }
         $result->{StatusReason} = '-' if (!defined($result->{StatusReason}) || $result->{StatusReason} eq '');
         
-        $self->{vs}->{$instance} = { %$result };
+        $self->{vs}->{$num . '.' . $index} = {
+            display => $name,
+            status => $result->{AvailState},
+            enabled => $result->{EnabledState},
+            reason => $result->{StatusReason}
+        };
     }
     
     if (scalar(keys %{$self->{vs}}) <= 0) {
@@ -219,11 +167,20 @@ Check Virtual Servers status.
 
 Filter by name (regexp can be used).
 
-=item B<--threshold-overload>
+=item B<--unknown-status>
 
-Set to overload default threshold values (syntax: section,status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='vs,CRITICAL,^(?!(green)$)'
+Set unknown threshold for status (Default: '').
+Can used special variables like: %{enabled}, %{status}, %{display}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%{enabled} eq "enabled" and %{status} eq "yellow"').
+Can used special variables like: %{enabled}, %{status}, %{display}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{enabled} eq "enabled" and %{status} eq "red"').
+Can used special variables like: %{enabled}, %{status}, %{display}
 
 =back
 

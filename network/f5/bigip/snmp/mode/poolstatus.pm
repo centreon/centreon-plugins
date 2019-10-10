@@ -100,7 +100,6 @@ sub new {
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '%{enabled} eq "enabled" and %{status} eq "yellow"' },
         'critical-status:s' => { name => 'critical_status', default => '%{enabled} eq "enabled" and %{status} eq "red"' },
-
     });
     
     return $self;
@@ -224,7 +223,7 @@ Filter by name (regexp can be used).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '').
+Set unknown threshold for status (Default: '').
 Can used special variables like: %{enabled}, %{status}, %{display}
 
 =item B<--warning-status>
