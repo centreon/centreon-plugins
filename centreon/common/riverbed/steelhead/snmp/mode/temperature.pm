@@ -53,6 +53,7 @@ sub new {
 
     $options{options}->add_options(arguments =>{
     });
+
     return $self;
 }
 
@@ -75,12 +76,8 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oids->{common},
-              start => $mappings->{common}->{systemTemperature}->{oid},
-              end => $mappings->{common}->{systemTemperature}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{systemTemperature}->{oid},
-              end => $mappings->{ex}->{systemTemperature}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{systemTemperature}->{oid}, end => $mappings->{common}->{systemTemperature}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{systemTemperature}->{oid}, end => $mappings->{ex}->{systemTemperature}->{oid} }
         ]
     );
 

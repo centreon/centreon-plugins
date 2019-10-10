@@ -101,20 +101,15 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oids->{common},
-              start => $mappings->{common}->{dsHitsTotal}->{oid},
-              end => $mappings->{common}->{dsAveDiskUtilization}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{dsHitsTotal}->{oid},
-              end => $mappings->{ex}->{dsAveDiskUtilization}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{dsHitsTotal}->{oid}, end => $mappings->{common}->{dsAveDiskUtilization}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{dsHitsTotal}->{oid}, end => $mappings->{ex}->{dsAveDiskUtilization}->{oid} }
         ]
     );
 
     foreach my $equipment (keys %{$oids}) {
         next if (!%{$results->{$oids->{$equipment}}});
 
-        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment},
-            results => $results->{$oids->{$equipment}}, instance => 0);
+        my $result = $options{snmp}->map_instance(mapping => $mappings->{$equipment}, results => $results->{$oids->{$equipment}}, instance => 0);
         
         $self->{global} = {
             dsHitsTotal => $result->{dsHitsTotal},

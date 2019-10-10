@@ -95,12 +95,8 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oids->{common},
-              start => $mappings->{common}->{bwPassThroughIn}->{oid},
-              end => $mappings->{common}->{bwPassThroughOut}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{bwPassThroughIn}->{oid},
-              end => $mappings->{ex}->{bwPassThroughOut}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{bwPassThroughIn}->{oid}, end => $mappings->{common}->{bwPassThroughOut}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{bwPassThroughIn}->{oid}, end => $mappings->{ex}->{bwPassThroughOut}->{oid} }
         ]
     );
 

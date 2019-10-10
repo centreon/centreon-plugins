@@ -105,6 +105,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
     });
+
     return $self;
 }
 
@@ -139,12 +140,8 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oids->{common},
-              start => $mappings->{common}->{optimizedConnections}->{oid},
-              end => $mappings->{common}->{totalConnections}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{optimizedConnections}->{oid},
-              end => $mappings->{ex}->{totalConnections}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{optimizedConnections}->{oid}, end => $mappings->{common}->{totalConnections}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{optimizedConnections}->{oid}, end => $mappings->{ex}->{totalConnections}->{oid} }
         ]
     );
 
