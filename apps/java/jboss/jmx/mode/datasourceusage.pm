@@ -84,10 +84,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s" => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
