@@ -44,7 +44,7 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {
+        $options{options}->add_options(arguments => {
             'hostname:s'        => { name => 'hostname' },
             'port:s'            => { name => 'port'},
             'proto:s'           => { name => 'proto' },
@@ -218,6 +218,10 @@ sub request_api {
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
+    if ($self->{http}->get_code() != 200) {
+        $self->{output}->add_option_msg(short_msg => 'api request error: ' . (defined($decoded->{type}) ? $decoded->{type} : 'unknown'));
         $self->{output}->option_exit();
     }
 
