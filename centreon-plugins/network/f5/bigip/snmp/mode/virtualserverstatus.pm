@@ -32,7 +32,7 @@ sub custom_status_output {
     my $msg = sprintf(
         'status: %s [state: %s] [reason: %s]',
         $self->{result_values}->{status},
-        $self->{result_values}->{enabled},
+        $self->{result_values}->{state},
         $self->{result_values}->{reason},
     );
     return $msg;
@@ -46,7 +46,7 @@ sub set_counters {
     ];
     $self->{maps_counters}->{vs} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'enabled' }, { name => 'status' }, { name => 'reason' },{ name => 'display' } ],
+                key_values => [ { name => 'state' }, { name => 'status' }, { name => 'reason' },{ name => 'display' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -70,8 +70,8 @@ sub new {
     $options{options}->add_options(arguments => { 
         'filter-name:s'     => { name => 'filter_name' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{enabled} eq "enabled" and %{status} eq "yellow"' },
-        'critical-status:s' => { name => 'critical_status', default => '%{enabled} eq "enabled" and %{status} eq "red"' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{state} eq "enabled" and %{status} eq "yellow"' },
+        'critical-status:s' => { name => 'critical_status', default => '%{state} eq "enabled" and %{status} eq "red"' },
     });
     
     return $self;
@@ -142,7 +142,7 @@ sub manage_selection {
         $self->{vs}->{$num . '.' . $index} = {
             display => $name,
             status => $result->{AvailState},
-            enabled => $result->{EnabledState},
+            state => $result->{EnabledState},
             reason => $result->{StatusReason}
         };
     }
@@ -170,17 +170,17 @@ Filter by name (regexp can be used).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{enabled}, %{status}, %{display}
+Can used special variables like: %{state}, %{status}, %{display}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{enabled} eq "enabled" and %{status} eq "yellow"').
-Can used special variables like: %{enabled}, %{status}, %{display}
+Set warning threshold for status (Default: '%{state} eq "enabled" and %{status} eq "yellow"').
+Can used special variables like: %{state}, %{status}, %{display}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{enabled} eq "enabled" and %{status} eq "red"').
-Can used special variables like: %{enabled}, %{status}, %{display}
+Set critical threshold for status (Default: '%{state} eq "enabled" and %{status} eq "red"').
+Can used special variables like: %{state}, %{status}, %{display}
 
 =back
 

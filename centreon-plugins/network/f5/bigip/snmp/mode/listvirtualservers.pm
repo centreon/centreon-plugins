@@ -31,8 +31,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "name:s"    => { name => 'name' },
-        "regexp"    => { name => 'use_regexp' },
+        'name:s' => { name => 'name' },
+        'regexp' => { name => 'use_regexp' },
     });
     
     return $self;
@@ -73,10 +73,13 @@ my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
-        { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{EnabledState}->{oid} },
-        { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{EnabledState}->{oid} },
-    ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{EnabledState}->{oid} },
+            { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{EnabledState}->{oid} },
+        ],
+        nothing_quit => 1
+    );
     
     my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
     if (!defined($snmp_result->{$oid_ltmVsStatusEntry}) || scalar(keys %{$snmp_result->{$oid_ltmVsStatusEntry}}) == 0)  {
@@ -85,16 +88,11 @@ sub manage_selection {
     
     $self->{vs} = {};
     foreach my $oid (keys %{$snmp_result->{$branch}}) {
-        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch}, instance => $instance);
-        
-        $result->{Name} = '';
-        foreach (split /\./, $instance) {
-            $result->{Name} .= chr if ($_ >= 32 && $_ <= 126);
-        }
-        $result->{Name} =~ s/^.//;
-        
+        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*?)\.(.*)$/);
+        my ($num, $index) = ($1, $2);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch}, instance => $num . '.' . $index);
+
+        $result->{Name} = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));        
         if (defined($self->{option_results}->{name}) && $self->{option_results}->{name} ne '') {
             next if (defined($self->{option_results}->{use_regexp}) && $result->{Name} !~ /$self->{option_results}->{name}/);
             next if ($result->{Name} ne $self->{option_results}->{name});
