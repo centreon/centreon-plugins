@@ -73,7 +73,7 @@ sub set_counters {
         }
     ];
     
-    $self->{maps_counters}->{member} = [
+    $self->{maps_counters}->{global} = [
         { label => 'member-status', threshold => 0, set => {
                 key_values => [ { name => 'role' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_member_status_calc'),
