@@ -88,9 +88,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /off/i' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /off/i' },
     });
     
     return $self;
@@ -134,18 +134,26 @@ sub check_rpdu {
     my $oid_rPDUOutletStatusEntry = '.1.3.6.1.4.1.318.1.1.12.3.5.1.1';
     my $snmp_result = $options{snmp}->get_table(oid => $oid_rPDUOutletStatusEntry, nothing_quit => 1);
 
+    my $duplicated = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{rPDUOutletStatusOutletState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        if (defined($self->{outlet}->{$result->{rPDUOutletStatusOutletName}})) {
-            $self->{output}->output_add(long_msg => "skipping instance '" . $result->{rPDUOutletStatusOutletName} . "' [$instance]: name duplicated");
-            next;
+        my $name = $result->{rPDUOutletStatusOutletName};
+        $name = $instance if (defined($duplicated->{$name}));
+        if (defined($self->{outlet}->{$name})) {
+            $duplicated->{$name} = 1;
+            my $instance2 = $self->{outlet}->{$name}->{instance};
+            $self->{outlet}->{$instance2} = $self->{outlet}->{$name};
+            $self->{outlet}->{$instance2}->{display} = $instance2;
+            delete $self->{outlet}->{$name};
+            $name = $instance;
         }
 
-        $self->{outlet}->{$result->{rPDUOutletStatusOutletName}} = {
-            display => $result->{rPDUOutletStatusOutletName},
+        $self->{outlet}->{$name} = {
+            instance => $instance,
+            display => $name,
             status => $result->{rPDUOutletStatusOutletState},
             bank => $result->{rPDUOutletStatusOutletBank},
             phase => $result->{rPDUOutletStatusOutletPhase},
@@ -183,18 +191,25 @@ sub check_rpdu2 {
         return_type => 1,
     );
 
+    my $duplicated = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{rPDU2OutletSwitchedStatusState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         my $name = $result->{rPDU2OutletSwitchedStatusName} . ' bank ' . $result->{rPDU2OutletSwitchedPropertiesBank};
+        $name = $instance if (defined($duplicated->{$name}));
         if (defined($self->{outlet}->{$name})) {
-            $self->{output}->output_add(long_msg => "skipping instance '" . $name . "' [$instance]: name duplicated");
-            next;
+            $duplicated->{$name} = 1;
+            my $instance2 = $self->{outlet}->{$name}->{instance};
+            $self->{outlet}->{$instance2} = $self->{outlet}->{$name};
+            $self->{outlet}->{$instance2}->{display} = $instance2;
+            delete $self->{outlet}->{$name};
+            $name = $instance;
         }
 
         $self->{outlet}->{$name} = {
+            instance => $instance,
             display => $name,
             status => $result->{rPDU2OutletSwitchedStatusState},
             bank => '',
