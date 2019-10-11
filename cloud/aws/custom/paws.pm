@@ -42,14 +42,14 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            "aws-secret-key:s"    => { name => 'aws_secret_key' },
-            "aws-access-key:s"    => { name => 'aws_access_key' },
-            "region:s"            => { name => 'region' },
-            "timeframe:s"         => { name => 'timeframe' },
-            "period:s"            => { name => 'period' },
-            "statistic:s@"        => { name => 'statistic' },
-            "zeroed"              => { name => 'zeroed' },
-            "proxyurl:s"          => { name => 'proxyurl' },
+            'aws-secret-key:s'    => { name => 'aws_secret_key' },
+            'aws-access-key:s'    => { name => 'aws_access_key' },
+            'region:s'            => { name => 'region' },
+            'timeframe:s'         => { name => 'timeframe' },
+            'period:s'            => { name => 'period' },
+            'statistic:s@'        => { name => 'statistic' },
+            'zeroed'              => { name => 'zeroed' },
+            'proxyurl:s'          => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
