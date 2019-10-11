@@ -150,14 +150,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name"                    => { name => 'use_name' },
-                                  "device:s"                => { name => 'device' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },                                  
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'name'              => { name => 'use_name' },
+        'device:s'          => { name => 'device' },
+        'regexp'            => { name => 'use_regexp' },
+        'regexp-isensitive' => { name => 'use_regexpi' },                                  
+    });
+
     return $self;
 }
 
