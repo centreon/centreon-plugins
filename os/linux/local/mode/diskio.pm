@@ -49,8 +49,11 @@ sub custom_utils_calc {
             ($options{new_datas}->{$self->{instance} . '_cpu_system'} - $options{old_datas}->{$self->{instance} . '_cpu_system'})
         )
         / $options{new_datas}->{$self->{instance} . '_cpu_total'} / 100;
-    $self->{result_values}->{utils} = 100 * ($options{new_datas}->{$self->{instance} . '_ticks'} - $options{old_datas}->{$self->{instance} . '_ticks'}) / $delta_ms;
-    $self->{result_values}->{utils} = 100 if ($self->{result_values}->{utils} > 100);
+    $self->{result_values}->{utils} = 0;
+    if ($delta_ms != 0) {
+        $self->{result_values}->{utils} = 100 * ($options{new_datas}->{$self->{instance} . '_ticks'} - $options{old_datas}->{$self->{instance} . '_ticks'}) / $delta_ms;
+        $self->{result_values}->{utils} = 100 if ($self->{result_values}->{utils} > 100);
+    }
     return 0;
 }
 
@@ -183,9 +186,9 @@ sub manage_selection {
         command_options => $self->{option_results}->{command_options}
     );
     
-    $stdout =~ /\/proc\/stat(.*)\/proc\/diskstats.*?\n(.*)/msg;
+    $stdout =~ /\/proc\/stat(.*?)\/proc\/diskstats.*?\n(.*)/msg;
     my ($cpu_parts, $disk_parts) = ($1, $2);
-    
+
     # Manage CPU Parts
     $cpu_parts =~ /^cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/ms;
 
@@ -196,9 +199,9 @@ sub manage_selection {
     }
 
     $self->{device} = {};
-    while ($disk_parts =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+/msg) {
-        my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($3, $6, $10, $7, $11, $13);
-        
+    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*$/msg) {
+        my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($1, $2, $4, $3, $5, $6);
+
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
             && $partition_name !~ /$self->{option_results}->{name}/i);
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
