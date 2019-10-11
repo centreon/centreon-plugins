@@ -66,6 +66,7 @@ sub run {
         $edge{edge_state} = $edge->{edgeState};
         $edge{service_state} = $edge->{serviceState};
         $edge{ha_state} = $edge->{haState};
+        $edge{type} = 'edge';
         
         push @disco_data, \%edge;
     }
