@@ -367,11 +367,11 @@ Threshold critical minimum Amount of NTP-Server
 
 =item B<--warning-offset>
 
-Threshold warning Offset deviation value in miliseconds
+Threshold warning Offset deviation value in milliseconds
 
 =item B<--critical-offset>
 
-Threshold critical Offset deviation value in miliseconds
+Threshold critical Offset deviation value in milliseconds
 
 =item B<--warning-stratum>
 
