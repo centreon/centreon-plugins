@@ -59,6 +59,7 @@ sub run {
 
     foreach my $api (@{$apis->{items}}) {
         my %api;
+        $api{type} = "apigateway";
         $api{id} = $api->{id};
         $api{name} = $api->{name};
         $api{description} = $api->{description};
