@@ -159,7 +159,7 @@ sub check_data {
             $value = $1;
         }
     }
-    if ($value !~ /^\d+(\.\d+)?$/) {
+    if ($value !~ /^-?\d+(?:\.\d+)?$/) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'oid value is not numeric (' . $value . ')'
