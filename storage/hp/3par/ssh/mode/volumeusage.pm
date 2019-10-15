@@ -56,22 +56,22 @@ sub set_counters {
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'volume.space.free.bytes', set => {
-                    key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
-                    closure_custom_output => $self->can('custom_usage_output'),
-                    perfdatas => [
-                        { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                          unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                    ],
-                }
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' },  ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'volume.space.usage.percentage', set => {
-                    key_values => [ { name => 'prct_used' }, { name => 'display' } ],
-                    output_template => 'Used : %.2f %%',
-                    perfdatas => [
-                        { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                          unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
-                    ],
-                }
+                key_values => [ { name => 'prct_used' }, { name => 'display' } ],
+                output_template => 'Used : %.2f %%',
+                perfdatas => [
+                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
         },
     ];
 }
