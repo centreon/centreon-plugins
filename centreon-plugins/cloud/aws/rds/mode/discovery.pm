@@ -68,6 +68,12 @@ sub run {
         $rds{instance_class} = $db_instance->{DBInstanceClass};
         $rds{availability_zone} = $db_instance->{AvailabilityZone};
         $rds{vpc_id} = $db_instance->{DBSubnetGroup}->{VpcId};
+        $rds{engine} = $db_instance->{Engine};
+        $rds{engine_version} = $db_instance->{EngineVersion};
+        $rds{db_name} = $db_instance->{DBName};
+        $rds{endpoint_host_zone_id} = $db_instance->{Endpoint}->{HostedZoneId};
+        $rds{endpoint_port} = $db_instance->{Endpoint}->{Port};
+        $rds{endpoint_address} = $db_instance->{Endpoint}->{Address};
         push @disco_data, \%rds;
     }
 
