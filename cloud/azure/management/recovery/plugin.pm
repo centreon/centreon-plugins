@@ -34,7 +34,6 @@ sub new {
         'backup-items-status'   => 'cloud::azure::management::recovery::mode::backupitemsstatus',
         'backup-jobs-status'    => 'cloud::azure::management::recovery::mode::backupjobsstatus',
         'discovery'             => 'cloud::azure::management::recovery::mode::discovery',
-        'health'                => 'cloud::azure::management::recovery::mode::health',
         'list-backup-jobs'      => 'cloud::azure::management::recovery::mode::listbackupjobs',
         'list-vaults'           => 'cloud::azure::management::recovery::mode::listvaults',
     );
