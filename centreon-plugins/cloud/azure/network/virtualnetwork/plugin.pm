@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'discovery'                 => 'cloud::azure::network::virtualnetwork::mode::discovery',
+        'health'                    => 'cloud::azure::network::virtualnetwork::mode::health',
         'list-virtual-networks'     => 'cloud::azure::network::virtualnetwork::mode::listvirtualnetworks',
         'peerings-status'           => 'cloud::azure::network::virtualnetwork::mode::peeringsstatus',
     );

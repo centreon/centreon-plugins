@@ -33,6 +33,7 @@ sub new {
     %{ $self->{modes} } = (
         'circuit-status'    => 'cloud::azure::network::expressroute::mode::circuitstatus',
         'discovery'         => 'cloud::azure::network::expressroute::mode::discovery',
+        'health'            => 'cloud::azure::network::expressroute::mode::health',
         'list-circuits'     => 'cloud::azure::network::expressroute::mode::listcircuits',
         'traffic'           => 'cloud::azure::network::expressroute::mode::traffic',
     );
