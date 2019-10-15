@@ -55,15 +55,14 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
+
     my $oid_jnxOperatingDescr = '.1.3.6.1.4.1.2636.3.1.13.1.5';
     my $oid_jnxOperatingCPU = '.1.3.6.1.4.1.2636.3.1.13.1.8';
     my $oid_jnxOperating1MinLoadAvg = '.1.3.6.1.4.1.2636.3.1.13.1.20';
     my $oid_jnxOperating5MinLoadAvg = '.1.3.6.1.4.1.2636.3.1.13.1.21';
     my $oid_jnxOperating15MinLoadAvg = '.1.3.6.1.4.1.2636.3.1.13.1.22';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_jnxOperatingDescr, nothing_quit => 1);
+
+    my $result = $options{snmp}->get_table(oid => $oid_jnxOperatingDescr, nothing_quit => 1);
     my $routing_engine_find = 0;
     my @oids_routing_engine = ();
     foreach my $oid (keys %$result) {        
@@ -80,15 +79,19 @@ sub run {
     my $multiple = 0;
     if (scalar(@oids_routing_engine) > 1) {
         $multiple = 1;
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => sprintf("All CPU(s) average usages are ok"));
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => sprintf("All CPU(s) average usages are ok")
+        );
     }
     
-    $self->{snmp}->load(oids => [$oid_jnxOperatingCPU, $oid_jnxOperating1MinLoadAvg, $oid_jnxOperating5MinLoadAvg, $oid_jnxOperating15MinLoadAvg],
-                        instances => \@oids_routing_engine,
-                        instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)');
-    my $result2 = $self->{snmp}->get_leef();
-    
+    $options{snmp}->load(
+        oids => [$oid_jnxOperatingCPU, $oid_jnxOperating1MinLoadAvg, $oid_jnxOperating5MinLoadAvg, $oid_jnxOperating15MinLoadAvg],
+        instances => \@oids_routing_engine,
+        instance_regexp => "^" . $oid_jnxOperatingDescr . '\.(.+)'
+    );
+    my $result2 = $options{snmp}->get_leef();
+
     foreach my $oid_routing_engine (@oids_routing_engine) {
         $oid_routing_engine =~ /^$oid_jnxOperatingDescr\.(.+)/;
         my $instance = $1;
