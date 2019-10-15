@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'apm'                  => 'network::f5::bigip::snmp::mode::apm',
         'connections'          => 'network::f5::bigip::snmp::mode::connections',
         'failover'             => 'network::f5::bigip::snmp::mode::failover',
         'hardware'             => 'network::f5::bigip::snmp::mode::hardware',
