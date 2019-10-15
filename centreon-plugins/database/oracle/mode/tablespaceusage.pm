@@ -321,7 +321,6 @@ sub manage_selection {
     
     # request from check_oracle_health.
     my $query;
-     if ($self->{sql}->is_version_minimum(version => '9')) {
     if ($self->{sql}->is_version_minimum(version => '9')) {
         my $tbs_sql_undo = q{
             SELECT
