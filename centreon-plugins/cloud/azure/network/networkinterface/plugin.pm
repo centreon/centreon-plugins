@@ -32,7 +32,6 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'discovery'         => 'cloud::azure::network::networkinterface::mode::discovery',
-        'health'            => 'cloud::azure::network::networkinterface::mode::health',
         'list-resources'    => 'cloud::azure::network::networkinterface::mode::listresources',
         'traffic'           => 'cloud::azure::network::networkinterface::mode::traffic',
     );

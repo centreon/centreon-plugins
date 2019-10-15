@@ -32,7 +32,6 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'discovery'     => 'cloud::azure::database::sqlserver::mode::discovery',
-        'health'        => 'cloud::azure::database::sqlserver::mode::health',
         'list-servers'  => 'cloud::azure::database::sqlserver::mode::listservers',
         'server-status' => 'cloud::azure::database::sqlserver::mode::serverstatus',
     );
