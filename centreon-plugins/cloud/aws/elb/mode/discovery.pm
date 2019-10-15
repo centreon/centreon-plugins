@@ -65,6 +65,9 @@ sub run {
         $elb{dns_name} = $load_balancer->{DNSName};
         $elb{availability_zones} = $load_balancer->{AvailabilityZones};
         $elb{vpc_id} = $load_balancer->{VPCId};
+        $elb{instances} = $load_balancer->{Instances};
+        $elb{security_groups} = $load_balancer->{SecurityGroups};
+        $elb{subnets} = $load_balancer->{Subnets};
         push @disco_data, \%elb;
     }
 
