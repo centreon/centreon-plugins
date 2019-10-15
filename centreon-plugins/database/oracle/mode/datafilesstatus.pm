@@ -136,7 +136,7 @@ sub new {
         "filter-tablespace:s"       => { name => 'filter_tablespace' },
         "filter-data-file:s"        => { name => 'filter_data_file' },
         "warning-status:s"          => { name => 'warning_status', default => '' },
-        "critical-status:s"         => { name => 'critical_status', default => '' },
+        "critical-status:s"         => { name => 'critical_status', default => '%{status} =~ /offline|invalid/i' },
         "warning-online-status:s"   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
         "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' },
     });
@@ -250,7 +250,7 @@ Can used special variables like: %{display}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: none).
+Set critical threshold for status (Default: '%{status} =~ /offline|invalid/i').
 Can used special variables like: %{display}, %{status}
 
 =item B<--warning-online-status>
