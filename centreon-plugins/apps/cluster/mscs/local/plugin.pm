@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'list-nodes'           => 'apps::cluster::mscs::local::mode::listnodes',
-                         'list-resources'       => 'apps::cluster::mscs::local::mode::listresources',
-                         'network-status'       => 'apps::cluster::mscs::local::mode::networkstatus',
-                         'node-status'          => 'apps::cluster::mscs::local::mode::nodestatus',
-                         'resource-status'      => 'apps::cluster::mscs::local::mode::resourcestatus',
-                         'resourcegroup-status' => 'apps::cluster::mscs::local::mode::resourcegroupstatus',
-                         );
+        'list-nodes'           => 'apps::cluster::mscs::local::mode::listnodes',
+        'list-resources'       => 'apps::cluster::mscs::local::mode::listresources',
+        'network-status'       => 'apps::cluster::mscs::local::mode::networkstatus',
+        'node-status'          => 'apps::cluster::mscs::local::mode::nodestatus',
+        'resource-status'      => 'apps::cluster::mscs::local::mode::resourcestatus',
+        'resourcegroup-status' => 'apps::cluster::mscs::local::mode::resourcegroupstatus',
+    );
 
     return $self;
 }

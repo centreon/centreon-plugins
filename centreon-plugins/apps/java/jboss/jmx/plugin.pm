@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'class-count'      => 'centreon::common::jvm::mode::classcount',
-                          'datasource-usage' => 'apps::java::jboss::jmx::mode::datasourceusage',
-                          'list-datasources' => 'apps::java::jboss::jmx::mode::listdatasources',
-                          'memory'           => 'centreon::common::jvm::mode::memory',
-                          'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
-                          'threads'          => 'centreon::common::jvm::mode::threads',
-                         );
+        'class-count'      => 'centreon::common::jvm::mode::classcount',
+        'datasource-usage' => 'apps::java::jboss::jmx::mode::datasourceusage',
+        'list-datasources' => 'apps::java::jboss::jmx::mode::listdatasources',
+        'memory'           => 'centreon::common::jvm::mode::memory',
+        'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
+        'threads'          => 'centreon::common::jvm::mode::threads',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;
