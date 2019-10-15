@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'list-attributes'  => 'apps::protocols::jmx::mode::listattributes',
-                         'numeric-value'    => 'apps::protocols::jmx::mode::numericvalue',
-                         );
+        'list-attributes'  => 'apps::protocols::jmx::mode::listattributes',
+        'numeric-value'    => 'apps::protocols::jmx::mode::numericvalue',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;

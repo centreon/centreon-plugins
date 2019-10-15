@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'quota-usage'  => 'cloud::ovh::restapi::mode::quotausage',
-                         'sms'          => 'cloud::ovh::restapi::mode::sms',
-                         );
+        'quota-usage'  => 'cloud::ovh::restapi::mode::quotausage',
+        'sms'          => 'cloud::ovh::restapi::mode::sms',
+    );
 
     $self->{custom_modes}{api} = 'cloud::ovh::restapi::custom::api';
     return $self;

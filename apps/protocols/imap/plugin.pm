@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'login'            => 'apps::protocols::imap::mode::login',
-                        'search-message'   => 'apps::protocols::imap::mode::searchmessage',
-                        );
+        'login'            => 'apps::protocols::imap::mode::login',
+        'search-message'   => 'apps::protocols::imap::mode::searchmessage',
+    );
+
     return $self;
 }
 

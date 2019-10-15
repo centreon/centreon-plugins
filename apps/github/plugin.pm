@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'status'       => 'apps::github::mode::status',
-                        'issues'       => 'apps::github::mode::issues',
-                        'commits'      => 'apps::github::mode::commits',
-                        'pullrequests' => 'apps::github::mode::pullrequests',
-                        'stats'        => 'apps::github::mode::stats',
-                        );
+        'issues'       => 'apps::github::mode::issues',
+        'commits'      => 'apps::github::mode::commits',
+        'pullrequests' => 'apps::github::mode::pullrequests',
+        'stats'        => 'apps::github::mode::stats',
+        'status'       => 'apps::github::mode::status',
+    );
+
     return $self;
 }
 

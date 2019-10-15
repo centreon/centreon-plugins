@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'server-usage' => 'storage::exagrid::snmp::mode::serverusage',
-                         );
+        'server-usage' => 'storage::exagrid::snmp::mode::serverusage',
+    );
 
     return $self;
 }

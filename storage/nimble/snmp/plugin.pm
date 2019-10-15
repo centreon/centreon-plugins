@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'volume-usage'     => 'storage::nimble::snmp::mode::volumeusage',
-                         'global-stats'     => 'storage::nimble::snmp::mode::globalstats',
-                         );
+        'global-stats' => 'storage::nimble::snmp::mode::globalstats',
+        'volume-usage' => 'storage::nimble::snmp::mode::volumeusage',
+    );
 
     return $self;
 }

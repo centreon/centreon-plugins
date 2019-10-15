@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'connection'        => 'apps::protocols::udp::mode::connection',
-                        );
+        'connection' => 'apps::protocols::udp::mode::connection',
+    );
+
     return $self;
 }
 

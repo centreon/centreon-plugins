@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'numeric-value'    => 'apps::protocols::modbus::mode::numericvalue',
-                         );
+        'numeric-value' => 'apps::protocols::modbus::mode::numericvalue',
+    );
 
     $self->{custom_modes}{api} = 'centreon::common::protocols::modbus::custom::api';
     return $self;

@@ -32,13 +32,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'deployment'            => 'apps::antivirus::kaspersky::snmp::mode::deployment',
-                            'events'                => 'apps::antivirus::kaspersky::snmp::mode::events',
-                            'full-scan'             => 'apps::antivirus::kaspersky::snmp::mode::fullscan',
-                            'logical-network'       => 'apps::antivirus::kaspersky::snmp::mode::logicalnetwork',
-                            'protection'            => 'apps::antivirus::kaspersky::snmp::mode::protection',
-                            'updates'               => 'apps::antivirus::kaspersky::snmp::mode::updates',
-                        );
+        'deployment'      => 'apps::antivirus::kaspersky::snmp::mode::deployment',
+        'events'          => 'apps::antivirus::kaspersky::snmp::mode::events',
+        'full-scan'       => 'apps::antivirus::kaspersky::snmp::mode::fullscan',
+        'logical-network' => 'apps::antivirus::kaspersky::snmp::mode::logicalnetwork',
+        'protection'      => 'apps::antivirus::kaspersky::snmp::mode::protection',
+        'updates'         => 'apps::antivirus::kaspersky::snmp::mode::updates',
+    );
 
     return $self;
 }

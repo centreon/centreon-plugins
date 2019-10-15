@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'login'    => 'apps::protocols::ssh::mode::login',
-                         );
+        'login'    => 'apps::protocols::ssh::mode::login',
+    );
 
     $self->{custom_modes}{api} = 'centreon::common::protocols::ssh::custom::api';
     return $self;

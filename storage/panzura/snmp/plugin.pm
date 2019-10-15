@@ -31,20 +31,20 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-                         'cpu-cloud'        => 'storage::panzura::snmp::mode::cpucloud',
-                         'diskio'           => 'snmp_standard::mode::diskio',
-                         'disk-usage-cloud' => 'snmp_standard::mode::diskusage',
-                         'disk-usage-local' => 'storage::panzura::snmp::mode::diskusagelocal',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-diskspath'   => 'snmp_standard::mode::listdiskspath',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'    => 'snmp_standard::mode::liststorages',
-                         'memory'           => 'storage::panzura::snmp::mode::memory',
-                         'ratios'           => 'storage::panzura::snmp::mode::ratios',
-                         'swap'             => 'snmp_standard::mode::swap',
-                         );
+        'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+        'cpu-cloud'        => 'storage::panzura::snmp::mode::cpucloud',
+        'diskio'           => 'snmp_standard::mode::diskio',
+        'disk-usage-cloud' => 'snmp_standard::mode::diskusage',
+        'disk-usage-local' => 'storage::panzura::snmp::mode::diskusagelocal',
+        'load'             => 'snmp_standard::mode::loadaverage',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-diskspath'   => 'snmp_standard::mode::listdiskspath',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
+        'memory'           => 'storage::panzura::snmp::mode::memory',
+        'ratios'           => 'storage::panzura::snmp::mode::ratios',
+        'swap'             => 'snmp_standard::mode::swap',
+    );
 
     return $self;
 }
