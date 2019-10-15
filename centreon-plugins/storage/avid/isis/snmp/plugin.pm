@@ -32,11 +32,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'hardware'              => 'centreon::common::broadcom::megaraid::snmp::mode::hardware',
-                            'performance'           => 'storage::avid::isis::snmp::mode::performance',
-                            'status'                => 'storage::avid::isis::snmp::mode::status',
-                            'usage'                 => 'storage::avid::isis::snmp::mode::usage',
-                        );
+        'hardware'    => 'centreon::common::broadcom::megaraid::snmp::mode::hardware',
+        'performance' => 'storage::avid::isis::snmp::mode::performance',
+        'status'      => 'storage::avid::isis::snmp::mode::status',
+        'usage'       => 'storage::avid::isis::snmp::mode::usage',
+    );
 
     return $self;
 }

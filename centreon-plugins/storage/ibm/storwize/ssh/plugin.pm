@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'components'   => 'storage::ibm::storwize::ssh::mode::hardware',
-                         'pool-usage'   => 'storage::ibm::storwize::ssh::mode::poolusage',
-                         'eventlog'     => 'storage::ibm::storwize::ssh::mode::eventlog',
-                        );
+        'components'   => 'storage::ibm::storwize::ssh::mode::hardware',
+        'eventlog'     => 'storage::ibm::storwize::ssh::mode::eventlog',
+        'pool-usage'   => 'storage::ibm::storwize::ssh::mode::poolusage',
+    );
 
     return $self;
 }

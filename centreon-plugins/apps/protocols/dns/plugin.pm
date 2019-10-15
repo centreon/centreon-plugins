@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'request'   => 'apps::protocols::dns::mode::request',
-                        );
+        'request'   => 'apps::protocols::dns::mode::request',
+    );
+
     return $self;
 }
 

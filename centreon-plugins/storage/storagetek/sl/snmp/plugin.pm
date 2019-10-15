@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'storage::storagetek::sl::snmp::mode::hardware',
-                         );
+        'hardware' => 'storage::storagetek::sl::snmp::mode::hardware',
+    );
 
     return $self;
 }

@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'     => 'storage::overland::neo::snmp::mode::hardware',
-                         'eventlog'     => 'storage::overland::neo::snmp::mode::eventlog',
-                         );
+        'hardware' => 'storage::overland::neo::snmp::mode::hardware',
+        'eventlog' => 'storage::overland::neo::snmp::mode::eventlog',
+    );
 
     return $self;
 }

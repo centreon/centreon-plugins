@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'components'   => 'storage::hp::storeonce::ssh::mode::hardware',
-                        );
+        'components'   => 'storage::hp::storeonce::ssh::mode::hardware',
+    );
 
     $self->{custom_modes}{ssh} = 'storage::hp::storeonce::ssh::custom::custom';
     return $self;

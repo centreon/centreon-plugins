@@ -32,14 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'clients'               => 'apps::antivirus::mcafee::webgateway::snmp::mode::clients',
-                            'connections'           => 'apps::antivirus::mcafee::webgateway::snmp::mode::connections',
-                            'detections'            => 'apps::antivirus::mcafee::webgateway::snmp::mode::detections',
-                            'ftp-statistics'        => 'apps::antivirus::mcafee::webgateway::snmp::mode::ftpstatistics',
-                            'http-statistics'       => 'apps::antivirus::mcafee::webgateway::snmp::mode::httpstatistics',
-                            'https-statistics'      => 'apps::antivirus::mcafee::webgateway::snmp::mode::httpsstatistics',
-                            'versions'              => 'apps::antivirus::mcafee::webgateway::snmp::mode::versions',
-                        );
+        'clients'          => 'apps::antivirus::mcafee::webgateway::snmp::mode::clients',
+        'connections'      => 'apps::antivirus::mcafee::webgateway::snmp::mode::connections',
+        'detections'       => 'apps::antivirus::mcafee::webgateway::snmp::mode::detections',
+        'ftp-statistics'   => 'apps::antivirus::mcafee::webgateway::snmp::mode::ftpstatistics',
+        'http-statistics'  => 'apps::antivirus::mcafee::webgateway::snmp::mode::httpstatistics',
+        'https-statistics' => 'apps::antivirus::mcafee::webgateway::snmp::mode::httpsstatistics',
+        'versions'         => 'apps::antivirus::mcafee::webgateway::snmp::mode::versions',
+    );
 
     return $self;
 }

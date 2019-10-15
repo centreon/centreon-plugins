@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'scenario'      => 'apps::protocols::telnet::mode::scenario',
-                        );
+        'scenario'      => 'apps::protocols::telnet::mode::scenario',
+    );
+
     return $self;
 }
 

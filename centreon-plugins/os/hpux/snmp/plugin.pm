@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'          => 'os::hpux::snmp::mode::cpu',
-                         'load'         => 'os::hpux::snmp::mode::load',
-                         'memory'       => 'os::hpux::snmp::mode::memory',
-                         'process'      => 'os::hpux::snmp::mode::process',
-                         'storage'      => 'os::hpux::snmp::mode::storage',
-                         'tcpcon'       => 'snmp_standard::mode::tcpcon',
-                         'uptime'       => 'snmp_standard::mode::uptime',
-                         );
+         'cpu'     => 'os::hpux::snmp::mode::cpu',
+         'load'    => 'os::hpux::snmp::mode::load',
+         'memory'  => 'os::hpux::snmp::mode::memory',
+         'process' => 'os::hpux::snmp::mode::process',
+         'storage' => 'os::hpux::snmp::mode::storage',
+         'tcpcon'  => 'snmp_standard::mode::tcpcon',
+         'uptime'  => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'list-storages'    => 'os::hpux::local::mode::liststorages',
-                         'storage'          => 'os::hpux::local::mode::storage',
-                         'inodes'           => 'os::hpux::local::mode::inodes',
-                         );
+        'inodes'           => 'os::hpux::local::mode::inodes',
+        'list-storages'    => 'os::hpux::local::mode::liststorages',
+        'storage'          => 'os::hpux::local::mode::storage',
+    );
 
     return $self;
 }
