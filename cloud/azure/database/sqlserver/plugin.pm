@@ -32,8 +32,9 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'discovery'     => 'cloud::azure::database::sqlserver::mode::discovery',
-        'server-status' => 'cloud::azure::database::sqlserver::mode::serverstatus',
+        'health'        => 'cloud::azure::database::sqlserver::mode::health',
         'list-servers'  => 'cloud::azure::database::sqlserver::mode::listservers',
+        'server-status' => 'cloud::azure::database::sqlserver::mode::serverstatus',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';

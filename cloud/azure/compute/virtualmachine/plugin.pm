@@ -34,6 +34,7 @@ sub new {
         'cpu'               => 'cloud::azure::compute::virtualmachine::mode::cpu',
         'discovery'         => 'cloud::azure::compute::virtualmachine::mode::discovery',
         'diskio'            => 'cloud::azure::compute::virtualmachine::mode::diskio',
+        'health'            => 'cloud::azure::compute::virtualmachine::mode::health',
         'list-resources'    => 'cloud::azure::compute::virtualmachine::mode::listresources',
         'network'           => 'cloud::azure::compute::virtualmachine::mode::network',
         'vm-sizes'          => 'cloud::azure::compute::virtualmachine::mode::vmsizes',

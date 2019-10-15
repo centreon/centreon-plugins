@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'discovery'             => 'cloud::azure::network::vpngateway::mode::discovery',
+        'health'                => 'cloud::azure::network::vpngateway::mode::health',
         'site-traffic'          => 'cloud::azure::network::vpngateway::mode::sitetraffic',
         'tunnel-traffic'        => 'cloud::azure::network::vpngateway::mode::tunneltraffic',
         'vpn-gateway-status'    => 'cloud::azure::network::vpngateway::mode::vpngatewaystatus',
