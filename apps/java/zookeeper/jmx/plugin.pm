@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'stats'        => 'apps::java::zookeeper::jmx::mode::stats',
-                         );
+        'stats' => 'apps::java::zookeeper::jmx::mode::stats',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;

@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'global-stats'    => 'apps::java::kafka::jmx::mode::globalstats',
-                         );
+        'global-stats' => 'apps::java::kafka::jmx::mode::globalstats',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;
