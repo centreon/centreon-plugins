@@ -28,11 +28,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'group'     => 'hardware::pdu::eaton::snmp::mode::group',
-        'outlet'    => 'hardware::pdu::eaton::snmp::mode::outlet',
+        'environment' => 'hardware::pdu::eaton::snmp::mode::environment',
+        'group'       => 'hardware::pdu::eaton::snmp::mode::group',
+        'outlet'      => 'hardware::pdu::eaton::snmp::mode::outlet',
     );
 
     return $self;
