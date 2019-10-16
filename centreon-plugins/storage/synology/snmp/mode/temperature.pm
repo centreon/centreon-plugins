@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'temperature', nlabel => 'system.temperature.celsus', set => {
+        { label => 'temperature', nlabel => 'system.temperature.celsius', set => {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'system temperature: %s C',
                 perfdatas => [
