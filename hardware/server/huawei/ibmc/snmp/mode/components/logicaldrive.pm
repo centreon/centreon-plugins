@@ -41,7 +41,10 @@ my $oid_logicalDriveDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.37.50.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_logicalDriveDescriptionEntry };
+    push @{$self->{request}}, {
+        oid => $oid_logicalDriveDescriptionEntry,
+        end => $mapping->{logicalDriveState}->{oid},
+    };
 }
 
 sub check {
