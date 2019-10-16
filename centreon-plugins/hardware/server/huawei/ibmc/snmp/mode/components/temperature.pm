@@ -32,7 +32,11 @@ my $oid_temperatureDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.26.50.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_temperatureDescriptionEntry };
+    push @{$self->{request}}, {
+        oid => $oid_temperatureDescriptionEntry,
+        start => $mapping->{temperatureObject}->{oid},
+        end => $mapping->{temperatureReading}->{oid},
+    };
 }
 
 sub check {
