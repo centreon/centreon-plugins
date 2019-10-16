@@ -43,7 +43,7 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'api-version'   => { name => 'api_version' },
+            'api-version:s' => { name => 'api_version' },
             'hostname:s'    => { name => 'hostname' },
             'port:s'        => { name => 'port' },
             'proto:s'       => { name => 'proto' },
