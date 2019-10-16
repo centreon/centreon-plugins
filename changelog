@@ -1,3 +1,18 @@
+2019-10-16 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: ABB CMS700 SNMP
+ * Mode added: [linux/local] 'discovery-nmap'
+ * Mode added: [hp/procurve] 'virtual-chassis'
+ * Mode added: [azure] 'health'
+ * Enhancement: [emerson/liebert] merge plugins
+ * Enhancement: [fortigate] enhance vpn mode
+ * Enhancement: [extreme/snmp] refacto modes
+ * Enhancement: [core] add mode status in openmetrics output
+ * Enhancement: [netapp/snmp] enhance snapmirrorlag
+ * Enhancement: [linux/local] refacto diskio mode
+ * Break: [f5/bigip] use status thresholds in virtual-server-status
+ * Fix: [nrpe] fix SSL context
+ * Fix: Ctrl+F "Fix" on commits page
+
 2019-10-02 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Warp10 Sensision
  * Plugin added: OpenMetrics
