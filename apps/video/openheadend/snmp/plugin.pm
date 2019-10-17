@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'node-usage'       => 'apps::video::openheadend::snmp::mode::nodeusage',
-                         'operation-status' => 'apps::video::openheadend::snmp::mode::operationstatus',
-                         );
+        'node-usage'       => 'apps::video::openheadend::snmp::mode::nodeusage',
+        'operation-status' => 'apps::video::openheadend::snmp::mode::operationstatus',
+    );
 
     return $self;
 }

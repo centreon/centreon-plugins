@@ -30,12 +30,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'gates'            => 'apps::centreon::map4::jmx::mode::gates',
-                         'elements'         => 'apps::centreon::map4::jmx::mode::elements',
-                         'sessions'         => 'apps::centreon::map4::jmx::mode::sessions',
-                         'event-queue'      => 'apps::centreon::map4::jmx::mode::eventqueue',
-                         'event-statistics' => 'apps::centreon::map4::jmx::mode::eventstatistics',
-                         );
+        'elements'         => 'apps::centreon::map4::jmx::mode::elements',
+        'event-queue'      => 'apps::centreon::map4::jmx::mode::eventqueue',
+        'event-statistics' => 'apps::centreon::map4::jmx::mode::eventstatistics',
+        'gates'            => 'apps::centreon::map4::jmx::mode::gates',
+        'sessions'         => 'apps::centreon::map4::jmx::mode::sessions',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;

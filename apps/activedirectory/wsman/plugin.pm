@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'dcdiag'    => 'apps::activedirectory::wsman::mode::dcdiag',
-                         );
+        'dcdiag' => 'apps::activedirectory::wsman::mode::dcdiag',
+    );
 
     return $self;
 }
