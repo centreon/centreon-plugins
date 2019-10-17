@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'audioengine-usage'    => 'apps::inin::mediaserver::snmp::mode::audioengineusage',
-                         'cmdsrv-usage'         => 'apps::inin::mediaserver::snmp::mode::cmdsrvusage',
-                         'disk-usage'           => 'apps::inin::mediaserver::snmp::mode::diskusage',
-                         'component'            => 'apps::inin::mediaserver::snmp::mode::component',
-                         'memory-usage'         => 'apps::inin::mediaserver::snmp::mode::memoryusage',
-                         );
+        'audioengine-usage'    => 'apps::inin::mediaserver::snmp::mode::audioengineusage',
+        'cmdsrv-usage'         => 'apps::inin::mediaserver::snmp::mode::cmdsrvusage',
+        'component'            => 'apps::inin::mediaserver::snmp::mode::component',
+        'disk-usage'           => 'apps::inin::mediaserver::snmp::mode::diskusage',
+        'memory-usage'         => 'apps::inin::mediaserver::snmp::mode::memoryusage',
+    );
 
     return $self;
 }
