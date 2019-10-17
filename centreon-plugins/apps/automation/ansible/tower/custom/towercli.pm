@@ -40,15 +40,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "host:s"                => { name => 'host' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "timeout:s"             => { name => 'timeout', default => 50 },
-            "sudo"                  => { name => 'sudo' },
-            "command:s"             => { name => 'command', default => 'tower-cli' },
-            "command-path:s"        => { name => 'command_path' },
-            "command-options:s"     => { name => 'command_options', default => '' },
-            "proxyurl:s"            => { name => 'proxyurl' },
+            'host:s'                => { name => 'host' },
+            'username:s'            => { name => 'username' },
+            'password:s'            => { name => 'password' },
+            'timeout:s'             => { name => 'timeout', default => 50 },
+            'sudo'                  => { name => 'sudo' },
+            'command:s'             => { name => 'command', default => 'tower-cli' },
+            'command-path:s'        => { name => 'command_path' },
+            'command-options:s'     => { name => 'command_options', default => '' },
+            'proxyurl:s'            => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'TOWERCLI OPTIONS', once => 1);
