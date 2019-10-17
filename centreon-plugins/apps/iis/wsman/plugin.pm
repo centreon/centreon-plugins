@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'applicationpool-state'    => 'apps::iis::wsman::mode::applicationpoolstate',
-                         'list-applicationpools'    => 'apps::iis::wsman::mode::listapplicationpools',
-                         );
+        'applicationpool-state' => 'apps::iis::wsman::mode::applicationpoolstate',
+        'list-applicationpools' => 'apps::iis::wsman::mode::listapplicationpools',
+    );
 
     return $self;
 }

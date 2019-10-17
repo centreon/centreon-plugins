@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'applicationpool-state'    => 'apps::iis::local::mode::applicationpoolstate',
-                         'list-applicationpools'    => 'apps::iis::local::mode::listapplicationpools',
-                         'list-sites'               => 'apps::iis::local::mode::listsites',
-                         'webservice-statistics'    => 'apps::iis::local::mode::webservicestatistics',
-                         );
+        'applicationpool-state'    => 'apps::iis::local::mode::applicationpoolstate',
+        'list-applicationpools'    => 'apps::iis::local::mode::listapplicationpools',
+        'list-sites'               => 'apps::iis::local::mode::listsites',
+        'webservice-statistics'    => 'apps::iis::local::mode::webservicestatistics',
+    );
 
     return $self;
 }

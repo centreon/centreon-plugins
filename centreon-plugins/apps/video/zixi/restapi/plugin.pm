@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'broadcaster-input-usage'      => 'apps::video::zixi::restapi::mode::broadcasterinputusage',
-                         'broadcaster-license-usage'    => 'apps::video::zixi::restapi::mode::broadcasterlicenseusage',
-                         'broadcaster-output-usage'     => 'apps::video::zixi::restapi::mode::broadcasteroutputusage',
-                         'broadcaster-system-usage'     => 'apps::video::zixi::restapi::mode::broadcastersystemusage',
-                         'feeder-input-usage'           => 'apps::video::zixi::restapi::mode::feederinputusage',
-                         'feeder-output-usage'          => 'apps::video::zixi::restapi::mode::feederoutputusage',
-                         );
+        'broadcaster-input-usage'      => 'apps::video::zixi::restapi::mode::broadcasterinputusage',
+        'broadcaster-license-usage'    => 'apps::video::zixi::restapi::mode::broadcasterlicenseusage',
+        'broadcaster-output-usage'     => 'apps::video::zixi::restapi::mode::broadcasteroutputusage',
+        'broadcaster-system-usage'     => 'apps::video::zixi::restapi::mode::broadcastersystemusage',
+        'feeder-input-usage'           => 'apps::video::zixi::restapi::mode::feederinputusage',
+        'feeder-output-usage'          => 'apps::video::zixi::restapi::mode::feederoutputusage',
+    );
 
     $self->{custom_modes}{api} = 'apps::video::zixi::restapi::custom::api';
     return $self;
