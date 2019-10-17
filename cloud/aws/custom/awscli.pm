@@ -127,8 +127,11 @@ sub check_options {
 
 sub execute {
     my ($self, %options) = @_;
+    
+    my $cmd_options = $options{cmd_options};
+    $cmd_options .= " --debug" if ($self->{output}->is_debug());
 
-    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $options{cmd_options} . "'", debug => 1);
+    $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
     
     my ($response) = centreon::plugins::misc::execute(
         output => $self->{output},
@@ -136,8 +139,8 @@ sub execute {
         sudo => $self->{option_results}->{sudo},
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
-        command_options => $options{cmd_options},
-        redirect_stderr => 0
+        command_options => $cmd_options,
+        redirect_stderr => 1
     );
 
     my $raw_results;
