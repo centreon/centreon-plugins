@@ -1190,7 +1190,7 @@ sub apply_perfdata_explode {
     foreach (@{$self->{perfdatas}}) {
         next if ($_->{max} eq '');
         if ($self->{explode_perfdata_total} == 2) {
-            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
+            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max}, unit => $_->{unit});
             next;
         }
         foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
