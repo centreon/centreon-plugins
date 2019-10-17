@@ -32,8 +32,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "host-pattern:s"    => { name => 'host_pattern', default => 'all' },
-        "prettify"          => { name => 'prettify' },
+        'host-pattern:s'    => { name => 'host_pattern', default => 'all' },
+        'prettify'          => { name => 'prettify' },
     });
 
     return $self;

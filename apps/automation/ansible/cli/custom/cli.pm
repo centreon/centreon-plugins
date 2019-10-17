@@ -40,16 +40,16 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"            => { name => 'hostname' },
-            "remote"                => { name => 'remote' },
-            "ssh-option:s@"         => { name => 'ssh_option' },
-            "ssh-path:s"            => { name => 'ssh_path' },
-            "ssh-command:s"         => { name => 'ssh_command', default => 'ssh' },
-            "timeout:s"             => { name => 'timeout', default => 50 },
-            "sudo"                  => { name => 'sudo' },
-            "command:s"             => { name => 'command', default => 'ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json ansible' },
-            "command-path:s"        => { name => 'command_path' },
-            "command-options:s"     => { name => 'command_options', default => '' },
+            'hostname:s'            => { name => 'hostname' },
+            'remote'                => { name => 'remote' },
+            'ssh-option:s@'         => { name => 'ssh_option' },
+            'ssh-path:s'            => { name => 'ssh_path' },
+            'ssh-command:s'         => { name => 'ssh_command', default => 'ssh' },
+            'timeout:s'             => { name => 'timeout', default => 50 },
+            'sudo'                  => { name => 'sudo' },
+            'command:s'             => { name => 'command', default => 'ANSIBLE_LOAD_CALLBACK_PLUGINS=true ANSIBLE_STDOUT_CALLBACK=json ansible' },
+            'command-path:s'        => { name => 'command_path' },
+            'command-options:s'     => { name => 'command_options', default => '' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CLI OPTIONS', once => 1);

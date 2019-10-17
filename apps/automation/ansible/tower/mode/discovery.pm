@@ -32,9 +32,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "group"     => { name => 'group' },
-        "inventory" => { name => 'inventory' },
-        "prettify"  => { name => 'prettify' },
+        'group'     => { name => 'group' },
+        'inventory' => { name => 'inventory' },
+        'prettify'  => { name => 'prettify' },
     });
 
     return $self;
