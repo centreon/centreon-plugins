@@ -1195,7 +1195,7 @@ sub apply_perfdata_explode {
         }
         foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
             if ($_->{label} =~ /$regexp/) {
-                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
+                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max}, unit => $_->{unit});
                 last;
             }
         }
