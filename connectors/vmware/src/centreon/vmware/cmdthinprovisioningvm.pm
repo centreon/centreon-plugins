@@ -77,7 +77,8 @@ sub run {
         
         foreach (@{$entity_view->{'config.hardware.device'}}) {         
             if ($_->isa('VirtualDisk')) {
-                push @{$data->{$entity_value}->{disks}}, { thin_provisioned => $_->backing->thinProvisioned, name => $_->backing->fileName };
+                next if (!defined($_->{backing}->{thinProvisioned}));
+                push @{$data->{$entity_value}->{disks}}, { thin_provisioned => $_->{backing}->{thinProvisioned}, name => $_->{backing}->{fileName} };
             }
         }
     }
