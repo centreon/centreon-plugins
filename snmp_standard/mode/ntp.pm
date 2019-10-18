@@ -20,12 +20,31 @@
 
 package snmp_standard::mode::ntp;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
 use DateTime;
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'offset', type => 0 }
+    ];
+
+    $self->{maps_counters}->{offset} = [
+        { label => 'offset', nlabel => 'time.offset.seconds', set => {
+                key_values => [ { name => 'offset' } ],
+                output_template => 'Offset: %d second(s)',
+                perfdatas => [
+                    { label => 'offset', value => 'offset_absolute', template => '%d', unit => 's' },
+                ],
+                }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -36,34 +55,25 @@ sub new {
                                 { 
                                   "ntp-hostname:s"          => { name => 'ntp_hostname' },
                                   "ntp-port:s"              => { name => 'ntp_port', default => 123 },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
                                   "timezone:s"              => { name => 'timezone' },
                                 });
     return $self;
 }
 
 sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{ntp_hostname})) {
+   my ($self, %options) = @_;
+   $self->SUPER::check_options(%options);
+   
+   if (defined($self->{option_results}->{ntp_hostname})) {
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Net::NTP',
-                                               error_msg => "Cannot load module 'Net::NTP'.");
+                                                error_msg => "Cannot load module 'Net::NTP'.");
     }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
+    $self->{offset} = {};
 
     my ($ref_time, $distant_time);
     my $oid_hrSystemDate = '.1.3.6.1.2.1.25.1.2.0';
@@ -104,25 +114,21 @@ sub run {
       second     => $remote_date[5],
       %$tz
     );
+
     $distant_time = $dt->epoch;
     
-    my $diff = $distant_time - $ref_time;
-    my $remote_date_formated = sprintf("%02d-%02d-%02dT%02d:%02d:%02d (%s)", $remote_date[0], $remote_date[1], $remote_date[2],
+    my $offset = $distant_time - $ref_time;
+    my $remote_date_formated = sprintf("Local Time : %02d-%02d-%02dT%02d:%02d:%02d (%s)", $remote_date[0], $remote_date[1], $remote_date[2],
                                        $remote_date[3], $remote_date[4], $remote_date[5], $timezone);
+      
     
-    my $exit = $self->{perfdata}->threshold_check(value => $diff, 
-                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Time offset %d second(s) : %s", $diff, $remote_date_formated));
-
-    $self->{output}->perfdata_add(label => 'offset', unit => 's',
-                                  value => sprintf("%d", $diff),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $formated_offset = sprintf("%d", $offset);
+    
+    $self->{offset} = { 
+        offset =>  $formated_offset, 
+        display => 0 };
+    
+    $self->{output}->add_option_msg(short_msg => $remote_date_formated);
 }
 
 1;
@@ -137,13 +143,13 @@ Use threshold with (+-) 2 seconds offset (minimum).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-offset>
 
-Threshold warning.
+Time offset warning threshold (in seconds).
 
-=item B<--critical>
+=item B<--critical-offset>
 
-Threshold critical.
+Time offset critical Threshold (in seconds).
 
 =item B<--ntp-hostname>
 
