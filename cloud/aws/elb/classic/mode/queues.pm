@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::mode::targetshealth;
+package cloud::aws::elb::classic::mode::queues;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,15 +26,15 @@ use strict;
 use warnings;
 
 my %metrics_mapping = (
-    'HealthyHostCount' => {
-        'output' => 'Healthy Hosts',
-        'label' => 'healthyhostcount',
-        'nlabel' => 'elb.healthyhostcount.count',
+    'SpilloverCount' => { # Average, Minimum, and Maximum are reported per load balancer node and are not typically useful.
+        'output' => 'Spillover Count',
+        'label' => 'spillovercount',
+        'nlabel' => 'elb.spillovercount.count',
     },
-    'UnHealthyHostCount' => {
-        'output' => 'Unhealthy Hosts',
-        'label' => 'unhealthyhostcount',
-        'nlabel' => 'elb.unhealthyhostcount.count',
+    'SurgeQueueLength' => { # Sum is not useful.
+        'output' => 'Surge Queue Length',
+        'label' => 'surgequeuelength',
+        'nlabel' => 'elb.surgequeuelength.count',
     },
 );
 
@@ -149,7 +149,7 @@ sub check_options {
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
 
-    $self->{aws_statistics} = ['Average'];
+    $self->{aws_statistics} = ['Sum', 'Maximum'];
     if (defined($self->{option_results}->{statistic})) {
         $self->{aws_statistics} = [];
         foreach my $stat (@{$self->{option_results}->{statistic}}) {
@@ -210,15 +210,15 @@ __END__
 
 =head1 MODE
 
-Check ELB instances health.
+Check Classic ELB surge queue.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::elb::plugin --custommode=paws --mode=instancehealth --region='eu-west-1'
---type='loadbalancer' --name='elb-www-fr' --critical-healthyhostcount='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::aws::elb::classic::plugin --custommode=paws --mode=queues --region='eu-west-1'
+--type='loadbalancer' --name='elb-www-fr' --critical-spillovercount-sum='10' --verbose
 
 See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
 
-Default statistic: 'average' / Most usefull statistics: 'average', 'minimum', 'maximum'.
+Default statistic: 'sum', 'maximum' / Most usefull statistics: SpilloverCount: 'sum', SurgeQueueLength: 'maximum'.
 
 =over 8
 
@@ -236,16 +236,12 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'HealthyHostCount', 'UnHealthyHostCount') 
+Filter metrics (Can be: 'SpilloverCount', 'SurgeQueueLength') 
 (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'healthyhostcount', 'unhealthyhostcount').
-
-=item B<--critical-*>
-
-Thresholds critical (Can be: 'healthyhostcount', 'unhealthyhostcount').
+Thresholds warning (Can be: 'spillovercount', 'surgequeuelength').
 
 =back
 

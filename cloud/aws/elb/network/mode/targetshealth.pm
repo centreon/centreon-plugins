@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::mode::performances;
+package cloud::aws::elb::network::mode::targetshealth;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,21 +26,16 @@ use strict;
 use warnings;
 
 my %metrics_mapping = (
-    'RequestCount' => { # Minimum, Maximum, and Average all return 1.
-        'output' => 'Requests',
-        'label' => 'requestcount',
-        'nlabel' => 'elb.requestcount.count',
+    'HealthyHostCount' => {
+        'output' => 'Healthy Hosts',
+        'label' => 'healthyhostcount',
+        'nlabel' => 'elb.healthyhostcount.count',
     },
-    'Latency' => { # Minimum is typically not useful
-        'output' => 'Latency',
-        'label' => 'latency',
-        'nlabel' => 'elb.latency.seconds',
+    'UnHealthyHostCount' => {
+        'output' => 'Unhealthy Hosts',
+        'label' => 'unhealthyhostcount',
+        'nlabel' => 'elb.unhealthyhostcount.count',
     },
-);
-
-my %map_type = (
-    "loadbalancer"      => "LoadBalancerName",
-    "availabilityzone"  => "AvailabilityZone",
 );
 
 sub prefix_metric_output {
@@ -51,7 +46,7 @@ sub prefix_metric_output {
         $availability_zone = "[$options{instance_value}->{availability_zone}] ";
     }
     
-    return ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone;
+    return "ELB '" . $options{instance_value}->{display} . "' " . $availability_zone;
 }
 
 sub prefix_statistics_output {
@@ -68,7 +63,7 @@ sub long_output {
         $availability_zone = "[$options{instance_value}->{availability_zone}] ";
     }
 
-    return "Checking " . ucfirst($self->{option_results}->{type}) . " '" . $options{instance_value}->{display} . "' " . $availability_zone;
+    return "Checking '" . $options{instance_value}->{display} . "' " . $availability_zone;
 }
 
 sub set_counters {
@@ -106,7 +101,6 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "type:s"                => { name => 'type' },
         "name:s@"               => { name => 'name' },
         "availability-zone:s"   => { name => 'availability_zone' },
         "filter-metric:s"       => { name => 'filter_metric' },
@@ -119,20 +113,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    if (!defined($self->{option_results}->{type}) || $self->{option_results}->{type} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --type option.");
-        $self->{output}->option_exit();
-    }
-
-    if ($self->{option_results}->{type} ne 'loadbalancer' && $self->{option_results}->{type} ne 'availabilityzone') {
-        $self->{output}->add_option_msg(short_msg => "Instance type '" . $self->{option_results}->{type} . "' is not handled for this mode");
-        $self->{output}->option_exit();
-    }
-
-    if ($self->{option_results}->{type} eq 'availabilityzone' && defined($self->{option_results}->{availability_zone})) {
-        $self->{output}->add_option_msg(short_msg => "Can't specify --availability-zone option with availabilityzone instance's type");
-        $self->{output}->option_exit();
-    }
 
     if (!defined($self->{option_results}->{name}) || $self->{option_results}->{name} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --name option.");
@@ -148,7 +128,7 @@ sub check_options {
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
 
-    $self->{aws_statistics} = ['Sum', 'Average'];
+    $self->{aws_statistics} = ['Average'];
     if (defined($self->{option_results}->{statistic})) {
         $self->{aws_statistics} = [];
         foreach my $stat (@{$self->{option_results}->{statistic}}) {
@@ -171,13 +151,13 @@ sub manage_selection {
 
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
-        push @{$self->{aws_dimensions}}, { Name => $map_type{$self->{option_results}->{type}}, Value => $instance };
+        push @{$self->{aws_dimensions}}, { Name => 'LoadBalancer', Value => $instance };
         if (defined($self->{option_results}->{availability_zone}) && $self->{option_results}->{availability_zone} ne '') {
             push @{$self->{aws_dimensions}}, { Name => 'AvailabilityZone', Value => $self->{option_results}->{availability_zone} };
         }
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
             region => $self->{option_results}->{region},
-            namespace => 'AWS/ELB',
+            namespace => 'AWS/ApplicationELB',
             dimensions => $self->{aws_dimensions},
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
@@ -209,21 +189,17 @@ __END__
 
 =head1 MODE
 
-Check ELB performances.
+Check Network ELB targets health.
 
-Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::elb::plugin --custommode=paws --mode=performances --region='eu-west-1'
---type='loadbalancer' --name='elb-www-fr' --critical-requestcount='10' --verbose
+Example:
+perl centreon_plugins.pl --plugin=cloud::aws::elb::network::plugin --custommode=paws --mode=targets-health
+--region='eu-west-1' --name='net/NetProd/7c8ecfbd1093c5bd' --critical-unhealthyhostcount='10' --verbose
 
-See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
+See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/network/load-balancer-cloudwatch-metrics.html' for more informations.
 
-Default statistic: 'sum', 'average' / Most usefull statistics: RequestCount: 'sum', Latency: 'average'.
+Default statistic: 'average' / Most usefull statistics: 'average', 'minimum', 'maximum'.
 
 =over 8
-
-=item B<--type>
-
-Set the instance type (Required) (Can be: 'loadbalancer', 'availabilityzone').
 
 =item B<--name>
 
@@ -231,20 +207,16 @@ Set the instance name (Required) (Can be multiple).
 
 =item B<--availability-zone>
 
-Add Availability Zone dimension (only with --type='loadbalancer').
+Add Availability Zone dimension.
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'RequestCount', 'Latency') 
+Filter metrics (Can be: 'HealthyHostCount', 'UnHealthyHostCount') 
 (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Thresholds warning (Can be: 'requestcount', 'latency').
-
-=item B<--critical-*>
-
-Thresholds critical (Can be: 'requestcount', 'latency').
+Thresholds warning (Can be: 'healthyhostcount', 'unhealthyhostcount').
 
 =back
 
