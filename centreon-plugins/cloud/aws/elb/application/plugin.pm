@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::plugin;
+package cloud::aws::elb::application::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'discovery'             => 'cloud::aws::elb::mode::discovery',
-        'http-codes'            => 'cloud::aws::elb::mode::httpcodes',
-        'performances'          => 'cloud::aws::elb::mode::performances',
-        'queues'                => 'cloud::aws::elb::mode::queues',
-        'targets-health'        => 'cloud::aws::elb::mode::targetshealth',
+        'connections'           => 'cloud::aws::elb::application::mode::connections',
+        'discovery'             => 'cloud::aws::elb::application::mode::discovery',
+        'http-codes'            => 'cloud::aws::elb::application::mode::httpcodes',
+        'targets-health'        => 'cloud::aws::elb::application::mode::targetshealth',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
@@ -49,6 +48,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Amazon Elastic Load Balancing (Amazon ELB).
+Check Amazon Application Elastic Load Balancing (Amazon Application ELB).
 
 =cut
