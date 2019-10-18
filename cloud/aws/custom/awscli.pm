@@ -140,7 +140,7 @@ sub execute {
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
         command_options => $cmd_options,
-        redirect_stderr => 1
+        redirect_stderr => ($self->{output}->is_debug()) ? 0 : 1
     );
 
     my $raw_results;
