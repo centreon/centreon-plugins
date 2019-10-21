@@ -18,24 +18,25 @@
 # limitations under the License.
 #
 
-package apps::slack::restapi::plugin;
+package cloud::aws::elb::network::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'count-channels' => 'apps::slack::restapi::mode::countchannels',
-        'count-members'  => 'apps::slack::restapi::mode::countmembers',
+    $self->{version} = '0.1';
+    %{ $self->{modes} } = (
+        'discovery'             => 'cloud::aws::elb::network::mode::discovery',
+        'targets-health'        => 'cloud::aws::elb::network::mode::targetshealth',
     );
 
-    $self->{custom_modes}{restapi} = 'apps::slack::restapi::custom::api';
+    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
+    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
@@ -45,6 +46,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Slack using API.
+Check Amazon Network Elastic Load Balancing (Amazon Network ELB).
 
 =cut

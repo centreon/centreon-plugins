@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::mode::discovery;
+package cloud::aws::elb::classic::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
@@ -60,7 +60,7 @@ sub run {
     foreach my $load_balancer (@{$load_balancers->{LoadBalancerDescriptions}}) {
         next if (!defined($load_balancer->{LoadBalancerName}));
         my %elb;
-        $elb{type} = "elb";
+        $elb{type} = "classic";
         $elb{name} = $load_balancer->{LoadBalancerName};
         $elb{dns_name} = $load_balancer->{DNSName};
         $elb{availability_zones} = $load_balancer->{AvailabilityZones};
@@ -99,7 +99,7 @@ __END__
 
 =head1 MODE
 
-ELB discovery.
+Classic ELB discovery.
 
 =over 8
 

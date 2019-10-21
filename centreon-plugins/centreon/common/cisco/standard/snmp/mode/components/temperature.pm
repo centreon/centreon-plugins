@@ -59,22 +59,26 @@ sub check {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ciscoEnvMonTemperatureStatusEntry}, instance => $instance);
         
-        next if ($self->check_filter(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $instance, name => $result->{ciscoEnvMonTemperatureStatusDescr}));
         $self->{components}->{temperature}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Temperature '%s' status is %s [instance: %s] [value: %s C]", 
-                                    $result->{ciscoEnvMonTemperatureStatusDescr}, $result->{ciscoEnvMonTemperatureState},
-                                    $instance, defined($result->{ciscoEnvMonTemperatureStatusValue}) ? $result->{ciscoEnvMonTemperatureStatusValue} : '-'));
-        my $exit = $self->get_severity(section => 'temperature', value => $result->{ciscoEnvMonTemperatureState});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Temperature '%s' status is %s [instance: %s] [value: %s C]", 
+                $result->{ciscoEnvMonTemperatureStatusDescr}, $result->{ciscoEnvMonTemperatureState},
+                $instance, defined($result->{ciscoEnvMonTemperatureStatusValue}) ? $result->{ciscoEnvMonTemperatureStatusValue} : '-'
+            )
+        );
+        my $exit = $self->get_severity(section => 'temperature', instance => $instance, value => $result->{ciscoEnvMonTemperatureState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' status is %s", 
                                                              $result->{ciscoEnvMonTemperatureStatusDescr}, $result->{ciscoEnvMonTemperatureState}));
         }
-     
+
         next if (!defined($result->{ciscoEnvMonTemperatureStatusValue}));
-        
-        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{ciscoEnvMonTemperatureStatusValue});
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, name => $result->{ciscoEnvMonTemperatureStatusDescr}, value => $result->{ciscoEnvMonTemperatureStatusValue});
         if ($checked == 0) {
             my $warn_th = undef;
             my $crit_th = '~:' . $result->{ciscoEnvMonTemperatureThreshold};

@@ -18,24 +18,28 @@
 # limitations under the License.
 #
 
-package apps::slack::restapi::plugin;
+package cloud::aws::elb::classic::plugin;
 
 use strict;
 use warnings;
 use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'count-channels' => 'apps::slack::restapi::mode::countchannels',
-        'count-members'  => 'apps::slack::restapi::mode::countmembers',
+    $self->{version} = '0.1';
+    %{ $self->{modes} } = (
+        'discovery'             => 'cloud::aws::elb::classic::mode::discovery',
+        'http-codes'            => 'cloud::aws::elb::classic::mode::httpcodes',
+        'performances'          => 'cloud::aws::elb::classic::mode::performances',
+        'queues'                => 'cloud::aws::elb::classic::mode::queues',
+        'targets-health'        => 'cloud::aws::elb::classic::mode::targetshealth',
     );
 
-    $self->{custom_modes}{restapi} = 'apps::slack::restapi::custom::api';
+    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
+    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 
@@ -45,6 +49,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Slack using API.
+Check Amazon Classic Elastic Load Balancing (Amazon Classic ELB).
 
 =cut

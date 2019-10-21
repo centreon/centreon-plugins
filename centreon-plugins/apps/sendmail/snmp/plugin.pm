@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'mta-usage'    => 'snmp_standard::mode::mtausage',
-                         );
+        'mta-usage' => 'snmp_standard::mode::mtausage',
+    );
 
     return $self;
 }

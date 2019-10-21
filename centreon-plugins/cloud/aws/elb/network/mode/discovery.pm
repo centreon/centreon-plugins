@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::automation::ansible::cli::mode::discovery;
+package cloud::aws::elb::network::mode::discovery;
 
 use base qw(centreon::plugins::mode);
 
@@ -32,10 +32,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'host-pattern:s'    => { name => 'host_pattern', default => 'all' },
-        'prettify'          => { name => 'prettify' },
+        "prettify"  => { name => 'prettify' },
     });
-
+    
     return $self;
 }
 
@@ -52,26 +51,27 @@ sub run {
 
     $disco_stats->{start_time} = time();
 
-    my $result = $options{custom}->ansible_list_hosts(host_pattern => $self->{option_results}->{host_pattern});
+    my $load_balancers = $options{custom}->discovery(
+        region => $self->{option_results}->{region},
+        service => 'elbv2',
+        command => 'describe-load-balancers'
+    );
+
+    foreach my $load_balancer (@{$load_balancers->{LoadBalancers}}) {
+        next if (!defined($load_balancer->{LoadBalancerArn}) || $load_balancer->{Type} ne 'network');
+        my %elb;
+        $elb{type} = "network";
+        $elb{name} = $1 if ($load_balancer->{LoadBalancerArn} =~ /arn:aws:elasticloadbalancing:.*:loadbalancer\/(.*)/);
+        $elb{dns_name} = $load_balancer->{DNSName};
+        $elb{availability_zones} = $load_balancer->{AvailabilityZones};
+        $elb{vpc_id} = $load_balancer->{VpcId};
+        $elb{security_groups} = $load_balancer->{SecurityGroups};
+        $elb{state} = $load_balancer->{State}->{Code};
+        push @disco_data, \%elb;
+    }
 
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
-
-    foreach my $play (@{$result->{plays}}) {
-        foreach my $task (@{$play->{tasks}}) {
-            foreach my $host (keys %{$task->{hosts}}) {
-                my %host;
-                $host{ip} = $host;
-                $host{hostname} = $task->{hosts}->{$host}->{ansible_facts}->{ansible_hostname};
-                $host{fqdn} = $task->{hosts}->{$host}->{ansible_facts}->{ansible_fqdn};
-                $host{type} = $task->{hosts}->{$host}->{ansible_facts}->{ansible_system};
-                $host{distribution} = $task->{hosts}->{$host}->{ansible_facts}->{ansible_distribution};
-                $host{all_ips} = $task->{hosts}->{$host}->{ansible_facts}->{ansible_all_ipv4_addresses};
-                push @disco_data, \%host;
-            }
-        }
-    }
-
     $disco_stats->{discovered_items} = @disco_data;
     $disco_stats->{results} = \@disco_data;
 
@@ -98,13 +98,9 @@ __END__
 
 =head1 MODE
 
-Resources discovery.
+Network ELB discovery.
 
 =over 8
-
-=item B<--host-pattern>
-
-Specify host pattern to look for (Default: 'all').
 
 =item B<--prettify>
 

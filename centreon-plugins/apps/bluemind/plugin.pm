@@ -32,8 +32,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'incoming'                 => 'apps::bluemind::mode::incoming',
-                         );
+        'incoming' => 'apps::bluemind::mode::incoming',
+    );
 
     return $self;
 }

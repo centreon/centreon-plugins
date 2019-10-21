@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::elb::mode::queues;
+package cloud::aws::elb::classic::mode::httpcodes;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,15 +26,40 @@ use strict;
 use warnings;
 
 my %metrics_mapping = (
-    'SpilloverCount' => { # Average, Minimum, and Maximum are reported per load balancer node and are not typically useful.
-        'output' => 'Spillover Count',
-        'label' => 'spillovercount',
-        'nlabel' => 'elb.spillovercount.count',
+    'HTTPCode_Backend_2XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 2XXs',
+        'label' => 'httpcode-backend-2xx',
+        'nlabel' => 'elb.httpcode.backend.2xx.count',
     },
-    'SurgeQueueLength' => { # Sum is not useful.
-        'output' => 'Surge Queue Length',
-        'label' => 'surgequeuelength',
-        'nlabel' => 'elb.surgequeuelength.count',
+    'HTTPCode_Backend_3XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 3XXs',
+        'label' => 'httpcode-backend-3xx',
+        'nlabel' => 'elb.httpcode.backend.3xx.count',
+    },
+    'HTTPCode_Backend_4XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 4XXs',
+        'label' => 'httpcode-backend-4xx',
+        'nlabel' => 'elb.httpcode.backend.4xx.count',
+    },
+    'HTTPCode_Backend_5XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'HTTP 5XXs',
+        'label' => 'httpcode-backend-5xx',
+        'nlabel' => 'elb.httpcode.backend.5xx.count',
+    },
+    'HTTPCode_ELB_4XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'ELB HTTP 4XXs',
+        'label' => 'httpcode-elb-4xx',
+        'nlabel' => 'elb.httpcode.elb.4xx.count',
+    },
+    'HTTPCode_ELB_5XX' => { # Minimum, Maximum, and Average all return 1.
+        'output' => 'ELB HTTP 5XXs',
+        'label' => 'httpcode-elb-5xx',
+        'nlabel' => 'elb.httpcode.elb.5xx.count',
+    },
+    'BackendConnectionErrors' => {
+        'output' => 'Backend Connection Errors',
+        'label' => 'backendconnectionerrors',
+        'nlabel' => 'elb.backendconnectionerrors.count',
     },
 );
 
@@ -110,7 +135,6 @@ sub new {
         "name:s@"               => { name => 'name' },
         "availability-zone:s"   => { name => 'availability_zone' },
         "filter-metric:s"       => { name => 'filter_metric' },
-        "statistic:s@"          => { name => 'statistic' },
     });
     
     return $self;
@@ -149,7 +173,7 @@ sub check_options {
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
 
-    $self->{aws_statistics} = ['Sum', 'Maximum'];
+    $self->{aws_statistics} = ['Sum'];
     if (defined($self->{option_results}->{statistic})) {
         $self->{aws_statistics} = [];
         foreach my $stat (@{$self->{option_results}->{statistic}}) {
@@ -197,7 +221,7 @@ sub manage_selection {
             }
         }
     }
-
+    
     if (scalar(keys %{$self->{metrics}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No metrics. Check your options or use --zeroed option to set 0 on undefined values');
         $self->{output}->option_exit();
@@ -210,15 +234,15 @@ __END__
 
 =head1 MODE
 
-Check ELB surge queue.
+Check Classic ELB HTTP codes metrics.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::elb::plugin --custommode=paws --mode=queues --region='eu-west-1'
---type='loadbalancer' --name='elb-www-fr' --critical-spillovercount-sum='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::aws::elb::classic::plugin --custommode=paws --mode=http-codes --region='eu-west-1'
+--type='loadbalancer' --name='elb-www-fr' --critical-httpcode-backend-4xx='10' --verbose
 
 See 'https://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-cloudwatch-metrics.html' for more informations.
 
-Default statistic: 'sum', 'maximum' / Most usefull statistics: SpilloverCount: 'sum', SurgeQueueLength: 'maximum'.
+Default statistic: 'sum' / Most usefull statistics: 'sum'.
 
 =over 8
 
@@ -236,18 +260,15 @@ Add Availability Zone dimension (only with --type='loadbalancer').
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'SpilloverCount', 'SurgeQueueLength') 
+Filter metrics (Can be: 'HTTPCode_Backend_2XX', 'HTTPCode_Backend_3XX', 'HTTPCode_Backend_4XX',
+'HTTPCode_Backend_5XX', 'HTTPCode_ELB_4XX', 'HTTPCode_ELB_5XX', 'BackendConnectionErrors') 
 (Can be a regexp).
 
-=item B<--warning-$metric$-$statistic$>
+=item B<--warning-*> B<--critical-*>
 
-Thresholds warning ($metric$ can be: 'spillovercount', 'surgequeuelength', 
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
-
-=item B<--critical-$metric$-$statistic$>
-
-Thresholds critical ($metric$ can be: 'spillovercount', 'surgequeuelength', 
-$statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
+Thresholds warning (Can be: 'httpcode-backend-2xx', 'httpcode-backend-3xx',
+'httpcode-backend-4xx', 'httpcode-backend-5xx', 'httpcode-elb-4xx',
+'httpcode-elb-5xx', 'backendconnectionerrors')
 
 =back
 

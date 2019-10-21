@@ -61,12 +61,12 @@ sub check {
             next;
         }
         
-        next if ($self->check_filter(section => 'physical', instance => $instance));
+        next if ($self->check_filter(section => 'physical', instance => $instance, name => $physical_descr));
         
         $self->{components}->{physical}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Physical '%s' status is %s [instance: %s]",
                                     $physical_descr, $result->{cefcPhysicalStatus}, $instance));
-        my $exit = $self->get_severity(section => 'physical', value => $result->{cefcPhysicalStatus});
+        my $exit = $self->get_severity(section => 'physical', instance => $instance, value => $result->{cefcPhysicalStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Physical '%s/%s' status is %s", $physical_descr, 

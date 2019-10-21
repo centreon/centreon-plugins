@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'cache-usage'             => 'apps::java::solr::jmx::mode::cacheusage',
-                          'request-handler-usage'   => 'apps::java::solr::jmx::mode::requesthandlerusage',
-                         );
+        'cache-usage'             => 'apps::java::solr::jmx::mode::cacheusage',
+        'request-handler-usage'   => 'apps::java::solr::jmx::mode::requesthandlerusage',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;
