@@ -79,12 +79,12 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcModuleOperStatus}, instance => $instance);
         my $module_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         
-        next if ($self->check_filter(section => 'module', instance => $instance));
+        next if ($self->check_filter(section => 'module', instance => $instance, name => $module_descr));
         
         $self->{components}->{module}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Module '%s' status is %s [instance: %s]",
                                     $module_descr, $result->{cefcModuleOperStatus}, $instance));
-        my $exit = $self->get_severity(section => 'module', value => $result->{cefcModuleOperStatus});
+        my $exit = $self->get_severity(section => 'module', instance => $instance, value => $result->{cefcModuleOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Module '%s/%s' status is %s", $module_descr, 
