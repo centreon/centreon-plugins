@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'actlog'       => 'apps::backup::tsm::local::mode::actlog',
-                         'drives'       => 'apps::backup::tsm::local::mode::drives',
-                         'nodes'        => 'apps::backup::tsm::local::mode::nodes',
-                         'sessions'     => 'apps::backup::tsm::local::mode::sessions',
-                         'volumes'      => 'apps::backup::tsm::local::mode::volumes',
-                        );
+        'actlog'   => 'apps::backup::tsm::local::mode::actlog',
+        'drives'   => 'apps::backup::tsm::local::mode::drives',
+        'nodes'    => 'apps::backup::tsm::local::mode::nodes',
+        'sessions' => 'apps::backup::tsm::local::mode::sessions',
+        'volumes'  => 'apps::backup::tsm::local::mode::volumes',
+    );
 
     $self->{custom_modes}{api} = 'apps::backup::tsm::local::custom::api';
     return $self;
