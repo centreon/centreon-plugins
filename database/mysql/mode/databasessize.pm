@@ -24,32 +24,19 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-
-sub custom_status_output {
-    my ($self, %options) = @_;
-
-    my $msg = '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{connection_state} = $options{new_datas}->{$self->{instance} . '_connection_state'};
-    $self->{result_values}->{power_state} = $options{new_datas}->{$self->{instance} . '_power_state'};
-    return 0;
-}
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output',  },
-        { name => 'database', type => 3, cb_prefix_output => 'prefix_database_output', cb_long_output => 'database_long_output', indent_long_output => '    ', message_multiple => 'All databases are ok', 
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', cb_init => 'skip_global'  },
+        { name => 'database', type => 3, cb_prefix_output => 'prefix_database_output',
+          cb_long_output => 'database_long_output', indent_long_output => '    ',
+          message_multiple => 'All databases are ok', 
             group => [
                 { name => 'global_db', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'table', display_long => 0, cb_prefix_output => 'prefix_table_output', message_multiple => 'All tables are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'table', display_long => 0, cb_prefix_output => 'prefix_table_output',
+                  message_multiple => 'All tables are ok', type => 1, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -57,7 +44,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total-usage', nlabel => 'databases.space.usage.bytes', set => {
                 key_values => [ { name => 'used' } ],
-                output_template => 'used space %s %s',
+                output_template => 'Used Space: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { value => 'used_absolute', template => '%s', unit => 'B', 
@@ -67,7 +54,7 @@ sub set_counters {
         },
         { label => 'total-free', nlabel => 'databases.space.free.bytes', set => {
                 key_values => [ { name => 'free' } ],
-                output_template => 'free space %s %s',
+                output_template => 'Free Space: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { value => 'free_absolute', template => '%s', unit => 'B', 
@@ -80,7 +67,7 @@ sub set_counters {
     $self->{maps_counters}->{global_db} = [
         { label => 'db-usage', nlabel => 'database.space.usage.bytes', set => {
                 key_values => [ { name => 'used' } ],
-                output_template => 'used %s %s',
+                output_template => 'Used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { value => 'used_absolute', template => '%s', unit => 'B', 
@@ -90,7 +77,7 @@ sub set_counters {
         },
         { label => 'db-free', nlabel => 'database.space.free.bytes', set => {
                 key_values => [ { name => 'free' } ],
-                output_template => 'free %s %s',
+                output_template => 'Free: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { value => 'free_absolute', template => '%s', unit => 'B', 
@@ -103,7 +90,7 @@ sub set_counters {
     $self->{maps_counters}->{table} = [
         { label => 'table-usage', nlabel => 'table.space.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'display' } ],
-                output_template => 'used %s %s',
+                output_template => 'Used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { value => 'used_absolute', template => '%s', unit => 'B', 
@@ -113,7 +100,7 @@ sub set_counters {
         },
         { label => 'table-free', nlabel => 'table.space.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'display' } ],
-                output_template => 'free %s %s',
+                output_template => 'Free: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
                     { value => 'free_absolute', template => '%s', unit => 'B', 
@@ -123,7 +110,7 @@ sub set_counters {
         },
         { label => 'table-frag', nlabel => 'table.fragmentation.percentage', set => {
                 key_values => [ { name => 'frag' }, { name => 'display' } ],
-                output_template => 'fragmentation : %s %%',
+                output_template => 'Fragmentation: %.2f %%',
                 perfdatas => [
                     { value => 'frag_absolute', template => '%.2f', unit => '%', 
                       min => 0, max => 100, label_extra_instance => 1 },
@@ -133,10 +120,16 @@ sub set_counters {
     ];
 }
 
+sub skip_global {
+    my ($self, %options) = @_;
+
+    scalar(keys %{$self->{database}}) > 1 ? return(0) : return(1);
+}
+
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Total database ";
+    return "Databases Total ";
 }
 
 sub prefix_database_output {
@@ -148,13 +141,13 @@ sub prefix_database_output {
 sub database_long_output {
     my ($self, %options) = @_;
 
-    return "checking database '" . $options{instance_value}->{display} . "'";
+    return "Checking Database '" . $options{instance_value}->{display} . "'";
 }
 
 sub prefix_table_output {
     my ($self, %options) = @_;
 
-    return "table '" . $options{instance_value}->{display} . "' ";
+    return "Table '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -214,7 +207,7 @@ sub manage_selection {
         ) {
             $self->{database}->{$$row[0]}->{global_db}->{free} += $$row[3];
             $self->{database}->{$$row[0]}->{global_db}->{used} += $$row[4];
-
+            
             $self->{database}->{$$row[0]}->{table}->{$$row[1]} = {
                 display => $$row[1],
                 free => $$row[3],
@@ -222,6 +215,11 @@ sub manage_selection {
                 frag => $$row[5]
             };
         }
+    }
+
+    if (scalar(keys %{$self->{database}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No database found.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -237,7 +235,12 @@ Check MySQL databases size.
 
 =item B<--filter-database>
 
-Filter database to checks.
+Filter database to checks (Can be a regexp).
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds (Can be: 'total-usage', 'total-free', 'db-usage',
+'db-free', 'table-usage', 'table-free', 'table-frag').
 
 =back
 
