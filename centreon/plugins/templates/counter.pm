@@ -120,14 +120,18 @@ sub new {
     
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'filter-counters:s'     => { name => 'filter_counters' },
-        'display-ok-counters:s' => { name => 'display_ok_counters' },
-        'list-counters'         => { name => 'list_counters' },
+        'filter-counters-block:s' => { name => 'filter_counters_block' },
+        'filter-counters:s'       => { name => 'filter_counters' },
+        'display-ok-counters:s'   => { name => 'display_ok_counters' },
+        'list-counters'           => { name => 'list_counters' },
     });
     $self->{statefile_value} = undef;
     if (defined($options{statefile}) && $options{statefile}) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'centreon::plugins::statefile',
-                                               error_msg => "Cannot load module 'centreon::plugins::statefile'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'centreon::plugins::statefile',
+            error_msg => "Cannot load module 'centreon::plugins::statefile'."
+        );
         $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     }
     
@@ -203,14 +207,16 @@ sub check_options {
 
 sub run_global {
     my ($self, %options) = @_;
-    
+
+    return undef if (defined($self->{option_results}->{filter_counters_block}) && $self->{option_results}->{filter_counters_block} ne '' 
+        && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $resume = defined($options{resume}) && $options{resume} == 1 ? 1 : 0;
     # Can be set when it comes from type 3 counters
     my $called_multiple = defined($options{called_multiple}) && $options{called_multiple} == 1 ? 1 : 0;
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? 1 : 0;
     my $force_instance = defined($options{force_instance}) ? $options{force_instance} : undef;
-    
+
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator}: ', ';
     my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
@@ -286,7 +292,9 @@ sub run_global {
 
 sub run_instances {
     my ($self, %options) = @_;
-    
+
+    return undef if (defined($self->{option_results}->{filter_counters_block}) && $self->{option_results}->{filter_counters_block} ne '' 
+        && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $cb_init_counters = $self->get_callback(method_name => $options{config}->{cb_init_counters});
     my $display_status_lo = defined($options{display_status_long_output}) && $options{display_status_long_output} == 1 ? 1 : 0;
@@ -395,7 +403,7 @@ sub run_group {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $options{config}->{message_multiple});
     }
-    
+
     my $format_output = defined($options{config}->{format_output}) ? $options{config}->{format_output} : '%s problem(s) detected';
     
     my ($global_exit, $total_problems) = ([], 0);
@@ -448,7 +456,9 @@ sub run_group {
 
 sub run_multiple_instances {
     my ($self, %options) = @_;
-    
+
+    return undef if (defined($self->{option_results}->{filter_counters_block}) && $self->{option_results}->{filter_counters_block} ne '' 
+        && $options{config}->{name} =~ /$self->{option_results}->{filter_counters_block}/);
     return undef if (defined($options{config}->{cb_init}) && $self->call_object_callback(method_name => $options{config}->{cb_init}) == 1);
     my $use_new_perfdata = $self->{output}->use_new_perfdata();
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
@@ -561,18 +571,22 @@ sub run_multiple {
     if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
         $multiple = 0;
     }
-    
+
     if ($multiple == 1) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $options{config}->{message_multiple});
     }
-    
+
     foreach my $instance (sort keys %{$self->{$options{config}->{name}}}) {
         if (defined($options{config}->{cb_long_output})) {
-            $self->{output}->output_add(long_msg => $self->call_object_callback(method_name => $options{config}->{cb_long_output},
-                                                                                instance_value => $self->{$options{config}->{name}}->{$instance}));
+            $self->{output}->output_add(
+                long_msg => $self->call_object_callback(
+                    method_name => $options{config}->{cb_long_output},
+                    instance_value => $self->{$options{config}->{name}}->{$instance}
+                )
+            );
         }
-        
+
         $self->{prefix_multiple_output} = '';
         $self->{prefix_multiple_output_done} = { ok => 0, warning => 0, critical => 0, unknown => 0 };
         $self->{prefix_multiple_output} = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$instance})
@@ -580,11 +594,11 @@ sub run_multiple {
         my $indent_long_output = '';
         $indent_long_output = $options{config}->{indent_long_output}
             if (defined($options{config}->{indent_long_output}));
-        
+
         foreach my $group (@{$options{config}->{group}}) {
             next if (!defined($self->{$options{config}->{name}}->{$instance}->{$group->{name}}));
             $self->{$group->{name}} = $self->{$options{config}->{name}}->{$instance}->{$group->{name}};
-            
+
             if ($group->{type} == 1) {
                 $self->run_multiple_instances(config => $group, multiple_parent => $multiple, instance_parent => $instance, indent_long_output => $indent_long_output);
             } elsif ($group->{type} == 0) {
