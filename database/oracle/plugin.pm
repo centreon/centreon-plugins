@@ -38,6 +38,7 @@ sub new {
         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
+	'dataguard-lag'            => 'database::oracle::mode::dataguardlag',
         'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
         'event-waits-usage'        => 'database::oracle::mode::eventwaitsusage',
         'fra-usage'                => 'database::oracle::mode::frausage',
