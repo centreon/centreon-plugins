@@ -49,6 +49,7 @@ sub new {
         'swap'             => 'snmp_standard::mode::swap',
         'time'             => 'snmp_standard::mode::ntp',
         'tcpcon'           => 'snmp_standard::mode::tcpcon',
+        'udpcon'           => 'snmp_standard::mode::udpcon',
         'uptime'           => 'snmp_standard::mode::uptime',
     );
 
