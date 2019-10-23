@@ -116,6 +116,7 @@ Check MSSQL page life expectancy.
 =over 8
 
 =item B<--filter-instance>
+
 Filter instance by name (Can be a regex).
 
 =item B<--warning-page-life-expectancy>
