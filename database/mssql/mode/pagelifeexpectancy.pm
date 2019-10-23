@@ -29,18 +29,26 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 1, cb_prefix_output => 'prefix_instance_output',
+            message_multiple => 'All page life expectancy are ok' },
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'page-life-expectancy', nlabel => 'page.life.expectancy.seconds', set => {
-            key_values => [ { name => 'page_life_expectancy'}],
+            key_values => [ { name => 'page_life_expectancy' },  { name => 'display' },],
             output_template => 'Page life expectancy : %d second(s)',
             perfdatas => [
-                { value => 'page_life_expectancy_absolute', template => '%d', unit => 's', min => 0 },
+                { value => 'page_life_expectancy_absolute', template => '%d', unit => 's', min => 0,
+                    label_extra_instance => 1, instance_use => 'display_absolute' },
             ]
         }}
     ];
+}
+
+sub prefix_instance_output {
+    my ($self, %options) = @_;
+
+    return "Instance '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -48,27 +56,52 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {});
+    $options{options}->add_options(arguments => {
+        "filter-instance:s"     => {name => 'filter_instance'},
+    });
 
     return $self;
 }
 
-sub manage_selection {
+sub check_options {
     my ($self, %options) = @_;
 
-    $options{sql}->connect();
-    $options{sql}->query(query => q{
-        SELECT
-            cntr_value
-        FROM
-            sys.dm_os_performance_counters
-        WHERE
-            counter_name = 'Page life expectancy'
-        AND
-            object_name = 'SQLServer:Buffer Manager'
-    });
+    $self->SUPER::check_options(%options);
+}
 
-    $self->{global}->{page_life_expectancy} = $options{sql}->fetchrow_array();
+sub manage_selection {
+    my ($self, %options) = @_;
+    $self->{sql} = $options{sql};
+
+    $self->{sql}->connect();
+    $self->{sql}->query(query => q{
+        SELECT object_name,cntr_value
+        FROM sys.dm_os_performance_counters
+        WHERE counter_name = 'Page life expectancy'
+        AND object_name LIKE '%Manager%'
+    });
+    my $result =  $self->{sql}->fetchall_arrayref();
+
+    foreach my $row (@$result) {
+        if (defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne '' &&
+            $$row[0] !~ /$self->{option_results}->{filter_instance}/i) {
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping instance " . $$row[0] . ": no matching filter.");
+            next;
+        }
+
+        $self->{global}->{$$row[0]} = {
+            page_life_expectancy => $$row[1],
+            display => get_instances_name($$row[0]),
+        };
+    }
+}
+
+sub get_instances_name {
+    my ($object_name) = @_;
+    
+    my ($instance) = $object_name =~ /(?<=\$)(.*?)(?=\:)/;
+    
+    return $instance;
 }
 
 1;
@@ -80,6 +113,10 @@ __END__
 Check MSSQL page life expectancy.
 
 =over 8
+
+=item B<--filter-instance>
+
+Filter instance by name (Can be a regex).
 
 =item B<--warning-page-life-expectancy>
 
