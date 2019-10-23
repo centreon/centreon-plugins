@@ -112,8 +112,8 @@ sub check_options {
     
     if (defined($self->{option_results}->{no_swap}) && $self->{option_results}->{no_swap} ne '') {
         if ($self->{output}->is_litteral_status(status => $self->{option_results}->{no_swap}) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
-                $self->{output}->option_exit();
+            $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
+            $self->{output}->option_exit();
         }
         $self->{no_swap} = $self->{option_results}->{no_swap};
     }
