@@ -53,18 +53,11 @@ sub new {
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-
-    $self->SUPER::check_options(%options);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{sql} = $options{sql};
 
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{
+    $options{sql}->connect();
+    $options{sql}->query(query => q{
         SELECT
             cntr_value
         FROM
@@ -75,7 +68,7 @@ sub manage_selection {
             object_name = 'SQLServer:Buffer Manager'
     });
 
-    $self->{global}->{page_life_expectancy} = $self->{sql}->fetchrow_array();
+    $self->{global}->{page_life_expectancy} = $options{sql}->fetchrow_array();
 }
 
 1;
