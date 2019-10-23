@@ -65,7 +65,7 @@ sub manage_selection {
         WHERE
             counter_name = 'Page life expectancy'
         AND
-            object_name = 'SQLServer:Buffer Manager'
+            object_name LIKE '%Manager%'
     });
 
     $self->{global}->{page_life_expectancy} = $options{sql}->fetchrow_array();
