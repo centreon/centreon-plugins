@@ -50,10 +50,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "sensor-scale"  => { name => 'sensor_scale' },
-                                });
+    $options{options}->add_options(arguments => {
+        'sensor-scale' => { name => 'sensor_scale' },
+    });
 
     return $self;
 }
@@ -207,9 +206,15 @@ sub check {
         }
         
         $self->{components}->{sensor}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("sensor '%s' status is '%s' [instance = %s, value = %s]",
-                                                        $name, $result->{entPhySensorOperStatus}, $result->{entPhySensorType} . '.' . $instance,
-                                                        defined($result->{entPhySensorValue}) ? $result->{entPhySensorValue} : '-'));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "sensor '%s' status is '%s' [instance = %s, value = %s]",
+                $name,
+                $result->{entPhySensorOperStatus},
+                $result->{entPhySensorType} . '.' . $instance,
+                defined($result->{entPhySensorValue}) ? $result->{entPhySensorValue} : '-'
+            )
+        );
         my $exit = $self->get_severity(label => 'sensor', section => 'sensor.' . $result->{entPhySensorType}, value => $result->{entPhySensorOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -221,13 +226,23 @@ sub check {
         my $component = 'sensor.' . $result->{entPhySensorType};
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $result->{entPhySensorValue});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Sensor '%s/%s' is %s %s", $name, $instance, $result->{entPhySensorValue}, $perfdata_unit{$result->{entPhySensorType}}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Sensor '%s/%s' is %s %s",
+                    $name,
+                    $instance,
+                    $result->{entPhySensorValue},
+                    $perfdata_unit{$result->{entPhySensorType}}
+                )
+            );
         }
-        $self->{output}->perfdata_add(label => $component . '_' . $name, unit => $perfdata_unit{$result->{entPhySensorType}},
-                                      value => $result->{entPhySensorValue},
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => $component . '_' . $name, unit => $perfdata_unit{$result->{entPhySensorType}},
+            value => $result->{entPhySensorValue},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

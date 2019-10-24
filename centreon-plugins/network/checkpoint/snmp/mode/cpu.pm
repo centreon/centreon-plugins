@@ -30,11 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"       => { name => 'warning', },
-                                  "critical:s"      => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning:s'  => { name => 'warning', },
+        'critical:s' => { name => 'critical', },
+    });
 
     return $self;
 }
@@ -90,7 +89,6 @@ sub run {
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                   min => 0, max => 100);
 
-    
     $self->{output}->display();
     $self->{output}->exit();
 }
