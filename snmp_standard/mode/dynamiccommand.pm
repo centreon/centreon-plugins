@@ -41,13 +41,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "label:s"             => { name => 'label' },
-                                  "command:s"           => { name => 'command' },
-                                  "args:s"              => { name => 'args' },
-                                  "shell"               => { name => 'shell' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'label:s'   => { name => 'label' },
+        'command:s' => { name => 'command' },
+        'args:s'    => { name => 'args' },
+        'shell'     => { name => 'shell' },
+    });
+
     return $self;
 }
 
@@ -95,13 +95,13 @@ sub create_command {
 sub update_command {
     my ($self, %options) = @_;
     my $shell = defined($self->{option_results}->{shell}) ? 2 : 1;
-    
+
     # Cannot change values
     if ($options{result}->{$oid_nsExtendStorage . '.' . $options{instance}} != 2) {
         $self->{output}->add_option_msg(short_msg => "Command label '" . $self->{option_results}->{label} . "' is not volatile. So we can't manage it.");
         $self->{output}->option_exit();
     }
-    
+
     my $oids2set = {};
     if (!defined($options{result}->{$oid_nsExtendCommand . '.' . $options{instance}}) || 
         $options{result}->{$oid_nsExtendCommand . '.' . $options{instance}} ne $self->{option_results}->{command}) {
@@ -124,32 +124,41 @@ sub update_command {
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
 
     # snmpset -On -c test -v 2c localhost \
     #    '.1.3.6.1.4.1.8072.1.3.2.2.1.21.4.104.102.101.102'  = 4 \
     #    '.1.3.6.1.4.1.8072.1.3.2.2.1.2.4.104.102.101.102' = /bin/echo \
     #    '.1.3.6.1.4.1.8072.1.3.2.2.1.3.4.104.102.101.102'    = 'myplop' 
     #
-    
     my $instance = $self->get_instance();
-    $self->{snmp}->load(oids => [$oid_nsExtendArgs, $oid_nsExtendStatus, 
-                                 $oid_nsExtendCommand, $oid_nsExtendStorage, $oid_nsExtendExecType],
-                        instances => [$instance],
-                        instance_regexp => '^(.+)$');
+    $self->{snmp}->load(
+        oids => [
+            $oid_nsExtendArgs, $oid_nsExtendStatus, 
+            $oid_nsExtendCommand, $oid_nsExtendStorage, $oid_nsExtendExecType
+        ],
+        instances => [$instance],
+        instance_regexp => '^(.+)$'
+    );
     my $result = $self->{snmp}->get_leef();
-    
+
     if (!defined($result->{$oid_nsExtendCommand . '.' . $instance})) {
         $self->create_command(instance => $instance);
     } else {
         $self->update_command(result => $result, instance => $instance);
     }
 
-    $result = $self->{snmp}->get_leef(oids => [$oid_nsExtendOutputFull . '.' . $instance,
-                                               $oid_nsExtendResult . '.' . $instance], nothing_quit => 1);
+    $result = $self->{snmp}->get_leef(
+        oids => [
+            $oid_nsExtendOutputFull . '.' . $instance,
+            $oid_nsExtendResult . '.' . $instance
+        ],
+        nothing_quit => 1
+    );
     
-    $self->{output}->output_add(severity => $self->{output}->get_litteral_status(status => $result->{$oid_nsExtendResult . '.' . $instance}),
-                                short_msg => $result->{$oid_nsExtendOutputFull . '.' . $instance});
+    $self->{output}->output_add(
+        severity => $self->{output}->get_litteral_status(status => $result->{$oid_nsExtendResult . '.' . $instance}),
+        short_msg => $result->{$oid_nsExtendOutputFull . '.' . $instance}
+    );
     $self->{output}->display(force_ignore_perfdata => 1);
     $self->{output}->exit();
 }

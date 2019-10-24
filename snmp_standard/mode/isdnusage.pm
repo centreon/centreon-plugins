@@ -72,11 +72,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                 "filter-name:s"           => { name => 'filter_name' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
@@ -107,12 +106,14 @@ sub manage_selection {
 
     $self->{isdn} = {};
     $self->{bearer} = { active => 0, total => 0 };
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_isdnBearerOperStatus },
-                                                            { oid => $oid_isdnSignalingIfIndex },
-                                                            { oid => $oid_isdnSignalingStatsEntry },
-                                                         ],
-                                                         nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $oid_isdnBearerOperStatus },
+            { oid => $oid_isdnSignalingIfIndex },
+            { oid => $oid_isdnSignalingStatsEntry },
+        ],
+        nothing_quit => 1
+    );
 
     # Get interface name
     foreach my $oid (keys %{$snmp_result->{$oid_isdnSignalingIfIndex}}) {
@@ -132,8 +133,11 @@ sub manage_selection {
         }
         
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_isdnSignalingStatsEntry}, instance => $instance);
-        $self->{isdn}->{$instance} = { in => $result->{isdnSigStatsInCalls}, out => $result->{isdnSigStatsOutCalls}, 
-                                       display => $display };
+        $self->{isdn}->{$instance} = {
+            in => $result->{isdnSigStatsInCalls},
+            out => $result->{isdnSigStatsOutCalls}, 
+            display => $display
+        };
     }
     
     foreach my $oid (keys %{$snmp_result->{$oid_isdnBearerOperStatus}}) {
