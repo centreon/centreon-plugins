@@ -187,13 +187,21 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_fgVdEntName },
-            { oid => $oid_fgVpnTunTable },
             { oid => $oid_fgVpnSslStatsTable },
         ],
         nothing_quit => 1
     );
+    my $snmp_result2 = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{fgVpnTunEntPhase2Name}->{oid} },
+            { oid => $oid_fgVpnTunTable, start => $mapping->{fgVpnTunEntInOctets}->{oid} },
+        ],
+        return_type => 1, 
+        nothing_quit => 1
+    );
 
     $self->{vd} = {};
+    my $duplicated = {};
     foreach my $oid (keys %{$snmp_result->{ $oid_fgVdEntName }}) {
         $oid =~ /^$oid_fgVdEntName\.(.*)$/;
         my $vdom_instance = $1;
@@ -216,11 +224,12 @@ sub manage_selection {
             vpn => {},
         };
 
-        foreach (keys %{$snmp_result->{$oid_fgVpnTunTable}}) {
-            next if (/^$mapping->{fgVpnTunEntVdom}->{oid}\.(.*)$/ && 
-                $snmp_result->{$oid_fgVpnTunTable}->{$_} != $vdom_instance
+        foreach (keys %$snmp_result2) {
+            next if (! /^$mapping->{fgVpnTunEntVdom}->{oid}\.(.*)$/ ||
+                $snmp_result2->{$_} != $vdom_instance
             );
-            $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_fgVpnTunTable}, instance => $1);
+            my $instance = $1;
+            $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result2, instance => $instance);
 
             if (defined($self->{option_results}->{filter_vpn}) && $self->{option_results}->{filter_vpn} ne '' &&
                 $result->{fgVpnTunEntPhase2Name} !~ /$self->{option_results}->{filter_vpn}/) {
@@ -228,14 +237,25 @@ sub manage_selection {
                 next;
             }
 
-            $self->{vd}->{$vdomain_name}->{vpn}->{$result->{fgVpnTunEntPhase2Name}} = {
-                display => $result->{fgVpnTunEntPhase2Name},
+            my $name = $result->{fgVpnTunEntPhase2Name};
+            $name .= '.' . $instance if (defined($duplicated->{$name}));
+            if (defined($self->{vd}->{$vdomain_name}->{vpn}->{$name})) {
+                $duplicated->{$name} = 1;
+                $self->{vd}->{$vdomain_name}->{vpn}->{$name . '.' . $self->{vd}->{$vdomain_name}->{vpn}->{$name}->{instance}} = $self->{vd}->{$vdomain_name}->{vpn}->{$name};
+                $self->{vd}->{$vdomain_name}->{vpn}->{$name . '.' . $self->{vd}->{$vdomain_name}->{vpn}->{$name}->{instance}}->{display} = $name . '.' . $self->{vd}->{$vdomain_name}->{vpn}->{$name}->{instance};
+                delete $self->{vd}->{$vdomain_name}->{vpn}->{$name};
+                $name = $result->{fgVpnTunEntPhase2Name} . '.' . $instance;
+            }
+
+            $self->{vd}->{$vdomain_name}->{vpn}->{$name} = {
+                display => $name,
+                instance => $instance,
                 state => $result->{fgVpnTunEntStatus},
                 traffic_in => $result->{fgVpnTunEntInOctets},
                 traffic_out => $result->{fgVpnTunEntOutOctets},
             };
         }
-    }
+    }    
 }
 
 1;
