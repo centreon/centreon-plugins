@@ -38,8 +38,7 @@ sub new {
                                 "warning_15m:i"		=> { name => 'w_15m', default => 2 },
                                 "critical_1m:i"  	=> { name => 'c_1m', default => 8 },
                                 "critical_5m:i"  	=> { name => 'c_5m', default => 6 },
-                                "critical_15m:i"	=> { name => 'c_15m', default => 4 },
-                                "perfdata"   		=> { name => 'perfdata' },
+                                "critical_15m:i"	=> { name => 'c_15m', default => 4 }
                                 });
 	$self->{version} = '0.1';
     return $self;
