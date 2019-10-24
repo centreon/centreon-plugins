@@ -144,18 +144,19 @@ sub manage_selection {
     foreach my $label (keys %{$self->{queries}}) {
         push @queries, $self->{queries}->{$label};
     }
-    
-    my $queries_results = $options{custom}->query(queries => \@queries) if (scalar(@queries) > 0);
+
+    my $queries_results = [];
+    $queries_results = $options{custom}->query(queries => \@queries) if (scalar(@queries) > 0);
 
     foreach my $result (@{$queries_results}) {
         next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));        
         my $value;
         $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}) if (defined($result->{values}));
-        
+
         $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
-        $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[1]} = defined($value) ? $value : '';
+        $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[1]} = $value;
     }
-    
+
     if (scalar(keys %{$self->{queries_results}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'No queries found.');
         $self->{output}->option_exit();
