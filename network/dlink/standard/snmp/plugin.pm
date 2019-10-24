@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::dlink::standard::snmp::mode::cpu',
-                         'hardware'         => 'network::dlink::standard::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         );
+        'cpu'              => 'network::dlink::standard::snmp::mode::cpu',
+        'hardware'         => 'network::dlink::standard::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+    );
 
     return $self;
 }

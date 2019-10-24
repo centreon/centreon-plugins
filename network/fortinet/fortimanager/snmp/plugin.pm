@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'cpu'           => 'network::fortinet::fortimanager::snmp::mode::cpu',
-                        'device-status' => 'network::fortinet::fortimanager::snmp::mode::devicestatus',
-                        'disk'          => 'network::fortinet::fortimanager::snmp::mode::disk',
-                        'memory'        => 'network::fortinet::fortimanager::snmp::mode::memory',
-                        );
+        'cpu'           => 'network::fortinet::fortimanager::snmp::mode::cpu',
+        'device-status' => 'network::fortinet::fortimanager::snmp::mode::devicestatus',
+        'disk'          => 'network::fortinet::fortimanager::snmp::mode::disk',
+        'memory'        => 'network::fortinet::fortimanager::snmp::mode::memory',
+    );
 
     return $self;
 }

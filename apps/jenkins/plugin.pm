@@ -32,8 +32,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'job-state'                 => 'apps::jenkins::mode::jobstate',
-                         );
+        'job-state' => 'apps::jenkins::mode::jobstate',
+    );
 
     return $self;
 }

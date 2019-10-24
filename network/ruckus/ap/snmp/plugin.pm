@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::ruckus::ap::snmp::mode::cpu',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::ruckus::ap::snmp::mode::memory',
-                         'users'            => 'network::ruckus::ap::snmp::mode::users',
-                         );
+        'cpu'              => 'network::ruckus::ap::snmp::mode::cpu',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::ruckus::ap::snmp::mode::memory',
+        'users'            => 'network::ruckus::ap::snmp::mode::users',
+    );
 
     return $self;
 }

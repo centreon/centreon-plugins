@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'list-vtl'         => 'apps::backup::quadstor::local::mode::listvtl',
-                         'vtl-disk-usage'   => 'apps::backup::quadstor::local::mode::vtldiskusage',
-                         'vtl-job-status'   => 'apps::backup::quadstor::local::mode::vtljobstatus',
-                         'vtl-tape-usage'   => 'apps::backup::quadstor::local::mode::vtltapeusage',
-                         );
+        'list-vtl'         => 'apps::backup::quadstor::local::mode::listvtl',
+        'vtl-disk-usage'   => 'apps::backup::quadstor::local::mode::vtldiskusage',
+        'vtl-job-status'   => 'apps::backup::quadstor::local::mode::vtljobstatus',
+        'vtl-tape-usage'   => 'apps::backup::quadstor::local::mode::vtltapeusage',
+    );
 
     return $self;
 }

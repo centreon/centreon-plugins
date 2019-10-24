@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'mail-state'      => 'apps::lotus::snmp::mode::mailstate',
-                         'mail-time'	   => 'apps::lotus::snmp::mode::mailtime',
-                         'server-availability'     => 'apps::lotus::snmp::mode::serveravailability',
-                         'user-sessions'    => 'apps::lotus::snmp::mode::usersessions',
-                         'server-transactions'           => 'apps::lotus::snmp::mode::servertransactions',
-                         );
+        'mail-state'          => 'apps::lotus::snmp::mode::mailstate',
+        'mail-time'	          => 'apps::lotus::snmp::mode::mailtime',
+        'server-availability' => 'apps::lotus::snmp::mode::serveravailability',
+        'server-transactions' => 'apps::lotus::snmp::mode::servertransactions',
+        'user-sessions'       => 'apps::lotus::snmp::mode::usersessions',
+    );
 
     return $self;
 }

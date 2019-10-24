@@ -34,6 +34,7 @@ sub new {
     %{$self->{modes}} = (
         'health'         => 'storage::hp::p2000::xmlapi::mode::health',
         'list-volumes'   => 'storage::hp::p2000::xmlapi::mode::listvolumes',
+        'vdisks'         => 'storage::hp::p2000::xmlapi::mode::vdisks',
         'volume-stats'   => 'storage::hp::p2000::xmlapi::mode::volumesstats',
     );
     $self->{custom_modes}{p2000xml} = 'storage::hp::p2000::xmlapi::custom';

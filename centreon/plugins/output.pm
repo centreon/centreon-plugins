@@ -386,6 +386,7 @@ sub output_openmetrics {
 
     my $time_ms = int(Time::HiRes::time() * 1000);
     $self->change_perfdata();
+
     foreach my $perf (@{$self->{perfdatas}}) {
         next if (defined($self->{option_results}->{filter_perfdata}) &&
                  $perf->{label} !~ /$self->{option_results}->{filter_perfdata}/);
@@ -495,7 +496,12 @@ sub display {
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     $force_long_output = 1 if (defined($self->{option_results}->{debug}));
 
+    if (defined($self->{option_results}->{output_openmetrics})) {
+        $self->perfdata_add(nlabel => 'plugin.mode.status', value => $self->{errors}->{$self->{myerrors}->{$self->{global_status}}});
+    }
+
     return if ($self->{nodisplay} == 1);
+
     if (defined($self->{option_results}->{output_file})) {
         if (!open (STDOUT, '>', $self->{option_results}->{output_file})) {
             $self->output_add(severity => 'UNKNOWN',
@@ -576,6 +582,10 @@ sub option_exit {
             $self->output_json(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1, force_long_output => 1);
             $self->exit(exit_litteral => $exit_litteral);
         }
+    } elsif (defined($self->{option_results}->{output_openmetrics})) {
+        $self->set_status(exit_litteral => $exit_litteral);
+        $self->output_openmetrics();
+        $self->exit(exit_litteral => $exit_litteral);
     }
 
     $self->output_txt(exit_litteral => $exit_litteral, nolabel => $nolabel, force_ignore_perfdata => 1, force_long_output => 1);
@@ -1180,12 +1190,12 @@ sub apply_perfdata_explode {
     foreach (@{$self->{perfdatas}}) {
         next if ($_->{max} eq '');
         if ($self->{explode_perfdata_total} == 2) {
-            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max});
+            $self->perfdata_add(label => $_->{label} . '_max', value => $_->{max}, unit => $_->{unit});
             next;
         }
         foreach my $regexp (keys %{$self->{explode_perfdatas}}) {
             if ($_->{label} =~ /$regexp/) {
-                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max});
+                $self->perfdata_add(label => $self->{explode_perfdatas}->{$regexp}, value => $_->{max}, unit => $_->{unit});
                 last;
             }
         }

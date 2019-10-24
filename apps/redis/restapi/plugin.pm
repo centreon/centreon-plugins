@@ -31,14 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'databases-stats'    => 'apps::redis::restapi::mode::databasesstats',
-                            'cluster-stats'      => 'apps::redis::restapi::mode::clusterstats',
-                            'list-databases'     => 'apps::redis::restapi::mode::listdatabases',
-                            'list-nodes'         => 'apps::redis::restapi::mode::listnodes',
-                            'list-shards'        => 'apps::redis::restapi::mode::listshards',
-                            'nodes-stats'        => 'apps::redis::restapi::mode::nodesstats',
-                            'shards-stats'       => 'apps::redis::restapi::mode::shardsstats',
-                        );
+        'databases-stats'    => 'apps::redis::restapi::mode::databasesstats',
+        'cluster-stats'      => 'apps::redis::restapi::mode::clusterstats',
+        'list-databases'     => 'apps::redis::restapi::mode::listdatabases',
+        'list-nodes'         => 'apps::redis::restapi::mode::listnodes',
+        'list-shards'        => 'apps::redis::restapi::mode::listshards',
+        'nodes-stats'        => 'apps::redis::restapi::mode::nodesstats',
+        'shards-stats'       => 'apps::redis::restapi::mode::shardsstats',
+    );
+
     $self->{custom_modes}{api} = 'apps::redis::restapi::custom::api';
     return $self;
 }

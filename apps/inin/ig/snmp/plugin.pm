@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'span-usage'   => 'apps::inin::ig::snmp::mode::spanusage',
-                         'stats'        => 'apps::inin::ig::snmp::mode::stats',
-                         );
+        'span-usage'   => 'apps::inin::ig::snmp::mode::spanusage',
+        'stats'        => 'apps::inin::ig::snmp::mode::stats',
+    );
 
     return $self;
 }

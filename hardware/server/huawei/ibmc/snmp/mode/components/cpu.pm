@@ -33,15 +33,19 @@ my %map_status = (
 );
 
 my $mapping = {
-    cpuStatus               => { oid => '.1.3.6.1.4.1.2011.2.235.1.1.15.50.1.6', map => \%map_status },
-    cpuDevicename           => { oid => '.1.3.6.1.4.1.2011.2.235.1.1.15.50.1.10' },
+    cpuStatus     => { oid => '.1.3.6.1.4.1.2011.2.235.1.1.15.50.1.6', map => \%map_status },
+    cpuDevicename => { oid => '.1.3.6.1.4.1.2011.2.235.1.1.15.50.1.10' },
 };
 my $oid_cpuDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.15.50.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_cpuDescriptionEntry };
+    push @{$self->{request}}, { 
+        oid => $oid_cpuDescriptionEntry, 
+        start => $mapping->{cpuStatus}->{oid},
+        end => $mapping->{cpuDevicename}->{oid},
+    };
 }
 
 sub check {

@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::devices::safenet::hsm::protecttoolkit::mode::hardware',
-                         );
+        'hardware' => 'hardware::devices::safenet::hsm::protecttoolkit::mode::hardware',
+    );
 
     return $self;
 }

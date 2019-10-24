@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'hardware'    => 'apps::vmware::wsman::mode::hardware',
-                         );
+        'hardware' => 'apps::vmware::wsman::mode::hardware',
+    );
 
     return $self;
 }

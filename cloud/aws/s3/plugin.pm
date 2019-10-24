@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'bucket-size'               => 'cloud::aws::s3::mode::bucketsize',
-        'objects'                   => 'cloud::aws::s3::mode::objects',
-        'requests'                  => 'cloud::aws::s3::mode::requests',
+        'bucket-size'   => 'cloud::aws::s3::mode::bucketsize',
+        'discovery'     => 'cloud::aws::s3::mode::discovery',
+        'objects'       => 'cloud::aws::s3::mode::objects',
+        'requests'      => 'cloud::aws::s3::mode::requests',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

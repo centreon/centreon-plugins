@@ -42,6 +42,10 @@ sub new {
         RDS => $self->can('discover_rds'),
         ELB => $self->can('discover_elb'),
         VPN => $self->can('discover_vpn'),
+        KINESIS => $self->can('discover_kinesis_stream'),
+        DYNAMODB => $self->can('discover_dynamodb_table'),
+        APIGATEWAY => $self->can('discover_api'),
+        S3 => $self->can('discover_s3_bucket')
     };
     
     return $self;
@@ -190,6 +194,85 @@ sub discover_vpn {
         }
         push @disco_data, \%vpn;
     }
+    return @disco_data;
+}
+
+sub discover_kinesis_stream {
+    my (%options) = @_;
+
+    my @disco_data;
+
+    my $streams = $options{custom}->discovery(region => $options{region},
+        service => 'kinesis', command => 'list-streams');
+    
+    foreach my $stream (@{$streams->{StreamNames}}) {
+        my %stream;
+        $stream{type} = "kinesis_stream";
+        $stream{name} = $stream;
+        push @disco_data, \%stream;
+    }
+
+    return @disco_data;
+}
+
+sub discover_s3_bucket {
+    my (%options) = @_;
+
+    my @disco_data;
+
+    my $buckets = $options{custom}->discovery(region => $options{region},
+        service => 's3api', command => 'list-buckets');
+    
+    foreach my $bucket (@{$buckets->{Buckets}}) {
+        my %bucket;
+        $bucket{type} = "s3_bucket";
+        $bucket{name} = $bucket->{Name};
+        $bucket{creation_date} = $bucket->{CreationDate};
+        push @disco_data, \%bucket;
+    }
+
+    return @disco_data;
+}
+
+sub discover_dynamodb_table {
+    my (%options) = @_;
+
+    my @disco_data;
+
+    my $tables = $options{custom}->discovery(region => $options{region},
+        service => 'dynamodb', command => 'list-tables');
+    
+    foreach my $table (@{$tables->{TableNames}}) {
+        my %table;
+        $table{type} = "dynamodb_table";
+        $table{name} = $table;
+        push @disco_data, \%table;
+    }
+
+    return @disco_data;
+}
+
+sub discover_api {
+    my (%options) = @_;
+
+    my @disco_data;
+
+    my $apis = $options{custom}->discovery(region => $options{region},
+        service => 'apigateway', command => 'get-rest-apis');
+
+    foreach my $api (@{$apis->{items}}) {
+        my %api;
+        $api{id} = $api->{id};
+        $api{name} = $api->{name};
+        $api{description} = $api->{description};
+        $api{version} = $api->{version};
+        foreach my $type (@{$api->{endpointConfiguration}->{types}}) {
+            push @{$api{types}}, $type;
+        }
+
+        push @disco_data, \%api;
+    }
+
     return @disco_data;
 }
 

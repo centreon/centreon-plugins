@@ -30,12 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "real-swap"               => { name => 'real_swap' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'real-swap'  => { name => 'real_swap' },
+    });
 
     $self->{swap_memory_id} = undef;
     $self->{physical_memory_id} = undef;

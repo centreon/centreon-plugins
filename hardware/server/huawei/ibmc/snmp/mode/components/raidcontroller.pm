@@ -24,15 +24,19 @@ use strict;
 use warnings;
 
 my $mapping = {
-    raidControllerHealthStatus      => { oid => '.1.3.6.1.4.1.2011.2.235.1.1.36.50.1.7' },
     raidControllerComponentName     => { oid => '.1.3.6.1.4.1.2011.2.235.1.1.36.50.1.4' },
+    raidControllerHealthStatus      => { oid => '.1.3.6.1.4.1.2011.2.235.1.1.36.50.1.7' },
 };
 my $oid_raidControllerDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.36.50.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_raidControllerDescriptionEntry };
+    push @{$self->{request}}, {
+        oid => $oid_raidControllerDescriptionEntry,
+        start => $mapping->{raidControllerComponentName}->{oid},
+        end => $mapping->{raidControllerHealthStatus}->{oid},
+    };
 }
 
 sub check {

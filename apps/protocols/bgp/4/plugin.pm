@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'bgppeerstate'             => 'apps::protocols::bgp::4::mode::bgppeerstate',
-                         );
+        'bgppeerstate'             => 'apps::protocols::bgp::4::mode::bgppeerstate',
+    );
 
     return $self;
 }

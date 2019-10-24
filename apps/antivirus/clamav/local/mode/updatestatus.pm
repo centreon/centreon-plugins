@@ -118,28 +118,27 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options' },
-                                  "warning-engine-status:s"     => { name => 'warning_engine_status', default => '' },
-                                  "critical-engine-status:s"    => { name => 'critical_engine_status', default => '%{last_engine_version} ne %{current_engine_version}' },
-                                  "warning-maindb-status:s"     => { name => 'warning_maindb_status', default => '' },
-                                  "critical-maindb-status:s"    => { name => 'critical_maindb_status', default => '%{last_maindb_version} ne %{current_maindb_version}' },
-                                  "warning-dailydb-status:s"    => { name => 'warning_dailydb_status', default => '' },
-                                  "critical-dailydb-status:s"   => { name => 'critical_dailydb_status', default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000' },
-                                  "nameservers:s@"              => { name => 'nameservers' },
-                                  "maindb-file:s"               => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
-                                  "dailydb-file:s"              => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options' },
+        'warning-engine-status:s'     => { name => 'warning_engine_status', default => '' },
+        'critical-engine-status:s'    => { name => 'critical_engine_status', default => '%{last_engine_version} ne %{current_engine_version}' },
+        'warning-maindb-status:s'     => { name => 'warning_maindb_status', default => '' },
+        'critical-maindb-status:s'    => { name => 'critical_maindb_status', default => '%{last_maindb_version} ne %{current_maindb_version}' },
+        'warning-dailydb-status:s'    => { name => 'warning_dailydb_status', default => '' },
+        'critical-dailydb-status:s'   => { name => 'critical_dailydb_status', default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000' },
+        'nameservers:s@'              => { name => 'nameservers' },
+        'maindb-file:s'               => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
+        'dailydb-file:s'              => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' },
+    });
     
     return $self;
 }

@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'login'            => 'apps::protocols::smtp::mode::login',
-                        'message'          => 'apps::protocols::smtp::mode::message',
-                        );
+        'login'   => 'apps::protocols::smtp::mode::login',
+        'message' => 'apps::protocols::smtp::mode::message',
+    );
+
     return $self;
 }
 

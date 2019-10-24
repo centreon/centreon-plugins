@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     my $msg = sprintf("state : %s [admin state : '%s']", 
         $self->{result_values}->{operState}, $self->{result_values}->{adminState});
     return $msg;
@@ -80,11 +80,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"        => { name => 'warning_status', default => '' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{adminState} eq "up" and %{operState} ne %{operStateLast}' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{adminState} eq "up" and %{operState} ne %{operStateLast}' },
+    });
 
     return $self;
 }
@@ -110,8 +109,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{vrrp} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_vrrpOperEntry, end => $mapping->{vrrpOperMasterIpAddr}->{oid},
-                                                nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_vrrpOperEntry,
+        end => $mapping->{vrrpOperMasterIpAddr}->{oid},
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vrrpOperState}->{oid}\.(.*)$/);

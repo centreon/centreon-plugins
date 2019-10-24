@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'database-size'             => 'cloud::azure::database::sqldatabase::mode::databasesize',
-        'database-status'           => 'cloud::azure::database::sqldatabase::mode::databasestatus',
-        'list-databases'            => 'cloud::azure::database::sqldatabase::mode::listdatabases',
+        'database-size'     => 'cloud::azure::database::sqldatabase::mode::databasesize',
+        'database-status'   => 'cloud::azure::database::sqldatabase::mode::databasestatus',
+        'list-databases'    => 'cloud::azure::database::sqldatabase::mode::listdatabases',
     );
 
     $self->{custom_modes}{azcli} = 'cloud::azure::custom::azcli';
@@ -44,10 +44,9 @@ sub new {
 sub init {
     my ($self, %options) = @_;
 
-    $self->{options}->add_options(arguments =>
-                                    {
-                                        'api-version:s'  => { name => 'api_version', default => '2018-06-01-preview' },
-                                    });
+    $self->{options}->add_options(arguments => {
+        'api-version:s'  => { name => 'api_version', default => '2018-06-01-preview' },
+    });
 
     $self->SUPER::init(%options);
 }

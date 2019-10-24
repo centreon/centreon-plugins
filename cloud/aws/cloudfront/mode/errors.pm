@@ -160,7 +160,9 @@ sub manage_selection {
 
                 $self->{metrics}->{$instance}->{display} = $instance;
                 $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{display} = $statistic;
-                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
+                $self->{metrics}->{$instance}->{statistics}->{lc($statistic)}->{$metric} = 
+                    defined($metric_results{$instance}->{$metric}->{lc($statistic)}) ? 
+                    $metric_results{$instance}->{$metric}->{lc($statistic)} : 0;
             }
         }
     }

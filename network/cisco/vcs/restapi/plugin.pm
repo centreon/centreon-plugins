@@ -31,10 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'calls'                 => 'network::cisco::vcs::restapi::mode::calls',
-                            'http-proxy-stats'      => 'network::cisco::vcs::restapi::mode::httpproxystats',
-                            'zones'                 => 'network::cisco::vcs::restapi::mode::zones',
-                        );
+        'calls'            => 'network::cisco::vcs::restapi::mode::calls',
+        'http-proxy-stats' => 'network::cisco::vcs::restapi::mode::httpproxystats',
+        'zones'            => 'network::cisco::vcs::restapi::mode::zones',
+    );
+
     $self->{custom_modes}{xmlapi} = 'network::cisco::vcs::restapi::custom::xmlapi';
     return $self;
 }

@@ -72,9 +72,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'upstatus'     => 'network::fritzbox::mode::upstatus',
-                         'traffic'      => 'network::fritzbox::mode::traffic',
-                        );
+        'upstatus' => 'network::fritzbox::mode::upstatus',
+        'traffic'  => 'network::fritzbox::mode::traffic',
+    );
+
     return $self;
 }
 

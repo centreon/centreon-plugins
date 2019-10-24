@@ -31,16 +31,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'connections'           => 'cloud::aws::rds::mode::connections',
-        'cpu'                   => 'cloud::aws::rds::mode::cpu',
-        'diskio'                => 'cloud::aws::rds::mode::diskio',
-        'instance-status'       => 'cloud::aws::rds::mode::instancestatus',
-        'list-clusters'         => 'cloud::aws::rds::mode::listclusters',
-        'list-instances'        => 'cloud::aws::rds::mode::listinstances',
-        'network'               => 'cloud::aws::rds::mode::network',
-        'queries'               => 'cloud::aws::rds::mode::queries',
-        'transactions'          => 'cloud::aws::rds::mode::transactions',
-        'volume'                => 'cloud::aws::rds::mode::volume',
+        'connections'       => 'cloud::aws::rds::mode::connections',
+        'cpu'               => 'cloud::aws::rds::mode::cpu',
+        'discovery'         => 'cloud::aws::rds::mode::discovery',
+        'diskio'            => 'cloud::aws::rds::mode::diskio',
+        'instance-status'   => 'cloud::aws::rds::mode::instancestatus',
+        'list-clusters'     => 'cloud::aws::rds::mode::listclusters',
+        'list-instances'    => 'cloud::aws::rds::mode::listinstances',
+        'network'           => 'cloud::aws::rds::mode::network',
+        'queries'           => 'cloud::aws::rds::mode::queries',
+        'transactions'      => 'cloud::aws::rds::mode::transactions',
+        'volume'            => 'cloud::aws::rds::mode::volume',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

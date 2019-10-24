@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'errors'               => 'network::ruggedcom::mode::errors',
-                         'hardware'             => 'network::ruggedcom::mode::hardware',
-                         'interfaces'           => 'snmp_standard::mode::interfaces', 
-                         'memory'               => 'network::ruggedcom::mode::memory',
-                         'temperature'          => 'network::ruggedcom::mode::temperature',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         );
+        'errors'               => 'network::ruggedcom::mode::errors',
+        'hardware'             => 'network::ruggedcom::mode::hardware',
+        'interfaces'           => 'snmp_standard::mode::interfaces', 
+        'memory'               => 'network::ruggedcom::mode::memory',
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'temperature'          => 'network::ruggedcom::mode::temperature',
+    );
 
     return $self;
 }

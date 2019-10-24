@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'              => 'snmp_standard::mode::cpu',
-                         'hardware'         => 'storage::qnap::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'    => 'snmp_standard::mode::liststorages',
-                         'memory'           => 'storage::qnap::snmp::mode::memory',
-                         'storage'          => 'snmp_standard::mode::storage',
-                         'volume-usage'     => 'storage::qnap::snmp::mode::volumeusage',
-                         );
+        'cpu'              => 'snmp_standard::mode::cpu',
+        'hardware'         => 'storage::qnap::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
+        'memory'           => 'storage::qnap::snmp::mode::memory',
+        'storage'          => 'snmp_standard::mode::storage',
+        'volume-usage'     => 'storage::qnap::snmp::mode::volumeusage',
+    );
 
     return $self;
 }

@@ -114,6 +114,10 @@ Check service health.
 
 =over 8
 
+=item B<--filter-service>
+
+Filter service (can be a regexp).
+
 =item B<--unknown-status>
 
 Set unknown threshold for status.

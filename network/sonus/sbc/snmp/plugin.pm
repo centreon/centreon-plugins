@@ -31,18 +31,18 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'call-statistics'   => 'network::sonus::sbc::snmp::mode::callstats',
-                        'channels'          => 'network::sonus::sbc::snmp::mode::channels',
-                        'cpu'               => 'snmp_standard::mode::cpu',
-                        'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
-                        'dsp-stats'         => 'network::sonus::sbc::snmp::mode::dspstats',
-                        'interfaces'        => 'snmp_standard::mode::interfaces',
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'load'              => 'snmp_standard::mode::loadaverage',
-                        'memory'            => 'snmp_standard::mode::memory',
-                        'storage'           => 'snmp_standard::mode::storage',
-                        'swap'              => 'snmp_standard::mode::swap',
-                         );
+        'call-statistics'   => 'network::sonus::sbc::snmp::mode::callstats',
+        'channels'          => 'network::sonus::sbc::snmp::mode::channels',
+        'cpu'               => 'snmp_standard::mode::cpu',
+        'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
+        'dsp-stats'         => 'network::sonus::sbc::snmp::mode::dspstats',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'load'              => 'snmp_standard::mode::loadaverage',
+        'memory'            => 'snmp_standard::mode::memory',
+        'storage'           => 'snmp_standard::mode::storage',
+        'swap'              => 'snmp_standard::mode::swap',
+    );
 
     return $self;
 }

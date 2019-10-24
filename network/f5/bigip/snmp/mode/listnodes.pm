@@ -25,18 +25,15 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $oid_ltmNodeAddrName = '.1.3.6.1.4.1.3375.2.2.4.1.2.1.17'; # old
-my $oid_ltmNodeAddrStatusName = '.1.3.6.1.4.1.3375.2.2.4.3.2.1.7'; # new
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"   => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
@@ -48,36 +45,66 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_ltmNodeAddrName }, { oid => $oid_ltmNodeAddrStatusName } ], nothing_quit => 1);
-    
-    my ($branch_name) = ($oid_ltmNodeAddrStatusName);
-    if (!defined($snmp_result->{$oid_ltmNodeAddrStatusName}) || scalar(keys %{$snmp_result->{$oid_ltmNodeAddrStatusName}}) == 0)  {
-        ($branch_name) = ($oid_ltmNodeAddrName);
-    }
-    
-    $self->{node} = {};
-    foreach my $oid (keys %{$snmp_result->{$branch_name}}) {        
+    my $map_pool_status = {
+        0 => 'none', 1 => 'green',
+        2 => 'yellow', 3 => 'red',
+        4 => 'blue', 5 => 'gray',
+    };
+    my $map_pool_enabled = {
+        0 => 'none', 1 => 'enabled', 2 => 'disabled', 3 => 'disabledbyparent',
+    };
+    my $mapping = {
+        AvailState      => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.3', map => $map_pool_status },
+        EnabledState    => { oid => '.1.3.6.1.4.1.3375.2.2.4.3.2.1.4', map => $map_pool_enabled },
+    };
+    my $oid_ltmNodeAddrStatusEntry = '.1.3.6.1.4.1.3375.2.2.4.3.2.1';
+
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_ltmNodeAddrStatusEntry,
+        start => $mapping->{AvailState}->{oid},
+        end => $mapping->{EnabledState}->{oid},
+        nothing_quit => 1
+    );
+    my $results = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{AvailState}->{oid}\.(.*?)\.(.*)$/);
+        my ($num, $index) = ($1, $2);
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $num . '.' . $index);
+        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $snmp_result->{$branch_name}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping service class '" . $snmp_result->{$branch_name}->{$oid} . "'.", debug => 1);
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping node '" . $name . "'.", debug => 1);
             next;
         }
-        
-        $self->{node}->{$snmp_result->{$branch_name}->{$oid}} = { name => $snmp_result->{$branch_name}->{$oid} };
+
+        $results->{$name} = {
+            status => $result->{AvailState},
+            state => $result->{EnabledState},
+        };
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
-    foreach my $name (sort keys %{$self->{node}}) {
-        $self->{output}->output_add(long_msg => "'" . $name . "'");
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach my $name (sort keys %$results) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[name: %s] [status: %s] [state: %s]',
+                $name,
+                $results->{$name}->{status},
+                $results->{$name}->{state},
+            )
+        );
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Nodes:');
+                                short_msg => 'List nodes:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -85,16 +112,19 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['name', 'status', 'state']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
-    foreach my $name (sort keys %{$self->{node}}) {        
-        $self->{output}->add_disco_entry(name => $name);
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach my $name (sort keys %$results) {
+        $self->{output}->add_disco_entry(
+            name => $name,
+            status => $results->{$name}->{status},
+            state => $results->{$name}->{state}
+        );
     }
 }
 

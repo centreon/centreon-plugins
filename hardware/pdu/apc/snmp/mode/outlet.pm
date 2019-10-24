@@ -29,7 +29,12 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output { 
     my ($self, %options) = @_;
 
-    my $msg = "status : '" . $self->{result_values}->{status} . "' [bank : " . $self->{result_values}->{bank} . ', phase : ' . $self->{result_values}->{phase} . ']';
+    my $msg = sprintf(
+        "status : '%s' %s%s",
+        $self->{result_values}->{status},
+        $self->{result_values}->{bank} ne '' ? '[bank: ' . $self->{result_values}->{bank} . '] ' : '',
+        '[phase: ' . $self->{result_values}->{phase} . ']',
+    );
     return $msg;
 }
 
@@ -60,7 +65,7 @@ sub set_counters {
             }
         },
         { label => 'current', nlabel => 'outlet.current.ampere', set => {
-                key_values => [ { name => 'current' }, { name => 'display' } ],
+                key_values => [ { name => 'current', no_value => 0 }, { name => 'display' } ],
                 output_template => 'current : %s A',
                 perfdatas => [
                     { label => 'current',  template => '%s', value => 'current_absolute',
@@ -83,9 +88,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /off/i' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /off/i' },
     });
     
     return $self;
@@ -129,13 +134,26 @@ sub check_rpdu {
     my $oid_rPDUOutletStatusEntry = '.1.3.6.1.4.1.318.1.1.12.3.5.1.1';
     my $snmp_result = $options{snmp}->get_table(oid => $oid_rPDUOutletStatusEntry, nothing_quit => 1);
 
+    my $duplicated = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{rPDUOutletStatusOutletState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        $self->{outlet}->{$instance} = {
-            display => $result->{rPDUOutletStatusOutletName},
+        my $name = $result->{rPDUOutletStatusOutletName};
+        $name = $instance if (defined($duplicated->{$name}));
+        if (defined($self->{outlet}->{$name})) {
+            $duplicated->{$name} = 1;
+            my $instance2 = $self->{outlet}->{$name}->{instance};
+            $self->{outlet}->{$instance2} = $self->{outlet}->{$name};
+            $self->{outlet}->{$instance2}->{display} = $instance2;
+            delete $self->{outlet}->{$name};
+            $name = $instance;
+        }
+
+        $self->{outlet}->{$name} = {
+            instance => $instance,
+            display => $name,
             status => $result->{rPDUOutletStatusOutletState},
             bank => $result->{rPDUOutletStatusOutletBank},
             phase => $result->{rPDUOutletStatusOutletPhase},
@@ -147,7 +165,57 @@ sub check_rpdu {
 sub check_rpdu2 {
     my ($self, %options) = @_;
 
-    # not implemented yet
+    my $map_rpdu2_status = {
+        1 => 'off',
+        2 => 'on',
+    };
+    my $map_rpdu2_phase = {
+        1 => 'seqPhase1ToNeutral', 2 => 'seqPhase2ToNeutral',
+        3 => 'seqPhase3ToNeutral', 4 => 'seqPhase1ToPhase2',
+        5 => 'seqPhase2ToPhase3',  6 => 'seqPhase3ToPhase1',
+    };
+    my $mapping = {
+        rPDU2OutletSwitchedPropertiesPhaseLayout => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.2.1.5', map => $map_rpdu2_phase },
+        rPDU2OutletSwitchedPropertiesBank => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.2.1.6' },
+        rPDU2OutletSwitchedStatusName     => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.3.1.3' },
+        rPDU2OutletSwitchedStatusState    => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.3.1.5', map => $map_rpdu2_status },
+    };
+
+    my $oid_rPDU2OutletSwitchedPropertiesEntry = '.1.3.6.1.4.1.318.1.1.26.9.2.2.1';
+    my $oid_rPDU2OutletSwitchedStatusEntry = '.1.3.6.1.4.1.318.1.1.26.9.2.3.1';
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_rPDU2OutletSwitchedPropertiesEntry, start => $mapping->{rPDU2OutletSwitchedPropertiesPhaseLayout}->{oid}, end => $mapping->{rPDU2OutletSwitchedPropertiesBank}->{oid} },
+            { oid => $oid_rPDU2OutletSwitchedStatusEntry, start => $mapping->{rPDU2OutletSwitchedStatusName}->{oid}, end => $mapping->{rPDU2OutletSwitchedStatusState}->{oid} },
+        ],
+        return_type => 1,
+    );
+
+    my $duplicated = {};
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{rPDU2OutletSwitchedStatusState}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        my $name = $result->{rPDU2OutletSwitchedStatusName} . ' bank ' . $result->{rPDU2OutletSwitchedPropertiesBank};
+        $name = $instance if (defined($duplicated->{$name}));
+        if (defined($self->{outlet}->{$name})) {
+            $duplicated->{$name} = 1;
+            my $instance2 = $self->{outlet}->{$name}->{instance};
+            $self->{outlet}->{$instance2} = $self->{outlet}->{$name};
+            $self->{outlet}->{$instance2}->{display} = $instance2;
+            delete $self->{outlet}->{$name};
+            $name = $instance;
+        }
+
+        $self->{outlet}->{$name} = {
+            instance => $instance,
+            display => $name,
+            status => $result->{rPDU2OutletSwitchedStatusState},
+            bank => '',
+            phase => $result->{rPDU2OutletSwitchedPropertiesPhaseLayout},
+        };
+    }
 }
 
 sub manage_selection {

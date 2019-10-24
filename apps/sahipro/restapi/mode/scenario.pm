@@ -122,7 +122,7 @@ sub set_counters {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Scenario ";
+    return 'Scenario ';
 }
 
 sub prefix_step_output {
@@ -137,24 +137,24 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-         "sahi-hostname:s"      => { name => 'sahi_hostname' },
-         "sahi-port:s"          => { name => 'sahi_port', default => 9999 },
-         "sahi-proto:s"         => { name => 'sahi_proto', default => 'http' },
-         "sahi-http-timeout:s"  => { name => 'sahi_http_timeout', default => 5 },
-         "sahi-endpoint:s"      => { name => 'sahi_endpoint', default => '/_s_/dyn/' },
-         "sahi-suite:s"         => { name => 'sahi_suite' },
-         "sahi-threads:s"       => { name => 'sahi_threads', default => 1 },
-         "sahi-startwith:s"     => { name => 'sahi_startwith', default => 'BROWSER' },
-         "sahi-browsertype:s"   => { name => 'sahi_browsertype', default => 'chrome' },
-         "sahi-baseurl:s"       => { name => 'sahi_baseurl' },
-         "timeout:s"            => { name => 'timeout' },
-         "retries-scenario-status:s"    => { name => 'retries_scenario_status' },
-         "interval-scenario-status:s"   => { name => 'interval_scenario_status', default => 10 },
-         "unknown-run-status:s"     => { name => 'unknown_run_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-         "warning-run-status:s"     => { name => 'warning_run_status' },
-         "critical-run-status:s"    => { name => 'critical_run_status', default => '' },
-         "warning-status:s"         => { name => 'warning_status', default => '' },
-         "critical-status:s"        => { name => 'critical_status', default => '%{status} ne "SUCCESS"' },
+         'sahi-hostname:s'      => { name => 'sahi_hostname' },
+         'sahi-port:s'          => { name => 'sahi_port', default => 9999 },
+         'sahi-proto:s'         => { name => 'sahi_proto', default => 'http' },
+         'sahi-http-timeout:s'  => { name => 'sahi_http_timeout', default => 5 },
+         'sahi-endpoint:s'      => { name => 'sahi_endpoint', default => '/_s_/dyn/' },
+         'sahi-suite:s'         => { name => 'sahi_suite' },
+         'sahi-threads:s'       => { name => 'sahi_threads', default => 1 },
+         'sahi-startwith:s'     => { name => 'sahi_startwith', default => 'BROWSER' },
+         'sahi-browsertype:s'   => { name => 'sahi_browsertype', default => 'chrome' },
+         'sahi-baseurl:s'       => { name => 'sahi_baseurl' },
+         'timeout:s'            => { name => 'timeout' },
+         'retries-scenario-status:s'    => { name => 'retries_scenario_status' },
+         'interval-scenario-status:s'   => { name => 'interval_scenario_status', default => 10 },
+         'unknown-run-status:s'     => { name => 'unknown_run_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+         'warning-run-status:s'     => { name => 'warning_run_status' },
+         'critical-run-status:s'    => { name => 'critical_run_status', default => '' },
+         'warning-status:s'         => { name => 'warning_status', default => '' },
+         'critical-status:s'        => { name => 'critical_status', default => '%{status} ne "SUCCESS"' },
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
@@ -179,7 +179,7 @@ sub handle_ALRM {
     my $self = shift;
 
     $self->killed_scenario();
-    $self->{output}->add_option_msg(short_msg => "Cannot finished scenario execution (timeout received)");
+    $self->{output}->add_option_msg(short_msg => 'Cannot finished scenario execution (timeout received)');
     $self->{output}->option_exit();
 }
 
@@ -190,7 +190,7 @@ sub check_options {
     foreach my $option (('sahi_hostname', 'sahi_suite', 'sahi_startwith', 'sahi_browsertype')) {
         (my $label = $option) =~ s/_/-/g;
         if (!defined($self->{option_results}->{$option}) || $self->{option_results}->{$option} eq '') {
-            $self->{output}->add_option_msg(short_msg => "Please set " . $label . " option");
+            $self->{output}->add_option_msg(short_msg => 'Please set ' . $label . ' option');
             $self->{output}->option_exit();
         }
     }
@@ -232,7 +232,7 @@ sub generate_user_defined_id {
     my ($self, %options) = @_;
     
     my ($seconds, $microseconds) = Time::HiRes::gettimeofday();
-    my $user_defined_id = strftime("%d%B%Y__%H_%M_%S_", localtime($seconds));
+    my $user_defined_id = strftime('%d%B%Y__%H_%M_%S_', localtime($seconds));
     $user_defined_id .= $microseconds;
 
     return $user_defined_id;
@@ -301,7 +301,7 @@ sub run_scenario {
     );
     
     if ($self->{http}->get_code() != 200) {
-        $self->{output}->add_option_msg(short_msg => "run scenario issue:" . $content);
+        $self->{output}->add_option_msg(short_msg => 'run scenario issue:' . $content);
         $self->{output}->option_exit();
     }
     
@@ -325,7 +325,7 @@ sub check_scenario_status {
         );
         if ($self->{http}->get_code() != 200) {
             if ($retries == $self->{option_results}->{retries_scenario_status}) {
-                $self->{output}->add_option_msg(short_msg => "check scenario status issue:" . $content);
+                $self->{output}->add_option_msg(short_msg => 'check scenario status issue:' . $content);
                 $self->{output}->option_exit();
             }
             $retries++;
@@ -362,13 +362,13 @@ sub get_suite_report {
     );
     
     if ($self->{http}->get_code() != 200) {
-        $self->cleanup_option_exit(short_msg => "get suite report issue:" . $content);
+        $self->cleanup_option_exit(short_msg => 'get suite report issue:' . $content);
     }
     
     my $response = $self->decode_xml_response(response => $content, ForceArray => ['summary']);
     if (!defined($response->{suite}->{scriptSummaries}->{summary})) {
         $self->{output}->output_add(long_msg => $response, debug => 1);
-        $self->cleanup_option_exit(short_msg => "get suite report issue: unknown response format");
+        $self->cleanup_option_exit(short_msg => 'get suite report issue: unknown response format');
     }
     
     # in milliseconds
@@ -396,13 +396,13 @@ sub get_script_report {
     );
     
     if ($self->{http}->get_code() != 200) {
-        $self->cleanup_option_exit(short_msg => "get suite report issue:" . $content);
+        $self->cleanup_option_exit(short_msg => 'get suite report issue:' . $content);
     }
     
     my $response = $self->decode_xml_response(response => $content, ForceArray => ['step']);
     if (!defined($response->{steps}->{step})) {
         $self->{output}->output_add(long_msg => $response, debug => 1);
-        $self->cleanup_option_exit(short_msg => "get script report issue: unknown response format");
+        $self->cleanup_option_exit(short_msg => 'get script report issue: unknown response format');
     }
     
     $self->{steps} = {};

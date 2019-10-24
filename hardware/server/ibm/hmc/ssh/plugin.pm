@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'hardware-errors'      => 'hardware::server::ibm::hmc::ssh::mode::hardwareerrors',
-                         'led-status'           => 'hardware::server::ibm::hmc::ssh::mode::ledstatus',
-                         );
+        'hardware-errors' => 'hardware::server::ibm::hmc::ssh::mode::hardwareerrors',
+        'led-status'      => 'hardware::server::ibm::hmc::ssh::mode::ledstatus',
+    );
 
     return $self;
 }

@@ -164,6 +164,10 @@ Can be: 'fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'.
 Exclude some parts (comma seperated list) (Example: --filter=fan --filter=psu)
 Can also exclude specific instance: --filter=fan,1
 
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter, absent-problem and threshold options).
+
 =item B<--absent-problem>
 
 Return an error if an entity is not 'present' (default is skipping) (comma seperated list)

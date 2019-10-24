@@ -31,20 +31,20 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                            'compaction'                => 'storage::quantum::dxi::ssh::mode::compaction',
-                            'dedupnas'                  => 'storage::quantum::dxi::ssh::mode::dedupnas',
-                            'dedupvtl'                  => 'storage::quantum::dxi::ssh::mode::dedupvtl',
-                            'disk-usage'                => 'storage::quantum::dxi::ssh::mode::diskusage',
-                            'health'                    => 'storage::quantum::dxi::ssh::mode::health',
-                            'hostbus-adapter-status'    => 'storage::quantum::dxi::ssh::mode::hostbusadapterstatus',
-                            'memory'                    => 'storage::quantum::dxi::ssh::mode::memory',
-                            'network'                   => 'storage::quantum::dxi::ssh::mode::network',
-                            'reclamation'               => 'storage::quantum::dxi::ssh::mode::reclamation',
-                            'reduction'                 => 'storage::quantum::dxi::ssh::mode::reduction',
-                            'storage-array-status'      => 'storage::quantum::dxi::ssh::mode::storagearraystatus',
-                            'system-status'             => 'storage::quantum::dxi::ssh::mode::systemstatus',
-                            'throughput'                => 'storage::quantum::dxi::ssh::mode::throughput',
-                        );
+        'compaction'             => 'storage::quantum::dxi::ssh::mode::compaction',
+        'dedupnas'               => 'storage::quantum::dxi::ssh::mode::dedupnas',
+        'dedupvtl'               => 'storage::quantum::dxi::ssh::mode::dedupvtl',
+        'disk-usage'             => 'storage::quantum::dxi::ssh::mode::diskusage',
+        'health'                 => 'storage::quantum::dxi::ssh::mode::health',
+        'hostbus-adapter-status' => 'storage::quantum::dxi::ssh::mode::hostbusadapterstatus',
+        'memory'                 => 'storage::quantum::dxi::ssh::mode::memory',
+        'network'                => 'storage::quantum::dxi::ssh::mode::network',
+        'reclamation'            => 'storage::quantum::dxi::ssh::mode::reclamation',
+        'reduction'              => 'storage::quantum::dxi::ssh::mode::reduction',
+        'storage-array-status'   => 'storage::quantum::dxi::ssh::mode::storagearraystatus',
+        'system-status'          => 'storage::quantum::dxi::ssh::mode::systemstatus',
+        'throughput'             => 'storage::quantum::dxi::ssh::mode::throughput',
+    );
 
     return $self;
 }

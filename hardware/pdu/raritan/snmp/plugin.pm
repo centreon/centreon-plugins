@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'inlet-sensors'    => 'hardware::pdu::raritan::snmp::mode::inletsensors',
-                         'outlet-sensors'   => 'hardware::pdu::raritan::snmp::mode::outletsensors',
-                         'ocprot-sensors'   => 'hardware::pdu::raritan::snmp::mode::ocprotsensors',
-                         );
+        'inlet-sensors'    => 'hardware::pdu::raritan::snmp::mode::inletsensors',
+        'outlet-sensors'   => 'hardware::pdu::raritan::snmp::mode::outletsensors',
+        'ocprot-sensors'   => 'hardware::pdu::raritan::snmp::mode::ocprotsensors',
+    );
 
     return $self;
 }

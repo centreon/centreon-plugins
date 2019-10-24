@@ -85,12 +85,17 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'localhost';
-    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 27017;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
+    $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : '';
     $self->{protocol} = (defined($self->{option_results}->{protocol})) ? $self->{option_results}->{protocol} : 'mongodb';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : '';
+
+    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+        $self->{output}->option_exit();
+    }
 
     foreach (@{$self->{option_results}->{ssl_opt}}) {
         $_ =~ /(\w+)\s*=>\s*(\w+)/;
@@ -208,7 +213,7 @@ MongoDB server hostname.
 
 =item B<--port>
 
-Port used (Default: 27017)
+Port used by MongoDB.
 
 =item B<--protocol>
 

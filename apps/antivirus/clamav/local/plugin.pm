@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'update-status'    => 'apps::antivirus::clamav::local::mode::updatestatus',
-                         );
+        'update-status' => 'apps::antivirus::clamav::local::mode::updatestatus',
+    );
 
     return $self;
 }

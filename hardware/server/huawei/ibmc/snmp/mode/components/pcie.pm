@@ -48,7 +48,11 @@ my $oid_pCIeDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.24.50.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_pCIeDescriptionEntry };
+    push @{$self->{request}}, {
+        oid => $oid_pCIeDescriptionEntry,
+        start => $mapping->{pCIePresence}->{oid},
+        end => $mapping->{pCIeDevicename}->{oid},
+    };
 }
 
 sub check {

@@ -266,11 +266,11 @@ sub access_result {
         }
     }
     
-    $self->{snmp}->load(
+    $options{snmp}->load(
         oids => [$oid_hrFSAccess], 
         instances => \@instances, nothing_quit => 1
     );
-    my $snmp_result = $self->{snmp}->get_leef();
+    my $snmp_result = $options{snmp}->get_leef();
     my $result = {};
     foreach (@{$self->{storage_id_selected}}) {
         if (defined($snmp_result->{$oid_hrFSAccess . '.' . $relations->{$_}})) {
@@ -284,18 +284,20 @@ sub access_result {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{snmp} = $options{snmp};
-    $self->get_selection();
+    $self->get_selection(snmp => $options{snmp});
     
     my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
     my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
     
-    $self->{snmp}->load(oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
-                        instances => $self->{storage_id_selected}, nothing_quit => 1);
-    my $result = $self->{snmp}->get_leef();
-    my $access_result = $self->access_result();
+    $options{snmp}->load(
+        oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
+        instances => $self->{storage_id_selected},
+        nothing_quit => 1
+    );
+    my $result = $options{snmp}->get_leef();
+    my $access_result = $self->access_result(snmp => $options{snmp});
     
     $self->{storage} = {};
     foreach (sort @{$self->{storage_id_selected}}) {
@@ -331,7 +333,7 @@ sub manage_selection {
 }
 
 sub reload_cache {
-    my ($self) = @_;
+    my ($self, %options) = @_;
     my $datas = {};
 
     $datas->{oid_filter} = $self->{option_results}->{oid_filter};
@@ -359,9 +361,9 @@ sub reload_cache {
         $build_relation = 1;
     }
 
-    my $result = $self->{snmp}->get_multiple_table(oids => $request);
+    my $result = $options{snmp}->get_multiple_table(oids => $request);
     foreach ((['filter', $self->{option_results}->{oid_filter}], ['display', $self->{option_results}->{oid_display}], ['type', 'hrstoragetype'])) {
-        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{ $oids_hrStorageTable{$$_[1]} }})) {
+        foreach my $key ($options{snmp}->oid_lex_sort(keys %{$result->{ $oids_hrStorageTable{$$_[1]} }})) {
             next if ($key !~ /\.([0-9]+)$/);
             # get storage index
             my $storage_index = $1;
@@ -406,7 +408,7 @@ sub get_selection {
     my ($self, %options) = @_;
 
     # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
         $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
         $self->{output}->option_exit();
@@ -418,7 +420,7 @@ sub get_selection {
     if ($has_cache_file == 0 ||
         ($self->{option_results}->{oid_display} !~ /^($oid_display|$oid_filter)$/i || $self->{option_results}->{oid_filter} !~ /^($oid_display|$oid_filter)$/i) ||
         !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-            $self->reload_cache();
+            $self->reload_cache(snmp => $options{snmp});
             $self->{statefile_cache}->read();
     }
 

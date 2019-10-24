@@ -41,7 +41,11 @@ my $oid_memoryDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.16.50.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_memoryDescriptionEntry };
+    push @{$self->{request}}, {
+        oid => $oid_memoryDescriptionEntry,
+        start => $mapping->{memoryStatus}->{oid},
+        end => $mapping->{memoryDevicename}->{oid},
+    };
 }
 
 sub check {

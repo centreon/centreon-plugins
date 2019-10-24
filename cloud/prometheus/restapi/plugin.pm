@@ -31,20 +31,13 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'expression'       => 'cloud::prometheus::restapi::mode::expression',
-                        'target-status'    => 'cloud::prometheus::restapi::mode::targetstatus',
-                        );
+        'expression'       => 'cloud::prometheus::restapi::mode::expression',
+        'target-status'    => 'cloud::prometheus::restapi::mode::targetstatus',
+    );
 
     $self->{custom_modes}{api} = 'cloud::prometheus::restapi::custom::api';
     return $self;
 }
-
-sub init {
-    my ( $self, %options ) = @_;
-
-    $self->SUPER::init(%options);
-}
-
 
 1;
 

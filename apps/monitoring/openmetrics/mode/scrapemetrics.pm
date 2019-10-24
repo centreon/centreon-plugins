@@ -75,11 +75,11 @@ sub run {
             $metric !~ /$self->{option_results}->{filter_metrics}/);
         
         foreach my $data (@{$self->{metrics}->{$metric}->{data}}) {
-            next if (defined($self->{option_results}->{instance}) &&
+            next if (defined($self->{option_results}->{instance}) && $self->{option_results}->{instance} ne '' &&
                 !defined($data->{dimensions}->{$self->{option_results}->{instance}}) ||
                 defined($self->{option_results}->{filter_instance}) && $self->{option_results}->{filter_instance} ne '' &&
                 $data->{dimensions}->{$self->{option_results}->{instance}} !~ /$self->{option_results}->{filter_instance}/);
-            next if (defined($self->{option_results}->{subinstance}) &&
+            next if (defined($self->{option_results}->{subinstance}) && $self->{option_results}->{subinstance} ne '' &&
                 !defined($data->{dimensions}->{$self->{option_results}->{subinstance}}) ||
                 defined($self->{option_results}->{filter_subinstance}) && $self->{option_results}->{filter_subinstance} ne '' &&
                 $data->{dimensions}->{$self->{option_results}->{subinstance}} !~ /$self->{option_results}->{filter_subinstance}/);
@@ -87,14 +87,14 @@ sub run {
             my $label = $metric;
             $label =~ s/_/./g if (defined($self->{option_results}->{new_perfdata}));
             $label = $data->{dimensions}->{$self->{option_results}->{instance}} . '#' . $label
-                if (defined($self->{option_results}->{instance}) &&
+                if (defined($self->{option_results}->{instance}) && $self->{option_results}->{instance} ne '' &&
                     defined($data->{dimensions}->{$self->{option_results}->{instance}}) &&
                     !defined($self->{option_results}->{subinstance}));
             $label = $data->{dimensions}->{$self->{option_results}->{instance}} . '~' .
                 $data->{dimensions}->{$self->{option_results}->{subinstance}} . '#' . $label
-                if (defined($self->{option_results}->{instance}) &&
+                if (defined($self->{option_results}->{instance}) && $self->{option_results}->{instance} ne '' &&
                     defined($data->{dimensions}->{$self->{option_results}->{instance}}) &&
-                    defined($self->{option_results}->{subinstance}) &&
+                    defined($self->{option_results}->{subinstance}) && $self->{option_results}->{subinstance} ne '' &&
                     defined($data->{dimensions}->{$self->{option_results}->{subinstance}}));
             $label =~ s/'//g;
 
@@ -147,7 +147,7 @@ Examples:
 
 # perl centreon_plugins.pl --plugin=apps::monitoring::openmetrics::plugin --mode=scrape-metrics
 --custommode=web --hostname=10.2.3.4 --port=9100 --verbose --filter-metrics='node_cpu_seconds_total'
---instance='cpu' --subinstance='mode' --filter-subinstance='idle'
+--instance='cpu' --subinstance='mode' --filter-subinstance='mode'
 
 # perl centreon_plugins.pl --plugin=apps::monitoring::openmetrics::plugin --mode=scrape-metrics
 --custommode=file --command-options='/tmp/metrics' --filter-metrics='cpu' --verbose

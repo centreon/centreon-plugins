@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'global-status' => 'storage::ibm::ts3200::snmp::mode::globalstatus',
-                         );
+        'global-status' => 'storage::ibm::ts3200::snmp::mode::globalstatus',
+    );
 
     return $self;
 }

@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'response-time'     => 'apps::protocols::tcp::mode::responsetime',
-                        );
+        'response-time'     => 'apps::protocols::tcp::mode::responsetime',
+    );
+
     return $self;
 }
 

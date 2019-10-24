@@ -157,11 +157,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s" => { name => 'filter_name' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
@@ -186,8 +185,10 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $results = $options{snmp}->get_table(oid => $oid_sysTmmStatEntry,
-                                            nothing_quit => 1);
+    my $results = $options{snmp}->get_table(
+        oid => $oid_sysTmmStatEntry,
+        nothing_quit => 1
+    );
     
     $self->{tmm} = {};
     foreach my $oid (keys %$results) {

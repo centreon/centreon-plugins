@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_threshold {
@@ -110,6 +109,7 @@ sub new {
     $options{options}->add_options(arguments => { 
         'filter-server-name:s'    => { name => 'filter_server_name' },
         'filter-type:s'           => { name => 'filter_type' },
+        'filter-start-time:s'     => { name => 'filter_start_time' },
         'filter-end-time:s'       => { name => 'filter_end_time', default => 86400 },
         'ok-status:s'             => { name => 'ok_status', default => '%{status} == 1' },
         'warning-status:s'        => { name => 'warning_status', default => '' },

@@ -36,6 +36,7 @@ sub new {
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::hp::procurve::snmp::mode::memory',
+        'virtual-chassis'  => 'network::hp::procurve::snmp::mode::virtualchassis',
     );
 
     return $self;

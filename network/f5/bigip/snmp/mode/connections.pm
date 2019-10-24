@@ -122,10 +122,14 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $result = $options{snmp}->get_leef(oids => [$oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
-                                                   $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns,
-                                                   $oid_sysClientsslStatTotNativeConns, $oid_sysClientsslStatTotCompatConns],
-                                         nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_sysStatClientCurConns, $oid_sysStatServerCurConns, 
+            $oid_sysClientsslStatCurConns, $oid_sysServersslStatCurConns,
+            $oid_sysClientsslStatTotNativeConns, $oid_sysClientsslStatTotCompatConns
+        ],
+        nothing_quit => 1
+    );
     $self->{global} = { 
         client => $result->{$oid_sysStatClientCurConns},
         client_ssl => $result->{$oid_sysClientsslStatCurConns},

@@ -43,7 +43,7 @@ sub set_system {
         ],
         smartdisk => [
             ['GOOD', 'OK'],
-            ['NORMAL', 'WARNING'],
+            ['NORMAL', 'OK'],
             ['--', 'OK'],
             ['.*', 'CRITICAL'],
         ],

@@ -52,7 +52,7 @@ sub new {
 sub prepare_destroy {
     my ($self) = @_;
 
-    %handlers = undef;
+    %handlers = ();
 }
 
 sub set_signal_handlers {

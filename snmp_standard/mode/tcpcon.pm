@@ -53,20 +53,22 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"       => { name => 'warning', },
-                                  "critical:s"      => { name => 'critical', },
-                                  "service:s@"      => { name => 'service', },
-                                  "application:s@"  => { name => 'application', },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'warning:s'       => { name => 'warning' },
+        'critical:s'      => { name => 'critical' },
+        'service:s@'      => { name => 'service' },
+        'application:s@'  => { name => 'application' },
+    });
+
     @{$self->{connections}} = ();
     $self->{services} = { total => { filter => '.*?#.*?#.*?#.*?#.*?#(?!(listen))', builtin => 1, number => 0, msg => 'Total connections: %d' } };
     $self->{applications} = {};
-    $self->{states} = { closed => 0, listen => 0, synSent => 0, synReceived => 0,
-                        established => 0, finWait1 => 0, finWait2 => 0, closeWait => 0,
-                        lastAck => 0, closing => 0, timeWait => 0 };
+    $self->{states} = {
+        closed => 0, listen => 0, synSent => 0, synReceived => 0,
+        established => 0, finWait1 => 0, finWait2 => 0, closeWait => 0,
+        lastAck => 0, closing => 0, timeWait => 0
+    };
     return $self;
 }
 
@@ -89,15 +91,17 @@ sub get_ipv6 {
 
 sub get_from_rfc4022 {
     my ($self, %options) = @_;
-    
+
     my $oid_tcpConnectionState = '.1.3.6.1.2.1.6.19.1.7';
     my $oid_tcpListenerProcess = '.1.3.6.1.2.1.6.20.1.4';
-    my $results = $self->{snmp}->get_multiple_table(oids => [ 
-                                                            { oid => $oid_tcpConnectionState },
-                                                            { oid => $oid_tcpListenerProcess },
-                                                            ]);
+    my $results = $self->{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $oid_tcpConnectionState },
+            { oid => $oid_tcpListenerProcess },
+        ]
+    );
     return 0 if (scalar(keys %{$results->{$oid_tcpConnectionState}}) + scalar(keys %{$results->{$oid_tcpListenerProcess}}) == 0);
-    
+
     # Listener
     foreach (keys %{$results->{$oid_tcpListenerProcess}}) {
         /^$oid_tcpListenerProcess\.(\d+)/;
@@ -117,7 +121,7 @@ sub get_from_rfc4022 {
         push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#0#listen";
         $self->{states}->{listen}++;
     }
-    
+
     foreach (keys %{$results->{$oid_tcpConnectionState}}) {
         /^$oid_tcpConnectionState\.(\d+)/;
         my $ipv = $map_addr_type{$1};
@@ -134,16 +138,16 @@ sub get_from_rfc4022 {
         $self->{states}->{$map_states{$results->{$oid_tcpConnectionState}->{$_}}}++;
         push @{$self->{connections}}, $ipv . "#$src_addr#$src_port#$dst_addr#$dst_port#" . lc($map_states{$results->{$oid_tcpConnectionState}->{$_}});
     }
-    
+
     return 1;
 }
 
 sub get_from_rfc1213 {
     my ($self, %options) = @_;
-    
+
     my $oid_tcpConnState = '.1.3.6.1.2.1.6.13.1.1';
     my $result = $self->{snmp}->get_table(oid => $oid_tcpConnState, nothing_quit => 1);
-    
+
     # Construct
     foreach (keys %$result) {
         /(\d+\.\d+\.\d+\.\d+).(\d+)\.(\d+\.\d+\.\d+\.\d+).(\d+)$/;
@@ -154,7 +158,7 @@ sub get_from_rfc1213 {
 
 sub build_connections {
     my ($self, %options) = @_;
-    
+
     if ($self->get_from_rfc4022() == 0) {
         $self->get_from_rfc1213();
     }
@@ -162,7 +166,7 @@ sub build_connections {
 
 sub check_services {
     my ($self, %options) = @_;
-    
+
     foreach my $service (@{$self->{option_results}->{service}}) {
         my ($tag, $ipv, $state, $port_src, $port_dst, $filter_ip_src, $filter_ip_dst, $warn, $crit) = split /,/, $service;
         
@@ -175,14 +179,17 @@ sub check_services {
             $self->{output}->option_exit();
         }
         
-        $self->{services}->{$tag} = { filter => ((defined($ipv) && $ipv ne '') ? $ipv : '.*?') . '#' . 
-                                                ((defined($filter_ip_src) && $filter_ip_src ne '') ? $filter_ip_src : '.*?') . '#' . 
-                                                ((defined($port_src) && $port_src ne '') ? $port_src : '.*?') . '#' . 
-                                                ((defined($filter_ip_dst) && $filter_ip_dst ne '') ? $filter_ip_dst : '.*?') . '#' . 
-                                                ((defined($port_dst) && $port_dst ne '') ? $port_dst : '.*?') . '#' . 
-                                                ((defined($state) && $state ne '') ? lc($state) : '(?!(listen))')
-                                                , 
-                                      builtin => 0, number => 0 };
+        $self->{services}->{$tag} = {
+            filter => 
+                ((defined($ipv) && $ipv ne '') ? $ipv : '.*?') . '#' . 
+                ((defined($filter_ip_src) && $filter_ip_src ne '') ? $filter_ip_src : '.*?') . '#' . 
+                ((defined($port_src) && $port_src ne '') ? $port_src : '.*?') . '#' . 
+                ((defined($filter_ip_dst) && $filter_ip_dst ne '') ? $filter_ip_dst : '.*?') . '#' . 
+                ((defined($port_dst) && $port_dst ne '') ? $port_dst : '.*?') . '#' . 
+                ((defined($state) && $state ne '') ? lc($state) : '(?!(listen))'), 
+            builtin => 0,
+            number => 0
+        };
         if (($self->{perfdata}->threshold_validate(label => 'warning-service-' . $tag, value => $warn)) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $warn . "' for service '$tag'.");
             $self->{output}->option_exit();
@@ -209,9 +216,7 @@ sub check_applications {
             $self->{output}->option_exit();
         }
         
-        $self->{applications}->{$tag} = {
-                                            services => {},
-                                        };
+        $self->{applications}->{$tag} = { services => {} };
         foreach my $service (split /\|/, $services) {
             if (!defined($self->{services}->{$service})) {
                 $self->{output}->add_option_msg(short_msg => "Service '" . $service . "' is not defined.");
@@ -239,22 +244,31 @@ sub test_services {
             if (/$self->{services}->{$tag}->{filter}/) {
                 $self->{services}->{$tag}->{number}++;
             }
-        }        
+        }
+
+        my $exit_code = $self->{perfdata}->threshold_check(
+            value => $self->{services}->{$tag}->{number}, 
+            threshold => [ { label => 'critical-service-' . $tag, exit_litteral => 'critical' }, { label => 'warning-service-' . $tag, exit_litteral => 'warning' } ]
+        );
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $self->{services}->{$tag}->{number}, 
-                               threshold => [ { label => 'critical-service-' . $tag, 'exit_litteral' => 'critical' }, { label => 'warning-service-' . $tag, exit_litteral => 'warning' } ]);
-        my ($perf_label, $msg) = ('service_' . $tag, "Service '$tag' connections: %d");
+        my $msg = "Service '$tag' connections: %d";
         if ($self->{services}->{$tag}->{builtin} == 1) {
-            ($perf_label, $msg) = ($tag, $self->{services}->{$tag}->{msg});
+            $msg = $self->{services}->{$tag}->{msg};
         }
         
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf($msg, $self->{services}->{$tag}->{number}));
-        $self->{output}->perfdata_add(label => $perf_label,
-                                      value => $self->{services}->{$tag}->{number},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-service-' . $tag),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-service-' . $tag),
-                                      min => 0);
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf($msg, $self->{services}->{$tag}->{number})
+        );
+        $self->{output}->perfdata_add(
+            label => 'service',
+            nlabel => 'service.connections.tcp.count',
+            instances => $tag,
+            value => $self->{services}->{$tag}->{number},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-service-' . $tag),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-service-' . $tag),
+            min => 0
+        );
     }
 }
 
@@ -263,20 +277,28 @@ sub test_applications {
 
     foreach my $tag (keys %{$self->{applications}}) {
         my $number = 0;
-        
+
         foreach (keys %{$self->{applications}->{$tag}->{services}}) {
             $number += $self->{services}->{$_}->{number};
         }
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $number, 
-                               threshold => [ { label => 'critical-app-' . $tag, 'exit_litteral' => 'critical' }, { label => 'warning-app-' . $tag, exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Applicatin '%s' connections: %d", $tag, $number));
-        $self->{output}->perfdata_add(label => 'app_' . $tag,
-                                      value => $number,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-app-' . $tag),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-app-' . $tag),
-                                      min => 0);
+
+        my $exit_code = $self->{perfdata}->threshold_check(
+            value => $number, 
+            threshold => [ { label => 'critical-app-' . $tag, exit_litteral => 'critical' }, { label => 'warning-app-' . $tag, exit_litteral => 'warning' } ]
+        );
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("Applicatin '%s' connections: %d", $tag, $number)
+        );
+        $self->{output}->perfdata_add(
+            label => 'app',
+            nlabel => 'application.connections.tcp.count',
+            instances => $tag,
+            value => $number,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-app-' . $tag),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-app-' . $tag),
+            min => 0
+        );
     }
 }
 
@@ -299,15 +321,18 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
-    
+
     $self->build_connections();
     $self->test_services();
     $self->test_applications();
-    
+
     foreach (keys %{$self->{states}}) {
-        $self->{output}->perfdata_add(label => 'con_' . $_,
-                                      value => $self->{states}->{$_},
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'con_' . $_,
+            nlabel => 'connections.tcp.' . lc($_) . '.count',
+            value => $self->{states}->{$_},
+            min => 0
+        );
     }
 
     $self->{output}->display();

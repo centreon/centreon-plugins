@@ -32,8 +32,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'status'                 => 'apps::checkmyws::mode::status',
-                         );
+        'status' => 'apps::checkmyws::mode::status',
+    );
 
     return $self;
 }

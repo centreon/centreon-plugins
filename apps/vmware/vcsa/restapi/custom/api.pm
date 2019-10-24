@@ -44,7 +44,7 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments =>  {
+        $options{options}->add_options(arguments => {
             'hostname:s'        => { name => 'hostname' },
             'port:s'            => { name => 'port'},
             'proto:s'           => { name => 'proto' },
@@ -129,11 +129,6 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
     $self->{http}->add_header(key => 'Accept', value => 'application/json;charset=UTF-8');
-    if (defined($self->{session_id})) {
-        $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
-    } else {
-        $self->{http}->add_header(key => 'vmware-api-session-id', value => 'null');
-    }
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -158,6 +153,7 @@ sub clean_session_id {
     my $datas = { last_timestamp => time() };
     $options{statefile}->write(data => $datas);
     $self->{session_id} = undef;
+    $self->{http}->add_header(key => 'vmware-api-session-id', value => undef);
 }
 
 sub authenticate {
@@ -165,7 +161,7 @@ sub authenticate {
 
     my $has_cache_file = $options{statefile}->read(statefile => 'vcsa_api_' . md5_hex($self->{option_results}->{hostname}) . '_' . md5_hex($self->{option_results}->{api_username}));
     my $session_id = $options{statefile}->get(name => 'session_id');
-    
+
     if ($has_cache_file == 0 || !defined($session_id)) {
         my $content = $self->{http}->request(
             method => 'POST',
@@ -195,6 +191,7 @@ sub authenticate {
     }
 
     $self->{session_id} = $session_id;
+    $self->{http}->add_header(key => 'vmware-api-session-id', value => $self->{session_id});
 }
 
 sub request_api {
@@ -204,13 +201,14 @@ sub request_api {
     if (!defined($self->{session_id})) {
         $self->authenticate(statefile => $self->{cache});
     }
+    
     my $content = $self->{http}->request(%options, 
         warning_status => '', unknown_status => '', critical_status => ''
     );
 
     # Maybe there is an issue with the session_id. So we retry.
     if ($self->{http}->get_code() != 200) {
-        $self->clean_session_id();
+        $self->clean_session_id(statefile => $self->{cache});
         $self->authenticate(statefile => $self->{cache});
         $content = $self->{http}->request(%options, 
             warning_status => '', unknown_status => '', critical_status => ''
@@ -220,6 +218,10 @@ sub request_api {
     my $decoded = $self->json_decode(content => $content);
     if (!defined($decoded)) {
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
+        $self->{output}->option_exit();
+    }
+    if ($self->{http}->get_code() != 200) {
+        $self->{output}->add_option_msg(short_msg => 'api request error: ' . (defined($decoded->{type}) ? $decoded->{type} : 'unknown'));
         $self->{output}->option_exit();
     }
 

@@ -50,7 +50,10 @@ my $oid_powerSupplyDescriptionEntry = '.1.3.6.1.4.1.2011.2.235.1.1.6.50.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_powerSupplyDescriptionEntry };
+    push @{$self->{request}}, {
+        oid => $oid_powerSupplyDescriptionEntry,
+        start => $mapping->{powerSupplyPowerRating}->{oid},
+    };
 }
 
 sub check {

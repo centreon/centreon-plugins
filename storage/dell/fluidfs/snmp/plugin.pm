@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'components'   => 'storage::dell::fluidfs::snmp::mode::hardware',
-                         'volume-usage' => 'storage::dell::fluidfs::snmp::mode::volumeusage',
-                         );
+        'components'   => 'storage::dell::fluidfs::snmp::mode::hardware',
+        'volume-usage' => 'storage::dell::fluidfs::snmp::mode::volumeusage',
+    );
 
     return $self;
 }

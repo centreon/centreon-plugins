@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'channel-usage'    => 'apps::voip::asterisk::ami::mode::channelusage',
-                         'dahdi-status'     => 'apps::voip::asterisk::ami::mode::dahdistatus',
-                         'sip-peers-usage'  => 'apps::voip::asterisk::ami::mode::sippeersusage',
-                         );
+        'channel-usage'    => 'apps::voip::asterisk::ami::mode::channelusage',
+        'dahdi-status'     => 'apps::voip::asterisk::ami::mode::dahdistatus',
+        'sip-peers-usage'  => 'apps::voip::asterisk::ami::mode::sippeersusage',
+    );
 
     $self->{custom_modes}{api} = 'apps::voip::asterisk::ami::custom::api';
     return $self;

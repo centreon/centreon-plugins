@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::brocade::snmp::mode::cpu',
-                         'hardware'         => 'network::brocade::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::brocade::snmp::mode::memory',
-                         );
+        'cpu'              => 'network::brocade::snmp::mode::cpu',
+        'hardware'         => 'network::brocade::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::brocade::snmp::mode::memory',
+    );
 
     return $self;
 }

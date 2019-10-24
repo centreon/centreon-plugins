@@ -31,8 +31,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "name:s"    => { name => 'name' },
-        "regexp"    => { name => 'use_regexp' },
+        'filter-name:s' => { name => 'filter_name' },
     });
     
     return $self;
@@ -73,51 +72,58 @@ my $oid_ltmVirtualServEntry = '.1.3.6.1.4.1.3375.2.2.10.1.2.1'; # old
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
-        { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{EnabledState}->{oid} },
-        { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{EnabledState}->{oid} },
-    ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_ltmVirtualServEntry, start => $mapping->{old}->{AvailState}->{oid}, end => $mapping->{old}->{EnabledState}->{oid} },
+            { oid => $oid_ltmVsStatusEntry, start => $mapping->{new}->{AvailState}->{oid}, end => $mapping->{new}->{EnabledState}->{oid} },
+        ],
+        nothing_quit => 1
+    );
     
     my ($branch, $map) = ($oid_ltmVsStatusEntry, 'new');
     if (!defined($snmp_result->{$oid_ltmVsStatusEntry}) || scalar(keys %{$snmp_result->{$oid_ltmVsStatusEntry}}) == 0)  {
         ($branch, $map) = ($oid_ltmVirtualServEntry, 'old');
     }
     
-    $self->{vs} = {};
+    my $results = {};
     foreach my $oid (keys %{$snmp_result->{$branch}}) {
-        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch}, instance => $instance);
-        
-        $result->{Name} = '';
-        foreach (split /\./, $instance) {
-            $result->{Name} .= chr if ($_ >= 32 && $_ <= 126);
-        }
-        $result->{Name} =~ s/^.//;
-        
-        if (defined($self->{option_results}->{name}) && $self->{option_results}->{name} ne '') {
-            next if (defined($self->{option_results}->{use_regexp}) && $result->{Name} !~ /$self->{option_results}->{name}/);
-            next if ($result->{Name} ne $self->{option_results}->{name});
+        next if ($oid !~ /^$mapping->{$map}->{AvailState}->{oid}\.(.*?)\.(.*)$/);
+        my ($num, $index) = ($1, $2);
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$map}, results => $snmp_result->{$branch}, instance => $num . '.' . $index);
+
+        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));        
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping virtual server '" . $name . "'.", debug => 1);
+            next;
         }
         
-        $self->{vs}->{$result->{Name}} = { %$result };
+        $results->{$name} = {
+            status => $result->{AvailState},
+            state => $result->{EnabledState},
+        };
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (sort keys %{$self->{vs}}) {
-        $self->{output}->output_add(long_msg => 
-            "[name = '" . $self->{vs}->{$_}->{Name} . "']" .
-            "[availstate = '" . $self->{vs}->{$_}->{AvailState} . "']" .
-            "[enabledtate = '" . $self->{vs}->{$_}->{EnabledState} . "']"
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach my $name (sort keys %$results) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[name: %s] [status: %s] [state: %s]',
+                $name,
+                $results->{$name}->{status},
+                $results->{$name}->{state},
+            )
         );
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Virtual Servers:');
+                                short_msg => 'List virtual servers:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -125,18 +131,18 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'availstate', 'enabledtate']);
+    $self->{output}->add_disco_format(elements => ['name', 'status', 'state']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (sort keys %{$self->{vs}}) {        
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach my $name (sort keys %$results) {
         $self->{output}->add_disco_entry(
-            name => $self->{vs}->{$_}->{Name},
-            availstate => $self->{vs}->{$_}->{AvailState},
-            enabledtate => $self->{vs}->{$_}->{EnabledState},
+            name => $name,
+            status => $results->{$name}->{status},
+            state => $results->{$name}->{state}
         );
     }
 }
@@ -151,13 +157,9 @@ List F-5 Virtual Servers.
 
 =over 8
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the virtual server name.
-
-=item B<--regexp>
-
-Allows to use regexp to filter virtual server name (with option --name).
+Filter by virtual server name.
 
 =back
 

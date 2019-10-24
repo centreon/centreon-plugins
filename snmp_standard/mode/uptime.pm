@@ -125,15 +125,21 @@ sub run {
     
     my $exit_code = $self->{perfdata}->threshold_check(value => floor($value / $unitdiv->{$self->{option_results}->{unit}}), 
                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
-    $self->{output}->perfdata_add(label => 'uptime', unit => $self->{option_results}->{unit},
-                                  value => floor($value / $unitdiv->{$self->{option_results}->{unit}}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'uptime', unit => $self->{option_results}->{unit},
+        value => floor($value / $unitdiv->{$self->{option_results}->{unit}}),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
 
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("System uptime is: %s",
-                                                     centreon::plugins::misc::change_seconds(value => $value, start => 'd')));
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => sprintf(
+            'System uptime is: %s',
+            centreon::plugins::misc::change_seconds(value => $value, start => 'd')
+        )
+    );
 
     $self->{output}->display();
     $self->{output}->exit();

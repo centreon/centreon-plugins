@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'login'            => 'apps::protocols::radius::mode::login',
-                        );
+        'login' => 'apps::protocols::radius::mode::login',
+    );
+
     return $self;
 }
 

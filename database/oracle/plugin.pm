@@ -44,6 +44,7 @@ sub new {
         'invalid-object'           => 'database::oracle::mode::invalidobject',
         'library-cache-usage'      => 'database::oracle::mode::librarycacheusage',
         'list-asm-diskgroups'      => 'database::oracle::mode::listasmdiskgroups',
+        'list-tablespaces'         => 'database::oracle::mode::listtablespaces',
         'long-queries'             => 'database::oracle::mode::longqueries',
         'password-expiration'      => 'database::oracle::mode::passwordexpiration',
         'process-usage'            => 'database::oracle::mode::processusage',
@@ -56,9 +57,7 @@ sub new {
         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',
         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-        'temp-usage'               => 'database::oracle::mode::temptablespace',
         'tnsping'                  => 'database::oracle::mode::tnsping',
-        'undo-usage'               => 'database::oracle::mode::undotablespace',
     );
 
     $self->{sql_modes}{dbi} = 'database::oracle::dbi';

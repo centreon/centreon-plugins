@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'neighbor'     => 'apps::protocols::ospf::snmp::mode::neighbor',
-                         );
+        'neighbor' => 'apps::protocols::ospf::snmp::mode::neighbor',
+    );
 
     return $self;
 }

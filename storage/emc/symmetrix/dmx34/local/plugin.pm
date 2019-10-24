@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'hardware'	=> 'storage::emc::symmetrix::dmx34::local::mode::hardware',
-                         );
+        'hardware' => 'storage::emc::symmetrix::dmx34::local::mode::hardware',
+    );
 
     return $self;
 }

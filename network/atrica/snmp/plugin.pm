@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'connections'      => 'network::atrica::snmp::mode::connections',
-                         'list-connections' => 'network::atrica::snmp::mode::listconnections',
-                         );
+        'connections'      => 'network::atrica::snmp::mode::connections',
+        'list-connections' => 'network::atrica::snmp::mode::listconnections',
+    );
 
     return $self;
 }

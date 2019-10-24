@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'connection'   => 'apps::protocols::dhcp::mode::connection',
-                        );
+        'connection'   => 'apps::protocols::dhcp::mode::connection',
+    );
+
     return $self;
 }
 

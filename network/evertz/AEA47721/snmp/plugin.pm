@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'stream-status'    => 'network::evertz::AEA47721::snmp::mode::streamstatus',
-                        );
+        'stream-status'    => 'network::evertz::AEA47721::snmp::mode::streamstatus',
+    );
 
     return $self;
 }

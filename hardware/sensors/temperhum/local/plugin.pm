@@ -29,8 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'environment' => 'hardware::sensors::temperhum::local::mode::environment',
-                         );
+        'environment' => 'hardware::sensors::temperhum::local::mode::environment',
+    );
+
     return $self;}
 1;
 

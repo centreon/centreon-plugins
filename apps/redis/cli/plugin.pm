@@ -31,23 +31,17 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'clients'                  => 'apps::redis::cli::mode::clients',
-                         'commands'                 => 'apps::redis::cli::mode::commands',
-                         'connections'              => 'apps::redis::cli::mode::connections',
-                         'cpu'                      => 'apps::redis::cli::mode::cpu',
-                         'memory'                   => 'apps::redis::cli::mode::memory',
-                         'persistence'              => 'apps::redis::cli::mode::persistence',
-                         'replication'              => 'apps::redis::cli::mode::replication',
-                         );
+        'clients'     => 'apps::redis::cli::mode::clients',
+        'commands'    => 'apps::redis::cli::mode::commands',
+        'connections' => 'apps::redis::cli::mode::connections',
+        'cpu'         => 'apps::redis::cli::mode::cpu',
+        'memory'      => 'apps::redis::cli::mode::memory',
+        'persistence' => 'apps::redis::cli::mode::persistence',
+        'replication' => 'apps::redis::cli::mode::replication',
+    );
 
     $self->{custom_modes}{rediscli} = 'apps::redis::cli::custom::rediscli';
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;
