@@ -24,6 +24,7 @@ package network::cisco::catalyst::snmp::mode::cpu_load;
 use strict;
 use warnings;
 use base qw(centreon::plugins::mode); # --> implies sub run; commented out as 
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -73,40 +74,53 @@ sub check_options {
   	$self->{snmp} = $options{snmp};
   	# OIDs
   	my $ciscocata_cpmEntries = ".1.3.6.1.4.1.9.9.109.1.1.1.1.2"; # List of Physical devices
-  	my $ciscocata_names="1.3.6.1.2.1.47.1.1.1.1.2"; #name of the physical devices, use same number from previous
+  	my $ciscocata_names=".1.3.6.1.2.1.47.1.1.1.1.2"; #name of the physical devices, use same number from previous
   	my $ciscocata_cpmCPULoadAvg1min = ".1.3.6.1.4.1.9.9.109.1.1.1.1.24"; # Cisco CPU load (5min %) per item in cmpEntries
   	my $ciscocata_cpmCPULoadAvg5min = ".1.3.6.1.4.1.9.9.109.1.1.1.1.25"; # Cisco CPU load (1min %) per item in cmpEntries
   	my $ciscocata_cpmCPULoadAvg15min = ".1.3.6.1.4.1.9.9.109.1.1.1.1.26"; # Cisco CPU load (5sec %) per item in cmpEntries
   	# OUTPUT Messages
   	my %out_messages=(
-  		'ok' => 'CPU Load on all stack members within threshold',
-  		'warning' => 'CPU Load exceeding at least one warning thresholds',
-  		'critical' => 'CPU Load exceeding at least one critical thresholds'
+  		'ok' => 'CPU Load on all stack members within threshold.',
+  		'warning' => 'CPU Load exceeding at least one warning thresholds.',
+  		'critical' => 'CPU Load exceeding at least one critical thresholds.'
   	);
-  	# Retrieve information
-  	my %cpm_entries = $self->{snmp}->get_table(oid => $ciscocata_cpmEntries, nothing_quit=>1) ;
-  	#use Data::Dumper;
-  	#print Dumper($cpm_entries);
-  	#$VAR1 = 'HASH(0xff4eb0)'; #it is a reference, not a scalar, suspected.
-  	#$VAR2 = undef;
-  	my %cpm_names = $self->{snmp}->get_table(oid => $ciscocata_names, nothing_quit=>1);
-  	my %cpu_load_values = $self->{snmp}->get_multiple_table(oids =>  [
+  	# Retrieve information - REFERENCES to Hashes
+  	my $debug_script=1;
+  	if ($debug_script==1) {
+  		print("Collecting Entries\n");
+  	}
+  	my $cpm_entries = $self->{snmp}->get_table(oid => $ciscocata_cpmEntries, nothing_quit=>1) ;
+  	if ($debug_script==1) {
+  		print Dumper($cpm_entries);
+  		print("Collecting names\n");
+  	}
+  	my @selection_of_cpm_names=();
+  	my $cpm_names = $self->{snmp}->get_table(oid => $ciscocata_names, nothing_quit=>1);
+  	if ($debug_script==1) {
+  		print Dumper($cpm_names);
+  		print("Collecting load values\n");
+  	}
+  	my $cpu_load_values = $self->{snmp}->get_multiple_table(oids =>  [
   										{oid => $ciscocata_cpmCPULoadAvg1min},
   										{oid => $ciscocata_cpmCPULoadAvg5min},
   										{oid => $ciscocata_cpmCPULoadAvg15min},
   	]) ;
+  	if ($debug_script==1) {
+  		print Dumper($cpu_load_values);
+  		print("Starting snmp processing\n");
+  	}
   	# Initialize exit code
   	my $exit_status='ok';
   	# How many entries
-  	# my $members_count= keys %cpm_entries;
+  	# my $members_count= keys $cpm_entries;
   	# my %catalyst_stack_details;
-	foreach my $key ( keys %cpm_entries) {
+	foreach my $key ( keys %$cpm_entries) {
 		#    .1.3.6.1.4.1.9.9.109.1.1.1.1.2.19 = INTEGER: 1000	   
 	   	my @oid_list=split (/\./,$key);
 	   	my $device_number=pop @oid_list; #19
 	   	my $current_device="_" .$device_number; #_19
-	   	my $current_value= $cpm_entries{$key};  # 1.3.6.1.2.1.47.1.1.1.1.2 . The value 1000
-	   	my $device_label=$cpm_names{$ciscocata_names . "." . $current_value };
+	   	my $current_value= $$cpm_entries{$key};  # 1.3.6.1.2.1.47.1.1.1.1.2 . The value 1000
+	   	my $device_label=$$cpm_names{$ciscocata_names . "." . $current_value };
 		# I need to use the method to create the device hash
 		# $catalyst_stack_details{$current_device}{'label'}=$device_label;
 	   	# $catalyst_stack_details={
@@ -130,27 +144,27 @@ sub check_options {
 		#		},
 		# }
 		$self->{output}->perfdata_add(
-			label => "$device_label . $current_device . load1m", 
+			label => $device_label . $current_device . "_load1m", 
 			unit => undef,
-			value => $cpu_load_values{$load_1m_oid},
+			value => $$cpu_load_values{$load_1m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_1m'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_1m'),
             min => undef, 
             max => undef
         );
 		$self->{output}->perfdata_add(
-			label => "$device_label . $current_device . load5m", 
+			label => $device_label . $current_device . "_load5m", 
 			unit => undef,
-			value => $cpu_load_values{$load_5m_oid},
+			value => $$cpu_load_values{$load_5m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_5m'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_5m'),
             min => undef, 
             max => undef
         ); 
 		$self->{output}->perfdata_add(
-			label => "$device_label . $current_device . load15m", 
+			label => $device_label . $current_device . "_load15m", 
 			unit => undef,
-			value => $cpu_load_values{$load_15m_oid},
+			value => $$cpu_load_values{$load_15m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_15m'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_15m'),
             min => undef, 
@@ -159,9 +173,9 @@ sub check_options {
         #	Compare the value with the thresholds.  
         #	and set exit_status accordingly
         if (($exit_status eq 'ok') || ($exit_status eq 'warning')) {
-        	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $cpu_load_values{$load_1m_oid}, threshold => [ { label => 'c_1m', 'exit_litteral' => 'critical' },{ label => 'w_1m', 'exit_litteral' => 'warning' }]);
-        	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $cpu_load_values{$load_5m_oid}, threshold => [ { label => 'c_5m', 'exit_litteral' => 'critical' },{ label => 'w_5m', 'exit_litteral' => 'warning' }]);
-        	my $check15m 	= $self -> {perfdata} -> threshold_check(value => $cpu_load_values{$load_15m_oid}, threshold => [ { label => 'c_15m', 'exit_litteral' => 'critical' },{ label => 'w_15m', 'exit_litteral' => 'warning' }]);
+        	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$load_1m_oid}, threshold => [ { label => 'c_1m', 'exit_litteral' => 'critical' },{ label => 'w_1m', 'exit_litteral' => 'warning' }]);
+        	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$load_5m_oid}, threshold => [ { label => 'c_5m', 'exit_litteral' => 'critical' },{ label => 'w_5m', 'exit_litteral' => 'warning' }]);
+        	my $check15m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$load_15m_oid}, threshold => [ { label => 'c_15m', 'exit_litteral' => 'critical' },{ label => 'w_15m', 'exit_litteral' => 'warning' }]);
         	my $plaintext 	= join('@', $check1m,$check5m,$check15m);
         	if ($plaintext =~ /critical/) {
         		$exit_status='critical';
