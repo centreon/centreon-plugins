@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use List::MoreUtils qw(first_index);
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
@@ -141,21 +142,24 @@ sub manage_selection {
     $self->{queries_results} = {};
     my (@results, @queries);
 
+    my $query_index = -1;
     foreach my $label (keys %{$self->{queries}}) {
+        $query_index++;
+        @queries = ();
         push @queries, $self->{queries}->{$label};
-    }
-    
-    my $queries_results = $options{custom}->query(queries => \@queries) if (scalar(@queries) > 0);
 
-    foreach my $result (@{$queries_results}) {
-        next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));        
-        my $value;
-        $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}) if (defined($result->{values}));
-        
-        $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
-        $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[1]} = $value;
+        my $queries_results = $options{custom}->query(queries => \@queries) if (scalar(@queries) > 0);
+
+        foreach my $result (@{$queries_results}) {
+            next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));
+            my $column_index = first_index { $_ eq $self->{custom_keys}[$query_index] } @{$result->{columns}};
+            my $value;
+            $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index ) if (defined($result->{values}));
+            $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
+            $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[$column_index]} = $value;
+        }
     }
-    
+
     if (scalar(keys %{$self->{queries_results}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No queries found.");
         $self->{output}->option_exit();
