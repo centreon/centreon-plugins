@@ -100,6 +100,7 @@ Trigger commands against NRPE/NSClient agent.
 =item B<--command>
 
 Set command.
+In nrpe use following command to get server version: --command='_NRPE_CHECK'
 
 =item B<--arg>
 

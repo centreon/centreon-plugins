@@ -31,18 +31,18 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'                  => 'snmp_standard::mode::cpu',
-                         'cpu-detailed'         => 'snmp_standard::mode::cpudetailed',
-                         'connections'          => 'network::stormshield::snmp::mode::connections',
-                         'interfaces'           => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
-                         'load'                 => 'snmp_standard::mode::loadaverage',
-                         'ha-nodes'             => 'network::stormshield::snmp::mode::hanodes',
-                         'memory'               => 'os::freebsd::snmp::mode::memory',
-                         'storage'              => 'snmp_standard::mode::storage',
-                         'swap'                 => 'snmp_standard::mode::swap',
-                         'vpn-status'           => 'network::stormshield::snmp::mode::vpnstatus',
-                         );
+        'cpu'               => 'snmp_standard::mode::cpu',
+        'cpu-detailed'      => 'snmp_standard::mode::cpudetailed',
+        'connections'       => 'network::stormshield::snmp::mode::connections',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'load'              => 'snmp_standard::mode::loadaverage',
+        'ha-nodes'          => 'network::stormshield::snmp::mode::hanodes',
+        'memory'            => 'os::freebsd::snmp::mode::memory',
+        'storage'           => 'snmp_standard::mode::storage',
+        'swap'              => 'snmp_standard::mode::swap',
+        'vpn-status'        => 'network::stormshield::snmp::mode::vpnstatus',
+    );
 
     return $self;
 }

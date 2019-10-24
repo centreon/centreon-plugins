@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'temperature'           => 'apps::hddtemp::local::mode::temperature',
-                         );
+        'temperature' => 'apps::hddtemp::local::mode::temperature',
+    );
 
     return $self;
 }

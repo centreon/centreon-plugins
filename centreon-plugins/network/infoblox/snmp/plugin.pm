@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::infoblox::snmp::mode::cpu',
-                         'dhcp-usage'       => 'network::infoblox::snmp::mode::dhcpusage',
-                         'dns-usage'        => 'network::infoblox::snmp::mode::dnsusage',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::infoblox::snmp::mode::memory',
-                         'services'         => 'network::infoblox::snmp::mode::services',
-                         );
+        'cpu'              => 'network::infoblox::snmp::mode::cpu',
+        'dhcp-usage'       => 'network::infoblox::snmp::mode::dhcpusage',
+        'dns-usage'        => 'network::infoblox::snmp::mode::dnsusage',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::infoblox::snmp::mode::memory',
+        'services'         => 'network::infoblox::snmp::mode::services',
+    );
 
     return $self;
 }

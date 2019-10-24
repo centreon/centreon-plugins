@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'queue-length'    => 'apps::java::peoplesoft::jmx::mode::queuelength',
-                          'sessions'        => 'apps::java::peoplesoft::jmx::mode::sessions',
-                         );
+        'queue-length'    => 'apps::java::peoplesoft::jmx::mode::queuelength',
+        'sessions'        => 'apps::java::peoplesoft::jmx::mode::sessions',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;

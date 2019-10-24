@@ -31,16 +31,16 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-vs'          => 'network::kemp::snmp::mode::listvs',
-                         'ha-status'        => 'network::kemp::snmp::mode::hastatus',
-                         'memory'           => 'snmp_standard::mode::memory',
-                         'rs-status'        => 'network::kemp::snmp::mode::rsstatus',
-                         'vs-status'        => 'network::kemp::snmp::mode::vsstatus',
-                         );
+        'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'load'             => 'snmp_standard::mode::loadaverage',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-vs'          => 'network::kemp::snmp::mode::listvs',
+        'ha-status'        => 'network::kemp::snmp::mode::hastatus',
+        'memory'           => 'snmp_standard::mode::memory',
+        'rs-status'        => 'network::kemp::snmp::mode::rsstatus',
+        'vs-status'        => 'network::kemp::snmp::mode::vsstatus',
+    );
 
     return $self;
 }

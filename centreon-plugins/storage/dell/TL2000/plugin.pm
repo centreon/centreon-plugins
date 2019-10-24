@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'global-status' => 'storage::dell::TL2000::mode::globalstatus',
-                         );
+        'global-status' => 'storage::dell::TL2000::mode::globalstatus',
+    );
 
     return $self;
 }

@@ -303,6 +303,7 @@ sub get_leef {
     while (my $entry = shift(@{$self->{array_ref_ar}})) {
         my $vb = new SNMP::VarList(@{$entry});
         $self->{session}->get($vb);
+
         if ($self->{session}->{ErrorNum}) {
             # 0    noError       Pas d'erreurs.
             # 1    tooBig        Reponse de taille trop grande.
@@ -350,7 +351,7 @@ sub get_leef {
                 # Error in snmp > 1
                 next;
             }
-            
+
             $total++;
             $results->{${$entry}[0] . "." . ${$entry}[1]} = ${$entry}[2];
         }

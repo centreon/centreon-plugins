@@ -59,10 +59,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -71,9 +70,12 @@ sub manage_selection {
 
     my $oid_coUsInfoStorageUsePermanent = '.1.3.6.1.4.1.8744.5.21.1.1.13.0';
     my $oid_coUsInfoStorageUseTemporary = '.1.3.6.1.4.1.8744.5.21.1.1.14.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
             $oid_coUsInfoStorageUsePermanent, $oid_coUsInfoStorageUseTemporary,
-        ], nothing_quit => 1);
+        ],
+        nothing_quit => 1
+    );
 
     $self->{storage} = {
         perm_used => $snmp_result->{$oid_coUsInfoStorageUsePermanent},

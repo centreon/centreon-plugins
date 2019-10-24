@@ -20,62 +20,76 @@
 
 package storage::synology::snmp::mode::ups;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'load', nlabel => 'ups.load.percent', set => {
+                key_values => [ { name => 'ups_load' } ],
+                output_template => 'ups load: %s%%',
+                perfdatas => [
+                    { value => 'ups_load_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => 'charge-remaining', nlabel => 'battery.charge.remaining.percent', set => {
+                key_values => [ { name => 'charge_remain' } ],
+                output_template => 'battery charge remaining: %s%%',
+                perfdatas => [
+                    { value => 'charge_remain_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => 'lifetime-remaining', nlabel => 'battery.lifetime.remaining.seconds', set => {
+                key_values => [ { name => 'lifetime_remain' } ],
+                output_template => 'battery estimated lifetime: %s seconds',
+                perfdatas => [
+                    { value => 'lifetime_remain_absolute', template => '%s', min => 0, unit => 's' },
+                ],
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"       => { name => 'warning' },
-                                  "critical:s"      => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
+    my $oid_upsBatteryRuntimeValue = '.1.3.6.1.4.1.6574.4.3.6.1.0'; # in seconds
+    my $oid_upsBatteryChargeValue = '.1.3.6.1.4.1.6574.4.3.1.1.0'; # in %
+    my $oid_upsInfoLoadValue = '.1.3.6.1.4.1.6574.4.2.12.1.0'; # in %
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_upsBatteryRuntimeValue, $oid_upsBatteryChargeValue, $oid_upsInfoLoadValue
+        ],
+        nothing_quit => 1
+    );
 
-    my $oid_synoUPSupsBatteryRuntimeValue = '.1.3.6.1.4.1.6574.4.3.6.1.0'; # in Seconds
-
-    my $result = $self->{snmp}->get_leef(oids => [$oid_synoUPSupsBatteryRuntimeValue],
-                                         nothing_quit => 1);
-    my $time = $result->{$oid_synoUPSupsBatteryRuntimeValue};
-
-    my $exit = $self->{perfdata}->threshold_check(value => $time, threshold => [ { label => 'warning', 'exit_litteral' => 'warning' }, { label => 'critical', exit_litteral => 'critical' } ]);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Estimated Battery Life is %d seconds",
-                                                     $time));
-
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => $time,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = {
+        ups_load => $snmp_result->{$oid_upsInfoLoadValue},
+        charge_remain => $snmp_result->{$oid_upsBatteryChargeValue},
+        lifetime_remain => $snmp_result->{$oid_upsBatteryRuntimeValue},
+    };
 }
 
 1;
@@ -84,17 +98,14 @@ __END__
 
 =head1 MODE
 
-Check UPS (SYNOLOGY-UPS-MIB).
+Check ups (SYNOLOGY-UPS-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*> 
 
-Threshold warning in seconds.
-
-=item B<--critical>
-
-Threshold critical in seconds.
+Thresholds
+Can be: 'charge-remaining' (%), 'lifetime-remaining' (s)
 
 =back
 

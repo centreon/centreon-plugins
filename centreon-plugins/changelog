@@ -1,3 +1,52 @@
+2019-10-16 Colin Gagnaire <cgagnaire@centreon.com>
+ * Plugin added: ABB CMS700 SNMP
+ * Mode added: [linux/local] 'discovery-nmap'
+ * Mode added: [hp/procurve] 'virtual-chassis'
+ * Mode added: [azure] 'health'
+ * Enhancement: [emerson/liebert] merge plugins
+ * Enhancement: [fortigate] enhance vpn mode
+ * Enhancement: [extreme/snmp] refacto modes
+ * Enhancement: [core] add mode status in openmetrics output
+ * Enhancement: [netapp/snmp] enhance snapmirrorlag
+ * Enhancement: [linux/local] refacto diskio mode
+ * Break: [f5/bigip] use status thresholds in virtual-server-status
+ * Fix: [nrpe] fix SSL context
+ * Fix: Ctrl+F "Fix" on commits page
+
+2019-10-02 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Warp10 Sensision
+ * Plugin added: OpenMetrics
+ * Plugin added: AWS API Gateway Api
+ * Plugin added: AWS Kinesis Api
+ * Plugin added: Hanwha Camera SNMP
+ * Plugin added: Perle IDS SNMP
+ * Plugin added: Scom Rest API
+ * Plugin added: Wazuh Rest API
+ * Plugin added: Zoom Rest API
+ * Plugin added: VMWare VCSA Rest API
+ * Plugin added: EMC Unisphere Rest API
+ * Plugin added: Nitram UPS SNMP
+ * Plugin added: Quanta.io Rest API
+ * Plugin added: HP OneView
+ * Plugin added: Geist
+ * Mode added: [oracle] 'fra-usage'
+ * Mode added: [oracle] 'tablespace-usage'
+ * Mode added: [hp p2000] 'vdisks'
+ * Mode added: [windows] 'list-services'
+ * Mode added: [os] 'list-processes'
+ * Enhancement: [core] add global timeout option
+ * Enhancement: [cisco/standard/snmp] add err disable interfaces
+ * Enhancement: [oracle] add container option
+ * Enhancement: [snmp_standard] 'memory' add option for redhat
+ * Enhancement: [nsclient] handle new rest api
+ * Enhancement: [aruba/standard] enhance modes to use ap name
+ * Enhancement: [azure] allow multiple metrics in monitor getmetrics mode
+ * Enhancement: [aws/paws] add proxyurl option
+ * Break: [ucopia] modes refactoring
+ * Break: [aws] metrics forced to new format for billing, cloudfront, elb, ec2, lambda breaks thresholds
+ * Break: [oracle] merged modes temp-tablespace and undo-tablespace into tablespace-usage
+ * Fix: Ctrl+F "Fix" on commits page
+
 2019-07-04 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: RabbitMQ Rest API
  * Plugin added: VMware VeloCloud Rest API

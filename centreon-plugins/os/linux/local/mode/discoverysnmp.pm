@@ -99,6 +99,7 @@ my $lookup_type = [
 sub define_type {
     my ($self, %options) = @_;
 
+    return "unknown" unless (defined($options{desc}) && $options{desc} ne '');
     foreach (@$lookup_type) {
         if ($options{desc} =~ /$_->{re}/) {
             return $_->{type};

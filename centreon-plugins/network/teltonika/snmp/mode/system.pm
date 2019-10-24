@@ -115,8 +115,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'warning-status:s'          => { name => 'warning_status', default => '' },
-        'critical-status:s'         => { name => 'critical_status', default => '%{connection_state} !~ /connected/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{connection_state} !~ /connected/i' },
     });
     
     return $self;
@@ -142,11 +142,14 @@ sub manage_selection {
     my $oid_Received = '.1.3.6.1.4.1.48690.2.20.0';
     my $oid_RSRP = '.1.3.6.1.4.1.48690.2.23.0';
     my $oid_RSRQ = '.1.3.6.1.4.1.48690.2.24.0';
-    my $result = $options{snmp}->get_leef(oids => [
-        $oid_SimState, $oid_PinState, $oid_NetState, $oid_ConnectionState,
-        $oid_Signal, $oid_Temperature, $oid_Sent, $oid_Received,
-        $oid_RSRP, $oid_RSRQ
-    ], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_SimState, $oid_PinState, $oid_NetState, $oid_ConnectionState,
+            $oid_Signal, $oid_Temperature, $oid_Sent, $oid_Received,
+            $oid_RSRP, $oid_RSRQ
+        ],
+        nothing_quit => 1
+    );
 
     $self->{cache_name} = "teltonika_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));

@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'backend-usage'    => 'apps::haproxy::snmp::mode::backendusage',
-                         'frontend-usage'   => 'apps::haproxy::snmp::mode::frontendusage',
-                         );
+        'backend-usage'    => 'apps::haproxy::snmp::mode::backendusage',
+        'frontend-usage'   => 'apps::haproxy::snmp::mode::frontendusage',
+    );
 
     return $self;
 }

@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'connections'       => 'centreon::common::ingrian::snmp::mode::connections',
-                        'cpu'               => 'centreon::common::ingrian::snmp::mode::cpu',
-                        'disk'              => 'centreon::common::ingrian::snmp::mode::disk',
-                        'interfaces'        => 'snmp_standard::mode::interfaces',
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'memory'            => 'centreon::common::ingrian::snmp::mode::memory',
-                        'request-stats'     => 'centreon::common::ingrian::snmp::mode::requeststats',
-                        );
+        'connections'       => 'centreon::common::ingrian::snmp::mode::connections',
+        'cpu'               => 'centreon::common::ingrian::snmp::mode::cpu',
+        'disk'              => 'centreon::common::ingrian::snmp::mode::disk',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'memory'            => 'centreon::common::ingrian::snmp::mode::memory',
+        'request-stats'     => 'centreon::common::ingrian::snmp::mode::requeststats',
+    );
 
     return $self;
 }

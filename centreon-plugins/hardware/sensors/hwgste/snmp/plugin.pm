@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.9';
     %{$self->{modes}} = (
-                       'sensors' => 'hardware::sensors::hwgste::snmp::mode::sensors',
-                       );
+        'sensors' => 'hardware::sensors::hwgste::snmp::mode::sensors',
+    );
 
     return $self;
 }

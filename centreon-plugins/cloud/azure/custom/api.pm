@@ -335,6 +335,25 @@ sub azure_get_metrics {
     return $results, $response;
 }
 
+sub azure_get_resource_health_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
+        $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
+        "/" . $options{resource} . "/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=" . $self->{api_version};
+        
+    return $url; 
+}
+
+sub azure_get_resource_health {
+    my ($self, %options) = @_;
+    
+    my $full_url = $self->azure_get_resource_health_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+    
+    return $response;
+}
+
 sub azure_list_resources_set_url {
     my ($self, %options) = @_;
     

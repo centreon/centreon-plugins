@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'blade'    => 'hardware::server::huawei::hmm::snmp::mode::blade',
-                         'chassis'  => 'hardware::server::huawei::hmm::snmp::mode::chassis',
-                         );
+        'blade'    => 'hardware::server::huawei::hmm::snmp::mode::blade',
+        'chassis'  => 'hardware::server::huawei::hmm::snmp::mode::chassis',
+    );
 
     return $self;
 }

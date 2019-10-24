@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
-                         'failover'         => 'network::cisco::asa::snmp::mode::failover',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'ipsec-tunnel'     => 'centreon::common::cisco::standard::snmp::mode::ipsectunnel', 
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'sensors'          => 'snmp_standard::mode::entity',
-                         'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
-                         );
+        'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
+        'failover'         => 'network::cisco::asa::snmp::mode::failover',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'ipsec-tunnel'     => 'centreon::common::cisco::standard::snmp::mode::ipsectunnel', 
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
+        'sensors'          => 'snmp_standard::mode::entity',
+        'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
+    );
 
     return $self;
 }

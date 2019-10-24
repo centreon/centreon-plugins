@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'interfaces'      => 'snmp_standard::mode::interfaces',
-                         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-                         'cpu'             => 'network::digi::sarian::snmp::mode::cpu',
-                         'memory'          => 'network::digi::sarian::snmp::mode::memory',
-                         'temperature'     => 'network::digi::sarian::snmp::mode::temperature',
-                         'gprs'            => 'network::digi::sarian::snmp::mode::gprs',
-                         );
+        'cpu'             => 'network::digi::sarian::snmp::mode::cpu',
+        'gprs'            => 'network::digi::sarian::snmp::mode::gprs',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'network::digi::sarian::snmp::mode::memory',
+        'temperature'     => 'network::digi::sarian::snmp::mode::temperature',
+    );
 
     return $self;
 }

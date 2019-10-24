@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                            'fc-usage'              => 'storage::ibm::fs900::snmp::mode::fcusage',
-                            'arrays-status'         => 'storage::ibm::fs900::snmp::mode::arraysstatus',
-                            'arrays-usage'          => 'storage::ibm::fs900::snmp::mode::arraysusage',
-                            'hardware'              => 'storage::ibm::fs900::snmp::mode::hardware',
-                         );
+        'arrays-status' => 'storage::ibm::fs900::snmp::mode::arraysstatus',
+        'arrays-usage'  => 'storage::ibm::fs900::snmp::mode::arraysusage',
+        'fc-usage'      => 'storage::ibm::fs900::snmp::mode::fcusage',
+        'hardware'      => 'storage::ibm::fs900::snmp::mode::hardware',
+    );
 
     return $self;
 }

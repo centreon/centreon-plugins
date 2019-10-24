@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'login'            => 'apps::protocols::ldap::mode::login',
-                        'search'           => 'apps::protocols::ldap::mode::search',
-                        );
+        'login'            => 'apps::protocols::ldap::mode::login',
+        'search'           => 'apps::protocols::ldap::mode::search',
+    );
+
     return $self;
 }
 

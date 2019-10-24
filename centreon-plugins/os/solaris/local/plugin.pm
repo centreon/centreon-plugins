@@ -31,18 +31,18 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'prtdiag'              => 'os::solaris::local::mode::prtdiag',
-                         'cpu'                  => 'os::solaris::local::mode::cpu',
-                         'fc-connected'         => 'os::solaris::local::mode::fcconnected',
-                         'hardware-fmadm'       => 'os::solaris::local::mode::fmadm',
-                         'analyze-disks'        => 'os::solaris::local::mode::analyzedisks',
-                         'vx-disks'             => 'os::solaris::local::mode::vxdisks',
-                         'svm-disks'            => 'os::solaris::local::mode::svmdisks',
-                         'hwraidctl-status'     => 'os::solaris::local::mode::hwraidctl',
-                         'hwsas2ircu-status'    => 'os::solaris::local::mode::hwsas2ircu',
-                         'lom-v120-status'      => 'os::solaris::local::mode::lomv120',
-                         'lom-v1280-status'     => 'os::solaris::local::mode::lomv1280',
-                         );
+        'prtdiag'              => 'os::solaris::local::mode::prtdiag',
+        'cpu'                  => 'os::solaris::local::mode::cpu',
+        'fc-connected'         => 'os::solaris::local::mode::fcconnected',
+        'hardware-fmadm'       => 'os::solaris::local::mode::fmadm',
+        'analyze-disks'        => 'os::solaris::local::mode::analyzedisks',
+        'vx-disks'             => 'os::solaris::local::mode::vxdisks',
+        'svm-disks'            => 'os::solaris::local::mode::svmdisks',
+        'hwraidctl-status'     => 'os::solaris::local::mode::hwraidctl',
+        'hwsas2ircu-status'    => 'os::solaris::local::mode::hwsas2ircu',
+        'lom-v120-status'      => 'os::solaris::local::mode::lomv120',
+        'lom-v1280-status'     => 'os::solaris::local::mode::lomv1280',
+    );
 
     return $self;
 }

@@ -91,6 +91,7 @@ sub run {
         $ap{group} = $result->{wlanAPGroupName};
         $ap{location} = $result->{wlanAPLocation};
         $ap{status} = $result->{wlanAPStatus};
+        $ap{type} = "ap";
         
         push @disco_data, \%ap;
     }

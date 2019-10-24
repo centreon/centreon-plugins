@@ -36,6 +36,7 @@ sub new {
         'cmd-return'        => 'os::linux::local::mode::cmdreturn',
         'connections'       => 'os::linux::local::mode::connections',
         'directlvm-usage'   => 'os::linux::local::mode::directlvmusage',
+        'discovery-nmap'    => 'os::linux::local::mode::discoverynmap',
         'discovery-snmp'    => 'os::linux::local::mode::discoverysnmp',
         'diskio'            => 'os::linux::local::mode::diskio',
         'files-size'        => 'os::linux::local::mode::filessize',

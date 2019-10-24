@@ -43,6 +43,7 @@ sub new {
         'list-databases'       => 'database::mssql::mode::listdatabases',
         'locks-waits'          => 'database::mssql::mode::lockswaits',
         'logs-size'            => 'database::mssql::mode::logssize',
+        'page-life-expectancy' => 'database::mssql::mode::pagelifeexpectancy',
         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
         'transactions'         => 'database::mssql::mode::transactions',

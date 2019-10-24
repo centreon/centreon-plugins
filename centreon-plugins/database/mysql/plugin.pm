@@ -60,12 +60,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'host:s@'  => { name => 'db_host' },
-                                                'port:s@'  => { name => 'db_port' },
-                                                'socket:s@'  => { name => 'db_socket' },
-                                                }
-                                  );
+        arguments => {
+            'host:s@'  => { name => 'db_host' },
+            'port:s@'  => { name => 'db_port' },
+            'socket:s@'  => { name => 'db_socket' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();

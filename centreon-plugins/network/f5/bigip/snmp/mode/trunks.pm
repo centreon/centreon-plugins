@@ -301,10 +301,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"             => { name => 'filter_name' },
-        "threshold-overload:s@"     => { name => 'threshold_overload' },
-        "units-traffic:s"           => { name => 'units_traffic', default => '%' },
-        "speed:s"                   => { name => 'speed' },
+        'filter-name:s'         => { name => 'filter_name' },
+        'threshold-overload:s@' => { name => 'threshold_overload' },
+        'units-traffic:s'       => { name => 'units_traffic', default => '%' },
+        'speed:s'               => { name => 'speed' },
     });
 
     return $self;
@@ -388,10 +388,13 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
     
-    my $results = $options{snmp}->get_multiple_table(oids => [
-                                                        { oid => $oid_sysTrunkTable  },
-                                                        { oid => $oid_sysTrunkStatTable },
-                                                    ], nothing_quit => 1);
+    my $results = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_sysTrunkTable  },
+            { oid => $oid_sysTrunkStatTable },
+        ],
+        nothing_quit => 1
+    );
     
     $self->{trunks} = {};
     foreach my $oid (keys %{$results->{$oid_sysTrunkTable}}) {

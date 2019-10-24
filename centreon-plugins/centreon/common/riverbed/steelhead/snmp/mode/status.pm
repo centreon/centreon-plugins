@@ -82,8 +82,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments =>  {
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{health} !~ /Healthy/ || %{status} !~ /running/' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{health} !~ /Healthy/ || %{status} !~ /running/' },
     });
 
     return $self;
@@ -125,15 +125,9 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oids->{common},
-              start => $mappings->{common}->{health}->{oid},
-              end => $mappings->{common}->{serviceUptime}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{health}->{oid},
-              end => $mappings->{ex}->{serviceUptime}->{oid} },
-            { oid => $oids->{interceptor},
-              start => $mappings->{interceptor}->{health}->{oid},
-              end => $mappings->{interceptor}->{serviceUptime}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{health}->{oid}, end => $mappings->{common}->{serviceUptime}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{health}->{oid}, end => $mappings->{ex}->{serviceUptime}->{oid} },
+            { oid => $oids->{interceptor}, start => $mappings->{interceptor}->{health}->{oid}, end => $mappings->{interceptor}->{serviceUptime}->{oid} }
         ]
     );
 

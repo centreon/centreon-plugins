@@ -31,21 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'xenvs-cpu'        => 'storage::emc::xtremio::restapi::mode::xenvscpu',
-                         'xenvs-state'      => 'storage::emc::xtremio::restapi::mode::xenvsstate',
-                         'ssds-endurance'   => 'storage::emc::xtremio::restapi::mode::ssdendurance',
-                         'ssds-iops'        => 'storage::emc::xtremio::restapi::mode::ssdiops',
-                         'cluster-health'   => 'storage::emc::xtremio::restapi::mode::clusterhealth',
-                         );
+        'xenvs-cpu'        => 'storage::emc::xtremio::restapi::mode::xenvscpu',
+        'xenvs-state'      => 'storage::emc::xtremio::restapi::mode::xenvsstate',
+        'ssds-endurance'   => 'storage::emc::xtremio::restapi::mode::ssdendurance',
+        'ssds-iops'        => 'storage::emc::xtremio::restapi::mode::ssdiops',
+        'cluster-health'   => 'storage::emc::xtremio::restapi::mode::clusterhealth',
+    );
 
     $self->{custom_modes}{xtremioapi} = 'storage::emc::xtremio::restapi::custom::xtremioapi';
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;

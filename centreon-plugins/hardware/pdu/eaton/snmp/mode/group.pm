@@ -34,29 +34,29 @@ sub set_counters {
 
     $self->{maps_counters}->{group} = [
         { label => 'current', nlabel => 'group.current.ampere', set => {
-                key_values => [ { name => 'groupCurrent', no_value => 0 } ],
+                key_values => [ { name => 'groupCurrent', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
                     { value => 'groupCurrent_absolute', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1 },
+                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'voltage', nlabel => 'group.voltage.volt', set => {
-                key_values => [ { name => 'groupVoltage', no_value => 0 } ],
+                key_values => [ { name => 'groupVoltage', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
                     { value => 'groupVoltage_absolute', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1 },
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
         { label => 'power', nlabel => 'group.power.watt', set => {
-                key_values => [ { name => 'groupWatts', no_value => 0 } ],
+                key_values => [ { name => 'groupWatts', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
                     { value => 'groupWatts_absolute', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1 },
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
         },
@@ -102,16 +102,18 @@ sub manage_selection {
     );
 
     foreach my $oid (keys %{$snmp_result}) {
-        $oid =~ /\.(\d+\.\d+)$/;
-        my $instance = $1;
-        next if (defined($self->{group}->{$instance}));
+        $oid =~ /\.(\d+)\.(\d+)$/;
+        my ($strapping_index, $group_index) = ($1, $2);
+        next if (defined($self->{group}->{$strapping_index . '.' . $group_index}));
         
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $strapping_index . '.' . $group_index);
         $result->{groupVoltage} *= 0.001 if (defined($result->{groupVoltage}));
         $result->{groupCurrent} *= 0.001 if (defined($result->{groupCurrent}));
-        my $display = $instance;
-        $display = $result->{groupName} if (defined($result->{groupName}) && $result->{groupName} ne '');
-        $self->{group}->{$display} = { display => $display, %$result };
+        my $display = $strapping_index . '.' . $group_index;
+        if (defined($result->{groupName}) && $result->{groupName} ne '') {
+            $display = $result->{groupName} . ' strapping ' . $strapping_index;
+        }
+        $self->{group}->{$strapping_index . '.' . $group_index} = { display => $display, %$result };
     }
 
     if (scalar(keys %{$self->{group}}) <= 0) {

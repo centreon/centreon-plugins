@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::netgear::mseries::snmp::mode::cpu',
-                         'hardware'         => 'network::netgear::mseries::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::netgear::mseries::snmp::mode::memory',
-                         );
+        'cpu'              => 'network::netgear::mseries::snmp::mode::cpu',
+        'hardware'         => 'network::netgear::mseries::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::netgear::mseries::snmp::mode::memory',
+    );
 
     return $self;
 }

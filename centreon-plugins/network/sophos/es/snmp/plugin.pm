@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'health'   => 'network::sophos::es::snmp::mode::health',
-                         'message'  => 'network::sophos::es::snmp::mode::message',
-                         );
+        'health'   => 'network::sophos::es::snmp::mode::health',
+        'message'  => 'network::sophos::es::snmp::mode::message',
+    );
 
     return $self;
 }

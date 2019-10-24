@@ -101,12 +101,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-name:s"         => { name => 'filter_name' },
-                                "warning-ap-status:s"   => { name => 'warning_ap_status', default => '' },
-                                "critical-ap-status:s"  => { name => 'critical_ap_status', default => '%{state} eq "disconnected"' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s'         => { name => 'filter_name' },
+        'warning-ap-status:s'   => { name => 'warning_ap_status', default => '' },
+        'critical-ap-status:s'  => { name => 'critical_ap_status', default => '%{state} eq "disconnected"' },
+    });
+
     return $self;
 }
 
@@ -138,11 +138,15 @@ sub manage_selection {
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
     
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
             { oid => $mapping->{coDevDisState}->{oid} },
             { oid => $mapping->{coDevDisSystemName}->{oid} },
             { oid => $mapping2->{coDevWirCliStaMACAddress}->{oid} },
-        ], nothing_quit => 1, return_type => 1);
+        ], 
+        nothing_quit => 1,
+        return_type => 1
+    );
 
     $self->{ap} = {};
     $self->{global} = { total_ap => 0, total_users => 0 };

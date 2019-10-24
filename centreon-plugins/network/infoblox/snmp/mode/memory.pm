@@ -59,9 +59,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }
@@ -71,9 +70,12 @@ sub manage_selection {
 
     my $oid_ibSystemMonitorMemUsage = '.1.3.6.1.4.1.7779.3.1.1.2.1.8.2.1.0';
     my $oid_ibSystemMonitorSwapUsage = '.1.3.6.1.4.1.7779.3.1.1.2.1.8.3.1.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
             $oid_ibSystemMonitorMemUsage, $oid_ibSystemMonitorSwapUsage,
-        ], nothing_quit => 1);
+        ],
+        nothing_quit => 1
+    );
 
     $self->{memory} = {
         ram_used => $snmp_result->{$oid_ibSystemMonitorMemUsage},

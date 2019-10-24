@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cluster-usage'    => 'storage::hp::storeonce::restapi::mode::clusterusage',
-                         'fcs-usage'        => 'storage::hp::storeonce::restapi::mode::fcsusage',
-                         'nas-usage'        => 'storage::hp::storeonce::restapi::mode::nasusage',
-                         'serviceset-usage' => 'storage::hp::storeonce::restapi::mode::servicesetusage',
-                         );
+        'cluster-usage'    => 'storage::hp::storeonce::restapi::mode::clusterusage',
+        'fcs-usage'        => 'storage::hp::storeonce::restapi::mode::fcsusage',
+        'nas-usage'        => 'storage::hp::storeonce::restapi::mode::nasusage',
+        'serviceset-usage' => 'storage::hp::storeonce::restapi::mode::servicesetusage',
+    );
 
     $self->{custom_modes}{api} = 'storage::hp::storeonce::restapi::custom::api';
     return $self;

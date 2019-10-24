@@ -30,11 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+    });
 
     return $self;
 }
@@ -44,12 +43,12 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
+        $self->{output}->option_exit();
     }
     if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
+        $self->{output}->option_exit();
     }
 }
 
@@ -62,10 +61,13 @@ sub run {
     my $oid_coUsInfoRamBuffer = '.1.3.6.1.4.1.8744.5.21.1.1.11.0';
     my $oid_coUsInfoRamCached = '.1.3.6.1.4.1.8744.5.21.1.1.12.0';
 
-    my $result = $self->{snmp}->get_leef(oids => [
-        $oid_coUsInfoRamTotal, $oid_coUsInfoRamFree,
-        $oid_coUsInfoRamBuffer, $oid_coUsInfoRamCached
-        ], nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(
+        oids => [
+            $oid_coUsInfoRamTotal, $oid_coUsInfoRamFree,
+            $oid_coUsInfoRamBuffer, $oid_coUsInfoRamCached
+        ],
+        nothing_quit => 1
+    );
 
     my $cached_used = $result->{$oid_coUsInfoRamCached};
     my $buffer_used = $result->{$oid_coUsInfoRamBuffer};
@@ -82,25 +84,35 @@ sub run {
     my ($buffer_value, $buffer_unit) = $self->{perfdata}->change_bytes(value => $buffer_used);
     my ($cached_value, $cached_unit) = $self->{perfdata}->change_bytes(value => $cached_used);
     
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram Total: %s, Used (-buffers/cache): %s (%.2f%%), Buffer: %s, Cached: %s",
-                                            $total_value . " " . $total_unit,
-                                            $nobuf_value . " " . $nobuf_unit, $prct_used,
-                                            $buffer_value . " " . $buffer_unit,
-                                            $cached_value . " " . $cached_unit));
-    
-    $self->{output}->perfdata_add(label => "cached", unit => 'B',
-                                  value => $cached_used,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "buffer", unit => 'B',
-                                  value => $buffer_used,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $nobuf_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
-                                  
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf(
+            "Ram Total: %s, Used (-buffers/cache): %s (%.2f%%), Buffer: %s, Cached: %s",
+            $total_value . " " . $total_unit,
+            $nobuf_value . " " . $nobuf_unit, $prct_used,
+            $buffer_value . " " . $buffer_unit,
+            $cached_value . " " . $cached_unit
+        )
+    );
+
+    $self->{output}->perfdata_add(
+        label => "cached", unit => 'B',
+        value => $cached_used,
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => "buffer", unit => 'B',
+        value => $buffer_used,
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => "used", unit => 'B',
+        value => $nobuf_used,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
+        min => 0, max => $total_size
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }

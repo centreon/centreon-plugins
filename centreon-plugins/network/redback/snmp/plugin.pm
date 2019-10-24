@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::redback::snmp::mode::cpu',
-                         'disk-usage'       => 'network::redback::snmp::mode::disk',
-                         'hardware'         => 'network::redback::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::redback::snmp::mode::memory',
-                         );
+        'cpu'              => 'network::redback::snmp::mode::cpu',
+        'disk-usage'       => 'network::redback::snmp::mode::disk',
+        'hardware'         => 'network::redback::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'network::redback::snmp::mode::memory',
+    );
 
     return $self;
 }

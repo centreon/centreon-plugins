@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'dhcp-usage'   => 'network::efficientip::snmp::mode::dhcpusage',
-                         'dns-usage'    => 'network::efficientip::snmp::mode::dnsusage',
-                         );
+        'dhcp-usage'   => 'network::efficientip::snmp::mode::dhcpusage',
+        'dns-usage'    => 'network::efficientip::snmp::mode::dnsusage',
+    );
 
     return $self;
 }

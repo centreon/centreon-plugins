@@ -189,9 +189,10 @@ Check GCP metrics.
 
 Example:
 
-perl centreon_plugins.pl --plugin=cloud::google::gcp::management::stackdriver::plugin --custommode=api --mode=get-metrics
---api='compute.googleapis.com' --metric='instance/cpu/utilization' --instance=mycomputeinstance --aggregation=average
--timeframe=600 --warning-metric= --critical-metric=
+perl centreon_plugins.pl --plugin=cloud::google::gcp::management::stackdriver::plugin
+--custommode=api --mode=get-metrics --api='compute.googleapis.com' --dimension='metric.labels.instance_name'
+--metric='instance/cpu/utilization' --instance=mycomputeinstance --aggregation=average
+--timeframe=600 --warning-metric= --critical-metric=
 
 =over 8
 

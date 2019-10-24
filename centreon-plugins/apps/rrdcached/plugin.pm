@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'stats'  => 'apps::rrdcached::mode::stats',
-                         );
+        'stats' => 'apps::rrdcached::mode::stats',
+    );
 
     return $self;
 }

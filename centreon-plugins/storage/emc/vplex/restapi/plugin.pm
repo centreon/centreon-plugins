@@ -31,23 +31,17 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'psus'                  => 'storage::emc::vplex::restapi::mode::psus',
-                         'fans'                  => 'storage::emc::vplex::restapi::mode::fans',
-                         'distributed-devices'   => 'storage::emc::vplex::restapi::mode::distributeddevices',
-                         'cluster-devices'       => 'storage::emc::vplex::restapi::mode::clusterdevices',
-                         'storage-volumes'       => 'storage::emc::vplex::restapi::mode::storagevolumes',
-                         'directors'             => 'storage::emc::vplex::restapi::mode::directors',
-                         'cluster-communication' => 'storage::emc::vplex::restapi::mode::clustercommunication',
-                         );
+        'psus'                  => 'storage::emc::vplex::restapi::mode::psus',
+        'fans'                  => 'storage::emc::vplex::restapi::mode::fans',
+        'distributed-devices'   => 'storage::emc::vplex::restapi::mode::distributeddevices',
+        'cluster-devices'       => 'storage::emc::vplex::restapi::mode::clusterdevices',
+        'storage-volumes'       => 'storage::emc::vplex::restapi::mode::storagevolumes',
+        'directors'             => 'storage::emc::vplex::restapi::mode::directors',
+        'cluster-communication' => 'storage::emc::vplex::restapi::mode::clustercommunication',
+    );
 
     $self->{custom_modes}{vplexapi} = 'storage::emc::vplex::restapi::custom::vplexapi';
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);
 }
 
 1;

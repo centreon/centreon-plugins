@@ -31,20 +31,20 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'ap-status'        => 'network::ruckus::scg::snmp::mode::apstatus',
-                         'ap-usage'         => 'network::ruckus::scg::snmp::mode::apusage',
-                         'cpu'              => 'snmp_standard::mode::cpu',
-                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-aps'         => 'network::ruckus::scg::snmp::mode::listaps',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-ssids'       => 'network::ruckus::scg::snmp::mode::listssids',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'memory'           => 'snmp_standard::mode::memory',
-                         'ssid-usage'       => 'network::ruckus::scg::snmp::mode::ssidusage',
-                         'system-stats'     => 'network::ruckus::scg::snmp::mode::systemstats',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         );
+        'ap-status'        => 'network::ruckus::scg::snmp::mode::apstatus',
+        'ap-usage'         => 'network::ruckus::scg::snmp::mode::apusage',
+        'cpu'              => 'snmp_standard::mode::cpu',
+        'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-aps'         => 'network::ruckus::scg::snmp::mode::listaps',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-ssids'       => 'network::ruckus::scg::snmp::mode::listssids',
+        'load'             => 'snmp_standard::mode::loadaverage',
+        'memory'           => 'snmp_standard::mode::memory',
+        'ssid-usage'       => 'network::ruckus::scg::snmp::mode::ssidusage',
+        'system-stats'     => 'network::ruckus::scg::snmp::mode::systemstats',
+        'uptime'           => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

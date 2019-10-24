@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'   => 'hardware::server::hp::ilo::xmlapi::mode::hardware',
-                        );
+        'hardware'   => 'hardware::server::hp::ilo::xmlapi::mode::hardware',
+    );
 
     $self->{custom_modes}{api} = 'hardware::server::hp::ilo::xmlapi::custom::api';
     return $self;

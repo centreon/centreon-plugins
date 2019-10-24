@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::server::sun::mseries::mode::hardware',
-                         'domains' => 'hardware::server::sun::mseries::mode::domains',
-                         );
+        'domains' => 'hardware::server::sun::mseries::mode::domains',
+        'hardware' => 'hardware::server::sun::mseries::mode::hardware',
+    );
 
     return $self;
 }

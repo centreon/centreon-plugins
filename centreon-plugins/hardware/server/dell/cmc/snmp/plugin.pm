@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'hardware::server::dell::cmc::snmp::mode::hardware',
-                         'uptime'   => 'snmp_standard::mode::uptime',
-                         );
+        'hardware' => 'hardware::server::dell::cmc::snmp::mode::hardware',
+        'uptime'   => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

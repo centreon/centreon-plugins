@@ -32,16 +32,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  
-                                  "no-ps"             => { name => 'no_ps', },
-                                  "timeout:s"         => { name => 'timeout', default => 50 },
-                                  "command:s"         => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s"         => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"              => { name => 'ps_exec_only', }
-                                });
+    $options{options}->add_options(arguments => {
+        'no-ps'             => { name => 'no_ps', },
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'ps-exec-only'      => { name => 'ps_exec_only', }
+    });
+
     return $self;
 }
 
@@ -57,11 +56,13 @@ sub run {
 
     $self->{option_results}->{command_options} .= " " . $ps;
 
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $stdout);
@@ -87,11 +88,13 @@ sub disco_show {
     my $ps = centreon::common::powershell::windows::liststorages::get_powershell(no_ps => $self->{option_results}->{no_ps});
 																				
     $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     centreon::common::powershell::windows::liststorages::disco_show($self, stdout => $stdout);
 }
 

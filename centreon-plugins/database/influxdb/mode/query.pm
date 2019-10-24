@@ -91,13 +91,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "query:s@"          => { name => 'query' },
-        "instance:s"        => { name => 'instance' },
-        "aggregation:s"     => { name => 'aggregation', default => 'average' },
-        "output:s"          => { name => 'output' },
-        "multiple-output:s" => { name => 'multiple_output' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '' },
+        'query:s@'          => { name => 'query' },
+        'instance:s'        => { name => 'instance' },
+        'aggregation:s'     => { name => 'aggregation', default => 'average' },
+        'output:s'          => { name => 'output' },
+        'multiple-output:s' => { name => 'multiple_output' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
     });
    
     return $self;
@@ -148,7 +148,7 @@ sub manage_selection {
         @queries = ();
         push @queries, $self->{queries}->{$label};
 
-        my $queries_results = $options{custom}->query(queries => \@queries) if (scalar(@queries) > 0);
+        my $queries_results = $options{custom}->query(queries => \@queries);
 
         foreach my $result (@{$queries_results}) {
             next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));
@@ -161,7 +161,7 @@ sub manage_selection {
     }
 
     if (scalar(keys %{$self->{queries_results}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No queries found.");
+        $self->{output}->add_option_msg(short_msg => 'No queries found.');
         $self->{output}->option_exit();
     }
 }

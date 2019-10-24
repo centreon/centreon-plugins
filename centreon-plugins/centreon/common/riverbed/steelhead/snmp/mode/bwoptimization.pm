@@ -88,9 +88,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
 
     return $self;
 }
@@ -120,12 +119,8 @@ sub manage_selection {
 
     my $results = $options{snmp}->get_multiple_table(
         oids => [ 
-            { oid => $oids->{common},
-              start => $mappings->{common}->{bwHCAggInLan}->{oid},
-              end => $mappings->{common}->{bwHCAggOutWan}->{oid} },
-            { oid => $oids->{ex},
-              start => $mappings->{ex}->{bwHCAggInLan}->{oid},
-              end => $mappings->{ex}->{bwHCAggOutWan}->{oid} }
+            { oid => $oids->{common}, start => $mappings->{common}->{bwHCAggInLan}->{oid}, end => $mappings->{common}->{bwHCAggOutWan}->{oid} },
+            { oid => $oids->{ex}, start => $mappings->{ex}->{bwHCAggInLan}->{oid}, end => $mappings->{ex}->{bwHCAggOutWan}->{oid} }
         ]
     );
 

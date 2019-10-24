@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'dcdiag'       => 'apps::activedirectory::local::mode::dcdiag',
-                         'dfsr-backlog' => 'apps::activedirectory::local::mode::dfsrbacklog',
-                         'netdom'       => 'apps::activedirectory::local::mode::netdom',
-                         );
+        'dcdiag'       => 'apps::activedirectory::local::mode::dcdiag',
+        'dfsr-backlog' => 'apps::activedirectory::local::mode::dfsrbacklog',
+        'netdom'       => 'apps::activedirectory::local::mode::netdom',
+    );
 
     return $self;
 }

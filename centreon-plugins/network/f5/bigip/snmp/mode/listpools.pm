@@ -32,13 +32,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                });
-    $self->{pool_id_selected} = [];
-
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+    
     return $self;
 }
 
@@ -50,44 +47,67 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_ltmPoolStatusName, nothing_quit => 1);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
-        next if ($oid !~ /^$oid_ltmPoolStatusName\.(.*)$/);
-        my $instance = $1;
-        
-        # Get all without a name
-        if (!defined($self->{option_results}->{name})) {
-            push @{$self->{pool_id_selected}}, $instance; 
+    my $map_pool_status = {
+        0 => 'none', 1 => 'green',
+        2 => 'yellow', 3 => 'red',
+        4 => 'blue', 5 => 'gray',
+    };
+    my $map_pool_enabled = {
+        0 => 'none', 1 => 'enabled', 2 => 'disabled', 3 => 'disabledbyparent',
+    };
+    my $mapping = {
+        AvailState      => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.2', map => $map_pool_status },
+        EnabledState    => { oid => '.1.3.6.1.4.1.3375.2.2.5.5.2.1.3', map => $map_pool_enabled },
+    };
+    my $oid_ltmPoolStatusEntry = '.1.3.6.1.4.1.3375.2.2.5.5.2.1';
+
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_ltmPoolStatusEntry,
+        start => $mapping->{AvailState}->{oid},
+        end => $mapping->{EnabledState}->{oid},
+        nothing_quit => 1
+    );
+    my $results = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{AvailState}->{oid}\.(.*?)\.(.*)$/);
+        my ($num, $index) = ($1, $2);
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $num . '.' . $index);
+        my $name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $index))));
+
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping pool '" . $name . "'.", debug => 1);
             next;
         }
-        
-        $self->{result_names}->{$oid} = $self->{output}->to_utf8($self->{result_names}->{$oid});
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{pool_id_selected}}, $instance;
-            next;
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{pool_id_selected}}, $instance;
-            next;
-        }
-        
-        $self->{output}->output_add(long_msg => "Skipping pool '" . $self->{result_names}->{$oid} . "': no matching filter name", debug => 1);
+
+        $results->{$name} = {
+            status => $result->{AvailState},
+            state => $result->{EnabledState},
+        };
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
-    foreach my $instance (sort @{$self->{pool_id_selected}}) { 
-        my $name = $self->{result_names}->{$oid_ltmPoolStatusName . '.' . $instance};
-
-        $self->{output}->output_add(long_msg => "'" . $name . "'");
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach my $name (sort keys %$results) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[name: %s] [status: %s] [state: %s]',
+                $name,
+                $results->{$name}->{status},
+                $results->{$name}->{state},
+            )
+        );
     }
     
     $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Pools:');
+                                short_msg => 'List pools:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -95,18 +115,19 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['name', 'status', 'state']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection(disco => 1);
-    foreach my $instance (sort @{$self->{pool_id_selected}}) {        
-        my $name = $self->{result_names}->{$oid_ltmPoolStatusName . '.' . $instance};
-        
-        $self->{output}->add_disco_entry(name => $name);
+    my $results = $self->manage_selection(snmp => $options{snmp});
+    foreach my $name (sort keys %$results) {
+        $self->{output}->add_disco_entry(
+            name => $name,
+            status => $results->{$name}->{status},
+            state => $results->{$name}->{state}
+        );
     }
 }
 
@@ -120,13 +141,9 @@ List F-5 Pools.
 
 =over 8
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the pool name.
-
-=item B<--regexp>
-
-Allows to use regexp to filter pool name (with option --name).
+Filter pool name.
 
 =back
 

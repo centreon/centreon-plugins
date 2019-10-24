@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'alert'            => 'notification::slack::mode::alert',
-                         );
+        'alert' => 'notification::slack::mode::alert',
+    );
 
     return $self;
 }

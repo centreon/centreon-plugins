@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                        'video-status'    => 'network::evertz::DA6HDL7700::snmp::mode::videostatus',
-                        );
+        'video-status'    => 'network::evertz::DA6HDL7700::snmp::mode::videostatus',
+    );
 
     return $self;
 }

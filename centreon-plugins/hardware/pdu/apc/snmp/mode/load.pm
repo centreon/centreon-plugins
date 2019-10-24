@@ -218,12 +218,14 @@ sub check_rpdu2 {
     my ($self, %options) = @_;
 
     my $mapping_phase = {
+        rPDU2PhaseStatusModule      => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.2' },
         rPDU2PhaseStatusNumber      => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.3' },
         rPDU2PhaseStatusLoadState   => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.4', map => $map_rpdu2_status },
         rPDU2PhaseStatusCurrent     => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.5' }, 
         rPDU2PhaseStatusPower       => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.7' },
     };
     my $mapping_bank = {
+        rPDU2BankStatusModule       => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.2' },
         rPDU2BankStatusNumber       => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.3' },
         rPDU2BankStatusLoadState    => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.4', map => $map_rpdu2_status },
         rPDU2BankStatusCurrent      => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.5' }, 
@@ -239,7 +241,7 @@ sub check_rpdu2 {
     my $snmp_result = $options{snmp}->get_multiple_table(oids => [
         { oid => $oid_rPDU2PhaseStatusEntry, end => $mapping_phase->{rPDU2PhaseStatusPower}->{oid} },
         { oid => $oid_rPDU2BankStatusEntry, end => $mapping_bank->{rPDU2BankStatusCurrent}->{oid} },
-        { oid => $oid_rPDU2DeviceStatusEntry, end => $mapping_bank->{rPDU2DeviceStatusPower}->{oid} },
+        { oid => $oid_rPDU2DeviceStatusEntry, end => $mapping_device->{rPDU2DeviceStatusPower}->{oid} },
     ]);
 
     foreach my $oid (keys %{$snmp_result->{$oid_rPDU2PhaseStatusEntry}}) {
@@ -247,8 +249,9 @@ sub check_rpdu2 {
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_phase, results => $snmp_result->{$oid_rPDU2PhaseStatusEntry}, instance => $instance);
 
-        $self->{phase}->{$result->{rPDU2PhaseStatusNumber}} = {
-            display => $result->{rPDU2PhaseStatusNumber},
+        my $name = 'module ' . $result->{rPDU2PhaseStatusModule} . ' phase ' . $result->{rPDU2PhaseStatusNumber};
+        $self->{phase}->{$name} = {
+            display => $name,
             status => $result->{rPDU2PhaseStatusLoadState},
             current => $result->{rPDU2PhaseStatusCurrent} / 10,
             power => $result->{rPDU2PhaseStatusPower} * 10, # hundreth of kW. So * 10 for watt
@@ -256,12 +259,13 @@ sub check_rpdu2 {
     }
 
     foreach my $oid (keys %{$snmp_result->{$oid_rPDU2BankStatusEntry}}) {
-        next if ($oid !~ /^$mapping_phase->{rPDU2BankStatusLoadState}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping_bank->{rPDU2BankStatusLoadState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping_bank, results => $snmp_result->{$oid_rPDU2BankStatusEntry}, instance => $instance);
 
-        $self->{bank}->{$result->{rPDU2BankStatusNumber}} = {
-            display => $result->{rPDU2BankStatusNumber},
+        my $name = 'module ' . $result->{rPDU2BankStatusModule} . ' num ' . $result->{rPDU2BankStatusNumber};
+        $self->{bank}->{$name} = {
+            display => $name,
             status => $result->{rPDU2BankStatusLoadState},
             current => $result->{rPDU2BankStatusCurrent} / 10,
         }

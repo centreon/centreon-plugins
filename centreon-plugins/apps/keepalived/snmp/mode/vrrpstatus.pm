@@ -80,11 +80,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"        => { name => 'warning_status', default => '' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{instanceState} ne %{instanceWantedState} or %{instanceState} ne %{instanceStateLast}' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{instanceState} ne %{instanceWantedState} or %{instanceState} ne %{instanceStateLast}' },
+    });
 
     return $self;
 }
@@ -110,8 +109,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{vrrp} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_vrrpInstanceEntry, end => $mapping->{vrrpInstancePrimaryInterface}->{oid},
-                                                nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_vrrpInstanceEntry,
+        end => $mapping->{vrrpInstancePrimaryInterface}->{oid},
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vrrpInstanceState}->{oid}\.(.*)$/);

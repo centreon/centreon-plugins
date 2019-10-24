@@ -446,6 +446,12 @@ sub convert_bytes {
     return $value;
 }
 
+sub convert_fahrenheit {
+    my (%options) = @_;
+
+    return ($options{value} - 32) / 1.8;
+}
+
 sub expand_exponential {
     my (%options) = @_;
     

@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'global-status'    => 'hardware::pdu::emerson::snmp::mode::globalstatus',
-                         'ps-usage'         => 'hardware::pdu::emerson::snmp::mode::psusage',
-                         'rb-usage'         => 'hardware::pdu::emerson::snmp::mode::rbusage',
-                         );
+        'global-status' => 'hardware::pdu::emerson::snmp::mode::globalstatus',
+        'ps-usage'      => 'hardware::pdu::emerson::snmp::mode::psusage',
+        'receptacles'   => 'hardware::pdu::emerson::snmp::mode::receptacles',
+    );
 
     return $self;
 }

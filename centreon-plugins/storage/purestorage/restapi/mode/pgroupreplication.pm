@@ -140,7 +140,7 @@ sub manage_selection {
         
         $self->{pgroup}->{$pgroup_name} = {
             display => $pgroup_name,
-            progress => $entry->{progress} * 100,
+            progress => defined($entry->{progress}) ? $entry->{progress} * 100 : 0.0,
             physical_bytes_written => $entry->{physical_bytes_written},
             data_transferred => $entry->{data_transferred},
             creation_seconds => $creation_seconds,

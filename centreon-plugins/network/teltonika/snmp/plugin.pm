@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'interfaces'        => 'snmp_standard::mode::interfaces', 
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'system'            => 'network::teltonika::snmp::mode::system',
+        'interfaces'      => 'snmp_standard::mode::interfaces', 
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'system'          => 'network::teltonika::snmp::mode::system',
     );
 
     return $self;

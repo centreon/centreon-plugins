@@ -32,8 +32,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'health-status'  => 'centreon::common::smcli::mode::healthstatus',
-                        );
+        'health-status'  => 'centreon::common::smcli::mode::healthstatus',
+    );
+
     $self->{custom_modes}{smcli} = 'centreon::common::smcli::custom::custom';
     $self->{default} = {
         'health-status' => { 
@@ -46,12 +47,6 @@ sub new {
         }
     };
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
 }
 
 1;

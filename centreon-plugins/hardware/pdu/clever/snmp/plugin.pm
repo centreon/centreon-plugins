@@ -31,8 +31,8 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'ps-usage'         => 'hardware::pdu::clever::snmp::mode::psusage',
-                         );
+        'ps-usage' => 'hardware::pdu::clever::snmp::mode::psusage',
+    );
 
     return $self;
 }

@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'centreon::common::adic::tape::snmp::mode::hardware',
-                         );
+        'hardware' => 'centreon::common::adic::tape::snmp::mode::hardware',
+    );
 
     return $self;
 }

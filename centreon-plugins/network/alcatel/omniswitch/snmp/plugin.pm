@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'cpu'                   => 'network::alcatel::omniswitch::snmp::mode::cpu',
-                        'hardware'              => 'network::alcatel::omniswitch::snmp::mode::hardware',
-                        'interfaces'            => 'snmp_standard::mode::interfaces',
-                        'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
-                        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
-                        'flash-memory'          => 'network::alcatel::omniswitch::snmp::mode::flashmemory',
-                        'memory'                => 'network::alcatel::omniswitch::snmp::mode::memory',
-                        'spanning-tree'         => 'snmp_standard::mode::spanningtree',
-                        );
+        'cpu'                   => 'network::alcatel::omniswitch::snmp::mode::cpu',
+        'hardware'              => 'network::alcatel::omniswitch::snmp::mode::hardware',
+        'interfaces'            => 'snmp_standard::mode::interfaces',
+        'list-interfaces'       => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
+        'flash-memory'          => 'network::alcatel::omniswitch::snmp::mode::flashmemory',
+        'memory'                => 'network::alcatel::omniswitch::snmp::mode::memory',
+        'spanning-tree'         => 'snmp_standard::mode::spanningtree',
+    );
 
     return $self;
 }
