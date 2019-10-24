@@ -154,7 +154,7 @@ sub manage_selection {
             next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));
             my $column_index = first_index { $_ eq $self->{custom_keys}[$query_index] } @{$result->{columns}};
             my $value;
-            $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index ) if (defined($result->{values}));
+            $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index) if (defined($result->{values}));
             $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
             $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[$column_index]} = $value;
         }
