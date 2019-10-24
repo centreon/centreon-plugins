@@ -321,7 +321,27 @@ sub manage_selection {
     
     # request from check_oracle_health.
     my $query;
-    if ($self->{sql}->is_version_minimum(version => '9')) {
+    if ($self->{sql}->is_version_minimum(version => '11')) {
+         $query = sprintf(
+            q{
+             SELECT
+              tum.tablespace_name "Tablespace",
+              t.status "Status",
+              t.contents "Type",
+              t.extent_management "Extent Mgmt",
+              tum.used_space*t.block_size bytes,
+              tum.tablespace_size*t.block_size bytes_max
+             FROM
+              DBA_TABLESPACE_USAGE_METRICS tum
+             INNER JOIN
+              dba_tablespaces t on tum.tablespace_name=t.tablespace_name
+             %s
+            },
+            defined($self->{option_results}->{notemp}) ? 
+                "WHERE (t.contents != 'TEMPORARY' AND t.contents != 'UNDO')" : 
+                ''
+        );
+    } elsif ($self->{sql}->is_version_minimum(version => '9')) {
         my $tbs_sql_undo = q{
             SELECT
                 tablespace_name, bytes_expired
@@ -563,7 +583,12 @@ sub manage_selection {
         }
 
         my ($percent_used, $percent_free, $used, $free, $size);
-        if ((!defined($bytes_max)) || ($bytes_max eq '')) {
+        if ($self->{sql}->is_version_minimum(version => '11')) {
+            $percent_used = $bytes / $bytes_max * 100;
+            $size = $bytes_max;
+            $free = $bytes_max - $bytes;
+            $used = $bytes;
+        } elsif ((!defined($bytes_max)) || ($bytes_max eq '')) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': bytes max not defined.", debug => 1);
             next;
         } elsif ($bytes_max > $bytes) {
