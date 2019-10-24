@@ -33,11 +33,11 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
-                                "warning_1m:i"  	=> { name => 'w_1m', default => 6 },
-                                "warning_5m:i"  	=> { name => 'w_5m', default => 4 },
+                                "warning_1m:i"		=> { name => 'w_1m', default => 6 },
+                                "warning_5m:i"		=> { name => 'w_5m', default => 4 },
                                 "warning_15m:i"		=> { name => 'w_15m', default => 2 },
-                                "critical_1m:i"  	=> { name => 'c_1m', default => 8 },
-                                "critical_5m:i"  	=> { name => 'c_5m', default => 6 },
+                                "critical_1m:i"		=> { name => 'c_1m', default => 8 },
+                                "critical_5m:i"		=> { name => 'c_5m', default => 6 },
                                 "critical_15m:i"	=> { name => 'c_15m', default => 4 }
                                 });
 	$self->{version} = '0.1';
