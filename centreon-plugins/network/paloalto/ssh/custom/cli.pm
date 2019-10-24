@@ -95,6 +95,12 @@ sub check_options {
     return 0;
 }
 
+sub get_hostname {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{hostname};
+}
+
 ##############
 # Specific methods
 ##############

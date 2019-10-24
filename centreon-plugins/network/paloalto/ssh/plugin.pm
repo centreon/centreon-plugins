@@ -32,7 +32,10 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'environment' => 'network::paloalto::ssh::mode::environment',
+        'ha'          => 'network::paloalto::ssh::mode::ha',
+        'interfaces'  => 'network::paloalto::ssh::mode::interfaces',
         'system'      => 'network::paloalto::ssh::mode::system',
+        'vpn'         => 'network::paloalto::ssh::mode::vpn',
     );
 
     $self->{custom_modes}{ssh} = 'network::paloalto::ssh::custom::cli';
