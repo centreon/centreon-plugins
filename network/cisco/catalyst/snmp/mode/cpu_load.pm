@@ -143,9 +143,9 @@ sub check_options {
         #	Compare the value with the thresholds.  
         #	and set exit_status accordingly
         if (($exit_status eq 'ok') || ($exit_status eq 'warning')) {
-        	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$load_1m_oid}, threshold => [ { label => 'c_1m', 'exit_litteral' => 'critical' },{ label => 'w_1m', 'exit_litteral' => 'warning' }]);
-        	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$load_5m_oid}, threshold => [ { label => 'c_5m', 'exit_litteral' => 'critical' },{ label => 'w_5m', 'exit_litteral' => 'warning' }]);
-        	my $check15m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$load_15m_oid}, threshold => [ { label => 'c_15m', 'exit_litteral' => 'critical' },{ label => 'w_15m', 'exit_litteral' => 'warning' }]);
+        	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid}, threshold => [ { label => 'c_1m', 'exit_litteral' => 'critical' },{ label => 'w_1m', 'exit_litteral' => 'warning' }]);
+        	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid}, threshold => [ { label => 'c_5m', 'exit_litteral' => 'critical' },{ label => 'w_5m', 'exit_litteral' => 'warning' }]);
+        	my $check15m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid}, threshold => [ { label => 'c_15m', 'exit_litteral' => 'critical' },{ label => 'w_15m', 'exit_litteral' => 'warning' }]);
         	my $plaintext 	= join('@', $check1m,$check5m,$check15m);
         	if ($plaintext =~ /critical/) {
         		$exit_status='critical';
