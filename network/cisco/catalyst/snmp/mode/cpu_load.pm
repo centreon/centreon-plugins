@@ -53,17 +53,17 @@ sub check_options {
     	$self->SUPER::init(%options);
     	my @warning_names=('w_1m','w_5m','w_15m');
     	foreach my $option_label (@warning_names) {
-  	 	if (($self->{perfdata}->threshold_validate(label => $option_label, value => $self->{option_results}->{warning})) == 0) {
-  		     $self->{output}->add_option_msg(short_msg => "Wrong $option_label threshold '" . $self->{option_results}->{warning} . "'.");
-  		     $self->{output}->option_exit();
-  		} 		
+	  	 	if (($self->{perfdata}->threshold_validate(label => $option_label, value => $self->{option_results}->{warning})) == 0) {
+	  		     $self->{output}->add_option_msg(short_msg => "Wrong $option_label threshold '" . $self->{option_results}->{warning} . "'.");
+	  		     $self->{output}->option_exit();
+	  		} 		
     	}
     	my @critical_names=('c_1m','c_5m','c_15m');
     	foreach my $option_label (@critical_names) {
-  	 	if (($self->{perfdata}->threshold_validate(label => $option_label, value => $self->{option_results}->{critical})) == 0) {
-  		     $self->{output}->add_option_msg(short_msg => "Wrong $option_label threshold '" . $self->{option_results}->{critical} . "'.");
-  		     $self->{output}->option_exit();
-  		} 		
+	  	 	if (($self->{perfdata}->threshold_validate(label => $option_label, value => $self->{option_results}->{critical})) == 0) {
+	  		     $self->{output}->add_option_msg(short_msg => "Wrong $option_label threshold '" . $self->{option_results}->{critical} . "'.");
+	  		     $self->{output}->option_exit();
+	  		} 		
     	}  	
 }
 
@@ -85,56 +85,27 @@ sub check_options {
   		'critical' => 'CPU Load exceeding at least one critical thresholds.'
   	);
   	# Retrieve information - REFERENCES to Hashes
-  	my $debug_script=1;
-  	if ($debug_script==1) {
-  		print("Collecting Entries\n");
-  	}
   	my $cpm_entries = $self->{snmp}->get_table(oid => $ciscocata_cpmEntries, nothing_quit=>1) ;
-  	if ($debug_script==1) {
-  		print Dumper($cpm_entries);
-  		print("Collecting names\n");
-  	}
-  	my @selection_of_cpm_names=();
-  	my $cpm_names = $self->{snmp}->get_table(oid => $ciscocata_names, nothing_quit=>1);
-  	if ($debug_script==1) {
-  		print Dumper($cpm_names);
-  		print("Collecting load values\n");
-  	}
   	my $cpu_load_values = $self->{snmp}->get_multiple_table(oids =>  [
   										{oid => $ciscocata_cpmCPULoadAvg1min},
   										{oid => $ciscocata_cpmCPULoadAvg5min},
   										{oid => $ciscocata_cpmCPULoadAvg15min},
   	]) ;
-  	if ($debug_script==1) {
-  		print Dumper($cpu_load_values);
-  		print("Starting snmp processing\n");
-  	}
   	# Initialize exit code
   	my $exit_status='ok';
-  	# How many entries
-  	# my $members_count= keys $cpm_entries;
-  	# my %catalyst_stack_details;
 	foreach my $key ( keys %$cpm_entries) {
 		#    .1.3.6.1.4.1.9.9.109.1.1.1.1.2.19 = INTEGER: 1000	   
 	   	my @oid_list=split (/\./,$key);
 	   	my $device_number=pop @oid_list; #19
 	   	my $current_device="_" .$device_number; #_19
 	   	my $current_value= $$cpm_entries{$key};  # 1.3.6.1.2.1.47.1.1.1.1.2 . The value 1000
-	   	my $device_label=$$cpm_names{$ciscocata_names . "." . $current_value };
-		# I need to use the method to create the device hash
-		# $catalyst_stack_details{$current_device}{'label'}=$device_label;
-	   	# $catalyst_stack_details={
-		#		'_19' => {
-		#			'label' => 'C9300-48U',
-		#		},
-		# }
+	   	my $required_device_label=$ciscocata_names . "." . $current_value;
+	   	my $label_reference = $self->{snmp}->get_leef(oids => [$required_device_label], nothing_quit=>1);
+	    my $device_label=$$label_reference{$required_device_label };
 		# Load
 		my $load_1m_oid =	$ciscocata_cpmCPULoadAvg1min . '.' . $device_number;
 		my $load_5m_oid =	$ciscocata_cpmCPULoadAvg5min . '.' . $device_number;
 		my $load_15m_oid =	$ciscocata_cpmCPULoadAvg15min . '.' . $device_number;
-		# $catalyst_stack_details{$current_device}{'load1m'}=$cpu_load_values{$load_1m_oid};
-		# $catalyst_stack_details{$current_device}{'load5m'}=$cpu_load_values{$load_5m_oid};
-		# $catalyst_stack_details{$current_device}{'load15m'}=$cpu_load_values{$load_15m_oid};
 	   	# $catalyst_stack_details={
 		#		'_19' => {
 		#			'label' 	=> 'C9300-48U',
@@ -146,7 +117,7 @@ sub check_options {
 		$self->{output}->perfdata_add(
 			label => $device_label . $current_device . "_load1m", 
 			unit => undef,
-			value => $$cpu_load_values{$load_1m_oid},
+			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_1m'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_1m'),
             min => undef, 
@@ -155,7 +126,7 @@ sub check_options {
 		$self->{output}->perfdata_add(
 			label => $device_label . $current_device . "_load5m", 
 			unit => undef,
-			value => $$cpu_load_values{$load_5m_oid},
+			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_5m'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_5m'),
             min => undef, 
@@ -164,7 +135,7 @@ sub check_options {
 		$self->{output}->perfdata_add(
 			label => $device_label . $current_device . "_load15m", 
 			unit => undef,
-			value => $$cpu_load_values{$load_15m_oid},
+			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_15m'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_15m'),
             min => undef, 
