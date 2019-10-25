@@ -92,8 +92,8 @@ sub check_options {
   	# OUTPUT Messages
   	my %out_messages=(
   		'ok' => 'CPU Load on all stack members within threshold.',
-  		'warning' => 'CPU Load exceeding at least one warning thresholds.',
-  		'critical' => 'CPU Load exceeding at least one critical thresholds.'
+  		'warning' => 'CPU Load exceeding at least one warning threshold.',
+  		'critical' => 'CPU Load exceeding at least one critical threshold.'
   	);
   	# Retrieve information - REFERENCES to Hashes
   	my $cpm_entries = $self->{snmp}->get_table(oid => $ciscocata_cpmEntries, nothing_quit=>1) ;
