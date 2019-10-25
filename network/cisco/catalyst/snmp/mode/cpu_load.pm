@@ -23,7 +23,7 @@ package network::cisco::catalyst::snmp::mode::cpu_load;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::mode); # --> implies sub run; commented out as 
+use base qw(centreon::plugins::mode); # --> implies sub run; commented out as
 use Data::Dumper;
 
 sub new {
@@ -37,7 +37,7 @@ sub new {
                                 "critical:s"	=> { name => 'critical', default => '8,6,4' },
 
                                 });
-	$self->{version} = '0.1';
+    $self->{version} = '0.1';
     return $self;
 }
 
@@ -47,10 +47,10 @@ sub check_options {
   	# as described on https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
   	my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     ($self->{warn1}, $self->{warn5}, $self->{warn15}) = split /,/, $self->{option_results}->{warning};
     ($self->{crit1}, $self->{crit5}, $self->{crit15}) = split /,/, $self->{option_results}->{critical};
-    
+
     if (($self->{perfdata}->threshold_validate(label => 'warn1', value => $self->{warn1})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning (1min) threshold '" . $self->{warn1} . "'.");
        $self->{output}->option_exit();
@@ -75,7 +75,7 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Wrong critical (15min) threshold '" . $self->{crit15} . "'.");
        $self->{output}->option_exit();
     }
-        		
+
 }
 
 
@@ -104,55 +104,55 @@ sub check_options {
   	]) ;
   	# Initialize exit code
   	my $exit_status='ok';
-	foreach my $key ( keys %$cpm_entries) {
-		#    .1.3.6.1.4.1.9.9.109.1.1.1.1.2.19 = INTEGER: 1000	   
-	   	my @oid_list=split (/\./,$key);
-	   	my $device_number=pop @oid_list; #19
-	   	my $current_device="_" .$device_number; #_19
-	   	my $current_value= $$cpm_entries{$key};  # 1.3.6.1.2.1.47.1.1.1.1.2 . The value 1000
-	   	my $required_device_label=$ciscocata_names . "." . $current_value;
-	   	my $label_reference = $self->{snmp}->get_leef(oids => [$required_device_label], nothing_quit=>1);
-	    my $device_label=$$label_reference{$required_device_label };
-		# Load
-		my $load_1m_oid =	$ciscocata_cpmCPULoadAvg1min . '.' . $device_number;
-		my $load_5m_oid =	$ciscocata_cpmCPULoadAvg5min . '.' . $device_number;
-		my $load_15m_oid =	$ciscocata_cpmCPULoadAvg15min . '.' . $device_number;
-	   	# $catalyst_stack_details={
-		#		'_19' => {
-		#			'label' 	=> 'C9300-48U',
-		#			'load1m'	=> 23,
-		#			'load5m'	=> 18,
-		#			'load15m'	=> 12				
-		#		},
-		# }
-		$self->{output}->perfdata_add(
-			label => $device_label . $current_device . "_load1m", 
-			unit => undef,
-			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid},
+    foreach my $key ( keys %$cpm_entries) {
+        #    .1.3.6.1.4.1.9.9.109.1.1.1.1.2.19 = INTEGER: 1000
+       	my @oid_list=split (/\./,$key);
+       	my $device_number=pop @oid_list; #19
+       	my $current_device="_" .$device_number; #_19
+       	my $current_value= $$cpm_entries{$key};  # 1.3.6.1.2.1.47.1.1.1.1.2 . The value 1000
+       	my $required_device_label=$ciscocata_names . "." . $current_value;
+       	my $label_reference = $self->{snmp}->get_leef(oids => [$required_device_label], nothing_quit=>1);
+        my $device_label=$$label_reference{$required_device_label };
+        # Load
+        my $load_1m_oid =	$ciscocata_cpmCPULoadAvg1min . '.' . $device_number;
+        my $load_5m_oid =	$ciscocata_cpmCPULoadAvg5min . '.' . $device_number;
+        my $load_15m_oid =	$ciscocata_cpmCPULoadAvg15min . '.' . $device_number;
+       	# $catalyst_stack_details={
+        #		'_19' => {
+        #			'label' 	=> 'C9300-48U',
+        #			'load1m'	=> 23,
+        #			'load5m'	=> 18,
+        #			'load15m'	=> 12
+        #		},
+        # }
+        $self->{output}->perfdata_add(
+            label => $device_label . $current_device . "_load1m",
+            unit => undef,
+            value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
-            min => undef, 
+            min => undef,
             max => undef
         );
-		$self->{output}->perfdata_add(
-			label => $device_label . $current_device . "_load5m", 
-			unit => undef,
-			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid},
+        $self->{output}->perfdata_add(
+            label => $device_label . $current_device . "_load5m",
+            unit => undef,
+            value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
-            min => undef, 
+            min => undef,
             max => undef
-        ); 
-		$self->{output}->perfdata_add(
-			label => $device_label . $current_device . "_load15m", 
-			unit => undef,
-			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid},
+        );
+        $self->{output}->perfdata_add(
+            label => $device_label . $current_device . "_load15m",
+            unit => undef,
+            value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
-            min => undef, 
+            min => undef,
             max => undef
-        ); 
-        #	Compare the value with the thresholds.  
+        );
+        #	Compare the value with the thresholds.
         #	and set exit_status accordingly
         if (($exit_status eq 'ok') || ($exit_status eq 'warning')) {
         	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid}, threshold => [ { label => 'crit1', 'exit_litteral' => 'critical' },{ label => 'warn1', 'exit_litteral' => 'warning' }]);
@@ -164,18 +164,18 @@ sub check_options {
         	} elsif (($exit_status eq 'ok')  && ($plaintext =~ /warning/ )) {
         		$exit_status='warning';
         	}
-        } 
+        }
 
-	}
-	# Report exit Value and performance data	
-	  
+    }
+    # Report exit Value and performance data
+
     $self->{output}->output_add(severity => $exit_status,
                                 short_msg => $out_messages{$exit_status}
                                 );
     $self->{output}->display();
-    $self->{output}->exit(); 	
+    $self->{output}->exit();
   }
- 
+
 
 
 
