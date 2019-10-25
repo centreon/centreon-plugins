@@ -33,12 +33,9 @@ sub new {
 
     $options{options}->add_options(arguments =>
                                 {
-                                "warning_1m:i"		=> { name => 'w_1m', default => 6 },
-                                "warning_5m:i"		=> { name => 'w_5m', default => 4 },
-                                "warning_15m:i"		=> { name => 'w_15m', default => 2 },
-                                "critical_1m:i"		=> { name => 'c_1m', default => 8 },
-                                "critical_5m:i"		=> { name => 'c_5m', default => 6 },
-                                "critical_15m:i"	=> { name => 'c_15m', default => 4 }
+                                "warning:s"		=> { name => 'warning', default => '6,4,2' },
+                                "critical:s"	=> { name => 'critical', default => '8,6,4' },
+
                                 });
 	$self->{version} = '0.1';
     return $self;
@@ -48,22 +45,37 @@ sub new {
 sub check_options {
   	# From Docs - This will initialize all option names, if threshold sintax is ok
   	# as described on https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
-      my ($self, %options) = @_;
-    	$self->SUPER::init(%options);
-    	my @warning_names=('w_1m','w_5m','w_15m');
-    	foreach my $option_label (@warning_names) {
-	  	 	if (($self->{perfdata}->threshold_validate(label => $option_label, value => $self->{option_results}->{warning})) == 0) {
-	  		     $self->{output}->add_option_msg(short_msg => "Wrong $option_label threshold '" . $self->{option_results}->{warning} . "'.");
-	  		     $self->{output}->option_exit();
-	  		} 		
-    	}
-    	my @critical_names=('c_1m','c_5m','c_15m');
-    	foreach my $option_label (@critical_names) {
-	  	 	if (($self->{perfdata}->threshold_validate(label => $option_label, value => $self->{option_results}->{critical})) == 0) {
-	  		     $self->{output}->add_option_msg(short_msg => "Wrong $option_label threshold '" . $self->{option_results}->{critical} . "'.");
-	  		     $self->{output}->option_exit();
-	  		} 		
-    	}  	
+  	my ($self, %options) = @_;
+    $self->SUPER::init(%options);
+    
+    ($self->{warn1}, $self->{warn5}, $self->{warn15}) = split /,/, $self->{option_results}->{warning};
+    ($self->{crit1}, $self->{crit5}, $self->{crit15}) = split /,/, $self->{option_results}->{critical};
+    
+    if (($self->{perfdata}->threshold_validate(label => 'warn1', value => $self->{warn1})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning (1min) threshold '" . $self->{warn1} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'warn5', value => $self->{warn5})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning (5min) threshold '" . $self->{warn5} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'warn15', value => $self->{warn15})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong warning (15min) threshold '" . $self->{warn15} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'crit1', value => $self->{crit1})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical (1min) threshold '" . $self->{crit1} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'crit5', value => $self->{crit5})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical (5min) threshold '" . $self->{crit5} . "'.");
+       $self->{output}->option_exit();
+    }
+    if (($self->{perfdata}->threshold_validate(label => 'crit15', value => $self->{crit15})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong critical (15min) threshold '" . $self->{crit15} . "'.");
+       $self->{output}->option_exit();
+    }
+        		
 }
 
 
@@ -117,8 +129,8 @@ sub check_options {
 			label => $device_label . $current_device . "_load1m", 
 			unit => undef,
 			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_1m'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_1m'),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
             min => undef, 
             max => undef
         );
@@ -126,8 +138,8 @@ sub check_options {
 			label => $device_label . $current_device . "_load5m", 
 			unit => undef,
 			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_5m'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_5m'),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
             min => undef, 
             max => undef
         ); 
@@ -135,17 +147,17 @@ sub check_options {
 			label => $device_label . $current_device . "_load15m", 
 			unit => undef,
 			value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'w_15m'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'c_15m'),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
             min => undef, 
             max => undef
         ); 
         #	Compare the value with the thresholds.  
         #	and set exit_status accordingly
         if (($exit_status eq 'ok') || ($exit_status eq 'warning')) {
-        	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid}, threshold => [ { label => 'c_1m', 'exit_litteral' => 'critical' },{ label => 'w_1m', 'exit_litteral' => 'warning' }]);
-        	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid}, threshold => [ { label => 'c_5m', 'exit_litteral' => 'critical' },{ label => 'w_5m', 'exit_litteral' => 'warning' }]);
-        	my $check15m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid}, threshold => [ { label => 'c_15m', 'exit_litteral' => 'critical' },{ label => 'w_15m', 'exit_litteral' => 'warning' }]);
+        	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid}, threshold => [ { label => 'crit1', 'exit_litteral' => 'critical' },{ label => 'warn1', 'exit_litteral' => 'warning' }]);
+        	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid}, threshold => [ { label => 'crit5', 'exit_litteral' => 'critical' },{ label => 'warn5', 'exit_litteral' => 'warning' }]);
+        	my $check15m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid}, threshold => [ { label => 'crit15', 'exit_litteral' => 'critical' },{ label => 'warn15', 'exit_litteral' => 'warning' }]);
         	my $plaintext 	= join('@', $check1m,$check5m,$check15m);
         	if ($plaintext =~ /critical/) {
         		$exit_status='critical';
