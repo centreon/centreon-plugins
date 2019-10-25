@@ -38,7 +38,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
             'hostname:s'        => { name => 'hostname' },
@@ -106,7 +106,7 @@ sub get_hostname {
 ##############
 sub execute_command {
     my ($self, %options) = @_;
-    
+
     $self->{ssh_commands} = 
         "set cli op-command-xml-output on\n" .
         $options{command} . "\n";

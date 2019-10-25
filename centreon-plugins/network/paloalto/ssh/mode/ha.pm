@@ -140,7 +140,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'unknown-member-status:s'  => { name => 'unknown_member_status', default => '' },
         'warning-member-status:s'  => { name => 'warning_member_status', default => '' },
@@ -159,7 +159,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->change_macros(
         macros => [
             'unknown_sync_status', 'warning_sync_status', 'critical_sync_status',

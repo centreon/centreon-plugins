@@ -30,14 +30,14 @@ use centreon::plugins::misc;
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     my $msg = 'system operational mode: ' . $self->{result_values}->{oper_mode};
     return $msg;
 }
 
 sub custom_av_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         "antivirus version '%s', last update %s",
         $self->{result_values}->{av_version_absolute},
@@ -47,7 +47,7 @@ sub custom_av_output {
 
 sub custom_threat_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         "threat version '%s', last update %s",
         $self->{result_values}->{threat_version_absolute},
@@ -57,11 +57,11 @@ sub custom_threat_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'system', type => 0, message_separator => ' - ' }
     ];
-    
+
     $self->{maps_counters}->{system} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'oper_mode' } ],
@@ -94,7 +94,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '%{oper_mode} !~ /normal/i' },
