@@ -81,6 +81,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
+        'filter-name:s'       => { name => 'filter_name' },
         'unknown-status:s'    => { name => 'unknown_status', default => '' },
         'warning-status:s'    => { name => 'warning_status', default => '' },
         'critical-status:s'   => { name => 'critical_status', default => '%{state} ne "up"' },
@@ -108,6 +109,12 @@ sub manage_selection {
     $self->{global} = { total => 0 };
     $self->{interface} = {};
     foreach (@{$result->{hw}->{entry}}) {
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $_->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping interface '" . $_->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $self->{interface}->{$_->{name}} = {
             display => $_->{name},
             type => $_->{type},
@@ -123,9 +130,13 @@ __END__
 
 =head1 MODE
 
-Check vpn.
+Check interfaces.
 
 =over 8
+
+=item B<--filter-name>
+
+Filter interface name (can be a regexp).
 
 =item B<--unknown-status>
 
