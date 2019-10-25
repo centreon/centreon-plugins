@@ -27,13 +27,13 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_overload_check_section_option} = 
         '^(?:psu|temperature|voltage)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature|voltage)$';
-    
+
     $self->{cb_hook2} = 'ssh_execute';
-    
+
     $self->{thresholds} = {
         default => [
             ['false', 'OK'],
@@ -49,7 +49,7 @@ sub set_system {
 
 sub ssh_execute {
     my ($self, %options) = @_;
-    
+
     ($self->{results}, $self->{exit_code}) = $options{custom}->execute_command(
         command => 'show system environmentals',
     );
@@ -59,7 +59,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 
