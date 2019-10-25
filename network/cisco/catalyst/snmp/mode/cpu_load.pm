@@ -189,15 +189,13 @@ Reports CPU Load for  Cisco Catalyst (Catalyst L3 Switch Software (CAT9K_IOSXE),
 
 =over 8
 
-=item B<--warning_*m>
+=item B<--warning>
 
-Set warning threshold for status.
-valid values: 1m, 5m, 15m
+Threshold warning (1min,5min,15min).
 
-=item B<--critical_*m>
+=item B<--critical>
 
-Set critical threshold for status.
-valid values: 1m, 5m, 15m
+Threshold critical (1min,5min,15min).
 
 =back
 
