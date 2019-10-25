@@ -116,7 +116,10 @@ sub get_diff_time {
     # '2019/10/15 12:03:58 BST'
     return if ($options{time} !~ /^\s*(\d{4})\/(\d{2})\/(\d{2})\s+(\d+):(\d+):(\d+)\s+(\S+)/);
 
-    my $tz = $7 eq 'BST' ? 'GMT' : $7;
+    my $tz = $7;
+    $tz = 'GMT' if ($tz eq 'BST');
+    $tz = 'Europe/Paris' if ($tz eq 'CEST');
+    $tz = 'America/New_York' if ($tz eq 'EST');
     my $dt = DateTime->new(
         year       => $1,
         month      => $2,
