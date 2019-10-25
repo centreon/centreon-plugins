@@ -79,8 +79,8 @@ sub check_options {
 }
 
 
-  sub run {
-  	#From Docs - Execute the check
+sub run {
+  	# From Docs - Execute the check
   	my ($self, %options) = @_;
   	$self->{snmp} = $options{snmp};
   	# OIDs
@@ -105,7 +105,7 @@ sub check_options {
   	# Initialize exit code
   	my $exit_status='ok';
     foreach my $key ( keys %$cpm_entries) {
-        #    .1.3.6.1.4.1.9.9.109.1.1.1.1.2.19 = INTEGER: 1000
+        # .1.3.6.1.4.1.9.9.109.1.1.1.1.2.19 = INTEGER: 1000
        	my @oid_list=split (/\./,$key);
        	my $device_number=pop @oid_list; #19
        	my $current_device="_" .$device_number; #_19
@@ -152,8 +152,8 @@ sub check_options {
             min => undef,
             max => undef
         );
-        #	Compare the value with the thresholds.
-        #	and set exit_status accordingly
+        # Compare the value with the thresholds.
+        # and set exit_status accordingly
         if (($exit_status eq 'ok') || ($exit_status eq 'warning')) {
         	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid}, threshold => [ { label => 'crit1', 'exit_litteral' => 'critical' },{ label => 'warn1', 'exit_litteral' => 'warning' }]);
         	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid}, threshold => [ { label => 'crit5', 'exit_litteral' => 'critical' },{ label => 'warn5', 'exit_litteral' => 'warning' }]);
@@ -174,7 +174,7 @@ sub check_options {
                                 );
     $self->{output}->display();
     $self->{output}->exit();
-  }
+}
 
 
 
