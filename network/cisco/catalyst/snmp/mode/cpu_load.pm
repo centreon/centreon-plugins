@@ -38,88 +38,77 @@ sub new {
 }
 
 sub set_counters {
-  my ($self, %options) = @_;
-
-  $self->{maps_counters_type} = [
-      { name => 'switch', type => 1, cb_prefix_output => 'prefix_switch_output', message_multiple => 'All Switches are ok' }
-  ];
-
-  $self->{maps_counters}->{switch} = [
-      { label => 'load_1m',
-      	set => {
-                   key_values => [ { name => 'load_1m' }, { name => 'display' } ],
-                   output_template => 'cpu load 1m: %s',
-                   perfdatas => [
-                      { label => 'load1m',
-                      	value => 'load_1m_absolute',
-                      	template => '%s',
-                      	min => 0,
-                      	label_extra_instance => 1,
-                      	instance_use => 'display_absolute',
-                      },
-                   ],
-               }
-      },
-
-      { label => 'load_5m', set => {
-              key_values => [ { name => 'load_5m' }, { name => 'display' } ],
-              output_template => 'cpu load 5m: %s',
-              perfdatas => [
-                  { label => 'load5m', value => 'load_5m_absolute', template => '%s',
-                    min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-              ],
-          }
-      },
-      { label => 'load_15m', set => {
-              key_values => [ { name => 'load_15m' }, { name => 'display' } ],
-              output_template => 'cpu load 15m: %s',
-              perfdatas => [
-                  { label => 'load15m', value => 'load_15m_absolute', template => '%s',
-                    min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-              ],
-          }
-      },
-  ];
+    my ($self, %options) = @_;
+    $self->{maps_counters_type} = [
+        { name => 'switch', type => 1, cb_prefix_output => 'prefix_switch_output', message_multiple => 'All Switches are ok.' }
+    ];
+    $self->{maps_counters}->{switch} = [
+        { label => 'load_1m',
+            set => {
+                     key_values => [ { name => 'load_1m' }, { name => 'display' } ],
+                     output_template => 'cpu load 1m: %s',
+                     perfdatas => [
+                        {   label        => 'load1m',
+                            value        => 'load_1m_absolute',
+                            template     => '%s',
+                            min          => 0,
+                            label_extra_instance => 1,
+                            instance_use => 'display_absolute',
+                        },
+                     ],
+                   }
+        },
+        { label => 'load_5m', set => {
+                key_values => [ { name => 'load_5m' }, { name => 'display' } ],
+                output_template => 'cpu load 5m: %s',
+                perfdatas => [
+                    { label => 'load5m', value => 'load_5m_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'load_15m', set => {
+                key_values => [ { name => 'load_15m' }, { name => 'display' } ],
+                output_template => 'cpu load 15m: %s',
+                perfdatas => [
+                    { label => 'load15m', value => 'load_15m_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
 }
 
 sub prefix_switch_output {
-  my ($self, %options) = @_;
-  return $options{instance_value}->{display} . ' ';
-
+    my ($self, %options) = @_;
+    return $options{instance_value}->{display} . ' ';
 }
 
 sub manage_selection {
-  my ($self, %options) = @_;
-
-  my $ciscocata_names=".1.3.6.1.2.1.47.1.1.1.1.2"; #model of the physical devices, use same number from previous
-  my $cpmCPUTotalEntry = '.1.3.6.1.4.1.9.9.109.1.1.1.1';
-  my $mapping = {
-  	  switch     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.2'  },
-      load1m     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.24' },
-      load5m     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.25' },
-      load15m    => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.26' },
+    my ($self, %options) = @_;
+    my $ciscocata_names=".1.3.6.1.2.1.47.1.1.1.1.2"; #model of the physical devices, use same number from previous
+    my $cpmCPUTotalEntry = '.1.3.6.1.4.1.9.9.109.1.1.1.1';
+    my $mapping = {
+        switch     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.2'  },
+        load1m     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.24' },
+        load5m     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.25' },
+        load15m    => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.26' },
   };
-
-  $self->{switch} = {};
-  my $result = $options{snmp}->get_table(oid => $cpmCPUTotalEntry, nothing_quit => 1);
-  foreach my $oid (keys %$result) {
-      next if ($oid !~ /^$mapping->{switch}->{oid}\.(\d+)$/);
-      my $instance = $1;
-      my $data = $options{snmp}->map_instance(mapping => $mapping, results => $result, instance => $instance);
-      my $instance_label=$options{snmp}-> get_leef(oids => [$ciscocata_names . '.' . $data->{switch}]);
-      $self->{switch}->{$instance} = {
-      	  display => $$instance_label{$ciscocata_names . '.' . $data->{switch}} . "_" . $instance,
-          load_1m => $data->{load1m},
-          load_5m => $data->{load5m},
-          load_15m => $data->{load15m},
-      };
-  }
-
+    $self->{switch} = {};
+    my $result = $options{snmp}->get_table(oid => $cpmCPUTotalEntry, nothing_quit => 1);
+    foreach my $oid (keys %$result) {
+        next if ($oid !~ /^$mapping->{switch}->{oid}\.(\d+)$/);
+        my $instance = $1;
+        my $data = $options{snmp}->map_instance(mapping => $mapping, results => $result, instance => $instance);
+        my $instance_label=$options{snmp}-> get_leef(oids => [$ciscocata_names . '.' . $data->{switch}]);
+        $self->{switch}->{$instance} = {
+            display => $$instance_label{$ciscocata_names . '.' . $data->{switch}} . "_" . $instance,
+            load_1m => $data->{load1m},
+            load_5m => $data->{load5m},
+            load_15m => $data->{load15m},
+        };
+    }
 }
-
-
-
-
 
 1;
 
@@ -127,7 +116,7 @@ __END__
 
 =head1 MODE
 
-Reports CPU Load for  Cisco Catalyst (Catalyst L3 Switch Software (CAT9K_IOSXE), Version 16.6.4).
+Reports CPU Load for stacked Cisco Catalyst devices (Catalyst L3 Switch Software (CAT9K_IOSXE), Version 16.6.4).
 
 =over 8
 
