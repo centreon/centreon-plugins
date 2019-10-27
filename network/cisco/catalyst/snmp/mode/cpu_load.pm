@@ -23,7 +23,7 @@ package network::cisco::catalyst::snmp::mode::cpu_load;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::mode); # --> implies sub run; commented out as
+use base qw(centreon::plugins::templates::counter);
 use Data::Dumper;
 
 sub new {
@@ -31,150 +31,92 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning:s"		=> { name => 'warning', default => '6,4,2' },
-                                "critical:s"	=> { name => 'critical', default => '8,6,4' },
-
-                                });
+    $options{options}->add_options(arguments => {
+    });
     $self->{version} = '0.1';
     return $self;
 }
 
+sub set_counters {
+  my ($self, %options) = @_;
 
-sub check_options {
-  	# From Docs - This will initialize all option names, if threshold sintax is ok
-  	# as described on https://nagios-plugins.org/doc/guidelines.html#THRESHOLDFORMAT
-  	my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+  $self->{maps_counters_type} = [
+      { name => 'switch', type => 1, cb_prefix_output => 'prefix_switch_output', message_multiple => 'All Switches are ok' }
+  ];
 
-    ($self->{warn1}, $self->{warn5}, $self->{warn15}) = split /,/, $self->{option_results}->{warning};
-    ($self->{crit1}, $self->{crit5}, $self->{crit15}) = split /,/, $self->{option_results}->{critical};
+  $self->{maps_counters}->{switch} = [
+      { label => 'load_1m',
+      	set => {
+                   key_values => [ { name => 'load_1m' }, { name => 'display' } ],
+                   output_template => 'cpu load 1m: %s',
+                   perfdatas => [
+                      { label => 'load1m',
+                      	value => 'load_1m_absolute',
+                      	template => '%s',
+                      	min => 0,
+                      	label_extra_instance => 1,
+                      	instance_use => 'display_absolute',
+                      },
+                   ],
+               }
+      },
 
-    if (($self->{perfdata}->threshold_validate(label => 'warn1', value => $self->{warn1})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (1min) threshold '" . $self->{warn1} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn5', value => $self->{warn5})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (5min) threshold '" . $self->{warn5} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn15', value => $self->{warn15})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning (15min) threshold '" . $self->{warn15} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit1', value => $self->{crit1})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (1min) threshold '" . $self->{crit1} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit5', value => $self->{crit5})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (5min) threshold '" . $self->{crit5} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit15', value => $self->{crit15})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical (15min) threshold '" . $self->{crit15} . "'.");
-       $self->{output}->option_exit();
-    }
+      { label => 'load_5m', set => {
+              key_values => [ { name => 'load_5m' }, { name => 'display' } ],
+              output_template => 'cpu load 5m: %s',
+              perfdatas => [
+                  { label => 'load5m', value => 'load_5m_absolute', template => '%s',
+                    min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+              ],
+          }
+      },
+      { label => 'load_15m', set => {
+              key_values => [ { name => 'load_15m' }, { name => 'display' } ],
+              output_template => 'cpu load 15m: %s',
+              perfdatas => [
+                  { label => 'load15m', value => 'load_15m_absolute', template => '%s',
+                    min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+              ],
+          }
+      },
+  ];
+}
+
+sub prefix_switch_output {
+  my ($self, %options) = @_;
+  return $options{instance_value}->{display} . ' ';
 
 }
 
+sub manage_selection {
+  my ($self, %options) = @_;
 
-sub run {
-  	# From Docs - Execute the check
-  	my ($self, %options) = @_;
-  	$self->{snmp} = $options{snmp};
-  	# OIDs
-  	my $ciscocata_cpmEntries = ".1.3.6.1.4.1.9.9.109.1.1.1.1.2"; # List of Physical devices
-  	my $ciscocata_names=".1.3.6.1.2.1.47.1.1.1.1.2"; #name of the physical devices, use same number from previous
-  	my $ciscocata_cpmCPULoadAvg1min = ".1.3.6.1.4.1.9.9.109.1.1.1.1.24"; # Cisco CPU load (5min %) per item in cmpEntries
-  	my $ciscocata_cpmCPULoadAvg5min = ".1.3.6.1.4.1.9.9.109.1.1.1.1.25"; # Cisco CPU load (1min %) per item in cmpEntries
-  	my $ciscocata_cpmCPULoadAvg15min = ".1.3.6.1.4.1.9.9.109.1.1.1.1.26"; # Cisco CPU load (5sec %) per item in cmpEntries
-  	# OUTPUT Messages
-  	my %out_messages=(
-  		'ok' => 'CPU Load on all stack members within threshold.',
-  		'warning' => 'CPU Load exceeding at least one warning threshold.',
-  		'critical' => 'CPU Load exceeding at least one critical threshold.'
-  	);
-  	# Retrieve information - REFERENCES to Hashes
-  	my $cpm_entries = $self->{snmp}->get_table(oid => $ciscocata_cpmEntries, nothing_quit=>1) ;
-  	my $cpu_load_values = $self->{snmp}->get_multiple_table(oids =>  [
-  										{oid => $ciscocata_cpmCPULoadAvg1min},
-  										{oid => $ciscocata_cpmCPULoadAvg5min},
-  										{oid => $ciscocata_cpmCPULoadAvg15min},
-  	]) ;
-  	# Initialize exit code
-  	my $exit_status='ok';
-    foreach my $key ( keys %$cpm_entries) {
-        # .1.3.6.1.4.1.9.9.109.1.1.1.1.2.19 = INTEGER: 1000
-       	my @oid_list=split (/\./,$key);
-       	my $device_number=pop @oid_list; #19
-       	my $current_device="_" .$device_number; #_19
-       	my $current_value= $$cpm_entries{$key};  # 1.3.6.1.2.1.47.1.1.1.1.2 . The value 1000
-       	my $required_device_label=$ciscocata_names . "." . $current_value;
-       	my $label_reference = $self->{snmp}->get_leef(oids => [$required_device_label], nothing_quit=>1);
-        my $device_label=$$label_reference{$required_device_label };
-        # Load
-        my $load_1m_oid =	$ciscocata_cpmCPULoadAvg1min . '.' . $device_number;
-        my $load_5m_oid =	$ciscocata_cpmCPULoadAvg5min . '.' . $device_number;
-        my $load_15m_oid =	$ciscocata_cpmCPULoadAvg15min . '.' . $device_number;
-       	# $catalyst_stack_details={
-        #		'_19' => {
-        #			'label' 	=> 'C9300-48U',
-        #			'load1m'	=> 23,
-        #			'load5m'	=> 18,
-        #			'load15m'	=> 12
-        #		},
-        # }
-        $self->{output}->perfdata_add(
-            label => $device_label . $current_device . "_load1m",
-            unit => undef,
-            value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
-            min => undef,
-            max => undef
-        );
-        $self->{output}->perfdata_add(
-            label => $device_label . $current_device . "_load5m",
-            unit => undef,
-            value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn5'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit5'),
-            min => undef,
-            max => undef
-        );
-        $self->{output}->perfdata_add(
-            label => $device_label . $current_device . "_load15m",
-            unit => undef,
-            value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid},
-            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn15'),
-            critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit15'),
-            min => undef,
-            max => undef
-        );
-        # Compare the value with the thresholds.
-        # and set exit_status accordingly
-        if (($exit_status eq 'ok') || ($exit_status eq 'warning')) {
-        	my $check1m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg1min}{$load_1m_oid}, threshold => [ { label => 'crit1', 'exit_litteral' => 'critical' },{ label => 'warn1', 'exit_litteral' => 'warning' }]);
-        	my $check5m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg5min}{$load_5m_oid}, threshold => [ { label => 'crit5', 'exit_litteral' => 'critical' },{ label => 'warn5', 'exit_litteral' => 'warning' }]);
-        	my $check15m 	= $self -> {perfdata} -> threshold_check(value => $$cpu_load_values{$ciscocata_cpmCPULoadAvg15min}{$load_15m_oid}, threshold => [ { label => 'crit15', 'exit_litteral' => 'critical' },{ label => 'warn15', 'exit_litteral' => 'warning' }]);
-        	my $plaintext 	= join('@', $check1m,$check5m,$check15m);
-        	if ($plaintext =~ /critical/) {
-        		$exit_status='critical';
-        	} elsif (($exit_status eq 'ok')  && ($plaintext =~ /warning/ )) {
-        		$exit_status='warning';
-        	}
-        }
+  my $ciscocata_names=".1.3.6.1.2.1.47.1.1.1.1.2"; #model of the physical devices, use same number from previous
+  my $cpmCPUTotalEntry = '.1.3.6.1.4.1.9.9.109.1.1.1.1';
+  my $mapping = {
+  	  switch     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.2'  },
+      load1m     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.24' },
+      load5m     => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.25' },
+      load15m    => { oid => '.1.3.6.1.4.1.9.9.109.1.1.1.1.26' },
+  };
 
-    }
-    # Report exit Value and performance data
+  $self->{switch} = {};
+  my $result = $options{snmp}->get_table(oid => $cpmCPUTotalEntry, nothing_quit => 1);
+  foreach my $oid (keys %$result) {
+      next if ($oid !~ /^$mapping->{switch}->{oid}\.(\d+)$/);
+      my $instance = $1;
+      my $data = $options{snmp}->map_instance(mapping => $mapping, results => $result, instance => $instance);
+      my $instance_label=$options{snmp}-> get_leef(oids => [$ciscocata_names . '.' . $data->{switch}]);
+      $self->{switch}->{$instance} = {
+      	  display => $$instance_label{$ciscocata_names . '.' . $data->{switch}} . "_" . $instance,
+          load_1m => $data->{load1m},
+          load_5m => $data->{load5m},
+          load_15m => $data->{load15m},
+      };
+  }
 
-    $self->{output}->output_add(severity => $exit_status,
-                                short_msg => $out_messages{$exit_status}
-                                );
-    $self->{output}->display();
-    $self->{output}->exit();
 }
+
 
 
 
@@ -189,13 +131,13 @@ Reports CPU Load for  Cisco Catalyst (Catalyst L3 Switch Software (CAT9K_IOSXE),
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*>
 
-Threshold warning (1min,5min,15min).
+Threshold warning (load_1m,load_5min,load_15min).
 
-=item B<--critical>
+=item B<--critical-*>
 
-Threshold critical (1min,5min,15min).
+Threshold critical (load_1m,load_5min,load_15min).
 
 =back
 
