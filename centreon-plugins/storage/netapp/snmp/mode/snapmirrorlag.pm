@@ -107,7 +107,7 @@ sub check_snapmirror {
     }
     
     my $id_selected = [];
-    my $snmp_result_name = $options{snmp}->get_table(oid => $oid_snapmirrorSrc, nothing_quit => 1);
+    my $snmp_result_name = $options{snmp}->get_table(oid => $oid_snapmirrorSrc);
     foreach my $oid (keys %$snmp_result_name) {
         next if ($oid !~ /\.([0-9]+)$/);
         my $instance = $1;
@@ -121,11 +121,8 @@ sub check_snapmirror {
         push @$id_selected, $instance;
     }
 
-    if (scalar(@$id_selected) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No snapmirrors found for filter '" . $self->{option_results}->{filter_name} . "'.");
-        $self->{output}->option_exit();
-    }
-    
+    return if (scalar(@$id_selected) <= 0);
+
     my $map_state = {
         1 => 'uninitialized', 2 => 'snapmirrored', 
         3 => 'brokenOff', 4 => 'quiesced',
@@ -159,8 +156,10 @@ sub check_snapmirror {
 sub check_sm {
     my ($self, %options) = @_;
 
+    return if (scalar(keys %{$self->{snapmirror}}) > 0);
+
     my $oid_snapmirrorRelSrcPath = '.1.3.6.1.4.1.789.1.29.1.1.2';
-    
+
     my $id_selected = [];
     my $snmp_result_name = $options{snmp}->get_table(oid => $oid_snapmirrorRelSrcPath, nothing_quit => 1);
     foreach my $oid (keys %$snmp_result_name) {
