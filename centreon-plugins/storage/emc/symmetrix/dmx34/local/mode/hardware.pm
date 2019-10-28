@@ -76,20 +76,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "file-health:s"         => { name => 'file_health' },
-                                "file-health-env:s"     => { name => 'file_health_env' },
-                                # Email
-                                "email-warning:s"       => { name => 'email_warning' },
-                                "email-critical:s"      => { name => 'email_critical' },
-                                "email-smtp-host:s"     => { name => 'email_smtp_host' },
-                                "email-smtp-username:s" => { name => 'email_smtp_username' },
-                                "email-smtp-password:s" => { name => 'email_smtp_password' },
-                                "email-smtp-from:s"     => { name => 'email_smtp_from' },
-                                "email-smtp-options:s@" => { name => 'email_smtp_options' },
-                                "email-memory"          => { name => 'email_memory' },
-                                });
+    $options{options}->add_options(arguments => {
+        'file-health:s'         => { name => 'file_health' },
+        'file-health-env:s'     => { name => 'file_health_env' },
+        # Email
+        'email-warning:s'       => { name => 'email_warning' },
+        'email-critical:s'      => { name => 'email_critical' },
+        'email-smtp-host:s'     => { name => 'email_smtp_host' },
+        'email-smtp-username:s' => { name => 'email_smtp_username' },
+        'email-smtp-password:s' => { name => 'email_smtp_password' },
+        'email-smtp-from:s'     => { name => 'email_smtp_from' },
+        'email-smtp-options:s@' => { name => 'email_smtp_options' },
+        'email-memory'          => { name => 'email_memory' },
+    });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{components_exec_load} = 0;
@@ -218,19 +217,26 @@ sub send_email {
         return ;
     }
     
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Email::Send::SMTP::Gmail',
-                                           error_msg => "Cannot load module 'Email::Send::SMTP::Gmail'.");
-    my ($mail, $error) = Email::Send::SMTP::Gmail->new(-smtp => $self->{option_results}->{email_smtp_host},
-                                                       %smtp_options);
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output},
+        module => 'Email::Send::SMTP::Gmail',
+        error_msg => "Cannot load module 'Email::Send::SMTP::Gmail'."
+    );
+    my ($mail, $error) = Email::Send::SMTP::Gmail->new(
+        -smtp => $self->{option_results}->{email_smtp_host},
+        %smtp_options
+    );
     if ($mail == -1) {
         $self->{output}->add_option_msg(short_msg => "session error: " . $error);
         $self->{output}->option_exit();
     }
-    my $result = $mail->send(-to => $smtp_to,
-                             -from => $self->{option_results}->{email_smtp_from},
-                             -subject => defined($smtp_options{-subject}) ? $smtp_options{-subject} : $subject,
-                             -body => $stdout,
-                             -attachments => $self->{option_results}->{file_health} . ',' . $self->{option_results}->{file_health_env});
+    my $result = $mail->send(
+        -to => $smtp_to,
+        -from => $self->{option_results}->{email_smtp_from},
+        -subject => defined($smtp_options{-subject}) ? $smtp_options{-subject} : $subject,
+        -body => $stdout,
+        -attachments => $self->{option_results}->{file_health} . ',' . $self->{option_results}->{file_health_env}
+    );
     $mail->bye();
     if ($result == -1) {
         $self->{output}->add_option_msg(severity => 'UNKNOWN', short_msg => "problem to send the email");
@@ -291,4 +297,3 @@ The location of the environment storage file status (Should be something like: C
 =back
 
 =cut
-    
