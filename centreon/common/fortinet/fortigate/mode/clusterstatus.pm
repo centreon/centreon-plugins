@@ -95,7 +95,7 @@ sub set_counters {
         },
     ];        
     $self->{maps_counters}->{nodes} = [
-        { label => 'node', threshold => 0, set => {
+        { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' }, { name => 'checksum' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
