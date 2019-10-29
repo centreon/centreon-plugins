@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-lasthour', display_ok => 0, nlabel => 'calls.total.lasthour.count', set => {
+        { label => 'total-lasthour', nlabel => 'calls.total.lasthour.count', set => {
                 key_values => [ { name => 'avCmListMeasCallRateTotalNumCallsCompLstHr' } ],
                 output_template => 'total calls last hour: %s',
                 perfdatas => [
@@ -46,7 +46,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, foce_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
