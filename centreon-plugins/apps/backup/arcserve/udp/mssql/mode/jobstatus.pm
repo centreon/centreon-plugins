@@ -168,6 +168,7 @@ sub manage_selection {
     my ($count, $current_time) = (0, time());
     while ((my $row = $options{sql}->fetchrow_hashref())) {
         my $rhostname = defined($row->{rhostname}) && $row->{rhostname} ne '' ? $row->{rhostname} : 'unknown';
+        my $vmname = defined($row->{vmname}) && $row->{vmname} ne '' ? $row->{vmname} : '-';
         my $plan_name = defined($row->{name}) && $row->{name} ne '' ? $row->{name} : 'unknown';
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $row->{jobType} !~ /$self->{option_results}->{filter_type}/) {
@@ -185,7 +186,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_server_name}) && $self->{option_results}->{filter_server_name} ne '' &&
-            ($row->{rhostname} !~ /$self->{option_results}->{filter_server_name}/ || $row->{vmname} !~ /$self->{option_results}->{filter_server_name}/)) {
+            ($row->{rhostname} !~ /$self->{option_results}->{filter_server_name}/ && $vmname !~ /$self->{option_results}->{filter_server_name}/)) {
             $self->{output}->output_add(long_msg => "skipping job '" . $row->{jobId} . "': no matching filter type.", debug => 1);
             next;
         }
@@ -197,7 +198,7 @@ sub manage_selection {
             status => $row->{jobStatus},
             type => $row->{jobType},
             rhostname => $rhostname,
-            vmname => defined($row->{vmname}) && $row->{vmname} ne '' ? $row->{vmname} : '-',
+            vmname => $vmname,
             plan_name => $plan_name,
             end_time => $row->{end_time},
         };
