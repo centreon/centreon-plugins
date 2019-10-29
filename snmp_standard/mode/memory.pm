@@ -200,7 +200,7 @@ sub autodetect_rhel7 {
     # https://access.redhat.com/articles/3078#RHEL7
     # rhel 7.6: "Linux dev 3.10.0-957.10.1.el7.x86_64 #1 SMP Mon Mar 18 15:06:45 UTC 2019 x86_64"
     # rhel 7.7: "Linux dev 3.10.0-1062.1.1.el7.x86_64 #1 SMP Fri Sep 13 22:55:44 UTC 2019 x86_64"
-    return if (!defined($options{result}->{sysDescr}) || $options{result}->{sysDescr} !~ /3\.10\.0-(\d+)\..*?\.el7\./);
+    return if (!defined($options{result}->{sysDescr}) || $options{result}->{sysDescr} !~ /3\.10\.0-(\d+)\..*?el7\./);
     my $build = $1;
     if ($build >= 1062) {
         $self->{option_results}->{redhat} = 1;
