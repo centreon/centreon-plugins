@@ -31,14 +31,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"                   => { name => 'warning' },
-                                  "critical:s"                  => { name => 'critical' },
-                                  "centreon-storage-database:s" => { name => 'centreon_storage_database', default => 'centreon_storage' },
-                                });
-    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $options{options}->add_options(arguments => { 
+        'warning:s'                   => { name => 'warning' },
+        'critical:s'                  => { name => 'critical' },
+        'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' },
+    });
 
+    $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -68,10 +67,12 @@ sub execute {
     my $total_problems_by_poller = {};
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (!defined($total_problems_by_poller->{$row->{name}})) {
-            $total_problems_by_poller->{$row->{name}} = { '0_1' => { label_perf => 'host_down', label => 'host down', num => 0 },
-                                                          '1_1' => { label_perf => 'service_warning', label => 'service warning', num => 0 },
-                                                          '1_2' => { label_perf => 'service_critical', label => 'service critical', num => 0 },
-                                                          '1_3' => { label_perf => 'service_unknown', label => 'service unknown', num => 0 }};
+            $total_problems_by_poller->{$row->{name}} = {
+                '0_1' => { label_perf => 'host_down', label => 'host down', num => 0 },
+                '1_1' => { label_perf => 'service_warning', label => 'service warning', num => 0 },
+                '1_2' => { label_perf => 'service_critical', label => 'service critical', num => 0 },
+                '1_3' => { label_perf => 'service_unknown', label => 'service unknown', num => 0 }
+            };
         }
 
         if ($row->{num} != 0 && defined($total_problems_by_poller->{$row->{name}}->{$row->{msg_type} . '_' . $row->{status}})) {
@@ -84,40 +85,50 @@ sub execute {
             $total_problems->{total} += $row->{num};
         }        
     }
-    
+
     $self->{output}->output_add(long_msg => sprintf("%d total hosts problems", $total_problems->{services}));
     $self->{output}->output_add(long_msg => sprintf("%d total services problems", $total_problems->{services}));
     foreach my $poller (sort keys %{$total_problems_by_poller}) {
         foreach my $id (sort keys %{$total_problems_by_poller->{$poller}}) {
-            $self->{output}->output_add(long_msg => sprintf("%d %s problems on %s", 
-                                                            $total_problems_by_poller->{$poller}->{$id}->{num},
-                                                            $total_problems_by_poller->{$poller}->{$id}->{label},
-                                                            $poller));
-            $self->{output}->perfdata_add(label => $total_problems_by_poller->{$poller}->{$id}->{label_perf} . "_" . $poller,
-                                          value => $total_problems_by_poller->{$poller}->{$id}->{num},
-                                          min => 0);
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "%d %s problems on %s", 
+                    $total_problems_by_poller->{$poller}->{$id}->{num},
+                    $total_problems_by_poller->{$poller}->{$id}->{label},
+                    $poller
+                )
+            );
+            $self->{output}->perfdata_add(
+                label => $total_problems_by_poller->{$poller}->{$id}->{label_perf} . "_" . $poller,
+                value => $total_problems_by_poller->{$poller}->{$id}->{num},
+                min => 0
+            );
         }
     }
-                                      
+
     my $exit_code = $self->{perfdata}->threshold_check(value => $total_problems->{total}, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,
                                 short_msg => sprintf("%d total problems", $total_problems->{total}));
-    $self->{output}->perfdata_add(label => 'total',
-                                  value => $total_problems->{total},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'total_hosts',
-                                  value => $total_problems->{hosts},
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'total_services',
-                                  value => $total_problems->{services},
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'total',
+        value => $total_problems->{total},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => 'total_hosts',
+        value => $total_problems->{hosts},
+        min => 0);
+    $self->{output}->perfdata_add(
+        label => 'total_services',
+        value => $total_problems->{services},
+        min => 0
+    );
 }
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
     $self->{statefile_cache}->read(statefile => 'sql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());

@@ -65,12 +65,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-poller:s" => { name => 'filter_poller' },
-                                  "centreon-storage-database:s" => { name => 'centreon_storage_database', default => 'centreon_storage' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-poller:s'             => { name => 'filter_poller' },
+        'centreon-storage-database:s' => { name => 'centreon_storage_database', default => 'centreon_storage' },
+    });
+
     return $self;
 }
 
@@ -78,7 +77,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $query = "SELECT instances.name, COUNT(DISTINCT hosts.host_id) as num_hosts, count(DISTINCT services.host_id, services.service_id) as num_services
-    FROM " . $self->{option_results}->{centreon_storage_database} .  ".instances, " . $self->{option_results}->{centreon_storage_database} . ".hosts, " . $self->{option_results}->{centreon_storage_database} . ".services WHERE instances.running = '1' AND instances.instance_id = hosts.instance_id AND hosts.enabled = '1' AND hosts.host_id = services.host_id AND services.enabled = '1' GROUP BY hosts.instance_id";
+        FROM " . $self->{option_results}->{centreon_storage_database} .  ".instances, " . $self->{option_results}->{centreon_storage_database} . ".hosts, " . $self->{option_results}->{centreon_storage_database} . ".services WHERE instances.running = '1' AND instances.instance_id = hosts.instance_id AND hosts.enabled = '1' AND hosts.host_id = services.host_id AND services.enabled = '1' GROUP BY hosts.instance_id";
     $options{sql}->connect();
     $options{sql}->query(query => $query);
 
