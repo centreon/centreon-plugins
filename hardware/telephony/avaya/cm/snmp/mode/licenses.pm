@@ -75,7 +75,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, foce_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -120,9 +120,7 @@ Check licenses usage.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%), 
-'swap' (B), 'swap-free' (B), 'swap-prct' (%),
-'buffer' (B), 'cached' (B), 'shared' (B).
+Can be: 'stations-usage', 'stations-usage-free', 'stations-usage-prct' (%).
 
 =back
 
