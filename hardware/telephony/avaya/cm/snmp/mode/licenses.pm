@@ -54,7 +54,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'stations-usage-free', display_ok => 0, nlabel => 'stations.capacity.free.bytes', set => {
+        { label => 'stations-usage-free', display_ok => 0, nlabel => 'stations.capacity.free.count', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_station_output'),
                 perfdatas => [
