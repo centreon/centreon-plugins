@@ -57,11 +57,12 @@ sub custom_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf('status : %s (%s) [type: %s] [remote hostname: %s] [plan name: %s] [end time: %s]',
+    my $msg = sprintf('status : %s (%s) [type: %s] [remote hostname: %s] [vmname: %s] [plan name: %s] [end time: %s]',
         $self->{result_values}->{status} == 1 ? 'ok' : 'failed',
         $self->{result_values}->{status},
         $self->{result_values}->{type},
         $self->{result_values}->{rhostname},
+        $self->{result_values}->{vmname},
         $self->{result_values}->{plan_name},
         scalar(localtime($self->{result_values}->{end_time}))
     );
@@ -90,7 +91,7 @@ sub set_counters {
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' }, 
-                    { name => 'type' }, { name => 'rhostname' }, { name => 'plan_name' },
+                    { name => 'type' }, { name => 'rhostname' }, { name => 'vmname' }, { name => 'plan_name' },
                     { name => 'elapsed_time' }, { name => 'end_time' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
@@ -107,14 +108,14 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-server-name:s'    => { name => 'filter_server_name' },
-        'filter-type:s'           => { name => 'filter_type' },
-        'filter-start-time:s'     => { name => 'filter_start_time' },
-        'filter-end-time:s'       => { name => 'filter_end_time', default => 86400 },
-        'ok-status:s'             => { name => 'ok_status', default => '%{status} == 1' },
-        'warning-status:s'        => { name => 'warning_status', default => '' },
-        'critical-status:s'       => { name => 'critical_status', default => '%{status} != 1' },
-        'timezone:s'              => { name => 'timezone' },
+        'filter-server-name:s' => { name => 'filter_server_name' },
+        'filter-type:s'        => { name => 'filter_type' },
+        'filter-start-time:s'  => { name => 'filter_start_time' },
+        'filter-end-time:s'    => { name => 'filter_end_time', default => 86400 },
+        'ok-status:s'          => { name => 'ok_status', default => '%{status} == 1' },
+        'warning-status:s'     => { name => 'warning_status', default => '' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{status} != 1' },
+        'timezone:s'           => { name => 'timezone' },
     });
     
     return $self;
@@ -125,7 +126,8 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => [
-        'ok_status', 'warning_status', 'critical_status']
+            'ok_status', 'warning_status', 'critical_status'
+        ]
     );
     
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
@@ -147,14 +149,16 @@ sub manage_selection {
                lj.jobId,
                lj.jobStatus,
                rhostname,
+               vmname,
                DATEDIFF(s, '1970-01-01 00:00:00', lj.jobLocalStartTime) as start_time,
                DATEDIFF(s, '1970-01-01 00:00:00', lj.jobLocalEndTime) as end_time,
                ep.name,
                lj.jobType,
                lj.jobStatus
         FROM as_edge_d2dJobHistory_lastJob lj LEFT OUTER JOIN as_edge_policy ep ON lj.planUUID = ep.uuid,
-               as_edge_host h
-        WHERE lj.agentId = h.rhostid
+            LEFT JOIN as_edge_host h on lj.agentId = h.rhostid
+            LEFT JOIN as_edge_vsphere_entity_host_map entityHostMap ON h.rhostid = entityHostMap.hostId
+            LEFT JOIN as_edge_vsphere_vm_detail vmDetail ON entityHostMap.entityId=vmDetail.entityId
     };
     $options{sql}->connect();
     $options{sql}->query(query => $query);
@@ -193,6 +197,7 @@ sub manage_selection {
             status => $row->{jobStatus},
             type => $row->{jobType},
             rhostname => $rhostname,
+            vmname => defined($row->{vmname}) && $row->{vmname} ne '' ? $row->{vmname} : '-',
             plan_name => $plan_name,
             end_time => $row->{end_time},
         };
