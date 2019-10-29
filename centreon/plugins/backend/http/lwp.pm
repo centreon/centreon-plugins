@@ -123,26 +123,33 @@ sub request {
             keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout},
             credentials => $request_options->{credentials}, username => $request_options->{username}, password => $request_options->{password});
         if (defined($request_options->{cookies_file})) {
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::Cookies',
-                                                   error_msg => "Cannot load module 'HTTP::Cookies'.");
-            $self->{ua}->cookie_jar(HTTP::Cookies->new(file => $request_options->{cookies_file},
-                                                       autosave => 1));
+            centreon::plugins::misc::mymodule_load(
+                output => $self->{output},
+                module => 'HTTP::Cookies',
+                error_msg => "Cannot load module 'HTTP::Cookies'."
+            );
+            $self->{ua}->cookie_jar(
+                HTTP::Cookies->new(
+                    file => $request_options->{cookies_file},
+                    autosave => 1
+                )
+            );
         }
     }
     
     if ($self->{output}->is_debug() && $self->{debug_handlers} == 0) {
         $self->{debug_handlers} = 1;
-        $self->{ua}->add_handler("request_send", sub {
+        $self->{ua}->add_handler('request_send', sub {
             my ($response, $ua, $handler) = @_;
 
-            $self->{output}->output_add(long_msg => "======> request send", debug => 1);
+            $self->{output}->output_add(long_msg => '======> request send', debug => 1);
             $self->{output}->output_add(long_msg => $response->as_string, debug => 1);
             return ; 
         });
         $self->{ua}->add_handler("response_done", sub { 
             my ($response, $ua, $handler) = @_;
             
-            $self->{output}->output_add(long_msg => "======> response done", debug => 1);
+            $self->{output}->output_add(long_msg => '======> response done', debug => 1);
             $self->{output}->output_add(long_msg => $response->as_string, debug => 1);
             return ;
         });
@@ -161,9 +168,9 @@ sub request {
     if (defined($request_options->{full_url})) {
         $url = $request_options->{full_url};
     } elsif (defined($request_options->{port}) && $request_options->{port} =~ /^[0-9]+$/) {
-        $url = $request_options->{proto}. "://" . $request_options->{hostname} . ':' . $request_options->{port} . $request_options->{url_path};
+        $url = $request_options->{proto}. '://' . $request_options->{hostname} . ':' . $request_options->{port} . $request_options->{url_path};
     } else {
-        $url = $request_options->{proto}. "://" . $request_options->{hostname} . $request_options->{url_path};
+        $url = $request_options->{proto}. '://' . $request_options->{hostname} . $request_options->{url_path};
     }
 
     my $uri = URI->new($url);
@@ -196,8 +203,11 @@ sub request {
     }
 
     if (defined($request_options->{credentials}) && defined($request_options->{ntlmv2})) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Authen::NTLM',
-                                               error_msg => "Cannot load module 'Authen::NTLM'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Authen::NTLM',
+            error_msg => "Cannot load module 'Authen::NTLM'."
+        );
         Authen::NTLM::ntlmv2(1);
     }
 
@@ -208,7 +218,7 @@ sub request {
     $self->set_proxy(request => $request_options, url => $url);
 
     if (defined($request_options->{cert_pkcs12}) && $request_options->{cert_file} ne '' && $request_options->{cert_pwd} ne '') {
-        eval "use Net::SSL"; die $@ if $@;
+        eval 'use Net::SSL'; die $@ if $@;
         $ENV{HTTPS_PKCS12_FILE} = $request_options->{cert_file};
         $ENV{HTTPS_PKCS12_PASSWORD} = $request_options->{cert_pwd};
     }
@@ -266,7 +276,8 @@ sub get_headers {
     
     my $headers = '';
     foreach ($options{response}->header_field_names()) {
-        $headers .= "$_: " . $options{response}->header($_) . "\n";
+        my $value = $options{response}->header($_);
+        $headers .= "$_: " . (defined($value) ? $value : '') . "\n";
     }
     
     return $headers;
