@@ -155,7 +155,7 @@ sub manage_selection {
                ep.name,
                lj.jobType,
                lj.jobStatus
-        FROM as_edge_d2dJobHistory_lastJob lj LEFT OUTER JOIN as_edge_policy ep ON lj.planUUID = ep.uuid,
+        FROM as_edge_d2dJobHistory_lastJob lj LEFT OUTER JOIN as_edge_policy ep ON lj.planUUID = ep.uuid
             LEFT JOIN as_edge_host h on lj.agentId = h.rhostid
             LEFT JOIN as_edge_vsphere_entity_host_map entityHostMap ON h.rhostid = entityHostMap.hostId
             LEFT JOIN as_edge_vsphere_vm_detail vmDetail ON entityHostMap.entityId=vmDetail.entityId
@@ -185,7 +185,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_server_name}) && $self->{option_results}->{filter_server_name} ne '' &&
-            $row->{rhostname} !~ /$self->{option_results}->{filter_server_name}/) {
+            ($row->{rhostname} !~ /$self->{option_results}->{filter_server_name}/ || $row->{vmname} !~ /$self->{option_results}->{filter_server_name}/)) {
             $self->{output}->output_add(long_msg => "skipping job '" . $row->{jobId} . "': no matching filter type.", debug => 1);
             next;
         }
