@@ -68,7 +68,7 @@ sub manage_selection {
     );
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
 
-    $self->{station} = { %$result };
+    $self->{global} = { %$result };
 }
 
 1;
