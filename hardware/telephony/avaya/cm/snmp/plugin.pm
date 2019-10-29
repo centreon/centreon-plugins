@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'trunks' => 'hardware::telephony::avaya::cm::snmp::mode::trunks',
+        'licenses' => 'hardware::telephony::avaya::cm::snmp::mode::licenses',
+        'trunks'   => 'hardware::telephony::avaya::cm::snmp::mode::trunks',
     );
 
     return $self;

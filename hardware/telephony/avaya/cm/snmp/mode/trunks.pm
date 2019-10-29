@@ -118,7 +118,7 @@ sub manage_selection {
         $self->{sig}->{$instance} = {
             display => $instance,
             state => $result->{avCmStatusSigGrpGrpState},
-            far_node => defined($result->{avCmListSigGrpFarNode}) ? $result->{avCmListSigGrpFarNode} : '-',
+            far_node => defined($result->{avCmListSigGrpFarNode}) && $result->{avCmListSigGrpFarNode} ne '' ? $result->{avCmListSigGrpFarNode} : '-',
         };
     }
 }
