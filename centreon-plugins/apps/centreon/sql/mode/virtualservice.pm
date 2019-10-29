@@ -364,7 +364,7 @@ sub manage_selection {
     }
 }
 
-1
+1;
 
 __END__
 
