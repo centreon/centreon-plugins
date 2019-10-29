@@ -34,8 +34,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "centreon-config:s" => { name => 'centreon_config', default => '/etc/centreon/centreon-config.pm' },
-        "bam-id:s"          => { name => 'bam_id', },
+        'centreon-config:s' => { name => 'centreon_config', default => '/etc/centreon/centreon-config.pm' },
+        'bam-id:s'          => { name => 'bam_id', },
     });
     $self->{options} = $options{options};
     
@@ -70,13 +70,15 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Cannot get bam information");
         $self->{output}->option_exit();
     }
-    
+
     $self->{perfdata}->threshold_validate(label => 'warning', value => $level_w . ':');
     $self->{perfdata}->threshold_validate(label => 'critical', value => $level_c . ':');
-    
+
     my $exit = $self->{perfdata}->threshold_check(value => $current_level, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf('BA : %s - current_level = %s%%', $name, $current_level));
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf('BA : %s - current_level = %s%%', $name, $current_level)
+    );
     $self->{output}->perfdata_add(
         label => 'BA_Level',
         unit => '%',
