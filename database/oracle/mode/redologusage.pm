@@ -115,7 +115,7 @@ __END__
 
 =head1 MODE
 
-Check Oracle library cache usage.
+Check Oracle redo log usage.
 
 =over 8
 
