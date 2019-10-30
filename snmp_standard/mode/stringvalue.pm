@@ -25,6 +25,7 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use Date::Parse;
 
 sub new {
     my ($class, %options) = @_;
