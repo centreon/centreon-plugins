@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use Date::Parse;
 
 sub new {
     my ($class, %options) = @_;
@@ -71,6 +70,8 @@ sub new {
         'map-value-other:s'       => { name => 'map_value_other' },
         'map-values-separator:s'  => { name => 'map_values_separator', default => ',' },
         'convert-custom-values:s' => { name => 'convert_custom_values' },
+
+        "use-perl-mod:s@"         => { name => 'use_perl_mod' },
     });
 
     $self->{macros} = { ok => {}, warning => {}, critical => {}, unknown => {} };
@@ -80,6 +81,11 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+
+    foreach my $mod (@{$self->{option_results}->{use_perl_mod}}) {
+        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod,
+                                               error_msg => "Cannot load module '" . $mod . "'.");
+    }
 
     $self->{option_results}->{oid_leef} = $self->{option_results}->{oid} if (defined($self->{option_results}->{oid}) && $self->{option_results}->{oid} ne '');
     if ((!defined($self->{option_results}->{oid_leef}) || $self->{option_results}->{oid_leef} eq '') &&
@@ -386,6 +392,11 @@ Separator uses between values (default: coma).
 
 Custom code to convert values.
 Example to convert octetstring to macaddress: --convert-custom-values='join(":", unpack("(H2)*", $value))'
+
+=item B<--use-perl-mod>
+
+Load additional Perl module (Can be multiple)
+Example : --use-perl-mod='Date::Parse'
 
 =back
 
