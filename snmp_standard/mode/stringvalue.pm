@@ -71,7 +71,7 @@ sub new {
         'map-values-separator:s'  => { name => 'map_values_separator', default => ',' },
         'convert-custom-values:s' => { name => 'convert_custom_values' },
 
-        "use-perl-mod:s@"         => { name => 'use_perl_mod' },
+        'use-perl-mod:s@'         => { name => 'use_perl_mod' },
     });
 
     $self->{macros} = { ok => {}, warning => {}, critical => {}, unknown => {} };
