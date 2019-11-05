@@ -44,6 +44,7 @@ sub new {
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s" => { name => 'command_options' },
                                   "manage-returns:s"  => { name => 'manage_returns', default => '' },
+                                  "separator:s"       => { name => 'separator', default => '#' },
                                 });
     $self->{manage_returns} = {};
     return $self;
@@ -58,7 +59,7 @@ sub check_options {
        $self->{output}->option_exit();
     }
     
-    foreach my $entry (split(/#/, $self->{option_results}->{manage_returns})) {
+    foreach my $entry (split(/$self->{option_results}->{separator}/, $self->{option_results}->{manage_returns})) {
         next if (!($entry =~ /(.*?),(.*?),(.*)/));
         next if (!$self->{output}->is_litteral_status(status => $2));
         if ($1 ne '') {
@@ -121,6 +122,10 @@ Check command returns.
 
 Set action according command exit code.
 Example: 0,OK,File xxx exist#1,CRITICAL,File xxx not exist#,UNKNOWN,Command problem
+
+=item B<--separator>
+
+Set the separator used in --manage-returns (default : #)
 
 =item B<--remote>
 
