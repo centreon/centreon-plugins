@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
+        'cmd-return'    => 'os::aix::local::mode::cmdreturn',
         'errpt'         => 'os::aix::local::mode::errpt',
         'inodes'        => 'os::aix::local::mode::inodes',
         'list-storages' => 'os::aix::local::mode::liststorages',
