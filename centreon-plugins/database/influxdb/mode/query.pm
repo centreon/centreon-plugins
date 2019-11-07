@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-use List::MoreUtils qw(first_index);
 
 sub custom_status_perfdata {
     my ($self, %options) = @_;
@@ -152,7 +151,7 @@ sub manage_selection {
 
         foreach my $result (@{$queries_results}) {
             next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));
-            my $column_index = first_index { $_ eq $self->{custom_keys}[$query_index] } @{$result->{columns}};
+            my ($column_index) = grep { $result->{columns}[$_] eq $self->{custom_keys}[$query_index] } (0 .. @{$result->{columns}}-1);
             my $value;
             $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index) if (defined($result->{values}));
             $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
