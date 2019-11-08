@@ -316,9 +316,9 @@ sub manage_selection {
             free => $free,
             total => $size,
             prct_used => $percent_used,
-            name => lc($name),
+            name => $name,
             type => $type,
-            status => $status,
+            status => $status
         };
     }
 
