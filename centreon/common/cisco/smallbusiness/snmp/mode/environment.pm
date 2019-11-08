@@ -28,7 +28,8 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(?:fan|psu|temperature)$';
+     $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -52,7 +53,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'centreon::common::cisco::smallbusiness::snmp::mode::components';
-    $self->{components_module} = ['psu', 'fan'];
+    $self->{components_module} = ['psu', 'fan', 'temperature'];
 }
 
 sub snmp_execute {
@@ -64,12 +65,11 @@ sub snmp_execute {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -80,14 +80,14 @@ __END__
 
 =head1 MODE
 
-Check environment (Fans, Power supplies).
+Check environment.
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'psu'.
+Can be: 'fan', 'psu', 'temperature'.
 
 =item B<--filter>
 
@@ -109,6 +109,16 @@ If total (with skipped) is 0. (Default: 'critical' returns).
 Set to overload default threshold values (syntax: section,[instance,]status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='fan,CRITICAL,^(?!(normal)$)'
+
+=item B<--warning>
+
+Set warning threshold (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Set critical threshold (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,40'
 
 =back
 
