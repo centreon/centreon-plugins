@@ -58,7 +58,9 @@ our @EXPORT_OK = qw(%map_default1_status %map_default2_status %map_online %map_d
 
 %map_degree_type = (
     0 => { unit => 'F', unit_long => 'fahrenheit' },
+    F => { unit => 'F', unit_long => 'fahrenheit' },
     1 => { unit => 'C', unit_long => 'celsius' },
+    C => { unit => 'C', unit_long => 'celsius' },
 );
 
 1;
