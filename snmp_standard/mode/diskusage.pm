@@ -49,7 +49,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'count', nlabel => 'storages.partitions.count', display_ok => 0, set => {
+        { label => 'count', nlabel => 'storages.partitions.count', display_ok => 1, set => {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Partitions count : %d',
                 perfdatas => [
