@@ -98,7 +98,7 @@ sub new {
     
     $options{options}->add_options(arguments => { 
         'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} !~ /readOnly/i' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /readOnly/i' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '' },
     });
@@ -166,12 +166,13 @@ sub manage_selection {
             $prct_free = 100 - $prct_used;
         }
         $self->{memory}->{$instance} = {
-            display => $result->{ciscoFlashPartitionName}, 
+            display => $result->{ciscoFlashPartitionName},
+            status => $result->{ciscoFlashPartitionStatus},
             free => $free,
             used => $used,
             prct_used => $prct_used,
             prct_free => $prct_free,
-            total => $total > 0,
+            total => $total,
         };
     }
     
@@ -193,7 +194,7 @@ Check memory flash usages.
 
 =item B<--unknown-status>
 
-Set unknown threshold for status (Default: '%{status} !~ /readOnly/i').
+Set unknown threshold for status (Default: '%{status} =~ /readOnly/i').
 Can used special variables like: %{status}, %{display}
 
 =item B<--warning-status>
