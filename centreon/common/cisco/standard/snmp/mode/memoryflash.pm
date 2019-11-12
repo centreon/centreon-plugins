@@ -24,69 +24,68 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
-sub custom_usage_perfdata {
+sub custom_status_output { 
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(
-        label => 'used', unit => 'B',
-        nlabel => $self->{nlabel},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
-        value => $self->{result_values}->{used},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
-        min => 0, max => $self->{result_values}->{total}
-    );
-}
-
-sub custom_usage_threshold {
-    my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    return $exit;
-}
-
-sub custom_usage_output {
-    my ($self, %options) = @_;
-    
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    my $msg = 'status : ' . $self->{result_values}->{status};
     return $msg;
 }
 
-sub custom_usage_calc {
+sub custom_mem_output {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
-    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
-    $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
-    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
-    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
-    return 0;
+    my $msg = sprintf("Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+        $self->{result_values}->{prct_used_absolute},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
+        $self->{result_values}->{prct_free_absolute});
+    return $msg;
 }
-
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory flash partitions are ok' }
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory flash partitions are ok', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{memory} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
         { label => 'usage', nlabel => 'memory.flash.usage.bytes', set => {
-                key_values => [ { name => 'display' }, { name => 'free' }, { name => 'total' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
-                closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_mem_output'),
+                perfdatas => [
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.flash.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_mem_output'),
+                perfdatas => [
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.flash.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'display' } ],
+                output_template => 'Used : %.2f %%',
+                perfdatas => [
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%',
+                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
             }
         },
     ];
@@ -94,14 +93,24 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} !~ /readOnly/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub prefix_memory_output {
@@ -110,12 +119,15 @@ sub prefix_memory_output {
     return "Partition '" . $options{instance_value}->{display} . "' ";
 }
 
+my $map_status = { 1 => 'readOnly', 2 => 'runFromFlash', 3 => 'readWrite' };
+
 my $mapping = {
-    ciscoFlashPartitionSize                 => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.4' },
-    ciscoFlashPartitionFreeSpace            => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.5' },
-    ciscoFlashPartitionName                 => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.10' },
-    ciscoFlashPartitionSizeExtended         => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.13' },
-    ciscoFlashPartitionFreeSpaceExtended    => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.14' },
+    ciscoFlashPartitionSize              => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.4' },
+    ciscoFlashPartitionFreeSpace         => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.5' },
+    ciscoFlashPartitionStatus            => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.8', map => $map_status },
+    ciscoFlashPartitionName              => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.10' },
+    ciscoFlashPartitionSizeExtended      => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.13' },
+    ciscoFlashPartitionFreeSpaceExtended => { oid => '.1.3.6.1.4.1.9.9.10.1.1.4.1.1.14' },
 };
 
 sub manage_selection {
@@ -146,15 +158,25 @@ sub manage_selection {
         if (defined($result->{ciscoFlashPartitionFreeSpaceExtended})) {
             $free = $result->{ciscoFlashPartitionFreeSpaceExtended};
         }
-        
-        $self->{memory}->{$instance} = { 
+
+        my ($used, $prct_used, $prct_free);
+        if ($total > 0) {
+            $used = $total - $free;
+            $prct_used = $used * 100 / $total;
+            $prct_free = 100 - $prct_used;
+        }
+        $self->{memory}->{$instance} = {
             display => $result->{ciscoFlashPartitionName}, 
-            free => $free, total => $total
+            free => $free,
+            used => $used,
+            prct_used => $prct_used,
+            prct_free => $prct_free,
+            total => $total > 0,
         };
     }
     
     if (scalar(keys %{$self->{memory}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No flash memory found.");
+        $self->{output}->add_option_msg(short_msg => 'No flash memory found.');
         $self->{output}->option_exit();
     }
 }
@@ -169,13 +191,25 @@ Check memory flash usages.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--unknown-status>
 
-Threshold warning (in percent).
+Set unknown threshold for status (Default: '%{status} !~ /readOnly/i').
+Can used special variables like: %{status}, %{display}
 
-=item B<--critical-usage>
+=item B<--warning-status>
 
-Threshold critical (in percent).
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{display}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}, %{display}
+
+=item B<--warning-*> B<--critical-usage>
+
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =item B<--filter-name>
 
