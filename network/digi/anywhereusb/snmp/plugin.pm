@@ -35,6 +35,7 @@ sub new {
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
         'memory'           => 'network::digi::anywhereusb::snmp::mode::memory',
+        'uptime'           => 'snmp_standard::mode::uptime',
     );
 
     return $self;
