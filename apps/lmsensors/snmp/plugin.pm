@@ -29,12 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-	$self->{version} = '0.1';
-	%{$self->{modes}} = (
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
         'sensors'    => 'apps::lmsensors::snmp::mode::sensors',
     );
 
-	return $self;
+    return $self;
 }
 
 1;

@@ -80,7 +80,7 @@ sub manage_selection {
             next;
         }
         
-    	if ($$row[3] == 0) {
+        if ($$row[3] == 0) {
             $self->{output}->output_add(severity => 'CRITICAL',
                                         short_msg => sprintf("%s is not running", $$row[1]));
             next;

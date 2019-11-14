@@ -63,12 +63,13 @@ sub custom_metric_perfdata {
     my $extra_label = '';
     $extra_label = '_' . lc($self->{result_values}->{display}) if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
 
-    $self->{output}->perfdata_add(label => lc($self->{result_values}->{metric}) . "_" . lc($self->{result_values}->{stat}) . $extra_label,
-				                  unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'B/s' : 'B',
-                                  value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
-                                 );
+    $self->{output}->perfdata_add(
+        label => lc($self->{result_values}->{metric}) . "_" . lc($self->{result_values}->{stat}) . $extra_label,
+		unit => defined($self->{instance_mode}->{option_results}->{per_sec}) ? 'B/s' : 'B',
+        value => sprintf("%.2f", defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value}),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . lc($self->{result_values}->{metric}) . "-" . lc($self->{result_values}->{stat})),
+    );
 }
 
 sub custom_metric_output {
@@ -94,27 +95,29 @@ sub set_counters {
 
     foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
         foreach my $metric ('ReplicationBytes') {
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' }, { name => 'timeframe' } ],
-                                closure_custom_calc => $self->can('custom_metric_calc'),
-                                closure_custom_calc_extra_options => { metric => $metric, stat => $statistic },
-                                closure_custom_output => $self->can('custom_metric_output'),
-                                closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
-                            }
-                        };
+            my $entry = {
+                label => lc($metric) . '-' . lc($statistic), set => {
+                    key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' }, { name => 'timeframe' } ],
+                    closure_custom_calc => $self->can('custom_metric_calc'),
+                    closure_custom_calc_extra_options => { metric => $metric, stat => $statistic },
+                    closure_custom_output => $self->can('custom_metric_output'),
+                    closure_custom_perfdata => $self->can('custom_metric_perfdata'),
+                    closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                }
+            };
             push @{$self->{maps_counters}->{metric}}, $entry;
         }
         foreach my $metric ('ReplicationLag') {
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' }, { name => 'timeframe' } ],
-                                output_template => $metric . ': %.2f s',
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                                ],
-                            }
-                        };
+            my $entry = {
+                label => lc($metric) . '-' . lc($statistic), set => {
+                    key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'stat' }, { name => 'timeframe' } ],
+                    output_template => $metric . ': %.2f s',
+                    perfdatas => [
+                        { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
+                          template => '%.2f', unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    ],
+                }
+            };
             push @{$self->{maps_counters}->{metric}}, $entry;
         }
     }
@@ -126,10 +129,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "name:s@"	      => { name => 'name' },
-        "node-id:s" 	  => { name => 'node_id' },
-        "filter-metric:s" => { name => 'filter_metric' },
-        "per-sec"         => { name => 'per_sec' },
+        'name:s@'         => { name => 'name' },
+        'node-id:s'       => { name => 'node_id' },
+        'filter-metric:s' => { name => 'filter_metric' },
+        'per-sec'         => { name => 'per_sec' },
     });
 
     return $self;
