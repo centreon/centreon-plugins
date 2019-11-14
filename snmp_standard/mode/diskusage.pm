@@ -44,7 +44,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_init => 'skip_global' },
+        { name => 'global', type => 0 },
         { name => 'diskpath', type => 1, cb_prefix_output => 'prefix_diskpath_output', message_multiple => 'All partitions are ok', skipped_code => { -10 => 1 } },
     ];
     
@@ -97,12 +97,6 @@ sub set_counters {
             }
         },
     ];
-}
-
-sub skip_global {
-    my ($self, %options) = @_;
-
-    scalar(keys %{$self->{diskpath}}) > 1 ? return(0) : return(1);
 }
 
 sub prefix_diskpath_output {
