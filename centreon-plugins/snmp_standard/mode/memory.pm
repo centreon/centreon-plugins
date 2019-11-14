@@ -45,7 +45,8 @@ sub custom_swap_output {
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
         $self->{result_values}->{prct_used_absolute},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute});
+        $self->{result_values}->{prct_free_absolute}
+    );
     return $msg;
 }
 
@@ -204,13 +205,12 @@ sub autodetect_rhel7 {
     # oracle 7.7: "Linux dev 4.14.35-1902.6.6.el7uek.x86_64 #2 SMP Tue Oct 8 07:32:21 PDT 2019 x86_64 x86_64 x86_64"
     return if (!defined($options{result}->{sysDescr})); 
     if ($options{result}->{sysDescr} =~ /3\.10\.0-(\d+)\..*?el7\./) {
-      my $build = $1;
-      if ($build >= 1062) {
-        $self->{option_results}->{redhat} = 1; }}
-    if ($options{result}->{sysDescr} =~ /4\.14\.35-(\d+)\..*?\.el7uek\./) {
-         my $build = $1;
-         if ($build >= 1902) {
-         $self->{option_results}->{redhat} = 1; }}
+        my $build = $1;
+        $self->{option_results}->{redhat} = 1 if ($build >= 1062);
+    } elsif ($options{result}->{sysDescr} =~ /4\.14\.35-(\d+)\..*?\.el7uek\./) {
+        my $build = $1;
+        $self->{option_results}->{redhat} = 1 if ($build >= 1902);
+    }
 }
 
 sub memory_calc {
