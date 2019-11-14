@@ -25,19 +25,19 @@ use warnings;
 use base qw(centreon::plugins::script_simple);
 
 sub new {
-	my ($class, %options) = @_;
-	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-	bless $self, $class;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-	$self->{version} = '0.1';
-	%{$self->{modes}} = (
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
         'expected-content'  => 'apps::protocols::http::mode::expectedcontent',
         'json-content'      => 'apps::protocols::http::mode::jsoncontent',
         'response'          => 'apps::protocols::http::mode::response',
         'soap-content'      => 'apps::protocols::http::mode::soapcontent',
     );
 
-	return $self;
+    return $self;
 }
 
 1;
