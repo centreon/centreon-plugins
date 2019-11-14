@@ -191,27 +191,26 @@ sub compute {
     my ($self, %options) = @_;
 
     my $result;
-
     if ($options{aggregation} eq 'average') {
         my $points = 0;
         foreach my $value (@{$options{values}}) {
             $result = 0 if (!defined($result));
-            $result += $$value[$options{column}];
+            $result += $value->[$options{column}];
             $points++;
         }
         $result /= $points;
     } elsif ($options{aggregation} eq 'minimum') {
         foreach my $value (@{$options{values}}) {
-            $result = $$value[$options{column}] if (!defined($result) || $$value[$options{column}] < $result);
+            $result = $value->[$options{column}] if (!defined($result) || $value->[$options{column}] < $result);
         }
     } elsif ($options{aggregation} eq 'maximum') {
         foreach my $value (@{$options{values}}) {
-            $result = $$value[$options{column}] if (!defined($result) || $$value[$options{column}] > $result);
+            $result = $value->[$options{column}] if (!defined($result) || $value->[$options{column}] > $result);
         }
     } elsif ($options{aggregation} eq 'sum') {
         foreach my $value (@{$options{values}}) {
             $result = 0 if (!defined($result));
-            $result += $$value[$options{column}];
+            $result += $value->[$options{column}];
         }
     }
 
