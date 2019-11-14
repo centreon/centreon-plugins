@@ -141,20 +141,22 @@ sub manage_selection {
     $self->{queries_results} = {};
     my (@results, @queries);
 
+    my $query_index = -1;
     foreach my $label (keys %{$self->{queries}}) {
+        $query_index++;
+        @queries = ();
         push @queries, $self->{queries}->{$label};
-    }
 
-    my $queries_results = [];
-    $queries_results = $options{custom}->query(queries => \@queries) if (scalar(@queries) > 0);
+        my $queries_results = $options{custom}->query(queries => \@queries);
 
-    foreach my $result (@{$queries_results}) {
-        next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));        
-        my $value;
-        $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}) if (defined($result->{values}));
-
-        $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
-        $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[1]} = $value;
+        foreach my $result (@{$queries_results}) {
+            next if (!defined($result->{tags}->{$self->{option_results}->{instance}}));
+            my ($column_index) = grep { $result->{columns}[$_] eq $self->{custom_keys}[$query_index] } (0 .. @{$result->{columns}}-1);
+            my $value;
+            $value = $options{custom}->compute(aggregation => $self->{option_results}->{aggregation}, values => $result->{values}, column => $column_index) if (defined($result->{values}));
+            $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{instance} = $result->{tags}->{$self->{option_results}->{instance}};
+            $self->{queries_results}->{$result->{tags}->{$self->{option_results}->{instance}}}->{$result->{columns}[$column_index]} = $value;
+        }
     }
 
     if (scalar(keys %{$self->{queries_results}}) <= 0) {
