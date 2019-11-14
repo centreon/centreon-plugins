@@ -175,7 +175,7 @@ sub query {
 
     my $data;
     foreach my $query (@{$options{queries}}) {
-        my $results = $self->request(method => 'POST', url_path => '/query', post_param => ['q=' . $query]);
+        my $results = $self->request(method => 'POST', url_path => '/query?epoch=s', post_param => ['q=' . $query]);
         
         if (defined($results->{results}[0]->{error})) {
             $self->{output}->add_option_msg(short_msg => "API returns error '" . $results->{results}[0]->{error} . "'");
@@ -196,22 +196,22 @@ sub compute {
         my $points = 0;
         foreach my $value (@{$options{values}}) {
             $result = 0 if (!defined($result));
-            $result += $$value[1];
+            $result += $$value[$options{column}];
             $points++;
         }
         $result /= $points;
     } elsif ($options{aggregation} eq 'minimum') {
         foreach my $value (@{$options{values}}) {
-            $result = $$value[1] if (!defined($result) || $$value[1] < $result);
+            $result = $$value[$options{column}] if (!defined($result) || $$value[$options{column}] < $result);
         }
     } elsif ($options{aggregation} eq 'maximum') {
         foreach my $value (@{$options{values}}) {
-            $result = $$value[1] if (!defined($result) || $$value[1] > $result);
+            $result = $$value[$options{column}] if (!defined($result) || $$value[$options{column}] > $result);
         }
     } elsif ($options{aggregation} eq 'sum') {
         foreach my $value (@{$options{values}}) {
             $result = 0 if (!defined($result));
-            $result += $$value[1];
+            $result += $$value[$options{column}];
         }
     }
 
