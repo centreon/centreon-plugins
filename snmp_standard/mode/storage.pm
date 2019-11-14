@@ -162,9 +162,21 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_init => 'skip_global' },
         { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages are ok', skipped_code => { -10 => 1 } },
     ];
     
+    $self->{maps_counters}->{global} = [
+        { label => 'count', nlabel => 'storage.partitions.count', display_ok => 0, set => {
+                key_values => [ { name => 'count' } ],
+                output_template => 'Partitions count : %d',
+                perfdatas => [
+                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
+    ];
+
     $self->{maps_counters}->{storage} = [
         { label => 'usage', nlabel => 'storage.space.usage.bytes', set => {
                 key_values => [ { name => 'display' }, { name => 'used' }, { name => 'size' }, { name => 'allocation_units' } ],
@@ -299,6 +311,7 @@ sub manage_selection {
     my $result = $options{snmp}->get_leef();
     my $access_result = $self->access_result(snmp => $options{snmp});
     
+    $self->{global}->{count} = 0;
     $self->{storage} = {};
     foreach (sort @{$self->{storage_id_selected}}) {
         my $name_storage = $self->get_display_value(id => $_);
@@ -324,6 +337,7 @@ sub manage_selection {
             used => $result->{$oid_hrStorageUsed . "." . $_},
             access => defined($access_result->{$_}) ? $access_result->{$_} : undef,
         };
+        $self->{global}->{count}++;
     }
     
     if (scalar(keys %{$self->{storage}}) <= 0) {
