@@ -58,6 +58,15 @@ sub set_system {
             ['Canceling', 'OK'],
             ['Degrade', 'WARNING'],
             ['Crashed', 'CRITICAL'],
+            ['DataScrubbing', 'OK'],
+            ['RaidDeploying', 'OK'],
+            ['RaidUnDeploying', 'OK'],
+            ['RaidMountCache', 'OK'],
+            ['RaidUnmountCache', 'OK'],
+            ['RaidExpandingUnfinishedSHR', 'OK'],
+            ['RaidConvertSHRToPool', 'OK'],
+            ['RaidMigrateSHR1ToSHR2', 'OK'],
+            ['RaidUnknownStatus', 'UNKNOWN'],
         ],
     };
     
