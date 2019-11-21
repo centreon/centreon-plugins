@@ -31,21 +31,21 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options' },
-                                  "manage-returns:s"  => { name => 'manage_returns', default => '' },
-                                  "separator:s"       => { name => 'separator', default => '#' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options' },
+        'manage-returns:s'  => { name => 'manage_returns', default => '' },
+        'separator:s'       => { name => 'separator', default => '#' },
+    });
+
     $self->{manage_returns} = {};
     return $self;
 }
@@ -55,8 +55,8 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (!defined($self->{option_results}->{command})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify command option.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Need to specify command option.");
+        $self->{output}->option_exit();
     }
     
     foreach my $entry (split(/$self->{option_results}->{separator}/, $self->{option_results}->{manage_returns})) {
@@ -77,31 +77,41 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                sudo => $self->{option_results}->{sudo},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                no_quit => 1);
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options},
+        no_quit => 1
+    );
     my $long_msg = $stdout;
     $long_msg =~ s/\|/~/mg;
     $self->{output}->output_add(long_msg => $long_msg);
     
     if (defined($self->{manage_returns}->{$exit_code})) {
-        $self->{output}->output_add(severity => $self->{manage_returns}->{$exit_code}->{return}, 
-                                    short_msg => $self->{manage_returns}->{$exit_code}->{msg});
+        $self->{output}->output_add(
+            severity => $self->{manage_returns}->{$exit_code}->{return}, 
+            short_msg => $self->{manage_returns}->{$exit_code}->{msg}
+        );
     } elsif (defined($self->{manage_returns}->{default})) {
-        $self->{output}->output_add(severity => $self->{manage_returns}->{default}->{return}, 
-                                    short_msg => $self->{manage_returns}->{default}->{msg});
+        $self->{output}->output_add(
+            severity => $self->{manage_returns}->{default}->{return}, 
+            short_msg => $self->{manage_returns}->{default}->{msg}
+        );
     } else {
-        $self->{output}->output_add(severity => 'UNKNWON', 
-                                    short_msg => 'Exit code from command');
+        $self->{output}->output_add(
+            severity => 'UNKNWON', 
+            short_msg => 'Exit code from command'
+        );
     }
     
     if (defined($exit_code)) {
-        $self->{output}->perfdata_add(label => "code",
-                                      value => $exit_code);
+        $self->{output}->perfdata_add(
+            label => 'code',
+            value => $exit_code
+        );
     }
     
     $self->{output}->display();
