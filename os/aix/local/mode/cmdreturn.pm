@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package os::linux::local::mode::cmdreturn;
+package os::aix::local::mode::cmdreturn;
 
 use base qw(centreon::plugins::mode);
 
