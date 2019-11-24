@@ -292,7 +292,7 @@ Set 3CX Port (Default: '443').
 
 =item B<--proto>
 
-Specify https if needed (Default: 'https').
+Specify http if needed (Default: 'https').
 
 =item B<--api-username>
 
