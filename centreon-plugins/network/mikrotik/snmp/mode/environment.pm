@@ -85,11 +85,6 @@ Can be: 'current', 'fan', 'psu', 'temperature', 'voltage'.
 Exclude some parts (comma seperated list) (Example: --filter=fan --filter=voltage)
 Can also exclude specific instance: --filter=fan,1.1
 
-=item B<--absent-problem>
-
-Return an error if an entity is not 'present' (default is skipping) (comma seperated list)
-Can be specific or global: --absent-problem=fan,1
-
 =item B<--no-component>
 
 Return an error if no compenents are checked.
