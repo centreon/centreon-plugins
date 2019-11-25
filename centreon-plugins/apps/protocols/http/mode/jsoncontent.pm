@@ -164,8 +164,10 @@ sub display_output {
             }
             $format =~ s/%\{$1\}/$replace/g;
         }
-        $self->{output}->output_add(severity => $severity,
-                                    short_msg => $format);
+        $self->{output}->output_add(
+            severity => $severity,
+            short_msg => $format
+        );
     }
 }
 
@@ -207,32 +209,44 @@ sub lookup {
     }
 
     if ($self->{option_results}->{threshold_value} eq 'count') {
-        my $exit = lc($self->{perfdata}->threshold_check(value => $self->{count},
-                                                         threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
+        my $exit = lc(
+            $self->{perfdata}->threshold_check(
+                value => $self->{count},
+                threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]
+            )
+        );
         push @{$self->{'values_' . $exit}}, $self->{count};
         $self->{'count_' . $exit}++;
     }
 
-    $self->{output}->perfdata_add(label => 'count',
-                                  value => $self->{count},
-                                  warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
-                                  critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'count',
+        value => $self->{count},
+        warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+        critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
+        min => 0
+    );
 
     my $count = 0;
     foreach my $value (@{$self->{values}}) {
         $count++;
         if ($value =~ /^[0-9.]+$/) {
             if ($self->{option_results}->{threshold_value} eq 'values') {
-                my $exit = lc($self->{perfdata}->threshold_check(value => $value,
-                                            threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]));
+                my $exit = lc(
+                    $self->{perfdata}->threshold_check(
+                        value => $value,
+                        threshold => [ { label => 'critical-numeric', exit_litteral => 'critical' }, { label => 'warning-numeric', exit_litteral => 'warning' } ]
+                    )
+                );
                 push @{$self->{'values_' . $exit}}, $value;
                 $self->{'count_' . $exit}++
             }
-            $self->{output}->perfdata_add(label => 'element_' . $count,
-                                          value => $value,
-                                          warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
-                                          critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef);
+            $self->{output}->perfdata_add(
+                label => 'element_' . $count,
+                value => $value,
+                warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+                critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef
+            );
         } else {
             if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' &&
                 $value =~ /$self->{option_results}->{critical_string}/) {
@@ -294,12 +308,14 @@ sub lookup_perfdata_nagios {
         # separate the value from the unit
         my ($value, $unit) = $value_w_unit =~ /(^[0-9]+\.*\,*[0-9]*)(.*)/g;
 
-        $self->{output}->perfdata_add(label => $label, unit => $unit,
-                                      value => $value,
-                                      warning => $warn,
-                                      critical => $crit,
-                                      min => $min,
-                                      max => $max);
+        $self->{output}->perfdata_add(
+            label => $label, unit => $unit,
+            value => $value,
+            warning => $warn,
+            critical => $crit,
+            min => $min,
+            max => $max
+        );
     }
 }
 
@@ -314,25 +330,31 @@ sub run {
 
     $self->{output}->output_add(long_msg => $self->{json_response}, debug => 1);
     if (!defined($self->{option_results}->{lookup}) || scalar(@{$self->{option_results}->{lookup}}) == 0) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "JSON webservice request success");
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => "JSON webservice request success"
+        );
     } else {
         $self->lookup();
     }
 
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical-time', exit_litteral => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $timeelapsed,
+        threshold => [ { label => 'critical-time', exit_litteral => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]
+    );
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Response time %.3fs", $timeelapsed));
     } else {
         $self->{output}->output_add(long_msg => sprintf("Response time %.3fs", $timeelapsed));
     }
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => "time", unit => 's',
+        value => sprintf('%.3f', $timeelapsed),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
+        min => 0
+    );
 
     $self->lookup_perfdata_nagios();
     
