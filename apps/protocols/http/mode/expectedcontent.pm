@@ -35,7 +35,6 @@ sub custom_content_threshold {
     return $self->{instance_mode}->{content_status};
 }
 
-
 sub custom_content_output {
     my ($self, %options) = @_;
 
@@ -108,44 +107,75 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"            => { name => 'hostname' },
-        "port:s"                => { name => 'port', },
-        "method:s"              => { name => 'method' },
-        "proto:s"               => { name => 'proto' },
-        "urlpath:s"             => { name => 'url_path' },
-        "credentials"           => { name => 'credentials' },
-        "basic"                 => { name => 'basic' },
-        "ntlmv2"                => { name => 'ntlmv2' },
-        "username:s"            => { name => 'username' },
-        "password:s"            => { name => 'password' },
-        "expected-string:s"     => { name => 'expected_string' },
-        "extracted-pattern:s"   => { name => 'extracted_pattern' },
-        "timeout:s"             => { name => 'timeout' },
-        "no-follow"             => { name => 'no_follow', },
-        "cert-file:s"           => { name => 'cert_file' },
-        "key-file:s"            => { name => 'key_file' },
-        "cacert-file:s"         => { name => 'cacert_file' },
-        "cert-pwd:s"            => { name => 'cert_pwd' },
-        "cert-pkcs12"           => { name => 'cert_pkcs12' },
-        "header:s@"             => { name => 'header' },
-        "get-param:s@"          => { name => 'get_param' },
-        "post-param:s@"         => { name => 'post_param' },
-        "cookies-file:s"        => { name => 'cookies_file' },
-        "unknown-status:s"      => { name => 'unknown_status' },
-        "warning-status:s"      => { name => 'warning_status' },
-        "critical-status:s"     => { name => 'critical_status' },
-        "unknown-content:s"     => { name => 'unknown_content', default => '' },
-        "warning-content:s"     => { name => 'warning_content', default => '' },
-        "critical-content:s"    => { name => 'critical_content', default => '' },
+        'hostname:s'            => { name => 'hostname' },
+        'port:s'                => { name => 'port', },
+        'method:s'              => { name => 'method' },
+        'proto:s'               => { name => 'proto' },
+        'urlpath:s'             => { name => 'url_path' },
+        'credentials'           => { name => 'credentials' },
+        'basic'                 => { name => 'basic' },
+        'ntlmv2'                => { name => 'ntlmv2' },
+        'username:s'            => { name => 'username' },
+        'password:s'            => { name => 'password' },
+        'expected-string:s'     => { name => 'expected_string' },
+        'extracted-pattern:s'   => { name => 'extracted_pattern' },
+        'timeout:s'             => { name => 'timeout' },
+        'no-follow'             => { name => 'no_follow', },
+        'cert-file:s'           => { name => 'cert_file' },
+        'key-file:s'            => { name => 'key_file' },
+        'cacert-file:s'         => { name => 'cacert_file' },
+        'cert-pwd:s'            => { name => 'cert_pwd' },
+        'cert-pkcs12'           => { name => 'cert_pkcs12' },
+        'data:s'                => { name => 'data' },
+        'header:s@'             => { name => 'header' },
+        'get-param:s@'          => { name => 'get_param' },
+        'post-param:s@'         => { name => 'post_param' },
+        'cookies-file:s'        => { name => 'cookies_file' },
+        'unknown-status:s'      => { name => 'unknown_status' },
+        'warning-status:s'      => { name => 'warning_status' },
+        'critical-status:s'     => { name => 'critical_status' },
+        'unknown-content:s'     => { name => 'unknown_content', default => '' },
+        'warning-content:s'     => { name => 'warning_content', default => '' },
+        'critical-content:s'    => { name => 'critical_content', default => '' },
     });
     
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
+sub load_request {
+    my ($self, %options) = @_;
+
+    $self->{options_request} = {};
+    if (defined($self->{option_results}->{data}) && $self->{option_results}->{data} ne '') {
+        $self->{option_results}->{method} = 'POST';
+        if (-f $self->{option_results}->{data} and -r $self->{option_results}->{data}) {
+            local $/ = undef;
+            my $fh;
+            if (!open($fh, "<:encoding(UTF-8)", $self->{option_results}->{data})) {
+                $self->{output}->output_add(
+                    severity => 'UNKNOWN',
+                    short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!)
+                );
+                $self->{output}->display();
+                $self->{output}->exit();
+            }
+            my $file_content = <$fh>;
+            close $fh;
+            $/ = "\n";
+            chomp $file_content;
+            $self->{options_request}->{query_form_post} = $file_content;
+        } else {
+            $self->{options_request}->{query_form_post} = $self->{option_results}->{data};
+        }
+    }
+}
+
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
+
+    $self->load_request();
 
     # Legacy compat
     if (defined($self->{option_results}->{expected_string}) && $self->{option_results}->{expected_string} ne '') {
@@ -160,7 +190,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $timing0 = [gettimeofday];
-    my $webcontent = $self->{http}->request();
+    my $webcontent = $self->{http}->request(%{$self->{options_request}});
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
         
     $self->{global} = { 
@@ -271,6 +301,10 @@ Specify certificate's password
 =item B<--cert-pkcs12>
 
 Specify type of certificate (PKCS12)
+
+=item B<--data>
+
+Set POST data request (For a JSON data, add following option: --header='Content-Type: application/json')
 
 =item B<--header>
 
