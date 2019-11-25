@@ -53,7 +53,6 @@ sub load {
 sub check {
     my ($self) = @_;
 
-    
     $self->{output}->output_add(long_msg => "Checking sensors");
     $self->{components}->{sensor} = {name => 'sensors', total => 0, skip => 0};
     return if ($self->check_filter(section => 'sensor'));
