@@ -35,6 +35,7 @@ sub new {
         'hardware'         => 'network::dlink::dgs3100::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'uptime'           => 'snmp_standard::mode::uptime',
     );
 
     return $self;
