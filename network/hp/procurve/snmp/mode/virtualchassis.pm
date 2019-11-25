@@ -106,6 +106,14 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
+        { label => 'members-total', nlabel => 'stack.members.total.count', set => {
+                key_values => [ { name => 'members'} ],
+                output_template => 'total members: %s',
+                perfdatas => [
+                    { value => 'members_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
     ];
 
     $self->{maps_counters}->{member_global} = [
@@ -312,6 +320,8 @@ sub manage_selection {
         }
     }
 
+    $self->{global}->{members} = scalar(keys %{$self->{member}});
+
     $self->{cache_name} = 'hp_procurve_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
@@ -374,10 +384,9 @@ Can used special variables like: %{link_status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'memory-usage-prct', 'memory-usage', 'memory-usage-free',
+Can be: 'members-total', 'memory-usage-prct', 'memory-usage', 'memory-usage-free',
 'cpu-utilization'.
 
 =back
 
 =cut
-    
