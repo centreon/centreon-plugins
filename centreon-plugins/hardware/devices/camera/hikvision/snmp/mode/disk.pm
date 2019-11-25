@@ -97,14 +97,14 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    if ($snmp_result->{$oid_diskSize} !~ /(\d+)\s+(\S+)/) {
+    if ($snmp_result->{$oid_diskSize} !~ /([0-9\.]+)\s+(\S+)/) {
         $self->{output}->add_option_msg(short_msg => 'cannot parse disk size: ' . $snmp_result->{$oid_diskSize});
         $self->{output}->option_exit();
     }
     my ($total, $unit) = ($1, $2);
     $total = centreon::plugins::misc::convert_bytes(value => $total, unit => $unit);
 
-    if ($snmp_result->{$oid_diskPercent} !~ /(\d+)/) {
+    if ($snmp_result->{$oid_diskPercent} !~ /([0-9\.]+)/) {
         $self->{output}->add_option_msg(short_msg => 'cannot parse disk used: ' . $snmp_result->{$oid_diskPercent});
         $self->{output}->option_exit();
     }
