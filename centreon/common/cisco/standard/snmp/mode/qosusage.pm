@@ -106,7 +106,8 @@ sub custom_traffic_perfdata {
     my ($self, %options) = @_;
     
     my ($warning, $critical);
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' &&
+        (defined($self->{result_values}->{total}) && $self->{result_values}->{total} =~ /[0-9]/)) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1);
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
