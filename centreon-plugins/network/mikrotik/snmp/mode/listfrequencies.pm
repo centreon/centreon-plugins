@@ -30,11 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "oid-filter:s"            => { name => 'oid_filter', default => 'ifname' },
-                                  "oid-display:s"           => { name => 'oid_display', default => 'ifname' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'oid-filter:s'  => { name => 'oid_filter', default => 'ifname' },
+        'oid-display:s' => { name => 'oid_display', default => 'ifname' },
+    });
 
     $self->{oids_label} = {
         'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
@@ -85,8 +84,10 @@ sub run {
         }
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Frequencies:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'Frequencies:'
+    );
 
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();

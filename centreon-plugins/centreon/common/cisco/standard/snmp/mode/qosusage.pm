@@ -230,6 +230,10 @@ my $mapping2 = {
     cbQosTSCfgRate      => { oid => '.1.3.6.1.4.1.9.9.166.1.13.1.1.1' }, # bps
     cbQosTSCfgRate64    => { oid => '.1.3.6.1.4.1.9.9.166.1.13.1.1.11' }, # bps
 };
+my $mapping3 = {
+    cbQosQueueingCfgBandwidth      => { oid => '.1.3.6.1.4.1.9.9.166.1.9.1.1.1' },
+    cbQosQueueingCfgBandwidthUnits => { oid => '.1.3.6.1.4.1.9.9.166.1.9.1.1.2' },
+};
 
 my $oid_cbQosIfIndex = '.1.3.6.1.4.1.9.9.166.1.1.1.1.4';
 my $oid_cbQosConfigIndex = '.1.3.6.1.4.1.9.9.166.1.5.1.1.2';
@@ -242,8 +246,7 @@ my $oid_cbQosPolicyMapName = '.1.3.6.1.4.1.9.9.166.1.6.1.1.1';
 # Shaping : Linked to a classmap
 my $oid_cbQosTSCfgEntry = '.1.3.6.1.4.1.9.9.166.1.13.1.1';
 # Linked to a classmap
-my $oid_cbQosQueueingCfgBandwidth = '.1.3.6.1.4.1.9.9.166.1.9.1.1.1';
-my $oid_cbQosQueueingCfgBandwidthUnits = '.1.3.6.1.4.1.9.9.166.1.9.1.1.2';
+my $oid_cbQosQueueingCfgEntry = '.1.3.6.1.4.1.9.9.166.1.9.1.1';
 
 sub build_qos_information {
     my ($self, %options) = @_;
@@ -288,11 +291,10 @@ sub manage_selection {
         { oid => $oid_cbQosIfIndex },
         { oid => $oid_cbQosConfigIndex },
         { oid => $oid_cbQosCMName },
-        { oid => $oid_cbQosQueueingCfgBandwidth },
-        { oid => $oid_cbQosQueueingCfgBandwidthUnits },
-        { oid => $oid_cbQosCMStatsEntry },
+        { oid => $oid_cbQosQueueingCfgEntry, end => $mapping3->{cbQosQueueingCfgBandwidthUnits}->{oid} },
+        { oid => $oid_cbQosCMStatsEntry, start => $mapping->{cbQosCMPrePolicyByteOverflow}->{oid}, end => $mapping->{cbQosCMDropByte64}->{oid} },
         { oid => $oid_cbQosParentObjectsIndex },
-        { oid => $oid_cbQosTSCfgEntry },
+        { oid => $oid_cbQosTSCfgEntry, end => $mapping2->{cbQosTSCfgRate64}->{oid} },
     ];
     push @$request_oids, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}} } 
         if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display});
@@ -309,7 +311,7 @@ sub manage_selection {
     foreach (keys %{$self->{results}->{$oid_cbQosParentObjectsIndex}}) {
         /(\d+)\.(\d+)$/;
         my $config_index = $self->{results}->{$oid_cbQosConfigIndex}->{$oid_cbQosConfigIndex . '.' . $1 . '.' . $2};
-        if (defined($self->{results}->{$oid_cbQosQueueingCfgBandwidth}->{$oid_cbQosQueueingCfgBandwidth . '.' . $config_index})) {
+        if (defined($self->{results}->{$oid_cbQosQueueingCfgEntry}->{$mapping3->{cbQosQueueingCfgBandwidth}->{oid} . '.' . $config_index})) {
             $link_queueing->{$1 . '.' . $self->{results}->{$oid_cbQosParentObjectsIndex}->{$_}} = $config_index;
         } elsif (defined($self->{results}->{$oid_cbQosTSCfgEntry}->{$mapping2->{cbQosTSCfgRate}->{oid} . '.' . $config_index})) {
             $link_shaping->{$1 . '.' . $self->{results}->{$oid_cbQosParentObjectsIndex}->{$_}} = $config_index;
@@ -320,7 +322,7 @@ sub manage_selection {
         next if (!/$mapping->{cbQosCMPrePolicyByte}->{oid}\.(\d+)\.(\d+)/);
         
         my ($policy_index, $qos_object_index) = ($1, $2);
-        
+
         my $class_name = $classmap_name{$policy_index . '.' . $qos_object_index};
         my $if_index = $self->{results}->{$oid_cbQosIfIndex}->{$oid_cbQosIfIndex . '.' . $policy_index};
         if (!defined($self->{results}->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}->{$self->{oids_label}->{$self->{option_results}->{oid_display}} . '.' . $if_index})) {
@@ -333,7 +335,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping interface index '" . $if_index . "': no filter name.", debug => 1);
             next;
         }
-        
+
         my $qos_data = $self->build_qos_information(class_name => $class_name, policy_index => $policy_index, object_index => $qos_object_index,
             link_queueing => $link_queueing, link_shaping => $link_shaping);
         

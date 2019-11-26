@@ -30,11 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "oid-filter:s"            => { name => 'oid_filter', default => 'ifname' },
-                                  "oid-display:s"           => { name => 'oid_display', default => 'ifname' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'oid-filter:s'  => { name => 'oid_filter', default => 'ifname' },
+        'oid-display:s' => { name => 'oid_display', default => 'ifname' },
+    });
 
     $self->{oids_label} = {
         'ifdesc' => '.1.3.6.1.2.1.2.2.1.2',
@@ -80,7 +79,7 @@ sub run {
         my $display_value = $self->get_display_value(id => $_);
         my $oid = $mktFrequenOid . $_;
         my $snmp_result = $options{snmp}->get_leef(oids => [$oid]);
-        if(defined($snmp_result->{$oid})){
+        if (defined($snmp_result->{$oid})){
             $self->{output}->output_add(long_msg => $display_value . " : " . $snmp_result->{$oid});
         }
     }
