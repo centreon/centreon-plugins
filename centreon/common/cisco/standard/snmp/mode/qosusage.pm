@@ -37,7 +37,7 @@ sub set_counters {
 
     $self->{maps_counters}->{interface_classmap} = [
          { label => 'int-cmap-traffic', set => {
-                key_values => [ { name => 'display' }, { name => 'traffic_usage', diff => 1 }, { name => 'total' } ],
+                key_values => [ { name => 'traffic_usage', diff => 1 }, { name => 'total' }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'),
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -120,7 +120,7 @@ sub custom_traffic_perfdata {
         value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
         warning => $warning,
         critical => $critical,
-        min => 0, max => $self->{result_values}->{total}
+        min => 0, max => ($self->{result_values}->{total} =~ /[0-9]/ ? $self->{result_values}->{total} : undef)
     );
 }
 
@@ -128,7 +128,8 @@ sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && 
+        (defined($self->{result_values}->{total}) && $self->{result_values}->{total} =~ /[0-9]/)) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
