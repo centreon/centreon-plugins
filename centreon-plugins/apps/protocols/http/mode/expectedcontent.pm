@@ -152,7 +152,7 @@ sub load_request {
         if (-f $self->{option_results}->{data} and -r $self->{option_results}->{data}) {
             local $/ = undef;
             my $fh;
-            if (!open($fh, "<:encoding(UTF-8)", $self->{option_results}->{data})) {
+            if (!open($fh, "<", $self->{option_results}->{data})) {
                 $self->{output}->output_add(
                     severity => 'UNKNOWN',
                     short_msg => sprintf("Could not read file '%s': %s", $self->{option_results}->{data}, $!)
@@ -160,11 +160,8 @@ sub load_request {
                 $self->{output}->display();
                 $self->{output}->exit();
             }
-            my $file_content = <$fh>;
+            $self->{options_request}->{query_form_post} = <$fh>;
             close $fh;
-            $/ = "\n";
-            chomp $file_content;
-            $self->{options_request}->{query_form_post} = $file_content;
         } else {
             $self->{options_request}->{query_form_post} = $self->{option_results}->{data};
         }
