@@ -34,6 +34,7 @@ sub new {
         'cpu'    => 'hardware::devices::camera::hikvision::snmp::mode::cpu',
         'disk'   => 'hardware::devices::camera::hikvision::snmp::mode::disk',
         'memory' => 'hardware::devices::camera::hikvision::snmp::mode::memory',
+        'time'   => 'hardware::devices::camera::hikvision::snmp::mode::time'
     );
 
     return $self;

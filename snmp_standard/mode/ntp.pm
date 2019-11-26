@@ -82,13 +82,39 @@ sub check_options {
     }
 }
 
-sub manage_selection {
+sub get_target_time {
     my ($self, %options) = @_;
-    $self->{offset} = {};
 
-    my ($ref_time, $distant_time);
     my $oid_hrSystemDate = '.1.3.6.1.2.1.25.1.2.0';
     my $result = $options{snmp}->get_leef(oids => [ $oid_hrSystemDate ], nothing_quit => 1);
+
+    my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
+    my $timezone = 'UTC';
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        $timezone = $self->{option_results}->{timezone};
+    } elsif (defined($remote_date[9])) {
+        $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
+    }
+
+    my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
+    my $dt = DateTime->new(
+      year       => $remote_date[0],
+      month      => $remote_date[1],
+      day        => $remote_date[2],
+      hour       => $remote_date[3],
+      minute     => $remote_date[4],
+      second     => $remote_date[5],
+      %$tz
+    );
+
+    return ($dt->epoch, \@remote_date, $timezone);
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my ($disant_time, $remote_date, $timezone) = $self->get_target_time(%options);
+    my $ref_time;
     if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
         
@@ -109,37 +135,15 @@ sub manage_selection {
         $ref_time = time();
     }
 
-    my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
-    my $timezone = 'UTC';
-    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
-        $timezone = $self->{option_results}->{timezone};
-    } elsif (defined($remote_date[9])) {
-        $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
-    }
-
-    my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
-    my $dt = DateTime->new(
-      year       => $remote_date[0],
-      month      => $remote_date[1],
-      day        => $remote_date[2],
-      hour       => $remote_date[3],
-      minute     => $remote_date[4],
-      second     => $remote_date[5],
-      %$tz
-    );
-    $distant_time = $dt->epoch;
-
-    my $offset = $distant_time - $ref_time;
+    my $offset = $disant_time - $ref_time;
     my $remote_date_formated = sprintf(
         'Local Time : %02d-%02d-%02dT%02d:%02d:%02d (%s)',
-        $remote_date[0], $remote_date[1], $remote_date[2],
-        $remote_date[3], $remote_date[4], $remote_date[5], $timezone
+        $remote_date->[0], $remote_date->[1], $remote_date->[2],
+        $remote_date->[3], $remote_date->[4], $remote_date->[5], $timezone
     );
 
-    my $formated_offset = sprintf("%d", $offset);
-
     $self->{offset} = { 
-        offset => $formated_offset,
+        offset => sprintf("%d", $offset),
         date => $remote_date_formated,
     };    
 }
