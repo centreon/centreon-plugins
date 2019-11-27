@@ -48,10 +48,10 @@
 
       my ($start, $end);
       my %months = ("Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5, "Jun" => 6, "Jul" => 7, "Aug" => 8, "Sep" => 9, "Oct" => 10, "Nov" => 11, "Dec" => 12);
-      if (defined($self->{result_values}->{start_time}) && $self->{result_values}->{start_time} =~ /^(\w+)\s(\w+)\s(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) { # Mon Jan 01 13:01:23 2018
+      if (defined($self->{result_values}->{start_time}) && $self->{result_values}->{start_time} =~ /^(\w+)\s(\w+)\s+(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) { # Mon Jan  1 13:01:23 2018 or Mon Jan 15 13:01:23
           $start = DateTime->new(year => $7, month => $months{$2}, day => $3, hour => $4, minute => $5, second => $6);
       }
-      if (defined($self->{result_values}->{completion_time}) && $self->{result_values}->{completion_time} =~ /^(\w+)\s(\w+)\s(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) {
+      if (defined($self->{result_values}->{completion_time}) && $self->{result_values}->{completion_time} =~ /^(\w+)\s(\w+)\s+(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) {
           $end = DateTime->new(year => $7, month => $months{$2}, day => $3, hour => $4, minute => $5, second => $6);
       }
 
@@ -64,7 +64,7 @@
 
   sub prefix_output {
       my ($self, %options) = @_;
-      
+
       return "VTL deduplication '" . $options{instance_value}->{name} . "' ";
   }
 
@@ -203,77 +203,77 @@
       }
   }
 
-  1;
+1;
 
-  __END__
- 
-  =head1 MODE
+__END__
 
-  Check deduped VTL on source.
+=head1 MODE
 
-  =over 8
+Check deduped VTL on source.
 
-  =item B<--hostname>
+=over 8
 
-  Hostname to query.
+=item B<--hostname>
 
-  =item B<--filter-counters>
+Hostname to query.
 
-  Only display some counters (regexp can be used).
-  Example: --filter-counters='status'
+=item B<--filter-counters>
 
-  =item B<--warning-status>
+Only display some counters (regexp can be used).
+Example: --filter-counters='status'
 
-  Set warning threshold for status (Default: '%{state} !~ /Enabled/i').
-  Can used special variables like: %{status}, %{state}, %{duration}, %{percent_complete}.
+=item B<--warning-status>
 
-  =item B<--critical-status>
+Set warning threshold for status (Default: '%{state} !~ /Enabled/i').
+Can used special variables like: %{status}, %{state}, %{duration}, %{percent_complete}.
 
-  Set critical threshold for status (Default: '').
-  Can used special variables like: %{status}, %{state}, %{duration}, %{percent_complete}.
+=item B<--critical-status>
 
-  =item B<--warning-*>
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}, %{state}, %{duration}, %{percent_complete}.
 
-  Threshold warning.
-  Can be: 'original-data-size', 'sent-data-size'.
+=item B<--warning-*>
 
-  =item B<--critical-*>
+Threshold warning.
+Can be: 'original-data-size', 'sent-data-size'.
 
-  Threshold critical.
-  Can be: 'original-data-size', 'sent-data-size'.
+=item B<--critical-*>
 
-  =item B<--ssh-option>
+Threshold critical.
+Can be: 'original-data-size', 'sent-data-size'.
 
-  Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
+=item B<--ssh-option>
 
-  =item B<--ssh-path>
+Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
 
-  Specify ssh command path (default: none)
+=item B<--ssh-path>
 
-  =item B<--ssh-command>
+Specify ssh command path (default: none)
 
-  Specify ssh command (default: 'ssh'). Useful to use 'plink'.
+=item B<--ssh-command>
 
-  =item B<--timeout>
+Specify ssh command (default: 'ssh'). Useful to use 'plink'.
 
-  Timeout in seconds for the command (Default: 30).
+=item B<--timeout>
 
-  =item B<--sudo>
+Timeout in seconds for the command (Default: 30).
 
-  Use 'sudo' to execute the command.
+=item B<--sudo>
 
-  =item B<--command>
+Use 'sudo' to execute the command.
 
-  Command to get information (Default: 'syscli').
+=item B<--command>
 
-  =item B<--command-path>
+Command to get information (Default: 'syscli').
 
-  Command path.
+=item B<--command-path>
 
-  =item B<--command-options>
+Command path.
 
-  Command options (Default: '--list dedupvtl').
+=item B<--command-options>
 
-  =back
+Command options (Default: '--list dedupvtl').
 
-  =cut
+=back
+
+=cut
