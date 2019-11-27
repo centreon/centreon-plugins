@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     my $msg = sprintf("Status is '%s' [State: %s], Duration: %s, Percent complete: %s%%",
         $self->{result_values}->{status}, $self->{result_values}->{state},
         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration}),
@@ -39,7 +39,7 @@ sub custom_status_output {
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{start_time} = $options{new_datas}->{$self->{instance} . '_start_time'};
@@ -48,10 +48,10 @@ sub custom_status_calc {
 
     my ($start, $end);
     my %months = ("Jan" => 1, "Feb" => 2, "Mar" => 3, "Apr" => 4, "May" => 5, "Jun" => 6, "Jul" => 7, "Aug" => 8, "Sep" => 9, "Oct" => 10, "Nov" => 11, "Dec" => 12);
-    if (defined($self->{result_values}->{start_time}) && $self->{result_values}->{start_time} =~ /^(\w+)\s(\w+)\s(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) { # Mon Jan 01 13:01:23 2018
+    if (defined($self->{result_values}->{start_time}) && $self->{result_values}->{start_time} =~ /^(\w+)\s(\w+)\s+(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) { # Mon Jan  1 13:01:23 2018 or Mon Jan 15 13:01:23 
         $start = DateTime->new(year => $7, month => $months{$2}, day => $3, hour => $4, minute => $5, second => $6);
     }
-    if (defined($self->{result_values}->{completion_time}) && $self->{result_values}->{completion_time} =~ /^(\w+)\s(\w+)\s(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) {
+    if (defined($self->{result_values}->{completion_time}) && $self->{result_values}->{completion_time} =~ /^(\w+)\s(\w+)\s+(\d+)\s(\d+):(\d+):(\d+)\s(\d+)$/) {
         $end = DateTime->new(year => $7, month => $months{$2}, day => $3, hour => $4, minute => $5, second => $6);
     }
 
@@ -70,11 +70,11 @@ sub prefix_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All NAS deduplication are ok', message_separator => ' - ' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'state' }, { name => 'start_time' },
@@ -112,9 +112,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments =>
-                                { 
+                                {
                                   "hostname:s"          => { name => 'hostname' },
                                   "ssh-option:s@"       => { name => 'ssh_option' },
                                   "ssh-path:s"          => { name => 'ssh_path' },
@@ -127,7 +127,7 @@ sub new {
                                   "warning-status:s"    => { name => 'warning_status', default => '%{state} !~ /Enabled/i' },
                                   "critical-status:s"   => { name => 'critical_status', default => '' },
                                 });
-    
+
     return $self;
 }
 
