@@ -122,9 +122,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"   => { name => 'filter_name' },
-        "units:s"         => { name => 'units', default => '%' },
-        "free"            => { name => 'free' },
+        'filter-name:s'   => { name => 'filter_name' },
+        'units:s'         => { name => 'units', default => '%' },
+        'free'            => { name => 'free' },
     });
 
     return $self;
@@ -141,9 +141,10 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{storage} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_nsSysHealthDiskEntry,
-                                                nothing_quit => 1);
-
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_nsSysHealthDiskEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{sysHealthDiskName}->{oid}\.(.*)$/);
