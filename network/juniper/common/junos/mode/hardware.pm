@@ -50,11 +50,11 @@ sub set_system {
             ['empty', 'OK'],
         ],
         operating => [
+            ['runningAtFullSpeed', 'WARNING'],
             ['unknown', 'UNKNOWN'],
             ['running', 'OK'], 
             ['ready', 'OK'], 
             ['reset', 'WARNING'],
-            ['runningAtFullSpeed', 'WARNING'],
             ['down', 'CRITICAL'],
             ['standby', 'OK'],
         ],
