@@ -159,7 +159,7 @@ sub prefix_pool_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/api/types/pool/instances');
+    my $results = $options{custom}->request_api(url_path => '/api/types/pool/instances?fields=name,sizeFree,sizeSubscribed,sizeTotal,health');
 
     $self->{pool} = {};
     foreach (@{$results->{entries}}) {

@@ -27,7 +27,7 @@ use storage::emc::unisphere::restapi::mode::components::resources qw($health_sta
 sub load {
     my ($self) = @_;
 
-    $self->{json_results}->{dpe} = $self->{custom}->request_api(method => 'GET', url_path => '/api/types/dpe/instances');
+    $self->{json_results}->{dpe} = $self->{custom}->request_api(method => 'GET', url_path => '/api/types/dpe/instances?fields=name,health,currentPower,currentTemperature');
 }
 
 sub check {

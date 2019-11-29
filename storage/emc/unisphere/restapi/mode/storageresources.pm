@@ -68,7 +68,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'sr', type => 1, cb_prefix_output => 'prefix_sr_output', message_multiple => 'All storage resources are ok' },
+        { name => 'sr', type => 1, cb_prefix_output => 'prefix_sr_output', message_multiple => 'All storage resources are ok', skipped_code => { -10 => 1 } },
     ];
     
     $self->{maps_counters}->{sr} = [
@@ -159,7 +159,7 @@ sub prefix_sr_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->request_api(url_path => '/api/types/storageResource/instances');
+    my $results = $options{custom}->request_api(url_path => '/api/types/storageResource/instances?fields=name,health,sizeUsed,sizeAllocated,sizeTotal');
 
     $self->{sr} = {};
     foreach (@{$results->{entries}}) {
@@ -173,16 +173,20 @@ sub manage_selection {
             display => $_->{content}->{name},
             status => $health_status->{ $_->{content}->{health}->{value} },
             total_space => $_->{content}->{sizeTotal},
-            used_space => $_->{content}->{sizeUsed},
-            free_space => $_->{content}->{sizeTotal} - $_->{content}->{sizeUsed},
-            prct_used_space => $_->{content}->{sizeUsed} * 100 / $_->{content}->{sizeTotal},
-            prct_free_space => 100 - ($_->{content}->{sizeUsed} * 100 / $_->{content}->{sizeTotal}),
-
-            used_alloc => $_->{content}->{sizeAllocated},
-            free_alloc => $_->{content}->{sizeTotal} - $_->{content}->{sizeAllocated},
-            prct_used_alloc => $_->{content}->{sizeAllocated} * 100 / $_->{content}->{sizeTotal},
-            prct_free_alloc => 100 - ($_->{content}->{sizeAllocated} * 100 / $_->{content}->{sizeTotal}),
         };
+
+        if (defined($_->{content}->{sizeUsed})) {
+            $self->{sr}->{$_->{content}->{id}}->{used_space} = $_->{content}->{sizeUsed};
+            $self->{sr}->{$_->{content}->{id}}->{free_space} = $_->{content}->{sizeTotal} - $_->{content}->{sizeUsed};
+            $self->{sr}->{$_->{content}->{id}}->{prct_used_space} = $_->{content}->{sizeUsed} * 100 / $_->{content}->{sizeTotal};
+            $self->{sr}->{$_->{content}->{id}}->{prct_free_space} = 100 - ($_->{content}->{sizeUsed} * 100 / $_->{content}->{sizeTotal});
+        }
+        if (defined($_->{content}->{sizeAllocated})) {
+            $self->{sr}->{$_->{content}->{id}}->{used_alloc} = $_->{content}->{sizeAllocated};
+            $self->{sr}->{$_->{content}->{id}}->{free_alloc} = $_->{content}->{sizeTotal} - $_->{content}->{sizeAllocated};
+            $self->{sr}->{$_->{content}->{id}}->{prct_used_alloc} = $_->{content}->{sizeAllocated} * 100 / $_->{content}->{sizeTotal};
+            $self->{sr}->{$_->{content}->{id}}->{prct_free_alloc} = 100 - ($_->{content}->{sizeAllocated} * 100 / $_->{content}->{sizeTotal});
+        }
     }
     
     if (scalar(keys %{$self->{sr}}) <= 0) {
