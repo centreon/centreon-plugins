@@ -46,7 +46,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    return $options{custom}->request_api(url_path => '/api/types/storageResource/instances');
+    return $options{custom}->request_api(url_path => '/api/types/storageResource/instances?fields=name,health');
 }
 
 sub run {
