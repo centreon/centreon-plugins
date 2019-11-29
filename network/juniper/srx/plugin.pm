@@ -32,9 +32,9 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'hardware'          => 'network::juniper::common::junos::mode::hardware',
-        'cpu-routing'       => 'network::juniper::common::junos::mode::cpurouting', # routing engine
+        'cpu'               => 'network::juniper::common::junos::mode::cpu',
         'cpu-forwarding'    => 'network::juniper::common::junos::mode::cpuforwarding', # packet forwarding engine
-        'memory-routing'    => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
+        'memory'            => 'network::juniper::common::junos::mode::memory',
         'memory-forwarding' => 'network::juniper::common::junos::mode::memoryforwarding', # packet forwarding engine
         'cp-sessions'       => 'network::juniper::common::junos::mode::cpsessions', # CP = 'central point'
         'flow-sessions'     => 'network::juniper::common::junos::mode::flowsessions',

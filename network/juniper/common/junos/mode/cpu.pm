@@ -34,6 +34,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "filter:s"                => { name => 'filter', default => 'routing|fpc'}
                                 });
 
     return $self;
@@ -66,14 +67,14 @@ sub run {
     my $routing_engine_find = 0;
     my @oids_routing_engine = ();
     foreach my $oid (keys %$result) {        
-        if ($result->{$oid} =~ /routing/i) {
+        if ($result->{$oid} =~ /$filter/i) {
             $routing_engine_find = 1;
             push @oids_routing_engine, $oid;
         }
     }
     
     if ($routing_engine_find == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find operating with 'routing' in description.");
+        $self->{output}->add_option_msg(short_msg => "Cannot find operating with '$filter' in description.");
         $self->{output}->option_exit();
     }
     my $multiple = 0;
@@ -115,15 +116,17 @@ sub run {
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                       min => 0, max => 100);
-        $self->{output}->perfdata_add(label => 'load1' . $extra_label,
-                                      value => $cpu_load1,
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'load5' . $extra_label,
-                                      value => $cpu_load5,
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'load15' . $extra_label,
-                                      value => $cpu_load15,
-                                      min => 0);
+        if ($cpu_load1 != 0) {
+            $self->{output}->perfdata_add(label => 'load1' . $extra_label,
+                                          value => $cpu_load1,
+                                          min => 0);
+            $self->{output}->perfdata_add(label => 'load5' . $extra_label,
+                                          value => $cpu_load5,
+                                          min => 0);
+            $self->{output}->perfdata_add(label => 'load15' . $extra_label,
+                                          value => $cpu_load15,
+                                          min => 0);
+        }
     }
 
     $self->{output}->display();
@@ -136,9 +139,13 @@ __END__
 
 =head1 MODE
 
-Check CPU Usage of routing engine.
+Check CPU Usage.
 
 =over 8
+
+=item B<--filter>
+
+Filter operating (Default: 'routing|fpc').
 
 =item B<--warning>
 

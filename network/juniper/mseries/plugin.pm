@@ -33,7 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'bgp-peer-state'                => 'network::juniper::common::junos::mode::bgppeerstate',
         'bgp-peer-prefix-statistics'    => 'network::juniper::common::junos::mode::bgppeerprefixstatistics',
-        'cpu-routing'                   => 'network::juniper::common::junos::mode::cpurouting', # routing engine
+        'cpu'                           => 'network::juniper::common::junos::mode::cpu',
         'hardware'                      => 'network::juniper::common::junos::mode::hardware',
         'interfaces'                    => 'network::juniper::common::junos::mode::interfaces', 
         'ldp-session-status'            => 'network::juniper::common::junos::mode::ldpsessionstatus',
@@ -41,7 +41,7 @@ sub new {
         'list-bgp-peers'                => 'network::juniper::common::junos::mode::listbgppeers',
         'list-interfaces'               => 'snmp_standard::mode::listinterfaces',
         'list-storages'                 => 'snmp_standard::mode::liststorages',
-        'memory-routing'                => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
+        'memory'                        => 'network::juniper::common::junos::mode::memory',
         'rsvp-session-status'           => 'network::juniper::common::junos::mode::rsvpsessionstatus',
         'storage'                       => 'snmp_standard::mode::storage',
     );

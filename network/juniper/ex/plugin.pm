@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu-routing'       => 'network::juniper::common::junos::mode::cpurouting', # routing engine
+        'cpu'               => 'network::juniper::common::junos::mode::cpu',
         'hardware'          => 'network::juniper::common::junos::mode::hardware',
         'interfaces'        => 'snmp_standard::mode::interfaces',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces', 
-        'memory-routing'    => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
+        'memory'            => 'network::juniper::common::junos::mode::memory',
         'list-storages'     => 'snmp_standard::mode::liststorages',
         'stack'             => 'network::juniper::common::junos::mode::stack',
         'storage'           => 'snmp_standard::mode::storage',

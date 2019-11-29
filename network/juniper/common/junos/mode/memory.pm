@@ -34,6 +34,7 @@ sub new {
                                 { 
                                   "warning:s"               => { name => 'warning', },
                                   "critical:s"              => { name => 'critical', },
+                                  "filter:s"                => { name => 'filter', default => 'routing|fpc'}
                                 });
 
     return $self;
@@ -65,14 +66,14 @@ sub run {
     my $routing_engine_find = 0;
     my @oids_routing_engine = ();
     foreach my $oid (keys %$result) {        
-        if ($result->{$oid} =~ /routing/i) {
+        if ($result->{$oid} =~ /$filter/i) {
             $routing_engine_find = 1;
             push @oids_routing_engine, $oid;
         }
     }
     
     if ($routing_engine_find == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find operating with 'routing' in description.");
+        $self->{output}->add_option_msg(short_msg => "Cannot find operating with '$filter' in description.");
         $self->{output}->option_exit();
     }
     
@@ -137,6 +138,10 @@ __END__
 Check Memory Usage of routing engine.
 
 =over 8
+
+=item B<--filter>
+
+Filter operating (Default: 'routing|fpc').
 
 =item B<--warning>
 
