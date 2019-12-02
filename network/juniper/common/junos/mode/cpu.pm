@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::mode::cpurouting;
+package network::juniper::common::junos::mode::cpu;
 
 use base qw(centreon::plugins::mode);
 

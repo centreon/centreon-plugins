@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::juniper::common::junos::mode::memoryrouting;
+package network::juniper::common::junos::mode::memory;
 
 use base qw(centreon::plugins::mode);
 
