@@ -214,7 +214,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
-    if (defined($decoded->{imdata}->[0]->{error}->{attributes})) {
+    if (defined($decoded->{imdata}->[0]) && defined($decoded->{imdata}->[0]->{error}->{attributes})) {
         $self->{output}->add_option_msg(short_msg => "Error '" . uc($decoded->{imdata}->[0]->{error}->{attributes}->{code}) . " " . $decoded->{imdata}->[0]->{error}->{attributes}->{text} . "'");
         $self->{output}->option_exit();
     }
