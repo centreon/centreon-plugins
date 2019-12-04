@@ -38,12 +38,18 @@ sub new {
         $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
     }
 
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'centreon::plugins::backend::http::lwp',
-                                           error_msg => "Cannot load module 'centreon::plugins::backend::http::lwp'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output},
+        module => 'centreon::plugins::backend::http::lwp',
+        error_msg => "Cannot load module 'centreon::plugins::backend::http::lwp'."
+    );
     $self->{backend_lwp} = centreon::plugins::backend::http::lwp->new(%options);
 
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'centreon::plugins::backend::http::curl',
-                                           error_msg => "Cannot load module 'centreon::plugins::backend::http::curl'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output},
+        module => 'centreon::plugins::backend::http::curl',
+        error_msg => "Cannot load module 'centreon::plugins::backend::http::curl'."
+    );
     $self->{backend_curl} = centreon::plugins::backend::http::curl->new(%options);
 
     $self->{output} = $options{output};
@@ -87,10 +93,9 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (defined($options{request}->{curl_backend_options}) && 
-        $self->{http_backend} eq 'curl') {
-        foreach (keys %{$options{request}->{curl_backend_options}}) {
-            $options{request}->{$_} = $options{request}->{curl_backend_options}->{$_};
+    if (defined($options{request}->{$self->{http_backend} . '_backend_options'})) {
+        foreach (keys %{$options{request}->{$self->{http_backend} . '_backend_options'}}) {
+            $options{request}->{$_} = $options{request}->{$self->{http_backend} . '_backend_options'}->{$_};
         }
     }
 
@@ -116,7 +121,7 @@ sub check_options {
     $options{request}->{headers} = {};
     if (defined($options{request}->{header})) {
         foreach (@{$options{request}->{header}}) {
-            if (/^(.*?):(.*)/) {
+            if (/^(:.+?|.+?):(.*)/) {
                 $options{request}->{headers}->{$1} = $2;
             }
         }
