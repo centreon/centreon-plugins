@@ -129,10 +129,16 @@ sub settings {
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json');
-    if (defined($self->{access_token})) {
-        $self->{http}->add_header(key => 'Cookie', value => 'APIC-Cookie=' . $self->{access_token});
-    }
     $self->{http}->set_options(%{$self->{option_results}});
+}
+
+sub clean_access_token {
+    my ($self, %options) = @_;
+
+    my $datas = { last_timestamp => time() };
+    $options{statefile}->write(data => $datas);
+    $self->{access_token} = undef;
+    $self->{http}->add_header(key => 'Cookie', value => undef);
 }
 
 sub get_access_token {
@@ -173,31 +179,38 @@ sub get_access_token {
         $access_token = $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token};
         my $datas = {
             last_timestamp => time(),
-            access_token => $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{token}, 
+            access_token => $access_token, 
             expires_on => time() + $decoded->{imdata}->[0]->{aaaLogin}->{attributes}->{refreshTimeoutSeconds}
         };
         $options{statefile}->write(data => $datas);
     }
 
-    return $access_token;
+    $self->{access_token} = $access_token;
+    $self->{http}->add_header(key => 'Cookie', value => 'APIC-Cookie=' . $self->{access_token});
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
+    $self->settings();
     if (!defined($self->{access_token})) {
         $self->{access_token} = $self->get_access_token(statefile => $self->{cache});
     }
 
-    $self->settings();
-    my $content = $self->{http}->request(%options);
+    my $content = $self->{http}->request(%options, warning_status => '', unknown_status => '', critical_status => '');
+
+    # Maybe there is an issue with the access_token. So we retry.
+    if ($self->{http}->get_code() != 200) {
+        $self->clean_access_token(statefile => $self->{cache});
+        $self->get_access_token(statefile => $self->{cache});
+        $content = $self->{http}->request(%options);
+    }
     
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
