@@ -33,8 +33,8 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            "ssl:s"         => { name => 'ssl' },
-            "ssl-opt:s@"    => { name => 'ssl_opt' },
+            'ssl:s'      => { name => 'ssl' },
+            'ssl-opt:s@' => { name => 'ssl_opt' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'BACKEND LWP OPTIONS', once => 1);
     }
@@ -42,7 +42,7 @@ sub new {
     $self->{output} = $options{output};
     $self->{ua} = undef;
     $self->{debug_handlers} = 0;
-    
+
     return $self;
 }
 
@@ -138,7 +138,7 @@ sub request {
             );
         }
     }
-    
+
     if ($self->{output}->is_debug() && $self->{debug_handlers} == 0) {
         $self->{debug_handlers} = 1;
         $self->{ua}->add_handler('request_send', sub {
@@ -150,13 +150,13 @@ sub request {
         });
         $self->{ua}->add_handler("response_done", sub { 
             my ($response, $ua, $handler) = @_;
-            
+
             $self->{output}->output_add(long_msg => '======> response done', debug => 1);
             $self->{output}->output_add(long_msg => $response->as_string, debug => 1);
             return ;
         });
     }
-    
+
     if (defined($request_options->{no_follow})) {
         $self->{ua}->requests_redirectable(undef);
     } else {
@@ -263,8 +263,10 @@ sub request {
                 $self->{response}->www_authenticate =~ /(\S+)/);
         }
 
-        $self->{output}->output_add(severity => $status,
-                                    short_msg => $short_msg);
+        $self->{output}->output_add(
+            severity => $status,
+            short_msg => $short_msg
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -275,13 +277,13 @@ sub request {
 
 sub get_headers {
     my ($self, %options) = @_;
-    
+
     my $headers = '';
     foreach ($options{response}->header_field_names()) {
         my $value = $options{response}->header($_);
         $headers .= "$_: " . (defined($value) ? $value : '') . "\n";
     }
-    
+
     return $headers;
 }
 

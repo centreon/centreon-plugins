@@ -29,7 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 
@@ -43,7 +43,7 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $api_results = $options{custom}->request_api(
         url_path => '/api/measures/?type=ASA_DESKTOP&engineActivated=true&fields=name,alias,displayName,frequency,scenario.name,scenario.application.name,timeout,agent.id,agent.name,activated,engineActivated&limit=-1'
     );
@@ -86,7 +86,7 @@ sub run {
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['id', 'name', 'alias', 'display_name', 'app_name']);
 }
 
