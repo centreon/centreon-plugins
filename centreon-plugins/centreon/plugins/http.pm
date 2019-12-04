@@ -149,7 +149,7 @@ sub check_options {
             }
         }
     }
-    
+
     $self->{'backend_' . $self->{http_backend}}->check_options(%options);
 }
 

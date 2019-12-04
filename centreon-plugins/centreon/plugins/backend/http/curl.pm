@@ -32,25 +32,31 @@ sub new {
 
     if (!defined($options{noptions}) || $options{noptions} != 1) {
         $options{options}->add_options(arguments => {
-            "curl-opt:s@"   => { name => 'curl_opt' },
+            'curl-opt:s@'   => { name => 'curl_opt' },
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'BACKEND CURL OPTIONS', once => 1);
     }
-    
+
     $self->{output} = $options{output};
-    
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
 
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Net::Curl::Easy',
-                                           error_msg => "Cannot load module 'Net::Curl::Easy'.");
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'centreon::plugins::backend::http::curlconstants',
-                                           error_msg => "Cannot load module 'centreon::plugins::backend::http::curlconstants'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output},
+        module => 'Net::Curl::Easy',
+        error_msg => "Cannot load module 'Net::Curl::Easy'."
+    );
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output},
+        module => 'centreon::plugins::backend::http::curlconstants',
+        error_msg => "Cannot load module 'centreon::plugins::backend::http::curlconstants'."
+    );
     $self->{constant_cb} = \&centreon::plugins::backend::http::curlconstants::get_constant_value;
-    
+
     foreach (('unknown_status', 'warning_status', 'critical_status')) {
         if (defined($options{request}->{$_})) {
             $options{request}->{$_} =~ s/%\{http_code\}/\$self->{response_code}/g;
@@ -138,7 +144,7 @@ sub cb_debug {
 
 sub curl_setopt {
     my ($self, %options) = @_;
-    
+
     eval {
         $self->{curl_easy}->setopt($options{option}, $options{parameter});
     };
@@ -154,7 +160,7 @@ sub set_method {
     if ($options{request}->{method} eq 'GET') {
         return ;
     }
-    
+
     if ($options{content_type_forced} == 1) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $options{request}->{query_form_post})
             if (defined($options{request}->{query_form_post}) && $options{request}->{query_form_post} ne '');
@@ -164,7 +170,7 @@ sub set_method {
         push @{$options{headers}}, 'Content-Type: application/x-www-form-urlencoded';
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POSTFIELDS'), parameter => $uri_post->query);
     }
-    
+
     if ($options{request}->{method} eq 'POST') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_POST'), parameter => 1);
     }
@@ -211,10 +217,10 @@ sub set_proxy {
             $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_PROXYPASSWORD'), parameter => $2);
             $options{request}->{proxyurl} =~ s/\/\/$1:$2@//;
         }
-        
+
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_PROXY'), parameter => $options{request}->{proxyurl});
     }
-    
+
     if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
         $self->{output}->add_option_msg(short_msg => 'Unsupported proxypac option');
         $self->{output}->option_exit();
@@ -256,7 +262,7 @@ sub cb_get_header {
            $uservar->{response_headers}->[$uservar->{nheaders}]->{response_line} = $header; 
         }
     }
-    
+
     return length($_[1]);
 }
 
@@ -264,7 +270,7 @@ sub request {
     my ($self, %options) = @_;
 
     $self->{curl_easy} = Net::Curl::Easy->new();
-    
+
     if ($self->{output}->is_debug()) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_DEBUGFUNCTION'), parameter => \&cb_debug);
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_DEBUGDATA'), parameter => $self);
@@ -277,7 +283,7 @@ sub request {
     if (defined($options{request}->{cookies_file})) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_COOKIEFILE'), parameter => $options{request}->{cookies_file});
     }
-    
+
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FOLLOWLOCATION'), parameter => 1);
     if (defined($options{request}->{no_follow})) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_FOLLOWLOCATION'), parameter => 0);
@@ -302,9 +308,9 @@ sub request {
     if (defined($options{request}->{get_params})) {
         $uri->query_form($options{request}->{get_params});
     }
-    
+
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_URL'), parameter => $uri);
-    
+
     my $headers = [];
     my $content_type_forced = 0;
     foreach my $key (keys %{$options{request}->{headers}}) {
@@ -319,11 +325,11 @@ sub request {
     if (scalar(@$headers) > 0) {
         $self->{curl_easy}->pushopt($self->{constant_cb}->(name => 'CURLOPT_HTTPHEADER'), $headers);
     }
-    
+
     if (defined($options{request}->{cacert_file}) && $options{request}->{cacert_file} ne '') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CAINFO'), parameter => $options{request}->{cacert_file});
     }
-    
+
     $self->set_auth(%options);
     $self->set_proxy(%options);
     $self->set_extra_curl_opt(%options);
@@ -334,7 +340,7 @@ sub request {
     $self->{response_headers} = [{}];
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERDATA'), parameter => $self);
     $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_HEADERFUNCTION'), parameter => \&cb_get_header);
-        
+
     eval {
         $self->{curl_easy}->perform();
     };
@@ -344,7 +350,7 @@ sub request {
     }
 
     $self->{response_code} = $self->{curl_easy}->getinfo($self->{constant_cb}->(name => 'CURLINFO_RESPONSE_CODE'));
-    
+
     # Check response
     my $status = 'ok';
     my $message;
@@ -373,8 +379,10 @@ sub request {
         my $short_msg = $self->{response_code} . ' ' . 
             (defined($http_code_explained->{$self->{response_code}}) ? $http_code_explained->{$self->{response_code}} : 'unknown');
 
-        $self->{output}->output_add(severity => $status,
-                                    short_msg => $short_msg);
+        $self->{output}->output_add(
+            severity => $status,
+            short_msg => $short_msg
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -384,7 +392,7 @@ sub request {
 
 sub get_headers {
     my ($self, %options) = @_;
-    
+
     my $headers = '';
     foreach (keys %{$self->{response_headers}->[$options{nheader}]}) {
         next if (/response_line/);
@@ -392,17 +400,17 @@ sub get_headers {
             $headers .= "$_: " . $value . "\n";
         }
     }
-    
+
     return $headers;
 }
 
 sub get_first_header {
     my ($self, %options) = @_;
-    
+
     if (!defined($options{name})) {
         return $self->get_headers(nheader => 0);
     }
-    
+
     return undef
         if (!defined($self->{response_headers}->[0]->{ lc($options{name}) }));
     return wantarray ? @{$self->{response_headers}->[0]->{ lc($options{name}) }} : $self->{response_headers}->[0]->{ lc($options{name}) }->[0];
@@ -428,7 +436,7 @@ sub get_code {
 
 sub get_message {
     my ($self, %options) = @_;
-    
+
     return $http_code_explained->{$self->{response_code}};
 }
 

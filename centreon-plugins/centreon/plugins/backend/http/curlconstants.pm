@@ -26,7 +26,7 @@ use Net::Curl::Easy qw(:constants);
 
 sub get_constant_value {
     my (%options) = @_;
-    
+
     return eval $options{name};
 }
 
