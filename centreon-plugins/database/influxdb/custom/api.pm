@@ -44,12 +44,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"    => { name => 'hostname' },
-            "port:s"        => { name => 'port' },
-            "proto:s"       => { name => 'proto' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "timeout:s"     => { name => 'timeout' },
+            'hostname:s'    => { name => 'hostname' },
+            'port:s'        => { name => 'port' },
+            'proto:s'       => { name => 'proto' },
+            'username:s'    => { name => 'username' },
+            'password:s'    => { name => 'password' },
+            'timeout:s'     => { name => 'timeout' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CUSTOM MODE OPTIONS', once => 1);
@@ -92,6 +95,9 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{username} = (defined($self->{option_results}->{username})) ? $self->{option_results}->{username} : undef;
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
     
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -146,7 +152,12 @@ sub request {
     $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':'  . $self->{port} . $options{url_path} . "'", debug => 1);
     $self->{output}->output_add(long_msg => "Parameters: '" . join(', ', @{$options{post_param}}) . "'", debug => 1) if (defined($options{post_param}));
     
-    my $content = $self->{http}->request(%options);
+    my $content = $self->{http}->request(
+        %options,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status},
+    );
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
@@ -175,8 +186,12 @@ sub query {
 
     my $data;
     foreach my $query (@{$options{queries}}) {
-        my $results = $self->request(method => 'POST', url_path => '/query?epoch=s', post_param => ['q=' . $query]);
-        
+        my $results = $self->request(
+            method => 'POST',
+            url_path => '/query?epoch=s',
+            post_param => ['q=' . $query]
+        );
+
         if (defined($results->{results}[0]->{error})) {
             $self->{output}->add_option_msg(short_msg => "API returns error '" . $results->{results}[0]->{error} . "'");
             $self->{output}->option_exit();
@@ -255,16 +270,16 @@ Specify password for authentication.
 
 Set timeout in seconds (Default: 10).
 
-=item B<--unknown-status>
+=item B<--unknown-http-status>
 
 Threshold warning for http response code.
 (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
-=item B<--warning-status>
+=item B<--warning-http-status>
 
 Threshold warning for http response code.
 
-=item B<--critical-status>
+=item B<--critical-http-status>
 
 Threshold critical for http response code.
 
