@@ -84,11 +84,9 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{nodes} = {};
 
     my $result_nodes = $options{custom}->get_node_health_5m();
-
+    $self->{nodes} = {};
     foreach my $node (@{$result_nodes->{imdata}}) {
         $node->{fabricNodeHealth5min}->{attributes}->{dn} =~ /^topology\/(.*)\/sys\/CDfabricNodeHealth5min$/; 
         my $node_dn = $1;
