@@ -43,18 +43,18 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            "hostname:s"        => { name => 'hostname' },
-            "url-path:s"        => { name => 'url_path' },
-            "port:s"            => { name => 'port' },
-            "proto:s"           => { name => 'proto' },
-            "credentials"       => { name => 'credentials' },
-            "basic"             => { name => 'basic' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "timeout:s"         => { name => 'timeout' },
-            "header:s@"         => { name => 'header' },
-            "timeframe:s"       => { name => 'timeframe' },
-            "step:s"            => { name => 'step' },
+            'hostname:s'        => { name => 'hostname' },
+            'url-path:s'        => { name => 'url_path' },
+            'port:s'            => { name => 'port' },
+            'proto:s'           => { name => 'proto' },
+            'credentials'       => { name => 'credentials' },
+            'basic'             => { name => 'basic' },
+            'username:s'        => { name => 'username' },
+            'password:s'        => { name => 'password' },
+            'timeout:s'         => { name => 'timeout' },
+            'header:s@'         => { name => 'header' },
+            'timeframe:s'       => { name => 'timeframe' },
+            'step:s'            => { name => 'step' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
