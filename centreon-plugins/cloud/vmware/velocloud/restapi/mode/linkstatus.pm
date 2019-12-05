@@ -24,23 +24,16 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("Status is '%s', VPN State is '%s'",
-        $self->{result_values}->{state}, $self->{result_values}->{vpn_state});
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{vpn_state} = $options{new_datas}->{$self->{instance} . '_vpn_state'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    
-    return 0;
+    return sprintf("status is '%s' [vpn state: '%s'] [backup state: '%s']",
+        $self->{result_values}->{state},
+        $self->{result_values}->{vpn_state},
+        $self->{result_values}->{backup_state}
+    );
 }
 
 sub set_counters {
@@ -58,9 +51,9 @@ sub set_counters {
 
     $self->{maps_counters}->{links} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'vpn_state' },
+                key_values => [ { name => 'state' }, { name => 'vpn_state' }, { name => 'backup_state' },
                     { name => 'display' }, { name => 'id' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
@@ -146,6 +139,7 @@ sub manage_selection {
                 display => $link->{link}->{displayName},
                 state => $link->{link}->{state},
                 vpn_state => $link->{link}->{vpnState},
+                backup_state => defined($link->{link}->{backupState}) ? $link->{link}->{backupState} : '-'
             };
         }
     }
@@ -182,17 +176,17 @@ Filter link by name (Can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}.
+Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{vpn_state}.
+Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/').
-Can used special variables like: %{state}, %{vpn_state}.
+Can used special variables like: %{state}, %{vpn_state}, %{backup_state}.
 
 =back
 
