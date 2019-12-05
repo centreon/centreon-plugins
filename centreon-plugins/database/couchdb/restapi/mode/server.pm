@@ -37,7 +37,7 @@ sub custom_server_output {
 sub custom_compaction_output {
     my ($self, %options) = @_;
 
-    my $msg = 'compaction status is ' . $self->{result_values}->{compaction_status};
+    my $msg = "compaction status is '" . $self->{result_values}->{compaction_status} . "'";
     return $msg;
 }
 
@@ -149,7 +149,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->request_api(url_path => '/_up');
-    $self->{global} = { status => $results->{custom_compaction_output} };
+    $self->{global} = { status => $results->{status} };
 
     $results = $options{custom}->request_api(url_path => '/_all_dbs');
     my $db = {
@@ -180,7 +180,7 @@ sub manage_selection {
 
         $self->{database}->{$_->{info}->{db_name}} = {
             display => $_->{info}->{db_name},
-            compaction_status => $_->{info}->{compact_running} ? 'running' : 'notrunning',
+            compaction_status => $_->{info}->{compact_running} ? 'running' : 'notRunning',
             doc_count => $_->{info}->{doc_count},
             doc_del_count => $_->{info}->{doc_del_count},
             sizes_active => $_->{info}->{sizes}->{active},
