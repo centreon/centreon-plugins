@@ -121,7 +121,7 @@ sub manage_selection {
         my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
         eval { IO::Socket::SSL::set_default_context($context) };
         if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
+            $self->{output}->output_add(severity => 'UNKNOWN',
                                         short_msg => sprintf("Error setting SSL context: %s", $@));
             $self->{output}->display();
             $self->{output}->exit();
@@ -138,19 +138,19 @@ sub manage_selection {
         );
     };
     if ($@) {
-        $self->{output}->output_add(severity => 'CRITICAL',
+        $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => sprintf("%s", $@));
         $self->{output}->display();
         $self->{output}->exit();
     }
     if (!defined($socket)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
+        $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => "Error creating SSL socket: $!, SSL error: $SSL_ERROR");
         $self->{output}->display();
         $self->{output}->exit();
     }
     if (defined($SSL_ERROR)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
+        $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => "SSL error: $SSL_ERROR");
         $self->{output}->display();
         $self->{output}->exit();
