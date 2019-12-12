@@ -216,21 +216,21 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "units:s"                 => { name => 'units', default => '%' },
-        "free"                    => { name => 'free' },
-        "reload-cache-time:s"     => { name => 'reload_cache_time', default => 180 },
-        "name"                    => { name => 'use_name' },
-        "storage:s"               => { name => 'storage' },
-        "regexp"                  => { name => 'use_regexp' },
-        "regexp-isensitive"       => { name => 'use_regexpi' },
-        "oid-filter:s"            => { name => 'oid_filter', default => 'hrStorageDescr'},
-        "oid-display:s"           => { name => 'oid_display', default => 'hrStorageDescr'},
-        "display-transform-src:s" => { name => 'display_transform_src' },
-        "display-transform-dst:s" => { name => 'display_transform_dst' },
-        "show-cache"              => { name => 'show_cache' },
-        "space-reservation:s"     => { name => 'space_reservation' },
-        "filter-storage-type:s"   => { name => 'filter_storage_type', default => $self->default_storage_type() },
-        "add-access"              => { name => 'add_access' },
+        'units:s'                 => { name => 'units', default => '%' },
+        'free'                    => { name => 'free' },
+        'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
+        'name'                    => { name => 'use_name' },
+        'storage:s'               => { name => 'storage' },
+        'regexp'                  => { name => 'use_regexp' },
+        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'oid-filter:s'            => { name => 'oid_filter', default => 'hrStorageDescr'},
+        'oid-display:s'           => { name => 'oid_display', default => 'hrStorageDescr'},
+        'display-transform-src:s' => { name => 'display_transform_src' },
+        'display-transform-dst:s' => { name => 'display_transform_dst' },
+        'show-cache'              => { name => 'show_cache' },
+        'space-reservation:s'     => { name => 'space_reservation' },
+        'filter-storage-type:s'   => { name => 'filter_storage_type', default => $self->default_storage_type() },
+        'add-access'              => { name => 'add_access' },
     });
 
     $self->{storage_id_selected} = [];
@@ -271,16 +271,17 @@ sub access_result {
     my $oid_hrFSAccess = '.1.3.6.1.2.1.25.3.8.1.5';
     my $relations = $self->{statefile_cache}->get(name => 'relation_storageindex_fsstorageindex');
     return {} if (!defined($relations) || scalar(keys %$relations) <= 0);
-    my @instances = [];
+    my $instances = [];
     foreach (@{$self->{storage_id_selected}}) {
         if (defined($relations->{$_})) {
-            push @instances, $relations->{$_};
+            push @$instances, $relations->{$_};
         }
     }
-    
+
     $options{snmp}->load(
         oids => [$oid_hrFSAccess], 
-        instances => \@instances, nothing_quit => 1
+        instances => $instances,
+        nothing_quit => 1
     );
     my $snmp_result = $options{snmp}->get_leef();
     my $result = {};
@@ -317,16 +318,25 @@ sub manage_selection {
         my $name_storage = $self->get_display_value(id => $_);
 
         if (!defined($result->{$oid_hrStorageAllocationUnits . "." . $_})) {
-            $self->{output}->add_option_msg(long_msg => sprintf("skipping storage '%s': not found (need to reload the cache)", 
-                                                                $name_storage));
+            $self->{output}->add_option_msg(
+                long_msg => sprintf(
+                    "skipping storage '%s': not found (need to reload the cache)", 
+                    $name_storage
+                )
+            );
             next;
         }
         
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
-            $self->{output}->add_option_msg(long_msg => sprintf("skipping storage '%s': total size is <= 0 (%s)", 
-                                                                $name_storage, int($total_size)));
+            $self->{output}->add_option_msg(
+                long_msg => sprintf(
+                    "skipping storage '%s': total size is <= 0 (%s)", 
+                    $name_storage,
+                    int($total_size)
+                )
+            );
             next;
         }
         
@@ -341,7 +351,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{storage}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Issue with storage information (see details)");
+        $self->{output}->add_option_msg(short_msg => 'Issue with storage information (see details)');
         $self->{output}->option_exit();
     }
 }
