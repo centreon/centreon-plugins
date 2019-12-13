@@ -30,7 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'Operational State : ' . $self->{result_values}->{state};
+    my $msg = 'operational state: ' . $self->{result_values}->{state};
     return $msg;
 }
 
@@ -53,7 +53,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total-ap', set => {
                 key_values => [ { name => 'total_ap' } ],
-                output_template => 'Total AP : %s',
+                output_template => 'total AP: %s',
                 perfdatas => [
                     { label => 'total_ap', value => 'total_ap_absolute', template => '%s', min => 0 },
                 ],
@@ -61,7 +61,7 @@ sub set_counters {
         },
         { label => 'total-users', set => {
                 key_values => [ { name => 'total_users' } ],
-                output_template => 'Total Users : %s',
+                output_template => 'total users: %s',
                 perfdatas => [
                     { label => 'total_users', value => 'total_users_absolute', template => '%s', min => 0 },
                 ],
@@ -80,7 +80,7 @@ sub set_counters {
         },
         { label => 'ap-users', set => {
                 key_values => [ { name => 'users' }, { name => 'display' } ],
-                output_template => 'Current Users: %s',
+                output_template => 'current users: %s',
                 perfdatas => [
                     { label => 'ap_users', value => 'users_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
@@ -102,9 +102,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'         => { name => 'filter_name' },
-        'warning-ap-status:s'   => { name => 'warning_ap_status', default => '' },
-        'critical-ap-status:s'  => { name => 'critical_ap_status', default => '%{state} eq "disconnected"' },
+        'filter-name:s'             => { name => 'filter_name' },
+        'check-device-without-ctrl' => { name => 'check_device_without_ctrl' },
+        'warning-ap-status:s'       => { name => 'warning_ap_status', default => '' },
+        'critical-ap-status:s'      => { name => 'critical_ap_status', default => '%{state} eq "disconnected"' },
     });
 
     return $self;
@@ -123,8 +124,9 @@ my %map_device_state = (
 );
 
 my $mapping = {
-    coDevDisState       => { oid => '.1.3.6.1.4.1.8744.5.23.1.2.1.1.5', map => \%map_device_state },
-    coDevDisSystemName  => { oid => '.1.3.6.1.4.1.8744.5.23.1.2.1.1.6' },
+    coDevDisState            => { oid => '.1.3.6.1.4.1.8744.5.23.1.2.1.1.5', map => \%map_device_state },
+    coDevDisSystemName       => { oid => '.1.3.6.1.4.1.8744.5.23.1.2.1.1.6' },
+    coDevDisControllerIndex  => { oid => '.1.3.6.1.4.1.8744.5.23.1.2.1.1.11' },
 };
 
 my $mapping2 = {
@@ -137,29 +139,43 @@ sub manage_selection {
     $self->{cache_name} = "colubris_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
-    
+
+    my $oid_coDeviceDiscoveryEntry = '.1.3.6.1.4.1.8744.5.23.1.2.1.1';
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $mapping->{coDevDisState}->{oid} },
-            { oid => $mapping->{coDevDisSystemName}->{oid} },
+            { oid => $oid_coDeviceDiscoveryEntry, start => $mapping->{coDevDisState}->{oid}, end => $mapping->{coDevDisSystemName}->{oid} },
+            { oid => $mapping->{coDevDisControllerIndex}->{oid} },
             { oid => $mapping2->{coDevWirCliStaMACAddress}->{oid} },
         ], 
         nothing_quit => 1,
         return_type => 1
     );
 
-    $self->{ap} = {};
     $self->{global} = { total_ap => 0, total_users => 0 };
-    foreach my $oid (sort keys %{$snmp_result}) {
+    $self->{ap} = {};
+    my @oids = $options{snmp}->oid_lex_sort(keys %$snmp_result);
+    my $checked = {};
+    foreach my $oid (reverse @oids) {
         next if ($oid !~ /^$mapping->{coDevDisSystemName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{coDevDisSystemName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{coDevDisSystemName} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{coDevDisSystemName} . "': no matching filter.", debug => 1);
             next;
         }
-        
+        if (!defined($self->{option_results}->{check_device_without_ctrl})) {
+            if ($result->{coDevDisControllerIndex} == 0) {
+                $self->{output}->output_add(long_msg => "skipping '" . $result->{coDevDisSystemName} . "': no controller associated.", debug => 1);
+                next;
+            }
+        }
+        if (defined($checked->{$result->{coDevDisSystemName}})) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{coDevDisSystemName} . "': duplicated name.", debug => 1);
+            next;
+        }
+
+        $checked->{$result->{coDevDisSystemName}} = 1;
         $self->{global}->{total_ap}++;
         $self->{ap}->{$instance} = {
             display => $result->{coDevDisSystemName},
@@ -167,17 +183,17 @@ sub manage_selection {
             users => 0,
         };
     }
-    
-    foreach my $oid (sort keys %{$snmp_result}) {
+
+    foreach my $oid (sort keys %$snmp_result) {
         next if ($oid !~ /^$mapping2->{coDevWirCliStaMACAddress}->{oid}\.(.*?)\./);
         my $instance = $1;
-        
+
         next if (!defined($self->{ap}->{$instance}));
-        
+
         $self->{global}->{total_users}++;
         $self->{ap}->{$instance}->{users}++;
     }
-    
+
     if (scalar(keys %{$self->{ap}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No access point found.");
         $self->{output}->option_exit();
@@ -197,6 +213,10 @@ Check AP status and users connected.
 =item B<--filter-name>
 
 Filter ap name with regexp.
+
+=item B<--check-device-without-ctrl>
+
+Check device even if it doesn't belongs to an controller team.
 
 =item B<--warning-*>
 
