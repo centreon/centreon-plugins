@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'perCentCPUUtilization' } ],
                 output_template => 'cpu global usage is: %.2f%%',
                 perfdatas => [
-                    { label => 'cpu_global', value => 'perCentCPUUtilization_absolute', template => '%.2f', 
+                    { value => 'perCentCPUUtilization_absolute', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'cacheCpuUsage' } ],
                 output_template => 'cpu proxy usage is: %.2f%%',
                 perfdatas => [
-                    { label => 'cpu_proxy', value => 'cacheCpuUsage_absolute', template => '%.2f', 
+                    { value => 'cacheCpuUsage_absolute', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
