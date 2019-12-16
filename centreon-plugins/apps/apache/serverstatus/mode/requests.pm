@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -33,22 +34,22 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "port:s"            => { name => 'port', },
-        "proto:s"           => { name => 'proto' },
-        "urlpath:s"         => { name => 'url_path', default => "/server-status/?auto" },
-        "credentials"       => { name => 'credentials' },
-        "basic"             => { name => 'basic' },
-        "username:s"        => { name => 'username' },
-        "password:s"        => { name => 'password' },
-        "header:s@"         => { name => 'header' },
-        "warning:s"         => { name => 'warning' },
-        "critical:s"        => { name => 'critical' },
-        "warning-bytes:s"   => { name => 'warning_bytes' },
-        "critical-bytes:s"  => { name => 'critical_bytes' },
-        "warning-access:s"  => { name => 'warning_access' },
-        "critical-access:s" => { name => 'critical_access' },
-        "timeout:s"         => { name => 'timeout' },
+        'hostname:s'        => { name => 'hostname' },
+        'port:s'            => { name => 'port', },
+        'proto:s'           => { name => 'proto' },
+        'urlpath:s'         => { name => 'url_path', default => "/server-status/?auto" },
+        'credentials'       => { name => 'credentials' },
+        'basic'             => { name => 'basic' },
+        'username:s'        => { name => 'username' },
+        'password:s'        => { name => 'password' },
+        'header:s@'         => { name => 'header' },
+        'warning:s'         => { name => 'warning' },
+        'critical:s'        => { name => 'critical' },
+        'warning-bytes:s'   => { name => 'warning_bytes' },
+        'critical-bytes:s'  => { name => 'critical_bytes' },
+        'warning-access:s'  => { name => 'warning_access' },
+        'critical-access:s' => { name => 'critical_access' },
+        'timeout:s'         => { name => 'timeout' },
     });
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
@@ -92,20 +93,36 @@ sub run {
     my ($self, %options) = @_;
 
     my $webcontent = $self->{http}->request();
+
+    #Total accesses: 7323 - Total Traffic: 243.7 MB - Total Duration: 7175675
+    #CPU Usage: u1489.98 s1118.39 cu0 cs0 - .568% CPU load
+    #.0159 requests/sec - 555 B/second - 34.1 kB/request - 979.882 ms/request
     my ($rPerSec, $bPerReq, $total_access, $total_bytes, $avg_bPerSec);
 
     $total_access = $1 if ($webcontent =~ /^Total Accesses:\s+([^\s]+)/mi);
+
     $total_bytes = $1 * 1024 if ($webcontent =~ /^Total kBytes:\s+([^\s]+)/mi);
-    
-    $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
-    # Need a little time to init
-    if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi) {
-        $bPerReq = $1
-    } else {
-        $bPerReq = 0;
+    if ($webcontent =~ /Total\s+Traffic:\s+(\S+)\s+(.|)B\s+/mi) {
+        $total_bytes = centreon::plugins::misc::convert_bytes(value => $1, unit => $2 . 'B');
     }
+
+    $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
+    if ($webcontent =~ /^(\S+)\s+requests\/sec/mi) {
+        $rPerSec = $1;
+        $rPerSec = '0' . $rPerSec if ($rPerSec =~ /^\./);
+    }
+
+    # Need a little time to init
+    $bPerReq = $1 if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi);
+    if ($webcontent =~ /(\S+)\s+(.|)B\/request/mi) {
+        $bPerReq = centreon::plugins::misc::convert_bytes(value => $1, unit => $2 . 'B');
+    }
+
     $avg_bPerSec = $1 if ($webcontent =~ /^BytesPerSec:\s+([^\s]+)/mi);
-    
+    if ($webcontent =~ /(\S+)\s+(.|)B\/second/mi) {
+        $avg_bPerSec = centreon::plugins::misc::convert_bytes(value => $1, unit => $2 . 'B');
+    }
+
     if (!defined($avg_bPerSec)) {
         $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
         $self->{output}->option_exit();
