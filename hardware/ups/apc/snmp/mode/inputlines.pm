@@ -50,7 +50,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'voltage', set => {
                 key_values => [ { name => 'upsAdvInputLineVoltage' } ],
-                output_template => 'Voltage : %s V',
+                output_template => 'Voltage: %s V',
                 perfdatas => [
                     { label => 'voltage', value => 'upsAdvInputLineVoltage_absolute', template => '%s', 
                       unit => 'V' },
@@ -59,7 +59,7 @@ sub set_counters {
         },
         { label => 'frequence', set => {
                 key_values => [ { name => 'upsAdvInputFrequency' } ],
-                output_template => 'Frequence : %s Hz',
+                output_template => 'Frequence: %s Hz',
                 perfdatas => [
                     { label => 'frequence', value => 'upsAdvInputFrequency_absolute', template => '%s', 
                       unit => 'Hz' },
@@ -83,8 +83,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
     return $self;
@@ -104,21 +104,32 @@ my %map_status = (
 );
 
 my $mapping = {
-    upsAdvInputLineVoltage      => { oid => '.1.3.6.1.4.1.318.1.1.1.3.2.1' },
-    upsAdvInputFrequency        => { oid => '.1.3.6.1.4.1.318.1.1.1.3.2.4' },
-    upsAdvInputLineFailCause    => { oid => '.1.3.6.1.4.1.318.1.1.1.3.2.5', map => \%map_status },
+    upsAdvInputLineVoltage       => { oid => '.1.3.6.1.4.1.318.1.1.1.3.2.1' },
+    upsAdvInputFrequency         => { oid => '.1.3.6.1.4.1.318.1.1.1.3.2.4' },
+    upsAdvInputLineFailCause     => { oid => '.1.3.6.1.4.1.318.1.1.1.3.2.5', map => \%map_status },
+    upsAdvConfigHighTransferVolt => { oid => '.1.3.6.1.4.1.318.1.1.1.5.2.2' },
+    upsAdvConfigLowTransferVolt  => { oid => '.1.3.6.1.4.1.318.1.1.1.5.2.3' },
 };
-my $oid_upsAdvInput = '.1.3.6.1.4.1.318.1.1.1.3.2';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_upsAdvInput,
-                                                nothing_quit => 1);
-                                                         
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        nothing_quit => 1
+    );
+
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
-    
+    if ((!defined($self->{option_results}->{'warning-voltage'}) || $self->{option_results}->{'warning-voltage'} eq '') &&
+        (!defined($self->{option_results}->{'critical-voltage'}) || $self->{option_results}->{'critical-voltage'} eq '')
+    ) {
+        my $th = '';
+        $th .= $result->{upsAdvConfigHighTransferVolt} if (defined($result->{upsAdvConfigHighTransferVolt}) && $result->{upsAdvConfigHighTransferVolt} =~ /\d+/);
+        $th = $result->{upsAdvConfigLowTransferVolt} . ':' . $th if (defined($result->{upsAdvConfigLowTransferVolt}) && $result->{upsAdvConfigLowTransferVolt} =~ /\d+/);
+        $self->{perfdata}->threshold_validate(label => 'critical-voltage', value => $th) if ($th ne '');
+    }
+
     foreach my $name (keys %{$mapping}) {
         $self->{global}->{$name} = $result->{$name};
     }
@@ -149,14 +160,9 @@ Can used special variables like: %{last_cause}
 Set critical threshold for status (Default: '').
 Can used special variables like: %{last_cause}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'voltage', 'frequence'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'voltage', 'frequence'.
 
 =back
