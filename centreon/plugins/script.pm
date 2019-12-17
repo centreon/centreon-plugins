@@ -24,7 +24,6 @@ use strict;
 use warnings;
 use centreon::plugins::output;
 use centreon::plugins::misc;
-use FindBin;
 use Pod::Usage;
 use Pod::Find qw(pod_where);
 
@@ -97,7 +96,7 @@ sub get_global_version {
 
 sub get_plugin {
     my ($self) = @_;
-    
+
     # Need to load global 'Output' and 'Options'
     if ($alternative_fatpacker == 0) {
         require centreon::plugins::options;
@@ -131,7 +130,7 @@ sub get_plugin {
     $self->{environment} = $self->{options}->get_option(argument => 'environment');
     $self->{ignore_warn_msg} = $self->{options}->get_option(argument => 'ignore_warn_msg');
     $self->{convert_args} = $self->{options}->get_option(argument => 'convert_args');
-    
+
     my $global_timeout = $self->{options}->get_option(argument => 'global_timeout');
     if (defined($global_timeout) && $global_timeout =~ /(\d+)/) {
         $SIG{ALRM} = \&class_handle_ALRM;
@@ -147,7 +146,7 @@ sub get_plugin {
 
 sub convert_args {
     my ($self) = @_;
-    
+
     if ($self->{convert_args} =~ /^(.+?),(.*)/) {
         my ($search, $replace) = ($1, $2);
         for (my $i = 0; $i <= $#ARGV; $i++) {
@@ -175,27 +174,30 @@ sub display_local_help {
             close $str_fh;
         }
     }
-    
+
     $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
 }
 
 sub check_directory {
     my ($self, $directory) = @_;
-    
+
     opendir(my $dh, $directory) || return ;
     while (my $filename = readdir $dh) {
         $self->check_directory($directory . '/' . $filename) if ($filename !~ /^\./ && -d $directory . '/' . $filename);
         if ($filename eq 'plugin.pm') {
             my $stdout = '';
-            
+
             {
                 local *STDOUT;
                 open STDOUT, '>', \$stdout;
-                pod2usage(-exitval => 'NOEXIT', -input => $directory . "/" . $filename,
-                          -verbose => 99, 
-                          -sections => "PLUGIN DESCRIPTION");
+                pod2usage(
+                    -exitval => 'NOEXIT',
+                    -input => $directory . "/" . $filename,
+                    -verbose => 99, 
+                    -sections => 'PLUGIN DESCRIPTION'
+                );
             }
-            $self->{plugins_result}->{$directory . "/" . $filename} = $stdout;
+            $self->{plugins_result}->{$directory . '/' . $filename} = $stdout;
         }
     }
     closedir $dh;
@@ -213,18 +215,18 @@ sub fatpacker_find_plugin {
             }
         }
     }
-    
+
     return $plugins;
 }
 
 sub check_plugin_option {
     my ($self) = @_;
-    
+
     if (defined($self->{version})) {
         $self->{output}->add_option_msg(short_msg => 'Global Version: ' . $global_version);
         $self->{output}->option_exit(nolabel => 1);
     }
-    
+
     my $no_plugin = 1;
     if ($alternative_fatpacker == 1) {
         my $integrated_plugins = $self->fatpacker_find_plugin();
@@ -233,7 +235,7 @@ sub check_plugin_option {
             $no_plugin = 0;
         }
     }
-    
+
     if ($no_plugin == 1) {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--plugin' option.");
         $self->{output}->option_exit();
@@ -246,7 +248,7 @@ sub display_list_plugin {
 
     if ($alternative_fatpacker == 1) {
         my $integrated_plugins = $self->fatpacker_find_plugin();
-        
+
         foreach my $key (sort @$integrated_plugins) {
             # Need to load it to get the description
             centreon::plugins::misc::mymodule_load(
@@ -272,7 +274,11 @@ sub display_list_plugin {
         }
         return ;
     }
-    
+
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'FindBin', 
+        error_msg => "Cannot load module 'FindBin'."
+    );
     # Search file 'plugin.pm'
     $self->check_directory($FindBin::Bin);
     foreach my $key (sort keys %{$self->{plugins_result}}) {
@@ -280,7 +286,7 @@ sub display_list_plugin {
         $name =~ s/^$FindBin::Bin\/(.*)\.pm/$1/;
         $name =~ s/\//::/g;
         $self->{plugins_result}->{$key} =~ s/^Plugin Description/DESCRIPTION/i;
-        
+
         $self->{output}->add_option_msg(long_msg => '-----------------');
         $self->{output}->add_option_msg(long_msg => 'PLUGIN: ' . $name);
         $self->{output}->add_option_msg(long_msg => $self->{plugins_result}->{$key});
@@ -289,10 +295,16 @@ sub display_list_plugin {
 
 sub check_relaunch {
     my $self = shift;
+
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => 'FindBin', 
+        error_msg => "Cannot load module 'FindBin'."
+    );
+
     my $need_restart = 0;
-    my $cmd = $FindBin::Bin . "/" . $FindBin::Script;
+    my $cmd = $FindBin::Bin . '/' . $FindBin::Script;
     my @args = ();
-    
+
     if (defined($self->{environment})) {
         foreach (keys %{$self->{environment}}) {
             if ($_ ne '' && (!defined($ENV{$_}) || $ENV{$_} ne $self->{environment}->{$_})) {
@@ -311,11 +323,11 @@ sub check_relaunch {
         }
         if ($uid != $>) {
             if ($> == 0) {
-                unshift @args, "-s", "/bin/bash", "-l", $self->{runas}, "-c", join(" ", $cmd, "--plugin=" . $self->{plugin}, @ARGV);
-                $cmd = "su";
+                unshift @args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, '--plugin=' . $self->{plugin}, @ARGV);
+                $cmd = 'su';
             } else {
-                unshift @args, "-S", "-u", $self->{runas}, $cmd, "--plugin=" . $self->{plugin}, @ARGV;
-                $cmd = "sudo";
+                unshift @args, '-S', '-u', $self->{runas}, $cmd, '--plugin=' . $self->{plugin}, @ARGV;
+                $cmd = 'sudo';
             }
             $need_restart = 1;
         }
@@ -335,8 +347,10 @@ sub check_relaunch {
 
         if ($exit_code <= -1000) {
             if ($exit_code == -1000) {
-                $self->{output}->output_add(severity => 'UNKNOWN', 
-                                            short_msg => $stdout);
+                $self->{output}->output_add(
+                    severity => 'UNKNOWN', 
+                    short_msg => $stdout
+                );
             }
             $self->{output}->display();
             $self->{output}->exit();
@@ -370,7 +384,7 @@ sub run {
     $self->convert_args() if (defined($self->{convert_args}));
 
     $self->check_relaunch();
-    
+
     (undef, $self->{plugin}) = 
         centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{plugin}, 
                                                error_msg => 'Cannot load module --plugin.');
