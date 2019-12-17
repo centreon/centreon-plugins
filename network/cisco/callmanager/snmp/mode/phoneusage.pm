@@ -130,7 +130,7 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $snmp_result = $options{snmp}->get_table(
+    my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $mapping->{ccmPhoneDescription} },
             { oid => $mapping->{ccmPhoneStatus} },
