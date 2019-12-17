@@ -132,9 +132,9 @@ sub manage_selection {
     
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $mapping->{ccmPhoneDescription} },
-            { oid => $mapping->{ccmPhoneStatus} },
-            { oid => $mapping->{ccmPhoneName} }
+            { oid => $mapping->{ccmPhoneDescription}->{oid} },
+            { oid => $mapping->{ccmPhoneStatus}->{oid} },
+            { oid => $mapping->{ccmPhoneName}->{oid} }
         ],
         return_type => 1,
         nothing_quit => 1
