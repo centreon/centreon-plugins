@@ -88,13 +88,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"    => { name => 'warning_status', default => '' },
-                                "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /^registered/' },
-                                });
-                                
+
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /^registered/' },
+    });
+
     return $self;
 }
 
@@ -128,12 +127,18 @@ my $mapping = {
     ccmPhoneName        => { oid => '.1.3.6.1.4.1.9.9.156.1.2.1.1.20' },
 };
 
-my $oid_ccmPhoneEntry = '.1.3.6.1.4.1.9.9.156.1.2.1.1';
-
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_ccmPhoneEntry, start => $mapping->{ccmPhoneDescription}->{oid}, end => $mapping->{ccmPhoneName}->{oid}, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oids => [
+            { oid => $mapping->{ccmPhoneDescription} },
+            { oid => $mapping->{ccmPhoneStatus} },
+            { oid => $mapping->{ccmPhoneName} }
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
     
     $self->{phone} = {};
     $self->{global} = { unknown => 0, registered => 0, unregistered => 0, rejected => 0, partiallyregistered => 0 };
@@ -172,13 +177,9 @@ Can used special variables like: %{status}, %{display}
 Set critical threshold for status (Default: '%{status} !~ /^registered/').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 
 Can be: 'total-registered', 'total-unregistered', 'total-rejected', 
 'total-unknown', 'total-partiallyregistered'.
