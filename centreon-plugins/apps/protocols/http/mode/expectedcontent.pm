@@ -323,6 +323,11 @@ Save cookies in a file (Example: '/tmp/lwp_cookies.dat')
 
 Set pattern to extracted a number (used --warning-extracted and --critical-extracted option).
 
+=item B<--expected-string>
+
+--expected-string='toto' is a shortcut for --critical-content='%{content} !~ /toto/mi'
+Recommend to use directly --critical-content.
+
 =item B<--unknown-status>
 
 Threshold warning for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
