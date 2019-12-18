@@ -46,7 +46,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check 3CX extensions through its HTTPS remote API.
+Check 3CX ressources through its HTTPS remote API.
 
 Requirements: at least 3CX 15.5.
 

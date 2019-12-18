@@ -147,7 +147,7 @@ __END__
 
 =head1 MODE
 
-Check system health
+Check extentions status
 
 =over 8
 
