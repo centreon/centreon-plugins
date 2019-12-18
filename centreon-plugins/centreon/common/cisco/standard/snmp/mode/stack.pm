@@ -28,14 +28,14 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold 
 
 sub custom_stack_status_output {
     my ($self, %options) = @_;
-    
+
     my $msg = sprintf("Stack status is '%s'", $self->{result_values}->{stack_status});
     return $msg;
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
+
     my $msg = sprintf("State is '%s', Role is '%s'", $self->{result_values}->{state}, $self->{result_values}->{role});
     return $msg;
 }
