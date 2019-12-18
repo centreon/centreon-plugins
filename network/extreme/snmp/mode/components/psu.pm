@@ -54,14 +54,22 @@ sub check_fan_speed {
     
     my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu.fan', instance => $options{instance}, value => $options{value});            
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Power supply fan '%s' is '%s' rpm", $options{instance}, $options{value}));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                "Power supply fan '%s' is '%s' rpm",
+                $options{instance},
+                $options{value}
+            )
+        );
     }
-    $self->{output}->perfdata_add(label => 'psu_fan_' . $options{instance}, unit => 'rpm', 
-                                  value => $options{value},
-                                  warning => $warn,
-                                  critical => $crit, min => 0
-                                  );
+    $self->{output}->perfdata_add(
+        label => 'psu_fan_' . $options{instance}, unit => 'rpm', 
+        value => $options{value},
+        warning => $warn,
+        critical => $crit,
+        min => 0
+    );
 }
 
 sub check {
@@ -109,7 +117,8 @@ sub check {
                 instances => $instance,
                 value => $power,
                 warning => $warn,
-                critical => $crit, min => 0
+                critical => $crit,
+                min => 0
             );
         }
     }

@@ -37,14 +37,18 @@ my $oid_extremeFanStatusEntry = '.1.3.6.1.4.1.1916.1.1.1.9.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_extremeFanStatusEntry, end => $mapping->{extremeFanOperational}->{oid} };
+    push @{$self->{request}}, { 
+        oid => $oid_extremeFanStatusEntry,
+        start => $mapping->{extremeFanOperational}->{oid},
+        end => $mapping->{extremeFanSpeed}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking fans");
-    $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
+    $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
     my ($exit, $warn, $crit, $checked);
@@ -56,19 +60,37 @@ sub check {
         next if ($self->check_filter(section => 'fan', instance => $instance));
 
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is '%s' [instance = %s, speed = %s]",
-                                                        $instance, $result->{extremeFanOperational}, $instance, defined($result->{extremeFanSpeed}) ? $result->{extremeFanSpeed} : 'unknown'));
+        $self->{output}->output_add(long_msg => 
+            sprintf(
+                "Fan '%s' status is '%s' [instance = %s, speed = %s]",
+                $instance,
+                $result->{extremeFanOperational},
+                $instance,
+                defined($result->{extremeFanSpeed}) ? $result->{extremeFanSpeed} : 'unknown'
+            )
+        );
         $exit = $self->get_severity(section => 'fan', value => $result->{extremeFanOperational});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' status is '%s'", $instance, $result->{extremeFanOperational}));
-            next;
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Fan '%s' status is '%s'",
+                    $instance,
+                    $result->{extremeFanOperational}
+                )
+            );
         }
         
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => $instance, value => $result->{extremeFanSpeed});            
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '%s' is '%s' rpm", $instance, $result->{extremeFanSpeed}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Fan '%s' is '%s' rpm",
+                    $instance,
+                    $result->{extremeFanSpeed}
+                )
+            );
         }
         $self->{output}->perfdata_add(
             label => 'fan', unit => 'rpm',
@@ -76,7 +98,8 @@ sub check {
             instances => $instance, 
             value => $result->{extremeFanSpeed},
             warning => $warn,
-            critical => $crit, min => 0
+            critical => $crit,
+            min => 0
         );
     }
 }

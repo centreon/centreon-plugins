@@ -54,7 +54,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking poes");
-    $self->{components}->{poe} = {name => 'poes', total => 0, skip => 0};
+    $self->{components}->{poe} = { name => 'poes', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'poe'));
 
     my ($exit, $warn, $crit, $checked);
@@ -70,22 +70,39 @@ sub check {
             sprintf("%.3f", $result2->{extremePethSlotMeasuredPower} / 1000) : 'unknown';
         
         $self->{components}->{poe}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Poe '%s' status is '%s' [instance = %s, power = %s]",
-                                                        $instance, $result->{extremePethSlotPoeStatus}, 
-                                                        $instance, $result2->{extremePethSlotMeasuredPower}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Poe '%s' status is '%s' [instance = %s, power = %s]",
+                $instance,
+                $result->{extremePethSlotPoeStatus}, 
+                $instance,
+                $result2->{extremePethSlotMeasuredPower}
+            )
+        );
         $exit = $self->get_severity(section => 'poe', value => $result->{extremePethSlotPoeStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Poe '%s' status is '%s'", $instance, $result->{extremePethSlotPoeStatus}));
-            next;
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Poe '%s' status is '%s'",
+                    $instance,
+                    $result->{extremePethSlotPoeStatus}
+                )
+            );
         }
         
         next if ($result2->{extremePethSlotMeasuredPower} !~ /\d+/);
         
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'poe', instance => $instance, value => $result2->{extremePethSlotMeasuredPower});            
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Poe '%s' is '%s' W", $instance, $result2->{extremePethSlotMeasuredPower}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Poe '%s' is '%s' W",
+                    $instance,
+                    $result2->{extremePethSlotMeasuredPower}
+                )
+            );
         }
         $self->{output}->perfdata_add(
             label => 'poe_power', unit => 'W',
@@ -93,7 +110,8 @@ sub check {
             instances => $instance,
             value => $result2->{extremePethSlotMeasuredPower},
             warning => $warn,
-            critical => $crit, min => 0
+            critical => $crit,
+            min => 0
         );
     }
 }

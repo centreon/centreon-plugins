@@ -57,7 +57,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking slots");
-    $self->{components}->{slot} = {name => 'slots', total => 0, skip => 0};
+    $self->{components}->{slot} = { name => 'slots', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'slot'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_extremeSlotEntry}})) {
@@ -72,12 +72,24 @@ sub check {
         }
 
         $self->{components}->{slot}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Slot '%s' status is '%s' [instance = %s]",
-                                                        $result->{extremeSlotName}, $result->{extremeSlotModuleState}, $instance));
+        $self->{output}->output_add(long_msg =>
+            sprintf(
+                "Slot '%s' status is '%s' [instance = %s]",
+                $result->{extremeSlotName},
+                $result->{extremeSlotModuleState},
+                $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'slot', value => $result->{extremeSlotModuleState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                       short_msg => sprintf("Slot '%s' status is '%s'", $result->{extremeSlotName}, $result->{extremeSlotModuleState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Slot '%s' status is '%s'",
+                    $result->{extremeSlotName},
+                    $result->{extremeSlotModuleState}
+                )
+            );
         }
     }
 }
