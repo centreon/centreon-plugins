@@ -205,7 +205,7 @@ sub request_api {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
+        $decoded = JSON::XS->new->decode($content);
     };
     if ($@) {
         $self->{output}->output_add(long_msg => $content, debug => 1);
@@ -285,7 +285,7 @@ sub internal_update_checker {
         $status = $status->{tcxUpdate};
         if (ref($status) ne 'ARRAY') {
             # See above note about strange content
-            $status = JSON::XS->new->utf8->decode($status);
+            $status = JSON::XS->new->decode($status);
         }
     }
     return $status;
