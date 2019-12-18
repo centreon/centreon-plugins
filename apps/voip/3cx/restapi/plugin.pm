@@ -32,6 +32,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'extension' => 'apps::voip::3cx::restapi::mode::extension',
         'system'    => 'apps::voip::3cx::restapi::mode::system',
     );
 
@@ -45,7 +46,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check 3CX ressources through its HTTPS remote API.
+Check 3CX extensions through its HTTPS remote API.
 
 Requirements: at least 3CX 15.5.
 

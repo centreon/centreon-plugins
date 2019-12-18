@@ -221,6 +221,34 @@ sub request_api {
     return $decoded;
 }
 
+sub internal_activecalls {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/activeCalls');
+    return $status;
+}
+
+sub api_activecalls {
+    my ($self, %options) = @_;
+
+    my $status = $self->internal_activecalls();
+    return $status->{list};
+}
+
+sub internal_extension_list {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/ExtensionList');
+    return $status;
+}
+
+sub api_extension_list {
+    my ($self, %options) = @_;
+
+    my $status = $self->internal_extension_list();
+    return $status->{list};
+}
+
 sub internal_single_status {
     my ($self, %options) = @_;
 
