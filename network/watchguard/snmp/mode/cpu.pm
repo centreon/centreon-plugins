@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -53,9 +53,9 @@ sub set_counters {
         },
         { label => '15min', set => {
                 key_values => [ { name => '15min' } ],
-                output_template => '5 minutes : %.2f %%',
+                output_template => '15 minutes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5min', value => '15min_absolute', template => '%.2f',
+                    { label => 'cpu_15min', value => '15min_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -74,7 +74,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                 });
@@ -97,7 +96,9 @@ sub manage_selection {
             $oid_wgSystemCpuUtil1, $oid_wgSystemCpuUtil5, $oid_wgSystemCpuUtil15
         ], nothing_quit => 1);
 
-    $self->{global} = { '1min' => $snmp_result->{$oid_wgSystemCpuUtil1}, '5min' => $snmp_result->{$oid_wgSystemCpuUtil5}, '15min' => $snmp_result->{$oid_wgSystemCpuUtil15} };
+    $self->{global} = { '1min' => $snmp_result->{$oid_wgSystemCpuUtil1} / 100,
+                        '5min' => $snmp_result->{$oid_wgSystemCpuUtil5} / 100,
+                        '15min' => $snmp_result->{$oid_wgSystemCpuUtil15} / 100 };
 }
 
 1;

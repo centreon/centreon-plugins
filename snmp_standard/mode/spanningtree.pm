@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,30 +20,67 @@
 
 package snmp_standard::mode::spanningtree;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my %states = (
-    1 => ['disabled', 'OK'], 
-    2 => ['blocking', 'CRITICAL'], 
-    3 => ['listening', 'OK'], 
-    4 => ['learning', 'OK'],
-    5 => ['forwarding', 'OK'],
-    6 => ['broken', 'CRITICAL'],
-    
-    10 => ['not defined', 'UNKNOWN'], # mine status
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("spanning tree state is '%s' [op status: '%s'] [admin status: '%s'] [index: '%s']",
+        $self->{result_values}->{state}, $self->{result_values}->{op_status},
+        $self->{result_values}->{admin_status}, $self->{result_values}->{index});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{port} = $options{new_datas}->{$self->{instance} . '_description'};
+    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
+    $self->{result_values}->{admin_status} = $options{new_datas}->{$self->{instance} . '_admin_status'};
+    $self->{result_values}->{op_status} = $options{new_datas}->{$self->{instance} . '_op_status'};
+    $self->{result_values}->{index} = $options{new_datas}->{$self->{instance} . '_index'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'spanningtrees', type => 1, cb_prefix_output => 'prefix_peers_output', message_multiple => 'All spanning trees are ok' },
+    ];
+    $self->{maps_counters}->{spanningtrees} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' }, { name => 'admin_status' }, { name => 'op_status' },
+                                { name => 'index' }, { name => 'description' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+}
+
+sub prefix_peers_output {
+    my ($self, %options) = @_;
+
+    return "Port '" . $options{instance_value}->{description} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
+
     $options{options}->add_options(arguments =>
                                 {
+                                    "filter-port:s"         => { name => 'filter_port' },
+                                    "warning-status:s"      => { name => 'warning_status', default => '' },
+                                    "critical-status:s"     => { name => 'critical_status', default => '%{op_status} =~ /up/ && %{state} =~ /blocking|broken/' },
                                 });
 
     return $self;
@@ -51,66 +88,99 @@ sub new {
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-sub run {
+my %mapping_state = (
+    1 => 'disabled',
+    2 => 'blocking',
+    3 => 'listening',
+    4 => 'learning',
+    5 => 'forwarding',
+    6 => 'broken',
+    10 => 'not defined',
+);
+my %mapping_status = (
+    1 => 'enabled',
+    2 => 'disabled',
+);
+
+my $mapping = {
+    dot1dStpPortState   => { oid => '.1.3.6.1.2.1.17.2.15.1.3', map => \%mapping_state },
+    dot1dStpPortEnable  => { oid => '.1.3.6.1.2.1.17.2.15.1.4', map => \%mapping_status },
+};
+my $oid_dot1dStpPortEntry = '.1.3.6.1.2.1.17.2.15.1';
+
+my $oid_dot1dBasePortIfIndex = '.1.3.6.1.2.1.17.1.4.1.2';
+
+my %mapping_if_status = (
+    1 => 'up', 2 => 'down', 3 => 'testing', 4 => 'unknown',
+    5 => 'dormant', 6 => 'notPresent', 7 => 'lowerLayerDown',
+);
+my $oid_ifDesc = '.1.3.6.1.2.1.2.2.1.2';
+my $oid_ifAdminStatus = '.1.3.6.1.2.1.2.2.1.7';
+my $oid_ifOpStatus = '.1.3.6.1.2.1.2.2.1.8';
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+    
+    $self->{spanningtrees} = {};
+    my $results = $options{snmp}->get_table(oid => $oid_dot1dStpPortEntry, start => $mapping->{dot1dStpPortState}->{oid}, end => $mapping->{dot1dStpPortEnable}->{oid}, nothing_quit => 1);
 
-    my $oid_dot1dStpPortEnable = '.1.3.6.1.2.1.17.2.15.1.4';
-    my $oid_dot1dStpPortState = '.1.3.6.1.2.1.17.2.15.1.3';
-    my $oid_dot1dBasePortIfIndex = '.1.3.6.1.2.1.17.1.4.1.2';
-    my $oid_ifDesc = '.1.3.6.1.2.1.2.2.1.2';
-    my $results = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_dot1dStpPortEnable },
-                                                            { oid => $oid_dot1dStpPortState },
-                                                           ], nothing_quit => 1);
     my @instances = ();
-    foreach my $oid (keys %{$results->{$oid_dot1dStpPortEnable}}) {
-        $oid =~ /\.([0-9]+)$/;
+    foreach my $oid (keys %{$results}) {
+        next if ($oid !~ /^$mapping->{dot1dStpPortState}->{oid}\.(.*)/);
         my $instance = $1;
+        my $map_result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
 
-        # '2' => disabled, we skip
-        if ($results->{$oid_dot1dStpPortEnable}->{$oid} == 2) {
-            $self->{output}->output_add(long_msg => sprintf("Skipping interface '%d': Stp port disabled", $instance));
+        if ($map_result->{dot1dStpPortEnable} =~ /disabled/) {
+            $self->{output}->output_add(long_msg => sprintf("Skipping interface '%d': Stp port disabled", $instance), debug => 1);
             next;
         }
-        
         push @instances, $instance;
-       
     }
-    
-    $self->{snmp}->load(oids => [$oid_dot1dBasePortIfIndex],
-                            instances => [@instances]);
-    my $result = $self->{snmp}->get_leef(nothing_quit => 1);
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Spanning Tree is ok on all interfaces');
-    # Get description
-    foreach my $oid (keys %$result) {
+
+    $options{snmp}->load(oids => [ $oid_dot1dBasePortIfIndex ], instances => [ @instances ]);
+    my $result = $options{snmp}->get_leef(nothing_quit => 1);
+
+    foreach my $oid (keys %{$result}) {
         next if ($oid !~ /^$oid_dot1dBasePortIfIndex\./ || !defined($result->{$oid}));
-        
-        $self->{snmp}->load(oids => [$oid_ifDesc . "." . $result->{$oid}]);
+        $options{snmp}->load(oids => [ $oid_ifDesc . "." . $result->{$oid}, $oid_ifAdminStatus . "." . $result->{$oid}, $oid_ifOpStatus . "." . $result->{$oid} ]);
     }
-    my $result_desc = $self->{snmp}->get_leef();
-    
+    my $result_if = $options{snmp}->get_leef();
+
     foreach my $instance (@instances) {
-        my $stp_state = defined($results->{$oid_dot1dStpPortState}->{$oid_dot1dStpPortState . '.' . $instance}) ? 
-                          $results->{$oid_dot1dStpPortState}->{$oid_dot1dStpPortState . '.' . $instance} : 10;
-        my $descr = (defined($result->{$oid_dot1dBasePortIfIndex . '.' . $instance}) && defined($result_desc->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}})) ? 
-                        $result_desc->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}} : 'unknown';
-        
-        $self->{output}->output_add(long_msg => sprintf("Spanning Tree interface '%s' state is %s", $descr,
-                                            ${$states{$stp_state}}[0]));
-        if (${$states{$stp_state}}[1] ne 'OK') {
-             $self->{output}->output_add(severity => ${$states{$stp_state}}[1],
-                                        short_msg => sprintf("Spanning Tree interface '%s' state is %s", $descr,
-                                                             ${$states{$stp_state}}[0]));
+        my $map_result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+
+        my $state = (defined($map_result->{dot1dStpPortState})) ? $map_result->{dot1dStpPortState} : 'not defined';
+        my $description = (defined($result->{$oid_dot1dBasePortIfIndex . '.' . $instance}) && defined($result_if->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}})) ?
+            $result_if->{$oid_ifDesc . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}} : 'unknown';
+        my $admin_status = (defined($result->{$oid_dot1dBasePortIfIndex . '.' . $instance}) && defined($result_if->{$oid_ifAdminStatus . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}})) ?
+            $result_if->{$oid_ifAdminStatus . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}} : 'unknown';
+        my $op_status = (defined($result->{$oid_dot1dBasePortIfIndex . '.' . $instance}) && defined($result_if->{$oid_ifOpStatus . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}})) ?
+            $result_if->{$oid_ifOpStatus . '.' . $result->{$oid_dot1dBasePortIfIndex . '.' . $instance}} : 'unknown';
+
+        if (defined($self->{option_results}->{filter_port}) && $self->{option_results}->{filter_port} ne '' &&
+            $description !~ /$self->{option_results}->{filter_port}/) {
+            $self->{output}->output_add(long_msg => sprintf("Skipping interface '%s': filtered with options", $description), debug => 1);
+            next;
         }
+
+        $self->{spanningtrees}->{$result->{$oid_dot1dBasePortIfIndex . '.' . $instance}} = {
+            state => $state,
+            admin_status => $mapping_if_status{$admin_status},
+            op_status => $mapping_if_status{$op_status},
+            index => $result->{$oid_dot1dBasePortIfIndex . '.' . $instance},
+            description => $description
+        };
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+
+    if (scalar(keys %{$self->{spanningtrees}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No port with Spanning Tree Protocol found.');
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -119,11 +189,26 @@ __END__
 
 =head1 MODE
 
-Check Spanning-Tree current state of ports (BRIDGE-MIB).
+Check port Spanning Tree Protocol current state (BRIDGE-MIB).
 
 =over 8
+
+=item B<--filter-port>
+
+Filter on port description (can be a regexp).
+
+=item B<--warning-status>
+
+Set warning threshold for status.
+Can used special variables like: %{state}, %{op_status},
+%{admin_status}, %{port}, %{index}.
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{op_status} =~ /up/ && %{state} =~ /blocking|broken/').
+Can used special variables like: %{state}, %{op_status},
+%{admin_status}, %{port}, %{index}.
 
 =back
 
 =cut
-    

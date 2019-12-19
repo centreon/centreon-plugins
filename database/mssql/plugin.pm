@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,20 +32,24 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'blocked-processes'    => 'database::mssql::mode::blockedprocesses',
-                         'cache-hitratio'       => 'database::mssql::mode::cachehitratio',
-                         'connected-users'      => 'database::mssql::mode::connectedusers',
-                         'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'databases-size'       => 'database::mssql::mode::databasessize',
-                         'locks-waits'          => 'database::mssql::mode::lockswaits',
-                         'transactions'         => 'database::mssql::mode::transactions',
-                         'failed-jobs'          => 'database::mssql::mode::failedjobs',
-                         'dead-locks'           => 'database::mssql::mode::deadlocks',
-                         'backup-age'           => 'database::mssql::mode::backupage',
-                         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
-                         'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
-                         );
+        'backup-age'           => 'database::mssql::mode::backupage',
+        'blocked-processes'    => 'database::mssql::mode::blockedprocesses',
+        'cache-hitratio'       => 'database::mssql::mode::cachehitratio',
+        'connected-users'      => 'database::mssql::mode::connectedusers',
+        'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
+        'dead-locks'           => 'database::mssql::mode::deadlocks',
+        'databases-size'       => 'database::mssql::mode::databasessize',
+        'failed-jobs'          => 'database::mssql::mode::failedjobs',
+        'list-databases'       => 'database::mssql::mode::listdatabases',
+        'locks-waits'          => 'database::mssql::mode::lockswaits',
+        'logs-size'            => 'database::mssql::mode::logssize',
+        'page-life-expectancy' => 'database::mssql::mode::pagelifeexpectancy',
+        'sql'                  => 'centreon::common::protocols::sql::mode::sql',
+        'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
+        'transactions'         => 'database::mssql::mode::transactions',
+    );
 
+    $self->{sql_modes}{dbi} = 'database::mssql::dbi';
     return $self;
 }
 
@@ -53,18 +57,30 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'hostname:s@'       => { name => 'hostname' },
-                                                'port:s@'           => { name => 'port' },
-                                                'database:s'        => { name => 'database' },
-                                                }
-                                  );
+        arguments => {
+            'hostname:s@'       => { name => 'hostname' },
+            'port:s@'           => { name => 'port' },
+            'server:s@'         => { name => 'server' },
+            'database:s'        => { name => 'database' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();
 
+    if (defined($options_result->{server})) {
+        @{$self->{sqldefault}->{dbi}} = ();
+        for (my $i = 0; $i < scalar(@{$options_result->{server}}); $i++) {
+            $self->{sqldefault}->{dbi}[$i] = { data_source => 'Sybase:server=' . $options_result->{server}[$i] };
+            if ((defined($options_result->{database})) && ($options_result->{database} ne '')) {
+                $self->{sqldefault}->{dbi}[$i]->{data_source} .= ';database=' . $options_result->{database};
+            }
+        }
+    }
+
     if (defined($options_result->{hostname})) {
         @{$self->{sqldefault}->{dbi}} = ();
+
         for (my $i = 0; $i < scalar(@{$options_result->{hostname}}); $i++) {
             $self->{sqldefault}->{dbi}[$i] = { data_source => 'Sybase:host=' . $options_result->{hostname}[$i] };
             if (defined($options_result->{port}[$i])) {
@@ -75,6 +91,7 @@ sub init {
             }
         }
     }
+
     $self->SUPER::init(%options);    
 }
 
@@ -95,6 +112,14 @@ Hostname to query.
 =item B<--port>
 
 Database Server Port.
+
+=item B<--server>
+
+An alternative to hostname+port. <server> will be looked up in the file freetds.conf.
+
+=item B<--database>
+
+Select database .
 
 =back
 

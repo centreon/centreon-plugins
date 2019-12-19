@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,8 +36,8 @@ sub load {
 sub check {
     my ($self) = @_;
     
-    $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
+    $self->{output}->output_add(long_msg => 'Checking temperatures');
+    $self->{components}->{temperature} = { name => 'temperatures', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
     
     return if (!defined($self->{results}->{$mapping->{extremeCurrentTemperature}->{oid}}->{$mapping->{extremeCurrentTemperature}->{oid} . '.0'}));
@@ -47,18 +47,31 @@ sub check {
     next if ($self->check_filter(section => 'temperature', instance => $instance));
     $self->{components}->{temperature}->{total}++;
 
-    $self->{output}->output_add(long_msg => sprintf("temperature is %dC [instance: %s].", 
-                                                    $result->{extremeCurrentTemperature},
-                                                    $instance));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            'temperature is %dC [instance: %s].',
+            $result->{extremeCurrentTemperature},
+            $instance
+        )
+    );
     my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{extremeCurrentTemperature});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Temperature is %s degree centigrade", $result->{extremeCurrentTemperature}));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf(
+                'Temperature is %s degree centigrade',
+                $result->{extremeCurrentTemperature}
+            )
+        );
     }
-    $self->{output}->perfdata_add(label => "temp", unit => 'C',
-                                  value => $result->{extremeCurrentTemperature},
-                                  warning => $warn,
-                                  critical => $crit);
+
+    $self->{output}->perfdata_add(
+        label => 'temp', unit => 'C',
+        nlabel => 'hardware.temperature.celsius',
+        value => $result->{extremeCurrentTemperature},
+        warning => $warn,
+        critical => $crit
+    );
 }
 
 1;

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -98,11 +98,15 @@ sub check {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Humdity '%s' is %s %%", $result->{isDeviceMonitorHumidityName}, $result->{isDeviceMonitorHumidity}));
         }
-        $self->{output}->perfdata_add(label => 'humidity_' . $result->{isDeviceMonitorHumidityName}, unit => '%', 
-                                      value => $result->{isDeviceMonitorHumidity},
-                                      warning => $warn,
-                                      critical => $crit,
-                                      min => 0, max => 100);
+        $self->{output}->perfdata_add(
+            label => 'humidity', unit => '%',
+            nlabel => 'hardware.humidity.percentage',
+            instances => $result->{isDeviceMonitorHumidityName},
+            value => $result->{isDeviceMonitorHumidity},
+            warning => $warn,
+            critical => $crit,
+            min => 0, max => 100
+        );
     }
 }
 

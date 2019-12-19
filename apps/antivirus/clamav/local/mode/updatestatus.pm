@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -27,34 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use Net::DNS;
 use DateTime;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_engine_status_output {
     my ($self, %options) = @_;
@@ -118,7 +91,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_engine_status_calc'),
                 closure_custom_output => $self->can('custom_engine_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'maindb-status', threshold => 0, set => {
@@ -126,7 +99,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_maindb_status_calc'),
                 closure_custom_output => $self->can('custom_maindb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'dailydb-status', threshold => 0, set => {
@@ -134,7 +107,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_dailydb_status_calc'),
                 closure_custom_output => $self->can('custom_dailydb_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -145,29 +118,27 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options' },
-                                  "warning-engine-status:s"     => { name => 'warning_engine_status', default => '' },
-                                  "critical-engine-status:s"    => { name => 'critical_engine_status', default => '%{last_engine_version} ne %{current_engine_version}' },
-                                  "warning-maindb-status:s"     => { name => 'warning_maindb_status', default => '' },
-                                  "critical-maindb-status:s"    => { name => 'critical_maindb_status', default => '%{last_maindb_version} ne %{current_maindb_version}' },
-                                  "warning-dailydb-status:s"    => { name => 'warning_dailydb_status', default => '' },
-                                  "critical-dailydb-status:s"   => { name => 'critical_dailydb_status', default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000' },
-                                  "nameservers:s@"              => { name => 'nameservers' },
-                                  "maindb-file:s"               => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
-                                  "dailydb-file:s"              => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options' },
+        'warning-engine-status:s'     => { name => 'warning_engine_status', default => '' },
+        'critical-engine-status:s'    => { name => 'critical_engine_status', default => '%{last_engine_version} ne %{current_engine_version}' },
+        'warning-maindb-status:s'     => { name => 'warning_maindb_status', default => '' },
+        'critical-maindb-status:s'    => { name => 'critical_maindb_status', default => '%{last_maindb_version} ne %{current_maindb_version}' },
+        'warning-dailydb-status:s'    => { name => 'warning_dailydb_status', default => '' },
+        'critical-dailydb-status:s'   => { name => 'critical_dailydb_status', default => '%{last_dailydb_version} ne %{current_dailydb_version} || %{current_dailydb_timediff} > 432000' },
+        'nameservers:s@'              => { name => 'nameservers' },
+        'maindb-file:s'               => { name => 'maindb_file', default => '/var/lib/clamav/main.cvd' },
+        'dailydb-file:s'              => { name => 'dailydb_file', default => '/var/lib/clamav/daily.cvd' },
+    });
     
     return $self;
 }
@@ -176,19 +147,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_engine_status', 'critical_engine_status', 'warning_maindb_status', 'critical_maindb_status', 'warning_dailydb_status', 'critical_dailydb_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
-    
+    $self->change_macros(macros => ['warning_engine_status', 'critical_engine_status', 
+        'warning_maindb_status', 'critical_maindb_status', 'warning_dailydb_status', 'critical_dailydb_status']);        
     $self->{clamav_command} = 'echo "==== CLAMD ===" ; clamd -V ; echo "==== DAILY ===="; sigtool --info ' . $self->{option_results}->{dailydb_file} . '; echo "==== MAIN ====" ; sigtool --info ' . $self->{option_results}->{maindb_file};
 }
 

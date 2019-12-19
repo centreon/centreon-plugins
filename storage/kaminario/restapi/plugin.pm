@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'system-usage' => 'storage::kaminario::restapi::mode::systemusage',
-                         'volume-usage' => 'storage::kaminario::restapi::mode::volumeusage',
-                         );
+        'system-usage' => 'storage::kaminario::restapi::mode::systemusage',
+        'volume-usage' => 'storage::kaminario::restapi::mode::volumeusage',
+    );
 
     $self->{custom_modes}{api} = 'storage::kaminario::restapi::custom::api';
     return $self;

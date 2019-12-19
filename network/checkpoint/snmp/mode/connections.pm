@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,13 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"   => { name => 'warning' },
-                                  "critical:s"  => { name => 'critical' },
-                                  "units:s"     => { name => 'units', default => 'absolute' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning:s'   => { name => 'warning' },
+        'critical:s'  => { name => 'critical' },
+        'units:s'     => { name => 'units', default => 'absolute' },
+    });
 
     return $self;
 }
@@ -83,15 +81,18 @@ sub run {
     
     my $exit = $self->{perfdata}->threshold_check(value => $value, 
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Connections: %d%s", $result->{$oid_fwNumCom}, $extra));
-    $self->{output}->perfdata_add(label => "connections", unit => 'con',
-                                  value => $result->{$oid_fwNumCom},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
-                                  min => 0
-                                 );
-    
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf("Connections: %d%s", $result->{$oid_fwNumCom}, $extra)
+    );
+    $self->{output}->perfdata_add(
+        label => "connections", unit => 'con',
+        value => $result->{$oid_fwNumCom},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
+        min => 0
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }

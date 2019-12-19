@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -54,7 +54,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                 });
@@ -182,10 +181,16 @@ sub check {
                                         short_msg => sprintf("Sensor '%s' is %s %s", $result->{smHealthMonitorName}, $result->{smHealthMonitorReading}, 
                                                             defined($result->{smHealthMonitorReadingUnit}) ? $result->{smHealthMonitorReadingUnit} : ''));
         }
-        $self->{output}->perfdata_add(label => $component . '_' . $result->{smHealthMonitorName}, unit => $result->{smHealthMonitorReadingUnit},
-                                      value => $result->{smHealthMonitorReading},
-                                      warning => $warn,
-                                      critical => $crit);
+        
+        # need some snmpwalk to do unit mapping!! experimental
+        $self->{output}->perfdata_add(
+            label => $component, unit => $result->{smHealthMonitorReadingUnit},
+            nlabel => 'hardware.sensor.' . $result->{smHealthMonitorType} . '.' . $result->{smHealthMonitorReadingUnit},
+            instances => $result->{smHealthMonitorName},
+            value => $result->{smHealthMonitorReading},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,18 +31,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '7634' },
-            "timeout:s"             => { name => 'timeout', default => '10' },
-            "name:s"                => { name => 'name' },
-            "warning:s"             => { name => 'warning' },
-            "critical:s"            => { name => 'critical' },
-            "regexp"                => { name => 'use_regexp' },
-            "regexp-isensitive"     => { name => 'use_regexpi' },
-            });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname' },
+        "port:s"                => { name => 'port', default => '7634' },
+        "timeout:s"             => { name => 'timeout', default => '10' },
+        "name:s"                => { name => 'name' },
+        "warning:s"             => { name => 'warning' },
+        "critical:s"            => { name => 'critical' },
+        "regexp"                => { name => 'use_regexp' },
+        "regexp-isensitive"     => { name => 'use_regexpi' },
+    });
 
     $self->{result} = {};
     $self->{hostname} = undef;
@@ -71,11 +69,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $oSocketConn = new IO::Socket::INET ( Proto      => 'tcp', 
-                                             PeerAddr   => $self->{option_results}->{hostname},
-                                             PeerPort   => $self->{option_results}->{port},
-                                             Timeout    => $self->{option_results}->{timeout},
-                                           );
+    my $oSocketConn = new IO::Socket::INET (
+        Proto      => 'tcp', 
+        PeerAddr   => $self->{option_results}->{hostname},
+        PeerPort   => $self->{option_results}->{port},
+        Timeout    => $self->{option_results}->{timeout},
+    );
     
     if (!defined($oSocketConn)) {
         $self->{output}->add_option_msg(short_msg => "Could not connect.");
@@ -147,14 +146,17 @@ sub run {
                                        $self->{result}->{$name}->{unit}));
         }
 
-        my $extra_label = '';
+        my $extra_label;
         $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'temp' . $extra_label,
-                                      unit => $self->{result}->{$name}->{unit},
-                                      value => sprintf("%.2f", $self->{result}->{$name}->{temperature}),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'temp',
+            intances => $extra_label,
+            unit => $self->{result}->{$name}->{unit},
+            value => sprintf("%.2f", $self->{result}->{$name}->{temperature}),
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
     };
 
     $self->{output}->display();

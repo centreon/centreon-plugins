@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,9 +50,9 @@ my $mapping = {
 my $oid_sensorProbeHumidityEntry = '.1.3.6.1.4.1.3854.1.2.2.1.17.1';
 
 sub load {
-    my (%options) = @_;
-    
-    push @{$options{request}}, { oid => $oid_sensorProbeHumidityEntry, end => $mapping->{sensorProbeHumidityLowCritical}->{oid} };
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_sensorProbeHumidityEntry, end => $mapping->{sensorProbeHumidityLowCritical}->{oid} };
 }
 
 sub check {
@@ -60,14 +60,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking humidity");
     $self->{components}->{humidity} = {name => 'humidity', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'humidity'));
+    return if ($self->check_filter(section => 'humidity'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sensorProbeHumidityEntry}})) {
         next if ($oid !~ /^$mapping->{sensorProbeHumidityPercent}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_sensorProbeHumidityEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'humidity', instance => $instance));
+        next if ($self->check_filter(section => 'humidity', instance => $instance));
         if ($result->{sensorProbeHumidityOnline} =~ /Offline/i) {  
             $self->absent_problem(section => 'humidity', instance => $instance);
             next;
@@ -104,12 +104,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Humidity sensor '%s' is %s %%", $result->{sensorProbeHumidityDescription}, $result->{sensorProbeHumidityPercent}));
             }
-            $self->{output}->perfdata_add(label => 'humdity_' . $instance, unit => '%', 
-                                          value => $result->{sensorProbeHumidityPercent},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0, max => 100
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'humdity', unit => '%', 
+                nlabel => 'hardware.sensor.humidity.percentage',
+                instances => $instance,
+                value => $result->{sensorProbeHumidityPercent},
+                warning => $warn,
+                critical => $crit,
+                min => 0, max => 100
+            );
         }
     }
 }

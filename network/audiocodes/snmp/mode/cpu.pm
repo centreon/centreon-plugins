@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'global', type => 0, message_separator => ' - ' },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'voip', set => {
+        { label => 'voip', nlabel => 'cpu.voip.utilization.percentage', set => {
                 key_values => [ { name => 'voip' } ],
                 output_template => 'CPU VoIp Usage : %.2f %%',
                 perfdatas => [
@@ -40,7 +40,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'data', set => {
+        { label => 'data', nlabel => 'cpu.data.utilization.percentage', set => {
                 key_values => [ { name => 'data' } ],
                 output_template => 'CPU Data Usage : %.2f %%',
                 perfdatas => [
@@ -56,7 +56,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                 });

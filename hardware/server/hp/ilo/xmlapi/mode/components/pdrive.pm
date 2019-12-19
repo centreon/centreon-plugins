@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package hardware::server::hp::ilo::xmlapi::mode::components::pdrive;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 sub load { }
 
@@ -93,7 +94,7 @@ sub check_ilo2 {
         $self->{components}->{pdrive}->{total}++;
         
         $self->{output}->output_add(long_msg => sprintf("physical drive '%s' status is '%s' [instance = %s]",
-                                    $result->{NUM}, $result->{STATUS}, $instance));
+                                    centreon::plugins::misc::trim($result->{NUM}), $result->{STATUS}, $instance));
         
         my $exit = $self->get_severity(label => 'default', section => 'pdrive', value => $result->{STATUS});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {

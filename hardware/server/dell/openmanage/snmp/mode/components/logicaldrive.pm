@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -84,9 +84,9 @@ my $mapping4 = {
 my $oid_virtualDiskEntry = '.1.3.6.1.4.1.674.10893.1.20.140.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_virtualDiskEntry, start => $mapping->{virtualDiskName}->{oid}, end => $mapping->{virtualDiskState}->{oid} },
+    push @{$self->{request}}, { oid => $oid_virtualDiskEntry, start => $mapping->{virtualDiskName}->{oid}, end => $mapping->{virtualDiskState}->{oid} },
         { oid => $mapping2->{virtualDiskLengthInMB}->{oid} }, { oid => $mapping3->{virtualDiskLayout}->{oid} }, { oid => $mapping4->{virtualDiskComponentStatus}->{oid} };
 }
 
@@ -95,7 +95,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking logical drives");
     $self->{components}->{logicaldrive} = {name => 'logical drives', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'logicaldrive'));
+    return if ($self->check_filter(section => 'logicaldrive'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping4->{virtualDiskComponentStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping4->{virtualDiskComponentStatus}->{oid}\.(.*)$/);
@@ -105,7 +105,7 @@ sub check {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{virtualDiskLayout}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{virtualDiskComponentStatus}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'logicaldrive', instance => $instance));
+        next if ($self->check_filter(section => 'logicaldrive', instance => $instance));
         
         $self->{components}->{logicaldrive}->{total}++;
 
@@ -114,7 +114,7 @@ sub check {
                                     $result2->{virtualDiskLengthInMB}, $result3->{virtualDiskLayout}, 
                                     $result->{virtualDiskState}, $result->{virtualDiskDeviceName}
                                     ));
-        my $exit = $self->get_severity(section => 'logicaldrive', value => $result4->{virtualDiskComponentStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'logicaldrive', value => $result4->{virtualDiskComponentStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Logical drive '%s' status is '%s'",

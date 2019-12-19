@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,8 +26,7 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::statefile;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -46,7 +45,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_status_threshold'),
             }
         },
-        { label => 'in-traffic', set => {
+        { label => 'in-traffic', nlabel => 'sap.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -55,7 +54,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_qsap_threshold'),
             }
         },
-        { label => 'out-traffic', set => {
+        { label => 'out-traffic', nlabel => 'sap.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
@@ -67,7 +66,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'total-in-traffic', set => {
+        { label => 'total-in-traffic', nlabel => 'sap.traffic.in.bitspersecond', set => {
                 key_values => [],
                 manual_keys => 1, per_second => 1, output_change_bytes => 2,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
@@ -76,7 +75,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_total_traffic_threshold'),
             }
         },
-        { label => 'total-out-traffic', set => {
+        { label => 'total-out-traffic', nlabel => 'sap.traffic.out.bitspersecond', set => {
                 key_values => [],
                 manual_keys => 1, per_second => 1, output_change_bytes => 2,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
@@ -92,29 +91,32 @@ sub custom_total_traffic_perfdata {
     my ($self, %options) = @_;
     
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
     
-    $self->{output}->perfdata_add(label => 'total_traffic_' . $self->{result_values}->{label}, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{total_traffic}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    $self->{output}->perfdata_add(
+        label => 'total_traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        nlabel => $self->{nlabel},
+        value => sprintf("%.2f", $self->{result_values}->{total_traffic}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
 }
 
 sub custom_total_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{total_traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{total_traffic}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -156,9 +158,9 @@ sub custom_total_traffic_calc {
 
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{total_traffic} = $total_traffic / $options{delta_time};
-    if (defined($instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}} =~ /[0-9]/) {
-        $self->{result_values}->{traffic_prct} = $self->{result_values}->{total_traffic} * 100 / ($instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}} * 1000 * 1000);
-        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_total_' . $self->{result_values}->{label}} * 1000 * 1000;
+    if (defined($self->{instance_mode}->{option_results}->{'speed_total_' . $self->{result_values}->{label}}) && $self->{instance_mode}->{option_results}->{'speed_total_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{total_traffic} * 100 / ($self->{instance_mode}->{option_results}->{'speed_total_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $self->{instance_mode}->{option_results}->{'speed_total_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
     return 0;
 }
@@ -174,17 +176,17 @@ sub custom_status_threshold {
 
         my $label = $self->{label};
         $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
+        if (defined($self->{instance_mode}->{option_results}->{'critical_' . $label}) && $self->{instance_mode}->{option_results}->{'critical_' . $label} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{'critical_' . $label}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{'warning_' . $label}) && $self->{instance_mode}->{option_results}->{'warning_' . $label} ne '' &&
+                 eval "$self->{instance_mode}->{option_results}->{'warning_' . $label}") {
             $status = 'warning';
         }
 
-        $instance_mode->{last_status} = 0;
+        $self->{instance_mode}->{last_status} = 0;
         if ($self->{result_values}->{admin} eq 'up') {
-            $instance_mode->{last_status} = 1;
+            $self->{instance_mode}->{last_status} = 1;
         }
     };
     if (defined($message)) {
@@ -212,36 +214,35 @@ sub custom_status_calc {
 
 sub custom_sap_perfdata {
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
+
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
     
-    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    $self->{output}->perfdata_add(
+        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        nlabel => $self->{nlabel},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
 }
 
 sub custom_sap_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -265,13 +266,13 @@ sub custom_sap_output {
 sub custom_sap_calc {
     my ($self, %options) = @_;
     
-    return -10 if (defined($instance_mode->{last_status}) && $instance_mode->{last_status} == 0);
+    return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{traffic} = ($options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}} - $options{old_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}}) / $options{delta_time};
-    if (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
-        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
-        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    if (defined($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
     return 0;
 }
@@ -281,20 +282,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
-                                  "display-name:s"      => { name => 'display_name', default => '%{SvcDescription}.%{IfName}.%{SapEncapName}' },
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "speed-in:s"          => { name => 'speed_in' },
-                                  "speed-out:s"         => { name => 'speed_out' },
-                                  "speed-total-in:s"    => { name => 'speed_total_in' },
-                                  "speed-total-out:s"   => { name => 'speed_total_out' },
-                                  "units-traffic:s"     => { name => 'units_traffic', default => '%' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
+        "display-name:s"      => { name => 'display_name', default => '%{SvcDescription}.%{IfName}.%{SapEncapName}' },
+        "filter-name:s"       => { name => 'filter_name' },
+        "speed-in:s"          => { name => 'speed_in' },
+        "speed-out:s"         => { name => 'speed_out' },
+        "speed-total-in:s"    => { name => 'speed_total_in' },
+        "speed-total-out:s"   => { name => 'speed_total_out' },
+        "units-traffic:s"     => { name => 'units_traffic', default => '%' },
+        "warning-status:s"    => { name => 'warning_status', default => '' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
+    });
     
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -304,19 +303,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
     $self->{statefile_cache}->check_options(%options);
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub prefix_sap_output {
@@ -390,6 +378,7 @@ sub manage_selection {
 
     $self->{global} = {};
     $self->{sap} = {};
+
     foreach my $oid (keys %{$snmp_result->{$oid_sapDescription}}) {
         next if ($oid !~ /^$oid_sapDescription\.(.*?)\.(.*?)\.(.*?)$/);
         # $SvcId and $SapEncapValue is the same. We use service table
@@ -413,6 +402,7 @@ sub manage_selection {
             SvcId => $SvcId, 
             SapPortId => $SapPortId, 
             SapEncapValue => $SapEncapValue);
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
@@ -426,7 +416,9 @@ sub manage_selection {
         $mapping->{fadSapStatsEgressOctets}->{oid},
         $mapping->{sapAdminStatus}->{oid}, $mapping->{sapOperStatus}->{oid}], 
         instances => [keys %{$self->{sap}}], instance_regexp => '(\d+\.\d+\.\d+)$');
+    
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+    
     foreach (keys %{$self->{sap}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);        
         $self->{sap}->{$_}->{in} = $result->{fadSapStatsIngressOctets} * 8;

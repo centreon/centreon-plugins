@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -36,6 +36,15 @@ my %map_raid_status = (
     10 => 'Canceling',
     11 => 'Degrade',
     12 => 'Crashed',
+    13 => 'DataScrubbing',
+    14 => 'RaidDeploying',
+    15 => 'RaidUnDeploying',
+    16 => 'RaidMountCache',
+    17 => 'RaidUnmountCache',
+    18 => 'RaidExpandingUnfinishedSHR',
+    19 => 'RaidConvertSHRToPool',
+    20 => 'RaidMigrateSHR1ToSHR2',
+    21 => 'RaidUnknownStatus',
 );
 
 my $mapping = {

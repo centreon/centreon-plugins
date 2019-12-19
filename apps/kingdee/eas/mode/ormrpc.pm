@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,7 +31,6 @@ sub new {
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(
         arguments => {
             "urlpath:s"          => { name => 'url_path', default => "/easportal/tools/nagios/checkrpc.jsp" },
@@ -142,7 +141,7 @@ sub run {
                        { label => 'warn_activethreadcount', 'exit_litteral' => 'warning' } ]);
     $self->{output}->output_add(
         severity  => $exit,
-        short_msg => sprintf("ActiveTrheadCount: %d", $activethreadcount)
+        short_msg => sprintf("ActiveThreadCount: %d", $activethreadcount)
     );
     $exit = $self->{perfdata}->threshold_check(value => $stubcount, 
         threshold => [ { label => 'crit_stubcount', 'exit_litteral' => 'critical' }, 
@@ -188,7 +187,7 @@ sub run {
     );    
 
     $self->{output}->perfdata_add(
-        label => "ActiveTrheadCount",
+        label => "ActiveThreadCount",
         value => $activethreadcount,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_activethreadcount'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_activethreadcount'),
@@ -218,13 +217,13 @@ sub run {
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_serversessioncount'),
     );    
     $self->{output}->perfdata_add(
-        label => "InvokeCount /min",
+        label => "InvokeCountPerMinute",
         value => $invokecountpermin,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_invokecountpermin'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_invokecountpermin'),
     );    
     $self->{output}->perfdata_add(
-        label => "ServiceCount /min",
+        label => "ServiceCountPerMinute",
         value => $servicecountpermin,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_servicecountpermin'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_servicecountpermin'),

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,16 +31,17 @@ sub new {
 
     $self->{version} = '0.5';
     %{$self->{modes}} = (
-                        'connections'       => 'network::checkpoint::snmp::mode::connections',
-                        'cpu'               => 'network::checkpoint::snmp::mode::cpu',
-                        'hardware'          => 'network::checkpoint::snmp::mode::hardware',
-                        'hastate'           => 'network::checkpoint::snmp::mode::hastate',
-                        'interfaces'        => 'snmp_standard::mode::interfaces',
-                        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-                        'memory'            => 'network::checkpoint::snmp::mode::memory',
-                        'vpn-status'        => 'network::checkpoint::snmp::mode::vpnstatus',
-                        'vrrp-status'       => 'snmp_standard::mode::vrrp',
-                        );
+        'connections'       => 'network::checkpoint::snmp::mode::connections',
+        'cpu'               => 'network::checkpoint::snmp::mode::cpu',
+        'hardware'          => 'network::checkpoint::snmp::mode::hardware',
+        'hastate'           => 'network::checkpoint::snmp::mode::hastate',
+        'interfaces'        => 'snmp_standard::mode::interfaces',
+        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
+        'memory'            => 'network::checkpoint::snmp::mode::memory',
+        'uptime'            => 'snmp_standard::mode::uptime',
+        'vpn-status'        => 'network::checkpoint::snmp::mode::vpnstatus',
+        'vrrp-status'       => 'snmp_standard::mode::vrrp',
+    );
 
     return $self;
 }

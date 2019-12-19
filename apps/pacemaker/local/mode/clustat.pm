@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,40 +26,13 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use XML::Simple;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 my %map_node_state = (
     0 => 'down',
     1 => 'up',
     2 => 'clean'
 );
-
-sub custom_state_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
 
 sub custom_state_output {
     my ($self, %options) = @_;
@@ -89,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
-                closure_custom_threshold_check => $self->can('custom_state_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
                 closure_custom_perfdata => sub { return 0; },
             }
         },
@@ -99,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_state_calc'),
                 closure_custom_output => $self->can('custom_state_output'),
-                closure_custom_threshold_check => $self->can('custom_state_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
                 closure_custom_perfdata => sub { return 0; },
             }
         },
@@ -123,7 +96,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "hostname:s"          => { name => 'hostname' },
@@ -150,20 +122,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-
-    $self->change_macros();
-
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_group', 'critical_group', 'warning_node', 'critical_node')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_group', 'critical_group', 'warning_node', 'critical_node']);
 }
 
 sub manage_selection {

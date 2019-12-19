@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -115,11 +115,19 @@ sub check {
                                            $instance, $result->{cpqHeFltTolPowerSupplyCondition}));
         }
         
-        $self->{output}->perfdata_add(label => "psu_power_" . $instance, unit => 'W',
-                                      value => $result->{cpqHeFltTolPowerSupplyCapacityUsed},
-                                      critical => $result->{cpqHeFltTolPowerSupplyCapacityMaximum});
-        $self->{output}->perfdata_add(label => "psu_voltage" . $instance, unit => 'V',
-                                      value => $result->{cpqHeFltTolPowerSupplyMainVoltage});
+        $self->{output}->perfdata_add(
+            label => 'psu_power', unit => 'W',
+            nlabel => 'hardware.powersupply.power.watt',
+            instances => $instance,
+            value => $result->{cpqHeFltTolPowerSupplyCapacityUsed},
+            critical => $result->{cpqHeFltTolPowerSupplyCapacityMaximum}
+        );
+        $self->{output}->perfdata_add(
+            label => 'psu_voltage', unit => 'V',
+            nlabel => 'hardware.powersupply.voltage.volt',
+            instances => $instance,
+            value => $result->{cpqHeFltTolPowerSupplyMainVoltage}
+        );
     }
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,50 +20,86 @@
 
 package apps::tomcat::web::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
+
 use strict;
 use warnings;
 use centreon::plugins::http;
 use XML::XPath;
 
+sub custom_memory_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Memory Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+        $self->{result_values}->{prct_used_absolute},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
+        $self->{result_values}->{prct_free_absolute});
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_memory_output'),
+                perfdatas => [
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_memory_output'),
+                perfdatas => [
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'Memory Used : %.2f %%',
+                perfdatas => [
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '8080' },
-            "proto:s"               => { name => 'proto' },
-            "credentials"           => { name => 'credentials' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "timeout:s"             => { name => 'timeout' },
-            "urlpath:s"             => { name => 'url_path', default => '/manager/status?XML=true' },
-            "warning:s"             => { name => 'warning' },
-            "critical:s"            => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {
+        'hostname:s'    => { name => 'hostname' },
+        'port:s'        => { name => 'port', default => '8080' },
+        'proto:s'       => { name => 'proto' },
+        'credentials'   => { name => 'credentials' },
+        'basic'         => { name => 'basic' },
+        'username:s'    => { name => 'username' },
+        'password:s'    => { name => 'password' },
+        'timeout:s'     => { name => 'timeout' },
+        'urlpath:s'     => { name => 'url_path', default => '/manager/status?XML=true' },
+    });
 
-    $self->{result} = {};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
 
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -74,11 +110,10 @@ my %xpath_to_check = (
     memTotal => '/status/jvm/memory/@total',
 );
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
     
     my $webcontent = $self->{http}->request();
-    my $port = $self->{option_results}->{port};
 
     #EXAMPLE 1:
     #<status>
@@ -118,56 +153,32 @@ sub run {
     #</connector>
     #</status>
 
-    #GET XML DATA
-    my $xpath = XML::XPath->new( xml => $webcontent );
-    my %xpath_check_results;
+    my $result = {};
+    my $xpath = XML::XPath->new(xml => $webcontent);
+    foreach my $xpath_check (keys %xpath_to_check) {
+        my $nodeset = $xpath->find($xpath_to_check{$xpath_check});
 
-    foreach my $xpath_check ( keys %xpath_to_check ) {
-        my $singlepath = $xpath_to_check{$xpath_check};
-        $singlepath =~ s{\$port}{$port};
-        my $nodeset = $xpath->find($singlepath);
-
-        foreach my $node ($nodeset->get_nodelist) {
+        foreach my $node ($nodeset->get_nodelist()) {
             my $value = $node->string_value();
-            if ( $value =~ /^"?([0-9.]+)"?$/ ) {
-                $self->{result}->{$xpath_check} = $1;
-            } else {
-                $self->{result}->{$xpath_check} = "not_numeric";
-            };
+            if ($value =~ /^"?([0-9.]+)"?$/) {
+                $result->{$xpath_check} = $1;
+            }
         };
     };
 
-    my $memTotal = $self->{result}->{memTotal};
-    my $memFree = $self->{result}->{memFree};
-    my $memMax = $self->{result}->{memMax};
-    my $memUsed = $memTotal - $memFree;
-    my $memUsed_prct = $memUsed * 100 / $memTotal;
-
-    if (!defined($memTotal) || !defined($memFree) || !defined($memUsed) || !defined($memUsed_prct)) {
-        $self->{output}->add_option_msg(short_msg => "Some informations missing.");
+    if (!defined($result->{memTotal}) || !defined($result->{memFree})) {
+        $self->{output}->add_option_msg(short_msg => "some informations missing.");
         $self->{output}->option_exit();
     }
 
-    my $exit = $self->{perfdata}->threshold_check(value => $memUsed_prct, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    my ($memTotal_value, $memTotal_unit) = $self->{perfdata}->change_bytes(value => $memTotal);
-    my ($memFree_value, $memFree_unit) = $self->{perfdata}->change_bytes(value => $memFree);
-    my ($memMax_value, $memMax_unit) = $self->{perfdata}->change_bytes(value => $memMax);
-    my ($memUsed_value, $memUsed_unit) = $self->{perfdata}->change_bytes(value => $memUsed);
-
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Memory used %s (%.2f%%)",
-                                            $memUsed_value . " " . $memUsed_unit, $memUsed_prct));
-
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $memUsed,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $memTotal),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $memTotal),
-                                  min => 0, max => $memTotal);    
- 
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $total = $result->{memTotal};
+    $self->{global} = {
+        total => $total,
+        free => $result->{memFree},
+        used => $total - $result->{memFree},
+        prct_free => $result->{memFree} * 100 / $total,
+        prct_used => ($result->{memTotal} - $result->{memFree}) * 100 / $total,
+    };
 };
 
 1;
@@ -188,25 +199,29 @@ IP Address or FQDN of the Tomcat Application Server
 
 Port used by Tomcat
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Protocol used http or https
 
 =item B<--credentials>
 
-Specify this option if you access server-status page over basic authentification
+Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--timeout>
 
@@ -216,13 +231,10 @@ Threshold for HTTP timeout
 
 Path to the Tomcat Manager XML (Default: '/manager/status?XML=true')
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning in percent.
-
-=item B<--critical>
-
-Threshold critical in percent.
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back
 

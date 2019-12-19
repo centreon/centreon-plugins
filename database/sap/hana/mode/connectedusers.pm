@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'host', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All connected users are ok' },
     ];
     $self->{maps_counters}->{host} = [
-        { label => 'users', set => {
+        { label => 'users', nlabel => 'users.count', set => {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'Connected Users : %s',
                 perfdatas => [
@@ -55,7 +55,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                 "filter-username:s"     => { name => 'filter_username' },

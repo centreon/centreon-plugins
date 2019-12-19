@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,79 +20,84 @@
 
 package centreon::common::aruba::snmp::mode::cpu;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_output',
+          message_multiple => 'All CPUs utilization are ok' },
+    ];
+
+    $self->{maps_counters}->{cpu} = [
+        { label => 'utilization', nlabel => 'cpu.utilization.percentage', set => {
+                key_values => [ { name => 'sysExtProcessorLoad' }, { name => 'sysExtProcessorDescr' } ],
+                output_template => 'Utilization %.2f%%',
+                perfdatas => [
+                    { label => 'utilization', value => 'sysExtProcessorLoad_absolute', template => '%.2f',  min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'sysExtProcessorDescr_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{sysExtProcessorDescr} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
-sub check_options {
+my $oid_wlsxSysExtProcessorEntry = '.1.3.6.1.4.1.14823.2.2.1.2.1.13.1';
+
+my $mapping = {
+    sysExtProcessorDescr => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.13.1.2' },
+    sysExtProcessorLoad => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.13.1.3' },
+};
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    my $oid_wlsxSysExtProcessorEntry = '.1.3.6.1.4.1.14823.2.2.1.2.1.13.1';
-    my $oid_sysExtProcessorDescr = '.1.3.6.1.4.1.14823.2.2.1.2.1.13.1.2';
-    my $oid_sysExtProcessorLoad = '.1.3.6.1.4.1.14823.2.2.1.2.1.13.1.3';
-    my $result = $self->{snmp}->get_table(oid => $oid_wlsxSysExtProcessorEntry, nothing_quit => 1);
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All CPUs are ok.');
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_wlsxSysExtProcessorEntry,
+        start => $mapping->{sysExtProcessorDescr}->{oid},
+        end => $mapping->{sysExtProcessorLoad}->{oid},
+        nothing_quit => 1
+    );
     
-    foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_sysExtProcessorLoad/);
-        $oid =~ /\.([0-9]+)$/;
+    $self->{cpu} = {};
+    
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{sysExtProcessorDescr}->{oid}\.(.*)/);
         my $instance = $1;
-        my $load = $result->{$oid};
-        my $descr = $result->{$oid_sysExtProcessorDescr . '.' . $instance};
         
-        my $exit = $self->{perfdata}->threshold_check(value => $load, 
-                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        $self->{output}->output_add(long_msg => sprintf("CPU '%s': %.2f%% (1min)", $descr,
-                                                        $load));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-             $self->{output}->output_add(severity => $exit,
-                                         short_msg => sprintf("CPU '%s': %.2f%% (1min)", $descr,
-                                                              $load));
-        }
-        
-        $self->{output}->perfdata_add(label => "cpu_" . $instance, unit => '%',
-                                      value => $load,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
+        my $result = $options{snmp}->map_instance(
+            mapping => $mapping,
+            results => $snmp_result,
+            instance => $instance
+        );
+
+        $self->{cpu}->{$instance} = { %{$result} };
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+
+    if (scalar(keys %{$self->{cpu}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "Cannot find CPU informations");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -101,15 +106,15 @@ __END__
 
 =head1 MODE
 
-Check cpu usage (over the last minute) (aruba-systemext).
+Check CPU usage (over the last minute) (WLSX-SYSTEMEXT-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-utilization>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-utilization>
 
 Threshold critical in percent.
 

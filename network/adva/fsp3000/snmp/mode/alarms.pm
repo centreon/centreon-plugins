@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,32 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -88,7 +63,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -99,7 +74,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "warning-status:s"    => { name => 'warning_status', default => '%{severity} =~ /warning|minor/i' },
@@ -118,23 +92,12 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
     if (defined($self->{option_results}->{memory})) {
         $self->{statefile_cache}->check_options(%options);
     }
     
     $self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 my %map_type = (
@@ -303,8 +266,9 @@ sub manage_selection {
                 $timezone = sprintf("%s%02d%02d", $date[7], $date[8], $date[9]);
             }
 
+            my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
             my $dt = DateTime->new(year => $date[0], month => $date[1], day => $date[2], hour => $date[3], minute => $date[4], second => $date[5],
-                                   time_zone => $timezone);
+                                   %$tz);
 
             next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $dt->epoch);
 

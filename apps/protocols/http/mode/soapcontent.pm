@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,48 +33,42 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.2';
-    $options{options}->add_options(arguments =>
-            {
-            "service-soap:s"        => { name => 'service_soap' },
-            "data:s"                => { name => 'data' },
-            "lookup:s@"             => { name => 'lookup' },
-            "hostname:s"            => { name => 'hostname' },
-            "http-peer-addr:s"      => { name => 'http_peer_addr' },
-            "vhost:s"               => { name => 'vhost' },
-            "port:s"                => { name => 'port', },
-            "proto:s"               => { name => 'proto' },
-            "urlpath:s"             => { name => 'url_path' },
-            "credentials"           => { name => 'credentials' },
-            "ntlm"                  => { name => 'ntlm' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "proxypac:s"            => { name => 'proxypac' },
-            "header:s@"             => { name => 'header' },
-            "timeout:s"             => { name => 'timeout', default => 10 },
-            "ssl:s"					=> { name => 'ssl', },
-            "cert-file:s"           => { name => 'cert_file' },
-            "key-file:s"            => { name => 'key_file' },
-            "cacert-file:s"         => { name => 'cacert_file' },
-            "cert-pwd:s"            => { name => 'cert_pwd' },
-            "cert-pkcs12"           => { name => 'cert_pkcs12' },
-            "unknown-status:s"      => { name => 'unknown_status' },
-            "warning-status:s"      => { name => 'warning_status' },
-            "critical-status:s"     => { name => 'critical_status' },
-
-            "warning-numeric:s"       => { name => 'warning_numeric' },
-            "critical-numeric:s"      => { name => 'critical_numeric' },
-            "warning-string:s"        => { name => 'warning_string' },
-            "critical-string:s"       => { name => 'critical_string' },
-            "warning-time:s"          => { name => 'warning_time' },
-            "critical-time:s"         => { name => 'critical_time' },
-            "threshold-value:s"       => { name => 'threshold_value', default => 'count' },
-            "format-ok:s"             => { name => 'format_ok', default => '%{count} element(s) found' },
-            "format-warning:s"        => { name => 'format_warning', default => '%{count} element(s) found' },
-            "format-critical:s"       => { name => 'format_critical', default => '%{count} element(s) found' },
-            "values-separator:s"      => { name => 'values_separator', default => ', ' },
-            });
+    $options{options}->add_options(arguments => {
+        'service-soap:s'        => { name => 'service_soap' },
+        'data:s'                => { name => 'data' },
+        'lookup:s@'             => { name => 'lookup' },
+        'hostname:s'            => { name => 'hostname' },
+        'vhost:s'               => { name => 'vhost' },
+        'port:s'                => { name => 'port', },
+        'proto:s'               => { name => 'proto' },
+        'urlpath:s'             => { name => 'url_path' },
+        'credentials'           => { name => 'credentials' },
+        'basic'                 => { name => 'basic' },
+        'ntlmv2'                => { name => 'ntlmv2' },
+        'username:s'            => { name => 'username' },
+        'password:s'            => { name => 'password' },
+        'header:s@'             => { name => 'header' },
+        'timeout:s'             => { name => 'timeout', default => 10 },
+        'cert-file:s'           => { name => 'cert_file' },
+        'key-file:s'            => { name => 'key_file' },
+        'cacert-file:s'         => { name => 'cacert_file' },
+        'cert-pwd:s'            => { name => 'cert_pwd' },
+        'cert-pkcs12'           => { name => 'cert_pkcs12' },
+        'unknown-status:s'      => { name => 'unknown_status' },
+        'warning-status:s'      => { name => 'warning_status' },
+        'critical-status:s'     => { name => 'critical_status' },
+        'warning-numeric:s'       => { name => 'warning_numeric' },
+        'critical-numeric:s'      => { name => 'critical_numeric' },
+        'warning-string:s'        => { name => 'warning_string' },
+        'critical-string:s'       => { name => 'critical_string' },
+        'warning-time:s'          => { name => 'warning_time' },
+        'critical-time:s'         => { name => 'critical_time' },
+        'threshold-value:s'       => { name => 'threshold_value', default => 'count' },
+        'format-ok:s'             => { name => 'format_ok', default => '%{count} element(s) found' },
+        'format-warning:s'        => { name => 'format_warning', default => '%{count} element(s) found' },
+        'format-critical:s'       => { name => 'format_critical', default => '%{count} element(s) found' },
+        'values-separator:s'      => { name => 'values_separator', default => ', ' },
+    });
     $self->{count} = 0;
     $self->{count_ok} = 0;
     $self->{count_warning} = 0;
@@ -85,7 +79,7 @@ sub new {
     $self->{values_string_ok} = [];
     $self->{values_string_warning} = [];
     $self->{values_string_critical} = [];
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -145,14 +139,14 @@ sub display_output {
     foreach my $severity (('ok', 'warning', 'critical')) {
         next if (scalar(@{$self->{'values_' . $severity}}) == 0 && scalar(@{$self->{'values_string_' . $severity}}) == 0);
         my $format = $self->{option_results}->{'format_' . $severity};
-        while ($format =~ /%{(.*?)}/g) {
+        while ($format =~ /%\{(.*?)\}/g) {
             my $replace = '';
             if (ref($self->{$1}) eq 'ARRAY') {
                 $replace = join($self->{option_results}->{values_separator}, @{$self->{$1}});
             } else {
                 $replace = defined($self->{$1}) ? $self->{$1} : '';
             }
-            $format =~ s/%{$1}/$replace/g;
+            $format =~ s/%\{$1\}/$replace/g;
         }
         $self->{output}->output_add(severity => $severity,
                                     short_msg => $format);
@@ -163,8 +157,7 @@ sub check_encoding {
     my ($self, %options) = @_;
     
     my $charset;
-    my $headers = $self->{http}->get_header();
-    my $content_type = $headers->header('Content-Type');
+    my ($content_type) = $self->{http}->get_header(name => 'Content-Type');
     if (defined($content_type) && $content_type =~ /charset\s*=\s*(\S+)/i) {
         $charset = $1;
     }
@@ -223,11 +216,13 @@ sub lookup {
         $self->{'count_' . $exit}++;
     }
 
-    $self->{output}->perfdata_add(label => 'count',
-                                  value => $self->{count},
-                                  warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
-                                  critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'count',
+        value => $self->{count},
+        warning => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+        critical => $self->{option_results}->{threshold_value} eq 'count' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef,
+        min => 0
+    );
 
     my $count = 0;
     foreach my $value (@{$self->{values}}) {
@@ -239,10 +234,12 @@ sub lookup {
                 push @{$self->{'values_' . $exit}}, $value;
                 $self->{'count_' . $exit}++
             }
-            $self->{output}->perfdata_add(label => 'element_' . $count,
-                                          value => $value,
-                                          warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
-                                          critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef);
+            $self->{output}->perfdata_add(
+                label => 'element_' . $count,
+                value => $value,
+                warning => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'warning-numeric') : undef,
+                critical => $self->{option_results}->{threshold_value} eq 'values' ? $self->{perfdata}->get_perfdata_for_output(label => 'critical-numeric') : undef
+            );
         } else {
             if (defined($self->{option_results}->{critical_string}) && $self->{option_results}->{critical_string} ne '' &&
                 $value =~ /$self->{option_results}->{critical_string}/) {
@@ -269,7 +266,10 @@ sub run {
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
 
     $self->{output}->output_add(long_msg => $self->{soap_response}, debug => 1);
-    if (!defined($self->{option_results}->{lookup}) || scalar(@{$self->{option_results}->{lookup}}) == 0) {
+    if (!defined($self->{option_results}->{lookup}) ||
+        scalar(@{$self->{option_results}->{lookup}}) == 0 ||
+        $self->{option_results}->{lookup}->[0] eq ''
+    ) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => "SOAP request success");
     } else {
@@ -284,11 +284,13 @@ sub run {
     } else {
         $self->{output}->output_add(long_msg => sprintf("Response time %.3fs", $timeelapsed));
     }
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => "time", unit => 's',
+        value => sprintf('%.3f', $timeelapsed),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-time'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-time'),
+        min => 0
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -392,21 +394,9 @@ HTTP OPTIONS:
 
 IP Addr/FQDN of the Webserver host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used by Webserver
-
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
 
 =item B<--proto>
 
@@ -418,27 +408,31 @@ Set path to get Webpage (Default: '/')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
-
-=item B<--ntlm>
-
-Specify this option if you access webpage over ntlm authentification (Use with --credentials option)
+Specify this option if you access webpage with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
+
+=item B<--ntlmv2>
+
+Specify this option if you access webpage over ntlmv2 authentication (Use with --credentials and --port options)
 
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 10)
-
-=item B<--ssl>
-
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 =item B<--cert-file>
 
@@ -466,7 +460,7 @@ Set HTTP headers (Multiple option)
 
 =item B<--unknown-status>
 
-Threshold warning for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
+Threshold unknown for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-status>
 

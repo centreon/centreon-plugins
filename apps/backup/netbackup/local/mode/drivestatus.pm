@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,32 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-
-my $instance_mode;
-
-sub custom_threshold_output {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -80,7 +55,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -91,19 +66,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'tpconfig' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-l' },
+                                  "hostname:s"              => { name => 'hostname' },
+                                  "remote"                  => { name => 'remote' },
+                                  "ssh-option:s@"           => { name => 'ssh_option' },
+                                  "ssh-path:s"              => { name => 'ssh_path' },
+                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
+                                  "timeout:s"               => { name => 'timeout', default => 30 },
+                                  "sudo"                    => { name => 'sudo' },
+                                  "command:s"               => { name => 'command', default => 'tpconfig' },
+                                  "command-path:s"          => { name => 'command_path' },
+                                  "command-options:s"       => { name => 'command_options', default => '-l' },
+                                  "exec-only"               => { name => 'exec_only' },
                                   "filter-name:s"           => { name => 'filter_name' },
                                   "warning-status:s"        => { name => 'warning_status', default => '' },
                                   "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /up/i' },
@@ -116,24 +91,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub prefix_drive_output {
     my ($self, %options) = @_;
     
     return "Drive '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {
@@ -144,7 +108,15 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+                                                    command_options => $self->{option_results}->{command_options});
+    
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
+    }
+
     $self->{drive} = {};
     #robot      0    -    TLD    -       -  -          -                    {3,0,0,1}
     #  drive    -    0 hcart2    2      UP  -          IBM.ULT3580-HH5.000  {3,0,1,0}
@@ -219,6 +191,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-l').
+
+=item B<--exec-only>
+
+Print command output
 
 =item B<--filter-name>
 

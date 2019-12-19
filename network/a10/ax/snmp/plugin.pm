@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,16 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::a10::ax::snmp::mode::cpu',
-                         'disk'             => 'network::a10::ax::snmp::mode::disk',
-                         'global-stats'     => 'network::a10::ax::snmp::mode::globalstats',
-                         'hardware'         => 'network::a10::ax::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-vservers'    => 'network::a10::ax::snmp::mode::listvservers',
-                         'memory'           => 'network::a10::ax::snmp::mode::memory',
-                         'vserver-usage'    => 'network::a10::ax::snmp::mode::vserverusage',
-                         );
+        'cpu'              => 'network::a10::ax::snmp::mode::cpu',
+        'disk'             => 'network::a10::ax::snmp::mode::disk',
+        'global-stats'     => 'network::a10::ax::snmp::mode::globalstats',
+        'hardware'         => 'network::a10::ax::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-vservers'    => 'network::a10::ax::snmp::mode::listvservers',
+        'memory'           => 'network::a10::ax::snmp::mode::memory',
+        'vserver-usage'    => 'network::a10::ax::snmp::mode::vserverusage',
+    );
 
     return $self;
 }

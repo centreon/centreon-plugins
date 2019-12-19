@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,130 +20,64 @@
 
 package os::solaris::local::mode::lomv120;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use os::solaris::local::mode::lomv120components::fan;
-use os::solaris::local::mode::lomv120components::psu;
-use os::solaris::local::mode::lomv120components::voltage;
-use os::solaris::local::mode::lomv120components::sf;
+
+sub set_system {
+    my ($self, %options) = @_;
+    
+    $self->{regexp_threshold_overload_check_section_option} = '^fan|psu|voltage|sf$';
+    
+    $self->{cb_hook2} = 'command_execute';
+    
+    $self->{thresholds} = {        
+        default => [
+            ['^(?!(OK)$)' => 'CRITICAL'],
+        ],
+    };
+    
+    $self->{components_exec_load} = 0;
+    
+    $self->{components_path} = 'os::solaris::local::mode::lomv120components';
+    $self->{components_module} = ['fan', 'psu', 'voltage', 'sf'];
+}
+
+sub command_execute {
+    my ($self, %options) = @_;
+
+    ($self->{stdout}) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options},
+        no_quit => 1
+    );
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'lom' },
-                                  "command-path:s"    => { name => 'command_path', default => '/usr/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-fpv 2>&1'},
-                                  "exclude:s"         => { name => 'exclude' },
-                                  "component:s"       => { name => 'component', default => 'all' },
-                                  "no-component:s"    => { name => 'no_component' },
-                                });
-    $self->{components} = {};
-    $self->{no_components} = undef;
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'lom' },
+        'command-path:s'    => { name => 'command_path', default => '/usr/sbin' },
+        'command-options:s' => { name => 'command_options', default => '-fpv 2>&1'},
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
-}
-
-sub component {
-    my ($self, %options) = @_;
-    
-    if ($self->{option_results}->{component} eq 'all') {
-        os::solaris::local::mode::lomv120components::fan::check($self);
-        os::solaris::local::mode::lomv120components::psu::check($self);
-        os::solaris::local::mode::lomv120components::voltage::check($self);
-        os::solaris::local::mode::lomv120components::sf::check($self);
-    } elsif ($self->{option_results}->{component} eq 'fan') {
-        os::solaris::local::mode::lomv120components::fan::check($self);
-    } elsif ($self->{option_results}->{component} eq 'psu') {
-        os::solaris::local::mode::lomv120components::psu::check($self);
-    } elsif ($self->{option_results}->{component} eq 'voltage') {
-        os::solaris::local::mode::lomv120components::voltage::check($self);
-    } elsif ($self->{option_results}->{component} eq 'sf') {
-        os::solaris::local::mode::lomv120components::sf::check($self);
-    } else {
-        $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    my $total_components = 0;
-    my $display_by_component = '';
-    my $display_by_component_append = '';
-    foreach my $comp (sort(keys %{$self->{components}})) {
-        # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
-        $total_components += $self->{components}->{$comp}->{total} + $self->{components}->{$comp}->{skip};
-        $display_by_component .= $display_by_component_append . $self->{components}->{$comp}->{total} . '/' . $self->{components}->{$comp}->{skip} . ' ' . $self->{components}->{$comp}->{name};
-        $display_by_component_append = ', ';
-    }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("All %s components [%s] are ok.", 
-                                                     $total_components,
-                                                     $display_by_component)
-                                );
-
-    if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-
-    ($self->{stdout}) = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options},
-                                                  no_quit => 1);
-    $self->component();
- 
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub check_exclude {
-    my ($self, %options) = @_;
-
-    if (defined($options{instance})) {
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-            $self->{components}->{$options{section}}->{skip}++;
-            $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-            return 1;
-        }
-    } elsif (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)$options{section}(\s|,|$)/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-        return 1;
-    }
-    return 0;
 }
 
 1;
@@ -199,18 +133,24 @@ Command options (Default: '-fpv 2>&1').
 
 =item B<--component>
 
-Which component to check (Default: 'all').
+Which component to check (Default: '.*').
 Can be: 'fan', 'psu', 'voltage', 'sf'.
 
-=item B<--exclude>
+=item B<--filter>
 
-Exclude some parts (comma seperated list) (Example: --exclude=fan,sf)
-Can also exclude specific instance: --exclude=fan#1#,sf
+Exclude some parts (comma seperated list) (Example: --filter=fan)
+Can also exclude specific instance: --filter=fan,1
 
 =item B<--no-component>
 
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='psu,WARNING,^(?!(ok)$)'
 
 =back
 

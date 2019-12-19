@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,32 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -71,23 +46,25 @@ sub custom_usage_perfdata {
     
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -95,12 +72,12 @@ sub custom_usage_threshold {
     
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -143,7 +120,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'usage', set => {
@@ -163,7 +140,6 @@ sub set_counters {
                 ],
             }
         },
-
     ];
 }
 
@@ -172,16 +148,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '%{health} =~ /warning/' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{health} =~ /critical/' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+        "warning-status:s"    => { name => 'warning_status', default => '%{health} =~ /warning/' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{health} =~ /critical/' },
+        "units:s"             => { name => 'units', default => '%' },
+        "free"                => { name => 'free' },
+    });
+
     return $self;
 }
 
@@ -189,24 +163,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub prefix_cluster_output {
     my ($self, %options) = @_;
     
     return "Cluster '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 my %mapping_health_level = (
@@ -229,13 +192,17 @@ sub manage_selection {
                 $self->{output}->output_add(long_msg => "skipping  '" . $entry->{properties}->{applianceName} . "': no matching filter.", debug => 1);
                 next;
             }
+
+            my $total = defined($entry->{properties}->{capacity}) ? $entry->{properties}->{capacity} * 1024 * 1024 * 1024 : $entry->{properties}->{localCapacityBytes};
+            my $used = $total - (defined($entry->{properties}->{freeSpace}) ? $entry->{properties}->{freeSpace} * 1024 * 1024 * 1024 : $entry->{properties}->{localFreeBytes});
             
             $self->{cluster}->{$entry->{properties}->{serialNumber}} = { 
                 display => $entry->{properties}->{applianceName}, 
                 health => $mapping_health_level{$entry->{properties}->{healthLevel}},
-                total => $entry->{properties}->{capacity} * 1024 * 1024 * 1024, # GB
-                used => ($entry->{properties}->{capacity} - $entry->{properties}->{freeSpace}) * 1024 * 1024 * 1024, # GB
-                dedup => $entry->{properties}->{dedupeRatio} };
+                total => $total,
+                used => $used,
+                dedup => $entry->{properties}->{dedupeRatio}
+            };
         }
     }
     
@@ -266,7 +233,7 @@ Filter cluster name (can be a regexp).
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{health} =~ /warning/).
+Set warning threshold for status (Default: '%{health} =~ /warning/').
 Can used special variables like: %{health}, %{display}
 
 =item B<--critical-status>

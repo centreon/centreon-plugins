@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,32 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'critical_'  . $self->{result_values}->{label}} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label}}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'warning_'  . $self->{result_values}->{label}} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label}}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -61,7 +36,6 @@ sub custom_status_output {
 sub custom_status_calc {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     $self->{result_values}->{ledstate} = $options{new_datas}->{$self->{instance} . '_ledstate'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -78,20 +52,20 @@ sub set_counters {
     $self->{maps_counters}->{physical} = [
         { label => 'physical-status', threshold => 0, set => {
                 key_values => [ { name => 'ledstate' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'), closure_custom_calc_extra_options => { label_ref => 'physical_status' },
+                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
     $self->{maps_counters}->{virtuallpar} = [
         { label => 'virtuallpar-status', threshold => 0, set => {
                 key_values => [ { name => 'ledstate' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'), closure_custom_calc_extra_options => { label_ref => 'virtuallpar_status' },
+                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -102,7 +76,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "filter-name:s"                   => { name => 'filter_name' },
@@ -133,8 +106,7 @@ sub check_options {
     }
     $self->{default_hmc_cmd} = 'while read system ; do echo "system: $system"; echo -n "  phys led: "; lsled -r sa -m "$system" -t "phys" ; while read lpar; do echo -n "  lpar [$lpar] led: "; lsled -m "$system" -r sa -t virtuallpar --filter "lpar_names=$lpar" -F state ; done < <(lssyscfg -m "$system" -r lpar -F name) ; done < <(lssyscfg -r sys -F "name")
 ';
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_physical_status', 'critical_physical_status', 'warning_virtuallpar_status', 'critical_virtuallpar_status']);
 }
 
 sub prefix_physical_output {
@@ -147,16 +119,6 @@ sub prefix_virtuallpar_output {
     my ($self, %options) = @_;
     
     return "Virtual partition '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_physical_status', 'critical_physical_status', 'warning_virtuallpar_status', 'critical_virtuallpar_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,19 +32,21 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'health-status'  => 'centreon::common::smcli::mode::healthstatus',
-                        );
+        'health-status'  => 'centreon::common::smcli::mode::healthstatus',
+    );
+
     $self->{custom_modes}{smcli} = 'centreon::common::smcli::custom::custom';
-    $self->{default} = { 'health-status' => { storage_command => 'show storageArray healthstatus;',
-                                              smcli_path => '/opt/dell/mdstoragemanager/client' }, };
-    
+    $self->{default} = {
+        'health-status' => { 
+            storage_command => 'show storageArray healthstatus;',
+        }
+    };
+    $self->{customdefault} = {
+        'smcli' => { 
+            smcli_path => '/opt/dell/mdstoragemanager/client', 
+        }
+    };
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
 }
 
 1;

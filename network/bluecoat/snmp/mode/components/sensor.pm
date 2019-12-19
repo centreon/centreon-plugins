@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,22 +46,22 @@ my %map_code = (
     15 => 'fanStopped',
 );
 my %map_units = (
-    1 => '', # other
-    2 => '', # truthvalue
-    3 => '', # specialEnum
-    4 => 'V', # volts
-    5 => 'C', # celsius
-    6 => 'rpm'
+    1 => { unit => '', nunit => '' }, # other
+    2 => { unit => '', nunit => '' }, # truthvalue
+    3 => { unit => '', nunit => '' }, # specialEnum
+    4 => { unit => 'V', nunit => 'voltage.volt' }, # volts
+    5 => { unit => 'C', nunit => 'temperature.celsius' }, # celsius
+    6 => { unit => 'rpm', nunit => 'speed.rpm' },
 );
 
 # In MIB 'BLUECOAT-SG-SENSOR-MIB'
 my $mapping = {
-    deviceSensorUnits => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.3', map => \%map_units },
-    deviceSensorScale => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.4' },
-    deviceSensorValue => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.5' },
-    deviceSensorCode => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.6', map => \%map_code },
-    deviceSensorStatus => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.7', map => \%map_status },
-    deviceSensorName => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.9' },
+    deviceSensorUnits   => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.3', map => \%map_units },
+    deviceSensorScale   => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.4' },
+    deviceSensorValue   => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.5' },
+    deviceSensorCode    => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.6', map => \%map_code },
+    deviceSensorStatus  => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.7', map => \%map_status },
+    deviceSensorName    => { oid => '.1.3.6.1.4.1.3417.2.1.1.1.1.1.9' },
 };
 my $oid_deviceSensorValueEntry = '.1.3.6.1.4.1.3417.2.1.1.1.1.1';
 
@@ -77,7 +77,7 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking sensors");
     $self->{components}->{sensor} = {name => 'sensors', total => 0, skip => 0};
     return if ($self->check_filter(section => 'sensor'));
-    
+
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_deviceSensorValueEntry}})) {
         next if ($oid !~ /^$mapping->{deviceSensorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -89,7 +89,7 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance: %s, operational status: %s, value: %s, scale: %s, unit: %s]", 
                                     $result->{deviceSensorName}, $result->{deviceSensorCode}, 
                                     $instance, $result->{deviceSensorStatus}, $result->{deviceSensorValue}, $result->{deviceSensorScale},
-                                    $result->{deviceSensorUnits}));
+                                    $result->{deviceSensorUnits}->{unit}));
         my $exit = $self->get_severity(section => 'sensor_opstatus', value => $result->{deviceSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -103,17 +103,22 @@ sub check {
                                                              $result->{deviceSensorName}, $result->{deviceSensorCode}));
         }
         
-        if (defined($result->{deviceSensorValue}) && $result->{deviceSensorValue} =~ /[0-9]/ && $result->{deviceSensorUnits} ne '') {
+        if (defined($result->{deviceSensorValue}) && $result->{deviceSensorValue} =~ /[0-9]/ && $result->{deviceSensorUnits}->{unit} ne '') {
             my $value = ($result->{deviceSensorValue} * (10 ** $result->{deviceSensorScale}));
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'sensor', instance => $instance, value => $value);
             if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                 $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Sensor '%s' value is %s %s", $result->{deviceSensorName}, $value, $result->{deviceSensorUnits}));
+                                            short_msg => sprintf("Sensor '%s' value is %s %s", $result->{deviceSensorName}, $value, $result->{deviceSensorUnits}->{unit}));
             }
-            $self->{output}->perfdata_add(label => $result->{deviceSensorName}, unit => $result->{deviceSensorUnits},
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit);
+            
+            $self->{output}->perfdata_add(
+                label => 'sensor', unit => $result->{deviceSensorUnits}->{unit},
+                nlabel => 'hardware.sensor.' . $result->{deviceSensorUnits}->{nunit},
+                instances => $result->{deviceSensorName},
+                value => $value,
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -62,12 +60,12 @@ sub custom_usage_perfdata {
 
     my $label = 'used_' . $self->{result_values}->{display};
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free_' . $self->{result_values}->{display};
         $value_perf = $self->{result_values}->{free};
     }
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -84,10 +82,10 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
@@ -126,20 +124,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "units:s"           => { name => 'units', default => '%' },
-                                "free"              => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => {
+        "units:s"   => { name => 'units', default => '%' },
+        "free"      => { name => 'free' },
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub manage_selection {

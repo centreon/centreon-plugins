@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,27 +43,30 @@ sub new {
         $options{output}->option_exit();
     }
 
-    $options{options}->add_options(arguments => 
-                { "hostname|host:s"           => { name => 'host' },
-                  "snmp-community:s"          => { name => 'snmp_community', default => 'public' },
-                  "snmp-version:s"            => { name => 'snmp_version', default => 1 },
-                  "snmp-port:s"               => { name => 'snmp_port', default => 161 },
-                  "snmp-timeout:s"            => { name => 'snmp_timeout', default => 1 },
-                  "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
-                  "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
-                  "subsetleef:s"              => { name => 'subsetleef', default => 50 },
-                  "subsettable:s"             => { name => 'subsettable', default => 100 },
-                  "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
-                  "snmp-username:s"           => { name => 'snmp_security_name' },
-                  "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
-                  "authprotocol:s"            => { name => 'snmp_auth_protocol' },
-                  "privpassphrase:s"          => { name => 'snmp_priv_passphrase' },
-                  "privprotocol:s"            => { name => 'snmp_priv_protocol' },
-                  "contextname:s"             => { name => 'snmp_context_name' },
-                  "contextengineid:s"         => { name => 'snmp_context_engine_id' },
-                  "securityengineid:s"        => { name => 'snmp_security_engine_id' },
-                  "snmp-errors-exit:s"        => { name => 'snmp_errors_exit', default => 'unknown' },
-    });
+    if (!defined($options{noptions})) {
+        $options{options}->add_options(arguments => {
+            "hostname|host:s"           => { name => 'host' },
+            "snmp-community:s"          => { name => 'snmp_community', default => 'public' },
+            "snmp-version:s"            => { name => 'snmp_version', default => 1 },
+            "snmp-port:s"               => { name => 'snmp_port', default => 161 },
+            "snmp-timeout:s"            => { name => 'snmp_timeout', default => 1 },
+            "snmp-retries:s"            => { name => 'snmp_retries', default => 5 },
+            "maxrepetitions:s"          => { name => 'maxrepetitions', default => 50 },
+            "subsetleef:s"              => { name => 'subsetleef', default => 50 },
+            "subsettable:s"             => { name => 'subsettable', default => 100 },
+            "snmp-autoreduce:s"         => { name => 'snmp_autoreduce' },
+            "snmp-force-getnext"        => { name => 'snmp_force_getnext' },
+            "snmp-username:s"           => { name => 'snmp_security_name' },
+            "authpassphrase:s"          => { name => 'snmp_auth_passphrase' },
+            "authprotocol:s"            => { name => 'snmp_auth_protocol' },
+            "privpassphrase:s"          => { name => 'snmp_priv_passphrase' },
+            "privprotocol:s"            => { name => 'snmp_priv_protocol' },
+            "contextname:s"             => { name => 'snmp_context_name' },
+            "contextengineid:s"         => { name => 'snmp_context_engine_id' },
+            "securityengineid:s"        => { name => 'snmp_security_engine_id' },
+            "snmp-errors-exit:s"        => { name => 'snmp_errors_exit', default => 'unknown' },
+        });
+    }
     $options{options}->add_help(package => __PACKAGE__, sections => 'SNMP OPTIONS');
 
     #####
@@ -138,6 +141,71 @@ sub load {
     push @{$self->{oids_loaded}}, @{$options{oids}};
 }
 
+sub autoreduce_table {
+    my ($self, %options) = @_;
+    
+    return 1 if (defined($self->{snmp_force_getnext}) || $self->is_snmpv1());
+    if ($self->{snmp_params}->{Retries} > 1) {
+        $self->{snmp_params}->{Retries} = 1;
+        $self->connect();
+    }
+    
+    return 1 if (${$options{repeat_count}} == 1);
+    ${$options{repeat_count}} = int(${$options{repeat_count}} / $self->{snmp_autoreduce_divisor});
+    ${$options{repeat_count}} = 1 if (${$options{repeat_count}} < 1);
+    return 0;
+}
+
+sub autoreduce_multiple_table {
+    my ($self, %options) = @_;
+    
+    if ($self->{snmp_params}->{Retries} > 1) {
+        $self->{snmp_params}->{Retries} = 1;
+        $self->connect();
+    }
+    return 1 if (${$options{repeat_count}} == 1);
+    
+    ${$options{repeat_count}} = int(${$options{repeat_count}} / $self->{snmp_autoreduce_divisor});
+    $self->{subsettable} = int($self->{subsettable} / $self->{snmp_autoreduce_divisor});
+    ${$options{repeat_count}} = 1 if (${$options{repeat_count}} < 1);
+    return 0;
+}
+
+sub autoreduce_leef {
+    my ($self, %options) = @_;
+    
+    if ($self->{snmp_params}->{Retries} > 1) {
+        $self->{snmp_params}->{Retries} = 1;
+        $self->connect();
+    }
+    
+    return 1 if ($self->{subsetleef} == 1);
+    $self->{subsetleef} = int($self->{subsetleef} / $self->{snmp_autoreduce_divisor});
+    $self->{subsetleef} = 1 if ($self->{subsetleef} < 1);
+    
+    my $array_ref = [];
+    my $subset_current = 0;
+    my $subset_construct = [];
+    foreach ([@{$options{current}}], @{$self->{array_ref_ar}}) {
+        foreach my $entry (@$_) {;
+            push @$subset_construct, [$entry->[0], $entry->[1]];
+            $subset_current++;
+            if ($subset_current == $self->{subsetleef}) {
+                push @$array_ref, \@$subset_construct;
+                $subset_construct = [];
+                $subset_current = 0;
+            }
+        }
+    }
+    
+    if ($subset_current) {
+        push @$array_ref, \@$subset_construct;
+    }
+
+    $self->{array_ref_ar} = \@$array_ref;
+    return 0;
+}
+
 sub get_leef {
     my ($self, %options) = @_;
     # $options{dont_quit} = integer
@@ -165,7 +233,7 @@ sub get_leef {
     }
     
     my $results = {};
-    my @array_ref_ar = ();
+    $self->{array_ref_ar} = [];
     my $subset_current = 0;
     my $subset_construct = [];
     foreach my $oid (@{$options{oids}}) {
@@ -177,13 +245,13 @@ sub get_leef {
         push @$subset_construct, [$oid, $instance];
         $subset_current++;
         if ($subset_current == $self->{subsetleef}) {
-            push @array_ref_ar, \@$subset_construct;
+            push @{$self->{array_ref_ar}}, \@$subset_construct;
             $subset_construct = [];
             $subset_current = 0;
         }
     }
     if ($subset_current) {
-        push @array_ref_ar, \@$subset_construct;
+        push @{$self->{array_ref_ar}}, \@$subset_construct;
     }
     
     ############################
@@ -232,26 +300,45 @@ sub get_leef {
     ############################
     
     my $total = 0;
-    foreach (@array_ref_ar) {
-        my $vb = new SNMP::VarList(@{$_});
+    while (my $entry = shift(@{$self->{array_ref_ar}})) {
+        my $vb = new SNMP::VarList(@{$entry});
         $self->{session}->get($vb);
+
         if ($self->{session}->{ErrorNum}) {
             # 0    noError       Pas d'erreurs.
             # 1    tooBig        Reponse de taille trop grande.
             # 2    noSuchName    Variable inexistante.
+            # -24  Timeout
             if ($self->{session}->{ErrorNum} == 2) {
                 # We are at the end with snmpv1. We next.
                 next;
             }
-        
-            my $msg = 'SNMP GET Request : ' . $self->{session}->{ErrorStr};
-            
+
+            if ($self->{snmp_autoreduce} == 1 && 
+                ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
+                next if ($self->autoreduce_leef(current => $entry) == 0);
+            }
+            my $msg = 'SNMP GET Request : ' . $self->{session}->{ErrorStr};    
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
                 $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
             }
             
             $self->set_error(error_status => -1, error_msg => $msg);
+            return undef;
+        }
+        
+        # Some equipments gives a partial response and no error.
+        # We look the last value if it's empty or not
+        # In snmpv1 we have the retryNoSuch
+        if (((scalar(@$vb) != scalar(@{$entry})) || (scalar(@{@$vb[-1]}) < 3)) && !$self->is_snmpv1()) {
+            next if ($self->{snmp_autoreduce} == 1 && $self->autoreduce_leef(current => $entry) == 0);
+            if ($dont_quit == 0) {
+                $self->{output}->add_option_msg(short_msg => "SNMP partial response. Please try --snmp-autoreduce option");
+                $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
+            }
+            
+            $self->set_error(error_status => -1, error_msg => "SNMP partial response");
             return undef;
         }
 
@@ -264,7 +351,7 @@ sub get_leef {
                 # Error in snmp > 1
                 next;
             }
-            
+
             $total++;
             $results->{${$entry}[0] . "." . ${$entry}[1]} = ${$entry}[2];
         }
@@ -377,8 +464,12 @@ sub get_multiple_table {
                 next;
             }
             
+            if ($self->{snmp_autoreduce} == 1 && 
+                ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
+                next if ($self->autoreduce_multiple_table(repeat_count => \$repeat_count) == 0);
+            }
+            
             my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
-        
             if ($dont_quit == 0) {
                 $self->{output}->add_option_msg(short_msg => $msg);
                 $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -410,7 +501,7 @@ sub get_multiple_table {
             my $base = $bases[$pos % $current_oids];
             if ($complete_oid !~ /^$base\./ ||
                 (defined($working_oids->{ $bases[$pos % $current_oids] }->{end}) && 
-                 $self->check_oid_up($complete_oid, $working_oids->{ $bases[$pos % $current_oids] }->{end}) )) {
+                 $self->check_oid_up(current => $complete_oid, end => $working_oids->{ $bases[$pos % $current_oids] }->{end}))) {
                 delete $working_oids->{ $bases[$pos % $current_oids] };
                 next;
             }
@@ -514,10 +605,16 @@ sub get_table {
             # 0    noError       Pas d'erreurs.
             # 1    tooBig        Reponse de taille trop grande.
             # 2    noSuchName    Variable inexistante.
+            # -24  Timeout
             if ($self->{session}->{ErrorNum} == 2) {
                 # We are at the end with snmpv1. We quit.
                 last;
             }
+            if ($self->{snmp_autoreduce} == 1 && 
+                ($self->{session}->{ErrorNum} == 1 || $self->{session}->{ErrorNum} == 5 || $self->{session}->{ErrorNum} == -24)) {
+                next if ($self->autoreduce_table(repeat_count => \$repeat_count) == 0);
+            }
+            
             my $msg = 'SNMP Table Request : ' . $self->{session}->{ErrorStr};
         
             if ($dont_quit == 0) {
@@ -540,7 +637,7 @@ sub get_table {
             # Not in same table
             my $complete_oid = ${$entry}[0] . "." . ${$entry}[1];
             if ($complete_oid !~ /^$main_indice\./ ||
-                (defined($options{end}) && $self->check_oid_up($complete_oid, $options{end}) )) {
+                (defined($options{end}) && $self->check_oid_up(current => $complete_oid, end => $options{end}))) {
                 $leave = 0;
                 last;
             }
@@ -584,7 +681,6 @@ sub set {
         # 2    noSuchName    Variable inexistante.
     
         my $msg = 'SNMP SET Request : ' . $self->{session}->{ErrorStr};
-        
         if ($dont_quit == 0) {
             $self->{output}->add_option_msg(short_msg => $msg);
             $self->{output}->option_exit(exit_litteral => $self->{snmp_errors_exit});
@@ -615,8 +711,10 @@ sub clean_oid {
 }
 
 sub check_oid_up {
-    my ($self) = @_;
-    my ($current_oid, $end_oid) = @_;
+    my ($self, %options) = @_;
+
+    my $current_oid = $options{current};
+    my $end_oid = $options{end};
     
     my @current_oid_splitted = split /\./, $current_oid;
     my @end_oid_splitted = split /\./, $end_oid;
@@ -650,15 +748,23 @@ sub check_options {
     $self->{subsetleef} = (defined($options{option_results}->{subsetleef}) && $options{option_results}->{subsetleef} =~ /^[0-9]+$/) ? $options{option_results}->{subsetleef} : 50;
     $self->{subsettable} = (defined($options{option_results}->{subsettable}) && $options{option_results}->{subsettable} =~ /^[0-9]+$/) ? $options{option_results}->{subsettable} : 100;
     $self->{snmp_errors_exit} = $options{option_results}->{snmp_errors_exit};
+    $self->{snmp_autoreduce} = 0;
+    $self->{snmp_autoreduce_divisor} = 2;
+    if (defined($options{option_results}->{snmp_autoreduce})) {
+        $self->{snmp_autoreduce} = 1;
+        $self->{snmp_autoreduce_divisor} = $1 if ($options{option_results}->{snmp_autoreduce} =~ /(\d+(\.\d+)?)/ && $1 > 1);
+    }
 
     %{$self->{snmp_params}} = (DestHost => $options{option_results}->{host},
                                Community => $options{option_results}->{snmp_community},
                                Version => $options{option_results}->{snmp_version},
-                               RemotePort => $options{option_results}->{snmp_port});
+                               RemotePort => $options{option_results}->{snmp_port},
+                               Retries => 5);
     
     if (defined($options{option_results}->{snmp_timeout}) && $options{option_results}->{snmp_timeout} =~ /^[0-9]+$/) {
         $self->{snmp_params}->{Timeout} = $options{option_results}->{snmp_timeout} * (10**6);
     }
+    
     if (defined($options{option_results}->{snmp_retries}) && $options{option_results}->{snmp_retries} =~ /^[0-9]+$/) {
         $self->{snmp_params}->{Retries} = $options{option_results}->{snmp_retries};
     }
@@ -681,47 +787,67 @@ sub check_options {
         }
         
 
-        if (!defined($options{option_results}->{snmp_security_name})) {
+        if (!defined($options{option_results}->{snmp_security_name}) || $options{option_results}->{snmp_security_name} eq '') {
             $self->{output}->add_option_msg(short_msg => "Missing parameter Security Name.");
             $self->{output}->option_exit();
         }
         
         # unauthenticated and unencrypted
-        if (!defined($options{option_results}->{snmp_auth_passphrase}) && !defined($options{option_results}->{snmp_priv_passphrase})) {
-            $self->{snmp_params}->{SecLevel} = 'noAuthNoPriv';
-            return ;
-        }
-
-        if (defined($options{option_results}->{snmp_auth_passphrase}) && !defined($options{option_results}->{snmp_auth_protocol})) {
-            $self->{output}->add_option_msg(short_msg => "Missing parameter authenticate protocol.");
-            $self->{output}->option_exit();
-        }
-        $options{option_results}->{snmp_auth_protocol} = uc($options{option_results}->{snmp_auth_protocol});
-        if ($options{option_results}->{snmp_auth_protocol} ne "MD5" && $options{option_results}->{snmp_auth_protocol} ne "SHA") {
-            $self->{output}->add_option_msg(short_msg => "Wrong authentication protocol. Must be MD5 or SHA.");
-            $self->{output}->option_exit();
-        }
-
-        $self->{snmp_params}->{SecLevel} = 'authNoPriv';
-        $self->{snmp_params}->{AuthProto} = $options{option_results}->{snmp_auth_protocol};
-        $self->{snmp_params}->{AuthPass} = $options{option_results}->{snmp_auth_passphrase};
-
-        if (defined($options{option_results}->{snmp_priv_passphrase}) && !defined($options{option_results}->{snmp_priv_protocol})) {
-            $self->{output}->add_option_msg(short_msg => "Missing parameter privacy protocol.");
-            $self->{output}->option_exit();
-        }
+        $self->{snmp_params}->{SecLevel} = 'noAuthNoPriv';
         
-        if (defined($options{option_results}->{snmp_priv_protocol})) {
+        my $user_activate = 0;
+        if (defined($options{option_results}->{snmp_auth_passphrase}) && $options{option_results}->{snmp_auth_passphrase} ne '') {
+            if (!defined($options{option_results}->{snmp_auth_protocol})) {
+                $self->{output}->add_option_msg(short_msg => "Missing parameter authenticate protocol.");
+                $self->{output}->option_exit();
+            }
+            $options{option_results}->{snmp_auth_protocol} = uc($options{option_results}->{snmp_auth_protocol});
+            if ($options{option_results}->{snmp_auth_protocol} ne "MD5" && $options{option_results}->{snmp_auth_protocol} ne "SHA") {
+                $self->{output}->add_option_msg(short_msg => "Wrong authentication protocol. Must be MD5 or SHA.");
+                $self->{output}->option_exit();
+            }
+            
+            $self->{snmp_params}->{SecLevel} = 'authNoPriv';
+            $self->{snmp_params}->{AuthProto} = $options{option_results}->{snmp_auth_protocol};
+            $self->{snmp_params}->{AuthPass} = $options{option_results}->{snmp_auth_passphrase};
+            $user_activate = 1;
+        }
+
+        if (defined($options{option_results}->{snmp_priv_passphrase}) && $options{option_results}->{snmp_priv_passphrase} ne '') {
+            if (!defined($options{option_results}->{snmp_priv_protocol})) {
+                $self->{output}->add_option_msg(short_msg => "Missing parameter privacy protocol.");
+                $self->{output}->option_exit();
+            }
+            
             $options{option_results}->{snmp_priv_protocol} = uc($options{option_results}->{snmp_priv_protocol});
             if ($options{option_results}->{snmp_priv_protocol} ne 'DES' && $options{option_results}->{snmp_priv_protocol} ne 'AES') {
                 $self->{output}->add_option_msg(short_msg => "Wrong privacy protocol. Must be DES or AES.");
                 $self->{output}->option_exit();
             }
-            
+            if ($user_activate == 0) {
+                $self->{output}->add_option_msg(short_msg => "Cannot use snmp v3 privacy option without snmp v3 authentification options.");
+                $self->{output}->option_exit();
+            }
             $self->{snmp_params}->{SecLevel} = 'authPriv';
             $self->{snmp_params}->{PrivPass} = $options{option_results}->{snmp_priv_passphrase};
             $self->{snmp_params}->{PrivProto} = $options{option_results}->{snmp_priv_protocol};
         }
+    }
+}
+
+sub set_snmp_connect_params {
+    my ($self, %options) = @_;
+    
+    foreach (keys %options) {
+        $self->{snmp_params}->{$_} = $options{$_};
+    }
+}
+
+sub set_snmp_params {
+    my ($self, %options) = @_;
+    
+    foreach (keys %options) {
+        $self->{$_} = $options{$_};
     }
 }
 
@@ -854,6 +980,10 @@ Max repetitions value (default: 50) (only for SNMP v2 and v3).
 =item B<--subsetleef>
 
 How many oid values per SNMP request (default: 50) (for get_leef method. Be cautious whe you set it. Prefer to let the default value).
+
+=item B<--snmp-autoreduce>
+ 
+Auto reduce SNMP request size in case of SNMP errors (By default, the divisor is 2).
 
 =item B<--snmp-force-getnext>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'list-services'    => 'os::windows::wsman::mode::listservices',
-                         'service'          => 'os::windows::wsman::mode::service',
-                         );
+        'list-services'    => 'os::windows::wsman::mode::listservices',
+        'service'          => 'os::windows::wsman::mode::service',
+    );
 
     return $self;
 }

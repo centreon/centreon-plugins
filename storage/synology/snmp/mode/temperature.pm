@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,63 +20,54 @@
 
 package storage::synology::snmp::mode::temperature;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'temperature', nlabel => 'system.temperature.celsius', set => {
+                key_values => [ { name => 'temperature' } ],
+                output_template => 'system temperature: %s C',
+                perfdatas => [
+                    { value => 'temperature_absolute', template => '%s', unit => 'C' },
+                ],
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_synoSystemtemperature = '.1.3.6.1.4.1.6574.1.2.0'; # in Celsius
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_synoSystemtemperature],
-                                         nothing_quit => 1);
-    my $temp = $result->{$oid_synoSystemtemperature};
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ $oid_synoSystemtemperature ],
+        nothing_quit => 1
+    );
 
-    my $exit = $self->{perfdata}->threshold_check(value => $temp, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Device Temperature is %d C degrees",
-                                                     $temp));
-
-    $self->{output}->perfdata_add(label => "temperature", unit => 'C',
-                                  value => $temp,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = {
+        temperature => $snmp_result->{$oid_synoSystemtemperature},
+    };
 }
 
 1;
@@ -89,11 +80,11 @@ Check temperature (SYNOLOGY-SYSTEM-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-temperature>
 
 Threshold warning in celsius degrees.
 
-=item B<--critical>
+=item B<--critical-temperature>
 
 Threshold critical in celsius degrees.
 

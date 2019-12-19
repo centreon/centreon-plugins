@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,46 +20,29 @@
 
 package storage::nimble::snmp::mode::volumeusage;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $instance_mode;
-
-my $maps_counters = {
-    vol => {
-        '000_usage'   => {
-            set => {
-                key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
-                closure_custom_calc => \&custom_usage_calc,
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
-            },
-        },
-    }
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+
+    $self->{output}->perfdata_add(
+        label => 'used', unit => 'B',
+        nlabel => $self->{nlabel},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -89,111 +72,41 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok' }
+    ];
+    
+    $self->{maps_counters}->{volume} = [
+        { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
+                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'total' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
-                                
-    foreach my $key (('vol')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s" => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach my $key (('vol')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-    $instance_mode = $self;
-}
-
-sub run_instances {
+sub prefix_volume_output {
     my ($self, %options) = @_;
     
-    my $multiple = 1;
-    if (scalar(keys %{$self->{vol}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All volume usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{vol}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{vol}}) {
-            my $obj = $maps_counters->{vol}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{vol}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Volume '$self->{vol}->{$id}->{display}' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Volume '$self->{vol}->{$id}->{display}' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Volume '$self->{vol}->{$id}->{display}' $long_msg");
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-
-    $self->manage_selection(%options);
-    $self->run_instances();
-     
-    $self->{output}->display();
-    $self->{output}->exit();
+    return "Volume '" . $options{instance_value}->{display} . "' ";
 }
 
 my $mapping = {
@@ -208,26 +121,27 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     my $oid_volEntry = '.1.3.6.1.4.1.37447.1.2.1';
-    my $results = $options{snmp}->get_table(oid => $oid_volEntry, nothing_quit => 1);
-    $self->{vol} = {};
-    foreach my $oid (keys %{$results}) {
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_volEntry, nothing_quit => 1);
+
+    $self->{volume} = {};
+    foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{volName}->{oid}\.(.*)/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{volName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping '" . $result->{volName} . "': no matching vserver name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{volName} . "': no matching volume name.", debug => 1);
             next;
         }
         
         my $total = (($result->{volSizeHigh} << 32) + $result->{volSizeLow}) * 1024 * 1024;
         my $used = (($result->{volUsageHigh} << 32) + $result->{volUsageLow}) * 1024 * 1024;
-        $self->{vol}->{$instance} = { display => $result->{volName}, used => $used, total => $total }; 
+        $self->{volume}->{$instance} = { display => $result->{volName}, used => $used, total => $total }; 
     }
     
-    if (scalar(keys %{$self->{vol}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
+    if (scalar(keys %{$self->{volume}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No volume found.");
         $self->{output}->option_exit();
     }
 }

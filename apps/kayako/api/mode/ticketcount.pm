@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,28 +44,27 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-         {
-		"hostname:s"            => { name => 'hostname' },
-		"port:s"                => { name => 'port' },
-		"proto:s"               => { name => 'proto' },
-		"urlpath:s"             => { name => 'url_path', default => '/api/index.php?' },
-		"kayako-api-key:s"		=> { name => 'kayako_api_key' },
-		"kayako-secret-key:s"	=> { name => 'kayako_secret_key' },
-		"reload-cache-time:s"   => { name => 'reload_cache_time', default => 180 },
-		"department-id:s"		=> { name => 'department_id' },
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname' },
+        "port:s"                => { name => 'port' },
+        "proto:s"               => { name => 'proto' },
+        "urlpath:s"             => { name => 'url_path', default => '/api/index.php?' },
+        "timeout:s"             => { name => 'timeout' },
+        "kayako-api-key:s"		=> { name => 'kayako_api_key' },
+        "kayako-secret-key:s"	=> { name => 'kayako_secret_key' },
+        "reload-cache-time:s"   => { name => 'reload_cache_time', default => 180 },
+        "department-id:s"		=> { name => 'department_id' },
         "staff-id:s"			=> { name => 'staff_id' },
         "status-id:s"			=> { name => 'status_id' },
-		"priority-id:s"			=> { name => 'priority_id' },
-		"warning:s"				=> { name => 'warning' },
+        "priority-id:s"			=> { name => 'priority_id' },
+        "warning:s"				=> { name => 'warning' },
         "critical:s"            => { name => 'critical' },
-		"start-date:s"			=> { name => 'start_date' },
+        "start-date:s"			=> { name => 'start_date' },
         "end-date:s"			=> { name => 'end_date' },
-         });
+    });
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -336,13 +335,13 @@ Port used by Apache
 
 Specify https if needed
 
-=item B<--proxyurl>
+=item B<--urlpath>
 
-Proxy URL if any
+This is the URL you should dispatch all GET, POST, PUT & DELETE requests to (Default: '/api/index.php?')
 
-=item B<--kayako-api-url>
+=item B<--timeout>
 
-This is the URL you should dispatch all GET, POST, PUT & DELETE requests to. (required)
+Threshold for HTTP timeout.
 
 =item B<--kayako-api-key>
 

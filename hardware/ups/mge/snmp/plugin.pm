@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,12 +31,12 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'environment'      => 'hardware::ups::mge::snmp::mode::environment',
-                         'input-lines'      => 'hardware::ups::mge::snmp::mode::inputlines',
-                         'output-lines'     => 'hardware::ups::mge::snmp::mode::outputlines',
-                         'output-source'    => 'hardware::ups::mge::snmp::mode::outputsource',
-                         'battery-status'   => 'hardware::ups::mge::snmp::mode::batterystatus',
-                         );
+        'battery-status'   => 'hardware::ups::mge::snmp::mode::batterystatus',
+        'environment'      => 'hardware::ups::mge::snmp::mode::environment',
+        'input-lines'      => 'hardware::ups::mge::snmp::mode::inputlines',
+        'output-lines'     => 'hardware::ups::mge::snmp::mode::outputlines',
+        'output-source'    => 'hardware::ups::mge::snmp::mode::outputsource',
+    );
 
     return $self;
 }

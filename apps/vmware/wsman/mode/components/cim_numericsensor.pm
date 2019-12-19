@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,7 +43,7 @@ sub check {
         next if ($self->check_filter(section => 'cim_numericsensor', instance => $instance));
         my $status = $self->get_status(entry => $_);
         if (!defined($status)) {
-            $self->{output}->output_add(long_msg => sprintf("skipping numeric sensor '%s' : no status", $_->{ElementName}), debug => 1);
+            $self->{output}->output_add(long_msg => sprintf("skipping numeric sensor '%s' : no status", $name), debug => 1);
             next;
         }
         
@@ -53,14 +53,14 @@ sub check {
         $value = $value * 10 ** int($_->{UnitModifier}) if (defined($value) && $value =~ /\d/);
 
         $self->{output}->output_add(long_msg => sprintf("Numeric sensor '%s' status is '%s' [instance: %s, current value: %s].",
-                                    $_->{ElementName}, $status,
+                                    $name, $status,
                                     $instance, defined($value) ? $value : '-'
                                     ));
         my $exit = $self->get_severity(section => 'cim_numericsensor', label => 'default', value => $status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
                                         short_msg => sprintf("Numeric sensor '%s' status is '%s'",
-                                                             $_->{ElementName}, $status));
+                                                             $name, $status));
         }
         
         
@@ -96,17 +96,21 @@ sub check {
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Numeric sensor '%s' value is %s %s", 
-                                                             $_->{ElementName}, $value, 
+                                                             $name, $value, 
                                                              defined($mapping_units->{$_->{BaseUnits}}) ? $mapping_units->{$_->{BaseUnits}} : '-'));
         }
         
         my $min = defined($_->{MinReadable}) && $_->{MinReadable} =~ /\d/ ? $_->{MinReadable} * 10 ** int($_->{UnitModifier}) : undef;
         my $max = defined($_->{MaxReadable}) && $_->{MaxReadable} =~ /\d/ ? $_->{MaxReadable} * 10 ** int($_->{UnitModifier}) : undef;
-        $self->{output}->perfdata_add(label => $instance, unit => $mapping_units->{$_->{BaseUnits}},
-                                      value => $value,
-                                      warning => $warn,
-                                      critical => $crit,
-                                      min => $min, max => $max);
+        $self->{output}->perfdata_add(
+            label => $sensor_type, unit => $mapping_units->{$_->{BaseUnits}},
+            nlabel => 'hardware.sensor.' . lc($sensor_type) .  '.' . lc($mapping_units->{$_->{BaseUnits}}),
+            instances => $name,
+            value => $value,
+            warning => $warn,
+            critical => $crit,
+            min => $min, max => $max
+        );
     }
 }
 

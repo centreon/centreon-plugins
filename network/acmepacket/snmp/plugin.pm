@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'         => 'network::acmepacket::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-realm'       => 'network::acmepacket::snmp::mode::listrealm',
-                         'list-sip'         => 'network::acmepacket::snmp::mode::listsip',
-                         'realm-usage'      => 'network::acmepacket::snmp::mode::realmusage',
-                         'sip-usage'        => 'network::acmepacket::snmp::mode::sipusage',
-                         'system-usage'     => 'network::acmepacket::snmp::mode::systemusage',
-                         );
+        'hardware'         => 'network::acmepacket::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-realm'       => 'network::acmepacket::snmp::mode::listrealm',
+        'list-sip'         => 'network::acmepacket::snmp::mode::listsip',
+        'realm-usage'      => 'network::acmepacket::snmp::mode::realmusage',
+        'sip-usage'        => 'network::acmepacket::snmp::mode::sipusage',
+        'system-usage'     => 'network::acmepacket::snmp::mode::systemusage',
+    );
 
     return $self;
 }

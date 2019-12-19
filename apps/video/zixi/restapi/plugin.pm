@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,13 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'broadcaster-input-usage'      => 'apps::video::zixi::restapi::mode::broadcasterinputusage',
-                         'broadcaster-license-usage'    => 'apps::video::zixi::restapi::mode::broadcasterlicenseusage',
-                         'broadcaster-output-usage'     => 'apps::video::zixi::restapi::mode::broadcasteroutputusage',
-                         'broadcaster-system-usage'     => 'apps::video::zixi::restapi::mode::broadcastersystemusage',
-                         'feeder-input-usage'           => 'apps::video::zixi::restapi::mode::feederinputusage',
-                         'feeder-output-usage'          => 'apps::video::zixi::restapi::mode::feederoutputusage',
-                         );
+        'broadcaster-input-usage'      => 'apps::video::zixi::restapi::mode::broadcasterinputusage',
+        'broadcaster-license-usage'    => 'apps::video::zixi::restapi::mode::broadcasterlicenseusage',
+        'broadcaster-output-usage'     => 'apps::video::zixi::restapi::mode::broadcasteroutputusage',
+        'broadcaster-system-usage'     => 'apps::video::zixi::restapi::mode::broadcastersystemusage',
+        'feeder-input-usage'           => 'apps::video::zixi::restapi::mode::feederinputusage',
+        'feeder-output-usage'          => 'apps::video::zixi::restapi::mode::feederoutputusage',
+    );
 
     $self->{custom_modes}{api} = 'apps::video::zixi::restapi::custom::api';
     return $self;

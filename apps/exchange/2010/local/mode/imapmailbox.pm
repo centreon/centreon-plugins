@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,23 +32,22 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "remote-host:s"       => { name => 'remote_host', },
-                                  "remote-user:s"       => { name => 'remote_user', },
-                                  "remote-password:s"   => { name => 'remote_password', },
-                                  "no-ps"               => { name => 'no_ps', },
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only', },
-                                  "warning:s"           => { name => 'warning', },
-                                  "critical:s"          => { name => 'critical', default => '%{result} !~ /Success/i' },
-                                  "mailbox:s"           => { name => 'mailbox', },
-                                  "password:s"          => { name => 'password', },
-                                });
+    $options{options}->add_options(arguments => {
+        "remote-host:s"       => { name => 'remote_host', },
+        "remote-user:s"       => { name => 'remote_user', },
+        "remote-password:s"   => { name => 'remote_password', },
+        "no-ps"               => { name => 'no_ps', },
+        "timeout:s"           => { name => 'timeout', default => 50 },
+        "command:s"           => { name => 'command', default => 'powershell.exe' },
+        "command-path:s"      => { name => 'command_path' },
+        "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        "ps-exec-only"        => { name => 'ps_exec_only', },
+        "warning:s"           => { name => 'warning', },
+        "critical:s"          => { name => 'critical', default => '%{result} !~ /Success/i' },
+        "mailbox:s"           => { name => 'mailbox', },
+        "password:s"          => { name => 'password', },
+    });
+
     return $self;
 }
 
@@ -85,7 +84,7 @@ sub run {
                                                                                        remote_user => $self->{option_results}->{remote_user},
                                                                                        remote_password => $self->{option_results}->{remote_password},
                                                                                        mailbox => $self->{option_results}->{mailbox},
-                                                                                       password => $self->{option_results}->{password}, 
+                                                                                       password => $self->{option_results}->{password},
                                                                                        no_ps => $self->{option_results}->{no_ps},
                                                                                        );
     $self->{option_results}->{command_options} .= " " . $ps;

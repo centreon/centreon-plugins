@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,8 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware' => 'centreon::common::adic::tape::snmp::mode::hardware',
-                         );
+        'hardware' => 'storage::quantum::scalar::snmp::mode::hardware',
+    );
 
     return $self;
 }
@@ -43,6 +43,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Quantum Scalar (i6000, i500, ...) in SNMP.
+Check Quantum Scalar in SNMP.
 
 =cut

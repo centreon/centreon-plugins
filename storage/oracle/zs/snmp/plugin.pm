@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'hardware'         => 'storage::oracle::zs::snmp::mode::hardware',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-shares'      => 'storage::oracle::zs::snmp::mode::listshares',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'share-usage'      => 'storage::oracle::zs::snmp::mode::shareusage',
-                         );
+        'hardware'         => 'storage::oracle::zs::snmp::mode::hardware',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-shares'      => 'storage::oracle::zs::snmp::mode::listshares',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'share-usage'      => 'storage::oracle::zs::snmp::mode::shareusage',
+    );
 
     return $self;
 }

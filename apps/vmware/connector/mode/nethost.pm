@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,65 +20,327 @@
 
 package apps::vmware::connector::mode::nethost;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_state'};
+    return 0;
+}
+
+sub custom_linkstatus_output {
+    my ($self, %options) = @_;
+
+    my $msg = 'status ' . $self->{result_values}->{link_status};
+    return $msg;
+}
+
+sub custom_linkstatus_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{link_status} = $options{new_datas}->{$self->{instance} . '_status'};
+    return 0;
+}
+
+sub custom_traffic_output {
+    my ($self, %options) = @_;
+
+    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic}, network => 1);
+    my $msg = sprintf("traffic %s : %s/s (%.2f %%)",
+                      $self->{result_values}->{label_ref}, $value . $unit, $self->{result_values}->{traffic_prct});
+    return $msg;
+}
+
+sub custom_traffic_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed'};
+    $self->{result_values}->{traffic} = $options{new_datas}->{$self->{instance} . '_traffic_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{label_ref} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / $self->{result_values}->{speed};
+
+    return 0;
+}
+
+sub custom_dropped_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("packets %s dropped : %.2f %% (%d/%d packets)",
+                      $self->{result_values}->{label_ref}, 
+                      $self->{result_values}->{dropped_prct},
+                      $self->{result_values}->{dropped}, $self->{result_values}->{packets});
+    return $msg;
+}
+
+sub custom_dropped_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{dropped} = $options{new_datas}->{$self->{instance} . '_dropped_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{packets} = $options{new_datas}->{$self->{instance} . '_packets_' . $options{extra_options}->{label_ref}};
+    $self->{result_values}->{label_ref} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{dropped_prct} = 0;
+    if ($self->{result_values}->{packets} > 0) {
+        $self->{result_values}->{dropped_prct} = $self->{result_values}->{dropped} * 100 / $self->{result_values}->{packets};
+    }
+    
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', indent_long_output => '    ', message_multiple => 'All ESX hosts are ok', 
+            group => [
+                { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_host', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'pnic', cb_prefix_output => 'prefix_pnic_output',  message_multiple => 'All physical interfaces are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'vswitch', cb_prefix_output => 'prefix_vswitch_output',  message_multiple => 'All vswitchs are ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'state' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{global_host} = [
+        { label => 'host-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
+                key_values => [ { name => 'traffic_in' } ],
+                output_template => 'host traffic in : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'host_traffic_in', value => 'traffic_in_absolute', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'host-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
+                key_values => [ { name => 'traffic_out' } ],
+                output_template => 'host traffic out : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'host_traffic_out', value => 'traffic_out_absolute', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{vswitch} = [
+        { label => 'vswitch-traffic-in', nlabel => 'host.vswitch.traffic.in.bitsperseconds', set => {
+                key_values => [ { name => 'traffic_in' } ],
+                output_template => 'traffic in : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'vswitch_traffic_in', value => 'traffic_in_absolute', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'vswitch-traffic-out', nlabel => 'host.vswitch.traffic.out.bitsperseconds', set => {
+                key_values => [ { name => 'traffic_out' } ],
+                output_template => 'traffic out : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { label => 'vswitch_traffic_out', value => 'traffic_out_absolute', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+    
+    $self->{maps_counters}->{pnic} = [
+        { label => 'link-status', threshold => 0, set => {
+                key_values => [ { name => 'status' } ],
+                closure_custom_calc => $self->can('custom_linkstatus_calc'),
+                closure_custom_output => $self->can('custom_linkstatus_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'link-traffic-in', nlabel => 'host.traffic.in.bitsperseconds', set => {
+                key_values => [ { name => 'display' }, { name => 'traffic_in' }, { name => 'speed' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                threshold_use => 'traffic_prct',
+                perfdatas => [
+                    { label => 'traffic_in', value => 'traffic', template => '%s', unit => 'b/s', 
+                      min => 0, max => 'speed', threshold_total => 'speed', cast_int => 1, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'link-traffic-out', nlabel => 'host.traffic.out.bitsperseconds', set => {
+                key_values => [ { name => 'display' }, { name => 'traffic_out' }, { name => 'speed' } ],
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'),
+                threshold_use => 'traffic_prct',
+                perfdatas => [
+                    { label => 'traffic_out', value => 'traffic', template => '%s', unit => 'b/s', 
+                      min => 0, max => 'speed', threshold_total => 'speed', cast_int => 1, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'link-dropped-in', nlabel => 'host.packets.in.dropped.percentage', set => {
+                key_values => [ { name => 'display' }, { name => 'packets_in' }, { name => 'dropped_in' } ],
+                closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_dropped_output'),
+                threshold_use => 'dropped_prct',
+                perfdatas => [
+                    { label => 'packets_dropped_in', value => 'dropped_prct', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'link-dropped-out', nlabel => 'host.packets.out.dropped.percentage', set => {
+                key_values => [ { name => 'display' }, { name => 'packets_out' }, { name => 'dropped_out' } ],
+                closure_custom_calc => $self->can('custom_dropped_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_dropped_output'),
+                threshold_use => 'dropped_prct',
+                perfdatas => [
+                    { label => 'packets_dropped_out', value => 'dropped_prct', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_host_output {
+    my ($self, %options) = @_;
+
+    return "Host '" . $options{instance_value}->{display} . "' : ";
+}
+
+sub host_long_output {
+    my ($self, %options) = @_;
+
+    return "checking host '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_pnic_output {
+    my ($self, %options) = @_;
+
+    return "physical interface '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_vswitch_output {
+    my ($self, %options) = @_;
+
+    return "vswitch '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "esx-hostname:s"          => { name => 'esx_hostname' },
-                                  "nic-name:s"              => { name => 'nic_name' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                  "scope-cluster:s"         => { name => 'scope_cluster' },
-                                  "filter-nic"              => { name => 'filter_nic' },
-                                  "disconnect-status:s"     => { name => 'disconnect_status', default => 'unknown' },
-                                  "warning-in:s"            => { name => 'warning_in', },
-                                  "critical-in:s"           => { name => 'critical_in', },
-                                  "warning-out:s"           => { name => 'warning_out', },
-                                  "critical-out:s"          => { name => 'critical_out', },
-                                  "link-down-status:s"      => { name => 'link_down_status', default => 'critical' },
-                                  "no-proxyswitch"          => { name => 'no_proxyswitch' },
-                                });
+    $options{options}->add_options(arguments => {
+        "esx-hostname:s"        => { name => 'esx_hostname' },
+        "nic-name:s"            => { name => 'nic_name' },
+        "filter"                => { name => 'filter' },
+        "scope-datacenter:s"    => { name => 'scope_datacenter' },
+        "scope-cluster:s"       => { name => 'scope_cluster' },
+        "no-proxyswitch"        => { name => 'no_proxyswitch' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '' },
+        "unknown-link-status:s"     => { name => 'unknown_link_status', default => '' },
+        "warning-link-status:s"     => { name => 'warning_link_status', default => '' },
+        "critical-link-status:s"    => { name => 'critical_link_status', default => '%{link_status} !~ /up/' },
+    });
+    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach my $label (('warning_in', 'critical_in', 'warning_out', 'critical_out')) {
-        if (($self->{perfdata}->threshold_validate(label => $label, value => $self->{option_results}->{$label})) == 0) {
-            my ($label_opt) = $label;
-            $label_opt =~ tr/_/-/;
-            $self->{output}->add_option_msg(short_msg => "Wrong " . $label_opt . " threshold '" . $self->{option_results}->{$label} . "'.");
-            $self->{output}->option_exit();
-        }
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{disconnect_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong disconnect-status status option '" . $self->{option_results}->{disconnect_status} . "'.");
-        $self->{output}->option_exit();
-    }
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{link_down_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong link down status option '" . $self->{option_results}->{link_down_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status',
+        'unknown_link_status', 'warning_link_status', 'critical_link_status']);
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'nethost');
-    $self->{connector}->run();
+    $self->{host} = {};
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'nethost');
+
+    foreach my $host_id (keys %{$response->{data}}) {
+        my $host_name = $response->{data}->{$host_id}->{name};
+        $self->{host}->{$host_name} = { display => $host_name, 
+            cpu => {},
+            global => {
+                state => $response->{data}->{$host_id}->{state},    
+            },
+            global_host => {
+                traffic_in => 0,
+                traffic_out => 0,
+            },
+        };
+        
+        foreach my $pnic_name (sort keys %{$response->{data}->{$host_id}->{pnic}}) {
+            $self->{host}->{$host_name}->{pnic} = {} if (!defined($self->{host}->{$host_name}->{pnic}));
+            next if (defined($self->{option_results}->{nic_name}) && $self->{option_results}->{nic_name} ne '' &&
+                $pnic_name !~ /$self->{option_results}->{nic_name}/);
+            
+            $self->{host}->{$host_name}->{pnic}->{$pnic_name} = { 
+                display     => $pnic_name, 
+                status      => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{status} ,
+                traffic_in  => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.received.average'},
+                traffic_out => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.transmitted.average'},
+                speed       => defined($response->{data}->{$host_id}->{pnic}->{$pnic_name}->{speed}) ? $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{speed} * 1024 * 1024 : undef, ,
+                packets_in  => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.packetsRx.summation'},
+                packets_out => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.packetsTx.summation'},
+                dropped_in  => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.droppedRx.summation'},
+                dropped_out => $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.droppedTx.summation'},
+            };
+            
+            next if (!defined($response->{data}->{$host_id}->{pnic}->{$pnic_name}->{speed}));
+            
+            foreach my $vswitch_name (keys %{$response->{data}->{$host_id}->{vswitch}}) {
+                next if (!defined($response->{data}->{$host_id}->{vswitch}->{$vswitch_name}->{pnic}));
+                foreach (@{$response->{data}->{$host_id}->{vswitch}->{$vswitch_name}->{pnic}}) {
+                    if ($_ eq $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{key}) {
+                        $self->{host}->{$host_name}->{vswitch} = {} 
+                            if (!defined($self->{host}->{$host_name}->{vswitch}));
+                        $self->{host}->{$host_name}->{vswitch}->{$vswitch_name} = { display => $vswitch_name, traffic_in => 0, traffic_out => 0 }
+                            if (!defined($self->{host}->{$host_name}->{vswitch}->{$vswitch_name}));
+                        $self->{host}->{$host_name}->{vswitch}->{$vswitch_name}->{traffic_in} += $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.received.average'};
+                        $self->{host}->{$host_name}->{vswitch}->{$vswitch_name}->{traffic_out} += $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.transmitted.average'};
+                    }
+                }
+            }
+            
+            $self->{host}->{$host_name}->{global_host}->{traffic_in} += $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.received.average'}
+                if (defined($response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.received.average'}));
+            $self->{host}->{$host_name}->{global_host}->{traffic_out} += $response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.transmitted.average'}
+                if (defined($response->{data}->{$host_id}->{pnic}->{$pnic_name}->{'net.transmitted.average'}));
+        }
+    }
 }
 
 1;
@@ -113,33 +375,47 @@ Search in following cluster(s) (can be a regexp).
 ESX nic to check.
 If not set, we check all nics.
 
-=item B<--filter-nic>
+=item B<--unknown-status>
 
-Nic name is a regexp.
+Set warning threshold for status (Default: '%{status} !~ /^connected$/i').
+Can used special variables like: %{status}
 
-=item B<--disconnect-status>
+=item B<--warning-status>
 
-Status if ESX host disconnected (default: 'unknown').
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
 
-=item B<--link-down-status>
+=item B<--critical-status>
 
-Status if some links are down (default: 'critical').
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
 
-=item B<--warning-in>
+=item B<--unknown-link-status>
 
-Threshold warning traffic in (percent).
+Set warning threshold for status (Default: '').
+Can used special variables like: %{link_status}
 
-=item B<--critical-in>
+=item B<--warning-link-status>
 
-Threshold critical traffic in (percent).
+Set warning threshold for status (Default: '').
+Can used special variables like: %{link_status}
 
-=item B<--warning-out>
+=item B<--critical-link-status>
 
-Threshold warning traffic out (percent).
+Set critical threshold for status (Default: '%{link_status} !~ /up/').
+Can used special variables like: %{link_status}
 
-=item B<--critical-out>
+=item B<--warning-*>
 
-Threshold critical traffic out (percent).
+Threshold warning.
+Can be: 'host-traffic-in', 'host-traffic-out', 'vswitch-traffic-in', 'vswitch-traffic-out',
+'link-traffic-in', 'link-traffic-out', 'link-dropped-in', 'link-dropped-out'.
+
+=item B<--critical-*>
+
+Threshold critical.
+Can be: 'host-traffic-in', 'host-traffic-out', 'vswitch-traffic-in', 'vswitch-traffic-out',
+'link-traffic-in', 'link-traffic-out', 'link-dropped-in', 'link-dropped-out'.
 
 =item B<--no-proxyswitch>
 

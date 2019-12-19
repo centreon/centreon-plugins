@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,19 +43,18 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "smcli-command:s"     => { name => 'smcli_command', default => 'SMcli' },
-                      "smcli-path:s"        => { name => 'smcli_path', },
-                      "sudo:s"              => { name => 'sudo', },
-                      "extra-options:s@"    => { name => 'extra_options' },
-                      "special-arg:s@"      => { name => 'special_arg' },
-                      "hostname:s@"         => { name => 'hostname' },
-                      "hostname2:s@"        => { name => 'hostname2' },
-                      "password:s@"         => { name => 'password' },
-                      "timeout:s@"          => { name => 'timeout' },
-                      "show-output:s"       => { name => 'show_output' },
-                    });
+        $options{options}->add_options(arguments => {
+            "smcli-command:s"     => { name => 'smcli_command', default => 'SMcli' },
+            "smcli-path:s"        => { name => 'smcli_path', },
+            "sudo:s"              => { name => 'sudo', },
+            "extra-options:s@"    => { name => 'extra_options' },
+            "special-arg:s@"      => { name => 'special_arg' },
+            "hostname:s@"         => { name => 'hostname' },
+            "hostname2:s@"        => { name => 'hostname2' },
+            "password:s@"         => { name => 'password' },
+            "timeout:s@"          => { name => 'timeout' },
+            "show-output:s"       => { name => 'show_output' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'SMCLI OPTIONS', once => 1);
 
@@ -84,15 +83,25 @@ sub set_defaults {
     # Manage default value
     foreach (keys %{$options{default}}) {
         if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
+            if (ref($options{default}->{$_}) eq 'ARRAY') {
+                for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
+                    foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
+                        if (!defined($self->{option_results}->{$opt}[$i])) {
+                            $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
+                        }
+                    }
+                }
+            }
+            
+            if (ref($options{default}->{$_}) eq 'HASH') {
+                foreach my $opt (keys %{$options{default}->{$_}}) {
+                    if (!defined($self->{option_results}->{$opt})) {
+                        $self->{option_results}->{$opt} = $options{default}->{$_}->{$opt};
                     }
                 }
             }
         }
-    }
+    }    
 }
 
 sub build_command {

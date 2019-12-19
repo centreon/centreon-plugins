@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,16 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-                         'hardware'         => 'centreon::common::sun::snmp::mode::hardware',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'infiniband-usage' => 'network::oracle::infiniband::snmp::mode::infinibandusage',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-infinibands' => 'network::oracle::infiniband::snmp::mode::listinfinibands',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'snmp_standard::mode::memory',
-                         'swap'             => 'snmp_standard::mode::swap',
-                         );
+        'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+        'hardware'         => 'centreon::common::sun::snmp::mode::hardware',
+        'load'             => 'snmp_standard::mode::loadaverage',
+        'infiniband-usage' => 'network::oracle::infiniband::snmp::mode::infinibandusage',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-infinibands' => 'network::oracle::infiniband::snmp::mode::listinfinibands',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'snmp_standard::mode::memory',
+        'swap'             => 'snmp_standard::mode::swap',
+    );
 
     return $self;
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,27 +31,31 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'aggregatestate'   => 'storage::netapp::snmp::mode::aggregatestate',
-                         'cp-statistics'    => 'storage::netapp::snmp::mode::cpstatistics',
-                         'cpuload'          => 'storage::netapp::snmp::mode::cpuload',
-                         'diskfailed'       => 'storage::netapp::snmp::mode::diskfailed',
-                         'fan'              => 'storage::netapp::snmp::mode::fan',
-                         'filesys'          => 'storage::netapp::snmp::mode::filesys',
-                         'list-filesys'     => 'storage::netapp::snmp::mode::listfilesys',
-                         'global-status'    => 'storage::netapp::snmp::mode::globalstatus',
-                         'ndmpsessions'     => 'storage::netapp::snmp::mode::ndmpsessions',
-                         'nvram'            => 'storage::netapp::snmp::mode::nvram',
-                         'partnerstatus'    => 'storage::netapp::snmp::mode::partnerstatus',
-                         'psu'              => 'storage::netapp::snmp::mode::psu',
-                         'qtree-usage'      => 'storage::netapp::snmp::mode::qtreeusage',
-                         'share-calls'      => 'storage::netapp::snmp::mode::sharecalls',
-                         'shelf'            => 'storage::netapp::snmp::mode::shelf',
-                         'snapmirrorlag'    => 'storage::netapp::snmp::mode::snapmirrorlag',
-                         'snapshotage'      => 'storage::netapp::snmp::mode::snapshotage',
-                         'temperature'      => 'storage::netapp::snmp::mode::temperature',
-                         'volumeoptions'    => 'storage::netapp::snmp::mode::volumeoptions',
-                         'cache-age'        => 'storage::netapp::snmp::mode::cacheage',
-                         );
+        'aggregatestate'   => 'storage::netapp::snmp::mode::aggregatestate',
+        'cache-age'        => 'storage::netapp::snmp::mode::cacheage',
+        'cp-statistics'    => 'storage::netapp::snmp::mode::cpstatistics',
+        'cpuload'          => 'storage::netapp::snmp::mode::cpuload',
+        'diskfailed'       => 'storage::netapp::snmp::mode::diskfailed',
+        'fan'              => 'storage::netapp::snmp::mode::fan',
+        'filesys'          => 'storage::netapp::snmp::mode::filesys',
+        'list-filesys'     => 'storage::netapp::snmp::mode::listfilesys',
+        'list-snapvault'   => 'storage::netapp::snmp::mode::listsnapvault',
+        'global-status'    => 'storage::netapp::snmp::mode::globalstatus',
+        'ndmpsessions'     => 'storage::netapp::snmp::mode::ndmpsessions',
+        'nvram'            => 'storage::netapp::snmp::mode::nvram',
+        'partnerstatus'    => 'storage::netapp::snmp::mode::partnerstatus',
+        'psu'              => 'storage::netapp::snmp::mode::psu',
+        'qtree-usage'      => 'storage::netapp::snmp::mode::qtreeusage',
+        'share-calls'      => 'storage::netapp::snmp::mode::sharecalls',
+        'shelf'            => 'storage::netapp::snmp::mode::shelf',
+        'sis'              => 'storage::netapp::snmp::mode::sis',
+        'snapmirrorlag'    => 'storage::netapp::snmp::mode::snapmirrorlag',
+        'snapshotage'      => 'storage::netapp::snmp::mode::snapshotage',
+        'snapvault-usage'  => 'storage::netapp::snmp::mode::snapvaultusage',
+        'temperature'      => 'storage::netapp::snmp::mode::temperature',
+        'uptime'           => 'snmp_standard::mode::uptime',
+        'volumeoptions'    => 'storage::netapp::snmp::mode::volumeoptions',
+    );
 
     return $self;
 }

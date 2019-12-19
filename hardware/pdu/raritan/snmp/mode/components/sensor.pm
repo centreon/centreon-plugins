@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -74,7 +74,7 @@ sub check {
             }
             $self->{output}->output_add(long_msg => sprintf("'%s' %s state is '%s' [instance: %s, value: %s, unit: %s, label: %s]", 
                                         $instance, $component, $result->{State},
-                                        $instance, $value, $result->{Unit}, $result2->{Label}));
+                                        $instance, $value, $result->{Unit}->{unit}, $result2->{Label}));
             my $exit = $self->get_severity(section => $component, label => $value_type, 
                                            instance => $instance, value => $result->{State});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -84,7 +84,7 @@ sub check {
             }
             
             if ($value =~ /[0-9]/) {
-                next if ($value =~ /^0$/ && $result->{Unit} eq '');
+                next if ($value =~ /^0$/ && $result->{Unit}->{unit} eq '');
                 my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $value);
                 if ($checked == 0) {
                     $result->{EnabledThresholds} = oct("0b". unpack('b*', $result->{EnabledThresholds}));
@@ -114,12 +114,18 @@ sub check {
                 if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
                     $self->{output}->output_add(severity => $exit2,
                                                 short_msg => sprintf("'%s' %s value is %s %s", 
-                                                                     $instance, $component, $value, $result->{Unit}));
+                                                                     $instance, $component, $value, $result->{Unit}->{unit}));
                 }
-                $self->{output}->perfdata_add(label => $instance . "_" . $component, unit => $result->{Unit},
-                                              value => $value,
-                                              warning => $warn,
-                                              critical => $crit);
+                
+                my $nunit = (!defined($result->{Unit}->{nunit}) ? $result->{Unit}->{nunit} : lc($result->{Unit}->{unit}));
+                $self->{output}->perfdata_add(
+                    label => $component, unit => $result->{Unit}->{unit},
+                    nlabel => 'hardware.sensor.' . $options{type} . '.' . lc($component) . '.' . $nunit,
+                    instances => $instance,
+                    value => $value,
+                    warning => $warn,
+                    critical => $crit
+                );
             }
         }
     }

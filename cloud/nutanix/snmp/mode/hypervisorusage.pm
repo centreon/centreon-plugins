@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-
-my $instance_mode;
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -139,20 +137,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $instance_mode = $self;
 }
 
 sub prefix_hypervisor_output {

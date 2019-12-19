@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,10 +108,13 @@ sub check {
                                                     $total - $used - $not_ready, $total));
     }
     
-    $self->{output}->perfdata_add(label => "disk_spare_available",
-                                  value => $total - $used - $not_ready,
-                                  warning => $warn,
-                                  critical => $crit, min => 0, max => $total);
+    $self->{output}->perfdata_add(
+        label => "disk_spare_available",
+        nlabel => 'hardware.disk.spare.available.count',
+        value => $total - $used - $not_ready,
+        warning => $warn,
+        critical => $crit, min => 0, max => $total
+    );
 }
 
 1;

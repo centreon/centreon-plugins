@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,9 +45,9 @@ my $mapping = {
 my $oid_sensorProbeSwitchEntry = '.1.3.6.1.4.1.3854.1.2.2.1.18.1';
 
 sub load {
-    my (%options) = @_;
-    
-    push @{$options{request}}, { oid => $oid_sensorProbeSwitchEntry, end => $mapping->{sensorProbeSwitchOnline}->{oid} };
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_sensorProbeSwitchEntry, end => $mapping->{sensorProbeSwitchOnline}->{oid} };
 }
 
 sub check {
@@ -55,14 +55,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking switch");
     $self->{components}->{switch} = {name => 'switch', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'switch'));
+    return if ($self->check_filter(section => 'switch'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sensorProbeSwitchEntry}})) {
         next if ($oid !~ /^$mapping->{sensorProbeSwitchStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_sensorProbeSwitchEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'switch', instance => $instance));
+        next if ($self->check_filter(section => 'switch', instance => $instance));
         if ($result->{sensorProbeSwitchOnline} =~ /Offline/i) {  
             $self->absent_problem(section => 'switch', instance => $instance);
             next;

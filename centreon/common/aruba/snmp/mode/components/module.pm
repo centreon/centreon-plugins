@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,7 +47,6 @@ my %map_module_status = (
     2 => 'inactive', 
 );
 
-# In MIB 'aruba-systemext'
 my $mapping = {
     sysExtCardType => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1.2', map => \%map_card_type },
     sysExtCardStatus => { oid => '.1.3.6.1.4.1.14823.2.2.1.2.1.16.1.12', map => \%map_module_status },
@@ -70,20 +69,29 @@ sub check {
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_wlsxSysExtCardEntry}})) {
         next if ($oid !~ /^$mapping->{sysExtCardStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_wlsxSysExtCardEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(
+            mapping => $mapping,
+            results => $self->{results}->{$oid_wlsxSysExtCardEntry},
+            instance => $instance
+        );
 
         next if ($self->check_filter(section => 'module', instance => $instance));
         $self->{components}->{module}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("Module '%s/%s' status is %s [instance: %s].",
-                                    $result->{sysExtCardType}, $instance, $result->{sysExtCardStatus},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf("Module '%s/%s' status is %s [instance: %s].",
+                $result->{sysExtCardType}, $instance, $result->{sysExtCardStatus},
+                $instance
+        ));
         my $exit = $self->get_severity(section => 'module', value => $result->{sysExtCardStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Module '%s/%s' status is %s",
-                                                             $result->{sysExtCardType}, $instance, $result->{sysExtCardStatus}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf("Module '%s/%s' status is %s",
+                    $result->{sysExtCardType},
+                    $instance,
+                    $result->{sysExtCardStatus})
+                );
         }
     }
 }

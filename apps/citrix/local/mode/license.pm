@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,80 +20,96 @@
 
 package apps::citrix::local::mode::license;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use Win32::OLE;
 
+sub custom_license_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Licenses Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $self->{result_values}->{total_absolute},
+        $self->{result_values}->{used_absolute},
+        $self->{result_values}->{prct_used_absolute},
+        $self->{result_values}->{free_absolute},
+        $self->{result_values}->{prct_free_absolute}
+    );
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'usage', nlabel => 'licenses.usage.count', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+        { label => 'usage-free', display_ok => 0, nlabel => 'licenses.free.count', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_license_output'),
+                perfdatas => [
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'licenses.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'Licenses Used : %.2f %%',
+                perfdatas => [
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"             => { name => 'warning', },
-                                  "critical:s"            => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{output}->output_add(severity => 'Ok',
-                                short_msg => "All licenses are ok");
-    
     my $wmi = Win32::OLE->GetObject('winmgmts:root\CitrixLicensing');
     if (!defined($wmi)) {
-        $self->{output}->add_option_msg(short_msg => "Cant create server object:" . Win32::OLE->LastError());
+        $self->{output}->add_option_msg(short_msg => 'Cant create server object:' . Win32::OLE->LastError());
         $self->{output}->option_exit();
     }
 
-    my $count = 0;
-    my $inUseCount = 0;
-    my $percentUsed = 100;
-
+    $self->{global} = { total => 0, used => 0 };
     my $query = "Select InUseCount,Count from Citrix_GT_License_Pool";
     my $resultset = $wmi->ExecQuery($query);
     foreach my $obj (in $resultset) {
-        $inUseCount = $obj->{InUseCount};
-        $count = $obj->{Count};
-        $percentUsed = ($inUseCount / $count) * 100;
-
-        my $exit = $self->{perfdata}->threshold_check(value => $percentUsed, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => $percentUsed . "% licenses are used (" . $inUseCount . "/" . $count . ")");
-        $self->{output}->perfdata_add(label => 'licenses_used',
-                                      value => $inUseCount,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $count),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $count),
-                                      min => 0, max => $count);
+        $self->{global}->{used} += $obj->{InUseCount};
+        $self->{global}->{total} += $obj->{Count};
     }
 
-    if ($count == 0) {
-        $self->{output}->output_add(severity => 'Unknown',
-                                    short_msg => "Can't get licenses count");
+    if ($self->{global}->{total} == 0) {
+        $self->{output}->add_option_msg(short_msg => 'Cant get licenses count');
+        $self->{output}->option_exit();
     }
- 
-    $self->{output}->display();
-    $self->{output}->exit();
+
+    $self->{global}->{prct_used} = $self->{global}->{used} * 100 / $self->{global}->{total};
+    $self->{global}->{prct_free} = 100 - $self->{global}->{prct_used};
+    $self->{global}->{free} = $self->{global}->{total} - $self->{global}->{used};
 }
 
 1;
@@ -106,13 +122,10 @@ Check Citrix licenses.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning of licenses used in percent.
-
-=item B<--critical>
-
-Threshold critical of licenses used in percent.
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back
 

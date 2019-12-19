@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,19 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'health'           => 'storage::hp::p2000::xmlapi::mode::health',
-                         'list-volumes'     => 'storage::hp::p2000::xmlapi::mode::listvolumes',
-                         'volume-stats'     => 'storage::hp::p2000::xmlapi::mode::volumesstats',
-                        );
+        'health'         => 'storage::hp::p2000::xmlapi::mode::health',
+        'list-volumes'   => 'storage::hp::p2000::xmlapi::mode::listvolumes',
+        'vdisks'         => 'storage::hp::p2000::xmlapi::mode::vdisks',
+        'volume-stats'   => 'storage::hp::p2000::xmlapi::mode::volumesstats',
+    );
     $self->{custom_modes}{p2000xml} = 'storage::hp::p2000::xmlapi::custom';
 
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
 }
 
 1;

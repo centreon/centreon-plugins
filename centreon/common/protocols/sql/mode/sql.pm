@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,18 +30,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "sql-statement:s"         => { name => 'sql_statement', },
-                                  "format:s"                => { name => 'format', default => 'SQL statement result : %i.'},
-                                  "perfdata-unit:s"         => { name => 'perfdata_unit', default => ''},
-                                  "perfdata-name:s"         => { name => 'perfdata_name', default => 'value'},
-                                  "perfdata-min:s"          => { name => 'perfdata_min', default => ''},
-                                  "perfdata-max:s"          => { name => 'perfdata_max', default => ''},
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "sql-statement:s"         => { name => 'sql_statement', },
+        "format:s"                => { name => 'format', default => 'SQL statement result : %i.'},
+        "perfdata-unit:s"         => { name => 'perfdata_unit', default => ''},
+        "perfdata-name:s"         => { name => 'perfdata_name', default => 'value'},
+        "perfdata-min:s"          => { name => 'perfdata_min', default => ''},
+        "perfdata-max:s"          => { name => 'perfdata_max', default => ''},
+        "warning:s"               => { name => 'warning', },
+        "critical:s"              => { name => 'critical', },
+    });
 
     return $self;
 }
@@ -70,7 +68,6 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
 
     my $query = $self->{option_results}->{sql_statement};
@@ -78,6 +75,7 @@ sub run {
     $self->{sql}->connect();
     $self->{sql}->query(query => $query);
     my $value = $self->{sql}->fetchrow_array();
+    $self->{sql}->disconnect();
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,

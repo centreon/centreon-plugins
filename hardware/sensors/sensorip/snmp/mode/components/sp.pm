@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,23 +33,24 @@ my %map_sp_status = (
 my $oid_spStatus = '.1.3.6.1.4.1.3854.1.1.2';
 
 sub load {
-    my (%options) = @_;
-    
-    push @{$options{request}}, { oid => $oid_spStatus };
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_spStatus };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking sp");
-    $self->{components}->{sp} = {name => 'sp', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sp'));
+    $self->{components}->{sp} = { name => 'sp', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'sp'));
+    return if (scalar(keys %{$self->{results}->{$oid_spStatus}}) <= 0);
 
     my $instance = 0;
     my $sp_status = defined($map_sp_status{$self->{results}->{$oid_spStatus}->{$oid_spStatus . '.' . $instance}}) ?
                             $map_sp_status{$self->{results}->{$oid_spStatus}->{$oid_spStatus . '.' . $instance}} : 'unknown';
 
-    return if ($self->check_exclude(section => 'sp', instance => $instance));
+    return if ($self->check_filter(section => 'sp', instance => $instance));
     return if ($sp_status =~ /noStatus/i && 
                $self->absent_problem(section => 'sp', instance => $instance));
     

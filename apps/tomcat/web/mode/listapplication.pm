@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,25 +30,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"            => { name => 'hostname' },
-            "port:s"                => { name => 'port', default => '8080' },
-            "proto:s"               => { name => 'proto' },
-            "credentials"           => { name => 'credentials' },
-            "username:s"            => { name => 'username' },
-            "password:s"            => { name => 'password' },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "timeout:s"             => { name => 'timeout' },
-            "urlpath:s"             => { name => 'url_path', default => '/manager/text/list' },
-            "filter-name:s"         => { name => 'filter_name', },
-            "filter-state:s"        => { name => 'filter_state', },
-            "filter-path:s"         => { name => 'filter_path', },
-            });
+    $options{options}->add_options(arguments => {
+        'hostname:s'     => { name => 'hostname' },
+        'port:s'         => { name => 'port', default => '8080' },
+        'proto:s'        => { name => 'proto' },
+        'credentials'    => { name => 'credentials' },
+        'basic'          => { name => 'basic' },
+        'username:s'     => { name => 'username' },
+        'password:s'     => { name => 'password' },
+        'timeout:s'      => { name => 'timeout' },
+        'urlpath:s'      => { name => 'url_path', default => '/manager/text/list' },
+        'filter-name:s'  => { name => 'filter_name', },
+        'filter-state:s' => { name => 'filter_state', },
+        'filter-path:s'  => { name => 'filter_path', },
+    });
 
     $self->{result} = {};
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -112,9 +110,10 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         state => $self->{result}->{$name}->{state}
-                                         );
+        $self->{output}->add_disco_entry(
+            name => $name,
+            state => $self->{result}->{$name}->{state}
+        );
     }
 }
 
@@ -136,25 +135,29 @@ IP Address or FQDN of the Tomcat Application Server
 
 Port used by Tomcat
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Protocol used http or https
 
 =item B<--credentials>
 
-Specify this option if you access server-status page over basic authentification
+Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--timeout>
 

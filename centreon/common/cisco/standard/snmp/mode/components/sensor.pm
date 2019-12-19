@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,6 +22,7 @@ package centreon::common::cisco::standard::snmp::mode::components::sensor;
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 
 my %map_sensor_status = (
     1 => 'ok',
@@ -114,7 +115,8 @@ my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_entSensorValueEntry }, { oid => $oid_entSensorThresholdEntry };
+    push @{$self->{request}}, { oid => $oid_entSensorValueEntry, end => $mapping->{entSensorStatus}->{oid} }, 
+        { oid => $oid_entSensorThresholdEntry, end => $mapping2->{entSensorThresholdValue}->{oid} };
 }
 
 sub get_default_warning_threshold {
@@ -126,7 +128,7 @@ sub get_default_warning_threshold {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_entSensorThresholdEntry}, instance => $options{instance} . '.' . $instance);
         next if ($result->{entSensorThresholdSeverity} ne 'minor');
-        
+
         my $value = $result->{entSensorThresholdValue} * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision})));
         if ($result->{entSensorThresholdRelation} eq 'greaterOrEqual') {
             $high_th = $value - (1 * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision}))));
@@ -139,9 +141,14 @@ sub get_default_warning_threshold {
         }
     }
     
+    # when it's the same value. Means no threshold.
+    if (defined($low_th) && defined($high_th) && $high_th <= $low_th) {
+        return '';
+    }
     my $th = '';
-    $th = $low_th . ':' if (defined($low_th));
-    $th .= $high_th if (defined($high_th));
+    $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
+    $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
+
     return $th;
 }
 
@@ -166,10 +173,15 @@ sub get_default_critical_threshold {
             $low_th = $value;
         }
     }
-    
+
+    # when it's the same value. Means no threshold.
+    if (defined($low_th) && defined($high_th) && $high_th <= $low_th) {
+        return '';
+    }
     my $th = '';
-    $th = $low_th . ':' if (defined($low_th));
-    $th .= $high_th if (defined($high_th));
+    $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
+    $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
+    
     return $th;
 }
 
@@ -188,7 +200,7 @@ sub check {
         next if (!defined($self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance}));
         my $sensor_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         
-        next if ($self->check_filter(section => 'sensor', instance => $instance));
+        next if ($self->check_filter(section => 'sensor', instance => $result->{entSensorType} . '.' . $instance));
         $self->{components}->{sensor}->{total}++;
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 
@@ -217,17 +229,25 @@ sub check {
             $self->{perfdata}->threshold_validate(label => 'critical-' . $component . '-instance-' . $instance, value => $crit_th);
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $component . '-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $component  . '-instance-' . $instance);
-            $exit2 = $self->{perfdata}->threshold_check(value => $result->{entSensorValue}, threshold => [ { label => 'critical-' . $component  . '-instance-' . $instance, exit_litteral => 'critical' }, 
-                                                                                             { label => 'warning-' . $component . '-instance-' . $instance, exit_litteral => 'warning' } ]);
+            $exit2 = $self->{perfdata}->threshold_check(
+                value => $result->{entSensorValue}, 
+                threshold => [ { label => 'critical-' . $component  . '-instance-' . $instance, exit_litteral => 'critical' }, 
+                               { label => 'warning-' . $component . '-instance-' . $instance, exit_litteral => 'warning' }
+                ]
+            );
         }
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit2,
                                         short_msg => sprintf("Sensor '%s/%s' is %s %s", $sensor_descr, $instance, $result->{entSensorValue}, $perfdata_unit{$result->{entSensorType}}));
         }
-        $self->{output}->perfdata_add(label => $component . '_' . $sensor_descr, unit => $perfdata_unit{$result->{entSensorType}},
-                                      value => $result->{entSensorValue},
-                                      warning => $warn,
-                                      critical => $crit);
+        $self->{output}->perfdata_add(
+            label => $component, unit => $perfdata_unit{$result->{entSensorType}},
+            nlabel => 'hardware.' . $component, 
+            instances => $sensor_descr,
+            value => $result->{entSensorValue},
+            warning => $warn,
+            critical => $crit
+        );
     }
 }
 

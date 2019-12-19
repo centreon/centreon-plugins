@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,7 +46,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     foreach my $name (keys %$counters) {
         $options{options}->add_options(arguments =>
                                 { 
@@ -185,13 +184,16 @@ sub check {
             $str_display .= $str_display_append . sprintf("%s %s /sec", $name, $value_display);
             $str_display_append = ', ';
             
-            my $extra_label = '';
+            my $extra_label;
             $extra_label = '_' . $site_name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-            $self->{output}->perfdata_add(label => $name . $extra_label, unit => $counters->{$name}->{unit},
-                                          value => sprintf("%.2f", $value_per_seconds),
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_' . $name),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_' . $name),
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => $name, unit => $counters->{$name}->{unit},
+                instances => $extra_label,
+                value => sprintf("%.2f", $value_per_seconds),
+                warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning_' . $name),
+                critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical_' . $name),
+                min => 0
+            );
         }
         
         # No values computing.

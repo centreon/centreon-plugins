@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,19 +31,24 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
-                         'environment'      => 'centreon::common::cisco::standard::snmp::mode::environment',
-                         'hsrp'             => 'centreon::common::cisco::standard::snmp::mode::hsrp',
-                         'interfaces'       => 'snmp_standard::mode::interfaces', 
-                         'ipsla'            => 'centreon::common::cisco::standard::snmp::mode::ipsla',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'memory-flash'     => 'centreon::common::cisco::standard::snmp::mode::memoryflash',
-                         'qos-usage'        => 'centreon::common::cisco::standard::snmp::mode::qosusage',
-                         'spanning-tree'    => 'snmp_standard::mode::spanningtree',
-                         'stack'            => 'centreon::common::cisco::standard::snmp::mode::stack',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         );
+        'arp'                  => 'snmp_standard::mode::arp',
+        'configuration'        => 'centreon::common::cisco::standard::snmp::mode::configuration',
+        'cpu'                  => 'centreon::common::cisco::standard::snmp::mode::cpu',
+        'environment'          => 'centreon::common::cisco::standard::snmp::mode::environment',
+        'hsrp'                 => 'centreon::common::cisco::standard::snmp::mode::hsrp',
+        'interfaces'           => 'centreon::common::cisco::standard::snmp::mode::interfaces', 
+        'ipsla'                => 'centreon::common::cisco::standard::snmp::mode::ipsla',
+        'list-interfaces'      => 'snmp_standard::mode::listinterfaces',
+        'list-spanning-trees'  => 'snmp_standard::mode::listspanningtrees',
+        'load'                 => 'centreon::common::cisco::standard::snmp::mode::load',
+        'memory'               => 'centreon::common::cisco::standard::snmp::mode::memory',
+        'memory-flash'         => 'centreon::common::cisco::standard::snmp::mode::memoryflash',
+        'qos-usage'            => 'centreon::common::cisco::standard::snmp::mode::qosusage',
+        'spanning-tree'        => 'snmp_standard::mode::spanningtree',
+        'stack'                => 'centreon::common::cisco::standard::snmp::mode::stack',
+        'uptime'               => 'snmp_standard::mode::uptime',
+        'voice-call'           => 'centreon::common::cisco::standard::snmp::mode::voicecall',
+    );
 
     return $self;
 }

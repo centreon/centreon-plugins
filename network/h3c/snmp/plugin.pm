@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::h3c::snmp::mode::cpu',
-                         'hardware'         => 'network::h3c::snmp::mode::hardware',
-                         'interfaces'       => 'snmp_standard::mode::interfaces', 
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'network::h3c::snmp::mode::memory',
-                         );
+        'cpu'              => 'centreon::common::h3c::snmp::mode::cpu',
+        'hardware'         => 'centreon::common::h3c::snmp::mode::hardware',
+        'interfaces'       => 'snmp_standard::mode::interfaces', 
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'centreon::common::h3c::snmp::mode::memory',
+    );
 
     return $self;
 }

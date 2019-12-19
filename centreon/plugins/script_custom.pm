@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,23 +28,21 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{package} = parent package caller
-    # $options{options} = options object
-    # $options{output} = output object
     $self->{options} = $options{options};
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-                                   arguments => {
-                                                'mode:s'          => { name => 'mode_name' },
-                                                'dyn-mode:s'      => { name => 'dynmode_name' },
-                                                'list-mode'       => { name => 'list_mode' },
-                                                'custommode:s'    => { name => 'custommode_name' },
-                                                'list-custommode' => { name => 'list_custommode' },
-                                                'multiple'        => { name => 'multiple' },
-                                                'sanity-options'  => { name => 'sanity_options' }, # keep it for 6 month before remove it
-                                                }
-                                  );
+        arguments => {
+            'mode:s'            => { name => 'mode_name' },
+            'dyn-mode:s'        => { name => 'dynmode_name' },
+            'list-mode'         => { name => 'list_mode' },
+            'custommode:s'      => { name => 'custommode_name' },
+            'list-custommode'   => { name => 'list_custommode' },
+            'multiple'          => { name => 'multiple' },
+            'no-sanity-options' => { name => 'no_sanity_options' },
+            'pass-manager:s'    => { name => 'pass_manager' },
+        }
+    );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
     %{$self->{custom_modes}} = ();
@@ -62,6 +60,7 @@ sub new {
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
     $self->{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL OPTIONS');
+    $self->{output}->mode(name => $self->{mode_name});
 
     return $self;
 }
@@ -70,16 +69,18 @@ sub load_custom_mode {
     my ($self, %options) = @_;
     
     $self->is_custommode(custommode => $self->{custommode_name});
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
-                                           error_msg => "Cannot load module --custommode.");
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
+        error_msg => 'Cannot load module --custommode.'
+    );
     $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
 }
 
 sub init {
     my ($self, %options) = @_;
-    # $options{version} = string version
-    # $options{help} = string help
 
+    # add meta mode
+    $self->{modes}->{multi} = 'centreon::plugins::multi';
     if (defined($options{help}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->{options}->display_help();
         $self->{output}->option_exit();
@@ -93,10 +94,12 @@ sub init {
     if (defined($self->{list_custommode})) {
         $self->list_custommode();
     }
-    $self->{options}->set_sanity();
+    $self->{options}->set_sanity() if (!defined($self->{no_sanity_options}));
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
+    
+    $self->load_password_mgr();
 
     if (defined($self->{custommode_name}) && $self->{custommode_name} ne '') {
         $self->load_custom_mode();
@@ -139,6 +142,7 @@ sub init {
     
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
+    $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
 
     push @{$self->{custommode_stored}}, $self->{custommode_current};
     $self->{custommode_current}->set_options(option_results => $self->{option_results});
@@ -149,7 +153,23 @@ sub init {
         $self->{custommode_current}->set_options(option_results => $self->{option_results});
         push @{$self->{custommode_stored}}, $self->{custommode_current};
     }
-    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+    $self->{mode}->check_options(
+        option_results => $self->{option_results},
+        default => $self->{default},
+        modes => $self->{modes} # for meta mode multi
+    );
+}
+
+sub load_password_mgr {
+    my ($self, %options) = @_;
+    
+    return if (!defined($self->{option_results}->{pass_manager}) || $self->{option_results}->{pass_manager} eq '');
+
+    (undef, my $pass_mgr_name) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager}, 
+        error_msg => "Cannot load module 'centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager} . "'"
+    );
+    $self->{pass_mgr} = $pass_mgr_name->new(options => $self->{options}, output => $self->{output});
 }
 
 sub run {
@@ -181,7 +201,6 @@ sub run {
 sub is_mode {
     my ($self, %options) = @_;
     
-    # $options->{mode} = mode
     if (!defined($self->{modes}{$options{mode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{mode} . "' doesn't exist (use --list-mode option to show available modes).");
         $self->{output}->option_exit();
@@ -191,7 +210,6 @@ sub is_mode {
 sub is_custommode {
     my ($self, %options) = @_;
     
-    # $options->{custommode} = mode
     if (!defined($self->{custom_modes}{$options{custommode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{custommode} . "' doesn't exist (use --list-custommode option to show available modes).");
         $self->{output}->option_exit();
@@ -208,9 +226,13 @@ sub list_mode {
     my $self = shift;
     $self->{options}->display_help();
     
-    $self->{output}->add_option_msg(long_msg => "Modes Available:");
+    $self->{output}->add_option_msg(long_msg => 'Modes Meta:');
+    $self->{output}->add_option_msg(long_msg => '   multi');
+    $self->{output}->add_option_msg(long_msg => '');
+    $self->{output}->add_option_msg(long_msg => 'Modes Available:');
     foreach (sort keys %{$self->{modes}}) {
-        $self->{output}->add_option_msg(long_msg => "   " . $_);
+        next if ($_ eq 'multi');
+        $self->{output}->add_option_msg(long_msg => '   ' . $_);
     }
     $self->{output}->option_exit(nolabel => 1);
 }
@@ -273,6 +295,10 @@ List available custom modes.
 =item B<--multiple>
 
 Multiple custom mode objects (some mode needs it).
+
+=item B<--pass-manager>
+
+Use a password manager.
 
 =back
 

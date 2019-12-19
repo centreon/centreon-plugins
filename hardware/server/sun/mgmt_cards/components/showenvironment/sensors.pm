@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking sensors");
     $self->{components}->{sensors} = {name => 'sensors', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'sensors'));
+    return if ($self->check_filter(section => 'sensors'));
     
     if ($self->{stdout} =~ /^Current sensors.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         #Sensor          Status
@@ -40,7 +40,7 @@ sub check {
             my $sensor_status = defined($2) ? $2 : 'unknown';
             my $sensor_name = defined($1) ? $1 : 'unknown';
             
-            next if ($self->check_exclude(section => 'sensors', instance => $sensor_name));
+            next if ($self->check_filter(section => 'sensors', instance => $sensor_name));
             
             $self->{components}->{sensors}->{total}++;
             $self->{output}->output_add(long_msg => "Current Sensor status '" . $sensor_name . "' is " . $sensor_status);

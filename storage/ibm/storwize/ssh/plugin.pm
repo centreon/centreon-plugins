@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'components'   => 'storage::ibm::storwize::ssh::mode::hardware',
-                         'pool-usage'   => 'storage::ibm::storwize::ssh::mode::poolusage',
-                         'eventlog'     => 'storage::ibm::storwize::ssh::mode::eventlog',
-                        );
+        'components'   => 'storage::ibm::storwize::ssh::mode::hardware',
+        'eventlog'     => 'storage::ibm::storwize::ssh::mode::eventlog',
+        'pool-usage'   => 'storage::ibm::storwize::ssh::mode::poolusage',
+    );
 
     return $self;
 }

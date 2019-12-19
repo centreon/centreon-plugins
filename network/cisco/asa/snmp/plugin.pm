@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
-                         'failover'         => 'network::cisco::asa::snmp::mode::failover',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'ipsec-tunnel'     => 'centreon::common::cisco::standard::snmp::mode::ipsectunnel', 
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
-                         'sensors'          => 'snmp_standard::mode::entity',
-                         'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
-                         );
+        'cpu'              => 'centreon::common::cisco::standard::snmp::mode::cpu',
+        'failover'         => 'network::cisco::asa::snmp::mode::failover',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'ipsec-tunnel'     => 'centreon::common::cisco::standard::snmp::mode::ipsectunnel', 
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'memory'           => 'centreon::common::cisco::standard::snmp::mode::memory',
+        'sensors'          => 'snmp_standard::mode::entity',
+        'sessions'         => 'centreon::common::cisco::standard::snmp::mode::sessions',
+    );
 
     return $self;
 }

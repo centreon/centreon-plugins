@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,14 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'users'            => 'database::firebird::mode::users',
-                         'pages'            => 'database::firebird::mode::pages',
-                         'memory'           => 'database::firebird::mode::memory',
-                         'queries'          => 'database::firebird::mode::queries',
-                         'long-queries'     => 'database::firebird::mode::longqueries',
-                         'sql'              => 'centreon::common::protocols::sql::mode::sql',
-                         );
+        'connection-time'  => 'centreon::common::protocols::sql::mode::connectiontime',
+        'users'            => 'database::firebird::mode::users',
+        'pages'            => 'database::firebird::mode::pages',
+        'memory'           => 'database::firebird::mode::memory',
+        'queries'          => 'database::firebird::mode::queries',
+        'long-queries'     => 'database::firebird::mode::longqueries',
+        'sql'              => 'centreon::common::protocols::sql::mode::sql',
+    );
 
     return $self;
 }
@@ -48,12 +48,12 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'host:s@'  => { name => 'db_host' },
-                                                'port:s@'  => { name => 'db_port' },
-                                                'database:s@'  => { name => 'db_name' },
-                                                }
-                                  );
+        arguments => {
+            'host:s@'     => { name => 'db_host' },
+            'port:s@'     => { name => 'db_port' },
+            'database:s@' => { name => 'db_name' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();

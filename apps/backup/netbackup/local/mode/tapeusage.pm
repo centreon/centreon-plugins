@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,20 +26,18 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
-my $instance_mode;
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
 
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
@@ -56,10 +54,10 @@ sub custom_usage_threshold {
     
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
     $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
     return $exit;
@@ -112,32 +110,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'vmquery' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-a -w' },
-                                  "filter-scratch:s"  => { name => 'filter_scratch', default => 'scratch' },
-                                  "units:s"           => { name => 'units', default => '%' },
-                                  "free"              => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "hostname:s"        => { name => 'hostname' },
+        "remote"            => { name => 'remote' },
+        "ssh-option:s@"     => { name => 'ssh_option' },
+        "ssh-path:s"        => { name => 'ssh_path' },
+        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"         => { name => 'timeout', default => 30 },
+        "sudo"              => { name => 'sudo' },
+        "command:s"         => { name => 'command', default => 'vmquery' },
+        "command-path:s"    => { name => 'command_path' },
+        "command-options:s" => { name => 'command_options', default => '-a -w' },
+        "filter-scratch:s"  => { name => 'filter_scratch', default => 'scratch' },
+        "units:s"           => { name => 'units', default => '%' },
+        "free"              => { name => 'free' },
+    });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $instance_mode = $self;
 }
 
 sub manage_selection {
@@ -148,7 +137,15 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+                                                    command_options => $self->{option_results}->{command_options});
+
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
+    }
+
     $self->{global} = { total => 0, used => 0 };
     #media   optical media                       barcode           robot         robot  robot  robot  side/  volume                                                   prev                    # of     max       # of            create          assigned       first mount        last mount        expiration                                             off sent        off return     off     off                                     
     #ID      partner type      barcode           partner           host          type       #   slot  face   group                      pool                  pool #  pool                  mounts  mounts  cleanings          datetime          datetime          datetime          datetime          datetime  status  offsite location                   datetime          datetime    slot  ses id   version  description              
@@ -228,6 +225,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-a -w').
+
+=item B<--exec-only>
+
+Print command output
 
 =item B<--filter-scratch>
 

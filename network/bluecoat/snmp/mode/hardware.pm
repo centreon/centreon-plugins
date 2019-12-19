@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -38,11 +38,12 @@ sub set_system {
             ['ok', 'OK'],
             ['unavailable', 'UNKNOWN'],
             ['nonoperational', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN'],
         ],
         sensor => [    
             ['ok', 'OK'],
             ['unknown', 'UNKNOWN'],
-            ['nonInstalled', 'OK'],
+            ['notInstalled', 'OK'],
             ['voltageLowWarning', 'WARNING'],
             ['voltageLowCritical', 'CRITICAL'],
             ['noPower', 'CRITICAL'],
@@ -86,7 +87,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                 });

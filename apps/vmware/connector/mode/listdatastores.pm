@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "datastore-name:s"        => { name => 'datastore_name' },
@@ -48,12 +47,20 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->set_discovery();
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'listdatastores');
-    $self->{connector}->run();
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'listdatastores');
+    foreach (keys %{$response->{data}}) {
+        $self->{output}->output_add(long_msg => sprintf("  %s [%s] [%s]", 
+                                                        $response->{data}->{$_}->{name}, 
+                                                        $response->{data}->{$_}->{accessible},
+                                                        $response->{data}->{$_}->{type}));
+    }
+
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List datastore(s):');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
 }
 
 sub disco_format {
@@ -64,11 +71,14 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
-
-    # We ask to use XML output from the connector
-    $self->{connector}->add_params(params => { disco_show => 1 });
-    $self->run(custom => $self->{connector});
+    
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'listdatastores');
+    foreach (keys %{$response->{data}}) {
+        $self->{output}->add_disco_entry(name => $response->{data}->{$_}->{name},
+            accessible => $response->{data}->{$_}->{accessible}, type => $response->{data}->{$_}->{type}
+        );
+    }
 }
 
 1;

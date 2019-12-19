@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,16 +29,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"           => { name => 'warning', },
-                                  "critical:s"          => { name => 'critical', },
-                                  "seconds:s"           => { name => 'seconds', default => 60 },
-                                  "filter-user:s"       => { name => 'filter_user' },
-                                  "filter-command:s"    => { name => 'filter_command', default => '^(?!(sleep)$)' },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'warning:s'        => { name => 'warning', },
+        'critical:s'       => { name => 'critical', },
+        'seconds:s'        => { name => 'seconds', default => 60 },
+        'filter-user:s'    => { name => 'filter_user' },
+        'filter-command:s' => { name => 'filter_command', default => '^(?!(sleep)$)' },
+    });
 
     return $self;
 }
@@ -85,19 +83,30 @@ sub run {
     
     my $exit_code = $self->{perfdata}->threshold_check(value => $long_queries, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%s queries over %s seconds",
-                                                     $long_queries, $self->{option_results}->{seconds}));
-    $self->{output}->perfdata_add(label => 'longqueries',
-                                  value => $long_queries,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => sprintf(
+            "%s queries over %s seconds",
+            $long_queries, $self->{option_results}->{seconds}
+        )
+    );
+    $self->{output}->perfdata_add(
+        label => 'longqueries',
+        value => $long_queries,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
     
     for (my $i = 0; $i < 10 && $i < scalar(@queries); $i++) {
-        $queries[$i]->{query} =~ s/\|/-/mg;
-        $self->{output}->output_add(long_msg => sprintf("[time: %s] [query: %s]",
-                                                        $queries[$i]->{time}, substr($queries[$i]->{query}, 0, 1024)));
+        $queries[$i]->{query} =~ s/\|/-/mg if (defined($queries[$i]->{query}));
+        $self->{output}->output_add(long_msg =>
+            sprintf(
+                "[time: %s] [query: %s]",
+                $queries[$i]->{time}, 
+                defined($queries[$i]->{query}) ? substr($queries[$i]->{query}, 0, 1024) : '-'
+            )
+        );
     }
 
     $self->{output}->display();
@@ -122,9 +131,9 @@ Threshold warning (number of long queries).
 
 Threshold critical (number of long queries).
 
-=item B<--critical>
+=item B<--seconds>
 
-Threshold critical (number of long queries).
+The minimum execution time in seconds for a long query (Default: 60).
 
 =item B<--filter-user>
 

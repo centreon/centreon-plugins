@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -114,8 +114,12 @@ sub check {
         }
 
         if (defined($result->{cpqHeFltTolFanCurrentSpeed})) {
-            $self->{output}->perfdata_add(label => "fan_speed_" . $instance, unit => 'rpm',
-                                          value => $result->{cpqHeFltTolFanCurrentSpeed});
+            $self->{output}->perfdata_add(
+                label => 'fan_speed', unit => 'rpm',
+                nlabel => 'hardware.fan.speed.rpm',
+                instances => $instance,
+                value => $result->{cpqHeFltTolFanCurrentSpeed}
+            );
         }
     }
 }

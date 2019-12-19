@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'client-connections'   => 'network::bluecoat::snmp::mode::clientconnections',
-                         'client-requests'      => 'network::bluecoat::snmp::mode::clientrequests',
-                         'client-traffic'       => 'network::bluecoat::snmp::mode::clienttraffic',
-                         'cpu'                  => 'network::bluecoat::snmp::mode::cpu',
-                         'disk'                 => 'network::bluecoat::snmp::mode::disk',
-                         'hardware'             => 'network::bluecoat::snmp::mode::hardware',
-                         'memory'               => 'network::bluecoat::snmp::mode::memory',
-                         'server-connections'   => 'network::bluecoat::snmp::mode::serverconnections',
-                         );
+        'client-connections'   => 'network::bluecoat::snmp::mode::clientconnections',
+        'client-requests'      => 'network::bluecoat::snmp::mode::clientrequests',
+        'client-traffic'       => 'network::bluecoat::snmp::mode::clienttraffic',
+        'cpu'                  => 'network::bluecoat::snmp::mode::cpu',
+        'disk'                 => 'network::bluecoat::snmp::mode::disk',
+        'hardware'             => 'network::bluecoat::snmp::mode::hardware',
+        'memory'               => 'network::bluecoat::snmp::mode::memory',
+        'server-connections'   => 'network::bluecoat::snmp::mode::serverconnections',
+    );
 
     return $self;
 }

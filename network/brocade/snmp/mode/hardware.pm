@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -60,10 +60,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_load_components => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
 
     return $self;
 }
@@ -131,7 +129,7 @@ use centreon::plugins::misc;
 
 my %map_status = (1 => 'unknown', 2 => 'faulty', 3 => 'below-min', 4 => 'nominal', 5 => 'above-max', 6 => 'absent');
 my %map_type = (1 => 'temperature', 2 => 'fan', 3 => 'power-supply');
-my %map_unit = (temperature => 'C', fan => 'rpm'); # No voltage value available
+my %map_unit = (temperature => 'celsius', fan => 'rpm'); # No voltage value available
 
 my $mapping = {
     swSensorType    => { oid => '.1.3.6.1.4.1.1588.2.1.1.1.1.22.1.2', map => \%map_type },
@@ -180,11 +178,14 @@ sub check {
                                             short_msg => sprintf("%s sensor '%s' is %s %s", $result->{swSensorType}, $result->{swSensorInfo}, $result->{swSensorValue},
                                                                  $map_unit{$result->{swSensorType}}));
             }
-            $self->{output}->perfdata_add(label => $result->{swSensorInfo}, unit => $map_unit{$result->{swSensorType}}, 
-                                          value => $result->{swSensorValue},
-                                          warning => $warn,
-                                          critical => $crit
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'sensor', unit => $map_unit{$result->{swSensorType}},
+                nlabel => 'hardware.sensor.' . $result->{swSensorType} . '.' . $map_unit{$result->{swSensorType}},
+                instances => $result->{swSensorInfo},
+                value => $result->{swSensorValue},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

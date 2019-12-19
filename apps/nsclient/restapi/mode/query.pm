@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,29 +33,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.1';
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"       => { name => 'hostname' },
-         "http-peer-addr:s" => { name => 'http_peer_addr' },
-         "port:s"           => { name => 'port', default => 8443 },
-         "proto:s"          => { name => 'proto', default => 'https' },
+    $options{options}->add_options(arguments => {
+         "hostname:s"           => { name => 'hostname' },
+         "port:s"               => { name => 'port', default => 8443 },
+         "proto:s"              => { name => 'proto', default => 'https' },
          "credentials"          => { name => 'credentials' },
+         "basic"                => { name => 'basic' },
          "username:s"           => { name => 'username' },
          "password:s"           => { name => 'password' },
          "legacy-password:s"    => { name => 'legacy_password' },
-         "proxyurl:s"           => { name => 'proxyurl' },
-         "proxypac:s"           => { name => 'proxypac' },
          "timeout:s"            => { name => 'timeout' },
-         "ssl:s"		        => { name => 'ssl' },
          "command:s"            => { name => 'command' },
          "arg:s@"               => { name => 'arg' },
          "unknown-status:s"     => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
          "warning-status:s"     => { name => 'warning_status' },
          "critical-status:s"    => { name => 'critical_status', default => '' },
-         });
+    });
     
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -109,8 +104,8 @@ sub nscp_output_perf {
                                       value => sprintf($printf_format, $perf->{value}),
                                       warning => defined($perf->{warning}) ? sprintf($printf_format, $perf->{warning}) : undef,
                                       critical => defined($perf->{critical}) ? sprintf($printf_format, $perf->{critical}) : undef,
-                                      min => sprintf($printf_format, $perf->{minimum}),
-                                      max => sprintf($printf_format, $perf->{maximum}),
+                                      min => defined($perf->{minimum}) ? sprintf($printf_format, $perf->{minimum}) : undef,
+                                      max => defined($perf->{maximum}) ? sprintf($printf_format, $perf->{maximum}) : undef,
                                       );
     }
 }
@@ -158,6 +153,7 @@ sub run {
     }
     
     my ($content) = $self->{http}->request(url_path => '/query/' . $self->{option_results}->{command} . '?' . $encoded_args);
+    $self->{output}->output_add(long_msg => "nsclient return = " . $content, debug => 1);
     $self->check_nscp_result(content => $content);
                                   
     $self->{output}->exit();
@@ -177,10 +173,6 @@ Query NSClient Rest API.
 
 IP Addr/FQDN of the host
 
-=item B<--http-peer-addr>
-
-Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
-
 =item B<--port>
 
 Port used (Default: 8443)
@@ -191,35 +183,31 @@ Specify https if needed (Default: 'https')
 
 =item B<--credentials>
 
-Specify this option if you access webpage over basic authentification
+Specify this option if you access webpage with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access webpage over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access webpage over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--legacy-password>
 
 Specify password for old authentification system.
 
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
-
-=item B<--ssl>
-
-Specify SSL version (example : 'sslv3', 'tlsv1'...)
 
 =item B<--command>
 

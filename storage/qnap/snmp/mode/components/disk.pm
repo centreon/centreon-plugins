@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -89,9 +89,12 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Disk '%s' temperature is %s degree centigrade", $result->{HdDescr}, $disk_temp));
             }
-            $self->{output}->perfdata_add(label => 'temp_disk_' . $instance, unit => 'C',
-                                          value => $disk_temp
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temp_disk', unit => 'C',
+                nlabel => 'hardware.disk.temperature.celsius',
+                instances => $instance,
+                value => $disk_temp
+            );
         }
     }
 }

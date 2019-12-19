@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,279 +20,138 @@
 
 package hardware::ups::mge::snmp::mode::outputlines;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my $maps_counters = {
-    voltage => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'voltage', no_value => 0 },
-                                      ],
-                        output_template => 'Voltage: %.2f V', output_error_template => 'Voltage: %s',
-                        perfdatas => [
-                            { value => 'voltage_absolute', label => 'voltage', template => '%.2f',
-                              unit => 'V', min => 0, label_extra_instance => 1 },
-                        ],
-                    }
-               },
-    current => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'current', no_value => 0 },
-                                      ],
-                        output_template => 'Current: %.2f A', output_error_template => 'Current: %s',
-                        perfdatas => [
-                            { value => 'current_absolute', label => 'current', template => '%.2f',
-                              unit => 'A', min => 0, label_extra_instance => 1 },
-                        ],
-                    }
-               },
-    frequence => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'frequence', no_value => 0 },
-                                      ],
-                        output_template => 'Frequence: %.2f Hz', output_error_template => 'Frequence: %s',
-                        perfdatas => [
-                            { value => 'frequence_absolute', label => 'frequence', template => '%.2f',
-                              unit => 'Hz', min => 0 },
-                        ],
-                    }
-               },
-    load => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'load', no_value => -1 },
-                                      ],
-                        output_template => 'Load: %.2f %%', output_error_template => 'Load: %s',
-                        perfdatas => [
-                            { value => 'load_absolute', label => 'load', template => '%.2f',
-                              unit => '%', min => 0 },
-                        ],
-                    }
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'oline', type => 1, cb_prefix_output => 'prefix_oline_output', message_multiple => 'All output lines are ok', skipped_code => { -10 => 1 } },
+    ];
 
-my $maps_counters2 = {
-    'stdev-3phases' => { class => 'centreon::plugins::values', obj => undef,
-                    set => {
-                        key_values => [
-                                        { name => 'stdev' },
-                                      ],
-                        output_template => 'Load Standard Deviation : %.2f', output_error_template => 'Load Standard Deviation : %s',
-                        perfdatas => [
-                            { value => 'stdev_absolute', label => 'stdev', template => '%.2f',
-                              min => 0 },
-                        ],
-                    }
-               },
-};
+    $self->{maps_counters}->{global} = [
+        { label => 'stdev-3phases', nlabel => 'output.3phases.stdev.gauge', set => {
+                key_values => [ { name => 'stdev' } ],
+                output_template => 'Load Standard Deviation : %.2f',
+                perfdatas => [
+                    { label => 'stdev', value => 'stdev_absolute', template => '%.2f' },
+                ],
+            }
+        },
+    ];
 
-my $oid_upsmgOutputPhaseNumEntry = '.1.3.6.1.4.1.705.1.7.1'; 
-my $oid_mgoutputVoltageEntry = '.1.3.6.1.4.1.705.1.7.2.1.2'; # in dV
-my $oid_mgoutputFrequencyEntry = '.1.3.6.1.4.1.705.1.7.2.1.3'; # in dHz
-my $oid_mgoutputCurrentEntry = '.1.3.6.1.4.1.705.1.7.2.1.5'; # in dA
-my $oid_mgoutputLoadPerPhaseEntry = '.1.3.6.1.4.1.705.1.7.2.1.4'; # in %
+    $self->{maps_counters}->{oline} = [
+        { label => 'load', nlabel => 'line.output.load.percentage', set => {
+                key_values => [ { name => 'mgoutputLoadPerPhase', no_value => 0 } ],
+                output_template => 'Load : %.2f %%',
+                perfdatas => [
+                    { value => 'mgoutputLoadPerPhase_absolute', template => '%.2f', 
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'current', nlabel => 'line.output.current.ampere', set => {
+                key_values => [ { name => 'mgoutputCurrent', no_value => 0 } ],
+                output_template => 'Current : %.2f A',
+                perfdatas => [
+                    { value => 'mgoutputCurrent_absolute', template => '%.2f', 
+                      min => 0, unit => 'A', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
+                key_values => [ { name => 'mgoutputVoltage', no_value => 0 } ],
+                output_template => 'Voltage : %.2f V',
+                perfdatas => [
+                    { value => 'mgoutputVoltage_absolute', template => '%.2f', 
+                      unit => 'V', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'frequence', nlabel => 'line.output.frequence.hertz', set => {
+                key_values => [ { name => 'mgoutputFrequency', no_value => -1 } ],
+                output_template => 'Frequence : %.2f Hz',
+                perfdatas => [
+                    { value => 'mgoutputFrequency_absolute', template => '%.2f', 
+                      unit => 'Hz', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
-    $self->{instance_selected} = {};
-     
-    foreach (keys %{$maps_counters}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    foreach (keys %{$maps_counters2}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters2->{$_}->{class};
-        $maps_counters2->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters2->{$_}->{obj}->set(%{$maps_counters2->{$_}->{set}});
-    }
-    
     return $self;
 }
 
-sub check_options {
+sub prefix_oline_output {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-    foreach (keys %{$maps_counters2}) {
-        $maps_counters2->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
+
+    return "Output Line '" . $options{instance_value}->{display} . "' ";
 }
 
-sub manage_counters {
+sub stdev {
     my ($self, %options) = @_;
     
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$options{maps_counters}}) {
-        $options{maps_counters}->{$_}->{obj}->set(instance => $options{instance});
-    
-        my ($value_check) = $options{maps_counters}->{$_}->{obj}->execute(values => $self->{instance_selected}->{$options{instance}});
-
-        # We don't want to display no value
-        next if ($value_check == -10);
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $options{maps_counters}->{$_}->{obj}->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $options{maps_counters}->{$_}->{obj}->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $options{maps_counters}->{$_}->{obj}->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $options{maps_counters}->{$_}->{obj}->perfdata(extra_instance => $self->{multiple});
-    }
-
-    $self->{output}->output_add(long_msg => $options{label} . " " . $long_msg);
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => $options{label} . " " . $short_msg
-                                    );
+    # Calculate stdev
+    my $total = 0;
+    my $num_present = scalar(keys %{$self->{oline}});
+    foreach my $instance (keys %{$self->{oline}}) {
+        next if (!defined($self->{oline}->{$instance}->{mgoutputLoadPerPhase}));
+        $total += $self->{oline}->{$instance}->{mgoutputLoadPerPhase};
     }
     
-    if ($self->{multiple} == 0) {
-        $self->{output}->output_add(short_msg => $options{label} . " " . $long_msg);
+    my $mean = $total / $num_present;
+    $total = 0;
+    foreach my $instance (keys %{$self->{oline}}) {
+        next if (!defined($self->{oline}->{$instance}->{mgoutputLoadPerPhase}));
+        $total += ($mean - $self->{oline}->{$instance}->{mgoutputLoadPerPhase}) ** 2; 
     }
+    my $stdev = sqrt($total / $num_present);
+    $self->{global} = { stdev => $stdev };
 }
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    $self->{multiple} = 1;
-    if (scalar(keys %{$self->{instance_selected}}) == 1) {
-        $self->{multiple} = 0;
-    }
-    
-    if ($self->{multiple} == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'Output Lines are ok.');
-    }
-    
-    foreach my $id (sort keys %{$self->{instance_selected}}) {     
-        $self->manage_counters(instance => $id, maps_counters => $maps_counters, label => "Output Line '" . $id . "'");
-    }
-    
-    if ($self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'} > 1) {
-        $self->{instance_selected}->{lines} = { stdev => $self->{stdev} };
-        $self->manage_counters(instance => 'lines', maps_counters => $maps_counters2, label => "Output Lines");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub add_result {
-    my ($self, %options) = @_;
-    
-    $self->{instance_selected}->{$options{instance}} = {} if (!defined($self->{instance_selected}->{$options{instance}}));
-    $self->{instance_selected}->{$options{instance}}->{$options{name}} = $self->{results}->{$options{oid}}->{$options{oid} . '.' . $options{instance2}} * $options{multiple};
-}
+my $mapping = {
+    mgoutputVoltage         => { oid => '.1.3.6.1.4.1.705.1.7.2.1.2' }, # in dV
+    mgoutputFrequency       => { oid => '.1.3.6.1.4.1.705.1.7.2.1.3' }, # in dHz
+    mgoutputLoadPerPhase    => { oid => '.1.3.6.1.4.1.705.1.7.2.1.4' }, # in %
+    mgoutputCurrent         => { oid => '.1.3.6.1.4.1.705.1.7.2.1.5' }, # in dA
+};
+my $oid_upsmgOutputPhaseEntry = '.1.3.6.1.4.1.705.1.7.2.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_upsmgOutputPhaseNumEntry },
-                                                            { oid => $oid_mgoutputVoltageEntry },
-                                                            { oid => $oid_mgoutputFrequencyEntry },
-                                                            { oid => $oid_mgoutputCurrentEntry },
-                                                            { oid => $oid_mgoutputLoadPerPhaseEntry },
-                                                         ],
-                                                         , nothing_quit => 1);
 
-    if (!defined($self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) || 
-        $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'} == 0) {
-        $self->{output}->add_option_msg(short_msg => "No output lines found.");
-        $self->{output}->option_exit();
-    }
+    $self->{oline} = {};
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_upsmgOutputPhaseEntry,
+        nothing_quit => 1
+    );
+    foreach my $oid (keys %{$snmp_result}) {
+        $oid =~ /^$oid_upsmgOutputPhaseEntry\.\d+\.(.*)$/;
+        my $instance = $1;
+        next if (defined($self->{oline}->{$instance}));
         
-    my %instances = ();
-    # can be 'xxx.1' or 'xxx.1.0' (cannot respect MIB :)
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputVoltageEntry}})) {
-        $oid =~ /^$oid_mgoutputVoltageEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'voltage', oid => $oid_mgoutputVoltageEntry, multiple => 0.1);
-        }
-    }
-    %instances = ();
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputCurrentEntry}})) {
-        $oid =~ /^$oid_mgoutputCurrentEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'current', oid => $oid_mgoutputCurrentEntry, multiple => 0.1);
-        }
-    }
-    %instances = ();
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputFrequencyEntry}})) {
-        $oid =~ /^$oid_mgoutputFrequencyEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'frequence', oid => $oid_mgoutputFrequencyEntry, multiple => 0.1);
-        }
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{mgoutputVoltage} *= 0.1 if (defined($result->{mgoutputVoltage}));
+        $result->{mgoutputFrequency} *= 0.1 if (defined($result->{mgoutputFrequency}));
+        $result->{mgoutputCurrent} *= 0.1 if (defined($result->{mgoutputCurrent}));
+        $self->{oline}->{$instance} = { display => $instance, %$result };
     }
     
-    %instances = ();    
-    # Calculate stdev
-    my $total = 0;
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mgoutputLoadPerPhaseEntry}})) {
-        $oid =~ /^$oid_mgoutputLoadPerPhaseEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'}) {
-            $instances{$2} = $self->{results}->{$oid_mgoutputLoadPerPhaseEntry}->{$oid};
-            $self->add_result(instance => $2, instance2 => $1, name => 'load', oid => $oid_mgoutputLoadPerPhaseEntry, multiple => 1);
-            $total += $self->{results}->{$oid_mgoutputLoadPerPhaseEntry}->{$oid};
-        }
-    }
-    
-    my $mean = $total / $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'};
-    $total = 0;
-    foreach (keys %instances) {
-        $total += ($mean - $instances{$_}) ** 2; 
-    }
-    $self->{stdev} = sqrt($total / $self->{results}->{$oid_upsmgOutputPhaseNumEntry}->{$oid_upsmgOutputPhaseNumEntry . '.0'});
-    
-    if (scalar(keys %{$self->{instance_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No output lines found.");
-        $self->{output}->option_exit();
+    if (scalar(keys %{$self->{oline}}) > 1) {
+        $self->stdev();
     }
 }
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,8 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -76,36 +74,34 @@ sub set_counters {
 
 sub custom_qos_perfdata {
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
+
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
     
-    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    $self->{output}->perfdata_add(
+        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
 }
 
 sub custom_qos_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -135,9 +131,9 @@ sub custom_qos_calc {
     if ($options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}} > 0) {
         $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $self->{result_values}->{label}} * 1000 * 1000;
         $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / $self->{result_values}->{speed};
-    } elsif (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
-        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
-        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    } elsif (defined($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
     return 0;
 }
@@ -147,26 +143,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "filter-vlan:s"       => { name => 'filter_vlan' },
-                                  "speed-in:s"          => { name => 'speed_in' },
-                                  "speed-out:s"         => { name => 'speed_out' },
-                                  "units-traffic:s"     => { name => 'units_traffic', default => '%' },
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'tail' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-1 /log/l_monitor' },
-                                  "config-speed-file:s" => { name => 'config_speed_file' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"       => { name => 'filter_name' },
+        "filter-vlan:s"       => { name => 'filter_vlan' },
+        "speed-in:s"          => { name => 'speed_in' },
+        "speed-out:s"         => { name => 'speed_out' },
+        "units-traffic:s"     => { name => 'units_traffic', default => '%' },
+        "hostname:s"          => { name => 'hostname' },
+        "ssh-option:s@"       => { name => 'ssh_option' },
+        "ssh-path:s"          => { name => 'ssh_path' },
+        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"           => { name => 'timeout', default => 30 },
+        "sudo"                => { name => 'sudo' },
+        "command:s"           => { name => 'command', default => 'tail' },
+        "command-path:s"      => { name => 'command_path' },
+        "command-options:s"   => { name => 'command_options', default => '-1 /log/l_monitor' },
+        "config-speed-file:s" => { name => 'config_speed_file' },
+    });
+
     return $self;
 }
 
@@ -180,9 +174,7 @@ sub check_options {
     $self->{hostname} = $self->{option_results}->{hostname};
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
-    }
-    
-    $instance_mode = $self;
+    }    
 }
 
 sub prefix_qos_output {

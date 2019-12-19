@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,8 +29,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'environment' => 'hardware::sensors::temperhum::local::mode::environment',
-                         );
+        'environment' => 'hardware::sensors::temperhum::local::mode::environment',
+    );
+
     return $self;}
 1;
 

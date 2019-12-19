@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'channel-usage'    => 'apps::voip::asterisk::ami::mode::channelusage',
-                         'dahdi-status'     => 'apps::voip::asterisk::ami::mode::dahdistatus',
-                         'sip-peers-usage'  => 'apps::voip::asterisk::ami::mode::sippeersusage',
-                         );
+        'channel-usage'    => 'apps::voip::asterisk::ami::mode::channelusage',
+        'dahdi-status'     => 'apps::voip::asterisk::ami::mode::dahdistatus',
+        'sip-peers-usage'  => 'apps::voip::asterisk::ami::mode::sippeersusage',
+    );
 
     $self->{custom_modes}{api} = 'apps::voip::asterisk::ami::custom::api';
     return $self;

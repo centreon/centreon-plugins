@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,12 +23,6 @@ package storage::hp::p2000::xmlapi::mode::components::vdisk;
 use strict;
 use warnings;
 
-my @conditions = (
-    ['^degraded$' => 'WARNING'],
-    ['^failed$' => 'CRITICAL'],
-    ['^(unknown|not available)$' => 'UNKNOWN'],
-);
-
 my %health = (
     0 => 'ok',
     1 => 'degraded',
@@ -37,36 +31,51 @@ my %health = (
     4 => 'not available',
 );
 
+sub check_vdisk {
+    my ($self, %options) = @_;
+
+    foreach my $vdisk_id (keys %{$options{results}}) {
+        next if ($self->check_filter(section => 'vdisk', instance => $vdisk_id));
+        $self->{components}->{vdisk}->{total}++;
+        
+        my $state = $health{$options{results}->{$vdisk_id}->{'health-numeric'}};
+        
+        $self->{output}->output_add(long_msg => sprintf("vdisk '%s' status is %s [instance: %s]",
+                                                        $vdisk_id, $state, $vdisk_id)
+                                    );
+        my $exit = $self->get_severity(label => 'default', section => 'vdisk', value => $state);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("Vdisk '%s' status is '%s'", $vdisk_id, $state));
+        }
+    }
+}
+
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking vdisks");
-    $self->{components}->{vdisk} = {name => 'vdisks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'vdisk'));
+    $self->{components}->{vdisk} = { name => 'vdisks', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'vdisk'));
     
-    my $results = $self->{p2000}->get_infos(cmd => 'show vdisks', 
-                                            base_type => 'virtual-disks',
-                                            key => 'name', 
-                                            properties_name => '^health-numeric$');
-    
-    foreach my $vdisk_id (keys %$results) {
-        next if ($self->check_exclude(section => 'vdisk', instance => $vdisk_id));
-        $self->{components}->{vdisk}->{total}++;
-        
-        my $state = $health{$results->{$vdisk_id}->{'health-numeric'}};
-        
-        $self->{output}->output_add(long_msg => sprintf("vdisk '%s' status is %s.",
-                                                        $vdisk_id, $state)
-                                    );
-        foreach (@conditions) {
-            if ($state =~ /$$_[0]/i) {
-                $self->{output}->output_add(severity =>  $$_[1],
-                                            short_msg => sprintf("vdisk '%s' status is %s",
-                                                        $vdisk_id, $state));
-                last;
-            }
-        }
+    my ($results, $code) = $self->{custom}->get_infos(
+        cmd => 'show vdisks', 
+        base_type => 'virtual-disks',
+        key => 'name', 
+        properties_name => '^health-numeric$',
+        no_quit => 1,
+    );
+    if ($code == 0) {
+        ($results) = $self->{custom}->get_infos(
+            cmd => 'show disk-groups', 
+            base_type => 'disk-groups',
+            key => 'name', 
+            properties_name => '^health-numeric$',
+            no_quit => 1,
+        );
     }
+
+    check_vdisk($self, results => $results);
 }
 
 1;

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,32 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -72,23 +47,25 @@ sub custom_usage_perfdata {
 
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
-    if (defined($instance_mode->{option_results}->{free})) {
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
         $label = 'free';
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+
     my %total_options = ();
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -96,12 +73,12 @@ sub custom_usage_threshold {
 
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($instance_mode->{option_results}->{free}));
-    if ($instance_mode->{option_results}->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($instance_mode->{option_results}->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -136,7 +113,20 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'tape', type => 1, cb_prefix_output => 'prefix_tape_output', message_multiple => 'All tapes are ok' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'count', set => {
+                key_values => [ { name => 'count' } ],
+                output_template => 'Number of tapes : %s',
+                perfdatas => [
+                    { label => 'count', value => 'count_absolute', template => '%s', 
+                      unit => 'tapes', min => 0 },
+                ],
+            }
+        },
     ];
     
     $self->{maps_counters}->{tape} = [
@@ -145,7 +135,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'usage', set => {
@@ -164,26 +154,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'vcconfig' },
-                                  "command-path:s"    => { name => 'command_path', default => '/quadstorvtl/bin' },
-                                  "command-options:s" => { name => 'command_options', default => '-l -v %{vtl_name}' },
-                                  "vtl-name:s"        => { name => 'vtl_name' },
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                  "warning-status:s"  => { name => 'warning_status', default => '' },
-                                  "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /active/i' },
-                                  "units:s"           => { name => 'units', default => '%' },
-                                  "free"              => { name => 'free' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'vcconfig' },
+        'command-path:s'    => { name => 'command_path', default => '/quadstorvtl/bin' },
+        'command-options:s' => { name => 'command_options', default => '-l -v %{vtl_name}' },
+        'vtl-name:s'        => { name => 'vtl_name' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /active/i' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' },
+    });
     
     return $self;
 }
@@ -198,9 +186,7 @@ sub check_options {
     }
 
     $self->{option_results}->{command_options} =~ s/%\{vtl_name\}/$self->{option_results}->{vtl_name}/;
-
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub prefix_tape_output {
@@ -209,25 +195,19 @@ sub prefix_tape_output {
     return "Tape '" . $options{instance_value}->{display} . "' ";
 }
 
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    sudo => $self->{option_results}->{sudo},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
+    $self->{global}->{count} = 0;
     $self->{tape} = {};
     #Pool    Label    Element Address Vtype       WORM Size  Used% Status
     #Default 701862L2 Unknown 0       LTO 2 200GB No   200   99    Vaulted
@@ -257,6 +237,7 @@ sub manage_selection {
             used_prct => $used_prct,
             status => $status,
         };
+        $self->{global}->{count}++;
     }
 
     if (scalar(keys %{$self->{tape}}) == 0) {
@@ -345,12 +326,12 @@ Can used special variables like: %{status}, %{display}
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'usage'.
+Can be: 'count', 'usage'.
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'usage'.
+Can be: 'count', 'usage'.
 
 =back
 

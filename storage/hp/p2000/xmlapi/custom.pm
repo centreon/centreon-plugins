@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,10 +30,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
 
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
@@ -45,19 +41,22 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "hostname:s@"      => { name => 'hostname', },
-                      "port:s@"          => { name => 'port', },
-                      "proto:s@"         => { name => 'proto', },
-                      "urlpath:s@"       => { name => 'url_path', },
-                      "proxyurl:s@"      => { name => 'proxyurl', },
-                      "username:s@"      => { name => 'username', },
-                      "password:s@"      => { name => 'password', },
-                      "timeout:s@"       => { name => 'timeout', },
-                    });
+        $options{options}->add_options(arguments => {
+            'hostname:s@'      => { name => 'hostname' },
+            'port:s@'          => { name => 'port' },
+            'proto:s@'         => { name => 'proto' },
+            'urlpath:s@'       => { name => 'url_path' },
+            'username:s@'      => { name => 'username' },
+            'password:s@'      => { name => 'password' },
+            'timeout:s@'       => { name => 'timeout' },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'P2000 OPTIONS', once => 1);
+
+    $self->{http} = centreon::plugins::http->new(%options);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
@@ -68,20 +67,15 @@ sub new {
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
         if ($_ eq $self->{mode}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
@@ -97,8 +91,6 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still hostname
-    # return 0 = no hostname left
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
@@ -107,10 +99,12 @@ sub check_options {
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? shift(@{$self->{option_results}->{proto}}) : 'http';
     $self->{url_path} = (defined($self->{option_results}->{url_path})) ? shift(@{$self->{option_results}->{url_path}}) : '/api/';
-    $self->{proxyurl} = (defined($self->{option_results}->{proxyurl})) ? shift(@{$self->{option_results}->{proxyurl}}) : undef;
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
         
     if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
     if (!defined($self->{username}) || !defined($self->{password})) {
@@ -133,7 +127,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{url_path} = $self->{url_path};
-    $self->{option_results}->{proxyurl} = $self->{proxyurl};
 }
 
 sub check_login {
@@ -177,27 +170,48 @@ sub DESTROY {
     my $self = shift;
     
     if ($self->{logon} == 1) {
-        $self->{http}->request(url_path => $self->{url_path} . 'exit',
-                               header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
-                                          'dataType: api', 'sessionKey: '. $self->{session_id}]);
+        $self->{http}->request(
+            url_path => $self->{url_path} . 'exit',
+            header => [
+                'Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+                'dataType: api', 'sessionKey: '. $self->{session_id}
+            ],
+            unknown_status => $self->{unknown_http_status},
+            warning_status => $self->{warning_http_status},
+            critical_status => $self->{critical_http_status},
+        );
     }
 }
 
 sub get_infos {
     my ($self, %options) = @_;
     my ($xpath, $nodeset);
-    
+
+    $self->login();
     my $cmd = $options{cmd};
     $cmd =~ s/ /\//g;
-    my $response =$self->{http}->request(url_path => $self->{url_path} . $cmd, 
-                                         header => ['Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
-                                                    'dataType: api', 'sessionKey: '. $self->{session_id}]);
     
+    my ($unknown_status, $warning_status, $critical_status) = ($self->{unknown_http_status}, $self->{warning_http_status}, $self->{critical_http_status});
+    if (defined($options{no_quit}) && $options{no_quit} == 1) {
+        ($unknown_status, $warning_status, $critical_status) = ('', '', '');
+    }
+    my $response = $self->{http}->request(
+        url_path => $self->{url_path} . $cmd, 
+        header => [
+            'Cookie: wbisessionkey=' . $self->{session_id} . '; wbiusername=' . $self->{username},
+            'dataType: api', 'sessionKey: '. $self->{session_id}
+        ],
+        unknown_status => $unknown_status,
+        warning_status => $warning_status,
+        critical_status => $critical_status,
+    );
+
     eval {
         $xpath = XML::XPath->new(xml => $response);
         $nodeset = $xpath->find("//OBJECT[\@basetype='" . $options{base_type} . "']");
     };
     if ($@) {
+        return ({}, 0) if (defined($options{no_quit}) && $options{no_quit} == 1);
         $self->{output}->add_option_msg(short_msg => "Cannot parse 'cmd' response: $@");
         $self->{output}->option_exit();
     }
@@ -217,7 +231,8 @@ sub get_infos {
         if ($return_code != 0) {
             $nodestatus = $xpath->find("//OBJECT[\@basetype='status']//PROPERTY[\@name='response']");
             @nodes = $nodestatus->get_nodelist();
-            $node = shift @nodes;   
+            $node = shift @nodes;
+            return ({}, 0, $node->string_value) if (defined($options{no_quit}) && $options{no_quit} == 1);
             $self->{output}->add_option_msg(short_msg => $node->string_value);
             $self->{output}->option_exit();
         }
@@ -241,7 +256,7 @@ sub get_infos {
         }
     }
     
-    return $results;
+    return ($results, 1);
 }
 
 ##############
@@ -249,14 +264,20 @@ sub get_infos {
 ##############
 sub login {
     my ($self, %options) = @_;
-    
+
+    return if ($self->{logon} == 1);
+
     $self->build_options_for_httplib();
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
     $self->{http}->set_options(%{$self->{option_results}});
     
     # Login First
     my $md5_hash = md5_hex($self->{username} . '_' . $self->{password});
-    my $response = $self->{http}->request(url_path => $self->{url_path} . 'login/' . $md5_hash);
+    my $response = $self->{http}->request(
+        url_path => $self->{url_path} . 'login/' . $md5_hash,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status},
+    );
     $self->check_login(content => $response);
 }
 
@@ -283,10 +304,6 @@ HP p2000 Hostname.
 =item B<--port>
 
 Port used
-
-=item B<--proxyurl>
-
-Proxy URL if any
 
 =item B<--proto>
 

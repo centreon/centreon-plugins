@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,16 +24,12 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 
-my %conditions = (
-    1 => ['^(?!(ok)$)' => 'CRITICAL'],
-);
-
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking supply voltages");
     $self->{components}->{voltage} = {name => 'voltages', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'voltage'));
+    return if ($self->check_filter(section => 'voltage'));
     
     #Supply voltages:
     #1               5V status=ok
@@ -48,19 +44,20 @@ sub check {
         next if ($line !~ /^\s*(\S+).*?status=(.*)/);
         my ($instance, $status) = ($1, $2);
         
-        next if ($self->check_exclude(section => 'voltage', instance => $instance));
+        next if ($self->check_filter(section => 'voltage', instance => $instance));
         $self->{components}->{voltage}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Supply voltage '%s' status is %s.",
-                                                        $instance, $status)
-                                    );
-        foreach (keys %conditions) {
-            if ($status =~ /${$conditions{$_}}[0]/i) {
-                $self->{output}->output_add(severity => ${$conditions{$_}}[1],
-                                            short_msg => sprintf("Supply voltage '%s' status is %s",
-                                                                 $instance, $status));
-                last;
-            }
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Supply voltage '%s' status is %s.",
+                $instance, $status
+            )
+        );
+        my $exit = $self->get_severity(label => 'default', section => 'voltage', value => $status);
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(severity => $exit,
+                                        short_msg => sprintf("supply voltage '%s' status is %s",
+                                                             $instance, $status));
         }
     }
 }

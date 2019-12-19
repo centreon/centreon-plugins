@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -129,9 +129,13 @@ sub custom_metric_threshold {
     my $label_warn = ($self->{result_values}->{type} eq 'unique') ? 'warning-metric' : 'warning-global-'.$self->{result_values}->{instance};
     my $label_crit = ($self->{result_values}->{type} eq 'unique') ? 'critical-metric' : 'critical-global-'.$self->{result_values}->{instance};
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{perfdata_value},
-                                                  threshold => [ { label => $label_crit, exit_litteral => 'critical' },
-                                                                 { label => $label_warn, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{perfdata_value},
+        threshold => [
+            { label => $label_crit, exit_litteral => 'critical' },
+            { label => $label_warn, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -169,12 +173,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "config-file:s"       => { name => 'config_file' },
-                                  "json-data:s"         => { name => 'json_data' },
-                                });
+    $options{options}->add_options(arguments => {
+        'config-file:s' => { name => 'config_file' },
+        'json-data:s'   => { name => 'json_data' },
+        'database:s'    => { name => 'database' },
+    });
+
     return $self;
 }
 
@@ -206,6 +210,10 @@ sub check_options {
     $config_data->{formatting}->{custom_message_metric} = "All metrics are OK" if (!exists($config_data->{formatting}->{custom_message_metric}));
     $config_data->{formatting}->{cannonical_separator} = "#" if (!exists($config_data->{formatting}->{cannonical_separator}));
     $config_data->{formatting}->{change_bytes} = 0 if (!exists($config_data->{formatting}->{change_bytes}));
+
+    $self->{option_results}->{database} = 
+        (defined($self->{option_results}->{database}) && $self->{option_results}->{database} ne '') ?
+            $self->{option_results}->{database} . '.' : 'centreon_storage.';
 }
 
 sub parse_json_config {
@@ -235,7 +243,6 @@ sub parse_json_config {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
     $self->{sql} = $options{sql};
     $self->{sql}->connect();
     $self->{metrics} = {};
@@ -254,7 +261,7 @@ sub manage_selection {
         };
         foreach my $id (keys %{$config_data->{selection}}) {
             my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
-            $query .= "FROM centreon_storage.index_data, centreon_storage.metrics WHERE index_data.id = metrics.index_id ";
+            $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics WHERE index_data.id = metrics.index_id ";
             $query .= "AND index_data.service_description = '" . $config_data->{selection}->{$id}->{service_name} . "'";
             $query .= "AND index_data.host_name = '" . $config_data->{selection}->{$id}->{host_name} . "'" ;
             $query .= "AND metrics.metric_name = '" . $config_data->{selection}->{$id}->{metric_name} . "'";
@@ -275,10 +282,11 @@ sub manage_selection {
             name => 'metric', type => 1, message_separator => $config_data->{formatting}->{message_separator}, message_multiple => $config_data->{formatting}->{custom_message_metric},
         };
         my $query = "SELECT index_data.host_name, index_data.service_description, metrics.metric_name, metrics.current_value, metrics.unit_name, metrics.min, metrics.max ";
-        $query .= "FROM centreon_storage.index_data, centreon_storage.metrics WHERE index_data.id = metrics.index_id ";
-        $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "'" if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
-        $query .= "AND index_data.host_name LIKE '" . $config_data->{filters}->{host} . "'" if (defined($config_data->{filters}->{host}) && ($config_data->{filters}->{host} ne ''));
-        $query .= "AND metrics.metric_name LIKE '" . $config_data->{filters}->{metric} . "'" if (defined($config_data->{filters}->{metric}) && ($config_data->{filters}->{metric} ne ''));
+        $query .= "FROM $self->{option_results}->{database}index_data, $self->{option_results}->{database}metrics, $self->{option_results}->{database}services WHERE index_data.id = metrics.index_id AND services.service_id = index_data.service_id AND services.host_id = index_data.host_id ";
+        $query .= "AND index_data.service_description LIKE '" . $config_data->{filters}->{service} . "' " if (defined($config_data->{filters}->{service}) && ($config_data->{filters}->{service} ne ''));
+        $query .= "AND index_data.host_name LIKE '" . $config_data->{filters}->{host} . "' " if (defined($config_data->{filters}->{host}) && ($config_data->{filters}->{host} ne ''));
+        $query .= "AND metrics.metric_name LIKE '" . $config_data->{filters}->{metric} . "' " if (defined($config_data->{filters}->{metric}) && ($config_data->{filters}->{metric} ne ''));
+        $query .= "AND services.enabled = '1'";
         $self->{sql}->query(query => $query);
         while ((my $row = $self->{sql}->fetchrow_hashref())) {
             my $metric_key = $row->{host_name}.$config_data->{formatting}->{cannonical_separator}.$row->{service_description}.$config_data->{formatting}->{cannonical_separator}.$row->{metric_name};
@@ -303,14 +311,18 @@ sub manage_selection {
 
             next if (scalar(@{$self->{vmetrics}->{$vcurve}->{values}}) == 0);
 
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    sum(@{$self->{vmetrics}->{$vcurve}->{values}})/scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
-            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf($config_data->{formatting}->{printf_metric_value},
-                                                                    max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                sum(@{$self->{vmetrics}->{$vcurve}->{values}}) / scalar(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'avg');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                sum(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'sum');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                min(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'min');
+            $self->{vmetrics}->{$vcurve}->{aggregated_value} = sprintf(
+                $config_data->{formatting}->{printf_metric_value},
+                max(@{$self->{vmetrics}->{$vcurve}->{values}})) if ($config_data->{virtualcurve}->{$vcurve}->{aggregation} eq 'max');
             $self->{vmetrics}->{$vcurve}->{aggregated_value} = eval "$self->{vmetrics}->{$vcurve}->{aggregated_value} $config_data->{virtualcurve}->{$vcurve}->{custom}" if (defined($config_data->{virtualcurve}->{$vcurve}->{custom}));
 
             $self->{vmetrics}->{$vcurve}->{unit} = (defined($config_data->{virtualcurve}->{$vcurve}->{unit})) ? $config_data->{virtualcurve}->{$vcurve}->{unit} : '';
@@ -318,37 +330,41 @@ sub manage_selection {
             $self->{vmetrics}->{$vcurve}->{max} = (defined($config_data->{virtualcurve}->{$vcurve}->{max})) ? $config_data->{virtualcurve}->{$vcurve}->{max} : '';
 
             if (defined($self->{option_results}->{'warning-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{warning})) {
-               $self->{perfdata}->threshold_validate(label => 'warning-global-'.$vcurve,
+               $self->{perfdata}->threshold_validate(label => 'warning-global-' . $vcurve,
                                                      value => (defined($self->{option_results}->{'warning-global'})) ? $self->{option_results}->{'warning-global'} : $config_data->{virtualcurve}->{$vcurve}->{warning});
             }
             if (defined($self->{option_results}->{'critical-global'}) || defined($config_data->{virtualcurve}->{$vcurve}->{critical})) {
-               $self->{perfdata}->threshold_validate(label => 'critical-global-'.$vcurve,
+               $self->{perfdata}->threshold_validate(label => 'critical-global-' . $vcurve,
                                                      value => (defined($self->{option_results}->{'critical-global'})) ? $self->{option_results}->{'critical-global'} : $config_data->{virtualcurve}->{$vcurve}->{critical});
             }
 
-            $self->{global}->{$vcurve} = {display => $vcurve,
-                                          type => 'global',
-                                          unit => $self->{vmetrics}->{$vcurve}->{unit},
-                                          value => $self->{vmetrics}->{$vcurve}->{aggregated_value},
-                                          min => $self->{vmetrics}->{$vcurve}->{min},
-                                          max => $self->{vmetrics}->{$vcurve}->{max} };
-       }
+            $self->{global}->{$vcurve} = {
+                display => $vcurve,
+                type => 'global',
+                unit => $self->{vmetrics}->{$vcurve}->{unit},
+                value => $self->{vmetrics}->{$vcurve}->{aggregated_value},
+                min => $self->{vmetrics}->{$vcurve}->{min},
+                max => $self->{vmetrics}->{$vcurve}->{max}
+            };
+        }
 
-        $self->{metric}->{$metric} = {display => $self->{metrics}->{$metric}->{display_name},
-                                      type => 'unique',
-                                      unit => $self->{metrics}->{$metric}->{unit},
-                                      value => $self->{metrics}->{$metric}->{current},
-                                      min => $self->{metrics}->{$metric}->{min},
-                                      max => $self->{metrics}->{$metric}->{max} } if ($self->{metrics}->{$metric}->{display} == 1);
+        $self->{metric}->{$metric} = {
+            display => $self->{metrics}->{$metric}->{display_name},
+            type => 'unique',
+            unit => $self->{metrics}->{$metric}->{unit},
+            value => $self->{metrics}->{$metric}->{current},
+            min => $self->{metrics}->{$metric}->{min},
+            max => $self->{metrics}->{$metric}->{max}
+        } if ($self->{metrics}->{$metric}->{display} == 1);
     }
 
     if (scalar(keys %{$self->{metric}}) <= 0 && scalar(keys %{$self->{vmetrics}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No metrics returned - are your selection/filters correct ?");
+        $self->{output}->add_option_msg(short_msg => 'No metrics returned - are your selection/filters correct ?');
         $self->{output}->option_exit();
     }
 }
 
-1
+1;
 
 __END__
 
@@ -359,6 +375,10 @@ e.g: display two curves of different service on the same graph
 e.g: aggregate multiple metrics (min,max,avg,sum) or custom operation
 
 =over 8
+
+=item B<--database>
+
+Specify the database (default: 'centreon_storage')
 
 =item B<--config-file>
 

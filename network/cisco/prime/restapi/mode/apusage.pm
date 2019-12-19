@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,32 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_ap_status}) && $instance_mode->{option_results}->{critical_ap_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_ap_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_ap_status}) && $instance_mode->{option_results}->{warning_ap_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_ap_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -99,7 +74,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'ap-clients', set => {
@@ -149,7 +124,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "filter-controller:s"     => { name => 'filter_controller' },
@@ -168,8 +142,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{statefile_cache_ap}->check_options(%options);
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_ap_status', 'critical_ap_status']);
 }
 
 sub prefix_controller_output {
@@ -182,16 +155,6 @@ sub prefix_ap_output {
     my ($self, %options) = @_;
     
     return "Access point '" . $options{instance_value}->{name} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_ap_status', 'critical_ap_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {

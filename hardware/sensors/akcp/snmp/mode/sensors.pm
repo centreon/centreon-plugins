@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|humidity|switch|serial)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|humidity|switch|serial|water)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|humidity)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -42,6 +42,8 @@ sub set_system {
             ['lowWarning', 'WARNING'],
             ['lowCritical', 'CRITICAL'],
             ['sensorError', 'CRITICAL'],
+            ['relayOn', 'OK'],
+            ['relayOff', 'OK'],
         ],
         default2 => [
             ['noStatus', 'OK'],
@@ -52,7 +54,7 @@ sub set_system {
     };
     
     $self->{components_path} = 'hardware::sensors::akcp::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'humidity', 'switch', 'serial'];
+    $self->{components_module} = ['temperature', 'humidity', 'switch', 'serial', 'water'];
 }
 
 sub snmp_execute {
@@ -67,7 +69,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                 });
@@ -88,7 +89,7 @@ Check sensors.
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'temperature', 'humidity', 'switch', 'serial'.
+Can be: 'temperature', 'humidity', 'switch', 'serial', 'water'.
 
 =item B<--filter>
 

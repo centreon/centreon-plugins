@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -23,8 +23,7 @@ package centreon::common::protocols::sql::mode::sqlstring;
 use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -60,11 +59,11 @@ sub custom_string_output {
     my $msg;
     my $message;
 
-    if (defined($instance_mode->{option_results}->{printf_format}) && $instance_mode->{option_results}->{printf_format} ne '') {
+    if (defined($self->{instance_mode}->{option_results}->{printf_format}) && $self->{instance_mode}->{option_results}->{printf_format} ne '') {
         eval {
             local $SIG{__WARN__} = sub { $message = $_[0]; };
             local $SIG{__DIE__} = sub { $message = $_[0]; };
-            $msg = sprintf("$instance_mode->{option_results}->{printf_format}", eval $instance_mode->{option_results}->{printf_value});
+            $msg = sprintf("$self->{instance_mode}->{option_results}->{printf_format}", eval $self->{instance_mode}->{option_results}->{printf_value});
         };
     } else {
         $msg = sprintf("'%s'", $self->{result_values}->{value_field});
@@ -85,11 +84,11 @@ sub custom_string_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
 
-        if (defined($instance_mode->{option_results}->{critical_string}) && $instance_mode->{option_results}->{critical_string} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_string}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_string}) && $self->{instance_mode}->{option_results}->{critical_string} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_string}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_string}) && $instance_mode->{option_results}->{warning_string} ne '' &&
-            eval "$instance_mode->{option_results}->{warning_string}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_string}) && $self->{instance_mode}->{option_results}->{warning_string} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_string}") {
             $status = 'warning';
         }
     };
@@ -106,41 +105,31 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "sql-statement:s"         => { name => 'sql_statement' },
-                                  "key-column:s"            => { name => 'key_column' },
-                                  "value-column:s"          => { name => 'value_column' },
-                                  "warning-string:s"        => { name => 'warning_string', default => '' },
-                                  "critical-string:s"       => { name => 'critical_string', default => '' },
-                                  "printf-format:s"         => { name => 'printf_format' },
-                                  "printf-value:s"          => { name => 'printf_value' },
-                                });
+    $options{options}->add_options(arguments => {
+        "sql-statement:s"         => { name => 'sql_statement' },
+        "key-column:s"            => { name => 'key_column' },
+        "value-column:s"          => { name => 'value_column' },
+        "warning-string:s"        => { name => 'warning_string', default => '' },
+        "critical-string:s"       => { name => 'critical_string', default => '' },
+        "printf-format:s"         => { name => 'printf_format' },
+        "printf-value:s"          => { name => 'printf_value' },
+        "dual-table"              => { name => 'dual_table' },
+        "empty-sql-string:s"      => { name => 'empty_sql_string', default => 'No row returned or --key-column/--value-column do not correctly match selected field' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    #$self->SUPER::init(%options);
     $self->SUPER::check_options(%options);
-    $instance_mode = $self;
 
-    if (!defined($instance_mode->{option_results}->{sql_statement}) || $instance_mode->{option_results}->{sql_statement} eq '') {
-        $instance_mode->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
-        $instance_mode->{output}->option_exit();
+    if (!defined($self->{option_results}->{sql_statement}) || $self->{option_results}->{sql_statement} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify '--sql-statement' option.");
+        $self->{output}->option_exit();
     }
 
-    $instance_mode->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    foreach (('warning_string', 'critical_string')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_string', 'critical_string']);
 }
 
 sub manage_selection {
@@ -152,6 +141,12 @@ sub manage_selection {
     my $row_count = 0;
 
     while (my $row = $self->{sql}->fetchrow_hashref()) {
+        if (defined($self->{option_results}->{dual_table})) {
+            $row->{$self->{option_results}->{value_column}} = delete $row->{keys %{$row}};
+            foreach (keys %{$row}) {
+                $row->{$self->{option_results}->{value_column}} = $row->{$_};
+            }
+        }
         if (!defined($self->{option_results}->{key_column})) {
             $self->{rows}->{$self->{option_results}->{value_column} . $row_count} = { key_field => $row->{$self->{option_results}->{value_column}},
                                                                                       value_field => $row->{$self->{option_results}->{value_column}}};
@@ -163,8 +158,9 @@ sub manage_selection {
         }
     }
 
+    $self->{sql}->disconnect();
     if (scalar(keys %{$self->{rows}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No row returned or --key-column/--value-column do not correctly match selected field");
+        $self->{output}->add_option_msg(short_msg => $self->{option_results}->{empty_sql_string});
         $self->{output}->option_exit();
     }
 
@@ -211,6 +207,15 @@ e.g --warning-string '%{key_field} eq 'Central' && %{value_field} =~ /127.0.0.1/
 
 Set critical condition (if statement syntax) for status evaluation.
 (Can be: %{key_field} or %{value_field})
+
+=item B<--dual-table>
+
+Set this option to ensure compatibility with dual table and Oracle.
+
+=item B<--empty-sql-string>
+
+Set this option to change the output message when the sql statement result is empty.
+(Default: 'No row returned or --key-column/--value-column do not correctly match selected field')
 
 =back
 

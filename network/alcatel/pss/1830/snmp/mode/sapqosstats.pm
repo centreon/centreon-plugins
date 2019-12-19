@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,8 +26,7 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 use centreon::plugins::statefile;
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -42,7 +41,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'traffic-in-below-cir', set => {
@@ -88,37 +87,6 @@ sub set_counters {
     ];
 }
 
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-
-        $instance_mode->{last_status} = 0;
-        if ($self->{result_values}->{admin} eq 'up') {
-            $instance_mode->{last_status} = 1;
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
-
 sub custom_status_output {
     my ($self, %options) = @_;
     my $msg = 'Status : ' . $self->{result_values}->{status} . ' (admin: ' . $self->{result_values}->{admin} . ')';
@@ -140,7 +108,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
@@ -158,19 +125,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
     $self->{statefile_cache}->check_options(%options);
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub prefix_sap_output {

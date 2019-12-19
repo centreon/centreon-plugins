@@ -4,7 +4,7 @@ Description
 
 Ce document présente les bonnes pratiques pour le développement de "centreon-plugins".
 Comme tous les plugins sont écrits en Perl, "There's more than one way to do it".
-Afib de ne pas réinventer la roue, vous devriez d'abord regarder le dossier “example”. Vous aurez alors un aperçu de la méthodologie pour construire votre propre plugin ainsi que ses modes associés.
+Afin de ne pas réinventer la roue, vous devriez d'abord regarder le dossier “example”. Vous aurez alors un aperçu de la méthodologie pour construire votre propre plugin ainsi que ses modes associés.
 
 La dernière version est disponible sur le dépôt git suivant: https://github.com/centreon/centreon-plugins.git
 
@@ -27,7 +27,7 @@ Les répertoires racines sont oganisés par catégorie:
 * Système d'exploitation : os
 * Equipement de stockage : storage
 
-Selon l'objet supervisé, il existe une organisation qui peut être utilisé :
+Selon l'objet supervisé, il existe une organisation qui peut être utilisée :
 
 * Type
 * Constructeur
@@ -225,7 +225,7 @@ Par exemple, les seuils Dégradé (Warning) et Critique (Critical) doivent être
 
 Dans cet exemple, l'aide est affichée si les seuils spécifiés ne sont pas au bon format.
 
-Ensuite vient la méthode **run** où sera effectué le traitement, vérifié les seuils et affichés le message de sortie et les données de performance.
+Ensuite vient la méthode **run** où le traitement sera effectué, où les seuils seront vérifiés et où le message de sortie et les données de performance seront affichés.
 Voici un exemple pour vérifier une valeur SNMP :
 
 .. code-block:: perl
@@ -597,7 +597,7 @@ Paramètres
 +--------------+--------------+----------+----------------------------------------------------------------------------+
 |  Paramètre   |    Type      |   Défaut |          Description                                                       |
 +==============+==============+==========+============================================================================+
-| **oids**     | String array |          | Tableau d'OIDs à contrôler (Peut être spécifier avec la méthode ``load``). |
+| **oids**     | String array |          | Tableau d'OIDs à contrôler (Peut être spécifié avec la méthode ``load``). |
 +--------------+--------------+----------+----------------------------------------------------------------------------+
 | dont_quit    | Int (0 or 1) |     0    | Ne pas quitter pas même si une erreur SNMP se produit.                     |
 +--------------+--------------+----------+----------------------------------------------------------------------------+
@@ -695,7 +695,7 @@ Paramètres
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
 |  Paramètre      |        Type          |   Défaut       |          Description                                            |
 +=================+======================+================+=================================================================+
-| **oid**         |  String              |                | OID de la talbe SNMP à récupérer.                               |
+| **oid**         |  String              |                | OID de la table SNMP à récupérer.                               |
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
 | start           |  Int                 |                | Premier OID à récupérer.                                        |
 +-----------------+----------------------+----------------+-----------------------------------------------------------------+
@@ -1243,7 +1243,7 @@ Nous supposons que ces options sont définies :
 
 .. code-block:: perl
 
-  $self->{http} = centreon::plugins::http->new(output => $self->{output});
+  $self->{http} = centreon::plugins::http->new(output => $self->{output}, options => $self->{options});
   $self->{http}->set_options(%{$self->{option_results}});
   my $webcontent = $self->{http}->request();
   print $webcontent;
@@ -1462,14 +1462,14 @@ Tout d'abord, créer le dossier du plugin, ainsi que le fichier du plugin :
   $ touch apps/pfsense/snmp/plugin.pm
 
 .. tip::
-  PfSense est un pare-feu applicatif et il sera contrôler en utilisant le protocole SNMP
+  PfSense est un pare-feu applicatif et il sera contrôlé en utilisant le protocole SNMP
 
 Ensuite, éditer le fichier **plugin.pm** et ajouter les lignes suivantes :
 
 .. code-block:: perl
 
   #
-  # Copyright 2017 Centreon (http://www.centreon.com/)
+  # Copyright 2018 Centreon (http://www.centreon.com/)
   #
   # Centreon is a full-fledged industry-strength solution that meets
   # the needs in IT infrastructure and application monitoring for
@@ -1559,7 +1559,7 @@ Editer le fichier **memorydroppedpackets.pm** et ajouter les lignes suivantes :
 .. code-block:: perl
 
   #
-  # Copyright 2017 Centreon (http://www.centreon.com/)
+  # Copyright 2018 Centreon (http://www.centreon.com/)
   #
   # Centreon is a full-fledged industry-strength solution that meets
   # the needs in IT infrastructure and application monitoring for

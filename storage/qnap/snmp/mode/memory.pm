@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "warning:s"               => { name => 'warning' },
@@ -81,8 +80,11 @@ sub run {
     my $oid_SystemTotalMem = '.1.3.6.1.4.1.24681.1.2.2.0';
     my $oid_SystemFreeMem = '.1.3.6.1.4.1.24681.1.2.3.0';
 
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_SystemTotalMem, $oid_SystemFreeMem ],
-                                         nothing_quit => 1);
+    my $result = $self->{snmp}->get_leef(
+        oids => [ $oid_SystemTotalMem, $oid_SystemFreeMem ],
+        nothing_quit => 1
+    );
+    
     my $total_size = $self->convert_bytes(value => $result->{$oid_SystemTotalMem});
     my $memory_free = $self->convert_bytes(value => $result->{$oid_SystemFreeMem});    
     my $memory_used = $total_size - $memory_free;
@@ -101,11 +103,14 @@ sub run {
                                         $used_value . " " . $used_unit, $prct_used,
                                         $free_value . " " . $free_unit, $prct_free));
 
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => int($memory_used),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => int($total_size));
+    $self->{output}->perfdata_add(
+        label => 'used', unit => 'B',
+        nlabel => 'memory.usage.bytes',
+        value => int($memory_used),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
+        min => 0, max => int($total_size)
+    );
 
     $self->{output}->display();
     $self->{output}->exit();

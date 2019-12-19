@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,17 +40,17 @@ sub check {
     return if ($self->check_filter(section => 'fan'));
     
     my @instances = ();
-    foreach my $key (keys %{$self->{results}->{$oids{entPhysicalClass}}}) {
-        if ($self->{results}->{$oids{entPhysicalClass}}->{$key} == 7) {
-            next if ($key !~ /^$oids{entPhysicalClass}\.(.*)$/);
+    foreach my $key (keys %{$self->{results}->{$oids{common}->{entPhysicalClass}}}) {
+        if ($self->{results}->{$oids{common}->{entPhysicalClass}}->{$key} == 7) {
+            next if ($key !~ /^$oids{common}->{entPhysicalClass}\.(.*)$/);
             push @instances, $1;
         }
     }
     
     foreach my $instance (@instances) {
-        next if (!defined($self->{results}->{entity}->{$oids{chasEntPhysAdminStatus} . '.' . $instance}));
+        next if (!defined($self->{results}->{entity}->{$oids{$self->{type}}{chasEntPhysAdminStatus} . '.' . $instance}));
         
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{entity}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping->{$self->{type}}, results => $self->{results}->{entity}, instance => $instance);
         
         next if ($self->check_filter(section => 'fan', instance => $instance));
         $self->{components}->{fan}->{total}++;
@@ -61,9 +61,13 @@ sub check {
                                     );
         
         if ($result->{chasEntPhysPower} > 0) {
-            $self->{output}->perfdata_add(label => "power_" . $instance, unit => 'W',
-                                          value => $result->{chasEntPhysPower},
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => "power", unit => 'W',
+                nlabel => 'hardware.fan.power.watt',
+                instances => $instance,
+                value => $result->{chasEntPhysPower},
+                min => 0
+            );
         }
         
         my $exit = $self->get_severity(label => 'admin', section => 'fan.admin', value => $result->{chasEntPhysAdminStatus});
@@ -84,14 +88,14 @@ sub check {
         }
     }
     
-    foreach my $key (keys %{$self->{results}->{$oids{alaChasEntPhysFanStatus}}}) {
-        next if ($key !~ /^$oids{alaChasEntPhysFanStatus}\.(.*?)\.(.*?)$/);
+    foreach my $key (keys %{$self->{results}->{$oids{$self->{type}}->{alaChasEntPhysFanStatus}}}) {
+        next if ($key !~ /^$oids{$self->{type}}->{alaChasEntPhysFanStatus}\.(.*?)\.(.*?)$/);
         my ($phys_index, $loc_index) = ($1, $2);
-        my $status = $self->{results}->{$oids{alaChasEntPhysFanStatus}}->{$key};
-        my $descr = defined($self->{results}->{entity}->{$oids{entPhysicalDescr} . '.' . $phys_index}) ? 
-                        $self->{results}->{entity}->{$oids{entPhysicalDescr} . '.' . $phys_index} : 'unknown';
-        my $name  = defined($self->{results}->{entity}->{$oids{entPhysicalName} . '.' . $phys_index}) ? 
-                        $self->{results}->{entity}->{$oids{entPhysicalName} . '.' . $phys_index} : 'unknown';
+        my $status = $self->{results}->{$oids{$self->{type}}->{alaChasEntPhysFanStatus}}->{$key};
+        my $descr = defined($self->{results}->{entity}->{$oids{common}->{entPhysicalDescr} . '.' . $phys_index}) ? 
+                        $self->{results}->{entity}->{$oids{common}->{entPhysicalDescr} . '.' . $phys_index} : 'unknown';
+        my $name  = defined($self->{results}->{entity}->{$oids{common}->{entPhysicalName} . '.' . $phys_index}) ? 
+                        $self->{results}->{entity}->{$oids{common}->{entPhysicalName} . '.' . $phys_index} : 'unknown';
         
         next if ($self->check_filter(section => 'fan', instance => $phys_index . '.' . $loc_index));
         $self->{components}->{fan}->{total}++;

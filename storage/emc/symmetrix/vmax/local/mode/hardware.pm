@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -98,23 +98,21 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "health-directory:s"            => { name => 'health_directory' },
-                                "health-directory-pattern:s"    => { name => 'health_directory_pattern' },
-                                "file-health-name:s"            => { name => 'file_health_name', default => 'HealthCheck.log' },
-                                "file-health-env-name:s"        => { name => 'file_health_env_name', default => 'sympl_env_health.log' },
-                                # Email
-                                "email-warning:s"       => { name => 'email_warning' },
-                                "email-critical:s"      => { name => 'email_critical' },
-                                "email-smtp-host:s"     => { name => 'email_smtp_host' },
-                                "email-smtp-username:s" => { name => 'email_smtp_username' },
-                                "email-smtp-password:s" => { name => 'email_smtp_password' },
-                                "email-smtp-from:s"     => { name => 'email_smtp_from' },
-                                "email-smtp-options:s@" => { name => 'email_smtp_options' },
-                                "email-memory"          => { name => 'email_memory' },
-                                });
+    $options{options}->add_options(arguments => {
+        'health-directory:s'         => { name => 'health_directory' },
+        'health-directory-pattern:s' => { name => 'health_directory_pattern' },
+        'file-health-name:s'         => { name => 'file_health_name', default => 'HealthCheck.log' },
+        'file-health-env-name:s'     => { name => 'file_health_env_name', default => 'sympl_env_health.log' },
+        # Email
+        'email-warning:s'       => { name => 'email_warning' },
+        'email-critical:s'      => { name => 'email_critical' },
+        'email-smtp-host:s'     => { name => 'email_smtp_host' },
+        'email-smtp-username:s' => { name => 'email_smtp_username' },
+        'email-smtp-password:s' => { name => 'email_smtp_password' },
+        'email-smtp-from:s'     => { name => 'email_smtp_from' },
+        'email-smtp-options:s@' => { name => 'email_smtp_options' },
+        'email-memory'          => { name => 'email_memory' },
+    });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{components_exec_load} = 0;
@@ -217,7 +215,7 @@ sub send_email {
         $send_email = 0 if ($status ne 'ok' && defined($prev_output) && $prev_output eq $subject);
         # recovery email
         $send_email = 1 if ($status eq 'ok' && defined($prev_status) && $prev_status ne 'ok');
-      $self->{statefile_cache}->write(data => $self->{new_datas});
+        $self->{statefile_cache}->write(data => $self->{new_datas});
     }
     
     my $smtp_to = '';
@@ -238,19 +236,26 @@ sub send_email {
         return ;
     }
     
-    centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Email::Send::SMTP::Gmail',
-                                           error_msg => "Cannot load module 'Email::Send::SMTP::Gmail'.");
-    my ($mail, $error) = Email::Send::SMTP::Gmail->new(-smtp => $self->{option_results}->{email_smtp_host},
-                                                       %smtp_options);
+    centreon::plugins::misc::mymodule_load(
+        output => $self->{output},
+        module => 'Email::Send::SMTP::Gmail',
+        error_msg => "Cannot load module 'Email::Send::SMTP::Gmail'."
+    );
+    my ($mail, $error) = Email::Send::SMTP::Gmail->new(
+        -smtp => $self->{option_results}->{email_smtp_host},
+        %smtp_options
+    );
     if ($mail == -1) {
         $self->{output}->add_option_msg(short_msg => "session error: " . $error);
         $self->{output}->option_exit();
     }
-    my $result = $mail->send(-to => $smtp_to,
-                             -from => $self->{option_results}->{email_smtp_from},
-                             -subject => defined($smtp_options{-subject}) ? $smtp_options{-subject} : $subject,
-                             -body => $stdout,
-                             -attachments => $self->{option_results}->{file_health} . "," . $self->{option_results}->{file_health_env});
+    my $result = $mail->send(
+        -to => $smtp_to,
+        -from => $self->{option_results}->{email_smtp_from},
+        -subject => defined($smtp_options{-subject}) ? $smtp_options{-subject} : $subject,
+        -body => $stdout,
+        -attachments => $self->{option_results}->{file_health} . "," . $self->{option_results}->{file_health_env}
+    );
     $mail->bye();
     if ($result == -1) {
         $self->{output}->add_option_msg(severity => 'UNKNOWN', short_msg => "problem to send the email");
@@ -319,4 +324,3 @@ Name of the environment storage file status (Default: sympl_env_health.log).
 =back
 
 =cut
-    

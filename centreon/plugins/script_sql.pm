@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,24 +28,22 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{package} = parent package caller
-    # $options{options} = options object
-    # $options{output} = output object
     $self->{options} = $options{options};
     $self->{output} = $options{output};
     
     $self->{options}->add_options(
-                                   arguments => {
-                                                'mode:s'         => { name => 'mode_name' },
-                                                'dyn-mode:s'     => { name => 'dynmode_name' },
-                                                'list-mode'      => { name => 'list_mode' },
-                                                'mode-version:s' => { name => 'mode_version' },
-                                                'sqlmode:s'      => { name => 'sqlmode_name', default => 'dbi' },
-                                                'list-sqlmode'   => { name => 'list_sqlmode' },
-                                                'multiple'       => { name => 'multiple' },
-                                                'sanity-options' => { name => 'sanity_options' }, # keep it for 6 month before remove it
-                                                }
-                                  );
+        arguments => {
+            'mode:s'            => { name => 'mode_name' },
+            'dyn-mode:s'        => { name => 'dynmode_name' },
+            'list-mode'         => { name => 'list_mode' },
+            'mode-version:s'    => { name => 'mode_version' },
+            'sqlmode:s'         => { name => 'sqlmode_name', default => 'dbi' },
+            'list-sqlmode'      => { name => 'list_sqlmode' },
+            'multiple'          => { name => 'multiple' },
+            'no-sanity-options' => { name => 'no_sanity_options' },
+            'pass-manager:s'    => { name => 'pass_manager' },
+        }
+    );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
     %{$self->{sql_modes}} = ('dbi' => 'centreon::plugins::dbi');
@@ -63,15 +61,16 @@ sub new {
 
     $self->{options}->add_help(package => $options{package}, sections => 'PLUGIN DESCRIPTION');
     $self->{options}->add_help(package => __PACKAGE__, sections => 'GLOBAL OPTIONS');
+    $self->{output}->mode(name => $self->{mode_name});
 
     return $self;
 }
 
 sub init {
     my ($self, %options) = @_;
-    # $options{version} = string version
-    # $options{help} = string help
 
+    # add meta mode
+    $self->{modes}->{multi} = 'centreon::plugins::multi';
     if (defined($options{help}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->{options}->display_help();
         $self->{output}->option_exit();
@@ -85,10 +84,12 @@ sub init {
     if (defined($self->{list_sqlmode})) {
         $self->list_sqlmode();
     }
-    $self->{options}->set_sanity();
+    $self->{options}->set_sanity() if (!defined($self->{no_sanity_options}));
 
     # Output HELP
     $self->{options}->add_help(package => 'centreon::plugins::output', sections => 'OUTPUT OPTIONS');
+    
+    $self->load_password_mgr();
 
     if (defined($self->{sqlmode_name}) && $self->{sqlmode_name} ne '') {
         $self->is_sqlmode(sqlmode => $self->{sqlmode_name});
@@ -135,6 +136,7 @@ sub init {
     
     $self->{options}->parse_options();
     $self->{option_results} = $self->{options}->get_options();
+    $self->{pass_mgr}->manage_options(option_results => $self->{option_results}) if (defined($self->{pass_mgr}));
 
     push @{$self->{sqlmode_stored}}, $self->{sqlmode_current};
     $self->{sqlmode_current}->set_options(option_results => $self->{option_results});
@@ -145,7 +147,23 @@ sub init {
         $self->{sqlmode_current}->set_options(option_results => $self->{option_results});
         push @{$self->{sqlmode_stored}}, $self->{sqlmode_current};
     }
-    $self->{mode}->check_options(option_results => $self->{option_results}, default => $self->{default});
+    $self->{mode}->check_options(
+        option_results => $self->{option_results},
+        default => $self->{default},
+        modes => $self->{modes} # for meta mode multi
+    );
+}
+
+sub load_password_mgr {
+    my ($self, %options) = @_;
+    
+    return if (!defined($self->{option_results}->{pass_manager}) || $self->{option_results}->{pass_manager} eq '');
+
+    (undef, my $pass_mgr_name) = centreon::plugins::misc::mymodule_load(
+        output => $self->{output}, module => "centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager}, 
+        error_msg => "Cannot load module 'centreon::plugins::passwordmgr::" . $self->{option_results}->{pass_manager} . "'"
+    );
+    $self->{pass_mgr} = $pass_mgr_name->new(options => $self->{options}, output => $self->{output});
 }
 
 sub run {
@@ -205,9 +223,13 @@ sub list_mode {
     my $self = shift;
     $self->{options}->display_help();
     
-    $self->{output}->add_option_msg(long_msg => "Modes Available:");
+    $self->{output}->add_option_msg(long_msg => 'Modes Meta:');
+    $self->{output}->add_option_msg(long_msg => '   multi');
+    $self->{output}->add_option_msg(long_msg => '');
+    $self->{output}->add_option_msg(long_msg => 'Modes Available:');
     foreach (sort keys %{$self->{modes}}) {
-        $self->{output}->add_option_msg(long_msg => "   " . $_);
+        next if ($_ eq 'multi');
+        $self->{output}->add_option_msg(long_msg => '   ' . $_);
     }
     $self->{output}->option_exit(nolabel => 1);
 }
@@ -270,6 +292,10 @@ List available sql modes.
 =item B<--multiple>
 
 Multiple database connections (some mode needs it).
+
+=item B<--pass-manager>
+
+Use a password manager.
 
 =back
 

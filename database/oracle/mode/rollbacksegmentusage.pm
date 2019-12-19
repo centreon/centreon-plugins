@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -109,10 +109,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
@@ -160,6 +159,7 @@ sub manage_selection {
     
     $self->{cache_name} = "oracle_" . $self->{mode} . '_' . $self->{sql}->get_unique_id4save() . '_' . 
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+    $self->{sql}->disconnect();
 }
 
 1;

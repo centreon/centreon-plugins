@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,37 +24,13 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
-
-sub custom_threshold_output {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'Status : ' . $self->{result_values}->{status};
+    my $msg = 'status : ' . $self->{result_values}->{status};
 
     return $msg;
 }
@@ -70,35 +46,33 @@ sub custom_status_calc {
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
 
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
 
-    $self->{output}->perfdata_add(label => 'traffic_' . $self->{result_values}->{label} . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{speed});
+    $self->{output}->perfdata_add(
+        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
 }
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
 
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -126,9 +100,9 @@ sub custom_traffic_calc {
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     my $diff_traffic = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}} - $options{old_datas}->{$self->{instance} . '_' . $self->{result_values}->{label}};
     $self->{result_values}->{traffic} = $diff_traffic / $options{delta_time};
-    if (defined($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
-        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
-        $self->{result_values}->{speed} = $instance_mode->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
+    if (defined($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}}) && $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} =~ /[0-9]/) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic} * 100 / ($self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000);
+        $self->{result_values}->{speed} = $self->{instance_mode}->{option_results}->{'speed_' . $self->{result_values}->{label}} * 1000 * 1000;
     }
     return 0;
 }
@@ -137,7 +111,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, cb_init => 'skip_global' },
         { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok' },
         { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All device interfaces are ok', skipped_code => { -10 => 1 } },
     ];
@@ -158,7 +132,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'clients', set => {
@@ -199,18 +173,20 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "filter-interface:s"      => { name => 'filter_interface' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} =~ /offline/' },
-                                  "speed-in:s"              => { name => 'speed_in' },
-                                  "speed-out:s"             => { name => 'speed_out' },
-                                  "units-traffic:s"         => { name => 'units_traffic', default => '%' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'      => { name => 'filter_name' },
+        'filter-interface:s' => { name => 'filter_interface' },
+        'filter-network:s'   => { name => 'filter_network' },
+        'filter-product:s'   => { name => 'filter_product' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '%{status} =~ /offline/' },
+        'speed-in:s'         => { name => 'speed_in' },
+        'speed-out:s'        => { name => 'speed_out' },
+        'units-traffic:s'    => { name => 'units_traffic', default => '%' },
+        'cache-expires-on:s' => { name => 'cache_expires_on' },
+    });
+
+    $self->{cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -218,30 +194,30 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->{cache}->check_options(option_results => $self->{option_results});
+    if (defined($self->{option_results}->{cache_expires_on}) && $self->{option_results}->{cache_expires_on} =~ /(\d+)/) {
+        $self->{cache_expires_on} = $1; 
+    }
+}
+
+sub skip_global {
+    my ($self, %options) = @_;
+
+    scalar(keys %{$self->{device}}) > 1 ? return(0) : return(1);
 }
 
 sub prefix_device_output {
     my ($self, %options) = @_;
     
-    return "Device '" . $options{instance_value}->{display} . "' ";
+    return "Device '" . $options{instance_value}->{display} . "' [network: " . $options{instance_value}->{network} . "]" .
+        " [product: " . $options{instance_value}->{product} . "] ";
 }
 
 sub prefix_interface_output {
     my ($self, %options) = @_;
     
     return "Interface '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 my %map_status = (
@@ -252,6 +228,8 @@ my $mapping = {
     devName         => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.2' },
     devStatus       => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.3', map => \%map_status },
     devClientCount  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.5' },
+    devProductCode  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.9' },
+    devNetworkName  => { oid => '.1.3.6.1.4.1.29671.1.1.4.1.11' },
 };
 my $mapping2 = {
     devInterfaceName        => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.3' },
@@ -259,24 +237,70 @@ my $mapping2 = {
     devInterfaceRecvBytes   => { oid => '.1.3.6.1.4.1.29671.1.1.5.1.7' },
 };
 
+sub get_devices_infos_snmp {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{devName}->{oid} },
+            { oid => $mapping2->{devInterfaceName}->{oid} },
+            { oid => $mapping->{devProductCode}->{oid} },
+            { oid => $mapping->{devNetworkName}->{oid} }
+        ], 
+        nothing_quit => 1
+    );
+
+    return $snmp_result;
+}
+
+sub get_devices_infos {
+    my ($self, %options) = @_;
+
+    my $snmp_result;
+    if (defined($self->{cache_expires_on})) {
+        my $has_cache_file = $self->{cache}->read(statefile => 'meraki_' . $self->{mode} . '_' . md5_hex($options{snmp}->get_hostname()));
+        my $timestamp = $self->{cache}->get(name => 'last_timestamp');
+        if ($has_cache_file == 0 || !defined($timestamp) || ((time() - $self->{cache_expires_on}) > $timestamp)) {
+            $snmp_result = $self->get_devices_infos_snmp(%options);
+            my $datas = { last_timestamp => time(), snmp => $snmp_result };
+            $self->{cache}->write(data => $datas);
+        } else {
+            $snmp_result = $self->{cache}->get(name => 'snmp');
+        }
+    } else {
+        $snmp_result = $self->get_devices_infos_snmp(%options);
+    }
+    
+    return $snmp_result;
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{device} = {};
     $self->{interface} = {};
     $self->{global} = { total => 0 };
-    
-     my $snmp_result = $options{snmp}->get_multiple_table(oids => 
-        [ { oid => $mapping->{devName}->{oid} },
-          { oid => $mapping2->{devInterfaceName}->{oid} },
-        ], nothing_quit => 1);
-    
+
+    my $snmp_result = $self->get_devices_infos(%options);
     foreach my $oid (keys %{$snmp_result->{ $mapping->{devName}->{oid} }}) {
         $oid =~ /^$mapping->{devName}->{oid}\.(.*)$/;
         my $instance = $1;
-        my $dev_name = $snmp_result->{$mapping->{devName}->{oid}}->{$oid}; 
+        my $dev_name = $snmp_result->{$mapping->{devName}->{oid}}->{$oid};
+        my $network = defined($snmp_result->{$mapping->{devNetworkName}->{oid}}->{ $mapping->{devNetworkName}->{oid} . '.' . $instance })
+            ? $snmp_result->{$mapping->{devNetworkName}->{oid}}->{ $mapping->{devNetworkName}->{oid} . '.' . $instance } : 'n/a';
+        my $product = $snmp_result->{$mapping->{devProductCode}->{oid}}->{ $mapping->{devProductCode}->{oid} . '.' . $instance };
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $dev_name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_product}) && $self->{option_results}->{filter_product} ne '' &&
+            $product !~ /$self->{option_results}->{filter_product}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_network}) && $self->{option_results}->{filter_network} ne '' &&
+            $network !~ /$self->{option_results}->{filter_network}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $dev_name . "': no matching filter.", debug => 1);
             next;
         }
@@ -296,7 +320,7 @@ sub manage_selection {
         }
         
         $self->{global}->{total}++;
-        $self->{device}->{$instance} = { display => $dev_name };
+        $self->{device}->{$instance} = { display => $dev_name, network => $network, product => $product };
     }
 
     if (scalar(keys %{$self->{interface}}) > 0) {
@@ -326,7 +350,8 @@ sub manage_selection {
     $self->{cache_name} = "cisco_meraki_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_product}) ? md5_hex($self->{option_results}->{filter_product}) : md5_hex('all'));
 }
 
 1;
@@ -348,9 +373,21 @@ Example: --filter-counters='^clients$'
 
 Filter device name (can be a regexp).
 
+=item B<--filter-product>
+
+Filter device product code (can be a regexp).
+
+=item B<--filter-network>
+
+Filter by network name (can be a regexp).
+
 =item B<--filter-interface>
 
 Filter interface name (can be a regexp).
+
+=item B<--cache-expires-on>
+
+Use cache file to speed up mode execution (X seconds before refresh cache file).
 
 =item B<--speed-in>
 

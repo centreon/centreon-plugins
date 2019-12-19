@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,27 +25,26 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
-use apps::protocols::ldap::lib::ldap;
+use centreon::common::protocols::ldap::lib::ldap;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"               => { name => 'hostname' },
-         "ldap-connect-options:s@"  => { name => 'ldap_connect_options' },
-         "ldap-starttls-options:s@" => { name => 'ldap_starttls_options' },
-         "ldap-bind-options:s@"     => { name => 'ldap_bind_options' },
-         "tls"                      => { name => 'use_tls' },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '30' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s'               => { name => 'hostname' },
+        'ldap-connect-options:s@'  => { name => 'ldap_connect_options' },
+        'ldap-starttls-options:s@' => { name => 'ldap_starttls_options' },
+        'ldap-bind-options:s@'     => { name => 'ldap_bind_options' },
+        'tls'                      => { name => 'use_tls' },
+        'username:s'   => { name => 'username' },
+        'password:s'   => { name => 'password' },
+        'warning:s'    => { name => 'warning' },
+        'critical:s'   => { name => 'critical' },
+        'timeout:s'    => { name => 'timeout', default => '30' },
+    });
+
     return $self;
 }
 
@@ -63,7 +62,13 @@ sub check_options {
     }
 
     if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
+        $self->{output}->add_option_msg(short_msg => 'Please set the hostname option');
+        $self->{output}->option_exit();
+    }
+
+    if (defined($self->{option_results}->{username}) && $self->{option_results}->{username} ne '' &&
+        !defined($self->{option_results}->{password})) {
+        $self->{output}->add_option_msg(short_msg => "Please set --password option.");
         $self->{output}->option_exit();
     }
 }
@@ -73,16 +78,31 @@ sub run {
     
     my $timing0 = [gettimeofday];
     
-    apps::protocols::ldap::lib::ldap::connect($self, connection_exit => 'critical');  
-    apps::protocols::ldap::lib::ldap::quit();
+    my ($ldap_handle, $code, $err_msg) = centreon::common::protocols::ldap::lib::ldap::connect(
+        hostname => $self->{option_results}->{hostname},
+        username => $self->{option_results}->{username},
+        password => $self->{option_results}->{password},
+        timeout => $self->{option_results}->{timeout},
+        ldap_connect_options => $self->{option_results}->{ldap_connect_options},
+        use_tls => $self->{option_results}->{use_tls},
+        ldap_starttls_options => $self->{option_results}->{ldap_starttls_options},
+        ldap_bind_options => $self->{option_results}->{ldap_bind_options},
+    );
+    if ($code == 1) {
+        $self->{output}->output_add(severity => 'critical',
+                                    short_msg => $err_msg);
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+    centreon::common::protocols::ldap::lib::ldap::quit(ldap_handle => $ldap_handle);
 
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     
     my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3f second(s)", $timeelapsed));
-    $self->{output}->perfdata_add(label => "time", unit => 's',
+                                short_msg => sprintf('Response time %.3f second(s)', $timeelapsed));
+    $self->{output}->perfdata_add(label => 'time', unit => 's',
                                   value => sprintf('%.3f', $timeelapsed),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));

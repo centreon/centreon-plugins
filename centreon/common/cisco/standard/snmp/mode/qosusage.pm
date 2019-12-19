@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,8 +26,6 @@ use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
 
-my $instance_mode;
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -39,7 +37,7 @@ sub set_counters {
 
     $self->{maps_counters}->{interface_classmap} = [
          { label => 'int-cmap-traffic', set => {
-                key_values => [ { name => 'display' }, { name => 'traffic_usage', diff => 1 }, { name => 'total' } ],
+                key_values => [ { name => 'traffic_usage', diff => 1 }, { name => 'total' }, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'),
                 closure_custom_output => $self->can('custom_traffic_output'),
@@ -107,35 +105,35 @@ sub set_counters {
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
     
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    
     my ($warning, $critical);
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
-        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' &&
+        (defined($self->{result_values}->{total}) && $self->{result_values}->{total} =~ /[0-9]/)) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
     }
     
-    $self->{output}->perfdata_add(label => 'icmap_traffic' . $extra_label, unit => 'b/s',
-                                  value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
-                                  warning => $warning,
-                                  critical => $critical,
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'icmap_traffic', unit => 'b/s',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => ($self->{result_values}->{total} =~ /[0-9]/ ? $self->{result_values}->{total} : undef)
+    );
 }
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
     my $exit = 'ok';
-    if ($instance_mode->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{total})) {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
-    } elsif ($instance_mode->{option_results}->{units_traffic} eq 'b/s') {
-        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && 
+        (defined($self->{result_values}->{total}) && $self->{result_values}->{total} =~ /[0-9]/)) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units_traffic} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     }
     return $exit;
 }
@@ -183,15 +181,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-source:s"       => { name => 'filter_source' },
-                                "oid-filter:s"          => { name => 'oid_filter', default => 'ifname' },
-                                "oid-display:s"         => { name => 'oid_display', default => 'ifname' },
-                                "units-traffic:s"       => { name => 'units_traffic', default => '%' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-source:s"       => { name => 'filter_source' },
+        "oid-filter:s"          => { name => 'oid_filter', default => 'ifname' },
+        "oid-display:s"         => { name => 'oid_display', default => 'ifname' },
+        "units-traffic:s"       => { name => 'units_traffic', default => '%' },
+    });
+
     return $self;
 }
 
@@ -205,7 +201,6 @@ sub check_options {
         'ifname' => '.1.3.6.1.2.1.31.1.1.1.1',
     };
     $self->check_oids_label();
-    $instance_mode = $self;
 }
 
 sub check_oids_label {
@@ -237,6 +232,10 @@ my $mapping2 = {
     cbQosTSCfgRate      => { oid => '.1.3.6.1.4.1.9.9.166.1.13.1.1.1' }, # bps
     cbQosTSCfgRate64    => { oid => '.1.3.6.1.4.1.9.9.166.1.13.1.1.11' }, # bps
 };
+my $mapping3 = {
+    cbQosQueueingCfgBandwidth      => { oid => '.1.3.6.1.4.1.9.9.166.1.9.1.1.1' },
+    cbQosQueueingCfgBandwidthUnits => { oid => '.1.3.6.1.4.1.9.9.166.1.9.1.1.2' },
+};
 
 my $oid_cbQosIfIndex = '.1.3.6.1.4.1.9.9.166.1.1.1.1.4';
 my $oid_cbQosConfigIndex = '.1.3.6.1.4.1.9.9.166.1.5.1.1.2';
@@ -249,8 +248,7 @@ my $oid_cbQosPolicyMapName = '.1.3.6.1.4.1.9.9.166.1.6.1.1.1';
 # Shaping : Linked to a classmap
 my $oid_cbQosTSCfgEntry = '.1.3.6.1.4.1.9.9.166.1.13.1.1';
 # Linked to a classmap
-my $oid_cbQosQueueingCfgBandwidth = '.1.3.6.1.4.1.9.9.166.1.9.1.1.1';
-my $oid_cbQosQueueingCfgBandwidthUnits = '.1.3.6.1.4.1.9.9.166.1.9.1.1.2';
+my $oid_cbQosQueueingCfgEntry = '.1.3.6.1.4.1.9.9.166.1.9.1.1';
 
 sub build_qos_information {
     my ($self, %options) = @_;
@@ -295,11 +293,10 @@ sub manage_selection {
         { oid => $oid_cbQosIfIndex },
         { oid => $oid_cbQosConfigIndex },
         { oid => $oid_cbQosCMName },
-        { oid => $oid_cbQosQueueingCfgBandwidth },
-        { oid => $oid_cbQosQueueingCfgBandwidthUnits },
-        { oid => $oid_cbQosCMStatsEntry },
+        { oid => $oid_cbQosQueueingCfgEntry, end => $mapping3->{cbQosQueueingCfgBandwidthUnits}->{oid} },
+        { oid => $oid_cbQosCMStatsEntry, start => $mapping->{cbQosCMPrePolicyByteOverflow}->{oid}, end => $mapping->{cbQosCMDropByte64}->{oid} },
         { oid => $oid_cbQosParentObjectsIndex },
-        { oid => $oid_cbQosTSCfgEntry },
+        { oid => $oid_cbQosTSCfgEntry, end => $mapping2->{cbQosTSCfgRate64}->{oid} },
     ];
     push @$request_oids, { oid => $self->{oids_label}->{$self->{option_results}->{oid_display}} } 
         if ($self->{option_results}->{oid_filter} ne $self->{option_results}->{oid_display});
@@ -316,7 +313,7 @@ sub manage_selection {
     foreach (keys %{$self->{results}->{$oid_cbQosParentObjectsIndex}}) {
         /(\d+)\.(\d+)$/;
         my $config_index = $self->{results}->{$oid_cbQosConfigIndex}->{$oid_cbQosConfigIndex . '.' . $1 . '.' . $2};
-        if (defined($self->{results}->{$oid_cbQosQueueingCfgBandwidth}->{$oid_cbQosQueueingCfgBandwidth . '.' . $config_index})) {
+        if (defined($self->{results}->{$oid_cbQosQueueingCfgEntry}->{$mapping3->{cbQosQueueingCfgBandwidth}->{oid} . '.' . $config_index})) {
             $link_queueing->{$1 . '.' . $self->{results}->{$oid_cbQosParentObjectsIndex}->{$_}} = $config_index;
         } elsif (defined($self->{results}->{$oid_cbQosTSCfgEntry}->{$mapping2->{cbQosTSCfgRate}->{oid} . '.' . $config_index})) {
             $link_shaping->{$1 . '.' . $self->{results}->{$oid_cbQosParentObjectsIndex}->{$_}} = $config_index;
@@ -327,7 +324,7 @@ sub manage_selection {
         next if (!/$mapping->{cbQosCMPrePolicyByte}->{oid}\.(\d+)\.(\d+)/);
         
         my ($policy_index, $qos_object_index) = ($1, $2);
-        
+
         my $class_name = $classmap_name{$policy_index . '.' . $qos_object_index};
         my $if_index = $self->{results}->{$oid_cbQosIfIndex}->{$oid_cbQosIfIndex . '.' . $policy_index};
         if (!defined($self->{results}->{$self->{oids_label}->{$self->{option_results}->{oid_display}}}->{$self->{oids_label}->{$self->{option_results}->{oid_display}} . '.' . $if_index})) {
@@ -340,7 +337,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping interface index '" . $if_index . "': no filter name.", debug => 1);
             next;
         }
-        
+
         my $qos_data = $self->build_qos_information(class_name => $class_name, policy_index => $policy_index, object_index => $qos_object_index,
             link_queueing => $link_queueing, link_shaping => $link_shaping);
         
@@ -374,12 +371,20 @@ sub manage_selection {
             display => $name,
             traffic_usage => $traffic_usage * 8, drop_usage => $drop_usage * 8, total => $total
         };
-        $self->{classmap}->{$class_name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$class_name}));
-        $self->{classmap}->{$class_name}->{traffic_usage} += $traffic_usage * 8;
-        $self->{classmap}->{$class_name}->{drop_usage} += $drop_usage * 8;
         
-        $self->{total}->{traffic_usage} += $traffic_usage * 8;
-        $self->{total}->{drop_usage} += $drop_usage * 8;
+        my @tabname = split /:/, $name;
+        if (defined($tabname[3])){
+            $class_name = $tabname[3].'-'.$class_name;
+        }
+        
+        $self->{classmap}->{$name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$name}));
+        $self->{classmap}->{$name}->{traffic_usage} += $traffic_usage * 8;
+        $self->{classmap}->{$name}->{drop_usage} += $drop_usage * 8;
+        
+        if (!defined($tabname[3])){
+            $self->{total}->{traffic_usage} += $traffic_usage * 8;
+            $self->{total}->{drop_usage} += $drop_usage * 8;
+        }
     }
     
     $self->{cache_name} = "cisco_qos_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
