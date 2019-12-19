@@ -205,7 +205,7 @@ sub request_api {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($content);
+        $decoded = JSON::XS->new->decode($content);
     };
     if ($@) {
         $self->{output}->output_add(long_msg => $content, debug => 1);
@@ -219,6 +219,34 @@ sub request_api {
     }
 
     return $decoded;
+}
+
+sub internal_activecalls {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/activeCalls');
+    return $status;
+}
+
+sub api_activecalls {
+    my ($self, %options) = @_;
+
+    my $status = $self->internal_activecalls();
+    return $status->{list};
+}
+
+sub internal_extension_list {
+    my ($self, %options) = @_;
+    
+    my $status = $self->request_api(method => 'GET', url_path =>'/api/ExtensionList');
+    return $status;
+}
+
+sub api_extension_list {
+    my ($self, %options) = @_;
+
+    my $status = $self->internal_extension_list();
+    return $status->{list};
 }
 
 sub internal_single_status {
@@ -257,7 +285,7 @@ sub internal_update_checker {
         $status = $status->{tcxUpdate};
         if (ref($status) ne 'ARRAY') {
             # See above note about strange content
-            $status = JSON::XS->new->utf8->decode($status);
+            $status = JSON::XS->new->decode($status);
         }
     }
     return $status;
