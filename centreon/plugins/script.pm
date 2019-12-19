@@ -293,6 +293,30 @@ sub display_list_plugin {
     }
 }
 
+sub check_relaunch_get_args {
+    my ($self) = @_;
+
+    my $args = ['--plugin=' . $self->{plugin}, @ARGV];
+    push @$args, '--ignore-warn-msg' if (defined($self->{ignore_warn_msg}));
+    push @$args, '--global-timeout', $self->{global_timeout} if (defined($self->{global_timeout}));
+    foreach ((
+        ['output_xml', 0], ['output_json', 0], ['output_openmetrics', 0], 
+        ['disco_format', 0], ['disco_show', 0], ['use_new_perfdata', 0], ['debug', 0], ['verbose', 0],
+        ['range_perfdata', 1], ['filter_uom', 1], ['opt_exit', 1], ['filter_perfdata', 1],
+        ['output_file', 1], ['float_precision', 1]
+    )) {
+        my $option = $self->{output}->get_option(option => $_->[0]);
+        if (defined($option)) {
+            my $option_label = $_->[0];
+            $option_label =~ s/_/-/g;
+            push @$args, "--$option_label" if ($_->[1] == 0);
+            push @$args, "--$option_label", $option if ($_->[1] == 1);
+        }
+    }
+
+    return $args;
+}
+
 sub check_relaunch {
     my $self = shift;
 
@@ -303,7 +327,7 @@ sub check_relaunch {
 
     my $need_restart = 0;
     my $cmd = $FindBin::Bin . '/' . $FindBin::Script;
-    my @args = ();
+    my $args = [];
 
     if (defined($self->{environment})) {
         foreach (keys %{$self->{environment}}) {
@@ -313,7 +337,9 @@ sub check_relaunch {
             }
         }
     }
-    
+
+    my $rebuild_args = $self->check_relaunch_get_args();
+
     if (defined($self->{runas}) && $self->{runas} ne '') {
         # Check if it's already me and user exist ;)
         my ($name, $passwd, $uid) = getpwnam($self->{runas});
@@ -323,10 +349,10 @@ sub check_relaunch {
         }
         if ($uid != $>) {
             if ($> == 0) {
-                unshift @args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, '--plugin=' . $self->{plugin}, @ARGV);
+                unshift @$args, '-s', '/bin/bash', '-l', $self->{runas}, '-c', join(' ', $cmd, $rebuild_args);
                 $cmd = 'su';
             } else {
-                unshift @args, '-S', '-u', $self->{runas}, $cmd, '--plugin=' . $self->{plugin}, @ARGV;
+                unshift @$args, '-S', '-u', $self->{runas}, $cmd, @$rebuild_args;
                 $cmd = 'sudo';
             }
             $need_restart = 1;
@@ -334,13 +360,13 @@ sub check_relaunch {
     }
 
     if ($need_restart == 1) {
-        if (scalar(@args) <= 0) {
-            unshift @args, @ARGV, '--plugin=' . $self->{plugin}
+        if (scalar(@$args) <= 0) {
+            unshift @$args, @$rebuild_args;
         }
 
         my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
             command => $cmd,
-            arguments => [@args],
+            arguments => $args,
             timeout => 30,
             wait_exit => 1
         );
@@ -355,7 +381,8 @@ sub check_relaunch {
             $self->{output}->display();
             $self->{output}->exit();
         }
-        print $stdout;
+        chomp $stdout;
+        print $stdout . "\n";
         # We put unknown
         if (!($exit_code >= 0 && $exit_code <= 4)) {
             exit 3;
