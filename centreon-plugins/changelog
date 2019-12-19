@@ -8,6 +8,7 @@
  * Mode added: [linux/snmp] 'udpcon'
  * Mode added: [cisco/standard/snmp] 'load'
  * Mode added: [3cx/restapi] 'extensions'
+ * Mode added: [aix/local] 'cmd-return'
  * Fix: Ctrl+F "Fix" on commits page
 
 2019-10-16 Colin Gagnaire <cgagnaire@centreon.com>
