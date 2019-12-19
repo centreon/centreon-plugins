@@ -39,7 +39,7 @@ sub set_counters {
                 output_template => 'Traffic In (Wan2Lan): %s %s/s',
                 output_change_bytes => 1, per_second => 1,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'bwPassThroughIn_absolute',
+                    { label => 'traffic_in', value => 'bwPassThroughIn_per_second',
                       template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
@@ -49,7 +49,7 @@ sub set_counters {
                 output_template => 'Traffic Out (Lan2Wan): %s %s/s',
                 output_change_bytes => 1, per_second => 1,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'bwPassThroughOut_absolute',
+                    { label => 'traffic_out', value => 'bwPassThroughOut_per_second',
                       template => '%s', min => 0, unit => 'B/s' },
                 ],
             }

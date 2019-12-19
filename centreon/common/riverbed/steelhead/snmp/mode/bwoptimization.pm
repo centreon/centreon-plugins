@@ -39,7 +39,7 @@ sub set_counters {
                 output_template => 'Wan2Lan on Lan: %s %s/s',
                 output_change_bytes => 1, per_second => 1,
                 perfdatas => [
-                    { label => 'wan2lan_lan', value => 'bwHCAggInLan_absolute',
+                    { label => 'wan2lan_lan', value => 'bwHCAggInLan_per_second',
                     template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
@@ -49,7 +49,7 @@ sub set_counters {
                 output_template => 'Wan2Lan on Wan: %s %s/s',
                 output_change_bytes => 1, per_second => 1,
                 perfdatas => [
-                    { label => 'wan2lan_wan', value => 'bwHCAggInWan_absolute',
+                    { label => 'wan2lan_wan', value => 'bwHCAggInWan_per_second',
                     template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
@@ -59,7 +59,7 @@ sub set_counters {
                 output_template => 'Lan2Wan on Lan: %s %s/s',
                 output_change_bytes => 1, per_second => 1,
                 perfdatas => [
-                    { label => 'lan2wan_lan', value => 'bwHCAggOutLan_absolute',
+                    { label => 'lan2wan_lan', value => 'bwHCAggOutLan_per_second',
                     template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 output_template => 'Lan2Wan on Wan: %s %s/s',
                 output_change_bytes => 1, per_second => 1,
                 perfdatas => [
-                    { label => 'lan2wan_wan', value => 'bwHCAggOutWan_absolute',
+                    { label => 'lan2wan_wan', value => 'bwHCAggOutWan_per_second',
                     template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
