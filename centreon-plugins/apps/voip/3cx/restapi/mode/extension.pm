@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
@@ -48,30 +48,17 @@ sub custom_status_output {
     return $msg;
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{extension} = $options{new_datas}->{$self->{instance} . '_extension'};
-    $self->{result_values}->{registered} = $options{new_datas}->{$self->{instance} . '_registered'};
-    $self->{result_values}->{dnd} = $options{new_datas}->{$self->{instance} . '_dnd'};
-    $self->{result_values}->{profile} = $options{new_datas}->{$self->{instance} . '_profile'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{duration} = $options{new_datas}->{$self->{instance} . '_duration'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
-        { name => 'extension', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'All extensions are ok', skipped_code => { -10 => 1 } }
+        { name => 'extension', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'All extensions are ok' }
     ];
 
     $self->{maps_counters}->{extension} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'extension' }, { name => 'registered' }, { name => 'dnd' }, { name => 'profile' }, { name => 'status' }, { name => 'duration' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
@@ -93,9 +80,9 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
     return $self;
@@ -135,8 +122,8 @@ sub manage_selection {
             dnd => $item->{DND} ? 'true' : 'false',
             profile => $item->{CurrentProfile},
             status => $status{$item->{_str}}->{Status} ? $status{$item->{_str}}->{Status} : '',
-            duration => $status{$item->{_str}}->{Duration} &&
-                        $status{$item->{_str}}->{Duration} =~ /(\d\d):(\d\d):(\d\d).*/ ? $1*3600+$2*60+$3 : 0,
+            duration => $status{$item->{_str}}->{Duration} && $status{$item->{_str}}->{Duration} =~ /(\d\d):(\d\d):(\d\d).*/ ? 
+                $1 * 3600 + $2 * 60 + $3 : 0
         };
     }
 }
