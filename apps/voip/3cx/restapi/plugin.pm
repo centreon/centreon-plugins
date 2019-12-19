@@ -32,6 +32,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'extension' => 'apps::voip::3cx::restapi::mode::extension',
         'system'    => 'apps::voip::3cx::restapi::mode::system',
     );
 
