@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,109 +20,95 @@
 
 package network::bluecoat::snmp::mode::cpu;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All cpu usages are ok' },
+    ];
+    $self->{maps_counters}->{cpu} = [
+        { label => 'usage', set => {
+                key_values => [ { name => 'idle', diff => 1 }, { name => 'busy', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_data_calc'),
+                output_template => '%.2f %%', output_use => 'used_prct', threshold_use => 'used_prct',
+                perfdatas => [
+                    { label => 'cpu', value => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%',
+                      label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+    ];
+}
+
+sub custom_data_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    my $delta_busy = $options{new_datas}->{$self->{instance} . '_busy'} - $options{old_datas}->{$self->{instance} . '_busy'};
+    my $delta_idle = $options{new_datas}->{$self->{instance} . '_idle'} - $options{old_datas}->{$self->{instance} . '_idle'};
+    my $total = $delta_busy + $delta_idle;
+    $self->{result_values}->{used_prct} = 0;
+    if ($total > 0) {
+        $self->{result_values}->{used_prct} = ($delta_busy) * 100 / $total;
+    }
+    return 0;
+}
+
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{display} . "' Usage : ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
-                                  "warning:s"      => { name => 'warning' },
-                                  "critical:s"     => { name => 'critical' },
                                 });
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
                                 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    $self->{statefile_value}->check_options(%options);
-}
+my $mapping = {
+    sgProxyCpuCoreBusyTime  => { oid => '.1.3.6.1.4.1.3417.2.11.2.4.1.3' },
+    sgProxyCpuCoreIdleTime  => { oid => '.1.3.6.1.4.1.3417.2.11.2.4.1.4' },
+};
+my $oid_table = '.1.3.6.1.4.1.3417.2.11.2.4.1';
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-    
-    if ($self->{snmp}->is_snmpv1()) {
+
+    if ($options{snmp}->is_snmpv1()) {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
 
-    my $new_datas = {};
-    my $old_timestamp = undef;
+    $self->{cache_name} = 'bluecoat_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode}. '_' . 
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
     
-    $self->{statefile_value}->read(statefile => 'bluecoat_' . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-    
-    my $result = $self->{snmp}->get_table(oid => '.1.3.6.1.4.1.3417.2.11.2.4.1', nothing_quit => 1);
-    $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    $new_datas->{last_timestamp} = time();
-    
-    my $oid_sgProxyCpuCoreBusyTime = '.1.3.6.1.4.1.3417.2.11.2.4.1.3';
-    my $oid_sgProxyCpuCoreIdleTime = '.1.3.6.1.4.1.3417.2.11.2.4.1.4';
+    $self->{cpu} = {};
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_table, start => $mapping->{sgProxyCpuCoreBusyTime}, end => $mapping->{sgProxyCpuCoreIdleTime}, nothing_quit => 1);
     my $i = 0;
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$result})) {
-        next if ($oid !~ /^$oid_sgProxyCpuCoreBusyTime\.(\d+)/);
+    foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result})) {
+        next if ($oid !~ /^$mapping->{sgProxyCpuCoreBusyTime}->{oid}\.(.*)$/);
         my $instance = $1;
-        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        $self->{cpu}->{$i} = {
+            display => $i,
+            idle => $result->{sgProxyCpuCoreIdleTime}, busy => $result->{sgProxyCpuCoreBusyTime}
+        };
         $i++;
-        $new_datas->{'cpu_' . $i . '_busy'} = $result->{$oid};
-        $new_datas->{'cpu_' . $i . '_idle'} = $result->{$oid_sgProxyCpuCoreIdleTime . '.' . $instance};
-        
-        next if (!defined($old_timestamp));
-        
-        my $old_cpu_busy = $self->{statefile_value}->get(name => 'cpu_' . $i . '_busy');
-        my $old_cpu_idle = $self->{statefile_value}->get(name => 'cpu_' . $i . '_idle');
-        if (!defined($old_cpu_busy) || !defined($old_cpu_idle)) {
-            next;
-        }
-        
-        if ($new_datas->{'cpu_' . $i . '_busy'} < $old_cpu_busy) {
-            # We set 0. Has reboot.
-            $old_cpu_busy = 0;
-            $old_cpu_idle = 0;
-        }
-        
-        my $total_elapsed = (($new_datas->{'cpu_' . $i . '_busy'} - $old_cpu_busy) + ($new_datas->{'cpu_' . $i . '_idle'} - $old_cpu_idle));
-        my $prct_usage =  (($new_datas->{'cpu_' . $i . '_busy'} - $old_cpu_busy) * 100 / ($total_elapsed));
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_usage, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("CPU $i Usage is %.2f%%", $prct_usage));
-        $self->{output}->perfdata_add(label => 'cpu_' . $i, unit => '%',
-                                      value => sprintf("%.2f", $prct_usage),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
     }
-    
-    $self->{statefile_value}->write(data => $new_datas);
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -135,11 +121,11 @@ Check CPU Usage
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical in percent.
 

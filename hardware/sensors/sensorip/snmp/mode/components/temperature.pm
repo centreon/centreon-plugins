@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -50,9 +50,9 @@ my $mapping = {
 my $oid_sensorProbeTempEntry = '.1.3.6.1.4.1.3854.1.2.2.1.16.1';
 
 sub load {
-    my (%options) = @_;
-    
-    push @{$options{request}}, { oid => $oid_sensorProbeTempEntry, end => $mapping->{sensorProbeTempLowCritical}->{oid} };
+    my ($self) = @_;
+
+    push @{$self->{request}}, { oid => $oid_sensorProbeTempEntry, end => $mapping->{sensorProbeTempLowCritical}->{oid} };
 }
 
 sub check {
@@ -60,14 +60,14 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
     $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'temperature'));
+    return if ($self->check_filter(section => 'temperature'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_sensorProbeTempEntry}})) {
         next if ($oid !~ /^$mapping->{sensorProbeTempDegree}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_sensorProbeTempEntry}, instance => $instance);
         
-        next if ($self->check_exclude(section => 'temperature', instance => $instance));
+        next if ($self->check_filter(section => 'temperature', instance => $instance));
         if ($result->{sensorProbeTempOnline} =~ /Offline/i) {
             $self->absent_problem(section => 'temperature', instance => $instance);
             next;
@@ -104,11 +104,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Temperature sensor '%s' is %s degree centigrade", $result->{sensorProbeTempDescription}, $result->{sensorProbeTempDegree}));
             }
-            $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => 'C', 
-                                          value => $result->{sensorProbeTempDegree},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'temp', unit => 'C',
+                nlabel => 'hardware.sensor.temperature.celsius',
+                instances => $instance,
+                value => $result->{sensorProbeTempDegree},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }

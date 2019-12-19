@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,10 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'load'             => 'hardware::pdu::apc::snmp::mode::load',
-                         'hardware'         => 'hardware::pdu::apc::snmp::mode::hardware',
-                         'outlet'           => 'hardware::pdu::apc::snmp::mode::outlet',
-                         );
+        'load'             => 'hardware::pdu::apc::snmp::mode::load',
+        'hardware'         => 'hardware::pdu::apc::snmp::mode::hardware',
+        'outlet'           => 'hardware::pdu::apc::snmp::mode::outlet',
+    );
 
     return $self;
 }

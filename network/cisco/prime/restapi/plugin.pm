@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'ap-usage'     => 'network::cisco::prime::restapi::mode::apusage',
-                         'wlc-cpu'      => 'network::cisco::prime::restapi::mode::wlccpu',
-                         'wlc-memory'   => 'network::cisco::prime::restapi::mode::wlcmemory',
-                         );
+        'ap-usage'     => 'network::cisco::prime::restapi::mode::apusage',
+        'wlc-cpu'      => 'network::cisco::prime::restapi::mode::wlccpu',
+        'wlc-memory'   => 'network::cisco::prime::restapi::mode::wlcmemory',
+    );
 
     $self->{custom_modes}{api} = 'network::cisco::prime::restapi::custom::api';
     return $self;

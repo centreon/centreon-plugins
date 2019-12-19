@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'dynamic-command'    => 'snmp_standard::mode::dynamiccommand',
         'numeric-value'      => 'snmp_standard::mode::numericvalue',
+        'response-time'      => 'apps::protocols::snmp::mode::responsetime',
         'string-value'       => 'snmp_standard::mode::stringvalue',
         'uptime'             => 'snmp_standard::mode::uptime',
     );

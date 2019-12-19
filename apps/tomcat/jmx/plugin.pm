@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,20 +31,20 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                          'class-count'      => 'centreon::common::jvm::mode::classcount',
-                          'connector-usage'  => 'apps::tomcat::jmx::mode::connectorusage',
-                          'cpu-load'         => 'centreon::common::jvm::mode::cpuload',
-                          'datasource-usage' => 'apps::tomcat::jmx::mode::datasourceusage',
-                          'fd-usage'         => 'centreon::common::jvm::mode::fdusage',
-                          'gc-usage'         => 'centreon::common::jvm::mode::gcusage',
-                          'list-datasources' => 'apps::tomcat::jmx::mode::listdatasources',
-                          'list-webapps'     => 'apps::tomcat::jmx::mode::listwebapps',
-                          'load-average'     => 'centreon::common::jvm::mode::loadaverage',
-                          'memory'           => 'centreon::common::jvm::mode::memory',
-                          'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
-                          'threads'          => 'centreon::common::jvm::mode::threads',
-                          'webapps-sessions' => 'apps::tomcat::jmx::mode::webappssessions',
-                         );
+        'class-count'      => 'centreon::common::jvm::mode::classcount',
+        'connector-usage'  => 'apps::tomcat::jmx::mode::connectorusage',
+        'cpu-load'         => 'centreon::common::jvm::mode::cpuload',
+        'datasource-usage' => 'apps::tomcat::jmx::mode::datasourceusage',
+        'fd-usage'         => 'centreon::common::jvm::mode::fdusage',
+        'gc-usage'         => 'centreon::common::jvm::mode::gcusage',
+        'list-datasources' => 'apps::tomcat::jmx::mode::listdatasources',
+        'list-webapps'     => 'apps::tomcat::jmx::mode::listwebapps',
+        'load-average'     => 'centreon::common::jvm::mode::loadaverage',
+        'memory'           => 'centreon::common::jvm::mode::memory',
+        'memory-detailed'  => 'centreon::common::jvm::mode::memorydetailed',
+        'threads'          => 'centreon::common::jvm::mode::threads',
+        'webapps-sessions' => 'apps::tomcat::jmx::mode::webappssessions',
+    );
 
     $self->{custom_modes}{jolokia} = 'centreon::common::protocols::jmx::custom::jolokia';
     return $self;

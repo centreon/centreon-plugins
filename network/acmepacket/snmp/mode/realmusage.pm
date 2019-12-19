@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,7 +34,7 @@ sub set_counters {
     ];    
     
     $self->{maps_counters}->{realm} = [
-        { label => 'current-in-sessions', set => {
+        { label => 'current-in-sessions', nlabel => 'realm.sessions.in.current.count', set => {
                 key_values => [ { name => 'apSigRealmStatsCurrentActiveSessionsInbound' }, { name => 'display' } ],
                 output_template => 'Current Inbound Sessions : %s',
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-in-sessions-rate', set => {
+        { label => 'current-in-sessions-rate', nlabel => 'realm.sessions.in.rate.count', set => {
                 key_values => [ { name => 'apSigRealmStatsCurrentSessionRateInbound' }, { name => 'display' } ],
                 output_template => 'Current Inbound Sessions Rate : %s/s',
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-in-sessions', set => {
+        { label => 'total-in-sessions', nlabel => 'realm.sessions.in.total.count', set => {
                 key_values => [ { name => 'apSigRealmStatsTotalSessionsInbound', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Inbound Sessions : %s',
                 perfdatas => [
@@ -61,7 +61,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-out-sessions', set => {
+        { label => 'current-out-sessions', nlabel => 'realm.sessions.out.current.count', set => {
                 key_values => [ { name => 'apSigRealmStatsCurrentActiveSessionsOutbound' }, { name => 'display' } ],
                 output_template => 'Current Outbound Sessions : %s',
                 perfdatas => [
@@ -70,7 +70,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-out-sessions-rate', set => {
+        { label => 'current-out-sessions-rate', nlabel => 'realm.sessions.out.current.count', set => {
                 key_values => [ { name => 'apSigRealmStatsCurrentSessionRateOutbound' }, { name => 'display' } ],
                 output_template => 'Current Outbound Sessions Rate : %s/s',
                 perfdatas => [
@@ -79,7 +79,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-out-sessions', set => {
+        { label => 'total-out-sessions', nlabel => 'realm.sessions.out.total.count', set => {
                 key_values => [ { name => 'apSigRealmStatsTotalSessionsOutbound', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Outbound Sessions : %s',
                 perfdatas => [
@@ -88,7 +88,7 @@ sub set_counters {
                 ],
             }
         },        
-        { label => 'avg-qos-rfactor', set => {
+        { label => 'avg-qos-rfactor', nlabel => 'realm.rfactor.qos.average.count', set => {
                 key_values => [ { name => 'apSigRealmStatsAverageQoSRFactor' }, { name => 'display' } ],
                 output_template => 'Average QoS RFactor : %s',
                 perfdatas => [
@@ -97,11 +97,11 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-rfactor', set => {
+        { label => 'total-rfactor', nlabel => 'realm.rfactor.execeded.total.count', set => {
                 key_values => [ { name => 'apSigRealmStatsTotalMajorRFactorExceeded', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Rfactor Exceeded : %s',
                 perfdatas => [
-                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceededabsolute', template => '%s',
+                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceeded_absolute', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
                 ],
             }
@@ -120,7 +120,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "filter-name:s"           => { name => 'filter_name' },

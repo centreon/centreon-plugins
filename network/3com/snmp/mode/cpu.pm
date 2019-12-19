@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,7 +32,7 @@ sub set_counters {
         { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPU usages are ok' }
     ];
     $self->{maps_counters}->{cpu} = [
-        { label => '5s', set => {
+        { label => '5s', nlabel => 'cpu.utilization.5s.percentage', set => {
                 key_values => [ { name => 'usage_5s' }, { name => 'display' } ],
                 output_template => '%s %% (5sec)', output_error_template => "%s (5sec)",
                 perfdatas => [
@@ -41,7 +41,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '1m', set => {
+        { label => '1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'usage_1m' }, { name => 'display' } ],
                 output_template => '%s %% (1m)', output_error_template => "%s (1min)",
                 perfdatas => [
@@ -50,7 +50,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '5m', set => {
+        { label => '5m', nlabel => 'cpu.utilization.5m.percentage', set => {
                 key_values => [ { name => 'usage_5m' }, { name => 'display' } ],
                 output_template => '%s %% (5min)', output_error_template => "%s (5min)",
                 perfdatas => [
@@ -76,7 +76,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                 });

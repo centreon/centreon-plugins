@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,29 +31,28 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'errpt' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '' },
-                                  "error-type:s"      => { name => 'error_type' },
-                                  "error-class:s"     => { name => 'error_class' },
-                                  "error-id:s"        => { name => 'error_id' },
-                                  "retention:s"       => { name => 'retention' },
-                                  "timezone:s"        => { name => 'timezone' },
-                                  "description"       => { name => 'description' },
-                                  "filter-resource:s" => { name => 'filter_resource' },
-                                  "filter-id:s"	      => { name => 'filter_id' },
-                                  "exclude-id:s"      => { name => 'exclude_id' },	
-                                });
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'errpt' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '' },
+        'error-type:s'      => { name => 'error_type' },
+        'error-class:s'     => { name => 'error_class' },
+        'error-id:s'        => { name => 'error_id' },
+        'retention:s'       => { name => 'retention' },
+        'timezone:s'        => { name => 'timezone' },
+        'description'       => { name => 'description' },
+        'filter-resource:s' => { name => 'filter_resource' },
+        'filter-id:s'	    => { name => 'filter_id' },
+        'exclude-id:s'      => { name => 'exclude_id' },
+        'format-date'       => { name => 'format_date' },
+    });
     $self->{result} = {};
     return $self;
 }
@@ -63,7 +62,7 @@ sub check_options {
     $self->SUPER::init(%options);
     
     if (defined($self->{option_results}->{exclude_id}) && defined($self->{option_results}->{error_id})) {
-    	$self->{output}->add_option_msg(short_msg => "Please use --error-id OR --exclude-id, these options are mutually exclusives");
+        $self->{output}->add_option_msg(short_msg => "Please use --error-id OR --exclude-id, these options are mutually exclusives");
     	$self->{output}->option_exit();
     }
 }
@@ -82,7 +81,7 @@ sub manage_selection {
     	$extra_options.= ' -j '.$self->{option_results}->{error_id};
     }
     if (defined($self->{option_results}->{exclude_id}) && $self->{option_results}->{exclude_id} ne ''){
-    	$extra_options.= ' -k '.$self->{option_results}->{exclude_id};
+    	$extra_options.= ' -k ' . $self->{option_results}->{exclude_id};
     }
     if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} ne ''){
         my $retention = time() - $self->{option_results}->{retention};
@@ -91,34 +90,36 @@ sub manage_selection {
         }
         my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($retention);
         $year = $year - 100;
-        if (length($sec)==1){
-            $sec = '0'.$sec;
+        if (length($sec) == 1){
+            $sec = '0' . $sec;
         }
-        if (length($min)==1){
-            $min = '0'.$min;
+        if (length($min) == 1){
+            $min = '0' . $min;
         }
-        if (length($hour)==1){
-            $hour = '0'.$hour;
+        if (length($hour) == 1){
+            $hour = '0' . $hour;
         }
-        if (length($mday)==1){
-            $mday = '0'.$mday;
+        if (length($mday) == 1){
+            $mday = '0' . $mday;
         }
         $mon = $mon + 1;
-        if (length($mon)==1){
-            $mon = '0'.$mon;
+        if (length($mon) == 1){
+            $mon = '0' . $mon;
         }
-        $retention = $mon.$mday.$hour.$min.$year;
+        $retention = $mon . $mday . $hour . $min . $year;
         $extra_options .= ' -s '.$retention;
     }
     
     $extra_options .= $self->{option_results}->{command_options};
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $extra_options);
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $extra_options
+    );
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
@@ -126,7 +127,7 @@ sub manage_selection {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
         
         my ($identifier, $timestamp, $resource_name, $description) = ($1, $2, $5, $6);
-        $self->{result}->{$timestamp.'~'.$identifier.'~'.$resource_name} = {description => $description};
+        $self->{result}->{ $timestamp . '~' . $identifier . '~' . $resource_name } = { description => $description };
     }
 }
 
@@ -139,12 +140,14 @@ sub run {
     }
     
     $self->manage_selection();
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("No error found%s.", $extra_message));
-    
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("No error found%s.", $extra_message)
+    );
+
     my $total_error = 0;
     foreach my $errpt_error (sort(keys %{$self->{result}})) {
-	    my @split_error = split ('~',$errpt_error);
+	    my @split_error = split ('~', $errpt_error);
 	    my $timestamp = $split_error[0];
         my $identifier = $split_error[1];
         my $resource_name = $split_error[2];
@@ -154,21 +157,30 @@ sub run {
                  $resource_name !~ /$self->{option_results}->{filter_resource}/);
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
                  $identifier !~ /$self->{option_results}->{filter_id}/);
+
+        my $output_date = $split_error[0];
+        if (defined($self->{option_results}->{format_date})) {
+            my ($month, $day, $hour, $minute, $year) = unpack("(A2)*", $output_date);
+            $output_date = sprintf("20%s/%s/%s %s:%s", $year, $month, $day, $hour, $minute);
+        }
+        
         $total_error++;
-        if (defined($self->{option_results}->{description})) {
+        if (defined($description)) {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
-                                                $timestamp, $resource_name, $description));           
+                                                $output_date, $resource_name, $description));           
         } else {
             $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
-                                                $timestamp, $resource_name));
+                                                $output_date, $resource_name));
         }
     }
 
     if ($total_error != 0) {
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf("%s error(s) found(s)%s", $total_error, $extra_message));
+        $self->{output}->output_add(
+            severity => 'critical',
+            short_msg => sprintf("%s error(s) found(s)%s", $total_error, $extra_message)
+        );
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -251,6 +263,10 @@ Filter error code (can use a regexp).
 =item B<--exclude-id>
 
 Filter on specific error code (can be a comma separated list).
+
+=item B<--format-date>
+
+Print the date to format 20YY/mm/dd HH:MM instead of mmddHHMMYY.
 
 =back
 

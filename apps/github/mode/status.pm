@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -40,21 +40,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"        => { name => 'hostname', default => 'status.github.com' },
-            "port:s"            => { name => 'port', default => '443'},
-            "proto:s"           => { name => 'proto', default => 'https' },
-            "urlpath:s"         => { name => 'url_path', default => '/api/last-message.json' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "timeout:s"         => { name => 'timeout' },
-            "threshold-overload:s@"   => { name => 'threshold_overload' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"                => { name => 'hostname', default => 'status.github.com' },
+        "port:s"                    => { name => 'port', default => '443'},
+        "proto:s"                   => { name => 'proto', default => 'https' },
+        "urlpath:s"                 => { name => 'url_path', default => '/api/last-message.json' },
+        "timeout:s"                 => { name => 'timeout' },
+        "threshold-overload:s@"     => { name => 'threshold_overload' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -152,21 +147,9 @@ Specify https if needed (Default: 'https')
 
 Set path to get GitHub's status information (Default: '/api/last-message.json')
 
-=item B<--credentials>
-
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
-
 =item B<--timeout>
 
-Threshold for HTTP timeout (Default: 5
+Threshold for HTTP timeout (Default: 5)
 
 =item B<--threshold-overload>
 

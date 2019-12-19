@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,33 +26,7 @@ use strict;
 use warnings;
 use Time::HiRes qw(gettimeofday tv_interval);
 use Authen::Radius;
-
-my $instance_mode;
-my $radius_result_attributes = {};
-
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -67,7 +41,7 @@ sub custom_status_calc {
 
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{error_msg} = $options{new_datas}->{$self->{instance} . '_error_msg'};
-    $self->{result_values}->{attributes} = $radius_result_attributes;
+    $self->{result_values}->{attributes} = $self->{instance_mode}->{radius_result_attributes};
     return 0;
 }
 
@@ -84,7 +58,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'time', set => {
@@ -104,7 +78,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
          {
          "hostname:s"       => { name => 'hostname' },
@@ -148,18 +121,7 @@ sub check_options {
     if (defined($self->{option_results}->{port}) && $self->{option_results}->{port} =~ /^\d+$/) {
         $self->{option_results}->{hostname} .= ':' . $self->{option_results}->{port};
     }
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub radius_simple_connection {
@@ -238,8 +200,9 @@ sub manage_selection {
     }
     
     $self->{radius}->{elapsed} = tv_interval($self->{timing0}, [gettimeofday]);
+    $self->{radius_result_attributes} = {};
     foreach my $attr ($self->{radius_session}->get_attributes()) {
-        $radius_result_attributes->{$attr->{Name}} = defined($attr->{Value}) ? $attr->{Value} : '';
+        $self->{radius_result_attributes}->{$attr->{Name}} = defined($attr->{Value}) ? $attr->{Value} : '';
         $self->{output}->output_add(long_msg => 'Attribute Name = ' .  $attr->{Name} . 
             ', Value = ' . (defined($attr->{Value}) ? $attr->{Value} : ''), debug => 1);
     }
@@ -282,7 +245,7 @@ Specify password for authentication
 
 Connection timeout in seconds (Default: 5)
 
-=item B<--timeout>
+=item B<--retry>
 
 Number of retry connection (Default: 0)
 

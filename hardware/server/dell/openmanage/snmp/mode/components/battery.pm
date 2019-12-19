@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,9 +47,9 @@ my $mapping = {
 my $oid_batteryTableEntry = '.1.3.6.1.4.1.674.10892.1.600.50.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_batteryTableEntry, start => $mapping->{batteryStatus}->{oid}, end => $mapping->{batteryLocationName}->{oid} };
+    push @{$self->{request}}, { oid => $oid_batteryTableEntry, start => $mapping->{batteryStatus}->{oid}, end => $mapping->{batteryLocationName}->{oid} };
 }
 
 sub check {
@@ -57,21 +57,21 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking batteries");
     $self->{components}->{battery} = {name => 'batteries', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'battery'));
+    return if ($self->check_filter(section => 'battery'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_batteryTableEntry}})) {
         next if ($oid !~ /^$mapping->{batteryStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_batteryTableEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'battery', instance => $instance));
+        next if ($self->check_filter(section => 'battery', instance => $instance));
         
         $self->{components}->{battery}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Battery '%s' status is '%s' [instance: %s, reading: %s, location: %s]",
                                     $instance, $result->{batteryStatus}, $instance, $result->{batteryReading}, $result->{batteryLocationName}
                                     ));
-        my $exit = $self->get_severity(section => 'battery', value => $result->{batteryStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'battery', value => $result->{batteryStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Battery '%s' status is '%s'",

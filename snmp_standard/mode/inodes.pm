@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{disk} = [
-        { label => 'usage', set => {
+        { label => 'usage', nlabel => 'storage.inodes.usage.percentage', set => {
                 key_values => [ { name => 'usage' }, { name => 'display' } ],
                 output_template => 'Used: %s %%', output_error_template => "%s",
                 perfdatas => [
@@ -56,17 +56,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name"                    => { name => 'use_name' },
-                                  "diskpath:s"              => { name => 'diskpath' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "filter-device:s"         => { name => 'filter_device' },
-                                  "display-transform-src:s" => { name => 'display_transform_src' },
-                                  "display-transform-dst:s" => { name => 'display_transform_dst' },
-                                });
+    $options{options}->add_options(arguments => {
+        'name'                    => { name => 'use_name' },
+        'diskpath:s'              => { name => 'diskpath' },
+        'regexp'                  => { name => 'use_regexp' },
+        'regexp-isensitive'       => { name => 'use_regexpi' },
+        'filter-device:s'         => { name => 'filter_device' },
+        'display-transform-src:s' => { name => 'display_transform_src' },
+        'display-transform-dst:s' => { name => 'display_transform_dst' },
+    });
 
     return $self;
 }
@@ -129,12 +127,14 @@ sub manage_selection {
         }
         
         
-        $self->{disk}->{$result->{dskPath}} = { display => $result->{dskPath}, 
-                                                         usage => $result->{dskPercentNode} };
+        $self->{disk}->{$result->{dskPath}} = {
+            display => $result->{dskPath}, 
+            usage => $result->{dskPercentNode}
+        };
     }
     
     if (scalar(keys %{$self->{disk}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->add_option_msg(short_msg => 'No entry found.');
         $self->{output}->option_exit();
     }
 }

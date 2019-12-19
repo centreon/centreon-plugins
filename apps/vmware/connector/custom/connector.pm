@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,18 +46,21 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "connector-hostname:s@"    => { name => 'connector_hostname' },
-                      "connector-port:s@"        => { name => 'connector_port' },
-                      "vsphere-address:s@"       => { name => 'vsphere_address' },
-                      "vsphere-username:s@"      => { name => 'vsphere_username' },
-                      "vsphere-password:s@"      => { name => 'vsphere_password' },
-                      "container:s@"             => { name => 'container' },
-                      "timeout:s@"               => { name => 'timeout' },
-                      "sampling-period:s@"       => { name => 'sampling_period' },
-                      "time-shift:s@"            => { name => 'time_shift' },
-                    });
+        $options{options}->add_options(arguments => {
+            'connector-hostname:s@'    => { name => 'connector_hostname' },
+            'connector-port:s@'        => { name => 'connector_port' },
+            'vsphere-address:s@'       => { name => 'vsphere_address' },
+            'vsphere-username:s@'      => { name => 'vsphere_username' },
+            'vsphere-password:s@'      => { name => 'vsphere_password' },
+            'container:s@'             => { name => 'container' },
+            'timeout:s@'               => { name => 'timeout' },
+            'sampling-period:s@'       => { name => 'sampling_period' },
+            'time-shift:s@'            => { name => 'time_shift' },
+            'case-insensitive'         => { name => 'case_insensitive' },
+            'unknown-connector-status:s'  => { name => 'unknown_connector_status' },
+            'warning-connector-status:s'  => { name => 'warning_connector_status' },
+            'critical-connector-status:s' => { name => 'critical_connector_status' },
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CONNECTOR OPTIONS', once => 1);
 
@@ -65,6 +68,7 @@ sub new {
     $self->{mode} = $options{mode};
 
     $self->{json_send} = {};
+    $self->{result} = undef;
     return $self;
 }
 
@@ -109,11 +113,15 @@ sub check_options {
     $self->{vsphere_password} = (defined($self->{option_results}->{vsphere_password})) ? shift(@{$self->{option_results}->{vsphere_password}}) : undef;
     $self->{sampling_period} = (defined($self->{option_results}->{sampling_period})) ? shift(@{$self->{option_results}->{sampling_period}}) : undef;
     $self->{time_shift} = (defined($self->{option_results}->{sampling_period})) ? shift(@{$self->{option_results}->{time_shift}}) : 0;
+    $self->{unknown_connector_status} = (defined($self->{option_results}->{unknown_connector_status})) ? $self->{option_results}->{unknown_connector_status} : '%{code} < 0 || (%{code} > 0 && %{code} < 200)';
+    $self->{warning_connector_status} = (defined($self->{option_results}->{warning_connector_status})) ? $self->{option_results}->{warning_connector_status} : '';
+    $self->{critical_connector_status} = (defined($self->{option_results}->{critical_connector_status})) ? $self->{option_results}->{critical_connector_status} : '';
+    $self->{case_insensitive} = (defined($self->{option_results}->{case_insensitive})) ? $self->{option_results}->{case_insensitive} : undef;
     
     $self->{connector_port} = 5700 if ($self->{connector_port} eq '');
     $self->{container} = 'default' if ($self->{container} eq '');
     if (!defined($self->{connector_hostname}) || $self->{connector_hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set option --connector-hostname.");
+        $self->{output}->add_option_msg(short_msg => 'Please set option --connector-hostname.');
         $self->{output}->option_exit();
     }
     if (defined($self->{timeout}) && $self->{timeout} =~ /^\d+$/ &&
@@ -128,12 +136,6 @@ sub check_options {
         return 0;
     }
     return 1;
-}
-
-sub set_discovery {
-    my ($self, %options) = @_;
-    
-    $self->{discovery} = 1;
 }
 
 sub add_params {
@@ -160,36 +162,101 @@ sub connector_response {
     }
     
     my $json = $1;
-    my $result;
-    
     eval {
-        $result = JSON->new->utf8->decode($json);
+        $self->{output}->output_add(long_msg => $json, debug => 1);
+        $self->{result} = JSON->new->utf8->decode($json);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json result: $@");
         $self->{output}->option_exit();
     }
+}
+
+sub connector_response_status {
+    my ($self, %options) = @_;
     
-    foreach my $output (@{$result->{plugin}->{outputs}}) {
-        if ($output->{type} == 1) {
-            $self->{output}->output_add(severity => $output->{exit},
-                                        short_msg => $output->{msg});
-        } elsif ($output->{type} == 2) {
-            $self->{output}->output_add(long_msg => $output->{msg});
-        }
+    if (!defined($self->{result})) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot get response (timeout received)');
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{result}->{code})) {
+        $self->{output}->add_option_msg(short_msg => 'response format incorrect - need connector vmware version >= 3.x.x');
+        $self->{output}->option_exit();
     }
     
-    foreach my $perf (@{$result->{plugin}->{perfdatas}}) {
-        $self->{output}->perfdata_add(label => $perf->{label}, unit => $perf->{unit},
-                                      value => $perf->{value},
-                                      warning => $perf->{warning},
-                                      critical => $perf->{critical},
-                                      min => $perf->{min}, max => $perf->{max});
+    foreach (('unknown_connector_status', 'warning_connector_status', 'critical_connector_status')) {
+        $self->{$_} =~ s/%\{(.*?)\}/\$self->{result}->{$1}/g;
+    }
+        
+    # Check response
+    my $status = 'ok';
+    my $message;
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+
+        if (defined($self->{critical_connector_status}) && $self->{critical_connector_status} ne '' &&
+            eval "$self->{critical_connector_status}") {
+            $status = 'critical';
+        } elsif (defined($self->{warning_connector_status}) && $self->{warning_connector_status} ne '' &&
+                 eval "$self->{warning_connector_status}") {
+            $status = 'warning';
+        } elsif (defined($self->{unknown_connector_status}) && $self->{unknown_connector_status} ne '' &&
+                 eval "$self->{unknown_connector_status}") {
+            $status = 'unknown';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->add_option_msg(short_msg => 'filter connector status issue: ' . $message);
+        $self->{output}->option_exit();
+    }
+
+    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
+        $self->{output}->output_add(long_msg => $self->{result}->{extra_message}, debug => 1);
+        $self->{output}->output_add(severity => $status,
+                                    short_msg => $self->{result}->{short_message});
+        $self->{output}->display();
+        $self->{output}->exit();
     }
 }
 
-sub run {
+sub entity_is_connected {
     my ($self, %options) = @_;
+     
+    if ($options{state} !~ /^connected$/i) {
+        return 0;
+    }
+    return 1;
+}
+
+sub vm_is_running {
+    my ($self, %options) = @_;
+    
+    if ($options{power} !~ /^poweredOn$/i) {
+        return 0;
+    }
+    return 1;
+}
+
+sub get_id {
+    my ($self, %options) = @_;
+    
+    return $self->{connector_hostname} . '.' . $self->{connector_port} . '.' .  $self->{container};
+}
+
+sub strip_cr {
+     my ($self, %options) = @_;
+    
+    $options{value} =~ s/^\s+.*\s+$//mg;
+    $options{value} =~ s/\r//mg;
+    $options{value} =~ s/\n/ -- /mg;
+    return $options{value};
+}
+
+sub execute {
+    my ($self, %options) = @_;
+    
+    $self->add_params(%options);
     
     # Build request
     my $uuid;
@@ -204,6 +271,7 @@ sub run {
     $self->{json_send}->{vsphere_password} = $self->{vsphere_password};
     $self->{json_send}->{sampling_period} = $self->{sampling_period};
     $self->{json_send}->{time_shift} = $self->{time_shift};
+    $self->{json_send}->{case_insensitive} = $self->{case_insensitive};
     
     # Init
     my $context = zmq_init();
@@ -227,16 +295,6 @@ sub run {
                my $response = zmq_recvmsg($self->{requester});
                zmq_close($self->{requester});
                $self->connector_response(response => $response);
-               # We need to remove xml output
-               if (defined($self->{output}->{option_results}->{output_xml})) {
-                   delete $self->{output}->{option_results}->{output_xml};
-               }
-               if (!defined($self->{discovery})) {
-                   $self->{output}->display();
-               } else {
-                   $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
-               }
-               $self->{output}->exit();
             },
         },
     );
@@ -244,10 +302,9 @@ sub run {
     zmq_poll(\@poll, $self->{timeout} * 1000);    
     zmq_close($self->{requester});
     
-    $self->{output}->output_add(severity => 'UNKNOWN',
-                                short_msg => sprintf("Cannot get response (timeout received)"));
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->connector_response_status();
+    
+    return $self->{result};
 }
 
 1;
@@ -302,6 +359,25 @@ Should be not different than 300 or 20.
 =item B<--time-shift>
 
 Can shift the time. We the following option you can average X counters values (default: 0).
+
+=item B<--case-insensitive>
+
+Searchs are case insensitive.
+
+=item B<--unknown-connector-status>
+
+Set unknown threshold for connector status (Default: '%{code} < 0 || (%{code} > 0 && %{code} < 200)').
+Can used special variables like: %{code}, %{short_message}, %{extra_message}.
+
+=item B<--warning-connector-status>
+
+Set warning threshold for connector status (Default: '').
+Can used special variables like: %{code}, %{short_message}, %{extra_message}.
+
+=item B<--critical-connector-status>
+
+Set critical threshold for connector status (Default: '').
+Can used special variables like: %{code}, %{short_message}, %{extra_message}.
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -108,12 +108,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -130,16 +128,19 @@ sub manage_selection {
 
     my $oid_extremeCpuMonitorSystemEntry = '.1.3.6.1.4.1.1916.1.32.1.4.1';
     my $oid_extremeCpuMonitorTotalUtilization = '.1.3.6.1.4.1.1916.1.32.1.2'; # without .0
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_extremeCpuMonitorTotalUtilization },
-                                                            { oid => $oid_extremeCpuMonitorSystemEntry },
-                                                          ], nothing_quit => 1);
-    
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_extremeCpuMonitorTotalUtilization },
+            { oid => $oid_extremeCpuMonitorSystemEntry, start => $mapping->{extremeCpuMonitorSystemUtilization5secs}->{oid}, end => $mapping->{extremeCpuMonitorSystemUtilization5mins}->{oid} },
+        ],
+        nothing_quit => 1
+    );
+
     $self->{cpu} = {};
-    foreach my $oid (keys %{$self->{results}->{$oid_extremeCpuMonitorSystemEntry}}) {
+    foreach my $oid (keys %{$snmp_result->{$oid_extremeCpuMonitorSystemEntry}}) {
         next if ($oid !~ /^$mapping->{extremeCpuMonitorSystemUtilization1min}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_extremeCpuMonitorSystemEntry}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_extremeCpuMonitorSystemEntry}, instance => $instance);
         
         foreach (keys %{$mapping}) {
             $result->{$_} = undef if (defined($result->{$_}) && $result->{$_} =~ /n\/a/i);
@@ -148,7 +149,7 @@ sub manage_selection {
         $self->{cpu}->{$instance} = { num => $instance, %$result };
     }
 
-    $self->{global} = { total => $self->{results}->{$oid_extremeCpuMonitorTotalUtilization}->{$oid_extremeCpuMonitorTotalUtilization . '.0'} };
+    $self->{global} = { total => $snmp_result->{$oid_extremeCpuMonitorTotalUtilization}->{$oid_extremeCpuMonitorTotalUtilization . '.0'} };
 }
 
 1;

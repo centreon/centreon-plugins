@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,6 +24,7 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use apps::protocols::ftp::lib::ftp;
 
 # How much arguments i need and commands manages
@@ -37,7 +38,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
          {
          "hostname:s"       => { name => 'hostname' },
@@ -133,6 +133,7 @@ sub run {
 
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "All file times are ok.");
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     foreach my $name (sort keys %file_times) {
         my $diff_time = $current_time - $file_times{$name};
 
@@ -140,7 +141,7 @@ sub run {
                                                            threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         my $display_date = scalar(localtime($file_times{$name}));
         if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
-            $display_date = DateTime->from_epoch(epoch => $file_times{$name}, time_zone => $self->{option_results}->{timezone})->datetime()
+            $display_date = DateTime->from_epoch(epoch => $file_times{$name}, %$tz)->datetime()
         }
         
         $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, $display_date));

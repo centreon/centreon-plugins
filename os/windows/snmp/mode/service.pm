@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -43,15 +43,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"          => { name => 'warning', },
-                                  "critical:s"         => { name => 'critical', },
-                                  "service:s@"         => { name => 'service', },
-                                  "regexp"             => { name => 'use_regexp', },
-                                  "state:s"            => { name => 'state', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning', },
+        'critical:s' => { name => 'critical', },
+        'service:s@' => { name => 'service', },
+        'regexp'     => { name => 'use_regexp', },
+        'state:s'    => { name => 'state', },
+    });
 
     return $self;
 }
@@ -61,8 +59,8 @@ sub check_options {
     $self->SUPER::init(%options);
 
     if (!defined($self->{option_results}->{service})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify at least one '--service' option.");
-       $self->{output}->option_exit();
+        $self->{output}->add_option_msg(short_msg => "Need to specify at least one '--service' option.");
+        $self->{output}->option_exit();
     }
     
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
@@ -80,23 +78,20 @@ sub run {
     $self->{snmp} = $options{snmp};
     
     my $oid_svSvcEntry = '.1.3.6.1.4.1.77.1.2.3.1';
-    my $oid_svSvcName  = '.1.3.6.1.4.1.77.1.2.3.1.1';
     my $oid_svSvcInstalledState  = '.1.3.6.1.4.1.77.1.2.3.1.2';
     my $oid_svSvcOperatingState  = '.1.3.6.1.4.1.77.1.2.3.1.3';
-    my $result = $self->{snmp}->get_table(oid => $oid_svSvcEntry);
+    my $result = $self->{snmp}->get_table(oid => $oid_svSvcEntry, start => $oid_svSvcInstalledState, end => $oid_svSvcOperatingState);
     
     my %services_match = ();
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => 'All service states are ok');
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($oid !~ /^$oid_svSvcName/);
-        $oid =~ /^$oid_svSvcName\.([0-9\.]+)$/;
-        my $instance = $1;
+        next if ($oid !~ /^$oid_svSvcOperatingState\.(.*?)\.(.*)$/);
+        my $instance = $1 . '.' . $2;
 
-        my $svc_name = $self->{output}->to_utf8($result->{$oid});
+        my $svc_name = $self->{output}->to_utf8(join('', map(chr($_), split(/\./, $2))));
         my $svc_installed_state = $result->{$oid_svSvcInstalledState . '.' . $instance};
-        my $svc_operating_state = $result->{$oid_svSvcOperatingState . '.' . $instance};
-        
+        my $svc_operating_state = $result->{$oid_svSvcOperatingState . '.' . $instance};        
         for (my $i = 0; $i < scalar(@{$self->{option_results}->{service}}); $i++) {
             my $filter = ${$self->{option_results}->{service}}[$i];
             if (defined($self->{option_results}->{use_regexp}) && $svc_name =~ /$filter/) {
@@ -126,7 +121,7 @@ sub run {
             $numbers++;
         }
         
-        my $exit = $self->{perfdata}->threshold_check(value => $numbers, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $numbers, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         $self->{output}->output_add(long_msg => sprintf("Service pattern '%s': service list %s",
                                        ${$self->{option_results}->{service}}[$i],
                                        join(', ', keys %{$services_match{$i}})));
@@ -141,7 +136,7 @@ sub run {
             }
         }
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }

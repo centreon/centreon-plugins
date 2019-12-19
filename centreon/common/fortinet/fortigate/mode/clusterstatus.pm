@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,105 +20,180 @@
 
 package centreon::common::fortinet::fortigate::mode::clusterstatus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
-my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1'; # '.0' to have the mode
-my $oid_fgHaStatsSerial = '.1.3.6.1.4.1.12356.101.13.2.1.1.2';
-my $oid_fgHaStatsMasterSerial = '.1.3.6.1.4.1.12356.101.13.2.1.1.16';
-my $oid_fgHaStatsSyncStatus = '.1.3.6.1.4.1.12356.101.13.2.1.1.12';
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("status is '%s' [Hostname: %s] [Role: %s] [Checksum: %s]",
+        $self->{result_values}->{sync_status},
+        $self->{result_values}->{hostname},
+        $self->{result_values}->{role},
+        $self->{result_values}->{checksum},
+    );
+    return $msg;
+}
 
-my %maps_ha_mode = (
-    1 => 'standalone',
-    2 => 'activeActive',
-    3 => 'activePassive',
-);
+sub prefix_status_output {
+    my ($self, %options) = @_;
+    
+    return "Node '" . $options{instance_value}->{serial} . "' ";
+}
 
-my %maps_sync_status = (
-    0 => 'not synchronized',
-    1 => 'synchronized',
-);
+sub prefix_global_output {
+    my ($self, %options) = @_;
+    
+    return "Nodes ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' },
+    ];
+    $self->{maps_counters}->{global} = [
+        { label => 'total-nodes', display_ok => 0, set => {
+                key_values => [ { name => 'total_nodes' } ],
+                output_template => 'Total nodes: %d',
+                perfdatas => [
+                    { label => 'total_nodes', value => 'total_nodes_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'synchronized', set => {
+                key_values => [ { name => 'synchronized' } ],
+                output_template => 'Synchronized: %d',
+                perfdatas => [
+                    { label => 'synchronized_nodes', value => 'synchronized_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'not-synchronized', set => {
+                key_values => [ { name => 'not_synchronized' } ],
+                output_template => 'Not Synchronized: %d',
+                perfdatas => [
+                    { label => 'not_synchronized_nodes', value => 'not_synchronized_absolute', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+        { label => 'total-checksums', display_ok => 0, set => {
+                key_values => [ { name => 'total_checksums' } ],
+                output_template => 'Total Checksums: %d',
+                perfdatas => [
+                    { label => 'total_checksums', value => 'total_checksums_absolute', template => '%d', min => 0 },
+                ],
+            }
+        },
+    ];        
+    $self->{maps_counters}->{nodes} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' }, { name => 'checksum' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "one-node-status:s" => { name => 'one_node_status', default => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{sync_status} =~ /not synchronized/' },
+        'one-node-status:s' => { name => 'one_node_status' }, # not used, use --opt-exit instead
+    });
 
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    if ($self->{output}->is_litteral_status(status => $self->{option_results}->{one_node_status}) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong one-node-status status option '" . $self->{option_results}->{one_node_status} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
-    
-sub run {
+
+my %map_ha_mode = (
+    1 => 'standalone',
+    2 => 'activeActive',
+    3 => 'activePassive',
+);
+my %map_sync_status = (
+    0 => 'not synchronized',
+    1 => 'synchronized',
+);
+
+my $mapping = {
+    fgHaStatsSerial         => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.2' },
+    fgHaStatsHostname       => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.11' },
+    fgHaStatsSyncStatus     => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.12', map => \%map_sync_status },
+    fgHaStatsGlobalChecksum => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.15' },
+    fgHaStatsMasterSerial   => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' },
+};
+my $oid_fgHaStatsEntry = '.1.3.6.1.4.1.12356.101.13.2.1.1';
+
+my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1.0';
+
+sub manage_selection {
     my ($self, %options) = @_;
     $self->{snmp} = $options{snmp};
-    
-    $self->{result} = $self->{snmp}->get_multiple_table(oids => [
-                                                                  { oid => $oid_fgHaSystemMode },
-                                                                  { oid => $oid_fgHaStatsMasterSerial },
-                                                                  { oid => $oid_fgHaStatsSerial },
-                                                                  { oid => $oid_fgHaStatsSyncStatus },
-                                                                ], 
-                                                        nothing_quit => 1);
-    
-    # Check if mode cluster
-    my $ha_mode = $self->{result}->{$oid_fgHaSystemMode}->{$oid_fgHaSystemMode . '.0'};
-    my $ha_output = defined($maps_ha_mode{$ha_mode}) ? $maps_ha_mode{$ha_mode} : 'unknown';
-    $self->{output}->output_add(long_msg => 'High availabily mode is ' . $ha_output . '.');
-    if ($ha_mode == 1) {
-        $self->{output}->output_add(severity => 'ok',
-                                    short_msg => sprintf("No cluster configuration (standalone mode)."));
-    } else {
-        $self->{output}->output_add(severity => 'ok',
-                                    short_msg => sprintf("Cluster status is ok."));
-        
-        foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsSerial}})) {
-            next if ($key !~ /^$oid_fgHaStatsSerial\.([0-9]+)$/);
 
-            if ($ha_mode == 3) {
-                my $state = $self->{result}->{$oid_fgHaStatsMasterSerial}->{$oid_fgHaStatsMasterSerial . '.' . $1} eq '' ? 
-                            'master' : 'slave';
-                $self->{output}->output_add(long_msg => sprintf("Node '%s' is %s.", 
-                                                    $self->{result}->{$oid_fgHaStatsSerial}->{$key}, $state));
-            }
-            
-            my $sync_status = $self->{result}->{$oid_fgHaStatsSyncStatus}->{$oid_fgHaStatsSyncStatus . '.' . $1};
-            next if (!defined($sync_status));
-            
-            $self->{output}->output_add(long_msg => sprintf("Node '%s' sync-status is %s.", 
-                                                    $self->{result}->{$oid_fgHaStatsSerial}->{$key}, $maps_sync_status{$sync_status}));
-            if ($sync_status == 0) {
-                $self->{output}->output_add(severity => 'critical',
-                                    short_msg => sprintf("Node '%s' sync-status is %s.", 
-                                                    $self->{result}->{$oid_fgHaStatsSerial}->{$key}, $maps_sync_status{$sync_status}));
-            }
-        }
-        
-        if (scalar(keys %{$self->{result}->{$oid_fgHaStatsSerial}}) == 1 &&
-            !$self->{output}->is_status(value => $self->{option_results}->{one_node_status}, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $self->{option_results}->{one_node_status},
-                                        short_msg => sprintf("Cluster with one node only"));
-        }
+    $self->{nodes} = {};
+
+    my $mode = $self->{snmp}->get_leef(oids => [ $oid_fgHaSystemMode ], nothing_quit => 1);
+    
+    if ($map_ha_mode{$mode->{$oid_fgHaSystemMode}} =~ /standalone/) {
+        $self->{output}->add_option_msg(short_msg => "No cluster configuration (standalone mode)");
+        $self->{output}->option_exit();
     }
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode{$mode->{$oid_fgHaSystemMode}});
+
+    $self->{results} = $options{snmp}->get_table(
+        oid => $oid_fgHaStatsEntry,
+        nothing_quit => 1
+    );
+
+    $self->{global} = { synchronized => 0, not_synchronized => 0, total_nodes => 0 };
+    my $checksums = {};
+    foreach my $oid (keys %{$self->{results}}) {
+        next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
+        my $instance = $1;
+        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+
+        $checksums->{$result->{fgHaStatsGlobalChecksum}} = 1;
+        $self->{nodes}->{$instance} = {
+            serial => $result->{fgHaStatsSerial},
+            hostname => $result->{fgHaStatsHostname},
+            sync_status => $result->{fgHaStatsSyncStatus},
+            role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? "master" : "slave",
+            checksum => $result->{fgHaStatsGlobalChecksum},
+        };
+        $result->{fgHaStatsSyncStatus} =~ s/ /_/;
+        $self->{global}->{$result->{fgHaStatsSyncStatus}}++;
+        $self->{global}->{total_nodes}++;
+    }
+
+    $self->{global}->{total_checksums} = scalar(keys %$checksums);
+    if (scalar(keys %{$self->{nodes}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No cluster nodes found');
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -131,9 +206,21 @@ Check cluster status (FORTINET-FORTIGATE-MIB).
 
 =over 8
 
-=item B<--one-node-status>
+=item B<--warning-*> B<--critical-*>
 
-Status if only one node (default: 'critical').
+Set thresholds.
+Can be: 'total-nodes', 'synchronized', 'not-synchronized',
+'total-checksums'.
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{sync_status} !~ /synchronized/').
+Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,24 +31,22 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
+    $options{options}->add_options(arguments => {
             "hostname:s"        => { name => 'hostname' },
             "port:s"            => { name => 'port', },
             "proto:s"           => { name => 'proto' },
             "urlpath:s"         => { name => 'url_path', default => "/index.htm?eL" },
             "credentials"       => { name => 'credentials' },
+            "basic"             => { name => 'basic' },
             "username:s"        => { name => 'username' },
             "password:s"        => { name => 'password' },
-            "proxyurl:s"        => { name => 'proxyurl' },
             "warning"           => { name => 'warning' },
             "critical"          => { name => 'critical' },
             "closed"            => { name => 'closed' },
             "timeout:s"         => { name => 'timeout' },
-            });
+    });
     $self->{status} = { closed => 'ok', opened => 'ok' };
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -110,10 +108,6 @@ IP Addr/FQDN of the webserver host
 
 Port used by Apache
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Specify https if needed
@@ -124,15 +118,23 @@ Set path to get server-status page in auto mode (Default: '/index.htm?eL')
 
 =item B<--credentials>
 
-Specify this option if you access server-status page over basic authentification
+Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--timeout>
 

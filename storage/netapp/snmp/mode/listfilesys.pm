@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,33 +25,16 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 
-my $oid_dfFileSys = '.1.3.6.1.4.1.789.1.5.4.1.2';
-my $oid_dfType = '.1.3.6.1.4.1.789.1.5.4.1.23';
-my $oid_dfKBytesTotal = '.1.3.6.1.4.1.789.1.5.4.1.3';
-my $oid_df64TotalKBytes = '.1.3.6.1.4.1.789.1.5.4.1.29';
-
-my %map_types = (
-    1 => 'traditionalVolume',
-    2 => 'flexibleVolume',
-    3 => 'aggregate',
-    4 => 'stripedAggregate',
-    5 => 'stripedVolume'
-);
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                  "type:s"                => { name => 'type' },
-                                  "skip-total-zero"       => { name => 'skip_total_zero' },
-                                });
-    $self->{filesys_id_selected} = [];
+    $options{options}->add_options(arguments => {
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-type:s'     => { name => 'filter_type' },
+        'skip-total-zero'   => { name => 'skip_total_zero' },
+    });
 
     return $self;
 }
@@ -61,71 +44,75 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
+my %map_types = (
+    1 => 'traditionalVolume',
+    2 => 'flexibleVolume',
+    3 => 'aggregate',
+    4 => 'stripedAggregate',
+    5 => 'stripedVolume'
+);
+
+my $mapping = {
+    dfFileSys       => { oid => '.1.3.6.1.4.1.789.1.5.4.1.2' },
+    dfKBytesTotal   => { oid => '.1.3.6.1.4.1.789.1.5.4.1.3' },
+    dfType          => { oid => '.1.3.6.1.4.1.789.1.5.4.1.23', map => \%map_types },
+    df64TotalKBytes => { oid => '.1.3.6.1.4.1.789.1.5.4.1.29' },
+    dfVserver       => { oid => '.1.3.6.1.4.1.789.1.5.4.1.34' },
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_dfFileSys, nothing_quit => 1);
-    $self->{result_types} = $self->{snmp}->get_table(oid => $oid_dfType, nothing_quit => 1);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
-        next if ($oid !~ /\.([0-9]+)$/);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [ 
+            { oid => $mapping->{dfFileSys}->{oid} },
+            { oid => $mapping->{dfKBytesTotal}->{oid} },
+            { oid => $mapping->{dfType}->{oid} },
+            { oid => $mapping->{df64TotalKBytes}->{oid} },
+            { oid => $mapping->{dfVserver}->{oid} },
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
+
+    $self->{fs} = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{dfFileSys}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $type = $map_types{$self->{result_types}->{$oid_dfType . '.' . $instance}};
-        
-        # Get all without a name
-        if (!defined($self->{option_results}->{name})) {
-            push @{$self->{filesys_id_selected}}, $instance; 
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{dfFileSys} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{dfFileSys} . "': no matching filter.", debug => 1);
             next;
         }
-        
-        if (defined($self->{option_results}->{type}) && $type !~ /$self->{option_results}->{type}/i) {
-            $self->{output}->output_add(long_msg => "Skipping filesys '" . $self->{result_names}->{$oid} . "': no matching filter type");
+        if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
+            $result->{dfType} !~ /$self->{option_results}->{filter_type}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{dfFileSys} . "': no matching filter.", debug => 1);
             next;
         }
 
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} ne $self->{option_results}->{name}) {
-            $self->{output}->output_add(long_msg => "Skipping filesys '" . $self->{result_names}->{$oid} . "': no matching filter name");
-            next;
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} !~ /$self->{option_results}->{name}/) {
-            $self->{output}->output_add(long_msg => "Skipping filesys '" . $self->{result_names}->{$oid} . "': no matching filter name (regexp)");
-            next;
-        }
-        
-        push @{$self->{filesys_id_selected}}, $instance;
+        $self->{fs}->{$instance} = {
+            name => $result->{dfFileSys},
+            total => defined($result->{df64TotalKBytes}) ? $result->{df64TotalKBytes} * 1024 : $result->{dfKBytesTotal} * 1024,
+            type => $result->{dfType},
+            vserver => $result->{dfVserver}
+        };
     }
-}
-
-sub get_additional_information {
-    my ($self, %options) = @_;
-
-    return if (scalar(@{$self->{filesys_id_selected}}) <= 0);
-    $self->{snmp}->load(oids => [$oid_dfKBytesTotal], instances => $self->{filesys_id_selected});
-    if (!$self->{snmp}->is_snmpv1()) {
-        $self->{snmp}->load(oids => [$oid_df64TotalKBytes], instances => $self->{filesys_id_selected});
-    }    
-    return $self->{snmp}->get_leef();
 }
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
-    my $result = $self->get_additional_information();
-
-    foreach my $instance (sort @{$self->{filesys_id_selected}}) { 
-        my $name = $self->{result_names}->{$oid_dfFileSys . '.' . $instance};
-        my $type = $self->{result_types}->{$oid_dfType . '.' . $instance};
-        my $total_size = $result->{$oid_dfKBytesTotal . '.' . $instance} * 1024;
-        if (defined($result->{$oid_df64TotalKBytes . '.' . $instance}) && $result->{$oid_df64TotalKBytes . '.' . $instance} != 0) {
-            $total_size = $result->{$oid_df64TotalKBytes . '.' . $instance} * 1024;
-        }
-        if (defined($self->{option_results}->{skip_total_zero}) && $total_size == 0) {
-            $self->{output}->output_add(long_msg => "Skipping filesys '" . $name . "': total size is 0 and option --skip-total-zero is set");
-            next;
-        }
-
-        $self->{output}->output_add(long_msg => "'" . $name . "' [total_size = $total_size B] [type = " . $map_types{$type} . "]");
+    $self->manage_selection(%options);
+    foreach my $instance (sort keys %{$self->{fs}}) {
+        next if (defined($self->{option_results}->{skip_total_zero}) && $self->{fs}->{$instance}->{total} == 0);
+        
+        $self->{output}->output_add(long_msg => '[instance = ' . $instance . '] ' . 
+            "[name = '" . $self->{fs}->{$instance}->{name} . "'] " .
+            "[type = '" . $self->{fs}->{$instance}->{type} . "'] " .
+            "[vserver = '" . $self->{fs}->{$instance}->{vserver} . "'] " .
+            "[total = '" . $self->{fs}->{$instance}->{total} . "']");
     }
     
     $self->{output}->output_add(severity => 'OK',
@@ -137,27 +124,17 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'total', 'type']);
+    $self->{output}->add_disco_format(elements => ['name', 'total', 'type', 'vserver']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
-    my $result = $self->get_additional_information();
-    foreach my $instance (sort @{$self->{filesys_id_selected}}) {        
-        my $name = $self->{result_names}->{$oid_dfFileSys . '.' . $instance};
-        my $type = $self->{result_types}->{$oid_dfType . '.' . $instance};
-        my $total_size = $result->{$oid_dfKBytesTotal . '.' . $instance} * 1024;
-        if (defined($result->{$oid_df64TotalKBytes . '.' . $instance}) && $result->{$oid_df64TotalKBytes . '.' . $instance} != 0) {
-            $total_size = $result->{$oid_df64TotalKBytes . '.' . $instance} * 1024;
-        }
-        next if (defined($self->{option_results}->{skip_total_zero}) && $total_size == 0);
-        
-        $self->{output}->add_disco_entry(name => $name,
-                                         total => $total_size,
-                                         type => $map_types{$type});
+    $self->manage_selection(%options);
+    foreach my $instance (sort keys %{$self->{fs}}) {
+        next if (defined($self->{option_results}->{skip_total_zero}) && $self->{fs}->{$instance}->{total} == 0);
+
+        $self->{output}->add_disco_entry(%{$self->{fs}->{$instance}});
     }
 }
 
@@ -171,15 +148,11 @@ List filesystems (volumes and aggregates also).
 
 =over 8
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the filesystem name.
+Filter the filesystem name.
 
-=item B<--regexp>
-
-Allows to use regexp to filter filesystem name (with option --name).
-
-=item B<--type>
+=item B<--filter-type>
 
 Filter filesystem type (a regexp. Example: 'flexibleVolume|aggregate').
 

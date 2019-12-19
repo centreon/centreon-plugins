@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
@@ -49,12 +48,25 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    $self->{connector}->set_discovery();
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'getmap');
-    $self->{connector}->run();
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'getmap');
+    
+    foreach my $host_id (sort { $response->{data}->{$a}->{name} cmp $response->{data}->{$b}->{name} } keys %{$response->{data}}) {
+        $self->{output}->output_add(long_msg => sprintf("  %s [v%s] %s", $response->{data}->{$host_id}->{name}, 
+            $response->{data}->{$host_id}->{version}, 
+            defined($self->{option_results}->{vm_no}) ? '' : ':'));
+
+        foreach my $vm_id (sort { $response->{data}->{$host_id}->{vm}->{$a}->{name} cmp $response->{data}->{$host_id}->{vm}->{$b}->{name} } keys %{$response->{data}->{$host_id}->{vm}}) {
+            $self->{output}->output_add(long_msg => sprintf("      %s [%s]", 
+                                                            $response->{data}->{$host_id}->{vm}->{$vm_id}->{name}, $response->{data}->{$host_id}->{vm}->{$vm_id}->{power_state}));
+        }
+    }
+
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List ESX host(s):');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
 }
 
 1;

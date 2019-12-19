@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,23 +20,96 @@
 
 package hardware::pdu::apc::snmp::mode::outlet;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my $thresholds = {
-    outlet => [
-        ['outletStatusOn', 'OK'],
-        ['outletStatusOff', 'CRITICAL'],
-    ],
-};
-my %map_status = (
-    1 => 'outletStatusOn',
-    2 => 'outletStatusOff',
+sub custom_status_output { 
+    my ($self, %options) = @_;
+
+    my $msg = sprintf(
+        "status : '%s' %s%s",
+        $self->{result_values}->{status},
+        $self->{result_values}->{bank} ne '' ? '[bank: ' . $self->{result_values}->{bank} . '] ' : '',
+        '[phase: ' . $self->{result_values}->{phase} . ']',
+    );
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{bank} = $options{new_datas}->{$self->{instance} . '_bank'};
+    $self->{result_values}->{phase} = $options{new_datas}->{$self->{instance} . '_phase'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'outlet', type => 1, cb_prefix_output => 'prefix_outlet_output', message_multiple => 'All outlets are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{outlet} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'bank' }, { name => 'phase' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'current', nlabel => 'outlet.current.ampere', set => {
+                key_values => [ { name => 'current', no_value => 0 }, { name => 'display' } ],
+                output_template => 'current : %s A',
+                perfdatas => [
+                    { label => 'current',  template => '%s', value => 'current_absolute',
+                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_outlet_output {
+    my ($self, %options) = @_;
+
+    return "Outlet '" . $options{instance_value}->{display} . "' ";
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => {
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /off/i' },
+    });
+    
+    return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => [
+        'warning_status', 'critical_status', 'unknown_status',
+    ]);
+}
+
+my %map_rpdu_status = (
+    1 => 'on',
+    2 => 'off',
 );
-my %map_phase = (
+my %map_rpdu_phase = (
     1 => 'phase1',
     2 => 'phase2',
     3 => 'phase3',
@@ -45,209 +118,118 @@ my %map_phase = (
     6 => 'phase3-1',
 );
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter:s@"               => { name => 'filter' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                  "warning:s@"              => { name => 'warning' },
-                                  "critical:s@"             => { name => 'critical' },
-                                });
-    
-    return $self;
-}
-
-sub check_options {
+sub check_rpdu {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    $self->{filter} = [];
-    foreach my $val (@{$self->{option_results}->{filter}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
-    }
-    
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        if (scalar(@values) < 3) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $instance, $status, $filter);
-        if (scalar(@values) == 3) {
-            ($section, $status, $filter) = @values;
-            $instance = '.*';
-        } else {
-             ($section, $instance, $status, $filter) = @values;
-        }
-        if ($section !~ /^outlet$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
-    }
-    
-    $self->{numeric_threshold} = {};
-    foreach my $option (('warning', 'critical')) {
-        foreach my $val (@{$self->{option_results}->{$option}}) {
-            next if (!defined($val) || $val eq '');
-            if ($val !~ /^(.*?),(.*?),(.*)$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
-                $self->{output}->option_exit();
-            }
-            my ($section, $instance, $value) = ($1, $2, $3);
-            if ($section !~ /^load$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
-                $self->{output}->option_exit();
-            }
-            my $position = 0;
-            if (defined($self->{numeric_threshold}->{$section})) {
-                $position = scalar(@{$self->{numeric_threshold}->{$section}});
-            }
-            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
-                $self->{output}->option_exit();
-            }
-            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
-            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, instance => $instance };
-        }
-    }
-}
 
-my $mapping = {
-    rPDUOutletStatusOutletName => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.2' },
-    rPDUOutletStatusOutletPhase => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.3', map => \%map_phase },
-    rPDUOutletStatusOutletState => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.4', map => \%map_status },
-    rPDUOutletStatusOutletBank => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.6' },
-    rPDUOutletStatusLoad => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.7' },
-};
+    return if (scalar(keys %{$self->{outlet}}) > 0);
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+    my $mapping = {
+        rPDUOutletStatusOutletName  => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.2' },
+        rPDUOutletStatusOutletPhase => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.3', map => \%map_rpdu_phase },
+        rPDUOutletStatusOutletState => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.4', map => \%map_rpdu_status },
+        rPDUOutletStatusOutletBank  => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.6' },
+        rPDUOutletStatusLoad        => { oid => '.1.3.6.1.4.1.318.1.1.12.3.5.1.1.7' },
+    };
 
     my $oid_rPDUOutletStatusEntry = '.1.3.6.1.4.1.318.1.1.12.3.5.1.1';
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_rPDUOutletStatusEntry, nothing_quit => 1);
 
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_rPDUOutletStatusEntry, nothing_quit => 1);
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All outlets are ok');
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}})) {
+    my $duplicated = {};
+    foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{rPDUOutletStatusOutletState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'outlet', instance => $instance));
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        $self->{output}->output_add(long_msg => sprintf("Outlet '%s' state is '%s' [instance: %s, bank : %s, phase : %s, load: %s]", 
-                                    $result->{rPDUOutletStatusOutletName}, $result->{rPDUOutletStatusOutletState}, 
-                                    $instance, $result->{rPDUOutletStatusOutletBank}, $result->{rPDUOutletStatusOutletPhase}, 
-                                    defined($result->{rPDUOutletStatusLoad}) ? $result->{rPDUOutletStatusLoad} : '-'));
-        my $exit = $self->get_severity(section => 'outlet', instance => $instance, value => $result->{rPDUOutletStatusOutletState});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Outlet '%s' state is '%s' [bank : %s, phase : %s]", 
-                                                             $result->{rPDUOutletStatusOutletName}, $result->{rPDUOutletStatusOutletState},
-                                                             $result->{rPDUOutletStatusOutletBank}, $result->{rPDUOutletStatusOutletPhase}));
+        my $name = $result->{rPDUOutletStatusOutletName};
+        $name = $instance if (defined($duplicated->{$name}));
+        if (defined($self->{outlet}->{$name})) {
+            $duplicated->{$name} = 1;
+            my $instance2 = $self->{outlet}->{$name}->{instance};
+            $self->{outlet}->{$instance2} = $self->{outlet}->{$name};
+            $self->{outlet}->{$instance2}->{display} = $instance2;
+            delete $self->{outlet}->{$name};
+            $name = $instance;
         }
-        
-        if (defined($result->{rPDUOutletStatusLoad}) && $result->{rPDUOutletStatusLoad} =~ /[0-9]/ && $result->{rPDUOutletStatusLoad} != 0) {
-            $result->{rPDUOutletStatusLoad} /= 10;
-            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'load', instance => $instance, value => $result->{rPDUOutletStatusLoad});
-            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Outlet '%s' load is %s A [bank : %s, phase : %s]", 
-                                                                 $result->{rPDUOutletStatusOutletName}, $result->{rPDUOutletStatusLoad}, 
-                                                                 $result->{rPDUOutletStatusOutletBank}, $result->{rPDUOutletStatusOutletPhase}));
-            }
-            $self->{output}->perfdata_add(label => 'load_' . $result->{rPDUOutletStatusOutletName} . '_bank_' . $result->{rPDUOutletStatusOutletBank} . '_' . $result->{rPDUOutletStatusOutletPhase} . '_' . $instance, 
-                                          unit => 'A',
-                                          value => $result->{rPDUOutletStatusLoad},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0);
-        }
+
+        $self->{outlet}->{$name} = {
+            instance => $instance,
+            display => $name,
+            status => $result->{rPDUOutletStatusOutletState},
+            bank => $result->{rPDUOutletStatusOutletBank},
+            phase => $result->{rPDUOutletStatusOutletPhase},
+            current => $result->{rPDUOutletStatusLoad} / 10,
+        };
     }
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
-sub check_filter {
+sub check_rpdu2 {
     my ($self, %options) = @_;
 
-    foreach (@{$self->{filter}}) {
-        if ($options{section} =~ /$_->{filter}/) {
-            if (!defined($options{instance}) && !defined($_->{instance})) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-                return 1;
-            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
-                $self->{components}->{$options{section}}->{skip}++ if (defined($self->{components}->{$options{section}}));
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-                return 1;
-            }
+    my $map_rpdu2_status = {
+        1 => 'off',
+        2 => 'on',
+    };
+    my $map_rpdu2_phase = {
+        1 => 'seqPhase1ToNeutral', 2 => 'seqPhase2ToNeutral',
+        3 => 'seqPhase3ToNeutral', 4 => 'seqPhase1ToPhase2',
+        5 => 'seqPhase2ToPhase3',  6 => 'seqPhase3ToPhase1',
+    };
+    my $mapping = {
+        rPDU2OutletSwitchedPropertiesPhaseLayout => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.2.1.5', map => $map_rpdu2_phase },
+        rPDU2OutletSwitchedPropertiesBank => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.2.1.6' },
+        rPDU2OutletSwitchedStatusName     => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.3.1.3' },
+        rPDU2OutletSwitchedStatusState    => { oid => '.1.3.6.1.4.1.318.1.1.26.9.2.3.1.5', map => $map_rpdu2_status },
+    };
+
+    my $oid_rPDU2OutletSwitchedPropertiesEntry = '.1.3.6.1.4.1.318.1.1.26.9.2.2.1';
+    my $oid_rPDU2OutletSwitchedStatusEntry = '.1.3.6.1.4.1.318.1.1.26.9.2.3.1';
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_rPDU2OutletSwitchedPropertiesEntry, start => $mapping->{rPDU2OutletSwitchedPropertiesPhaseLayout}->{oid}, end => $mapping->{rPDU2OutletSwitchedPropertiesBank}->{oid} },
+            { oid => $oid_rPDU2OutletSwitchedStatusEntry, start => $mapping->{rPDU2OutletSwitchedStatusName}->{oid}, end => $mapping->{rPDU2OutletSwitchedStatusState}->{oid} },
+        ],
+        return_type => 1,
+    );
+
+    my $duplicated = {};
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$mapping->{rPDU2OutletSwitchedStatusState}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        my $name = $result->{rPDU2OutletSwitchedStatusName} . ' bank ' . $result->{rPDU2OutletSwitchedPropertiesBank};
+        $name = $instance if (defined($duplicated->{$name}));
+        if (defined($self->{outlet}->{$name})) {
+            $duplicated->{$name} = 1;
+            my $instance2 = $self->{outlet}->{$name}->{instance};
+            $self->{outlet}->{$instance2} = $self->{outlet}->{$name};
+            $self->{outlet}->{$instance2}->{display} = $instance2;
+            delete $self->{outlet}->{$name};
+            $name = $instance;
         }
+
+        $self->{outlet}->{$name} = {
+            instance => $instance,
+            display => $name,
+            status => $result->{rPDU2OutletSwitchedStatusState},
+            bank => '',
+            phase => $result->{rPDU2OutletSwitchedPropertiesPhaseLayout},
+        };
     }
-    
-    return 0;
 }
 
-sub get_severity_numeric {
+sub manage_selection {
     my ($self, %options) = @_;
-    my $status = 'OK'; # default
-    my $thresholds = { warning => undef, critical => undef };
-    my $checked = 0;
-    
-    if (defined($self->{numeric_threshold}->{$options{section}})) {
-        my $exits = [];
-        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
-            if ($options{instance} =~ /$_->{instance}/) {
-                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
-                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
-                $checked = 1;
-            }
-        }
-        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
-    }
-    
-    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
-}
 
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
+    $self->{outlet} = {};
     
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i && 
-                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
-    }
-    my $label = defined($options{label}) ? $options{label} : $options{section};
-    foreach (@{$thresholds->{$label}}) {
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
+    $self->check_rpdu2(%options);
+    $self->check_rpdu(%options);
     
-    return $status;
+    if (scalar(keys %{$self->{outlet}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No outlet found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -256,30 +238,30 @@ __END__
 
 =head1 MODE
 
-Check outlet state.
+Check outlet.
 
 =over 8
 
-=item B<--filter>
+=item B<--unknown-status>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=outlet,1
+Set warning threshold for status.
+Can used special variables like: %{status}, %{display}
 
-=item B<--threshold-overload>
+=item B<--warning-status>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='outlet,WARNING,^(?!(outletStatusOn)$)'
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{phase}, %{bank}, %{display}
 
-=item B<--warning>
+=item B<--critical-status>
 
-Set warning threshold for temperatures (syntax: type,instance,threshold)
-Example: --warning='load,.*,30'
+Set critical threshold for status (Default: '%{status} =~ /off/').
+Can used special variables like: %{status}, %{phase}, %{bank}, %{display}
 
-=item B<--critical>
+=item B<--warning-*> B<--critical-*>
 
-Set critical threshold for temperatures (syntax: type,instance,threshold)
-Example: --critical='load,.*,40'
+Thresholds.
+Can be: 'current'.
+
 =back
 
 =cut

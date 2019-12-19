@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,29 +33,29 @@ our @ISA = qw(Exporter);
 our @EXPORT_OK = qw($thresholds $mapping %raritan_type %map_type);
 
 my %map_units = (
-    -1 => '', # none
-    0 => 'other',
-    1 => 'V', # volt,
-    2 => 'A', # amp,
-    3 => 'W', # watt
-    4 => 'voltamp',
-    5 => 'wattHour',
-    6 => 'voltampHour',
-    7 => 'C', # degreeC
-    8 => 'Hz', # hertz
-    9 => '%', # percent
-    10 => 'meterpersec',
-    11 => 'pascal',
-    12 => 'psi',
-    13 => 'g',
-    14 => 'degreeF',
-    15 => 'feet',
-    16 => 'inches',
-    17 => 'cm',
-    18 => 'meters',
-    19 => 'rpm',
-    20 => 'degrees',
-    21 => 'lux',
+    -1 => { unit => '' }, # none
+    0 => { unit => 'other', nunit => 'count' },
+    1 => { unit => 'V', nunit => 'volt' }, # volt,
+    2 => { unit => 'A', nunit => 'ampere' }, # amp,
+    3 => { unit => 'W', nunit => 'watt' }, # watt
+    4 => { unit => 'voltamp' },
+    5 => { unit => 'wattHour' },
+    6 => { unit => 'voltampHour' },
+    7 => { unit => 'C', nunit => 'celsius' }, # degreeC
+    8 => { unit => 'Hz', nunit => 'hertz' }, # hertz
+    9 => { unit => '%', nunit => 'percentage' }, # percent
+    10 => { unit => 'meterpersec' },
+    11 => { unit => 'pascal' },
+    12 => { unit => 'psi' },
+    13 => { unit => 'g' },
+    14 => { unit => 'degreeF', nunit => 'fahrenheit' },
+    15 => { unit => 'feet' },
+    16 => { unit => 'inches' },
+    17 => { unit => 'cm' },
+    18 => { unit => 'meters' },
+    19 => { unit => 'rpm' },
+    20 => { unit => 'degrees' },
+    21 => { unit => 'lux' },
 );
 
 my %map_state = (

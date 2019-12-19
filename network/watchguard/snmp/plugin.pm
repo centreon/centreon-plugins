@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,15 +31,16 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'cpu'              => 'network::watchguard::snmp::mode::cpu',
-                         'hardware'         => 'snmp_standard::mode::hardwaredevice',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'    => 'snmp_standard::mode::liststorages',
-                         'policy-usage'     => 'network::watchguard::snmp::mode::policyusage',
-                         'storage'          => 'snmp_standard::mode::storage',
-                         'system'           => 'network::watchguard::snmp::mode::system',
-                         );
+        'cpu'             => 'network::watchguard::snmp::mode::cpu',
+        'hardware'        => 'snmp_standard::mode::hardwaredevice',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'ipsec-tunnel'    => 'network::watchguard::snmp::mode::ipsectunnel',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-storages'   => 'snmp_standard::mode::liststorages',
+        'policy-usage'    => 'network::watchguard::snmp::mode::policyusage',
+        'storage'         => 'snmp_standard::mode::storage',
+        'system'          => 'network::watchguard::snmp::mode::system',
+    );
 
     return $self;
 }

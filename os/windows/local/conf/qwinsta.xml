@@ -5,6 +5,7 @@
         <disconnected>Total sessions disconnected</disconnected>
         <reconnected>Total sessions reconnected</reconnected>
         <activestate>Active</activestate>
+        <disconnectedstate>Disc</disconnectedstate>
         <header_sessionname>SESSIONNAME</header_sessionname>
         <header_state>STATE</header_state>
     </qwinsta>
@@ -13,6 +14,7 @@
         <disconnected>Nombre total de sessions d.*?connect.*?es</disconnected>
         <reconnected>Nombre total de sessions reconnect.*?es</reconnected>
         <activestate>Actif</activestate>
+        <disconnectedstate>D.*?co</disconnectedstate>
         <header_sessionname>SESSION</header_sessionname>
         <header_state>^.*?TAT</header_state>
     </qwinsta>

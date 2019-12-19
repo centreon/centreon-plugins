@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -45,7 +45,7 @@ my $oid_sc2CPUs = '.1.3.6.1.4.1.231.2.10.2.2.10.6.4.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_sc2CPUs, end => $mapping->{sc2}->{sc2cpuStatus} }, { oid => $mapping->{sc}->{cpuStatus}->{oid} };
 }
 

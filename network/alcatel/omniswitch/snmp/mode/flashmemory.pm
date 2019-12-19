@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,94 +20,121 @@
 
 package network::alcatel::omniswitch::snmp::mode::flashmemory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
+
+    my $msg = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+                      $total_size_value . " " . $total_size_unit,
+                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    return $msg;
+}
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_total'};
+    $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
+    $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
+    $self->{result_values}->{prct_free} = $self->{result_values}->{free} * 100 / $self->{result_values}->{total};
+    $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All flash memories are ok' },
+    ];
+
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', nlabel => 'flash.usage.bytes', set => {
+                key_values => [ { name => 'total' }, { name => 'free' }, { name => 'display' },  ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                threshold_use => 'prct_used',
+                perfdatas => [
+                    { label => 'used', value => 'used', template => '%.2f', min => 0, max => 'total',
+                      unit => 'B', label_extra_instance => 1, instance_use => 'display', cast_int => 1 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_memory_output {
+    my ($self, %options) = @_;
+
+    return "Memory '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"      => { name => 'warning' },
-                                  "critical:s"     => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
                                 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+    my $mapping = {
+        aos6 => {
+            entry => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.9.1',
+            flash => {
+                chasSupervisionFlashSize  => { oid => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.9.1.2' }, # in B
+                chasSupervisionFlashFree  => { oid => '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.9.1.3' }, # in B
+            },
+        },
+        aos7 => {
+            entry => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.9.1',
+            flash => {
+                chasSupervisionFlashSize  => { oid => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.9.1.2' }, # in B
+                chasSupervisionFlashFree  => { oid => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.9.1.3' }, # in B
+            },
+        },
+    };
+    
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+        { oid => $mapping->{aos6}->{entry} },
+        { oid => $mapping->{aos7}->{entry} },
+    ], nothing_quit => 1);
 
-    my $oid_chasSupervisionFlashMemEntry = '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.9.1';
-    my $oid_chasSupervisionFlashSize = '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.9.1.2'; # in B
-    my $oid_chasSupervisionFlashFree = '.1.3.6.1.4.1.6486.800.1.1.1.3.1.1.9.1.3'; # in B
-    my $result = $self->{snmp}->get_table(oid => $oid_chasSupervisionFlashMemEntry, nothing_quit => 1);
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All flash memories are ok.');
-    
-    foreach my $oid (keys %$result) {
-        next if ($oid !~ /^$oid_chasSupervisionFlashSize\./);
-        $oid =~ /\.([0-9]+)$/;
+    my $type = 'aos6';
+    if (scalar(keys %{$snmp_result->{ $mapping->{aos7}->{entry} }}) > 0) {
+        $type = 'aos7';
+    }
+
+    $self->{memory} = {};
+    foreach my $oid ($options{snmp}->oid_lex_sort(keys %{$snmp_result->{ $mapping->{$type}->{entry} }})) {
+        next if ($oid !~ /^$mapping->{$type}->{flash}->{chasSupervisionFlashSize}->{oid}\.(.*)$/);
         my $instance = $1;
-        
+        my $result = $options{snmp}->map_instance(mapping => $mapping->{$type}->{flash}, results => $snmp_result->{ $mapping->{$type}->{entry} }, instance => $instance);
+                
         # Skip if total = 0
-        next if ($result->{$oid_chasSupervisionFlashSize . '.' . $instance} == 0);        
-
-        my $memory_name = $instance;
-        my $memory_used = $result->{$oid_chasSupervisionFlashSize . '.' . $instance} - $result->{$oid_chasSupervisionFlashFree . '.' . $instance};
-        my $memory_free = $result->{$oid_chasSupervisionFlashFree . '.' . $instance};
+        next if ($result->{chasSupervisionFlashSize} == 0);
         
-        my $total_size = $memory_used + $memory_free;
-        my $prct_used = $memory_used * 100 / $total_size;
-        my $prct_free = 100 - $prct_used;
-        
-        my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-        my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $memory_used);
-        my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $memory_free);
-        
-        $self->{output}->output_add(long_msg => sprintf("Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $memory_name,
-                                            $total_value . " " . $total_unit,
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $free_value . " " . $free_unit, $prct_free));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-             $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Memory '%s' Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)", $memory_name,
-                                            $total_value . " " . $total_unit,
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $free_value . " " . $free_unit, $prct_free));
-        }
-        
-        $self->{output}->perfdata_add(label => "used_" . $memory_name, unit => 'B',
-                                      value => $memory_used,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
-                                      min => 0, max => $total_size);
+        $self->{memory}->{$instance} = {
+            display => $instance,
+            free => $result->{chasSupervisionFlashFree},
+            total => $result->{chasSupervisionFlashSize},
+        };
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -120,11 +147,11 @@ Check flash memory (AlcatelIND1Chassis.mib).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical in percent.
 

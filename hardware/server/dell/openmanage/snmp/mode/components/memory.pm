@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -55,9 +55,9 @@ my $mapping4 = {
 };
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $mapping->{memoryDeviceStatus}->{oid} }, { oid => $mapping2->{memoryDeviceLocationName}->{oid} },
+    push @{$self->{request}}, { oid => $mapping->{memoryDeviceStatus}->{oid} }, { oid => $mapping2->{memoryDeviceLocationName}->{oid} },
         { oid => $mapping3->{memoryDeviceSize}->{oid} }, { oid => $mapping4->{memoryDeviceFailureModes}->{oid} };
 }
 
@@ -67,7 +67,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking memory modules");
     $self->{components}->{memory} = {name => 'memory modules', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'memory'));
+    return if ($self->check_filter(section => 'memory'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$mapping->{memoryDeviceStatus}->{oid}}})) {
         next if ($oid !~ /^$mapping->{memoryDeviceStatus}->{oid}\.(.*)$/);
@@ -77,7 +77,7 @@ sub check {
         my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{memoryDeviceSize}->{oid}}, instance => $instance);
         my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{memoryDeviceFailureModes}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'memory', instance => $instance));
+        next if ($self->check_filter(section => 'memory', instance => $instance));
         
         $self->{components}->{memory}->{total}++;
 
@@ -85,7 +85,7 @@ sub check {
                                     $instance, $result->{memoryDeviceStatus}, $instance, 
                                     $result2->{memoryDeviceLocationName}, $result3->{memoryDeviceSize}, $result4->{memoryDeviceFailureModes}
                                     ));
-        my $exit = $self->get_severity(section => 'memory', value => $result->{memoryDeviceStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'memory', value => $result->{memoryDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Memory module '%s' status is '%s'",

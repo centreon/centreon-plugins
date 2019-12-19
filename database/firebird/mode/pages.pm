@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'reads', set => {
+        { label => 'reads', nlabel => 'pages.reads.persecond', set => {
                 key_values => [ { name => 'reads', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Reads : %.2f',
@@ -44,7 +44,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'writes', set => {
+        { label => 'writes', nlabel => 'pages.writes.persecond', set => {
                 key_values => [ { name => 'writes', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Writes : %.2f',
@@ -54,7 +54,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'fetches', set => {
+        { label => 'fetches', nlabel => 'pages.fetches.persecond', set => {
                 key_values => [ { name => 'fetches', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Fetches : %.2f',
@@ -64,7 +64,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'marks', set => {
+        { label => 'marks', nlabel => 'pages.marks.persecond', set => {
                 key_values => [ { name => 'marks', diff => 1 } ],
                 per_second => 1,
                 output_template => 'Marks : %.2f',
@@ -88,10 +88,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,15 +31,15 @@ sub new {
 
     $self->{version} = '1.1';
     %{$self->{modes}} = (
-                         'components'           => 'storage::synology::snmp::mode::hardware',
-                         'temperature'          => 'storage::synology::snmp::mode::temperature',
-                         'ups'                  => 'storage::synology::snmp::mode::ups',
-                         'cpu'                  => 'snmp_standard::mode::cpu',
-                         'interfaces'           => 'snmp_standard::mode::interfaces',
-                         'memory'               => 'snmp_standard::mode::memory',
-                         'load'                 => 'snmp_standard::mode::loadaverage',
-                         'storage'              => 'snmp_standard::mode::storage',
-                         );
+        'components'  => 'storage::synology::snmp::mode::hardware',
+        'cpu'         => 'snmp_standard::mode::cpu',
+        'interfaces'  => 'snmp_standard::mode::interfaces',
+        'memory'      => 'snmp_standard::mode::memory',
+        'load'        => 'snmp_standard::mode::loadaverage',
+        'storage'     => 'snmp_standard::mode::storage',
+        'temperature' => 'storage::synology::snmp::mode::temperature',
+        'ups'         => 'storage::synology::snmp::mode::ups',
+    );
 
     return $self;
 }

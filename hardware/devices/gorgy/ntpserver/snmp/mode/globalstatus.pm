@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,32 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label}} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $self->{result_values}->{label}}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label}}) && $instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label}} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $self->{result_values}->{label}}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_sync_status_output {
     my ($self, %options) = @_;
@@ -87,7 +62,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'), closure_custom_calc_extra_options => { label_ref => 'sync_status' },
                 closure_custom_output => $self->can('custom_sync_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'timebase-status', threshold => 0, set => {
@@ -95,7 +70,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'), closure_custom_calc_extra_options => { label_ref => 'timebase_status' },
                 closure_custom_output => $self->can('custom_timebase_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'ntp-requests', set => {
@@ -115,14 +90,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning-sync-status:s"   => { name => 'warning_sync_status', default => '%{sync_status} =~ /Running with autonomy|Free running/i' },
-                                  "critical-sync-status:s"  => { name => 'critical_sync_status', default => '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i' },
-                                  "warning-timebase-status:s"   => { name => 'warning_timebase_status', default => '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i' },
-                                  "critical-timebase-status:s"  => { name => 'critical_timebase_status', default => '%{timebase_status} =~ /^XO$/i' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-sync-status:s'      => { name => 'warning_sync_status', default => '%{sync_status} =~ /Running with autonomy|Free running/i' },
+        'critical-sync-status:s'     => { name => 'critical_sync_status', default => '%{sync_status} =~ /Server locked|Never synchronized|Server not synchronized/i' },
+        'warning-timebase-status:s'  => { name => 'warning_timebase_status', default => '%{timebase_status} =~ /^(?!(XO|XO OK|TCXO Precision < 2usec|OCXO Precision < 1usec)$)/i' },
+        'critical-timebase-status:s' => { name => 'critical_timebase_status', default => '%{timebase_status} =~ /^XO$/i' },
+    });
     
     return $self;
 }
@@ -131,18 +104,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_sync_status', 'critical_sync_status', 'warning_timebase_status', 'critical_timebase_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_sync_status', 'critical_sync_status', 'warning_timebase_status', 'critical_timebase_status']);
 }
 
 # timeBaseState values:
@@ -177,18 +139,22 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [
-                                                    $mapping->{currentSyncState}->{oid} . '.0',
-                                                    $mapping->{timeBaseState}->{oid} . '.0',
-                                                    $mapping->{powerDownFlags}->{oid} . '.0',
-                                                    $mapping->{ntpRequestsNumber}->{oid} . '.0',
-                                               ],
-                                               nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $mapping->{currentSyncState}->{oid} . '.0',
+            $mapping->{timeBaseState}->{oid} . '.0',
+            $mapping->{powerDownFlags}->{oid} . '.0',
+            $mapping->{ntpRequestsNumber}->{oid} . '.0',
+        ],
+        nothing_quit => 1
+    );
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
-    $self->{global} = { sync_status     => $result->{currentSyncState}, 
-                        timebase_status => $result->{timeBaseState}, 
-                        ntp_requests    => $result->{ntpRequestsNumber} };
-    
+    $self->{global} = {
+        sync_status     => $result->{currentSyncState}, 
+        timebase_status => $result->{timeBaseState}, 
+        ntp_requests    => $result->{ntpRequestsNumber}
+    };
+
     $self->{cache_name} = "gorgy_ntpserver_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }

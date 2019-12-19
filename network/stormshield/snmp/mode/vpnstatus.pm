@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,53 +20,16 @@
 
 package network::stormshield::snmp::mode::vpnstatus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
-
-my $thresholds = {
-    vpn => [
-        ['larval', 'WARNING'],
-        ['mature', 'OK'],
-        ['dying', 'CRITICAL'],
-        ['dead', 'CRITICAL'],
-    ],
-};
-my $instance_mode;
-
-my $maps_counters = {
-    vpn => { 
-        '000_status'   => { set => {
-                        key_values => [ { name => 'ntqVPNState' } ],
-                        closure_custom_calc => \&custom_status_calc,
-                        output_template => 'Status : %s', output_error_template => 'Status : %s',
-                        output_use => 'ntqVPNState',
-                        closure_custom_perfdata => sub { return 0; },
-                        closure_custom_threshold_check => \&custom_threshold_output,
-                    }
-               },
-        '001_traffic'   => { set => {
-                        key_values => [ { name => 'ntqVPNBytes', diff => 1 }, { name => 'num' } ],
-                        per_second => 1,  output_change_bytes => 2,
-                        output_template => 'Traffic: %s %s/s',
-                        perfdatas => [
-                             { label => 'traffic', value => 'ntqVPNBytes_per_second', template => '%s',
-                              unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'num_absolute' },
-                        ],
-                    }
-               },
-        },
-};
-
 
 sub custom_threshold_output {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'vpn', value => $self->{result_values}->{ntqVPNState});
+    return $self->{instance_mode}->get_severity(section => 'vpn', value => $self->{result_values}->{ntqVPNState});
 }
 
 sub custom_status_calc {
@@ -76,54 +39,70 @@ sub custom_status_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'vpn', type => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All vpn are ok' }
+    ];
+    
+    $self->{maps_counters}->{vpn} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'ntqVPNState' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                output_template => 'status: %s', output_error_template => 'Status : %s',
+                output_use => 'ntqVPNState',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            }
+        },
+        { label => 'traffic', nlabel => 'vpn.traffic.bitspersecond', set => {
+                key_values => [ { name => 'ntqVPNBytes', diff => 1 }, { name => 'num' } ],
+                per_second => 1, output_change_bytes => 2,
+                output_template => 'traffic: %s %s/s',
+                perfdatas => [
+                     { label => 'traffic', value => 'ntqVPNBytes_per_second', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'num_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_vpn_output {
+    my ($self, %options) = @_;
+    
+    return "VPN '$options{instance_value}->{num}/$options{instance_value}->{ntqVPNIPSrc}/$options{instance_value}->{ntqVPNIPDst}' ";
+}
+
+my $thresholds = {
+    vpn => [
+        ['larval', 'WARNING'],
+        ['mature', 'OK'],
+        ['dying', 'CRITICAL'],
+        ['dead', 'CRITICAL'],
+    ],
+};
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-id:s"  => { name => 'filter_id' },
-                                  "filter-src-ip:s"  => { name => 'filter_src_ip' },
-                                  "filter-dst-ip:s"  => { name => 'filter_dst_ip' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
+    $options{options}->add_options(arguments => { 
+        "filter-id:s"  => { name => 'filter_id' },
+        "filter-src-ip:s"  => { name => 'filter_src_ip' },
+        "filter-dst-ip:s"  => { name => 'filter_dst_ip' },
+        "threshold-overload:s@"   => { name => 'threshold_overload' },
+    });
 
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
- 
-    foreach my $key (('vpn')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
-                                                      output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach my $key (('vpn')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-    
-    $instance_mode = $self;
-    $self->{statefile_value}->check_options(%options);
-    
+    $self->SUPER::check_options(%options);
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*?),(.*)$/) {
@@ -138,80 +117,6 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-    
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{vpn}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All VPN are ok');
-    }
-    
-    my $matching = '';
-    foreach (('filter_id', 'filter_src_ip', 'filter_dst_ip')) {
-        $matching .= defined($self->{option_results}->{$_}) ? $self->{option_results}->{$_} : 'all';
-    }
-    $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "stormshield_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . md5_hex($matching));
-    $self->{new_datas}->{last_timestamp} = time();
-    
-    foreach my $id (sort keys %{$self->{vpn}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{vpn}}) {
-            my $obj = $maps_counters->{vpn}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{vpn}->{$id},
-                                              new_datas => $self->{new_datas});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{vpn}->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "VPN '$self->{vpn}->{$id}->{num}/$self->{vpn}->{$id}->{ntqVPNIPSrc}/$self->{vpn}->{$id}->{ntqVPNIPDst}' $long_msg");
-        }
-    }
-    
-    $self->{statefile_value}->write(data => $self->{new_datas});
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub get_severity {
@@ -244,61 +149,60 @@ my %map_state = (
 );
 my $mapping = {
     ntqVPNIPSrc => { oid => '.1.3.6.1.4.1.11256.1.1.1.1.2' },  
-};
-my $mapping2 = {
     ntqVPNIPDst => { oid => '.1.3.6.1.4.1.11256.1.1.1.1.3' },
-};
-my $mapping3 = {
     ntqVPNState => { oid => '.1.3.6.1.4.1.11256.1.1.1.1.11', map => \%map_state },
-};
-my $mapping4 = {
     ntqVPNBytes => { oid => '.1.3.6.1.4.1.11256.1.1.1.1.13' },
 };
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $mapping->{ntqVPNIPSrc}->{oid} },
-                                                            { oid => $mapping2->{ntqVPNIPDst}->{oid} },
-                                                            { oid => $mapping3->{ntqVPNState}->{oid} },
-                                                            { oid => $mapping4->{ntqVPNBytes}->{oid} },
-                                                         ],
-                                                         , nothing_quit => 1);
-    
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{ntqVPNIPSrc}->{oid} },
+            { oid => $mapping->{ntqVPNIPDst}->{oid} },
+            { oid => $mapping->{ntqVPNState}->{oid} },
+            { oid => $mapping->{ntqVPNBytes}->{oid} },
+        ],
+        return_type => 1, nothing_quit => 1
+    );
+
     $self->{vpn} = {};
-    foreach my $oid (keys %{$self->{results}->{$mapping3->{ntqVPNState}->{oid}}}) {
-        next if ($oid !~ /^$mapping3->{ntqVPNState}->{oid}\.(.*)$/);
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{ntqVPNState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{ntqVPNIPSrc}->{oid}}, instance => $instance);
-        my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{ntqVPNIPDst}->{oid}}, instance => $instance);
-        my $result3 = $self->{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{$mapping3->{ntqVPNState}->{oid}}, instance => $instance);
-        my $result4 = $self->{snmp}->map_instance(mapping => $mapping4, results => $self->{results}->{$mapping4->{ntqVPNBytes}->{oid}}, instance => $instance);
-        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
         if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
             $instance !~ /$self->{option_results}->{filter_id}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $instance . "': no matching filter id.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $instance . "': no matching filter id.");
             next;
         }
         if (defined($self->{option_results}->{filter_src_ip}) && $self->{option_results}->{filter_src_ip} ne '' &&
             $result->{ntqVPNIPSrc} !~ /$self->{option_results}->{filter_src_ip}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result->{ntqVPNIPSrc} . "': no matching filter src-ip.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{ntqVPNIPSrc} . "': no matching filter src-ip.");
             next;
         }
         if (defined($self->{option_results}->{filter_dst_ip}) && $self->{option_results}->{filter_dst_ip} ne '' &&
-            $result2->{ntqVPNIPDst} !~ /$self->{option_results}->{filter_dst_ip}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $result2->{ntqVPNIPDst} . "': no matching filter dst-ip.");
+            $result->{ntqVPNIPDst} !~ /$self->{option_results}->{filter_dst_ip}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $result->{ntqVPNIPDst} . "': no matching filter dst-ip.");
             next;
         }
         
-        $self->{vpn}->{$instance} = { num => $instance, %$result, %$result2, %$result3, %$result4};
+        $self->{vpn}->{$instance} = { num => $instance, %$result };
         $self->{vpn}->{$instance}->{ntqVPNBytes} *= 8 if (defined($self->{vpn}->{$instance}->{ntqVPNBytes}));
     }
     
     if (scalar(keys %{$self->{vpn}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
+        $self->{output}->add_option_msg(short_msg => "No vpn found.");
         $self->{output}->option_exit();
     }
+
+    $self->{cache_name} = "stormshield_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_id}) ? md5_hex($self->{option_results}->{filter_id}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_src_ip}) ? md5_hex($self->{option_results}->{filter_src_ip}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_dst_ip}) ? md5_hex($self->{option_results}->{filter_dst_ip}) : md5_hex('all'));
 }
 
 1;

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,13 +30,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                  "filter-type:s"       => { name => 'filter_type' },
-                                });
+    $options{options}->add_options(arguments => {
+        'name:s'        => { name => 'name' },
+        'regexp"        => { name => 'use_regexp' },
+        'filter-type:s' => { name => 'filter_type' },
+    });
+
     $self->{volume_name_selected} = [];
 
     return $self;
@@ -50,10 +49,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $self->{p2000}->get_infos(cmd => 'show volumes', 
-                                                 base_type => 'volumes',
-                                                 key => 'volume-name', 
-                                                 properties_name => '^volume-type$');
+    ($self->{results}) = $self->{p2000}->get_infos(
+        cmd => 'show volumes', 
+        base_type => 'volumes',
+        key => 'volume-name', 
+        properties_name => '^volume-type$'
+    );
     foreach my $name (keys %{$self->{results}}) {
         my $volume_type = $self->{results}->{$name}->{'volume-type'};
         

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,6 +63,7 @@ sub check {
             $divisor = 10;
         } elsif ($result->{amperageProbeType} =~ /amperageProbeTypeIsPowerSupplyWatts|amperageProbeTypeIsSystemWatts/) {
             $unit = 'W';
+            $divisor = 1;
         }
         $result->{amperageProbeReading} = (defined($result->{amperageProbeReading})) ? $result->{amperageProbeReading} / $divisor : 'unknown';
         $self->{output}->output_add(long_msg => sprintf("amperage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
@@ -110,11 +111,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Amperage '%s' is %s %s", $result->{amperageProbeLocationName}, $result->{amperageProbeReading}, $unit));
             }
-            $self->{output}->perfdata_add(label => 'amperage_' . $result->{amperageProbeLocationName}, unit => $unit, 
-                                          value => $result->{amperageProbeReading},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'amperage', unit => $unit,
+                nlabel => 'hardware.probe.amperage.' . ($unit eq 'A' ? 'ampere' : 'watt'),
+                instances =>  $result->{amperageProbeLocationName},
+                value => $result->{amperageProbeReading},
+                warning => $warn,
+                critical => $crit,
+            );
         }
     }
 }

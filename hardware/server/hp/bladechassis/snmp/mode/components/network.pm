@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -39,52 +39,50 @@ my %device_type = (
     6 => 'pciexpress',
 );
 
+my $mapping = {
+    nc_model    => { oid => '.1.3.6.1.4.1.232.22.2.6.1.1.1.6' }, # cpqRackNetConnectorModel
+    nc_serial   => { oid => '.1.3.6.1.4.1.232.22.2.6.1.1.1.7' }, # cpqRackNetConnectorSerialNum
+    nc_part     => { oid => '.1.3.6.1.4.1.232.22.2.6.1.1.1.8' }, # cpqRackNetConnectorPartNumber
+    nc_spare    => { oid => '.1.3.6.1.4.1.232.22.2.6.1.1.1.9' }, # cpqRackNetConnectorSparePartNumber
+    nc_device   => { oid => '.1.3.6.1.4.1.232.22.2.6.1.1.1.17', map => \%device_type }, # cpqRackNetConnectorDeviceType
+};
+
 sub check {
     my ($self) = @_;
 
     $self->{components}->{network} = {name => 'network connectors', total => 0, skip => 0};
-    $self->{output}->output_add(long_msg => "Checking network connectors");
-    return if ($self->check_exclude(section => 'network'));
+    $self->{output}->output_add(long_msg => "checking network connectors");
+    return if ($self->check_filter(section => 'network'));
     
     my $oid_cpqRackNetConnectorPresent = '.1.3.6.1.4.1.232.22.2.6.1.1.1.13';
-    my $oid_cpqRackNetConnectorIndex = '.1.3.6.1.4.1.232.22.2.6.1.1.1.3';
-    my $oid_cpqRackNetConnectorModel = '.1.3.6.1.4.1.232.22.2.6.1.1.1.6';
-    my $oid_cpqRackNetConnectorSerialNum = '.1.3.6.1.4.1.232.22.2.6.1.1.1.7';
-    my $oid_cpqRackNetConnectorPartNumber = '.1.3.6.1.4.1.232.22.2.6.1.1.1.8';
-    my $oid_cpqRackNetConnectorSparePartNumber = '.1.3.6.1.4.1.232.22.2.6.1.1.1.9';
-    my $oid_cpqRackNetConnectorDeviceType = '.1.3.6.1.4.1.232.22.2.6.1.1.1.17';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_cpqRackNetConnectorPresent);
-    return if (scalar(keys %$result) <= 0);
+    my $snmp_result = $self->{snmp}->get_table(oid => $oid_cpqRackNetConnectorPresent);
+    return if (scalar(keys %$snmp_result) <= 0);
     my @get_oids = ();
     my @oids_end = ();
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($present_map{$result->{$key}} ne 'present');
-        $key =~ /\.([0-9]+)$/;
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
+        next if ($present_map{$snmp_result->{$key}} ne 'present');
+        $key =~ /^$oid_cpqRackNetConnectorPresent\.(.*)$/;
         my $oid_end = $1;
         
         push @oids_end, $oid_end;
-        push @get_oids, $oid_cpqRackNetConnectorIndex . "." . $oid_end, $oid_cpqRackNetConnectorModel . "." . $oid_end,
-                $oid_cpqRackNetConnectorSerialNum . "." . $oid_end, $oid_cpqRackNetConnectorPartNumber . "." . $oid_end,
-                $oid_cpqRackNetConnectorSparePartNumber . "." . $oid_end, $oid_cpqRackNetConnectorDeviceType . "." . $oid_end;
+        push @get_oids, map($_->{oid} . '.' . $oid_end, values(%$mapping));
     }
-    $result = $self->{snmp}->get_leef(oids => \@get_oids);
+    $snmp_result = $self->{snmp}->get_leef(oids => \@get_oids);
     foreach (@oids_end) {
-        my $nc_index = $result->{$oid_cpqRackNetConnectorIndex . '.' . $_};
-        my $nc_model = $result->{$oid_cpqRackNetConnectorModel . '.' . $_};
-        my $nc_serial = $result->{$oid_cpqRackNetConnectorSerialNum . '.' . $_};
-        my $nc_part = $result->{$oid_cpqRackNetConnectorPartNumber . '.' . $_};
-        my $nc_spare = $result->{$oid_cpqRackNetConnectorSparePartNumber . '.' . $_};
-        my $nc_device = $result->{$oid_cpqRackNetConnectorDeviceType . '.' . $_};
-        
-        next if ($self->check_exclude(section => 'network', instance => $nc_index));
+        my $nc_index = $_;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+
+        next if ($self->check_filter(section => 'network', instance => $nc_index));
         
         $self->{components}->{network}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Network Connector %d (%s) type '%s' is present [serial: %s, part: %s, spare: %s].",
-                                    $nc_index, $nc_model,
-                                    $device_type{$nc_device},
-                                    $nc_serial, $nc_part, $nc_spare
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf("network connector '%s' (%s) type '%s' is present [serial: %s, part: %s, spare: %s].",
+                $nc_index, $result->{nc_model},
+                $result->{nc_device},
+                $result->{nc_serial}, $result->{nc_part}, $result->{nc_spare}
+            )
+        );
     }
 }
 

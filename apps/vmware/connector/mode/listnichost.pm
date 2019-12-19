@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,7 +30,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "esx-hostname:s"          => { name => 'esx_hostname' },
@@ -52,12 +51,19 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
+    
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'listnichost');
+    foreach (sort keys %{$response->{data}}) {
+        $self->{output}->output_add(long_msg => sprintf('%s [status: %s] [vswitch: %s]', 
+                                                       $response->{data}->{$_}->{name}, $response->{data}->{$_}->{status}, $response->{data}->{$_}->{vswitch})
+        );
+    }
 
-    $self->{connector}->set_discovery();
-    $self->{connector}->add_params(params => $self->{option_results},
-                                   command => 'listnichost');
-    $self->{connector}->run();
+    $self->{output}->output_add(severity => 'OK',
+                                short_msg => 'List nic host:');
+    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+    $self->{output}->exit();
 }
 
 sub disco_format {
@@ -68,11 +74,14 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{connector} = $options{custom};
 
-    # We ask to use XML output from the connector
-    $self->{connector}->add_params(params => { disco_show => 1 });
-    $self->run(custom => $self->{connector});
+    my $response = $options{custom}->execute(params => $self->{option_results},
+        command => 'listnichost');
+    foreach (sort keys %{$response->{data}}) {
+        $self->{output}->add_disco_entry(name => $response->{data}->{$_}->{name},
+            status => $response->{data}->{$_}->{status}, vswitch => $response->{data}->{$_}->{vswitch}
+        );
+    }
 }
 
 1;

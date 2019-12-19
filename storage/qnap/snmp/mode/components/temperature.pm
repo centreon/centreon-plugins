@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,16 +47,19 @@ sub check {
     if ($cpu_temp =~ /([0-9]+)\s*C/ && !$self->check_filter(section => 'temperature', instance => 'cpu')) {
         my $value = $1;
         $self->{components}->{temperature}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("CPU Temperature is '%s' degree centigrade",
+        $self->{output}->output_add(long_msg => sprintf("cpu temperature is '%s' degree centigrade",
                                                         $value));
         my ($exit, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => 'cpu', value => $value);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("CPU Temperature is '%s' degree centigrade", $value));
         }
-        $self->{output}->perfdata_add(label => 'temp_cpu', unit => 'C',
-                                      value => $value
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => 'cpu',
+            value => $value
+        );
     }
     
     my $system_temp = defined($self->{results}->{$oid_SystemTemperature_entry}->{$oid_SystemTemperature}) ? 
@@ -71,9 +74,12 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("System Temperature is '%s' degree centigrade", $value));
         }
-        $self->{output}->perfdata_add(label => 'temp_system', unit => 'C',
-                                      value => $value
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => 'system',
+            value => $value
+        );
     }
 }
 

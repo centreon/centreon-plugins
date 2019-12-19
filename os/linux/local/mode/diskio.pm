@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,81 +20,154 @@
 
 package os::linux::local::mode::diskio;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
+
+sub custom_usage_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{usage_persecond} = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_sectors'} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref} . '_sectors'}) 
+        * $self->{instance_mode}->{option_results}->{bytes_per_sector} / $options{delta_time};
+    return 0;
+}
+
+sub custom_utils_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    my $delta_ms =
+        $self->{instance_mode}->{option_results}->{interrupt_frequency} *
+        (
+            ($options{new_datas}->{$self->{instance} . '_cpu_idle'} - $options{old_datas}->{$self->{instance} . '_cpu_idle'}) +
+            ($options{new_datas}->{$self->{instance} . '_cpu_user'} - $options{old_datas}->{$self->{instance} . '_cpu_user'}) +
+            ($options{new_datas}->{$self->{instance} . '_cpu_iowait'} - $options{old_datas}->{$self->{instance} . '_cpu_iowait'}) +
+            ($options{new_datas}->{$self->{instance} . '_cpu_system'} - $options{old_datas}->{$self->{instance} . '_cpu_system'})
+        )
+        / $options{new_datas}->{$self->{instance} . '_cpu_total'} / 100;
+    $self->{result_values}->{utils} = 0;
+    if ($delta_ms != 0) {
+        $self->{result_values}->{utils} = 100 * ($options{new_datas}->{$self->{instance} . '_ticks'} - $options{old_datas}->{$self->{instance} . '_ticks'}) / $delta_ms;
+        $self->{result_values}->{utils} = 100 if ($self->{result_values}->{utils} > 100);
+    }
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok', skipped_code => { -10 => 1 } }
+    ];
+    
+    $self->{maps_counters}->{device} = [
+        { label => 'read-usage', nlabel => 'device.io.read.usage.bytespersecond', set => {
+                key_values => [ { name => 'read_sectors', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'read' },
+                output_template => 'read I/O : %s %s/s',
+                output_change_bytes => 1, per_second => 1,
+                output_use => 'usage_persecond', threshold_use => 'usage_persecond',
+                perfdatas => [
+                    { label => 'readio', value => 'usage_persecond', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        { label => 'write-usage', nlabel => 'device.io.write.usage.bytespersecond', set => {
+                key_values => [ { name => 'write_sectors', diff => 1 }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'write' },
+                output_template => 'write I/O : %s %s/s',
+                output_change_bytes => 1, per_second => 1,
+                output_use => 'usage_persecond', threshold_use => 'usage_persecond',
+                perfdatas => [
+                    { label => 'writeio', value => 'usage_persecond', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        { label => 'read-time', nlabel => 'device.io.read.time.milliseconds', set => {
+                key_values => [ { name => 'read_ms', diff => 1 }, { name => 'display' } ],
+                output_template => 'read time : %.2f ms',
+                perfdatas => [
+                    { label => 'readtime', value => 'read_ms_absolute',  template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'write-time', nlabel => 'device.io.write.time.milliseconds', set => {
+                key_values => [ { name => 'write_ms', diff => 1 }, { name => 'display' } ],
+                output_template => 'write time : %.2f ms',
+                perfdatas => [
+                    { label => 'writetime', value => 'write_ms_absolute',  template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'utils', nlabel => 'device.io.utils.percentage', set => {
+                key_values => [
+                    { name => 'cpu_total', diff => 1 },
+                    { name => 'cpu_iowait', diff => 1 },
+                    { name => 'cpu_user', diff => 1 },
+                    { name => 'cpu_system', diff => 1 },
+                    { name => 'cpu_idle', diff => 1 },
+                    { name => 'ticks', diff => 1 },
+                    { name => 'display' }
+                ],
+                closure_custom_calc => $self->can('custom_utils_calc'),
+                per_second => 1,
+                output_template => '%%utils: %.2f %%',
+                output_use => 'utils', threshold_use => 'utils',
+                perfdatas => [
+                    { label => 'utils', value => 'utils',  template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_device_output {
+    my ($self, %options) = @_;
+    
+    return "Device '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'tail' },
-                                  "command-path:s"    => { name => 'command_path', },
-                                  "command-options:s" => { name => 'command_options', default => '-n +1 /proc/stat /proc/diskstats 2>&1' },
-                                  "warning-bytes-read:s"    => { name => 'warning_bytes_read' },
-                                  "critical-bytes-read:s"   => { name => 'critical_bytes_read' },
-                                  "warning-bytes-write:s"   => { name => 'warning_bytes_write' },
-                                  "critical-bytes-write:s"  => { name => 'critical_bytes_write' },
-                                  "warning-utils:s"         => { name => 'warning_utils' },
-                                  "critical-utils:s"        => { name => 'critical_utils' },
-                                  "name:s"                  => { name => 'name' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },
-                                  "interrupt-frequency:s"   => { name => 'interrupt_frequency', default => 1000 },
-                                  "bytes_per_sector:s"      => { name => 'bytes_per_sector', default => 512 },
-                                  "skip"                    => { name => 'skip', },
-                                });
-    $self->{result} = { cpu => {}, total_cpu => 0, disks => {} };
+    $options{options}->add_options(arguments => {
+        'hostname:s'            => { name => 'hostname' },
+        'remote'                => { name => 'remote' },
+        'ssh-option:s@'         => { name => 'ssh_option' },
+        'ssh-path:s'            => { name => 'ssh_path' },
+        'ssh-command:s'         => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'             => { name => 'timeout', default => 30 },
+        'sudo'                  => { name => 'sudo' },
+        'command:s'             => { name => 'command', default => 'tail' },
+        'command-path:s'        => { name => 'command_path', },
+        'command-options:s'     => { name => 'command_options', default => '-n +1 /proc/stat /proc/diskstats 2>&1' },
+        'name:s'                => { name => 'name' },
+        'regexp'                => { name => 'use_regexp' },
+        'regexp-isensitive'     => { name => 'use_regexpi' },
+        'interrupt-frequency:s' => { name => 'interrupt_frequency', default => 1000 },
+        'bytes_per_sector:s'    => { name => 'bytes_per_sector', default => 512 },
+        'skip'                  => { name => 'skip' },
+    });
+
     $self->{hostname} = undef;
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning-bytes-read', value => $self->{option_results}->{warning_bytes_read})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-bytes-read threshold '" . $self->{option_results}->{warning_bytes_read} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-bytes-read', value => $self->{option_results}->{critical_bytes_read})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-bytes-read threshold '" . $self->{option_results}->{critical_bytes_read} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-bytes-write', value => $self->{option_results}->{warning_bytes_write})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-bytes-write threshold '" . $self->{option_results}->{warning_bytes_write} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-bytes-write', value => $self->{option_results}->{critical_bytes_write})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-bytes-write threshold '" . $self->{option_results}->{critical_bytes_writes} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-utils', value => $self->{option_results}->{warning_utils})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-utils threshold '" . $self->{option_results}->{warning_utils} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-utils', value => $self->{option_results}->{critical_utils})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-utils threshold '" . $self->{option_results}->{critical_utils} . "'.");
-        $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
     
-    $self->{statefile_value}->check_options(%options);
     $self->{hostname} = $self->{option_results}->{hostname};
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
@@ -104,31 +177,31 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     
-    $stdout =~ /\/proc\/stat(.*)\/proc\/diskstats(.*)/msg;
+    $stdout =~ /\/proc\/stat(.*?)\/proc\/diskstats.*?\n(.*)/msg;
     my ($cpu_parts, $disk_parts) = ($1, $2);
-    
+
     # Manage CPU Parts
     $cpu_parts =~ /^cpu\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)/ms;
-    $self->{result}->{cpu}->{idle} = $4;
-    $self->{result}->{cpu}->{system} = $3;
-    $self->{result}->{cpu}->{user} = $1;
-    $self->{result}->{cpu}->{iowait} = $5;
-    
+
+    my ($cpu_idle, $cpu_system, $cpu_user, $cpu_iowait) = ($4, $3, $1, $5);
+    my $cpu_total = 0;
     while ($cpu_parts =~ /^cpu(\d+)/msg) {
-        $self->{result}->{total_cpu}++;
+        $cpu_total++;
     }
-    
-    # Manage Disk Parts
-    while ($disk_parts =~ /^\s*(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+/msg) {
-        my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($3, $6, $10, $7, $11, $13);
-        
+
+    $self->{device} = {};
+    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*$/msg) {
+        my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($1, $2, $4, $3, $5, $6);
+
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
             && $partition_name !~ /$self->{option_results}->{name}/i);
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
@@ -137,149 +210,35 @@ sub manage_selection {
             && $partition_name ne $self->{option_results}->{name});
 
         if (defined($self->{option_results}->{skip}) && $read_sector == 0 && $write_sector == 0) {
-            $self->{output}->output_add(long_msg => "Skipping partition '" . $partition_name . "': no read/write IO.");
+            $self->{output}->output_add(long_msg => "skipping device '" . $partition_name . "': no read/write IO.", debug => 1);
             next;
         }
-            
-        $self->{result}->{disks}->{$partition_name} = { read_sectors => $read_sector, write_sectors => $write_sector,
-                                                        read_ms => $read_ms, write_ms => $write_ms, ticks => $ms_ticks};
+
+        $self->{device}->{$partition_name} = {
+            display => $partition_name,
+            read_sectors => $read_sector, 
+            write_sectors => $write_sector,
+            read_ms => $read_ms, 
+            write_ms => $write_ms, 
+            ticks => $ms_ticks,
+            cpu_total => $cpu_total,
+            cpu_system => $cpu_system,
+            cpu_idle => $cpu_idle,
+            cpu_user => $cpu_user,
+            cpu_iowait => $cpu_iowait,
+        };
     }
     
-    if (scalar(keys %{$self->{result}->{disks}}) <= 0) {
+    if (scalar(keys %{$self->{device}}) <= 0) {
         if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No partition found for name '" . $self->{option_results}->{name} . "'.");
+            $self->{output}->add_option_msg(short_msg => "No device found for name '" . $self->{option_results}->{name} . "'.");
         } else {
-            $self->{output}->add_option_msg(short_msg => "No partition found.");
+            $self->{output}->add_option_msg(short_msg => "No device found.");
         }
         $self->{output}->option_exit();
     }
-}
 
-sub run {
-    my ($self, %options) = @_;
-	
-    $self->manage_selection();
-    
-    my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "cache_linux_local_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $new_datas->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All partitions are ok.');
-    }
-    
-    foreach my $name (sort(keys %{$self->{result}->{disks}})) {
- 
-        my $old_datas = {};
-        my $next = 0;
-        foreach (keys %{$self->{result}->{disks}->{$name}}) {
-            $new_datas->{$_ . '_' . $name} = $self->{result}->{disks}->{$name}->{$_};
-            $old_datas->{$_ . '_' . $name} = $self->{statefile_value}->get(name => $_ . '_' . $name);
-            if (!defined($old_datas->{$_ . '_' . $name})) {
-                $next = 1;
-            } elsif ($new_datas->{$_ . '_' . $name} < $old_datas->{$_ . '_' . $name}) {
-                # We set 0. has reboot
-                $old_datas->{$_ . '_' . $name} = 0;
-            }
-        }
-        foreach (keys %{$self->{result}->{cpu}}) {
-            $new_datas->{'cpu_' . $_} = $self->{result}->{cpu}->{$_};
-            $old_datas->{'cpu_' . $_} = $self->{statefile_value}->get(name => 'cpu_' . $_);
-            if (!defined($old_datas->{'cpu_' . $_})) {
-                $next = 1;
-            } elsif ($new_datas->{'cpu_' . $_} < $old_datas->{'cpu_' . $_}) {
-                # We set 0. has reboot
-                $old_datas->{'cpu_' . $_} = 0;
-            }
-        }
-        
-        if (!defined($old_timestamp) || $next == 1) {
-            next;
-        }
-        my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
-        if ($time_delta <= 0) {
-            # At least one second. two fast calls ;)
-            $time_delta = 1;
-        }
- 
-        ############
-
-        # Do calc
-        my $read_bytes_per_seconds = ($new_datas->{'read_sectors_' . $name} - $old_datas->{'read_sectors_' . $name}) * $self->{option_results}->{bytes_per_sector} / $time_delta;
-        my $write_bytes_per_seconds = ($new_datas->{'write_sectors_' . $name} - $old_datas->{'write_sectors_' . $name}) * $self->{option_results}->{bytes_per_sector} / $time_delta;
-        my $read_ms = $new_datas->{'read_ms_' . $name} - $old_datas->{'read_ms_' . $name};
-        my $write_ms = $new_datas->{'write_ms_' . $name} - $old_datas->{'write_ms_' . $name};
-        my $delta_ms = $self->{option_results}->{interrupt_frequency} * (($new_datas->{cpu_idle} + $new_datas->{cpu_iowait} + $new_datas->{cpu_user} + $new_datas->{cpu_system}) 
-                                                                          - 
-                                                                         ($old_datas->{cpu_idle} + $old_datas->{cpu_iowait} + $old_datas->{cpu_user} + $old_datas->{cpu_system})) 
-                        / $self->{result}->{total_cpu} / 100;
-        my $utils = 100 * ($new_datas->{'ticks_' . $name} - $old_datas->{'ticks_' . $name}) / $delta_ms;
-        if ($utils > 100) {
-            $utils = 100;
-        }
-       
-        ###########
-        # Manage Output
-        ###########
-        
-        my $exit1 = $self->{perfdata}->threshold_check(value => $read_bytes_per_seconds, threshold => [ { label => 'critical-bytes-read', 'exit_litteral' => 'critical' }, { label => 'warning-bytes-read', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $write_bytes_per_seconds, threshold => [ { label => 'critical-bytes-write', 'exit_litteral' => 'critical' }, { label => 'warning-bytes-write', exit_litteral => 'warning' } ]);
-        my $exit3 = $self->{perfdata}->threshold_check(value => $utils, threshold => [ { label => 'critical-utils', 'exit_litteral' => 'critical' }, { label => 'warning-utils', exit_litteral => 'warning' } ]);
-
-        my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2, $exit3 ]);
-        
-        my ($read_value, $read_unit) = $self->{perfdata}->change_bytes(value => $read_bytes_per_seconds);
-        my ($write_value, $write_unit) = $self->{perfdata}->change_bytes(value => $write_bytes_per_seconds);
-        
-        $self->{output}->output_add(long_msg => sprintf("Partition '%s' Read I/O : %s/s, Write I/O : %s/s, Write Time : %s ms, Read Time : %s ms, %%Utils: %.2f %%", $name,
-                                                        $read_value . $read_unit,
-                                                        $write_value . $write_unit,
-                                                        $read_ms, $write_ms, $utils
-                                                        ));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Partition '%s' Read I/O : %s/s, Write I/O : %s/s, Write Time : %s ms, Read Time : %s ms, %%Utils: %.2f %%", $name,
-                                                        $read_value . $read_unit,
-                                                        $write_value . $write_unit,
-                                                        $read_ms, $write_ms, $utils
-                                                        ));
-        }
-
-        my $extra_label = '';
-        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'readio' . $extra_label, unit => 'B/s',
-                                      value => sprintf("%.2f", $read_bytes_per_seconds),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes-read'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes-read'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'writeio' . $extra_label, unit => 'B/s',
-                                      value => sprintf("%.2f", $write_bytes_per_seconds),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-bytes-write'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-bytes-write'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'readtime' . $extra_label, unit => 'ms',
-                                      value => $read_ms,
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'writetime' . $extra_label, unit => 'ms',
-                                      value => $write_ms,
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'utils' . $extra_label, unit => '%',
-                                      value => sprintf("%.2f", $utils),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-utils'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-util'),
-                                      min => 0, max => 100);
-    }
-    
-    $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{cache_name} = 'cache_linux_local_' . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'))
 }
 
 1;
@@ -334,29 +293,11 @@ Command path (Default: none).
 
 Command options (Default: '-n +1 /proc/stat /proc/diskstats 2>&1').
 
-=item B<--warning-bytes-read>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning in bytes per seconds read.
-
-=item B<--critical-bytes-read>
-
-Threshold critical in bytes per seconds read.
-
-=item B<--warning-bytes-write>
-
-Threshold warning in bytes per seconds write.
-
-=item B<--critical-bytes-write>
-
-Threshold critical in bytes per seconds write.
-
-=item B<--warning-utils>
-
-Threshold warning in %utils.
-
-=item B<--critical-utils>
-
-Threshold critical in %utils.
+Thresholds.
+Can be: 'read-usage', 'write-usage', 'read-time', 'write-time',
+'utils'.
 
 =item B<--name>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -83,32 +83,32 @@ $mapping_OperationalStatus = {
 $mapping_sensortype = {
     0 => 'unknown',
     1 => 'other',
-    2 => 'temp', # Temperature
-    3 => 'volt', # Voltage
+    2 => 'temperature', # Temperature
+    3 => 'voltage', # Voltage
     4 => 'current', # Current
     5 => 'tachometer',
     6 => 'counter',
     7 => 'switch',
     8 => 'lock',
-    9 => 'hum', # Humidity
-    10 => 'smoke_detection', # Smoke Detection
+    9 => 'humidity', # Humidity
+    10 => 'smokeDetection', # Smoke Detection
     11 => 'presence',
-    12 => 'air_flow', # Air Flow
-    13 => 'power_consumption', # Power Consumption
-    14 => 'power_production', # Power Production
-    15 => 'pressure_intrusion', # PressureIntrusion
+    12 => 'airFlow', # Air Flow
+    13 => 'powerConsumption', # Power Consumption
+    14 => 'powerProduction', # Power Production
+    15 => 'pressureIntrusion', # PressureIntrusion
     16 => 'intrusion',
 };
 
 $mapping_units = {
-    0 => '',
-    1 => '', 
-    2 => 'C', # Degrees C 
-    3 => 'F', # Degrees F
-    4 => 'K', # Degrees K
-    5 => 'V', # Volts 
-    6 => 'A', # Amps, 
-    7 => 'W', # Watts
+    0 => 'unknown',
+    1 => 'unknown', 
+    2 => 'celsius', # Degrees C 
+    3 => 'fahrenheit', # Degrees F
+    4 => 'kelvin', # Degrees K
+    5 => 'volt', # Volts 
+    6 => 'ampere', # Amps, 
+    7 => 'watt', # Watts
     8 => 'Joules',
     9 => 'Coulombs', 
     10 => 'VA', 
@@ -130,11 +130,11 @@ $mapping_units = {
     26 => 'Mils',
     27 => 'Inches',
     28 => 'Feet',
-    29 => 'Cubic_Inches',
-    30 => 'Cubic_Feet',
+    29 => 'CubicInches',
+    30 => 'CubicFeet',
     31 => 'Meters',
-    32 => 'Cubic_Centimeters',
-    33 => 'Cubic_Meters',
+    32 => 'CubicCentimeters',
+    33 => 'CubicMeters',
     34 => 'Liters',
     35 => 'Fluid_Ounces',
     36 => 'Radians',
@@ -144,8 +144,8 @@ $mapping_units = {
     40 => 'Gravities',
     41 => 'Ounces',
     42 => 'Pounds',
-    43 => 'Foot_Pounds',
-    44 => 'Ounce_Inches',
+    43 => 'FootPounds',
+    44 => 'OunceInches',
     45 => 'Gauss',
     46 => 'Gilberts',
     47 => 'Henries',
@@ -160,13 +160,13 @@ $mapping_units = {
     56 => 'DbC',
     57 => 'Grays',
     58 => 'Sieverts',
-    59 => 'Color_Temperature_Degrees_K',
-    60 => 'b', # bits
-    61 => 'B', # Bytes
+    59 => 'ColorTemperatureDegreesKelvin',
+    60 => 'bits', # bits
+    61 => 'bytes', # Bytes
     62 => 'Words',
     63 => 'DoubleWords',
     64 => 'QuadWords',
-    65 => '%', # Percentage,
+    65 => 'percentage', # Percentage,
     66 => 'Pascals',
 };
 

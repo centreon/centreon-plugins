@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,52 +20,15 @@
 
 package storage::netapp::snmp::mode::aggregatestate;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $thresholds = {
-    state => [
-        ['online', 'OK'],
-        ['offline', 'CRITICAL'],
-    ],
-    status => [
-        ['normal', 'OK'],
-        ['mirrored', 'OK'],
-        ['.*', 'CRITICAL'],
-    ],
-};
-my $instance_mode;
-
-my $maps_counters = {
-    agg => {
-        '000_state'   => { set => {
-                        key_values => [ { name => 'aggrState' } ],
-                        closure_custom_calc => \&custom_state_calc,
-                        output_template => "State : '%s'", output_error_template => "State : '%s'",
-                        output_use => 'aggrState',
-                        closure_custom_perfdata => sub { return 0; },
-                        closure_custom_threshold_check => \&custom_state_threshold,
-                    }
-               },
-        '001_status'   => { set => {
-                        key_values => [ { name => 'aggrStatus' } ],
-                        closure_custom_calc => \&custom_status_calc,
-                        output_template => "Status : '%s'", output_error_template => "Status : '%s'",
-                        output_use => 'aggrStatus',
-                        closure_custom_perfdata => sub { return 0; },
-                        closure_custom_threshold_check => \&custom_status_threshold,
-                    }
-               },
-        },
-};
 
 sub custom_state_threshold {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'state', value => $self->{result_values}->{aggrState});
+    return $self->{instance_mode}->get_severity(section => 'state', value => $self->{result_values}->{aggrState});
 }
 
 sub custom_state_calc {
@@ -78,7 +41,7 @@ sub custom_state_calc {
 sub custom_status_threshold {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'status', value => $self->{result_values}->{aggrStatus});
+    return $self->{instance_mode}->get_severity(section => 'status', value => $self->{result_values}->{aggrStatus});
 }
 
 sub custom_status_calc {
@@ -88,48 +51,58 @@ sub custom_status_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'agg', type => 1, cb_prefix_output => 'prefix_agg_output', message_multiple => 'All aggregates are ok' },
+    ];
+    
+    $self->{maps_counters}->{agg} = [
+        { label => 'state', set => {
+                key_values => [ { name => 'aggrState' } ],
+                closure_custom_calc => $self->can('custom_state_calc'),
+                output_template => "State : '%s'", output_error_template => "State : '%s'",
+                output_use => 'aggrState',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_state_threshold'),
+            }
+        },
+        { label => 'status', set => {
+                key_values => [ { name => 'aggrStatus' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                output_template => "Status : '%s'", output_error_template => "Status : '%s'",
+                output_use => 'aggrStatus',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_agg_output {
+    my ($self, %options) = @_;
+
+    return "Aggregate '" . $options{instance_value}->{aggrName} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"  => { name => 'filter_name' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
- 
-    foreach my $key (('agg')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"         => { name => 'filter_name' },
+        "threshold-overload:s@" => { name => 'threshold_overload' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach my $key (('agg')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-    
-    $instance_mode = $self;
-    
+    $self->SUPER::check_options(%options);
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         if ($val !~ /^(.*?),(.*?),(.*)$/) {
@@ -146,67 +119,17 @@ sub check_options {
     }
 }
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{agg}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All aggregates status are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{agg}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{agg}}) {
-            my $obj = $maps_counters->{agg}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{agg}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{agg}->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Aggregate '$self->{agg}->{$id}->{aggrName}' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Aggregate '$self->{agg}->{$id}->{aggrName}' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Aggregate '$self->{agg}->{$id}->{aggrName}' Usage $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
+my $thresholds = {
+    state => [
+        ['online', 'OK'],
+        ['offline', 'CRITICAL'],
+    ],
+    status => [
+        ['normal', 'OK'],
+        ['mirrored', 'OK'],
+        ['.*', 'CRITICAL'],
+    ],
+};
 
 sub get_severity {
     my ($self, %options) = @_;
@@ -236,28 +159,30 @@ sub manage_selection {
     my $oid_aggrName = '.1.3.6.1.4.1.789.1.5.11.1.2';
     my $oid_aggrState = '.1.3.6.1.4.1.789.1.5.11.1.5';
     my $oid_aggrStatus = '.1.3.6.1.4.1.789.1.5.11.1.6';
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_aggrName },
-                                                            { oid => $oid_aggrState },
-                                                            { oid => $oid_aggrStatus },
-                                                         ],
-                                                         , nothing_quit => 1);
-    
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_aggrName },
+            { oid => $oid_aggrState },
+            { oid => $oid_aggrStatus },
+        ],
+        nothing_quit => 1
+    );
+
     $self->{agg} = {};
-    foreach my $oid (keys %{$self->{results}->{$oid_aggrState}}) {
+    foreach my $oid (keys %{$snmp_result->{$oid_aggrState}}) {
         next if ($oid !~ /^$oid_aggrState\.(.*)$/);
         my $instance = $1;
-        my $name = $self->{results}->{$oid_aggrName}->{$oid_aggrName . '.' . $instance};
-        my $state = $self->{results}->{$oid_aggrState}->{$oid_aggrState . '.' . $instance};
-        my $status = $self->{results}->{$oid_aggrStatus}->{$oid_aggrStatus . '.' . $instance};
+        my $name = $snmp_result->{$oid_aggrName}->{$oid_aggrName . '.' . $instance};
+        my $state = $snmp_result->{$oid_aggrState}->{$oid_aggrState . '.' . $instance};
+        my $status = $snmp_result->{$oid_aggrStatus}->{$oid_aggrStatus . '.' . $instance};
         
         if (!defined($state) || $state eq '') {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': state value not set.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': state value not set.");
             next;
         } 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $name . "': no matching filter name.");
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter name.");
             next;
         }
         

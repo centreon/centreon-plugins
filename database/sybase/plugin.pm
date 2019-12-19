@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,12 +32,12 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'blocked-processes'    => 'database::sybase::mode::blockedprocesses',
-                         'connected-users'      => 'database::sybase::mode::connectedusers',
-                         'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
-                         'databases-size'       => 'database::sybase::mode::databasessize',
-                         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
-                         );
+        'blocked-processes'    => 'database::sybase::mode::blockedprocesses',
+        'connected-users'      => 'database::sybase::mode::connectedusers',
+        'connection-time'      => 'centreon::common::protocols::sql::mode::connectiontime',
+        'databases-size'       => 'database::sybase::mode::databasessize',
+        'sql'                  => 'centreon::common::protocols::sql::mode::sql',
+    );
 
     return $self;
 }
@@ -46,13 +46,13 @@ sub init {
     my ($self, %options) = @_;
 
     $self->{options}->add_options(
-                                   arguments => {
-                                                'hostname:s@'       => { name => 'hostname' },
-                                                'port:s@'           => { name => 'port' },
-                                                'tds-level:s@'      => { name => 'tds_level' },
-                                                'database:s'        => { name => 'database' },
-                                                }
-                                  );
+        arguments => {
+            'hostname:s@'       => { name => 'hostname' },
+            'port:s@'           => { name => 'port' },
+            'tds-level:s@'      => { name => 'tds_level' },
+            'database:s'        => { name => 'database' },
+        }
+    );
     $self->{options}->parse_options();
     my $options_result = $self->{options}->get_options();
     $self->{options}->clean();

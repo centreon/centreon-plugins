@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,12 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"          => { name => 'name' },
-                                  "regexp"          => { name => 'use_regexp' },
-                                });
+    $options{options}->add_options(arguments => {
+        'name:s' => { name => 'name' },
+        'regexp' => { name => 'use_regexp' },
+    });
 
     return $self;
 }
@@ -48,10 +46,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result} = $self->{wsman}->request(uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
-                                              wql_filter => 'Select Name, DisplayName, StartMode, State From Win32_Service',
-                                              result_type => 'hash',
-                                              hash_key => 'Name');
+    $self->{result} = $self->{wsman}->request(
+        uri => 'http://schemas.microsoft.com/wbem/wsman/1/wmi/root/cimv2/*',
+        wql_filter => 'Select Name, DisplayName, StartMode, State From Win32_Service',
+        result_type => 'hash',
+        hash_key => 'Name'
+    );
     foreach my $name (sort(keys %{$self->{result}})) {
         # Get all without a name
         next if (!defined($self->{option_results}->{name}));
@@ -96,11 +96,12 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         display_name => $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}),
-                                         start_mode => $self->{result}->{$name}->{StartMode},
-                                         state => $self->{result}->{$name}->{State}
-                                         );
+        $self->{output}->add_disco_entry(
+            name => $name,
+            display_name => $self->{output}->to_utf8($self->{result}->{$name}->{DisplayName}),
+            start_mode => $self->{result}->{$name}->{StartMode},
+            state => $self->{result}->{$name}->{State}
+        );
     }
 }
 

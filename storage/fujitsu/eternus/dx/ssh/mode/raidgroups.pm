@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,48 +20,16 @@
 
 package storage::fujitsu::eternus::dx::ssh::mode::raidgroups;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $thresholds = {
-    rg => [
-        ['Available', 'OK'],
-        ['Spare in Use', 'WARNING'],
-    ],
-};
-my $instance_mode;
-
-my $maps_counters = {
-    rg => { 
-        '000_status'   => {
-            set => { threshold => 0,
-                key_values => [ { name => 'status' } ],
-                closure_custom_calc => \&custom_status_calc,
-                output_template => 'Status : %s', output_error_template => 'Status : %s',
-                output_use => 'status',
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&custom_threshold_output,
-            }
-        },
-        '001_usage'   => {
-            set => {
-                key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
-                closure_custom_calc => \&custom_usage_calc,
-                closure_custom_output => \&custom_usage_output,
-                closure_custom_perfdata => \&custom_usage_perfdata,
-                closure_custom_threshold_check => \&custom_usage_threshold,
-            },
-        },
-    }
-};
+use centreon::plugins::misc;
 
 sub custom_threshold_output {
     my ($self, %options) = @_;
     
-    return $instance_mode->get_severity(section => 'rg', value => $self->{result_values}->{status});
+    return $self->{instance_mode}->get_severity(section => 'rg', value => $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -73,22 +41,22 @@ sub custom_status_calc {
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
-    
-    my $extra_label = '';
-    if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display};
-    }
-    $self->{output}->perfdata_add(label => 'used' . $extra_label, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+
+    $self->{output}->perfdata_add(
+        label => 'used', unit => 'B',
+        nlabel => $self->{nlabel},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -118,61 +86,69 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'rg', type => 1, cb_prefix_output => 'prefix_rg_output', message_multiple => 'All raid groups are ok' }
+    ];
+    
+    $self->{maps_counters}->{rg} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                output_template => 'Status : %s', output_error_template => 'Status : %s',
+                output_use => 'status',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+            }
+        },
+        { label => 'usage', nlabel => 'raidgroup.space.usage.bytes', set => {
+                key_values => [ { name => 'display' }, { name => 'total' }, { name => 'used' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_rg_output {
+    my ($self, %options) = @_;
+    
+    return "Raid Group '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"              => { name => 'hostname' },
-                                  "ssh-option:s@"           => { name => 'ssh_option' },
-                                  "ssh-path:s"              => { name => 'ssh_path' },
-                                  "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"               => { name => 'timeout', default => 30 },
-                                  "command:s"               => { name => 'command', default => 'show' },
-                                  "command-path:s"          => { name => 'command_path' },
-                                  "command-options:s"       => { name => 'command_options', default => 'raid-groups -csv' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                  "no-component:s"          => { name => 'no_component' },
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "filter-level:s"          => { name => 'filter_level' },
-                                });
-    $self->{no_components} = undef;
-    
-    foreach my $key (('rg')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            my ($id, $name) = split /_/;
-            if (!defined($maps_counters->{$key}->{$_}->{threshold}) || $maps_counters->{$key}->{$_}->{threshold} != 0) {
-                $options{options}->add_options(arguments => {
-                                                            'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                            'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                               });
-            }
-            $maps_counters->{$key}->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                      label => $name);
-            $maps_counters->{$key}->{$_}->{obj}->set(%{$maps_counters->{$key}->{$_}->{set}});
-        }
-    }
-    
+    $options{options}->add_options(arguments => { 
+        "hostname:s"              => { name => 'hostname' },
+        "ssh-option:s@"           => { name => 'ssh_option' },
+        "ssh-path:s"              => { name => 'ssh_path' },
+        "ssh-command:s"           => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"               => { name => 'timeout', default => 30 },
+        "command:s"               => { name => 'command', default => 'show' },
+        "command-path:s"          => { name => 'command_path' },
+        "command-options:s"       => { name => 'command_options', default => 'raid-groups -csv' },
+        "threshold-overload:s@"   => { name => 'threshold_overload' },
+        "filter-name:s"           => { name => 'filter_name' },
+        "filter-level:s"          => { name => 'filter_level' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
     if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         $self->{option_results}->{remote} = 1;
     }
-    
-    foreach my $key (('rg')) {
-        foreach (keys %{$maps_counters->{$key}}) {
-            $maps_counters->{$key}->{$_}->{obj}->init(option_results => $self->{option_results});
-        }
-    }
-    $instance_mode = $self;
 
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
@@ -188,86 +164,19 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
     }
-
-    if (defined($self->{option_results}->{no_component})) {
-        if ($self->{option_results}->{no_component} ne '') {
-            $self->{no_components} = $self->{option_results}->{no_component};
-        } else {
-            $self->{no_components} = 'critical';
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{rg}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All Raid Groups are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{rg}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits = ();
-        foreach (sort keys %{$maps_counters->{rg}}) {
-            my $obj = $maps_counters->{rg}->{$_}->{obj};
-            $obj->set(instance => $id);
-        
-            my ($value_check) = $obj->execute(values => $self->{rg}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $obj->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $obj->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $obj->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $obj->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Raid Group '$self->{rg}->{$id}->{display}' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Raid Group '$self->{rg}->{$id}->{display}' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Raid Group '$self->{rg}->{$id}->{display}' $long_msg");
-        }
-    }
-     
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  ssh_pipe => 1,
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        ssh_pipe => 1,
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     
     #[RAID Group No.],[RAID Group Name],[RAID Level],[Assigned CM],[Status],[Total Capacity(MB)],[Free Capacity(MB)]
     #1,RAIDGROUP001,RAID1+0,CM#0,Spare in Use,134656,132535
@@ -290,16 +199,25 @@ sub manage_selection {
             next;
         }
         
-        $self->{rg}->{$raid_num} = { status => $raid_status, total => $raid_total * 1024 * 1024, 
-                                     used => ($raid_total * 1024 * 1024) - ($raid_free * 1024 * 1024), 
-                                     display => $raid_name };
+        $self->{rg}->{$raid_num} = {
+            status => $raid_status, total => $raid_total * 1024 * 1024, 
+            used => ($raid_total * 1024 * 1024) - ($raid_free * 1024 * 1024), 
+            display => $raid_name
+        };
     }
-    
+
     if (scalar(keys %{$self->{rg}}) <= 0) {
-        $self->{output}->output_add(severity => defined($self->{no_components}) ? $self->{no_components} : 'unknown',
-                                    short_msg => 'No components are checked.');
+        $self->{output}->add_option_msg(short_msg => "No raid group found.");
+        $self->{output}->option_exit();
     }
 }
+
+my $thresholds = {
+    rg => [
+        ['Available', 'OK'],
+        ['Spare in Use', 'WARNING'],
+    ],
+};
 
 sub get_severity {
     my ($self, %options) = @_;
@@ -371,10 +289,6 @@ Command options (Default: 'raid-groups -csv').
 Set to overload default threshold values (syntax: section,status,regexp)
 It used before default thresholds (order stays).
 Example: --threshold-overload='rg,CRITICAL,^(?!(Available|Spare)$)'
-
-=item B<--no-component>
-
-Set the threshold where no components (Default: 'unknown' returns).
 
 =item B<--filter-name>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,17 +25,17 @@ use warnings;
 use base qw(centreon::plugins::script_simple);
 
 sub new {
-	my ($class, %options) = @_;
-	my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-	bless $self, $class;
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    bless $self, $class;
 
-	$self->{version} = '0.1';
-	%{$self->{modes}} = (
-                          'response-time'   => 'apps::protocols::ntp::mode::responsetime',
-                          'offset'          => 'apps::protocols::ntp::mode::offset',
-                        );
+    $self->{version} = '0.1';
+    %{$self->{modes}} = (
+        'offset'          => 'apps::protocols::ntp::mode::offset',
+        'response-time'   => 'apps::protocols::ntp::mode::responsetime',
+    );
 
-	return $self;
+    return $self;
 }
 
 1;

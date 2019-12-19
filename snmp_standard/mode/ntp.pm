@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,70 +20,112 @@
 
 package snmp_standard::mode::ntp;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::misc;
 use DateTime;
 
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'Time offset %d second(s): %s',
+        $self->{result_values}->{offset_absolute},
+        $self->{result_values}->{date_absolute}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'offset', type => 0 }
+    ];
+
+    $self->{maps_counters}->{offset} = [
+        { label => 'offset', nlabel => 'time.offset.seconds', set => {
+                key_values => [ { name => 'offset' }, { name => 'date' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { label => 'offset', value => 'offset_absolute', template => '%d', unit => 's' },
+                ],
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "ntp-hostname:s"          => { name => 'ntp_hostname' },
-                                  "ntp-port:s"              => { name => 'ntp_port', default => 123 },
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "timezone:s"              => { name => 'timezone' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'ntp-hostname:s' => { name => 'ntp_hostname' },
+        'ntp-port:s'     => { name => 'ntp_port', default => 123 },
+        'timezone:s'     => { name => 'timezone' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    $self->SUPER::check_options(%options);
+   
     if (defined($self->{option_results}->{ntp_hostname})) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Net::NTP',
-                                               error_msg => "Cannot load module 'Net::NTP'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'Net::NTP',
+            error_msg => "Cannot load module 'Net::NTP'."
+        );
     }
 }
 
-sub run {
+sub get_target_time {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    my ($ref_time, $distant_time);
     my $oid_hrSystemDate = '.1.3.6.1.2.1.25.1.2.0';
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_hrSystemDate ]);
-    if (scalar(keys %$result) == 0) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Cannot get 'hrSystemDate' information.");
-        $self->{output}->display();
-        $self->{output}->exit();
+    my $result = $options{snmp}->get_leef(oids => [ $oid_hrSystemDate ], nothing_quit => 1);
+
+    my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
+    my $timezone = 'UTC';
+    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
+        $timezone = $self->{option_results}->{timezone};
+    } elsif (defined($remote_date[9])) {
+        $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
     }
-    if (defined($self->{option_results}->{ntp_hostname})) {
+
+    my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
+    my $dt = DateTime->new(
+      year       => $remote_date[0],
+      month      => $remote_date[1],
+      day        => $remote_date[2],
+      hour       => $remote_date[3],
+      minute     => $remote_date[4],
+      second     => $remote_date[5],
+      %$tz
+    );
+
+    return ($dt->epoch, \@remote_date, $timezone);
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my ($disant_time, $remote_date, $timezone) = $self->get_target_time(%options);
+    my $ref_time;
+    if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
         
         eval {
             %ntp = Net::NTP::get_ntp_response($self->{option_results}->{ntp_hostname}, $self->{option_results}->{ntp_port});
         };
         if ($@) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Couldn't connect to ntp server: " . $@);
+            $self->{output}->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "Couldn't connect to ntp server: " . $@
+            );
             $self->{output}->display();
             $self->{output}->exit();
         }
@@ -92,43 +134,18 @@ sub run {
     } else {
         $ref_time = time();
     }
-    
-    my @remote_date = unpack 'n C6 a C2', $result->{$oid_hrSystemDate};
-    my $timezone = 'UTC';
-    if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
-        $timezone = $self->{option_results}->{timezone};
-    } elsif (defined($remote_date[9])) {
-        $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
-    }
-    
-    my $dt = DateTime->new(
-      year       => $remote_date[0],
-      month      => $remote_date[1],
-      day        => $remote_date[2],
-      hour       => $remote_date[3],
-      minute     => $remote_date[4],
-      second     => $remote_date[5],
-      time_zone  => $timezone, 
+
+    my $offset = $disant_time - $ref_time;
+    my $remote_date_formated = sprintf(
+        'Local Time : %02d-%02d-%02dT%02d:%02d:%02d (%s)',
+        $remote_date->[0], $remote_date->[1], $remote_date->[2],
+        $remote_date->[3], $remote_date->[4], $remote_date->[5], $timezone
     );
-    $distant_time = $dt->epoch;
-    
-    my $diff = $distant_time - $ref_time;
-    my $remote_date_formated = sprintf("%02d-%02d-%02dT%02d:%02d:%02d (%s)", $remote_date[0], $remote_date[1], $remote_date[2],
-                                       $remote_date[3], $remote_date[4], $remote_date[5], $timezone);
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $diff, 
-                               threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Time offset %d second(s) : %s", $diff, $remote_date_formated));
 
-    $self->{output}->perfdata_add(label => 'offset', unit => 's',
-                                  value => sprintf("%d", $diff),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{offset} = { 
+        offset => sprintf("%d", $offset),
+        date => $remote_date_formated,
+    };    
 }
 
 1;
@@ -143,13 +160,13 @@ Use threshold with (+-) 2 seconds offset (minimum).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-offset>
 
-Threshold warning.
+Time offset warning threshold (in seconds).
 
-=item B<--critical>
+=item B<--critical-offset>
 
-Threshold critical.
+Time offset critical Threshold (in seconds).
 
 =item B<--ntp-hostname>
 

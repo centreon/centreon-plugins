@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'crm'          => 'apps::pacemaker::local::mode::crm',
-                         'constraints'  => 'apps::pacemaker::local::mode::constraints',
-                         'clustat'      => 'apps::pacemaker::local::mode::clustat',
-                         );
+        'clustat'      => 'apps::pacemaker::local::mode::clustat',
+        'constraints'  => 'apps::pacemaker::local::mode::constraints',
+        'crm'          => 'apps::pacemaker::local::mode::crm',
+    );
 
     return $self;
 }

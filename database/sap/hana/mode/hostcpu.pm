@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All cpu usages are ok' },
     ];
     $self->{maps_counters}->{cpu} = [
-        { label => 'user', set => {
+        { label => 'user', nlabel => 'host.cpu.user.utilization.percentage', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'user', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'user' },
                 output_template => 'User %.2f %%', output_use => 'user_prct', threshold_use => 'user_prct',
@@ -43,7 +43,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'sys', set => {
+        { label => 'sys', nlabel => 'host.cpu.system.utilization.percentage', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'sys', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'sys' },
                 output_template => 'System %.2f %%', output_use => 'sys_prct', threshold_use => 'sys_prct',
@@ -53,7 +53,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'wait', set => {
+        { label => 'wait', nlabel => 'host.cpu.wait.utilization.percentage', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'wait', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'wait' },
                 output_template => 'Wait %.2f %%', output_use => 'wait_prct', threshold_use => 'wait_prct',
@@ -63,7 +63,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'idle', set => {
+        { label => 'idle', nlabel => 'host.cpu.idle.utilization.percentage', set => {
                 key_values => [ { name => 'total', diff => 1 }, { name => 'idle', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_data_calc'), closure_custom_calc_extra_options => { label_ref => 'idle' },
                 output_template => 'Idle %.2f %%', output_use => 'idle_prct', threshold_use => 'idle_prct',
@@ -101,10 +101,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
                                 
     return $self;
 }

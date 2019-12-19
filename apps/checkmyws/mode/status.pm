@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -41,20 +41,17 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"            => { name => 'hostname', default => 'api.checkmy.ws'},
-            "port:s"                => { name => 'port', },
-            "proto:s"               => { name => 'proto', default => "https" },
-            "urlpath:s"             => { name => 'url_path', default => "/api/status" },
-            "proxyurl:s"            => { name => 'proxyurl' },
-            "uid:s"                 => { name => 'uid' },
-            "timeout:s"             => { name => 'timeout' },
-            "threshold-overload:s@" => { name => 'threshold_overload' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"            => { name => 'hostname', default => 'api.checkmy.ws'},
+        "port:s"                => { name => 'port', },
+        "proto:s"               => { name => 'proto', default => "https" },
+        "urlpath:s"             => { name => 'url_path', default => "/api/status" },
+        "uid:s"                 => { name => 'uid' },
+        "timeout:s"             => { name => 'timeout' },
+        "threshold-overload:s@" => { name => 'threshold_overload' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -193,29 +190,21 @@ Checkmyws api host (Default: 'api.checkmy.ws')
 
 Port used by checkmyws
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Specify https if needed (Default: 'https')
 
 =item B<--urlpath>
 
-Set path to get checkmyws information (Default: 'api/status')
-
-=item B<--proxyurl>
-
-Proxy URL if any
-
-=item B<--uid>
-
-ID for checkmyws API
+Set path to get checkmyws information (Default: '/api/status')
 
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: 5)
+
+=item B<--uid>
+
+ID for checkmyws API
 
 =item B<--threshold-overload>
 

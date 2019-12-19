@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -106,25 +106,24 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "cem-host:s"      => { name => 'cem_host' },
-                                  "cem-user:s"      => { name => 'cem_user' },
-                                  "cem-password:s"  => { name => 'cem_password' },
-                                  "cem-port:s"      => { name => 'cem_port', default => 3033 },
-                                  "sdk-path-dll:s"  => { name => 'sdk_path_dll' },
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "no-ps"               => { name => 'no_ps' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "ps-sc-filter:s"      => { name => 'ps_sc_filter' },
-                                  "start-time:s"        => { name => 'start_time' },
-                                  "end-time:s"          => { name => 'end_time' },
-                                  "timezone:s"          => { name => 'timezone' },
-                                });
+    $options{options}->add_options(arguments => {
+        'cem-host:s'      => { name => 'cem_host' },
+        'cem-user:s'      => { name => 'cem_user' },
+        'cem-password:s'  => { name => 'cem_password' },
+        'cem-port:s'      => { name => 'cem_port', default => 3033 },
+        'sdk-path-dll:s'  => { name => 'sdk_path_dll' },
+        'timeout:s'           => { name => 'timeout', default => 50 },
+        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'      => { name => 'command_path' },
+        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'               => { name => 'no_ps' },
+        'ps-exec-only'        => { name => 'ps_exec_only' },
+        'ps-sc-filter:s'      => { name => 'ps_sc_filter' },
+        'start-time:s'        => { name => 'start_time' },
+        'end-time:s'          => { name => 'end_time' },
+        'timezone:s'          => { name => 'timezone' },
+    });
+
     return $self;
 }
 
@@ -149,8 +148,10 @@ sub parse_date {
         $self->{output}->option_exit();
     }
     
-    my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
-                           time_zone => $self->{option_results}->{timezone});
+    my $dt = DateTime->new(
+        year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6,
+        %{$self->{tz}}
+    );
     return $dt;
 }
 
@@ -169,10 +170,11 @@ sub check_options {
     }
     
     my ($dt_start, $dt_end);
+    $self->{tz} = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     if (defined($self->{option_results}->{end_time}) && $self->{option_results}->{end_time} ne '') {
         $dt_end = $self->parse_date(date => $self->{option_results}->{end_time});
     } else {
-        $dt_end = DateTime->now(time_zone => $self->{option_results}->{timezone});
+        $dt_end = DateTime->now(%{$self->{tz}});
     }
     $self->{end_time} = $self->get_iso8601(date => $dt_end);
     
@@ -187,21 +189,25 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::dell::compellent::hbausage::get_powershell(cem_host => $self->{option_results}->{cem_host},
-                                                                            cem_user => $self->{option_results}->{cem_user},
-                                                                            cem_password => $self->{option_results}->{cem_password},
-                                                                            cem_port => $self->{option_results}->{cem_port},
-                                                                            sdk_path_dll => $self->{option_results}->{sdk_path_dll},
-                                                                            no_ps => $self->{option_results}->{no_ps},
-                                                                            filter_sc => $self->{option_results}->{ps_sc_filter},
-                                                                            end_time => $self->{end_time}, start_time => $self->{start_time});
+    my $ps = centreon::common::powershell::dell::compellent::hbausage::get_powershell(
+        cem_host => $self->{option_results}->{cem_host},
+        cem_user => $self->{option_results}->{cem_user},
+        cem_password => $self->{option_results}->{cem_password},
+        cem_port => $self->{option_results}->{cem_port},
+        sdk_path_dll => $self->{option_results}->{sdk_path_dll},
+        no_ps => $self->{option_results}->{no_ps},
+        filter_sc => $self->{option_results}->{ps_sc_filter},
+        end_time => $self->{end_time}, start_time => $self->{start_time}
+    );
     
     $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(severity => 'OK',
                                     short_msg => $stdout);
@@ -218,8 +224,10 @@ sub manage_selection {
             ($1, $2, $3, $4, $5, $6, $7, $8);
         my $display = $sc . '/' . $name;
         
-        $self->{hba}->{$name} = { display => $display, read_iops => $read_iops, read_bps => $read_kbps * 1000, read_latency => $read_latency / 1000,
-                                  write_iops => $write_iops, write_bps => $write_kbps * 1000, write_latency => $write_latency / 1000 };
+        $self->{hba}->{$name} = {
+            display => $display, read_iops => $read_iops, read_bps => $read_kbps * 1000, read_latency => $read_latency / 1000,
+            write_iops => $write_iops, write_bps => $write_kbps * 1000, write_latency => $write_latency / 1000
+        };
     }
 }
 

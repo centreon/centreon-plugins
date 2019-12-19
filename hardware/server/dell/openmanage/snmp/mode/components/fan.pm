@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -47,9 +47,9 @@ my $mapping2 = {
 my $oid_coolingDeviceTableEntry = '.1.3.6.1.4.1.674.10892.1.700.12.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_coolingDeviceTableEntry, start => $mapping->{coolingDeviceStatus}->{oid}, end => $mapping->{coolingDeviceReading}->{oid} },
+    push @{$self->{request}}, { oid => $oid_coolingDeviceTableEntry, start => $mapping->{coolingDeviceStatus}->{oid}, end => $mapping->{coolingDeviceReading}->{oid} },
         { oid => $mapping2->{coolingDeviceLocationName}->{oid} };
 }
 
@@ -58,7 +58,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_coolingDeviceTableEntry}})) {
         next if ($oid !~ /^$mapping->{coolingDeviceStatus}->{oid}\.(.*)$/);
@@ -66,7 +66,7 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_coolingDeviceTableEntry}, instance => $instance);
         my $result2 = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$mapping2->{coolingDeviceLocationName}->{oid}}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance));
         
         $self->{components}->{fan}->{total}++;
 
@@ -74,7 +74,7 @@ sub check {
                                     $instance, $result->{coolingDeviceStatus}, $instance, 
                                     $result2->{coolingDeviceLocationName}, $result->{coolingDeviceReading}
                                     ));
-        my $exit = $self->get_severity(section => 'fan', value => $result->{coolingDeviceStatus});
+        my $exit = $self->get_severity(label => 'default', section => 'fan', value => $result->{coolingDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fan '%s' status is '%s'",
@@ -88,12 +88,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit,
                                             short_msg => sprintf("Fan '%s' speed is %s rpm", $instance, $result->{coolingDeviceReading}));
             }
-            $self->{output}->perfdata_add(label => 'fan_' . $instance, unit => 'rpm', 
-                                          value => $result->{coolingDeviceReading},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'fan', unit => 'rpm',
+                nlabel => 'hardware.fan.speed.rpm',
+                instances => $instance,
+                value => $result->{coolingDeviceReading},
+                warning => $warn,
+                critical => $crit,
+                min => 0
+            );
         }
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,41 +33,155 @@ my %map_operating_states = (
     7 => 'standby',
 );
 
-# In MIB 'mib-jnx-chassis'
-my $mapping = {
-    jnxOperatingDescr => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.5' },
-    jnxOperatingState => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.6', map => \%map_operating_states },
-};
-my $oid_jnxOperatingEntry = '.1.3.6.1.4.1.2636.3.1.13.1';
-
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_jnxOperatingEntry, start => $mapping->{jnxOperatingDescr}->{oid}, end => $mapping->{jnxOperatingState}->{oid} };
-}
-
 sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking operatings");
-    $self->{components}->{operating} = {name => 'operatings', total => 0, skip => 0};
+    $self->{components}->{operating} = { name => 'operatings', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'operating'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_jnxOperatingEntry}})) {
-        next if ($oid !~ /^$mapping->{jnxOperatingDescr}->{oid}\.(.*)$/);
-        my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_jnxOperatingEntry}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'operating', instance => $instance));
-        $self->{components}->{operating}->{total}++;
+    my $mapping = {
+        jnxOperatingState => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.6', map => \%map_operating_states },
+        jnxOperatingTemp => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.7' },
+        jnxOperatingCPU => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.8' },
+        jnxOperatingBuffer => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.11' },
+        jnxOperatingHeap => { oid => '.1.3.6.1.4.1.2636.3.1.13.1.12' },
+    };
 
-        $self->{output}->output_add(long_msg => sprintf("Operating '%s' state is %s [instance: %s]", 
-                                                        $result->{jnxOperatingDescr}, $result->{jnxOperatingState}, $instance));
-        my $exit = $self->get_severity(section => 'operating', value => $result->{jnxOperatingState});
+    my $results = $self->{snmp}->get_table(
+        oid => $self->{oids_operating}->{jnxOperatingEntry},
+        start => $mapping->{jnxOperatingState}->{oid},
+        end => $mapping->{jnxOperatingHeap}->{oid}
+    );
+    
+    foreach my $instance (sort $self->get_instances(oid_entry => $self->{oids_operating}->{jnxOperatingEntry},
+        oid_name => $self->{oids_operating}->{jnxOperatingDescr})) {
+        my $result = $self->{snmp}->map_instance(
+            mapping => $mapping,
+            results => $results,
+            instance => $instance
+        );        
+        my $description = $self->get_cache(
+            oid_entry => $self->{oids_operating}->{jnxOperatingEntry},
+            oid_name => $self->{oids_operating}->{jnxOperatingDescr},
+            instance => $instance
+        );
+
+        next if ($self->check_filter(section => 'operating', instance => $instance, name => $description));
+        $self->{components}->{operating}->{total}++;
+        
+        $self->{output}->output_add(
+            long_msg => sprintf("operating '%s' state is %s [instance: %s]", 
+                $description,
+                $result->{jnxOperatingState},
+                $instance)
+        );
+        my $exit = $self->get_severity(section => 'operating', instance => $instance,
+            value => $result->{jnxOperatingState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Operating '%s' state is %s", 
-                                    $result->{jnxOperatingDescr}, $result->{jnxOperatingState}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Operating '%s' state is %s", 
+                    $description,
+                    $result->{jnxOperatingState})
+            );
+        }
+        
+        if (defined($result->{jnxOperatingTemp}) && $result->{jnxOperatingTemp} != 0) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'operating-temperature',
+                instance => $instance,
+                name => $description,
+                value => $result->{jnxOperatingTemp}
+            );
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Operating '%s' temperature is %s degree centigrade",
+                        $description,
+                        $result->{jnxOperatingTemp})
+                );
+            }
+            $self->{output}->perfdata_add(
+                label => "temp", unit => 'C',
+                nlabel => 'hardware.temperature.celsius',
+                instances => $description,
+                value => $result->{jnxOperatingTemp},
+                warning => $warn,
+                critical => $crit
+            );
+        }
+        if (defined($result->{jnxOperatingCPU}) && $result->{jnxOperatingCPU} != 0) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'operating-cpu',
+                instance => $instance,
+                name => $description,
+                value => $result->{jnxOperatingCPU}
+            );
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Operating '%s' CPU utilization is %s%%",
+                        $description,
+                        $result->{jnxOperatingCPU})
+                );
+            }
+            $self->{output}->perfdata_add(
+                label => "cpu_utilization", unit => '%',
+                nlabel => 'hardware.cpu.utilization.percentage',
+                instances => $description,
+                value => $result->{jnxOperatingCPU},
+                warning => $warn,
+                critical => $crit
+            );
+        }
+        if (defined($result->{jnxOperatingBuffer}) && $result->{jnxOperatingBuffer} != 0) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'operating-buffer',
+                instance => $instance,
+                name => $description,
+                value => $result->{jnxOperatingBuffer}
+            );
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Operating '%s' buffer usage is %s%%",
+                        $description,
+                        $result->{jnxOperatingBuffer})
+                );
+            }
+            $self->{output}->perfdata_add(
+                label => "buffer_usage", unit => '%',
+                nlabel => 'hardware.buffer.usage.percentage',
+                instances => $description,
+                value => $result->{jnxOperatingBuffer},
+                warning => $warn,
+                critical => $crit
+            );
+        }
+        if (defined($result->{jnxOperatingHeap}) && $result->{jnxOperatingHeap} != 0) {
+            my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(
+                section => 'operating-heap',
+                instance => $instance,
+                name => $description,
+                value => $result->{jnxOperatingHeap}
+            );
+            if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Operating '%s' heap usage is %s%%",
+                        $description,
+                        $result->{jnxOperatingHeap})
+                );
+            }
+            $self->{output}->perfdata_add(
+                label => "heap_usage", unit => '%',
+                nlabel => 'hardware.heap.usage.percentage',
+                instances => $description,
+                value => $result->{jnxOperatingHeap},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

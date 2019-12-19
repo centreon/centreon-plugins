@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -35,13 +35,13 @@ sub set_counters {
     ];
     $self->{maps_counters}->{vm} = [
         { label => 'snapshot', set => {
-                key_values => [ { name => 'snapshot' }, { name => 'display' }],
+                key_values => [ { name => 'snapshot' }, { name => 'status' }, { name => 'display' }],
                 closure_custom_output => $self->can('custom_snapshot_output'),
                 closure_custom_perfdata => sub { return 0; },
             }
         },
         { label => 'backing', set => {
-                key_values => [ { name => 'backing' }, { name => 'display' }],
+                key_values => [ { name => 'backing' }, { name => 'status' }, { name => 'display' }],
                 closure_custom_output => $self->can('custom_backing_output'),
                 closure_custom_perfdata => sub { return 0; },
             }
@@ -51,14 +51,14 @@ sub set_counters {
 
 sub custom_snapshot_output {
     my ($self, %options) = @_;
-    my $msg = 'checkpoint started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute});
+    my $msg = "[status = " . $self->{result_values}->{status_absolute} . "] checkpoint started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute}) . "' ago";
 
     return $msg;
 }
 
 sub custom_backing_output {
     my ($self, %options) = @_;
-    my $msg = 'backing started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute});
+    my $msg = "[status = " . $self->{result_values}->{status_absolute} . "] backing started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute}) . "' ago";
 
     return $msg;
 }
@@ -74,7 +74,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "timeout:s"           => { name => 'timeout', default => 50 },
@@ -118,7 +117,9 @@ sub manage_selection {
         my ($name, $status, $note, $content) = ($1, $2, $3, $4);
         my %chkpt = (backing => -1, snapshot => -1);
         while ($content =~ /\[checkpointCreationTime=\s*(.*?)\s*\]\[type=\s*(.*?)\s*\]/msig) {
-            $chkpt{$2} = $1 if ($chkpt{$2} == -1 || $chkpt{$2} > $1);
+            my ($timestamp, $type) = ($1, $2);
+            $timestamp =~ s/,/\./g;
+            $chkpt{$type} = $timestamp if ($timestamp > 0 && ($chkpt{$type} == -1 || $chkpt{$type} > $timestamp));
         }
         next if ($chkpt{backing} == -1 && $chkpt{snapshot} == -1);
 
@@ -138,9 +139,12 @@ sub manage_selection {
             next;
         }
         
-        $self->{vm}->{$id} = { display => $name, 
+        $self->{vm}->{$id} = {
+            display => $name, 
             snapshot => $chkpt{snapshot} > 0 ? $time - $chkpt{snapshot} : undef, 
-            backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef };
+            backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef,
+            status => $status
+        };
         $id++;
     }
 }

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,8 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -157,14 +155,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "filter-type:s"           => { name => 'filter_type' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s'           => { name => 'filter_name' },
+        'filter-type:s'           => { name => 'filter_type' },
+        'threshold-overload:s@'   => { name => 'threshold_overload' },
+    });
+
     return $self;
 }
 
@@ -226,17 +222,22 @@ my $mapping2 = {
 sub manage_selection {
     my ($self, %options) = @_;
  
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $mapping->{vsvrFullName}->{oid} },
-                                                            { oid => $mapping->{vsvrState}->{oid} },
-                                                            { oid => $mapping->{vsvrEntityType}->{oid} },
-                                                         ], return_type => 1, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $mapping->{vsvrFullName}->{oid} },
+            { oid => $mapping->{vsvrState}->{oid} },
+            { oid => $mapping->{vsvrEntityType}->{oid} },
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
+
     $self->{vservers} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vsvrFullName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
-        
+
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
             $result->{vsvrEntityType} !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping Virtual Server '" . $result->{vsvrFullName} . "'.", debug => 1);
@@ -250,15 +251,23 @@ sub manage_selection {
         
         $self->{vservers}->{$instance} = { display => $result->{vsvrFullName}, state => $result->{vsvrState} };
     }
+
+    if (scalar(keys %{$self->{vservers}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No virtual server found.");
+        $self->{output}->option_exit();
+    }
     
-    $options{snmp}->load(oids => [$mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
-        $mapping2->{vsvrTotalResponseBytesLow}->{oid}, $mapping2->{vsvrTotalResponseBytesHigh}->{oid},
-        $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
-        $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
+    $options{snmp}->load(
+        oids => [
+            $mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
+            $mapping2->{vsvrTotalResponseBytesLow}->{oid}, $mapping2->{vsvrTotalResponseBytesHigh}->{oid},
+            $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
+            $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
         ], 
-        instances => [keys %{$self->{vservers}}], instance_regexp => '^(.*)$');
+        instances => [keys %{$self->{vservers}}], instance_regexp => '^(.*)$'
+    );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach (keys %{$self->{vservers}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
         
@@ -270,12 +279,7 @@ sub manage_selection {
         $self->{vservers}->{$_}->{clients} = $result->{vsvrTotalClients};
         $self->{vservers}->{$_}->{servers} = $result->{vsvrTotalServers};
     }
-    
-    if (scalar(keys %{$self->{vservers}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No virtual server found.");
-        $self->{output}->option_exit();
-    }
-    
+
     $self->{cache_name} = "citrix_netscaler_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .

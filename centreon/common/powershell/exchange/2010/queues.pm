@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -44,7 +44,7 @@ try {
 }
 
 Foreach ($result in $results) {
-    Write-Host "[identity=" $result.Identity "][deliverytype=" $result.DeliveryType "][status=" $result.Status "][isvalid=" $result.IsValid "][messagecount=" $result.MessageCount "][[error=" $result.LastError "]]"
+    Write-Host "[identity=" $result.Identity "][nexthopdomain=" $result.NextHopDomain "][deliverytype=" $result.DeliveryType "][status=" $result.Status "][isvalid=" $result.IsValid "][messagecount=" $result.MessageCount "][[error=" $result.LastError "]]"
 }
 exit 0
 ';
@@ -57,7 +57,7 @@ sub check {
     # options: stdout
     
     # Following output:
-    #[identity=  ][deliverytype= SmtpRelayWithinAdSite][status= Active ][isvalid= Yes][messagecount= 1 ][[error=...]]
+    #[identity=  ][nexthopdomain= xxxx][deliverytype= SmtpRelayWithinAdSite][status= Active ][isvalid= Yes][messagecount= 1 ][[error=...]]
     $self->{output}->output_add(severity => 'OK',
                                 short_msg => "All Queues are ok.");
    
@@ -65,11 +65,11 @@ sub check {
     $self->{output}->output_add(long_msg => $options{stdout});
     
     $self->{perfdatas_queues} = {};
-    while ($options{stdout} =~ /\[identity=(.*?)\]\[deliverytype=(.*?)\]\[status=(.*?)\]\[isvalid=(.*?)\]\[messagecount=(.*?)\]\[\[error=(.*?)\]\]/msg) {
+    while ($options{stdout} =~ /\[identity=(.*?)\]\[nexthopdomain=(.*?)\]\[deliverytype=(.*?)\]\[status=(.*?)\]\[isvalid=(.*?)\]\[messagecount=(.*?)\]\[\[error=(.*?)\]\]/msg) {
         $self->{data} = {};
-        ($self->{data}->{identity}, $self->{data}->{deliverytype}, $self->{data}->{status}, $self->{data}->{isvalid}, $self->{data}->{messagecount}, $self->{data}->{error}) = 
+        ($self->{data}->{identity}, $self->{data}->{nexthopdomain}, $self->{data}->{deliverytype}, $self->{data}->{status}, $self->{data}->{isvalid}, $self->{data}->{messagecount}, $self->{data}->{error}) = 
             ($self->{output}->to_utf8($1), centreon::plugins::misc::trim($2), 
-             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6));
+             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6), centreon::plugins::misc::trim($7));
         
         $checked++;
         
@@ -92,7 +92,7 @@ sub check {
         if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $status,
                                         short_msg => sprintf("Queue '%s' status is '%s' [last error: %s]",
-                                                             $self->{data}->{identity}, $self->{data}->{status}, $self->{data}->{error}));
+                                                             $self->{data}->{nexthopdomain}, $self->{data}->{status}, $self->{data}->{error}));
         }
         
         if ($self->{data}->{messagecount} =~ /^(\d+)/) {

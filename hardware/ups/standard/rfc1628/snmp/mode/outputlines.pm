@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,118 +20,85 @@
 
 package hardware::ups::standard::rfc1628::snmp::mode::outputlines;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
-my %oids = (
-    '.1.3.6.1.2.1.33.1.4.4.1.5' => { counter => 'load', no_present => -1 }, # upsOutputPercentLoad
-    '.1.3.6.1.2.1.33.1.4.4.1.2' => { counter => 'voltage', no_present => 0 }, # in Volt upsOutputVoltage
-    '.1.3.6.1.2.1.33.1.4.4.1.3' => { counter => 'current', no_present => 0 }, # in dA upsOutputCurrent
-    '.1.3.6.1.2.1.33.1.4.4.1.4' => { counter => 'power', no_present => 0 }, # in Watt upsOutputPower
-);
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'oline', type => 1, cb_prefix_output => 'prefix_oline_output', message_multiple => 'All output lines are ok', skipped_code => { -10 => 1 } },
+    ];
 
-my $maps_counters = {
-    load   => { thresholds => {
-                                warning_frequence  =>  { label => 'warning-load', exit_value => 'warning' },
-                                critical_frequence =>  { label => 'critical-load', exit_value => 'critical' },
-                              },
-                output_msg => 'Load : %.2f %%', no_present => -1,
-                factor => 1, unit => '%',
-               },
-    voltage => { thresholds => {
-                                warning_voltage  =>  { label => 'warning-voltage', exit_value => 'warning' },
-                                critical_voltage =>  { label => 'critical-voltage', exit_value => 'critical' },
-                                },
-                 output_msg => 'Voltage : %.2f V', no_present => 0,
-                 factor => 1, unit => 'V',
-                },
-    current => { thresholds => {
-                                warning_current    =>  { label => 'warning-current', exit_value => 'warning' },
-                                critical_current   =>  { label => 'critical-current', exit_value => 'critical' },
-                                },
-                 output_msg => 'Current : %.2f A', no_present => 0,
-                 factor => 0.1, unit => 'A',
-               },
-    power   => { thresholds => {
-                                warning_power  =>  { label => 'warning-power', exit_value => 'warning' },
-                                critical_power  =>  { label => 'critical-power', exit_value => 'critical' },
-                               },
-                 output_msg => 'Power : %.2f W', no_present => 0,
-                 factor => 1, unit => 'W',
-                },
-};
+    $self->{maps_counters}->{global} = [
+        { label => 'stdev-3phases', nlabel => 'output.3phases.stdev.gauge', set => {
+                key_values => [ { name => 'stdev' } ],
+                output_template => 'Load Standard Deviation : %.2f',
+                perfdatas => [
+                    { label => 'stdev', value => 'stdev_absolute', template => '%.2f' },
+                ],
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{oline} = [
+        { label => 'load', nlabel => 'line.output.load.percentage', set => {
+                key_values => [ { name => 'upsOutputPercentLoad' } ],
+                output_template => 'Load : %.2f %%',
+                perfdatas => [
+                    { value => 'upsOutputPercentLoad_absolute', template => '%.2f', 
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'current', nlabel => 'line.output.current.ampere', set => {
+                key_values => [ { name => 'upsOutputCurrent' } ],
+                output_template => 'Current : %.2f A',
+                perfdatas => [
+                    { value => 'upsOutputCurrent_absolute', template => '%.2f', 
+                      min => 0, unit => 'A', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
+                key_values => [ { name => 'upsOutputVoltage' } ],
+                output_template => 'Voltage : %.2f V',
+                perfdatas => [
+                    { value => 'upsOutputVoltage_absolute', template => '%.2f', 
+                      unit => 'V', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'power', nlabel => 'line.output.power.watt', set => {
+                key_values => [ { name => 'upsOutputPower' } ],
+                output_template => 'Power : %.2f W',
+                perfdatas => [
+                    { value => 'upsOutputPower_absolute', template => '%.2f', 
+                      unit => 'W', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-stdev-3phases:s"            => { name => 'warning_stdev' },
-                                "critical-stdev-3phases:s"           => { name => 'critical_stdev' },
-                                });
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            $options{options}->add_options(arguments => {
-                                                         $maps_counters->{$_}->{thresholds}->{$name}->{label} . ':s'    => { name => $name },
-                                                        });
-        }
-    }
+    $options{options}->add_options(arguments => {
+    });
 
-    $self->{counters_value} = {};
-    $self->{instances_done} = {};
     return $self;
 }
 
-sub check_options {
+sub prefix_oline_output {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning-stdev-3phases', value => $self->{option_results}->{warning_stdev})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-stdev-3phases threshold '" . $self->{option_results}->{warning_stdev} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-stdev-3phases', value => $self->{option_results}->{critical_stdev})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-stdev-3phases threshold '" . $self->{option_results}->{critical_stdev} . "'.");
-        $self->{output}->option_exit();
-    }
-    
-    foreach (keys %{$maps_counters}) {
-        foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-            if (($self->{perfdata}->threshold_validate(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, value => $self->{option_results}->{$name})) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong " . $maps_counters->{$_}->{thresholds}->{$name}->{label} . " threshold '" . $self->{option_results}->{$name} . "'.");
-                $self->{output}->option_exit();
-            }
-        }
-    }
-}
-
-sub build_values {
-    my ($self, %options) = @_;
-    my $counters_value = {};
-    my $instance = undef;
-    
-    foreach my $oid (keys %oids) {
-        if ($options{current} =~ /^$oid\.(.*)/) {
-            $instance = $1;
-            last;
-        }
-    }
-    
-    # Skip already done
-    if (!defined($instance) || defined($self->{instances_done}->{$instance})) {
-        return 0;
-    }
-    
-    $self->{instances_done}->{$instance} = 1;
-    $self->{counters_value}->{$instance} = {};
-    foreach my $oid (keys %oids) {
-        $self->{counters_value}->{$instance}->{$oids{$oid}->{counter}} = defined($options{result}->{$oid . '.' . $instance}) ? $options{result}->{$oid . '.' . $instance} : $oids{$oid}->{no_present};
-    }
+    return "Output Line '" . $options{instance_value}->{display} . "' ";
 }
 
 sub stdev {
@@ -139,86 +106,51 @@ sub stdev {
     
     # Calculate stdev
     my $total = 0;
-    my $num_present = 0;
-    foreach my $instance (keys %{$self->{instances_done}}) {
-        next if ($self->{counters_value}->{$instance}->{load} == -1); # Not present
-        $total += $self->{counters_value}->{$instance}->{load};
-        $num_present++;
+    my $num_present = scalar(keys %{$self->{oline}});
+    foreach my $instance (keys %{$self->{oline}}) {
+        next if (!defined($self->{oline}->{$instance}->{upsOutputPercentLoad}));
+        $total += $self->{oline}->{$instance}->{upsOutputPercentLoad};
     }
+    
     my $mean = $total / $num_present;
     $total = 0;
-    foreach my $instance (keys %{$self->{instances_done}}) {
-        next if ($self->{counters_value}->{$instance}->{load} == -1); # Not present
-        $total += ($mean - $self->{counters_value}->{$instance}->{load}) ** 2; 
+    foreach my $instance (keys %{$self->{oline}}) {
+        next if (!defined($self->{oline}->{$instance}->{upsOutputPercentLoad}));
+        $total += ($mean - $self->{oline}->{$instance}->{upsOutputPercentLoad}) ** 2; 
     }
     my $stdev = sqrt($total / $num_present);
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $stdev, threshold => [ { label => 'critical-stdev-3phases', 'exit_litteral' => 'critical' }, { label => 'warning-stdev-3phases', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Load Standard Deviation : %.2f", $stdev));
-    
-    $self->{output}->perfdata_add(label => 'stdev',
-                                  value => sprintf("%.2f", $stdev),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-stdev-3phases'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-stdev-3phases'));
+    $self->{global} = { stdev => $stdev };
 }
 
-sub run {
+my $mapping = {
+    upsOutputVoltage        => { oid => '.1.3.6.1.2.1.33.1.4.4.1.2' }, # in Volt 
+    upsOutputCurrent        => { oid => '.1.3.6.1.2.1.33.1.4.4.1.3' },  # in dA 
+    upsOutputPower          => { oid => '.1.3.6.1.2.1.33.1.4.4.1.4' }, # in Watt 
+    upsOutputPercentLoad    => { oid => '.1.3.6.1.2.1.33.1.4.4.1.5' },
+};
+my $oid_upsOutputEntry = '.1.3.6.1.2.1.33.1.4.4.1';
+
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    my $oid_upsOutputEntry = '.1.3.6.1.2.1.33.1.4.4.1';
-    my $result = $self->{snmp}->get_table(oid => $oid_upsOutputEntry, nothing_quit => 1);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        $self->build_values(current => $key, result => $result);
-    }
 
-    my $num = scalar(keys %{$self->{instances_done}});
-    foreach my $instance (keys %{$self->{instances_done}}) {
-        my $instance_output = $instance;
-        $instance_output =~ s/\./#/g;
+    $self->{oline} = {};
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_upsOutputEntry,
+        nothing_quit => 1
+    );
+    foreach my $oid (keys %{$snmp_result}) {
+        $oid =~ /^$oid_upsOutputEntry\.\d+\.(.*)$/;
+        my $instance = $1;
+        next if (defined($self->{oline}->{$instance}));
         
-        my @exits;
-        foreach (keys %{$maps_counters}) {
-            foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-                if (defined($self->{counters_value}->{$instance}->{$_}) && $self->{counters_value}->{$instance}->{$_} =~ /\d/ && $self->{counters_value}->{$instance}->{$_} != $maps_counters->{$_}->{no_present}) {
-                    push @exits, $self->{perfdata}->threshold_check(value => $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor}, threshold => [ { label => $maps_counters->{$_}->{thresholds}->{$name}->{label}, 'exit_litteral' => $maps_counters->{$_}->{thresholds}->{$name}->{exit_value} }]);
-                }
-            }
-        }
-
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        my $extra_label = '';
-        $extra_label = '_' . $instance_output if ($num > 1);
-
-        my $str_output = "Output Line '$instance_output' ";
-        my $str_append = '';
-        foreach (keys %{$maps_counters}) {
-            next if (!defined($self->{counters_value}->{$instance}->{$_}) || $self->{counters_value}->{$instance}->{$_} !~ /\d/ || $self->{counters_value}->{$instance}->{$_} == $maps_counters->{$_}->{no_present});
-            
-            $str_output .= $str_append . sprintf($maps_counters->{$_}->{output_msg}, $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor});
-            $str_append = ', ';
-            my ($warning, $critical);
-            foreach my $name (keys %{$maps_counters->{$_}->{thresholds}}) {
-                $warning = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'warning');
-                $critical = $self->{perfdata}->get_perfdata_for_output(label => $maps_counters->{$_}->{thresholds}->{$name}->{label}) if ($maps_counters->{$_}->{thresholds}->{$name}->{exit_value} eq 'critical');
-            }
-
-            $self->{output}->perfdata_add(label => $_ . $extra_label, unit => $maps_counters->{$_}->{unit},
-                                          value => sprintf("%.2f", $self->{counters_value}->{$instance}->{$_} * $maps_counters->{$_}->{factor}),
-                                          warning => $warning,
-                                          critical => $critical);
-        }
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => $str_output);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{upsOutputCurrent} *= 0.1 if (defined($result->{upsOutputCurrent}));
+        $self->{oline}->{$instance} = { display => $instance, %$result };
     }
     
-    if ($num > 1) {
+    if (scalar(keys %{$self->{oline}}) > 1) {
         $self->stdev();
     }
-                                  
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;

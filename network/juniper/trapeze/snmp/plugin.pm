@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu'        => 'network::juniper::trapeze::snmp::mode::cpu',
-                         'memory'     => 'network::juniper::trapeze::snmp::mode::memory',
-                         'ap-status'  => 'network::juniper::trapeze::snmp::mode::apstatus',
-                         'ap-users'	  => 'network::juniper::trapeze::snmp::mode::apusers',
-                         );
+        'ap-status'  => 'network::juniper::trapeze::snmp::mode::apstatus',
+        'ap-users'	 => 'network::juniper::trapeze::snmp::mode::apusers',
+        'cpu'        => 'network::juniper::trapeze::snmp::mode::cpu',
+        'memory'     => 'network::juniper::trapeze::snmp::mode::memory',
+    );
 
     return $self;
 }

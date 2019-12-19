@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -24,34 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-
-my $instance_mode;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -75,7 +48,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'health-score', set => {
+        { label => 'health-score', nlabel => 'health.score.percentage', set => {
                 key_values => [ { name => 'health_score' } ],
                 output_template => 'Health Score : %.2f %%',
                 perfdatas => [
@@ -84,7 +57,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu-load', set => {
+        { label => 'cpu-load', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_load' } ],
                 output_template => 'Cpu Load : %.2f %%',
                 perfdatas => [
@@ -93,7 +66,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory-usage', set => {
+        { label => 'memory-usage', nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'memory_used' } ],
                 output_template => 'Memory Used : %.2f %%',
                 perfdatas => [
@@ -102,7 +75,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'license-usage', set => {
+        { label => 'license-usage', nlabel => 'licence.usage.percentage', set => {
                 key_values => [ { name => 'license_used' } ],
                 output_template => 'License Used : %.2f %%',
                 perfdatas => [
@@ -111,7 +84,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-sessions', set => {
+        { label => 'current-sessions', nlabel => 'sessions.current.count', set => {
                 key_values => [ { name => 'current_sessions' } ],
                 output_template => 'Current Sessions : %s',
                 perfdatas => [
@@ -120,7 +93,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current-calls', set => {
+        { label => 'current-calls', nlabel => 'calls.current.count', set => {
                 key_values => [ { name => 'current_calls' } ],
                 output_template => 'Current Calls : %s/s',
                 perfdatas => [
@@ -134,7 +107,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
@@ -145,7 +118,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                 "warning-replication-status:s"    => { name => 'warning_replication_status', default => '' },
@@ -159,18 +131,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_replication_status', 'critical_replication_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_replication_status', 'critical_replication_status']);
 }
 
 sub manage_selection {
@@ -181,6 +142,7 @@ sub manage_selection {
         4 => 'outOfService', 5 => 'unassigned', 6 => 'activePending', 
         7 => 'standbyPending', 8 => 'outOfServicePending', 9 => 'recovery',
     );
+
     my $oid_apSysCPUUtil = '.1.3.6.1.4.1.9148.3.2.1.1.1.0';
     my $oid_apSysMemoryUtil = '.1.3.6.1.4.1.9148.3.2.1.1.2.0';
     my $oid_apSysHealthScore = '.1.3.6.1.4.1.9148.3.2.1.1.3.0';
@@ -193,6 +155,7 @@ sub manage_selection {
             $oid_apSysLicenseCapacity, $oid_apSysGlobalConSess, $oid_apSysGlobalCPS
         ], 
         nothing_quit => 1);
+
     $self->{global} = { 
         cpu_load => $result->{$oid_apSysCPUUtil},
         memory_used => $result->{$oid_apSysMemoryUtil},

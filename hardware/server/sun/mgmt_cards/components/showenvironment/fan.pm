@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ sub check {
     
     $self->{output}->output_add(long_msg => "Checking fans");
     $self->{components}->{fan} = {name => 'fans', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'fan'));
+    return if ($self->check_filter(section => 'fan'));
         
     if ($self->{stdout} =~ /^Fans.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         #Sensor           Status           Speed   Warn    Low
@@ -41,7 +41,7 @@ sub check {
             my $fan_status = defined($2) ? $2 : 'unknown';
             my $fan_name = defined($1) ? $1 : 'unknown';
             
-            next if ($self->check_exclude(section => 'fan', instance => $fan_name));
+            next if ($self->check_filter(section => 'fan', instance => $fan_name));
             
             $self->{components}->{fan}->{total}++;
             $self->{output}->output_add(long_msg => "Fan Sensor Status '" . $fan_name . "' is " . $fan_status);

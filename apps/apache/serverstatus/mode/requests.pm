@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,33 +26,32 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use centreon::plugins::statefile;
+use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-            {
-            "hostname:s"        => { name => 'hostname' },
-            "port:s"            => { name => 'port', },
-            "proto:s"           => { name => 'proto' },
-            "urlpath:s"         => { name => 'url_path', default => "/server-status/?auto" },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "proxyurl:s"        => { name => 'proxyurl' },
-            "header:s@"         => { name => 'header' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            "warning-bytes:s"   => { name => 'warning_bytes' },
-            "critical-bytes:s"  => { name => 'critical_bytes' },
-            "warning-access:s"  => { name => 'warning_access' },
-            "critical-access:s" => { name => 'critical_access' },
-            "timeout:s"         => { name => 'timeout' },
-            });
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'port:s'            => { name => 'port', },
+        'proto:s'           => { name => 'proto' },
+        'urlpath:s'         => { name => 'url_path', default => "/server-status/?auto" },
+        'credentials'       => { name => 'credentials' },
+        'basic'             => { name => 'basic' },
+        'username:s'        => { name => 'username' },
+        'password:s'        => { name => 'password' },
+        'header:s@'         => { name => 'header' },
+        'warning:s'         => { name => 'warning' },
+        'critical:s'        => { name => 'critical' },
+        'warning-bytes:s'   => { name => 'warning_bytes' },
+        'critical-bytes:s'  => { name => 'critical_bytes' },
+        'warning-access:s'  => { name => 'warning_access' },
+        'critical-access:s' => { name => 'critical_access' },
+        'timeout:s'         => { name => 'timeout' },
+    });
+    $self->{http} = centreon::plugins::http->new(%options);
     $self->{statefile_value} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -94,20 +93,36 @@ sub run {
     my ($self, %options) = @_;
 
     my $webcontent = $self->{http}->request();
+
+    #Total accesses: 7323 - Total Traffic: 243.7 MB - Total Duration: 7175675
+    #CPU Usage: u1489.98 s1118.39 cu0 cs0 - .568% CPU load
+    #.0159 requests/sec - 555 B/second - 34.1 kB/request - 979.882 ms/request
     my ($rPerSec, $bPerReq, $total_access, $total_bytes, $avg_bPerSec);
 
     $total_access = $1 if ($webcontent =~ /^Total Accesses:\s+([^\s]+)/mi);
+
     $total_bytes = $1 * 1024 if ($webcontent =~ /^Total kBytes:\s+([^\s]+)/mi);
-    
-    $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
-    # Need a little time to init
-    if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi) {
-        $bPerReq = $1
-    } else {
-        $bPerReq = 0;
+    if ($webcontent =~ /Total\s+Traffic:\s+(\S+)\s+(.|)B\s+/mi) {
+        $total_bytes = centreon::plugins::misc::convert_bytes(value => $1, unit => $2 . 'B');
     }
+
+    $rPerSec = $1 if ($webcontent =~ /^ReqPerSec:\s+([^\s]+)/mi);
+    if ($webcontent =~ /^(\S+)\s+requests\/sec/mi) {
+        $rPerSec = $1;
+        $rPerSec = '0' . $rPerSec if ($rPerSec =~ /^\./);
+    }
+
+    # Need a little time to init
+    $bPerReq = $1 if ($webcontent =~ /^BytesPerReq:\s+([^\s]+)/mi);
+    if ($webcontent =~ /(\S+)\s+(.|)B\/request/mi) {
+        $bPerReq = centreon::plugins::misc::convert_bytes(value => $1, unit => $2 . 'B');
+    }
+
     $avg_bPerSec = $1 if ($webcontent =~ /^BytesPerSec:\s+([^\s]+)/mi);
-    
+    if ($webcontent =~ /(\S+)\s+(.|)B\/second/mi) {
+        $avg_bPerSec = centreon::plugins::misc::convert_bytes(value => $1, unit => $2 . 'B');
+    }
+
     if (!defined($avg_bPerSec)) {
         $self->{output}->add_option_msg(short_msg => "Apache 'ExtendedStatus' option is off.");
         $self->{output}->option_exit();
@@ -205,10 +220,6 @@ IP Addr/FQDN of the webserver host
 
 Port used by Apache
 
-=item B<--proxyurl>
-
-Proxy URL if any
-
 =item B<--proto>
 
 Specify https if needed
@@ -219,15 +230,23 @@ Set path to get server-status page in auto mode (Default: '/server-status/?auto'
 
 =item B<--credentials>
 
-Specify this option if you access server-status page over basic authentification
+Specify this option if you access server-status page with authentication
 
 =item B<--username>
 
-Specify username for basic authentification (Mandatory if --credentials is specidied)
+Specify username for authentication (Mandatory if --credentials is specified)
 
 =item B<--password>
 
-Specify password for basic authentification (Mandatory if --credentials is specidied)
+Specify password for authentication (Mandatory if --credentials is specified)
+
+=item B<--basic>
+
+Specify this option if you access server-status page over basic authentication and don't want a '401 UNAUTHORIZED' error to be logged on your webserver.
+
+Specify this option if you access server-status page over hidden basic authentication or you'll get a '404 NOT FOUND' error.
+
+(Use with --credentials)
 
 =item B<--timeout>
 

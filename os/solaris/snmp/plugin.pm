@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,16 +31,17 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
-                         'load'             => 'snmp_standard::mode::loadaverage',
-                         'interfaces'       => 'snmp_standard::mode::interfaces',
-                         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-                         'list-storages'    => 'snmp_standard::mode::liststorages',
-                         'processcount'     => 'snmp_standard::mode::processcount',
-                         'storage'          => 'snmp_standard::mode::storage',
-                         'tcpcon'           => 'snmp_standard::mode::tcpcon',
-                         'uptime'           => 'snmp_standard::mode::uptime',
-                         );
+        'cpu-detailed'     => 'snmp_standard::mode::cpudetailed',
+        'load'             => 'snmp_standard::mode::loadaverage',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'list-processes'   => 'snmp_standard::mode::listprocesses',
+        'list-storages'    => 'snmp_standard::mode::liststorages',
+        'processcount'     => 'snmp_standard::mode::processcount',
+        'storage'          => 'snmp_standard::mode::storage',
+        'tcpcon'           => 'snmp_standard::mode::tcpcon',
+        'uptime'           => 'snmp_standard::mode::uptime',
+    );
 
     return $self;
 }

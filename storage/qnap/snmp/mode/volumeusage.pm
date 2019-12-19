@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,49 +20,36 @@
 
 package storage::qnap::snmp::mode::volumeusage;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-
-my $plugin_options;
-
-my $maps_counters = {
-    '000_usage' => { set => {
-                        key_values => [
-                                        { name => 'display' }, { name => 'free' }, { name => 'used' },
-                                      ],
-                        closure_custom_calc => \&custom_usage_calc,
-                        closure_custom_output => \&custom_usage_output,
-                        closure_custom_perfdata => \&custom_usage_perfdata,
-                        closure_custom_threshold_check => \&custom_usage_threshold,
-                    }
-               },
-};
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
-    
-    my $label = 'used';
+
+    my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
-    if (defined($plugin_options->{free})) {
-        $label = 'free';
+    if (defined($self->{instance_mode}->{option_results}->{free})) {
+        ($label, $nlabel) = ('free', 'volume.space.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
-    my $extra_label = '';
-    $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
+
     my %total_options = ();
-    if ($plugin_options->{units} eq '%') {
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $total_options{total} = $self->{result_values}->{total};
-        $total_options{cast_int} = 1; 
+        $total_options{cast_int} = 1;
     }
-    
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+
+    $self->{output}->perfdata_add(
+        label => $label, unit => 'B',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        nlabel => $nlabel,
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -70,12 +57,12 @@ sub custom_usage_threshold {
     
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
-    $threshold_value = $self->{result_values}->{free} if (defined($plugin_options->{free}));
-    if ($plugin_options->{units} eq '%') {
+    $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
+    if ($self->{instance_mode}->{option_results}->{units} eq '%') {
         $threshold_value = $self->{result_values}->{prct_used};
-        $threshold_value = $self->{result_values}->{prct_free} if (defined($plugin_options->{free}));
+        $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 
@@ -105,104 +92,43 @@ sub custom_usage_calc {
     return 0;
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'volume', type => 1, cb_prefix_output => 'prefix_volume_output', message_multiple => 'All volumes are ok' },
+    ];
+
+    $self->{maps_counters}->{volume} = [
+        { label => 'usage', nlabel => 'volume.space.usage.bytes', set => {
+                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'free' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_volume_output {
+    my ($self, %options) = @_;
+
+    return "Volume '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                  "units:s"           => { name => 'units', default => '%' },
-                                  "free"              => { name => 'free' },
-                                });                         
-     
-    foreach (sort keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
+
+    $options{options}->add_options(arguments => {
+        "filter-name:s"     => { name => 'filter_name' },
+        "units:s"           => { name => 'units', default => '%' },
+        "free"              => { name => 'free' },
+    });
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-    $plugin_options = $self->{option_results};
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{volumes_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All volume usages are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{volumes_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{volumes_selected}->{$id});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Volume '" . $self->{volumes_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Volume '" . $self->{volumes_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Volume '" . $self->{volumes_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my $mapping = {
@@ -215,34 +141,38 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{volumes_selected} = {};
+    $self->{volume} = {};
     my $oid_SysVolumeEntry = '.1.3.6.1.4.1.24681.1.2.17.1';
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_SysVolumeEntry, 
-                                                start => $mapping->{SysVolumeDescr}->{oid}, 
-                                                end => $mapping->{SysVolumeFreeSize}->{oid}, 
-                                                nothing_quit => 1);
-    foreach my $oid (keys %{$self->{results}}) {
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_SysVolumeEntry, 
+        start => $mapping->{SysVolumeDescr}->{oid}, 
+        end => $mapping->{SysVolumeFreeSize}->{oid}, 
+        nothing_quit => 1
+    );
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{SysVolumeDescr}->{oid}\.(\d+)/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{SysVolumeDescr} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping '" . $result->{SysVolumeDescr} . "': no matching filter.");
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{SysVolumeDescr} . "': no matching filter.");
             next;
         }
         
         my $free = $self->convert_bytes(value => $result->{SysVolumeFreeSize});
         my $total = $self->convert_bytes(value => $result->{SysVolumeTotalSize});
         if ($total == 0) {
-            $self->{output}->output_add(long_msg => "Skipping '" . $result->{SysVolumeDescr} . "': total size is 0.");
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{SysVolumeDescr} . "': total size is 0.");
             next;
         }
         
-        $self->{volumes_selected}->{$instance} = { display => $result->{SysVolumeDescr}, 
-                                                   free => $free, used => $total - $free };
+        $self->{volume}->{$instance} = { 
+            display => $result->{SysVolumeDescr}, 
+            free => $free, used => $total - $free
+        };
     }
     
-    if (scalar(keys %{$self->{volumes_selected}}) <= 0) {
+    if (scalar(keys %{$self->{volume}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
     }

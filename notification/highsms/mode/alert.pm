@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,22 +32,19 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"      => { name => 'hostname' },
-                                  "port:s"          => { name => 'port', default => 443 },
-                                  "proto:s"         => { name => 'proto', default => 'https' },
-                                  "proxyurl:s"      => { name => 'proxyurl' },
-                                  "proxypac:s"      => { name => 'proxypac' },
-                                  "username:s"      => { name => 'username' },
-                                  "password:s"      => { name => 'password' },
-                                  "phonenumber:s"   => { name => 'phonenumber' },
-                                  "message:s"       => { name => 'message' },
-                                  "sender:s"        => { name => 'sender', default => 'API_HIGHSMS' },
-                                });
+    $options{options}->add_options(arguments => {
+        "hostname:s"      => { name => 'hostname' },
+        "port:s"          => { name => 'port', default => 443 },
+        "proto:s"         => { name => 'proto', default => 'https' },
+        "username:s"      => { name => 'username' },
+        "password:s"      => { name => 'password' },
+        "timeout:s"       => { name => 'timeout' },
+        "phonenumber:s"   => { name => 'phonenumber' },
+        "message:s"       => { name => 'message' },
+        "sender:s"        => { name => 'sender', default => 'API_HIGHSMS' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 }
@@ -131,14 +128,6 @@ Port used by HighSMS API. (Default: 443)
 
 Specify http or https protocol. (Default: https)
 
-=item B<--proxyurl>
-
-Proxy URL
-
-=item B<--proxypac>
-
-Proxy pac file (can be an url or local file)
-
 =item B<--username>
 
 Specify username for API authentification.
@@ -146,6 +135,10 @@ Specify username for API authentification.
 =item B<--password>
 
 Specify password for API authentification.
+
+=item B<--timeout>
+
+Threshold for HTTP timeout
 
 =item B<--phonenumber>
 

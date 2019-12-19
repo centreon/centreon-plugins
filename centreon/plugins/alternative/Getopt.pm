@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -55,7 +55,7 @@ sub get_assigned_value {
 
 sub GetOptions {
     my (%opts) = @_;
-    
+
     my $search_str = ',' . join(',', keys %opts) . ',';
     my $num_args = scalar(@ARGV);
     for (my $i = 0; $i < $num_args;) {

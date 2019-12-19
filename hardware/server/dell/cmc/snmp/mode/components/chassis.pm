@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,30 +25,30 @@ use warnings;
 
 # In MIB 'DELL-RAC-MIB'
 my $mapping = {
-    drsWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.13', section => 'power', label => 'power', unit => 'W' },
-    drsAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.14', section => 'current', label => 'current', unit => 'A' },
+    drsWattsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.13', section => 'power', label => 'power', unit => 'watt' },
+    drsAmpsReading => { oid => '.1.3.6.1.4.1.674.10892.2.4.1.1.14', section => 'current', label => 'current', unit => 'ampere' },
 };
 my $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry = '.1.3.6.1.4.1.674.10892.2.4.1.1';
 
 sub load {
-    my (%options) = @_;
+    my ($self) = @_;
     
-    push @{$options{request}}, { oid => $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry };
+    push @{$self->{request}}, { oid => $oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry };
 }
 
 sub check {
     my ($self) = @_;
     
     $self->{output}->output_add(long_msg => "Checking chassis");
-    $self->{components}->{chassis} = {name => 'chassis', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'chassis'));
+    $self->{components}->{chassis} = { name => 'chassis', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'chassis'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry}})) {
         next if ($oid !~ /^$mapping->{drsWattsReading}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_drsCMCPowerTableEntrydrsCMCPowerTableEntry}, instance => $instance);
 
-        next if ($self->check_exclude(section => 'chassis', instance => $instance));
+        next if ($self->check_filter(section => 'chassis', instance => $instance));
         $self->{components}->{chassis}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Chassis '%s': power %s W, current %s A [instance: %s].",
@@ -63,10 +63,14 @@ sub check {
                                             short_msg => sprintf("Chassis '%s' %s is %s%s", $instance, 
                                                                  $mapping->{$probe}->{section}, $result->{$probe}, $mapping->{$probe}->{unit}));
             }
-            $self->{output}->perfdata_add(label => 'chassis_' . $mapping->{$probe}->{label} . '_' . $instance, unit => $mapping->{$probe}->{unit},
-                                          value => $result->{$probe},
-                                          warning => $warn,
-                                          critical => $crit);
+            $self->{output}->perfdata_add(
+                label => 'chassis_' . $mapping->{$probe}->{label}, unit => $mapping->{$probe}->{unit},
+                nlabel => 'hardware.chassis.' . $mapping->{$probe}->{label} . '.' . $mapping->{$probe}->{unit},
+                instances => $instance,
+                value => $result->{$probe},
+                warning => $warn,
+                critical => $crit
+            );
         }
     }
 }

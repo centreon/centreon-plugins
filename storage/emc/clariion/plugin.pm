@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,25 +32,20 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                         'cache'        => 'centreon::common::emc::navisphere::mode::cache',
-                         'controller'   => 'centreon::common::emc::navisphere::mode::controller',
-                         'disk'         => 'centreon::common::emc::navisphere::mode::disk',
-                         'sp'           => 'centreon::common::emc::navisphere::mode::sp',
-                         'faults'       => 'centreon::common::emc::navisphere::mode::faults',
-                         'list-luns'    => 'centreon::common::emc::navisphere::mode::listluns',
-                         'sp-info'      => 'centreon::common::emc::navisphere::mode::spinfo',
-                         'port-state'   => 'centreon::common::emc::navisphere::mode::portstate',
-                         'hba-state'    => 'centreon::common::emc::navisphere::mode::hbastate',
-                        );
+        'cache'        => 'centreon::common::emc::navisphere::mode::cache',
+        'controller'   => 'centreon::common::emc::navisphere::mode::controller',
+        'disk'         => 'centreon::common::emc::navisphere::mode::disk',
+        'sp'           => 'centreon::common::emc::navisphere::mode::sp',
+        'faults'       => 'centreon::common::emc::navisphere::mode::faults',
+        'list-luns'    => 'centreon::common::emc::navisphere::mode::listluns',
+        'sp-info'      => 'centreon::common::emc::navisphere::mode::spinfo',
+        'port-state'   => 'centreon::common::emc::navisphere::mode::portstate',
+        'hba-state'    => 'centreon::common::emc::navisphere::mode::hbastate',
+    );
+
     $self->{custom_modes}{clariion} = 'centreon::common::emc::navisphere::custom::custom';
 
     return $self;
-}
-
-sub init {
-    my ($self, %options) = @_;
-
-    $self->SUPER::init(%options);    
 }
 
 1;

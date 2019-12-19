@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,43 +20,55 @@
 
 package storage::netapp::snmp::mode::globalstatus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
-use centreon::plugins::values;
+use Digest::MD5 qw(md5_hex);
 
-my $maps_counters = {
-    read   => { class => 'centreon::plugins::values', obj => undef,
-                set => {
-                        key_values => [
-                                        { name => 'read', diff => 1 },
-                                      ],
-                        per_second => 1,
-                        output_template => 'Read I/O : %s %s/s',
-                        output_change_bytes => 1,
-                        perfdatas => [
-                            { value => 'read_per_second', template => '%d',
-                              unit => 'B/s', min => 0 },
-                        ],
-                    }
-               },
-    write   => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'write', diff => 1 },
-                                      ],
-                        per_second => 1,
-                        output_template => 'Write I/O : %s %s/s',
-                        output_change_bytes => 1,
-                        perfdatas => [
-                            { value => 'write_per_second', template => '%d',
-                              unit => 'B/s', min => 0 },
-                        ],
-                    }
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
+    ];
+    
+    $self->{maps_counters}->{global} = [
+        { label => 'read', nlabel => 'storage.io.read.usage.bytespersecond', set => {
+                key_values => [ { name => 'read', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Read I/O : %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'read_per_second', template => '%d',
+                      unit => 'B/s', min => 0 },
+                ],
+            }
+        },
+        { label => 'write', nlabel => 'storage.io.write.usage.bytespersecond', set => {
+                key_values => [ { name => 'write', diff => 1 } ],
+                per_second => 1,
+                output_template => 'Write I/O : %s %s/s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'write_per_second', template => '%d',
+                      unit => 'B/s', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
+sub new {
+    my ($class, %options) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
+    bless $self, $class;
+    
+    $options{options}->add_options(arguments => {
+    });
+
+    return $self;
+}
 
 my %states = (
     1 => ['other', 'WARNING'], 
@@ -83,126 +95,40 @@ my $oid_miscLowDiskReadBytes = '.1.3.6.1.4.1.789.1.2.2.16.0';
 my $oid_miscHighDiskWriteBytes = '.1.3.6.1.4.1.789.1.2.2.17.0';
 my $oid_miscLowDiskWriteBytes = '.1.3.6.1.4.1.789.1.2.2.18.0';
 
-sub new {
-    my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
-    bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);  
-    foreach (keys %{$maps_counters}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(statefile => $self->{statefile_value},
-                                                  output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-    
-    $self->{statefile_value}->check_options(%options);
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-
-    $self->manage_selection();
-    
-    $self->{results}->{$oid_miscGlobalStatusMessage} =~ s/\n//g;
-    $self->{output}->output_add(severity =>  ${$states{$self->{results}->{$oid_miscGlobalStatus}}}[1],
-                                short_msg => sprintf("Overall global status is '%s' [message: '%s']", 
-                                                ${$states{$self->{results}->{$oid_miscGlobalStatus}}}[0], $self->{results}->{$oid_miscGlobalStatusMessage}));
-    $self->{results}->{$oid_fsStatusMessage} =~ s/\n//g;
-    $self->{output}->output_add(severity =>  ${$fs_states{$self->{results}->{$oid_fsOverallStatus}}}[1],
-                                short_msg => sprintf("Overall file system status is '%s' [message: '%s']", 
-                                                ${$fs_states{$self->{results}->{$oid_fsOverallStatus}}}[0], $self->{results}->{$oid_fsStatusMessage}));
-    
-    $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "cache_netapp_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode});
-    $self->{new_datas}->{last_timestamp} = time();
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->set(instance => 'global');
-    
-        my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{global},
-                                                                 new_datas => $self->{new_datas});
-
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $maps_counters->{$_}->{obj}->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $maps_counters->{$_}->{obj}->perfdata();
-    }
-
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "$short_msg"
-                                    );
-    } else {
-        $self->{output}->output_add(short_msg => "$long_msg");
-    }
-    
-    $self->{statefile_value}->write(data => $self->{new_datas});
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $request = [$oid_fsOverallStatus, $oid_fsStatusMessage,
-                   $oid_miscGlobalStatus, $oid_miscGlobalStatusMessage, 
-                   $oid_miscHighDiskReadBytes, $oid_miscLowDiskReadBytes,
-                   $oid_miscHighDiskWriteBytes, $oid_miscLowDiskWriteBytes];
-    if (!$self->{snmp}->is_snmpv1()) {
+    my $request = [
+        $oid_fsOverallStatus, $oid_fsStatusMessage,
+        $oid_miscGlobalStatus, $oid_miscGlobalStatusMessage, 
+        $oid_miscHighDiskReadBytes, $oid_miscLowDiskReadBytes,
+        $oid_miscHighDiskWriteBytes, $oid_miscLowDiskWriteBytes
+    ];
+    if (!$options{snmp}->is_snmpv1()) {
         push @{$request}, ($oid_misc64DiskReadBytes, $oid_misc64DiskWriteBytes);
     }
     
-    $self->{results} = $self->{snmp}->get_leef(oids => $request, nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(oids => $request, nothing_quit => 1);
     
     $self->{global} = {};
-    $self->{global}->{read} = defined($self->{results}->{$oid_misc64DiskReadBytes}) ?
-                                $self->{results}->{$oid_misc64DiskReadBytes} : 
-                                ($self->{results}->{$oid_miscHighDiskReadBytes} << 32) + $self->{results}->{$oid_miscLowDiskReadBytes};
-    $self->{global}->{write} = defined($self->{results}->{$oid_misc64DiskWriteBytes}) ?
-                                $self->{results}->{$oid_misc64DiskWriteBytes} : 
-                                ($self->{results}->{$oid_miscHighDiskWriteBytes} << 32) + $self->{results}->{$oid_miscLowDiskWriteBytes};
+    $self->{global}->{read} = defined($snmp_result->{$oid_misc64DiskReadBytes}) ?
+                                $snmp_result->{$oid_misc64DiskReadBytes} : 
+                                ($snmp_result->{$oid_miscHighDiskReadBytes} << 32) + $snmp_result->{$oid_miscLowDiskReadBytes};
+    $self->{global}->{write} = defined($snmp_result->{$oid_misc64DiskWriteBytes}) ?
+                                $snmp_result->{$oid_misc64DiskWriteBytes} : 
+                                ($snmp_result->{$oid_miscHighDiskWriteBytes} << 32) + $snmp_result->{$oid_miscLowDiskWriteBytes};
 
+    $snmp_result->{$oid_miscGlobalStatusMessage} =~ s/\n//g;
+    $self->{output}->output_add(severity =>  ${$states{$snmp_result->{$oid_miscGlobalStatus}}}[1],
+                                short_msg => sprintf("Overall global status is '%s' [message: '%s']", 
+                                                ${$states{$snmp_result->{$oid_miscGlobalStatus}}}[0], $snmp_result->{$oid_miscGlobalStatusMessage}));
+    $snmp_result->{$oid_fsStatusMessage} =~ s/\n//g;
+    $self->{output}->output_add(severity =>  ${$fs_states{$snmp_result->{$oid_fsOverallStatus}}}[1],
+                                short_msg => sprintf("Overall file system status is '%s' [message: '%s']", 
+                                                ${$fs_states{$snmp_result->{$oid_fsOverallStatus}}}[0], $snmp_result->{$oid_fsStatusMessage}));
+
+    $self->{cache_name} = "cache_netapp_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' . 
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;

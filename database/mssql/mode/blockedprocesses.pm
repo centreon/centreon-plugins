@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,60 +20,138 @@
 
 package database::mssql::mode::blockedprocesses;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use POSIX qw/floor/;
+use centreon::plugins::misc;
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'processes', type => 1 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'blocked-processes', set => {
+                key_values => [ { name => 'blocked_processes' } ],
+                output_template => 'Number of blocked processes : %s',
+                perfdatas => [
+                    { label => 'blocked_processes', value => 'blocked_processes_absolute', template => '%s',
+                      unit => '', min => 0 },
+                ],
+            }
+        },
+    ];
+    $self->{maps_counters}->{processes} = [
+        { label => 'wait-time', set => {
+                key_values => [ { name => 'spid' }, { name => 'blocked' }, { name => 'status' },
+                    { name => 'waittime' }, { name => 'program' }, { name => 'cmd' } ],
+                closure_custom_calc => $self->can('custom_processes_calc'),
+                closure_custom_output => $self->can('custom_processes_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => $self->can('custom_processes_threshold'),
+            }
+        },
+    ];
+}
+
+sub custom_processes_threshold {
+    my ($self, %options) = @_;
+    
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{waittime},
+                                                  threshold => [ { label => 'critical-wait-time', exit_litteral => 'critical' },
+                                                                 { label => 'warning-wait-time', exit_litteral => 'warning' } ]);
+    
+    return $exit;
+}
+
+sub custom_processes_output {
+    my ($self, %options) = @_;
+
+    my $msg = sprintf("Process ID '%s' is blocked by process ID '%s' for %s [status: %s] [program: %s] [command: %s]",
+        $self->{result_values}->{spid},
+        $self->{result_values}->{blocked},
+        ($self->{result_values}->{waittime} > 0) ? centreon::plugins::misc::change_seconds(value => $self->{result_values}->{waittime}) : "0s",
+        $self->{result_values}->{status},
+        $self->{result_values}->{program},
+        $self->{result_values}->{cmd});
+
+    return $msg;
+}
+
+sub custom_processes_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{spid} = $options{new_datas}->{$self->{instance} . '_spid'};
+    $self->{result_values}->{blocked} = $options{new_datas}->{$self->{instance} . '_blocked'};
+    $self->{result_values}->{waittime} = (defined($options{new_datas}->{$self->{instance} . '_waittime'}) &&
+        $options{new_datas}->{$self->{instance} . '_waittime'} ne '') ?
+            floor($options{new_datas}->{$self->{instance} . '_waittime'} / 1000) : '0';
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{program} = $options{new_datas}->{$self->{instance} . '_program'};
+    $self->{result_values}->{cmd} = $options{new_datas}->{$self->{instance} . '_cmd'};
+    return 0;
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
 
+    $options{options}->add_options(arguments =>
+                                {
+                                    "filter-status:s" => { name => 'filter_status' },
+                                    "filter-program:s" => { name => 'filter_program' },
+                                    "filter-command:s" => { name => 'filter_command' },
+                                });
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+    $options{sql}->connect();
+    $options{sql}->query(query => q{SELECT spid, blocked, waittime, status, program_name, cmd FROM master.dbo.sysprocesses WHERE blocked <> '0'});
+
+    $self->{global} = { blocked_processes => 0 };
+    $self->{processes} = {};
+
+    while (my $row = $options{sql}->fetchrow_hashref()) {
+        my $status = centreon::plugins::misc::trim($row->{status});
+        my $program = centreon::plugins::misc::trim($row->{program_name});
+        my $cmd = centreon::plugins::misc::trim($row->{cmd});
+
+        if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
+            $status !~ /$self->{option_results}->{filter_status}/) {
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because status is not matching filter.");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_program}) && $self->{option_results}->{filter_program} ne '' &&
+            $program !~ /$self->{option_results}->{filter_program}/) {
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because program is not matching filter.");
+            next;
+        }
+        if (defined($self->{option_results}->{filter_command}) && $self->{option_results}->{filter_command} ne '' &&
+            $cmd !~ /$self->{option_results}->{filter_command}/) {
+            $self->{output}->output_add(debug => 1, long_msg => "Skipping process " . $row->{spid} . ": because command is not matching filter.");
+            next
+        }
+
+        $self->{processes}->{$row->{spid}} = {
+            waittime => $row->{waittime},
+            spid => $row->{spid},
+            blocked => $row->{blocked},
+            status => $status,
+            program => $program,
+            cmd => $cmd,
+        };
+
+        $self->{global}->{blocked_processes}++;
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT count(*) FROM master.dbo.sysprocesses WHERE blocked <> '0'});
-    my $blocked = $self->{sql}->fetchrow_array();
-
-    my $exit_code = $self->{perfdata}->threshold_check(value => $blocked, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%i blocked process(es).", $blocked));
-    $self->{output}->perfdata_add(label => 'blocked_processes',
-                                  value => $blocked,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -82,17 +160,37 @@ __END__
 
 =head1 MODE
 
-Check MSSQL blocked processes.
+Checks if some processes are in a blocked state.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-status>
 
-Threshold warning.
+Filter results based on the status (can be a regexp).
 
-=item B<--critical>
+=item B<--filter-program>
 
-Threshold critical.
+Filter results based on the program (client) name  (can be a regexp).
+
+=item B<--filter-command>
+
+Filter results based on the command name (can be a regexp).
+
+=item B<--warning-blocked-processes>
+
+Threshold warning for total number of blocked processes.
+
+=item B<--critical-blocked-processes>
+
+Threshold critical for total number of blocked processes.
+
+=item B<--warning-wait-time>
+
+Threshold warning for blocked wait time.
+
+=item B<--critical-wait-time>
+
+Threshold critical for blocked wait time.
 
 =back
 

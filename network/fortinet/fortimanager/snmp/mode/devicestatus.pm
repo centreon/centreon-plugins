@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -25,8 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -42,7 +41,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Status', name_status => 'fmDeviceEntState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'device-con-status', threshold => 0, set => {
@@ -51,7 +50,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Connection Status', name_status => 'fmDeviceEntConnectState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'device-db-status', threshold => 0, set => {
@@ -60,7 +59,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'DB Status', name_status => 'fmDeviceEntDbState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'device-config-status', threshold => 0, set => {
@@ -69,36 +68,10 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Configuration Status', name_status => 'fmDeviceEntConfigState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
     ];
-}
-
-sub custom_status_threshold {
-    my ($self, %options) = @_;
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        my $label = $self->{label};
-        $label =~ s/-/_/g;
-        if (defined($instance_mode->{option_results}->{'critical_' . $label}) && $instance_mode->{option_results}->{'critical_' . $label} ne '' &&
-            eval "$instance_mode->{option_results}->{'critical_' . $label}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{'warning_' . $label}) && $instance_mode->{option_results}->{'warning_' . $label} ne '' &&
-                 eval "$instance_mode->{option_results}->{'warning_' . $label}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
 }
 
 sub custom_status_output {
@@ -122,7 +95,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "filter-name:s"                   => { name => 'filter_name' },
@@ -143,19 +115,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
-    $instance_mode = $self;
-    $self->change_macros();
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_device_status', 'critical_device_status', 'warning_device_con_status', 'critical_device_con_status',
-              'warning_device_db_status', 'critical_device_db_status', 'warning_device_config_status', 'critical_device_config_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    $self->change_macros(macros => ['warning_device_status', 'critical_device_status', 'warning_device_con_status', 'critical_device_con_status',
+        'warning_device_db_status', 'critical_device_db_status', 'warning_device_config_status', 'critical_device_config_status']);
 }
 
 sub prefix_device_output {
@@ -238,32 +199,32 @@ Can used special variables like: %{status}, %{display}
 Set critical threshold for device status
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-con-status>
+=item B<--warning-device-con-status>
 
 Set warning threshold for device connection status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-con-status>
+=item B<--critical-device-con-status>
 
 Set critical threshold for device connection status (Default: '%{status} =~ /down/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-db-status>
+=item B<--warning-device-db-status>
 
 Set warning threshold for device DB status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-db-status>
+=item B<--critical-device-db-status>
 
 Set critical threshold for device DB status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-config-status>
+=item B<--warning-device-config-status>
 
 Set warning threshold for device configuration status.
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-config-status>
+=item B<--critical-device-config-status>
 
 Set critical threshold for device configuration status.
 Can used special variables like: %{status}, %{display}

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,32 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use JSON;
-
-my $instance_mode;
-
-sub custom_threshold_output {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -90,7 +65,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'speed-events', set => {
@@ -128,7 +103,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "broker-stats-file:s@"    => { name => 'broker_stats_file' },
@@ -155,24 +129,13 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set broker-stats-file option.");
         $self->{output}->option_exit();
     }
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub prefix_endpoint_output {
     my ($self, %options) = @_;
     
     return "Endpoint $options{instance_value}->{type} '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('warning_status', 'critical_status')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
 }
 
 sub manage_selection {
@@ -199,6 +162,13 @@ sub manage_selection {
 
             my $endpoint = $entry;
             $endpoint =~ s/endpoint //;
+
+            if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+                $endpoint !~ /$self->{option_results}->{filter_name}/i) {
+                $self->{output}->output_add(long_msg => "skipping endpoint '" . $endpoint . "': no matching filter name");
+                next;
+            }
+
             my $state = $json->{$entry}->{state};
             my $type = 'output';
             $type = 'input' if (!defined($json->{$entry}->{status}));
@@ -263,6 +233,10 @@ Use 'sudo' to execute the command.
 =item B<--broker-stats-file>
 
 Specify the centreon-broker json stats file (Required). Can be multiple.
+
+=item B<--filter-name>
+
+Filter endpoint name.
 
 =item B<--warning-*>
 

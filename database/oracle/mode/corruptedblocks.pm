@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,12 +30,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "warning:s"               => { name => 'warning', },
+        "critical:s"              => { name => 'critical', },
+    });
 
     return $self;
 }
@@ -62,6 +60,7 @@ sub run {
     $self->{sql}->connect();
     $self->{sql}->query(query => q{SELECT COUNT(*) FROM v$database_block_corruption});
     my $corrupted_blocks = $self->{sql}->fetchrow_array();
+    $self->{sql}->disconnect();
 
     my $exit_code = $self->{perfdata}->threshold_check(value => $corrupted_blocks, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit_code,

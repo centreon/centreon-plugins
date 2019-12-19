@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'backlog', set => {
+        { label => 'backlog', nlabel => 'backlog.file.count', set => {
                 key_values => [ { name => 'backlog' } ],
                 output_template => 'Backlog File Count : %s',
                 perfdatas => [
@@ -49,10 +49,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 {
                                   "sending-member:s"        => { name => 'sending_member' },
+                                  "receiving-member:s"      => { name => 'receiving_member' },
                                   "replication-group:s"     => { name => 'replication_group' },
                                   "replicated-folder:s"     => { name => 'replicated_folder' },
                                   "timeout:s"               => { name => 'timeout', default => 30 },
@@ -73,6 +73,10 @@ sub check_options {
         $self->{output}->option_exit();
     }
     $self->{option_results}->{command_options} .= '/SendingMember:' . $self->{option_results}->{sending_member} . ' ';
+
+    if (defined($self->{option_results}->{receiving_member}) && $self->{option_results}->{receiving_member} ne '') {
+        $self->{option_results}->{command_options} .= '/ReceivingMember:' . $self->{option_results}->{receiving_member} . ' ';
+    }
     
     if (!defined($self->{option_results}->{replication_group}) || $self->{option_results}->{replication_group} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify replication-group option.");
@@ -116,15 +120,19 @@ Check dfsr backlog.
 
 =item B<--sending-member>
 
-Name of the member that is sending the replication data.
+Name of the member that is sending the replication data. (Mandatory)
+
+=item B<--receiving-member>
+
+Name of the member that is receiving the replication data. (NOT Mandatory)
 
 =item B<--replication-group>
 
-Name for the replication group.
+Name for the replication group. (Mandatory)
 
 =item B<--replicated-folder>
 
-Name name for the replicated folder.
+Name name for the replicated folder. (Mandatory)
 
 =item B<--timeout>
 

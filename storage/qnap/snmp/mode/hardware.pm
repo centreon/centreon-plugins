@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,8 +28,8 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|disk|fan)$';
-    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|disk|fan)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|disk|smartdisk|fan|raid)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|disk|smartdisk|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -43,14 +43,19 @@ sub set_system {
         ],
         smartdisk => [
             ['GOOD', 'OK'],
-            ['NORMAL', 'WARNING'],
+            ['NORMAL', 'OK'],
             ['--', 'OK'],
+            ['.*', 'CRITICAL'],
+        ],
+        raid => [
+            ['Ready', 'OK'],
+            ['degraded', 'WARNING'],
             ['.*', 'CRITICAL'],
         ],
     };
     
     $self->{components_path} = 'storage::qnap::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'disk', 'fan'];
+    $self->{components_module} = ['temperature', 'disk', 'fan', 'raid'];
 }
 
 sub snmp_execute {
@@ -65,10 +70,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }
@@ -79,14 +82,14 @@ __END__
 
 =head1 MODE
 
-Check hardware (NAS.mib) (Fans, Temperatures, Disks).
+Check hardware (NAS.mib) (Fans, Temperatures, Disks, Raid).
 
 =over 8
 
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'fan', 'disk', 'temperature'.
+Can be: 'fan', 'disk', 'temperature', 'raid'.
 
 =item B<--filter>
 

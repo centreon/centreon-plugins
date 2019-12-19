@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -80,7 +80,6 @@ sub check {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' status is '%s'", $instance, $result->{boxServicesTempSensorState}));
-            next;
         }
         
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{boxServicesTempSensorTemperature});            
@@ -88,11 +87,14 @@ sub check {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Temperature '%s' is '%s' C", $instance, $result->{boxServicesTempSensorTemperature}));
         }
-        $self->{output}->perfdata_add(label => 'temp_' . $instance, unit => 'C', 
-                                      value => $result->{boxServicesTempSensorTemperature},
-                                      warning => $warn,
-                                      critical => $crit, min => 0
-                                      );
+        $self->{output}->perfdata_add(
+            label => 'temp', unit => 'C',
+            nlabel => 'hardware.temperature.celsius',
+            instances => $instance,
+            value => $result->{boxServicesTempSensorTemperature},
+            warning => $warn,
+            critical => $crit, min => 0
+        );
     }
 }
 

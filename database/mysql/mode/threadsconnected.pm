@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,69 +20,114 @@
 
 package database::mysql::mode::threadsconnected;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub custom_usage_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("Client Connection Threads Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $self->{result_values}->{total_absolute},
+        $self->{result_values}->{used_absolute},
+        $self->{result_values}->{prct_used_absolute},
+        $self->{result_values}->{free_absolute},
+        $self->{result_values}->{prct_free_absolute});
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'usage', nlabel => 'threads.connected.count', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { label => 'threads_connected', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute' },
+                ],
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'threads.connected.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'Client Connection Threads Used : %.2f %%',
+                perfdatas => [
+                    { label => 'threads_connected_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                      unit => '%' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+    $options{options}->add_options(arguments => { 
+    });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
     $options{sql}->connect();
-    
     if (!($options{sql}->is_version_minimum(version => '5'))) {
         $self->{output}->add_option_msg(short_msg => "MySQL version '" . $self->{sql}->{version} . "' is not supported (need version >= '5.x').");
         $self->{output}->option_exit();
     }
-    
-    $options{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Threads_connected'});
-    my ($name, $value) = $options{sql}->fetchrow_array();
-    if (!defined($value)) {
+
+    my $infos = {};
+    if (!$options{sql}->is_mariadb() && $options{sql}->is_version_minimum(version => '5.7.6')) {
+         $options{sql}->query(query => q{
+            SELECT 'max_connections' as name, @@GLOBAL.max_connections as value
+            UNION
+            SELECT VARIABLE_NAME as name, VARIABLE_VALUE as value FROM performance_schema.global_status WHERE VARIABLE_NAME = 'Threads_connected'
+        });
+        while (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value;
+        }
+    } elsif ($options{sql}->is_version_minimum(version => '5.1.12')) {
+        $options{sql}->query(query => q{
+            SELECT 'max_connections' as name, @@GLOBAL.max_connections as value
+            UNION
+            SELECT VARIABLE_NAME as name, VARIABLE_VALUE as value FROM information_schema.GLOBAL_STATUS WHERE VARIABLE_NAME = 'Threads_connected'
+        });
+        while (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value;
+        }
+    } else {
+        $options{sql}->query(query => q{SELECT 'max_connections' as name, @@GLOBAL.max_connections as value});
+        if (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value 
+        }
+        $options{sql}->query(query => q{SHOW /*!50000 global */ STATUS LIKE 'Threads_connected'});
+        if (my ($name, $value) = $options{sql}->fetchrow_array()) {
+            $infos->{lc($name)} = $value 
+        }
+    }
+
+    if (scalar(keys %$infos) == 0) {
         $self->{output}->add_option_msg(short_msg => "Cannot get number of open connections.");
         $self->{output}->option_exit();
     }
-    
-    my $exit_code = $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("%d client connection threads", $value)
-                                );
-    $self->{output}->perfdata_add(label => 'threads_connected',
-                                  value => $value,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $prct_used = $infos->{threads_connected} * 100 / $infos->{max_connections};
+    $self->{global} = {
+       total => $infos->{max_connections},
+       used => $infos->{threads_connected},
+       free => $infos->{max_connections} - $infos->{threads_connected},
+       prct_used => $prct_used,
+       prct_free => 100 - $prct_used,
+    };
 }
 
 1;
@@ -95,13 +140,10 @@ Check number of open connections.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
+Thresholds.
+Can be: 'usage', 'usage-prct' (%).
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,234 +20,160 @@
 
 package hardware::ups::mge::snmp::mode::inputlines;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
 
-my %map_input_status = (
-    1 => 'no',
-    2 => 'outoftolvolt',
-    3 => 'outoftolfreq',
-    4 => 'utilityoff',
-);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my $maps_counters = {
-    voltage => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'voltage', no_value => 0, },
-                                      ],
-                        output_template => 'Voltage: %.2f V', output_error_template => 'Voltage: %s',
-                        perfdatas => [
-                            { value => 'voltage_absolute', label => 'voltage', template => '%.2f',
-                              unit => 'V', min => 0, label_extra_instance => 1 },
-                        ],
-                    }
-               },
-    current => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'current', no_value => 0 },
-                                      ],
-                        output_template => 'Current: %.2f A', output_error_template => 'Current: %s',
-                        perfdatas => [
-                            { value => 'current_absolute', label => 'current', template => '%.2f',
-                              unit => 'A', min => 0, label_extra_instance => 1 },
-                        ],
-                    }
-               },
-    frequence => { class => 'centreon::plugins::values', obj => undef,
-                 set => {
-                        key_values => [
-                                        { name => 'frequence', no_value => 0, },
-                                      ],
-                        output_template => 'Frequence: %.2f Hz', output_error_template => 'Frequence: %s',
-                        perfdatas => [
-                            { value => 'frequence_absolute', label => 'frequence', template => '%.2f',
-                              unit => 'Hz', min => 0 },
-                        ],
-                    }
-               },
-};
+sub custom_status_output {
+    my ($self, %options) = @_;
 
-my $oid_upsmgInputPhaseNumEntry = '.1.3.6.1.4.1.705.1.6.1'; 
-my $oid_mginputVoltageEntry = '.1.3.6.1.4.1.705.1.6.2.1.2'; # in dV
-my $oid_mginputFrequencyEntry = '.1.3.6.1.4.1.705.1.6.2.1.3'; # in dHz
-my $oid_mginputCurrentEntry = '.1.3.6.1.4.1.705.1.6.2.1.6'; # in dA
-my $oid_upsmgInputBadStatusEntry = '.1.3.6.1.4.1.705.1.6.3';
-my $oid_upsmgInputLineFailCauseEntry = '.1.3.6.1.4.1.705.1.6.4';
+    my $msg = "Input Line(s) bad status is '" . $self->{result_values}->{badstatus} . "' [failcause = " . $self->{result_values}->{failcause} . "]";
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{badstatus} = $options{new_datas}->{$self->{instance} . '_badstatus'};
+    $self->{result_values}->{failcause} = $options{new_datas}->{$self->{instance} . '_failcause'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'iline', type => 1, cb_prefix_output => 'prefix_iline_output', message_multiple => 'All input lines are ok', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'status', set => {
+                key_values => [ { name => 'badstatus' }, { name => 'failcause' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{iline} = [
+        { label => 'current', set => {
+                key_values => [ { name => 'mginputCurrent', no_value => 0 } ],
+                output_template => 'Current : %.2f A',
+                perfdatas => [
+                    { label => 'current', value => 'mginputCurrent_absolute', template => '%.2f', 
+                      min => 0, unit => 'A', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'voltage', set => {
+                key_values => [ { name => 'mginputVoltage', no_value => 0 } ],
+                output_template => 'Voltage : %.2f V',
+                perfdatas => [
+                    { label => 'voltage', value => 'mginputVoltage_absolute', template => '%.2f', 
+                      unit => 'V', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'frequence', set => {
+                key_values => [ { name => 'mginputFrequency', no_value => 0 } ],
+                output_template => 'Frequence : %.2f Hz',
+                perfdatas => [
+                    { label => 'frequence', value => 'mginputFrequency_absolute', template => '%.2f', 
+                      unit => 'Hz', label_extra_instance => 1 },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+        "warning-status:s"    => { name => 'warning_status' },
+        "critical-status:s"   => { name => 'critical_status', default => '%{badstatus} =~ /yes/' },
+    });
 
-    $self->{instance_selected} = {};
-     
-    foreach (keys %{$maps_counters}) {
-        $options{options}->add_options(arguments => {
-                                                     'warning-' . $_ . ':s'    => { name => 'warning-' . $_ },
-                                                     'critical-' . $_ . ':s'    => { name => 'critical-' . $_ },
-                                      });
-        my $class = $maps_counters->{$_}->{class};
-        $maps_counters->{$_}->{obj} = $class->new(output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $_);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
     
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-sub manage_counters {
+sub prefix_iline_output {
     my ($self, %options) = @_;
-    
-    my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-    my @exits;
-    foreach (sort keys %{$options{maps_counters}}) {
-        $options{maps_counters}->{$_}->{obj}->set(instance => $options{instance});
-    
-        my ($value_check) = $options{maps_counters}->{$_}->{obj}->execute(values => $self->{instance_selected}->{$options{instance}});
 
-        # We don't want to display no value
-        next if ($value_check == -10);
-        if ($value_check != 0) {
-            $long_msg .= $long_msg_append . $options{maps_counters}->{$_}->{obj}->output_error();
-            $long_msg_append = ', ';
-            next;
-        }
-        my $exit2 = $options{maps_counters}->{$_}->{obj}->threshold_check();
-        push @exits, $exit2;
-
-        my $output = $options{maps_counters}->{$_}->{obj}->output();
-        $long_msg .= $long_msg_append . $output;
-        $long_msg_append = ', ';
-        
-        if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-            $short_msg .= $short_msg_append . $output;
-            $short_msg_append = ', ';
-        }
-        
-        $options{maps_counters}->{$_}->{obj}->perfdata(extra_instance => $self->{multiple});
-    }
-
-    $self->{output}->output_add(long_msg => $options{label} . " " . $long_msg);
-    my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-    if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => $options{label} . " " . $short_msg
-                                    );
-    }
-    
-    if ($self->{multiple} == 0) {
-        $self->{output}->output_add(short_msg => $options{label} . " " . $long_msg);
-    }
+    return "Input Line '" . $options{instance_value}->{display} . "' ";
 }
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+my %map_input_failcause = (
+    1 => 'no',
+    2 => 'outoftolvolt',
+    3 => 'outoftolfreq',
+    4 => 'utilityoff',
+);
+my %map_bad_status = (
+    1 => 'yes',
+    2 => 'no',
+);
 
-    $self->manage_selection();
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Input Line(s) status is ok');
-    if (defined($self->{results}->{$oid_upsmgInputBadStatusEntry}->{$oid_upsmgInputBadStatusEntry . '.0'}) &&
-        $self->{results}->{$oid_upsmgInputBadStatusEntry}->{$oid_upsmgInputBadStatusEntry . '.0'} == 1) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Input Line(s) status is '%s'", 
-                                                         $map_input_status{$self->{results}->{$oid_upsmgInputLineFailCauseEntry}->{$oid_upsmgInputLineFailCauseEntry . '.0'}}));
-    }
-    
-    $self->{multiple} = 1;
-    if (scalar(keys %{$self->{instance_selected}}) == 1) {
-        $self->{multiple} = 0;
-    }
-    
-    if ($self->{multiple} == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'Input Lines are ok');
-    }
-    
-    foreach my $id (sort keys %{$self->{instance_selected}}) {     
-        $self->manage_counters(instance => $id, maps_counters => $maps_counters, label => "Input Line '" . $id . "'");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
-}
-
-sub add_result {
-    my ($self, %options) = @_;
-    
-    $self->{instance_selected}->{$options{instance}} = {} if (!defined($self->{instance_selected}->{$options{instance}}));
-    $self->{instance_selected}->{$options{instance}}->{$options{name}} = $self->{results}->{$options{oid}}->{$options{oid} . '.' . $options{instance2}} * 0.1;
-}
+my $mapping = {
+    mginputVoltage      => { oid => '.1.3.6.1.4.1.705.1.6.2.1.2' }, # in dV
+    mginputFrequency    => { oid => '.1.3.6.1.4.1.705.1.6.2.1.3' }, # in dHz
+    mginputCurrent      => { oid => '.1.3.6.1.4.1.705.1.6.2.1.6' }, # in dA
+};
+my $oid_upsmgInput = '.1.3.6.1.4.1.705.1.6';
+my $oid_upsmgInputPhaseEntry = '.1.3.6.1.4.1.705.1.6.2.1';
+my $oid_upsmgInputPhaseNum = '.1.3.6.1.4.1.705.1.6.1.0';
+my $oid_upsmgInputBadStatus = '.1.3.6.1.4.1.705.1.6.3.0';
+my $oid_upsmgInputLineFailCause = '.1.3.6.1.4.1.705.1.6.4.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
- 
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_upsmgInputPhaseNumEntry },
-                                                            { oid => $oid_mginputVoltageEntry },
-                                                            { oid => $oid_mginputFrequencyEntry },
-                                                            { oid => $oid_mginputCurrentEntry },
-                                                            { oid => $oid_upsmgInputBadStatusEntry },
-                                                            { oid => $oid_upsmgInputLineFailCauseEntry },
-                                                         ],
-                                                         , nothing_quit => 1);
 
-    if (!defined($self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) || 
-        $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'} == 0) {
+    $self->{iline} = {};
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_upsmgInput,
+        nothing_quit => 1
+    );
+    
+    if (!defined($snmp_result->{$oid_upsmgInputPhaseNum}) || 
+        $snmp_result->{$oid_upsmgInputPhaseNum} == 0) {
         $self->{output}->add_option_msg(short_msg => "No input lines found.");
         $self->{output}->option_exit();
     }
     
-    my %instances = ();
-    # can be 'xxx.1' or 'xxx.1.0' (cannot respect MIB :)
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mginputVoltageEntry}})) {
-        $oid =~ /^$oid_mginputVoltageEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'voltage', oid => $oid_mginputVoltageEntry);
-        }
-    }
-    %instances = ();
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mginputCurrentEntry}})) {
-        $oid =~ /^$oid_mginputCurrentEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'current', oid => $oid_mginputCurrentEntry);
-        }
-    }
-    %instances = ();
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_mginputFrequencyEntry}})) {
-        $oid =~ /^$oid_mginputFrequencyEntry\.((\d+).*)/;
-        if (scalar(keys %instances) < $self->{results}->{$oid_upsmgInputPhaseNumEntry}->{$oid_upsmgInputPhaseNumEntry . '.0'}) {
-            $instances{$2} = 1;
-            $self->add_result(instance => $2, instance2 => $1, name => 'frequence', oid => $oid_mginputFrequencyEntry);
-        }
+    foreach my $oid (keys %{$snmp_result}) {
+        next if ($oid !~ /^$oid_upsmgInputPhaseEntry\.\d+\.(.*)$/);
+        my $instance = $1;
+        next if (defined($self->{iline}->{$instance}));
+        
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{mginputVoltage} *= 0.1 if (defined($result->{mginputVoltage}));
+        $result->{mginputFrequency} *= 0.1 if (defined($result->{mginputFrequency}));
+        $result->{mginputCurrent} *= 0.1 if (defined($result->{mginputCurrent}));
+        next if ((!defined($result->{mginputVoltage}) || $result->{mginputVoltage} == 0) &&
+                (!defined($result->{mginputFrequency}) || $result->{mginputFrequency} == 0) &&
+                (!defined($result->{mginputCurrent}) || $result->{mginputCurrent} == 0));
+        $self->{iline}->{$instance} = { display => $instance, %$result };
     }
     
-    if (scalar(keys %{$self->{instance_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No input lines found.");
-        $self->{output}->option_exit();
-    }
+    $self->{global} = {
+        badstatus => $map_bad_status{$snmp_result->{$oid_upsmgInputBadStatus}},
+        failcause => $map_input_failcause{$snmp_result->{$oid_upsmgInputLineFailCause}},
+    };
 }
 
 1;
@@ -269,6 +195,16 @@ Can be: 'frequence', 'voltage', 'current'.
 
 Threshold critical.
 Can be: 'frequence', 'voltage', 'current'.
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{badstatus}, %{failcause}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{badstatus} =~ /yes/').
+Can used special variables like: %{badstatus}, %{failcause}
 
 =back
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -29,6 +29,31 @@ sub default_storage_type {
     my ($self, %options) = @_;
     
     return '^(hrStorageRam|hrStorageFlashMemory)';
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All memory spaces are ok' },
+    ];
+    
+    $self->{maps_counters}->{storage} = [
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'size' }, { name => 'allocation_units' } ],
+                closure_custom_calc => $self->can('custom_usage_calc'),
+                closure_custom_output => $self->can('custom_usage_output'),
+                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+            }
+        },
+    ];
+}
+
+sub prefix_storage_output {
+    my ($self, %options) = @_;
+    
+    return "Memory space '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {

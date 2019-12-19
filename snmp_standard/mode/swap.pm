@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,87 +20,110 @@
 
 package snmp_standard::mode::swap;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub custom_swap_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+        $self->{result_values}->{prct_used_absolute},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
+        $self->{result_values}->{prct_free_absolute});
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{swap} = [
+        { label => 'usage', nlabel => 'swap.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_swap_output'),
+                perfdatas => [
+                    { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'usage-free', display_ok => 0, nlabel => 'swap.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_swap_output'),
+                perfdatas => [
+                    { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 },
+                ],
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'swap.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'Used : %.2f %%',
+                perfdatas => [
+                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                      unit => '%' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                  "no-swap:s"               => { name => 'no_swap' },
-                                });
-    $self->{no_swap} = 'critical';
+    $options{options}->add_options(arguments => { 
+        'no-swap:s' => { name => 'no_swap' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    $self->{no_swap} = 'critical';
     if (defined($self->{option_results}->{no_swap}) && $self->{option_results}->{no_swap} ne '') {
         if ($self->{output}->is_litteral_status(status => $self->{option_results}->{no_swap}) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong --no-swap status '" . $self->{option_results}->{no_swap} . "'.");
             $self->{output}->option_exit();
         }
-         $self->{no_swap} = $self->{option_results}->{no_swap};
+        $self->{no_swap} = $self->{option_results}->{no_swap};
     }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
     
     my $oid_memTotalSwap = '.1.3.6.1.4.1.2021.4.3.0'; # KB
     my $oid_memAvailSwap = '.1.3.6.1.4.1.2021.4.4.0'; # KB
-    my $result = $self->{snmp}->get_leef(oids => [$oid_memTotalSwap, $oid_memAvailSwap], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(oids => [$oid_memTotalSwap, $oid_memAvailSwap], nothing_quit => 1);
 
     if ($result->{$oid_memTotalSwap} == 0) {
         $self->{output}->output_add(severity => $self->{no_swap},
-                                    short_msg => 'No active swap.');
-        $self->{output}->display();
-        $self->{output}->exit();
+                                    short_msg => 'No active swap');
+        return ;
     }
-    
-    my $total_size = $result->{$oid_memTotalSwap} * 1024;
-    my $swap_used = ($result->{$oid_memTotalSwap} - $result->{$oid_memAvailSwap}) * 1024;
-    
-    my $prct_used = $swap_used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($swap_used_value, $swap_used_unit) = $self->{perfdata}->change_bytes(value => $swap_used);
-    my ($swap_free_value, $swap_free_unit) = $self->{perfdata}->change_bytes(value => ($total_size - $swap_used));
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                                            $total_value . " " . $total_unit,
-                                            $swap_used_value . " " . $swap_used_unit, $prct_used,
-                                            $swap_free_value . " " . $swap_free_unit, (100 - $prct_used)));
-    
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $swap_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $free = $result->{$oid_memAvailSwap} * 1024;
+    my $total = $result->{$oid_memTotalSwap} * 1024;
+    my $prct_used = ($total - $free) * 100 / $total;
+    $self->{swap} = {
+        total => $total,
+        used => $total - $free,
+        free => $free,
+        prct_used => $prct_used,
+        prct_free => 100 - $prct_used,
+    };
 }
 
 1;
@@ -113,17 +136,14 @@ Check swap memory (UCD-SNMP-MIB).
 
 =over 8
 
-=item B<--warning>
-
-Threshold warning in percent.
-
-=item B<--critical>
-
-Threshold critical in percent.
-
 =item B<--no-swap>
 
 Threshold if no active swap (default: 'critical').
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back
 

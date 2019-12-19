@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,225 +20,283 @@
 
 package hardware::pdu::apc::snmp::mode::load;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my $thresholds = {
-    load => [
-        ['phaseLoadNormal', 'OK'],
-        ['phaseLoadLow', 'WARNING'],
-        ['phaseLoadNearOverload', 'WARNING'],
-        ['phaseLoadOverload', 'CRITICAL'],
-    ],
-};
-my %map_status = (
-    1 => 'phaseLoadNormal',
-    2 => 'phaseLoadLow',
-    3 => 'phaseLoadNearOverload',
-    4 => 'phaseLoadOverload',
-);
+sub custom_status_output { 
+    my ($self, %options) = @_;
+
+    my $msg = 'status : ' . $self->{result_values}->{status};
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok', skipped_code => { -10 => 1 } },
+        { name => 'bank', type => 1, cb_prefix_output => 'prefix_bank_output', message_multiple => 'All banks are ok', skipped_code => { -10 => 1 } },
+        { name => 'phase', type => 1, cb_prefix_output => 'prefix_phase_output', message_multiple => 'All phases are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{bank} = [
+        { label => 'bank-status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'current', nlabel => 'bank.current.ampere', set => {
+                key_values => [ { name => 'current' }, { name => 'display' } ],
+                output_template => 'current : %s A',
+                perfdatas => [
+                    { label => 'current_bank',  template => '%s', value => 'current_absolute',
+                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{phase} = [
+        { label => 'phase-status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'current', nlabel => 'phase.current.ampere', set => {
+                key_values => [ { name => 'current' }, { name => 'display' } ],
+                output_template => 'current : %s A',
+                perfdatas => [
+                    { label => 'current_phase',  template => '%s', value => 'current_absolute',
+                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'power', nlabel => 'phase.power.watt', set => {
+                key_values => [ { name => 'power' }, { name => 'display' } ],
+                output_template => 'power : %s W',
+                perfdatas => [
+                    { label => 'power_phase',  template => '%s', value => 'power_absolute',
+                      unit => 'W', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{device} = [
+        { label => 'power', nlabel => 'device.power.watt', set => {
+                key_values => [ { name => 'power' }, { name => 'display' } ],
+                output_template => 'power : %s W',
+                perfdatas => [
+                    { label => 'power_phase',  template => '%s', value => 'power_absolute',
+                      unit => 'W', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_bank_output {
+    my ($self, %options) = @_;
+
+    return "Bank '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_phase_output {
+    my ($self, %options) = @_;
+
+    return "Phase '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_device_output {
+    my ($self, %options) = @_;
+
+    return "Device '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter:s@"               => { name => 'filter' },
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                  "warning:s@"              => { name => 'warning' },
-                                  "critical:s@"             => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+        "unknown-bank-status:s"  => { name => 'unknown_bank_status', default => '' },
+        "warning-bank-status:s"  => { name => 'warning_bank_status', default => '%{status} =~ /low|nearOverload/i' },
+        "critical-bank-status:s" => { name => 'critical_bank_status', default => '%{status} =~ /^overload/i' },
+        "unknown-phase-status:s"  => { name => 'unknown_phase_status', default => '' },
+        "warning-phase-status:s"  => { name => 'warning_phase_status', default => '%{status} =~ /low|nearOverload/i' },
+        "critical-phase-status:s" => { name => 'critical_phase_status', default => '%{status} =~ /^overload/i' },
+    });
     
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    $self->{filter} = [];
-    foreach my $val (@{$self->{option_results}->{filter}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
-    }
-    
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        next if (!defined($val) || $val eq '');
-        my @values = split (/,/, $val);
-        if (scalar(@values) < 3) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $instance, $status, $filter);
-        if (scalar(@values) == 3) {
-            ($section, $status, $filter) = @values;
-            $instance = '.*';
-        } else {
-             ($section, $instance, $status, $filter) = @values;
-        }
-        if ($section !~ /^load$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
-    }
-    
-    $self->{numeric_threshold} = {};
-    foreach my $option (('warning', 'critical')) {
-        foreach my $val (@{$self->{option_results}->{$option}}) {
-            next if (!defined($val) || $val eq '');
-            if ($val !~ /^(.*?),(.*?),(.*)$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
-                $self->{output}->option_exit();
-            }
-            my ($section, $instance, $value) = ($1, $2, $3);
-            if ($section !~ /^load$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
-                $self->{output}->option_exit();
-            }
-            my $position = 0;
-            if (defined($self->{numeric_threshold}->{$section})) {
-                $position = scalar(@{$self->{numeric_threshold}->{$section}});
-            }
-            if (($self->{perfdata}->threshold_validate(label => $option . '-' . $section . '-' . $position, value => $value)) == 0) {
-                $self->{output}->add_option_msg(short_msg => "Wrong $option threshold '" . $value . "'.");
-                $self->{output}->option_exit();
-            }
-            $self->{numeric_threshold}->{$section} = [] if (!defined($self->{numeric_threshold}->{$section}));
-            push @{$self->{numeric_threshold}->{$section}}, { label => $option . '-' . $section . '-' . $position, threshold => $option, instance => $instance };
-        }
-    }
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => [
+        'warning_bank_status', 'critical_bank_status', 'unknown_bank_status',
+        'warning_phase_status', 'critical_phase_status', 'unknown_phase_status',
+    ]);
 }
 
-my $mapping = {
-    rPDULoadStatusLoad => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.2' },
-    rPDULoadStatusLoadState => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.3', map => \%map_status },
-    rPDULoadStatusPhaseNumber => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.4' },
-    rPDULoadStatusBankNumber => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.5' },
+my $map_rpdu_status = {
+    1 => 'normal',
+    2 => 'low',
+    3 => 'nearOverload',
+    4 => 'overload',
 };
 
-sub run {
+sub check_rpdu {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+
+    return if (scalar(keys %{$self->{phase}}) > 0);
+
+    my $mapping = {
+        rPDULoadStatusLoad          => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.2' },
+        rPDULoadStatusLoadState     => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.3', map => $map_rpdu_status },
+        rPDULoadStatusPhaseNumber   => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.4' }, 
+        rPDULoadStatusBankNumber    => { oid => '.1.3.6.1.4.1.318.1.1.12.2.3.1.1.5' }, # Bank 0 = no bank (phase total)
+    };
 
     my $oid_rPDULoadStatusEntry = '.1.3.6.1.4.1.318.1.1.12.2.3.1.1';
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_rPDULoadStatusEntry, nothing_quit => 1);
 
-    $self->{results} = $self->{snmp}->get_table(oid => $oid_rPDULoadStatusEntry, nothing_quit => 1);
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All phase/bank loads are ok');
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}})) {
+    foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{rPDULoadStatusLoadState}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
-        
-        next if ($self->check_filter(section => 'load', instance => $instance));
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        $self->{output}->output_add(long_msg => sprintf("Phase '%s' on Bank '%s' status is '%s' [instance: %s, value: %s]", 
-                                    $result->{rPDULoadStatusPhaseNumber}, $result->{rPDULoadStatusBankNumber}, $result->{rPDULoadStatusLoadState},
-                                    $instance, defined($result->{rPDULoadStatusLoad}) ? $result->{rPDULoadStatusLoad} : '-'));
-        my $exit = $self->get_severity(section => 'load', instance => $instance, value => $result->{rPDULoadStatusLoadState});
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Phase '%s' on Bank '%s' status is '%s'", 
-                                                             $result->{rPDULoadStatusPhaseNumber}, $result->{rPDULoadStatusBankNumber}, $result->{rPDULoadStatusLoadState}));
-        }
-        
-        if (defined($result->{rPDULoadStatusLoad}) && $result->{rPDULoadStatusLoad} =~ /[0-9]/) {
-            $result->{rPDULoadStatusLoad} /= 10;
-            my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'load', instance => $instance, value => $result->{rPDULoadStatusLoad});
-            if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit2,
-                                            short_msg => sprintf("Phase '%s' on Bank '%s' load is %s A", 
-                                                                 $result->{rPDULoadStatusPhaseNumber}, $result->{rPDULoadStatusBankNumber}, $result->{rPDULoadStatusLoad}));
-            }
-            $self->{output}->perfdata_add(label => 'load_bank_' . $result->{rPDULoadStatusBankNumber} . '_phase_' . $result->{rPDULoadStatusPhaseNumber}, unit => 'A',
-                                          value => $result->{rPDULoadStatusLoad},
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0);
+        if ($result->{rPDULoadStatusBankNumber} == 0) {
+            $self->{phase}->{$result->{rPDULoadStatusPhaseNumber}} = {
+                display => $result->{rPDULoadStatusPhaseNumber},
+                status => $result->{rPDULoadStatusLoadState},
+                current => $result->{rPDULoadStatusLoad} / 10,
+            };
+        } else {
+            $self->{bank}->{$result->{rPDULoadStatusBankNumber}} = { display => $result->{rPDULoadStatusBankNumber}, current => 0 }
+                if (!defined($self->{bank}->{$result->{rPDULoadStatusBankNumber}}));
+            $self->{bank}->{$result->{rPDULoadStatusBankNumber}}->{status} = $result->{rPDULoadStatusLoadState};
+            $self->{bank}->{$result->{rPDULoadStatusBankNumber}}->{current} += $result->{rPDULoadStatusLoad} / 10;
         }
     }
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $oid_rPDUIdentName = '.1.3.6.1.4.1.318.1.1.12.1.1.0';
+    my $oid_rPDUIdentDevicePowerWatts = '.1.3.6.1.4.1.318.1.1.12.1.16.0';
+    $snmp_result = $options{snmp}->get_leef(oids => [$oid_rPDUIdentName, $oid_rPDUIdentDevicePowerWatts]);
+    $self->{device}->{0} = {
+        display => $snmp_result->{$oid_rPDUIdentName},
+        power => $snmp_result->{$oid_rPDUIdentDevicePowerWatts} * 10,
+    };
 }
 
-sub check_filter {
+my $map_rpdu2_status = {
+    1 => 'low',
+    2 => 'normal',
+    3 => 'nearOverload',
+    4 => 'overload',
+};
+
+sub check_rpdu2 {
     my ($self, %options) = @_;
 
-    foreach (@{$self->{filter}}) {
-        if ($options{section} =~ /$_->{filter}/) {
-            if (!defined($options{instance}) && !defined($_->{instance})) {
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section."));
-                return 1;
-            } elsif (defined($options{instance}) && $options{instance} =~ /$_->{instance}/) {
-                $self->{components}->{$options{section}}->{skip}++ if (defined($self->{components}->{$options{section}}));
-                $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance."));
-                return 1;
-            }
+    my $mapping_phase = {
+        rPDU2PhaseStatusModule      => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.2' },
+        rPDU2PhaseStatusNumber      => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.3' },
+        rPDU2PhaseStatusLoadState   => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.4', map => $map_rpdu2_status },
+        rPDU2PhaseStatusCurrent     => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.5' }, 
+        rPDU2PhaseStatusPower       => { oid => '.1.3.6.1.4.1.318.1.1.26.6.3.1.7' },
+    };
+    my $mapping_bank = {
+        rPDU2BankStatusModule       => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.2' },
+        rPDU2BankStatusNumber       => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.3' },
+        rPDU2BankStatusLoadState    => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.4', map => $map_rpdu2_status },
+        rPDU2BankStatusCurrent      => { oid => '.1.3.6.1.4.1.318.1.1.26.8.3.1.5' }, 
+    };
+    my $mapping_device = {
+        rPDU2DeviceStatusName       => { oid => '.1.3.6.1.4.1.318.1.1.26.4.3.1.3' },
+        rPDU2DeviceStatusPower      => { oid => '.1.3.6.1.4.1.318.1.1.26.4.3.1.5' }, 
+    };
+
+    my $oid_rPDU2DeviceStatusEntry = '.1.3.6.1.4.1.318.1.1.26.4.3.1';
+    my $oid_rPDU2PhaseStatusEntry = '.1.3.6.1.4.1.318.1.1.26.6.3.1';
+    my $oid_rPDU2BankStatusEntry = '.1.3.6.1.4.1.318.1.1.26.8.3.1';
+    my $snmp_result = $options{snmp}->get_multiple_table(oids => [
+        { oid => $oid_rPDU2PhaseStatusEntry, end => $mapping_phase->{rPDU2PhaseStatusPower}->{oid} },
+        { oid => $oid_rPDU2BankStatusEntry, end => $mapping_bank->{rPDU2BankStatusCurrent}->{oid} },
+        { oid => $oid_rPDU2DeviceStatusEntry, end => $mapping_device->{rPDU2DeviceStatusPower}->{oid} },
+    ]);
+
+    foreach my $oid (keys %{$snmp_result->{$oid_rPDU2PhaseStatusEntry}}) {
+        next if ($oid !~ /^$mapping_phase->{rPDU2PhaseStatusLoadState}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping_phase, results => $snmp_result->{$oid_rPDU2PhaseStatusEntry}, instance => $instance);
+
+        my $name = 'module ' . $result->{rPDU2PhaseStatusModule} . ' phase ' . $result->{rPDU2PhaseStatusNumber};
+        $self->{phase}->{$name} = {
+            display => $name,
+            status => $result->{rPDU2PhaseStatusLoadState},
+            current => $result->{rPDU2PhaseStatusCurrent} / 10,
+            power => $result->{rPDU2PhaseStatusPower} * 10, # hundreth of kW. So * 10 for watt
         }
     }
-    
-    return 0;
+
+    foreach my $oid (keys %{$snmp_result->{$oid_rPDU2BankStatusEntry}}) {
+        next if ($oid !~ /^$mapping_bank->{rPDU2BankStatusLoadState}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping_bank, results => $snmp_result->{$oid_rPDU2BankStatusEntry}, instance => $instance);
+
+        my $name = 'module ' . $result->{rPDU2BankStatusModule} . ' num ' . $result->{rPDU2BankStatusNumber};
+        $self->{bank}->{$name} = {
+            display => $name,
+            status => $result->{rPDU2BankStatusLoadState},
+            current => $result->{rPDU2BankStatusCurrent} / 10,
+        }
+    }
+
+    foreach my $oid (keys %{$snmp_result->{$oid_rPDU2DeviceStatusEntry}}) {
+        next if ($oid !~ /^$mapping_device->{rPDU2DeviceStatusPower}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping_device, results => $snmp_result->{$oid_rPDU2DeviceStatusEntry}, instance => $instance);
+
+        $self->{device}->{$result->{rPDU2DeviceStatusName}} = {
+            display => $result->{rPDU2DeviceStatusName},
+            power => $result->{rPDU2DeviceStatusPower} * 10,
+        }
+    }
 }
 
-sub get_severity_numeric {
+sub manage_selection {
     my ($self, %options) = @_;
-    my $status = 'OK'; # default
-    my $thresholds = { warning => undef, critical => undef };
-    my $checked = 0;
-    
-    if (defined($self->{numeric_threshold}->{$options{section}})) {
-        my $exits = [];
-        foreach (@{$self->{numeric_threshold}->{$options{section}}}) {
-            if ($options{instance} =~ /$_->{instance}/) {
-                push @{$exits}, $self->{perfdata}->threshold_check(value => $options{value}, threshold => [ { label => $_->{label}, exit_litteral => $_->{threshold} } ]);
-                $thresholds->{$_->{threshold}} = $self->{perfdata}->get_perfdata_for_output(label => $_->{label});
-                $checked = 1;
-            }
-        }
-        $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
-    }
-    
-    return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
-}
 
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
+    $self->{bank} = {};
+    $self->{phase} = {};
+    $self->{device} = {};
     
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i && 
-                (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
-    }
-    my $label = defined($options{label}) ? $options{label} : $options{section};
-    foreach (@{$thresholds->{$label}}) {
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
+    $self->check_rpdu2(%options);
+    $self->check_rpdu(%options);
     
-    return $status;
+    if (scalar(keys %{$self->{device}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No device found.");
+        $self->{output}->option_exit();
+    }
 }
 
 1;
@@ -247,30 +305,45 @@ __END__
 
 =head1 MODE
 
-Check phase/bank load state.
+Check phase/bank load.
 
 =over 8
 
-=item B<--filter>
+=item B<--unknown-bank-status>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --filter=load,1
+Set warning threshold for status.
+Can used special variables like: %{type}, %{status}, %{display}
 
-=item B<--threshold-overload>
+=item B<--warning-bank-status>
 
-Set to overload default threshold values (syntax: section,[instance,]status,regexp)
-It used before default thresholds (order stays).
-Example: --threshold-overload='load,CRITICAL,^(?!(PhaseLoadNormal)$)'
+Set warning threshold for status (Default: '%{status} =~ /low|nearOverload/i').
+Can used special variables like: %{type}, %{status}, %{display}
 
-=item B<--warning>
+=item B<--critical-bank-status>
 
-Set warning threshold for temperatures (syntax: type,instance,threshold)
-Example: --warning='load,.*,30'
+Set critical threshold for status (Default: '%{status} =~ /^overload/').
+Can used special variables like: %{type}, %{status}, %{display}
 
-=item B<--critical>
+=item B<--unknown-phase-status>
 
-Set critical threshold for temperatures (syntax: type,instance,threshold)
-Example: --critical='load,.*,40'
+Set warning threshold for status.
+Can used special variables like: %{status}, %{display}
+
+=item B<--warning-pĥase-status>
+
+Set warning threshold for status (Default: '%{status} =~ /low|nearOverload/i').
+Can used special variables like: %{status}, %{display}
+
+=item B<--critical-phase-status>
+
+Set critical threshold for status (Default: '%{status} =~ /^overload/i').
+Can used special variables like: %{status}, %{display}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'current', 'power'.
+
 =back
 
 =cut

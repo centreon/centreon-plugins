@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -34,17 +34,17 @@ sub new {
     bless $self, $class;
 
     if (defined($options{options})) {
-        $options{options}->add_options(arguments =>
-                                {
-                                  "memcached:s"           => { name => 'memcached' },
-                                  "redis-server:s"        => { name => 'redis_server' },
-                                  'redis-attribute:s%'    => { name => 'redis_attribute' },
-                                  "memexpiration:s"       => { name => 'memexpiration', default => 86400 },
-                                  "statefile-dir:s"       => { name => 'statefile_dir', default => $default_dir },
-                                  "statefile-suffix:s"    => { name => 'statefile_suffix', default => '' },
-                                  "statefile-concat-cwd"  => { name => 'statefile_concat_cwd' },
-                                  "statefile-storable"    => { name => 'statefile_storable' },
-                                });
+        $options{options}->add_options(arguments => {
+            'memcached:s'           => { name => 'memcached' },
+            'redis-server:s'        => { name => 'redis_server' },
+            'redis-attribute:s%'    => { name => 'redis_attribute' },
+            'redis-db:s'            => { name => 'redis_db' },
+            'memexpiration:s'       => { name => 'memexpiration', default => 86400 },
+            'statefile-dir:s'       => { name => 'statefile_dir', default => $default_dir },
+            'statefile-suffix:s'    => { name => 'statefile_suffix', default => '' },
+            'statefile-concat-cwd'  => { name => 'statefile_concat_cwd' },
+            'statefile-storable'    => { name => 'statefile_storable' },
+        });
         $options{options}->add_help(package => __PACKAGE__, sections => 'RETENTION OPTIONS', once => 1);
     }
     
@@ -76,7 +76,7 @@ sub check_options {
         $self->{redis_attributes} = '';
         if (defined($options{option_results}->{redis_attribute})) {
             foreach (keys %{$options{option_results}->{redis_attribute}}) {
-                $self->{redis_attributes} .= "$_ => " . $options{option_results}->{redis_attribute}->{$_} . ", ";
+                $self->{redis_attributes} .= "$_ => " . $options{option_results}->{redis_attribute}->{$_} . ', ';
             }
         }
         
@@ -85,6 +85,12 @@ sub check_options {
         eval {
             $self->{redis_cnx} = Redis->new(server => $options{option_results}->{redis_server}, 
                                             eval $self->{redis_attributes});
+            if (defined($self->{redis_cnx}) && 
+                defined($options{option_results}->{redis_db}) &&
+                $options{option_results}->{redis_db} ne ''
+                ) {
+                $self->{redis_cnx}->select($options{option_results}->{redis_db});
+            }
         };
     }
     
@@ -147,29 +153,29 @@ sub read {
         return 0;
     }
     
-    if (! -e $self->{statefile_dir} . "/" . $self->{statefile}) {
-        if (! -w $self->{statefile_dir}) {
+    if (! -e $self->{statefile_dir} . '/' . $self->{statefile}) {
+        if (! -w $self->{statefile_dir} || ! -x $self->{statefile_dir}) {
             $self->error(1);
-            $self->{output}->add_option_msg(short_msg =>  "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write permissions on directory.");
+            $self->{output}->add_option_msg(short_msg =>  "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write/exec permissions on directory.");
             if ($self->{no_quit} == 0) {
                 $self->{output}->option_exit();
             }
         }
         return 0;
-    } elsif (! -w $self->{statefile_dir} . "/" . $self->{statefile}) {
+    } elsif (! -w $self->{statefile_dir} . '/' . $self->{statefile}) {
         $self->error(1);
         $self->{output}->add_option_msg(short_msg => "Cannot write statefile '" . $self->{statefile_dir} . "/" . $self->{statefile} . "'. Need write permissions on file.");
         if ($self->{no_quit} == 0) {
             $self->{output}->option_exit();
         }
         return 1;
-    } elsif (! -s $self->{statefile_dir} . "/" . $self->{statefile}) {
+    } elsif (! -s $self->{statefile_dir} . '/' . $self->{statefile}) {
         # Empty file. Not a problem. Maybe plugin not manage not values
         return 0;
     }
     
     if ($self->{storable} == 1) {
-        open FILE, $self->{statefile_dir} . "/" . $self->{statefile};
+        open FILE, $self->{statefile_dir} . '/' . $self->{statefile};
         eval {
             $self->{datas} = Storable::fd_retrieve(*FILE);
         };
@@ -180,7 +186,7 @@ sub read {
         }
         close FILE;
     } else {
-        unless (my $return = do $self->{statefile_dir} . "/" . $self->{statefile}) {
+        unless (my $return = do $self->{statefile_dir} . '/' . $self->{statefile}) {
             # File is corrupted surely. We'll reset it
             return 0;
             #if ($@) {
@@ -221,21 +227,21 @@ sub write {
     my ($self, %options) = @_;
 
     if ($self->{memcached_ok} == 1) {
-        Memcached::libmemcached::memcached_set($self->{memcached}, $self->{statefile_dir} . "/" . $self->{statefile}, 
-                                               Data::Dumper->Dump([$options{data}], ["datas"]), $self->{memexpiration});
+        Memcached::libmemcached::memcached_set($self->{memcached}, $self->{statefile_dir} . '/' . $self->{statefile}, 
+                                               Data::Dumper->Dump([$options{data}], ['datas']), $self->{memexpiration});
         if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS$/i) {
             return ;
         }
     }
     if (defined($self->{redis_cnx})) {
-        return if (defined($self->{redis_cnx}->set($self->{statefile_dir} . "/" . $self->{statefile}, Data::Dumper->Dump([$options{data}], ["datas"]),
+        return if (defined($self->{redis_cnx}->set($self->{statefile_dir} . '/' . $self->{statefile}, Data::Dumper->Dump([$options{data}], ['datas']),
                                                   'EX', $self->{memexpiration})));
     }
-    open FILE, ">", $self->{statefile_dir} . "/" . $self->{statefile};
+    open FILE, '>', $self->{statefile_dir} . '/' . $self->{statefile};
     if ($self->{storable} == 1) {
         Storable::store_fd($options{data}, *FILE);
     } else {
-        print FILE Data::Dumper->Dump([$options{data}], ["datas"]);
+        print FILE Data::Dumper->Dump([$options{data}], ['datas']);
     }
     close FILE;
 }
@@ -267,6 +273,10 @@ Redis server to use (only one server).
 =item B<--redis-attribute>
 
 Set Redis Options (--redis-attribute="cnx_timeout=5").
+
+=item B<--redis-db>
+
+Set Redis database index.
 
 =item B<--memexpiration>
 

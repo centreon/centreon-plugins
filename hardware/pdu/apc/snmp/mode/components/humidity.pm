@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -49,12 +49,12 @@ my $mapping = {
 my $oid_rPDU2SensorTempHumidityStatusEntry = '.1.3.6.1.4.1.318.1.1.26.10.2.2.1';
 
 sub load {
-    my (%options) = @_;
-    
-    foreach (@{$options{request}}) {
+    my ($self) = @_;
+
+    foreach (@{$self->{request}}) {
         return if ($_->{oid} eq $oid_rPDU2SensorTempHumidityStatusEntry);
     }
-    push @{$options{request}}, { oid => $oid_rPDU2SensorTempHumidityStatusEntry };
+    push @{$self->{request}}, { oid => $oid_rPDU2SensorTempHumidityStatusEntry };
 }
 
 sub check {
@@ -92,11 +92,15 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("Humidity '%s' value is %s %%", $result->{rPDU2SensorTempHumidityStatusName}, $value));
             }
-            $self->{output}->perfdata_add(label => 'hum_' . $result->{rPDU2SensorTempHumidityStatusName}, unit => '%',
-                                          value => $value,
-                                          warning => $warn,
-                                          critical => $crit,
-                                          min => 0, max => 100);
+            $self->{output}->perfdata_add(
+                label => 'hum', unit => '%',
+                nlabel => 'hardware.sensor.humidity.percentage',
+                instances => $result->{rPDU2SensorTempHumidityStatusName},
+                value => $value,
+                warning => $warn,
+                critical => $crit,
+                min => 0, max => 100
+            );
         }
     }
 }

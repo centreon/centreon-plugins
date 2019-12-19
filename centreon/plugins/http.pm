@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -22,18 +22,37 @@ package centreon::plugins::http;
 
 use strict;
 use warnings;
-use LWP::UserAgent;
-use HTTP::Cookies;
-use URI;
-use IO::Socket::SSL;
 
 sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
 
+    if (!defined($options{noptions}) || $options{noptions} != 1) {
+        $options{options}->add_options(arguments => {
+            'http-peer-addr:s'  => { name => 'http_peer_addr' },
+            'proxyurl:s'        => { name => 'proxyurl' },
+            'proxypac:s'        => { name => 'proxypac' },
+            'http-backend:s'    => { name => 'http_backend', default => 'lwp' },
+        });
+        $options{options}->add_help(package => __PACKAGE__, sections => 'HTTP GLOBAL OPTIONS');
+    }
+
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output},
+        module => 'centreon::plugins::backend::http::lwp',
+        error_msg => "Cannot load module 'centreon::plugins::backend::http::lwp'."
+    );
+    $self->{backend_lwp} = centreon::plugins::backend::http::lwp->new(%options);
+
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output},
+        module => 'centreon::plugins::backend::http::curl',
+        error_msg => "Cannot load module 'centreon::plugins::backend::http::curl'."
+    );
+    $self->{backend_curl} = centreon::plugins::backend::http::curl->new(%options);
+
     $self->{output} = $options{output};
-    $self->{ua} = undef;
     $self->{options} = {
         proto => 'http',
         url_path => '/',
@@ -43,6 +62,7 @@ sub new {
         warning_status => undef,
         critical_status => undef,
     };
+
     $self->{add_headers} = {};
     return $self;
 }
@@ -65,6 +85,20 @@ sub add_header {
 sub check_options {
     my ($self, %options) = @_;
 
+    $options{request}->{http_backend} = 'lwp'
+        if (!defined($options{request}->{http_backend}) || $options{request}->{http_backend} eq '');
+    $self->{http_backend} = $options{request}->{http_backend};
+    if ($self->{http_backend} !~ /^\s*lwp|curl\s*$/i) {
+        $self->{output}->add_option_msg(short_msg => "Unsupported http backend specified '" . $self->{http_backend} . "'.");
+        $self->{output}->option_exit();
+    }
+
+    if (defined($options{request}->{$self->{http_backend} . '_backend_options'})) {
+        foreach (keys %{$options{request}->{$self->{http_backend} . '_backend_options'}}) {
+            $options{request}->{$_} = $options{request}->{$self->{http_backend} . '_backend_options'}->{$_};
+        }
+    }
+
     if (($options{request}->{proto} ne 'http') && ($options{request}->{proto} ne 'https')) {
         $self->{output}->add_option_msg(short_msg => "Unsupported protocol specified '" . $self->{option_results}->{proto} . "'.");
         $self->{output}->option_exit();
@@ -77,17 +111,17 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "You need to set --username= and --password= options when --credentials is used");
         $self->{output}->option_exit();
     }
-    if ((defined($options{request}->{pkcs12})) && (!defined($options{request}->{cert_file}) && !defined($options{request}->{cert_pwd}))) {
+    if ((defined($options{request}->{cert_pkcs12})) && (!defined($options{request}->{cert_file}) && !defined($options{request}->{cert_pwd}))) {
         $self->{output}->add_option_msg(short_msg => "You need to set --cert-file= and --cert-pwd= options when --pkcs12 is used");
         $self->{output}->option_exit();
     }
 
-    $options{request}->{port} = $self->get_port_request();
+    $options{request}->{port_force} = $self->get_port();
 
     $options{request}->{headers} = {};
     if (defined($options{request}->{header})) {
         foreach (@{$options{request}->{header}}) {
-            if (/^(.*?):(.*)/) {
+            if (/^(:.+?|.+?):(.*)/) {
                 $options{request}->{headers}->{$1} = $2;
             }
         }
@@ -98,29 +132,25 @@ sub check_options {
 
     foreach my $method (('get', 'post')) {
         if (defined($options{request}->{$method . '_param'})) {
-            $self->{$method . '_params'} = {};
+            $options{request}->{$method . '_params'} = {};
             foreach (@{$options{request}->{$method . '_param'}}) {
                 if (/^([^=]+)={0,1}(.*)$/) {
                     my $key = $1;
                     my $value = defined($2) ? $2 : 1;
-                    if (defined($self->{$method . '_params'}->{$key})) {
-                        if (ref($self->{$method . '_params'}->{$key}) ne 'ARRAY') {
-                            $self->{$method . '_params'}->{$key} = [ $self->{$method . '_params'}->{$key} ];
+                    if (defined($options{request}->{$method . '_params'}->{$key})) {
+                        if (ref($options{request}->{$method . '_params'}->{$key}) ne 'ARRAY') {
+                            $options{request}->{$method . '_params'}->{$key} = [ $options{request}->{$method . '_params'}->{$key} ];
                         }
-                        push @{$self->{$method . '_params'}->{$key}}, $value;
+                        push @{$options{request}->{$method . '_params'}->{$key}}, $value;
                     } else {
-                        $self->{$method . '_params'}->{$key} = $value;
+                        $options{request}->{$method . '_params'}->{$key} = $value;
                     }
                 }
             }
         }
     }
 
-    foreach (('unknown_status', 'warning_status', 'critical_status')) {
-        if (defined($options{request}->{$_})) {
-            $options{request}->{$_} =~ s/%\{http_code\}/\$response->code/g;
-        }
-    }
+    $self->{'backend_' . $self->{http_backend}}->check_options(%options);
 }
 
 sub get_port {
@@ -147,37 +177,6 @@ sub get_port_request {
     return $port;
 }
 
-sub set_proxy {
-    my ($self, %options) = @_;
-
-    if (defined($options{request}->{proxypac}) && $options{request}->{proxypac} ne '') {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'HTTP::ProxyPAC',
-                                               error_msg => "Cannot load module 'HTTP::ProxyPAC'.");
-        my ($pac, $pac_uri);
-        eval {
-            if ($options{request}->{proxypac} =~ /^(http|https):\/\//) {
-                $pac_uri = URI->new($options{request}->{proxypac});
-                $pac = HTTP::ProxyPAC->new($pac_uri);
-            } else {
-                $pac = HTTP::ProxyPAC->new($options{request}->{proxypac});
-            }
-        };
-        if ($@) {
-            $self->{output}->add_option_msg(short_msg => 'issue to load proxypac: ' . $@);
-            $self->{output}->option_exit();
-        }
-        my $res = $pac->find_proxy($options{url});
-        if (defined($res->direct) && $res->direct != 1) {
-            my $proxy_uri = URI->new($res->proxy);
-            $proxy_uri->userinfo($pac_uri->userinfo) if (defined($pac_uri->userinfo));
-            $self->{ua}->proxy(['http', 'https'], $proxy_uri->as_string);
-        }
-    }
-    if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
-        $self->{ua}->proxy(['http', 'https'], $options{request}->{proxyurl});
-    }
-}
-
 sub request {
     my ($self, %options) = @_;
 
@@ -187,141 +186,70 @@ sub request {
     }
     $self->check_options(request => $request_options);
 
-    if (!defined($self->{ua})) {
-        $self->{ua} = LWP::UserAgent->new(keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout});
-        if (defined($request_options->{cookies_file})) {
-            $self->{ua}->cookie_jar(HTTP::Cookies->new(file => $request_options->{cookies_file},
-                                                       autosave => 1));
-        }
-    }
-    if (defined($request_options->{no_follow})) {
-        $self->{ua}->requests_redirectable(undef);
-    } else {
-        $self->{ua}->requests_redirectable([ 'GET', 'HEAD', 'POST' ]);
-    }
-    if (defined($request_options->{http_peer_addr})) {
-        push @LWP::Protocol::http::EXTRA_SOCK_OPTS, PeerAddr => $request_options->{http_peer_addr};
-    }
+    return $self->{'backend_' . $self->{http_backend}}->request(request => $request_options);
+}
 
-    my ($response, $content);
-    my ($req, $url);
-    if (defined($request_options->{full_url})) {
-        $url = $request_options->{full_url};
-    } elsif (defined($request_options->{port}) && $request_options->{port} =~ /^[0-9]+$/) {
-        $url = $request_options->{proto}. "://" . $request_options->{hostname} . ':' . $request_options->{port} . $request_options->{url_path};
-    } else {
-        $url = $request_options->{proto}. "://" . $request_options->{hostname} . $request_options->{url_path};
-    }
+sub get_first_header {
+    my ($self, %options) = @_;
 
-    my $uri = URI->new($url);
-    if (defined($self->{get_params})) {
-        $uri->query_form($self->{get_params});
-    }
-    $req = HTTP::Request->new($request_options->{method}, $uri);
-
-    my $content_type_forced;
-    foreach my $key (keys %{$request_options->{headers}}) {
-        if ($key !~ /content-type/i) {
-            $req->header($key => $request_options->{headers}->{$key});
-        } else {
-            $content_type_forced = $request_options->{headers}->{$key};
-        }
-    }
-
-    if ($request_options->{method} eq 'POST') {
-        if (defined($content_type_forced)) {
-            $req->content_type($content_type_forced);
-            $req->content($request_options->{query_form_post});
-        } else {
-            my $uri_post = URI->new();
-            if (defined($self->{post_params})) {
-                $uri_post->query_form($self->{post_params});
-            }
-            $req->content_type('application/x-www-form-urlencoded');
-            $req->content($uri_post->query);
-        }
-    }
-
-    if (defined($request_options->{credentials}) && defined($request_options->{ntlm})) {
-        $self->{ua}->credentials($request_options->{hostname} . ':' . $request_options->{port}, '', $request_options->{username}, $request_options->{password});
-    } elsif (defined($request_options->{credentials})) {
-        $req->authorization_basic($request_options->{username}, $request_options->{password});
-    }
-
-    $self->set_proxy(request => $request_options, url => $url);
-
-    if (defined($request_options->{cert_pkcs12}) && $request_options->{cert_file} ne '' && $request_options->{cert_pwd} ne '') {
-        eval "use Net::SSL"; die $@ if $@;
-        $ENV{HTTPS_PKCS12_FILE} = $request_options->{cert_file};
-        $ENV{HTTPS_PKCS12_PASSWORD} = $request_options->{cert_pwd};
-    }
-
-    my $ssl_context;
-    if (defined($request_options->{ssl}) && $request_options->{ssl} ne '') {
-        $ssl_context = { SSL_version => $request_options->{ssl} };
-    }
-    if (defined($request_options->{cert_file}) && !defined($request_options->{cert_pkcs12})) {
-        $ssl_context = {} if (!defined($ssl_context));
-        $ssl_context->{SSL_use_cert} = 1;
-        $ssl_context->{SSL_cert_file} = $request_options->{cert_file};
-        $ssl_context->{SSL_key_file} = $request_options->{key_file} if (defined($request_options->{key_file}));
-        $ssl_context->{SSL_ca_file} = $request_options->{cacert_file} if (defined($request_options->{cacert_file}));
-    }
-
-    if (defined($ssl_context)) {
-        my $context = new IO::Socket::SSL::SSL_Context(%{$ssl_context});
-        IO::Socket::SSL::set_default_context($context);
-    }
-
-    $response = $self->{ua}->request($req);
-
-    # Check response
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        if (defined($request_options->{critical_status}) && $request_options->{critical_status} ne '' &&
-            eval "$request_options->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($request_options->{warning_status}) && $request_options->{warning_status} ne '' &&
-                 eval "$request_options->{warning_status}") {
-            $status = 'warning';
-        } elsif (defined($request_options->{unknown_status}) && $request_options->{unknown_status} ne '' &&
-                 eval "$request_options->{unknown_status}") {
-            $status = 'unknown';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->add_option_msg(short_msg => 'filter status issue: ' . $message);
-        $self->{output}->option_exit();
-    }
-
-    if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(long_msg => $response->content, debug => 1);
-        $self->{output}->output_add(severity => $status,
-                                    short_msg => $response->status_line);
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
-
-    $self->{headers} = $response->headers();
-    $self->{response} = $response;
-    return $response->content;
+    return $self->{'backend_' . $self->{http_backend}}->get_first_header(%options);
 }
 
 sub get_header {
     my ($self, %options) = @_;
 
-    return $self->{headers};
+    return $self->{'backend_' . $self->{http_backend}}->get_header(%options);
 }
 
-sub get_response {
+sub get_code {
     my ($self, %options) = @_;
 
-    return $self->{response};
+    return $self->{'backend_' . $self->{http_backend}}->get_code();
+}
+
+sub get_message {
+    my ($self, %options) = @_;
+
+    return $self->{'backend_' . $self->{http_backend}}->get_message();
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+HTTP abstraction layer.
+
+=head1 SYNOPSIS
+
+HTTP abstraction layer for lwp and curl backends
+
+=head1 HTTP GLOBAL OPTIONS
+
+=over 8
+
+=item B<--http-peer-addr>
+
+Set the address you want to connect (Useful if hostname is only a vhost. no ip resolve)
+
+=item B<--proxyurl>
+
+Proxy URL
+
+=item B<--proxypac>
+
+Proxy pac file (can be an url or local file)
+
+=item B<--http-backend>
+
+Set the backend used (Default: 'lwp')
+For curl: --http-backend=curl
+
+=back
+
+=head1 DESCRIPTION
+
+B<http>.
+
+=cut

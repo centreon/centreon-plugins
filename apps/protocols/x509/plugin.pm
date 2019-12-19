@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,8 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-                        'validity'     => 'apps::protocols::x509::mode::validity',
-                        );
+        'certificate'   => 'apps::protocols::x509::mode::certificate',
+        'validity'      => 'apps::protocols::x509::mode::validity', #legacy mode
+    );
+
     return $self;
 }
 

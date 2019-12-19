@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,205 +20,120 @@
 
 package centreon::common::fortinet::fortigate::mode::ipsstats;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::values;
-use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-my $maps_counters = {
-    '000_intrusions-detected'   => { set => {
-                        key_values => [ { name => 'fgIpsIntrusionsDetected', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'intrusions_detected', value => 'fgIpsIntrusionsDetected_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '001_intrusions-blocked'   => { set => {
-                        key_values => [ { name => 'fgIpsIntrusionsBlocked', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Intrusions blocked : %s',
-                        perfdatas => [
-                            { label => 'intrusions_blocked', value => 'fgIpsIntrusionsBlocked_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '002_crit-sev-detections'   => { set => {
-                        key_values => [ { name => 'fgIpsCritSevDetections', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Critical severity intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'crit_sev_detections', value => 'fgIpsCritSevDetections_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '003_high-sev-detections'   => { set => {
-                        key_values => [ { name => 'fgIpsHighSevDetections', diff => 1 }, { name => 'display' } ],
-                        output_template => 'High severity intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'high_sev_detections', value => 'fgIpsHighSevDetections_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '004_med-sev-detections'   => { set => {
-                        key_values => [ { name => 'fgIpsMedSevDetections', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Medium severity intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'med_sev_detections', value => 'fgIpsMedSevDetections_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '005_low-sev-detections'   => { set => {
-                        key_values => [ { name => 'fgIpsLowSevDetections', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Low severity intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'low_sev_detections', value => 'fgIpsLowSevDetections_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '006_info-sev-detections'   => { set => {
-                        key_values => [ { name => 'fgIpsInfoSevDetections', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Informational severity intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'info_sev_detections', value => 'fgIpsInfoSevDetections_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '007_signature-detections'   => { set => {
-                        key_values => [ { name => 'fgIpsSignatureDetections', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Signature intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'signature_detection', value => 'fgIpsSignatureDetections_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-    '008_anomaly-detections'   => { set => {
-                        key_values => [ { name => 'fgIpsAnomalyDetections', diff => 1 }, { name => 'display' } ],
-                        output_template => 'Anomaly intrusions detected : %s',
-                        perfdatas => [
-                            { label => 'anomaly_detections', value => 'fgIpsAnomalyDetections_absolute', template => '%s',
-                              min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                        ],
-                    }
-               },
-};
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'domain', type => 1, cb_prefix_output => 'prefix_domain_output', message_multiple => 'All IPS domain statistics are ok' }
+    ];
+    
+    $self->{maps_counters}->{domain} = [
+        { label => 'intrusions-detected', nlabel => 'domain.intrusions.detected.count', set => {
+                key_values => [ { name => 'fgIpsIntrusionsDetected', diff => 1 }, { name => 'display' } ],
+                output_template => 'Intrusions detected : %s',
+                perfdatas => [
+                    { label => 'intrusions_detected', value => 'fgIpsIntrusionsDetected_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'intrusions-blocked', nlabel => 'domain.intrusions.blocked.count', set => {
+                key_values => [ { name => 'fgIpsIntrusionsBlocked', diff => 1 }, { name => 'display' } ],
+                output_template => 'Intrusions blocked : %s',
+                perfdatas => [
+                    { label => 'intrusions_blocked', value => 'fgIpsIntrusionsBlocked_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'crit-sev-detections', nlabel => 'domain.intrusions.detected.critical.severity.count', set => {
+                key_values => [ { name => 'fgIpsCritSevDetections', diff => 1 }, { name => 'display' } ],
+                output_template => 'Critical severity intrusions detected : %s',
+                perfdatas => [
+                    { label => 'crit_sev_detections', value => 'fgIpsCritSevDetections_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'high-sev-detections', nlabel => 'domain.intrusions.detected.high.severity.count', set => {
+                key_values => [ { name => 'fgIpsHighSevDetections', diff => 1 }, { name => 'display' } ],
+                output_template => 'High severity intrusions detected : %s',
+                perfdatas => [
+                    { label => 'high_sev_detections', value => 'fgIpsHighSevDetections_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'med-sev-detections', nlabel => 'domain.intrusions.detected.medium.severity.count', set => {
+                key_values => [ { name => 'fgIpsMedSevDetections', diff => 1 }, { name => 'display' } ],
+                output_template => 'Medium severity intrusions detected : %s',
+                perfdatas => [
+                    { label => 'med_sev_detections', value => 'fgIpsMedSevDetections_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'low-sev-detections', nlabel => 'domain.intrusions.detected.low.severity.count', set => {
+                key_values => [ { name => 'fgIpsLowSevDetections', diff => 1 }, { name => 'display' } ],
+                output_template => 'Low severity intrusions detected : %s',
+                perfdatas => [
+                    { label => 'low_sev_detections', value => 'fgIpsLowSevDetections_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'info-sev-detections', nlabel => 'domain.intrusions.detected.info.severity.count', set => {
+                key_values => [ { name => 'fgIpsInfoSevDetections', diff => 1 }, { name => 'display' } ],
+                output_template => 'Informational severity intrusions detected : %s',
+                perfdatas => [
+                    { label => 'info_sev_detections', value => 'fgIpsInfoSevDetections_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'signature-detections', nlabel => 'domain.intrusions.detected.signature.count', set => {
+                key_values => [ { name => 'fgIpsSignatureDetections', diff => 1 }, { name => 'display' } ],
+                output_template => 'Signature intrusions detected : %s',
+                perfdatas => [
+                    { label => 'signature_detection', value => 'fgIpsSignatureDetections_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'anomaly-detections', nlabel => 'domain.intrusions.detected.anomaly.count', set => {
+                key_values => [ { name => 'fgIpsAnomalyDetections', diff => 1 }, { name => 'display' } ],
+                output_template => 'Anomaly intrusions detected : %s',
+                perfdatas => [
+                    { label => 'anomaly_detections', value => 'fgIpsAnomalyDetections_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_domain_output {
+    my ($self, %options) = @_;
+    
+    return "Domain '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"     => { name => 'filter_name' },
-                                });                         
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $options{options}->add_options(arguments => { 
+        "filter-name:s"     => { name => 'filter_name' },
+    });
 
-    foreach (keys %{$maps_counters}) {
-        my ($id, $name) = split /_/;
-        if (!defined($maps_counters->{$_}->{threshold}) || $maps_counters->{$_}->{threshold} != 0) {
-            $options{options}->add_options(arguments => {
-                                                        'warning-' . $name . ':s'    => { name => 'warning-' . $name },
-                                                        'critical-' . $name . ':s'    => { name => 'critical-' . $name },
-                                           });
-        }
-        $maps_counters->{$_}->{obj} = centreon::plugins::values->new(statefile => $self->{statefile_value},
-                                                  output => $self->{output}, perfdata => $self->{perfdata},
-                                                  label => $name);
-        $maps_counters->{$_}->{obj}->set(%{$maps_counters->{$_}->{set}});
-    }
-    
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    foreach (keys %{$maps_counters}) {
-        $maps_counters->{$_}->{obj}->init(option_results => $self->{option_results});
-    }
-    
-    $self->{statefile_value}->check_options(%options);
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-    
-    $self->manage_selection();
-    
-    my $multiple = 1;
-    if (scalar(keys %{$self->{domain_selected}}) == 1) {
-        $multiple = 0;
-    }
-    
-    if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All IPS domain statistics are ok');
-    }
-    
-    $self->{new_datas} = {};
-    $self->{statefile_value}->read(statefile => "fortinet_fortigate_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('.*')));
-    $self->{new_datas}->{last_timestamp} = time();
-    
-    foreach my $id (sort keys %{$self->{domain_selected}}) {     
-        my ($short_msg, $short_msg_append, $long_msg, $long_msg_append) = ('', '', '', '');
-        my @exits;
-        foreach (sort keys %{$maps_counters}) {
-            $maps_counters->{$_}->{obj}->set(instance => $id);
-        
-            my ($value_check) = $maps_counters->{$_}->{obj}->execute(values => $self->{domain_selected}->{$id},
-                                                                     new_datas => $self->{new_datas});
-
-            if ($value_check != 0) {
-                $long_msg .= $long_msg_append . $maps_counters->{$_}->{obj}->output_error();
-                $long_msg_append = ', ';
-                next;
-            }
-            my $exit2 = $maps_counters->{$_}->{obj}->threshold_check();
-            push @exits, $exit2;
-
-            my $output = $maps_counters->{$_}->{obj}->output();
-            $long_msg .= $long_msg_append . $output;
-            $long_msg_append = ', ';
-            
-            if (!$self->{output}->is_status(litteral => 1, value => $exit2, compare => 'ok')) {
-                $short_msg .= $short_msg_append . $output;
-                $short_msg_append = ', ';
-            }
-            
-            $maps_counters->{$_}->{obj}->perfdata(extra_instance => $multiple);
-        }
-
-        $self->{output}->output_add(long_msg => "Domain '" . $self->{domain_selected}->{$id}->{display} . "' $long_msg");
-        my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
-        if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Domain '" . $self->{domain_selected}->{$id}->{display} . "' $short_msg"
-                                        );
-        }
-        
-        if ($multiple == 0) {
-            $self->{output}->output_add(short_msg => "Domain '" . $self->{domain_selected}->{$id}->{display} . "' $long_msg");
-        }
-    }
-     
-    $self->{statefile_value}->write(data => $self->{new_datas});
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 my $mapping = {
@@ -238,32 +153,39 @@ my $oid_fgVdEntName     = '.1.3.6.1.4.1.12356.101.3.2.1.1.2';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{domain_selected} = {};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => [
-                                                           { oid => $oid_fgVdEntName},
-                                                           { oid => $oid_fgIpsStatsEntry},
-                                                         ],
-                                                         nothing_quit => 1);
-    foreach my $oid (keys %{$self->{results}->{$oid_fgVdEntName}}) {
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_fgVdEntName},
+            { oid => $oid_fgIpsStatsEntry},
+        ],
+        nothing_quit => 1
+    );
+
+    $self->{domain} = {};
+    foreach my $oid (keys %{$snmp_result->{$oid_fgVdEntName}}) {
         next if ($oid !~ /^$oid_fgVdEntName\.(.*)/);
         my $instance = $1;
         
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $self->{results}->{$oid_fgVdEntName}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $self->{results}->{$oid_fgVdEntName}->{$oid}  . "': no matching filter.");
+            $snmp_result->{$oid_fgVdEntName}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $snmp_result->{$oid_fgVdEntName}->{$oid}  . "': no matching filter.");
             next;
         }
         
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fgIpsStatsEntry}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_fgIpsStatsEntry}, instance => $instance);
         
-        $self->{domain_selected}->{$instance} = $result;
-        $self->{domain_selected}->{$instance}->{display} = $self->{results}->{$oid_fgVdEntName}->{$oid};
+        $self->{domain}->{$instance} = $result;
+        $self->{domain}->{$instance}->{display} = $snmp_result->{$oid_fgVdEntName}->{$oid};
     }
     
-    if (scalar(keys %{$self->{domain_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No entry found.");
+    if (scalar(keys %{$self->{domain}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No domain found.");
         $self->{output}->option_exit();
     }
+
+    $self->{cache_name} = "fortinet_fortigate_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
 
 1;

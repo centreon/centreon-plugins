@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -59,10 +59,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
 
     return $self;
 }
@@ -165,11 +163,14 @@ sub check {
                 $self->{output}->output_add(severity => $exit2,
                                             short_msg => sprintf("fan '%s' speed is %s rpm", $result->{axFanName}, $result->{axFanSpeed}));
             }
-            $self->{output}->perfdata_add(label => $result->{axFanName}, unit => 'rpm', 
-                                          value => $result->{axFanSpeed},
-                                          warning => $warn,
-                                          critical => $crit, min => 0
-                                          );
+            $self->{output}->perfdata_add(
+                label => 'fan', unit => 'rpm',
+                nlabel => 'hardware.fan.speed.rpm',
+                instances => $result->{axFanName},
+                value => $result->{axFanSpeed},
+                warning => $warn,
+                critical => $crit, min => 0
+            );
         }
     }
 }
@@ -250,11 +251,14 @@ sub check {
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("physical temperature is %s C", $result->{axSysHwPhySystemTemp}));
     }
-    $self->{output}->perfdata_add(label => 'temperature_physical', unit => 'C', 
-                                  value => $result->{axSysHwPhySystemTemp},
-                                  warning => $warn,
-                                  critical => $crit
-                                  );
+    $self->{output}->perfdata_add(
+        label => 'temperature', unit => 'C',
+        nlabel => 'hardware.temperature.celsius',
+        instances => 'physical',
+        value => $result->{axSysHwPhySystemTemp},
+        warning => $warn,
+        critical => $crit
+    );
 }
 
 1;

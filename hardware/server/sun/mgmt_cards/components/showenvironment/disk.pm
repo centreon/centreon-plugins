@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -28,7 +28,7 @@ sub check {
 
     $self->{output}->output_add(long_msg => "Checking disks");
     $self->{components}->{disk} = {name => 'disks', total => 0, skip => 0};
-    return if ($self->check_exclude(section => 'disk'));
+    return if ($self->check_filter(section => 'disk'));
     
     if ($self->{stdout} =~ /^System Disks.*?\n.*?\n.*?\n.*?\n(.*?)\n\n/ims && defined($1)) {
         #Disk   Status            Service  OK2RM
@@ -41,7 +41,7 @@ sub check {
             my $disk_status = defined($2) ? $2 : 'unknown';
             my $disk_name = defined($1) ? $1 : 'unknown';
             
-            next if ($self->check_exclude(section => 'disk', instance => $disk_name));
+            next if ($self->check_filter(section => 'disk', instance => $disk_name));
             
             $self->{components}->{disk}->{total}++;
             $self->{output}->output_add(long_msg => "Disk Status '" . $disk_name . "' is " . $disk_status);

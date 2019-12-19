@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -51,7 +51,6 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
     $options{options}->add_options(arguments =>
                                 { 
                                   "hostname:s"        => { name => 'hostname' },
@@ -64,6 +63,7 @@ sub new {
                                   "command:s"         => { name => 'command', default => 'tpconfig' },
                                   "command-path:s"    => { name => 'command_path' },
                                   "command-options:s" => { name => 'command_options', default => '-l' },
+                                  "exec-only"         => { name => 'exec_only' },
                                   "filter-name:s"     => { name => 'filter_name' },
                                 });
     
@@ -78,7 +78,15 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+                                                    command_options => $self->{option_results}->{command_options});
+    
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
+    }
+
     $self->{drive} = { total => 0, num_cleaning => 0 };
     #Drive Name              Type      Mount Time  Frequency   Last Cleaned         Comment
     #**********              ****      **********  *********   ****************     *******
@@ -159,6 +167,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-l').
+
+=item B<--exec-only>
+
+Print command output
 
 =item B<--filter-name>
 

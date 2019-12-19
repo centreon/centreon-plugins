@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -79,16 +79,16 @@ sub check_psu_envmon {
 
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ciscoEnvMonSupplyStatusEntry}, instance => $instance);
 
-        next if ($self->check_filter(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance, name => $result->{ciscoEnvMonSupplyStatusDescr}));
         next if ($result->{ciscoEnvMonSupplyState} =~ /not present/i && 
-                 $self->absent_problem(section => 'psu', instance => $instance));
+                 $self->absent_problem(section => 'psu', instance => $instance, name => $result->{ciscoEnvMonSupplyStatusDescr}));
         $self->{components}->{psu}->{total}++;
 
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is %s [instance: %s] [source: %s]",
                                     $result->{ciscoEnvMonSupplyStatusDescr}, $result->{ciscoEnvMonSupplyState},
                                     $instance, $result->{ciscoEnvMonSupplySource}
                                     ));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{ciscoEnvMonSupplyState});
+        my $exit = $self->get_severity(section => 'psu', instance => $instance, value => $result->{ciscoEnvMonSupplyState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
                                         short_msg => sprintf("Power supply '%s' status is %s",
@@ -110,12 +110,12 @@ sub check_psu_entity {
         my $psu_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcFRUPowerOperStatus}, instance => $instance);
         
-        next if ($self->check_filter(section => 'psu', instance => $instance));
+        next if ($self->check_filter(section => 'psu', instance => $instance, name => $psu_descr));
         
         $self->{components}->{psu}->{total}++;
         $self->{output}->output_add(long_msg => sprintf("Power supply '%s' status is %s [instance: %s]",
                                     $psu_descr, $result->{cefcFRUPowerOperStatus}, $instance));
-        my $exit = $self->get_severity(section => 'psu', value => $result->{cefcFRUPowerOperStatus});
+        my $exit = $self->get_severity(section => 'psu', instance => $instance, value => $result->{cefcFRUPowerOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Power supply '%s/%s' status is %s", $psu_descr, $instance, $result->{cefcFRUPowerOperStatus}));

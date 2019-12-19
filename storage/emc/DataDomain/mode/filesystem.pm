@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -85,14 +85,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name"                    => { name => 'use_name' },
-                                  "filesystem:s"            => { name => 'filesystem' },
-                                  "regexp"                  => { name => 'use_regexp' },
-                                  "regexp-isensitive"       => { name => 'use_regexpi' },                                  
-                                });     
+    $options{options}->add_options(arguments => {
+        'name'                    => { name => 'use_name' },
+        'filesystem:s'            => { name => 'filesystem' },
+        'regexp'                  => { name => 'use_regexp' },
+        'regexp-isensitive'       => { name => 'use_regexpi' },                                  
+    });
     
     return $self;
 }
@@ -113,11 +111,13 @@ sub add_result {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_sysDescr },
-                                                            { oid => $oid_fileSystemSpaceEntry },
-                                                         ], 
-                                                         nothing_quit => 1);
+    $self->{results} = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_sysDescr },
+            { oid => $oid_fileSystemSpaceEntry },
+        ], 
+        nothing_quit => 1
+    );
     if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $self->{results}->{$oid_sysDescr}->{$oid_sysDescr . '.0'}))) {
         $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => 'Cannot get DataDomain OS version.');
@@ -165,10 +165,10 @@ sub manage_selection {
         if (defined($self->{option_results}->{device})) {
             $self->{output}->add_option_msg(short_msg => "No filesystem found '" . $self->{option_results}->{filesystem} . "'.");
         } else {
-            $self->{output}->add_option_msg(short_msg => "No filesystem found.");
+            $self->{output}->add_option_msg(short_msg => 'No filesystem found.');
         }
         $self->{output}->option_exit();
-    }    
+    }
 }
 
 sub disco_format {
@@ -183,8 +183,10 @@ sub disco_show {
     $self->{snmp} = $options{snmp};
     $self->manage_selection(disco => 1);
     foreach (sort keys %{$self->{fs}}) {
-        $self->{output}->add_disco_entry(name => $self->{fs}->{$_}->{display},
-                                         deviceid => $_);
+        $self->{output}->add_disco_entry(
+            name => $self->{fs}->{$_}->{display},
+            deviceid => $_
+        );
     }
 }
 

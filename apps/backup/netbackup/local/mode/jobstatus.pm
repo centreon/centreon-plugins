@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,8 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
-
-my $instance_mode;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_threshold {
     my ($self, %options) = @_; 
@@ -39,14 +38,14 @@ sub custom_status_threshold {
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
         # To exclude some OK
-        if (defined($instance_mode->{option_results}->{ok_status}) && $instance_mode->{option_results}->{ok_status} ne '' &&
-            eval "$instance_mode->{option_results}->{ok_status}") {
+        if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{ok_status}") {
             $status = 'ok';
-        } elsif (defined($instance_mode->{option_results}->{critical_status}) && $instance_mode->{option_results}->{critical_status} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_status}) && $instance_mode->{option_results}->{warning_status} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_status}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_status}") {
             $status = 'warning';
         }
     };
@@ -59,7 +58,7 @@ sub custom_status_threshold {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status};
+    my $msg = 'Status : ' . $self->{result_values}->{status};
 
     return $msg;
 }
@@ -74,33 +73,9 @@ sub custom_status_calc {
     return 0;
 }
 
-sub custom_long_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-    
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
-        if (defined($instance_mode->{option_results}->{critical_long}) && $instance_mode->{option_results}->{critical_long} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_long}") {
-            $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_long}) && $instance_mode->{option_results}->{warning_long} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_long}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
-
 sub custom_long_output {
     my ($self, %options) = @_;
-    my $msg = 'started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
+    my $msg = 'Started Since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 
     return $msg;
 }
@@ -119,8 +94,6 @@ sub custom_long_calc {
     return 0;
 }
 
-my $last_status_frozen;
-
 sub custom_frozen_threshold {
     my ($self, %options) = @_; 
     my $status = 'ok';
@@ -130,11 +103,11 @@ sub custom_frozen_threshold {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
         
-        if (defined($instance_mode->{option_results}->{critical_frozen}) && $instance_mode->{option_results}->{critical_frozen} ne '' &&
-            eval "$instance_mode->{option_results}->{critical_frozen}") {
+        if (defined($self->{instance_mode}->{option_results}->{critical_frozen}) && $self->{instance_mode}->{option_results}->{critical_frozen} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{critical_frozen}") {
             $status = 'critical';
-        } elsif (defined($instance_mode->{option_results}->{warning_frozen}) && $instance_mode->{option_results}->{warning_frozen} ne '' &&
-                 eval "$instance_mode->{option_results}->{warning_frozen}") {
+        } elsif (defined($self->{instance_mode}->{option_results}->{warning_frozen}) && $self->{instance_mode}->{option_results}->{warning_frozen} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{warning_frozen}") {
             $status = 'warning';
         }
     };
@@ -142,16 +115,16 @@ sub custom_frozen_threshold {
        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
     }
 
-    $last_status_frozen = $status;
+    $self->{instance_mode}->{last_status_frozen} = $status;
     return $status;
 }
 
 sub custom_frozen_output {
     my ($self, %options) = @_;
-    my $msg = 'frozen : no';
+    my $msg = "Frozen: 'no'";
 
-    if (!$self->{output}->is_status(value => $last_status_frozen, compare => 'ok', litteral => 1)) {
-        $msg = 'frozen: yes';
+    if (!$self->{output}->is_status(value => $self->{instance_mode}->{last_status_frozen}, compare => 'ok', litteral => 1)) {
+        $msg = "Frozen: 'yes'";
     }    
     return $msg;
 }
@@ -177,7 +150,8 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'policy', type => 2, cb_prefix_output => 'prefix_policy_output', cb_long_output => 'policy_long_output', message_multiple => 'All policies are ok',
+        { name => 'policy', type => 2, cb_prefix_output => 'prefix_policy_output', cb_long_output => 'policy_long_output',
+          message_multiple => 'All policies are ok',
           group => [ { name => 'job', cb_prefix_output => 'prefix_job_output', skipped_code => { -11 => 1 } } ] 
         }
     ];
@@ -203,11 +177,12 @@ sub set_counters {
             }
         },
         { label => 'long', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' }, { name => 'state' } ],
+                key_values => [ { name => 'status' }, { name => 'display' }, { name => 'elapsed' }, { name => 'type' },
+                    { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_long_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
         { label => 'frozen', threshold => 0, set => {
@@ -228,31 +203,30 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'bpdbjobs' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-report -most_columns' },
-                                  "filter-policy-name:s"    => { name => 'filter_policy_name' },
-                                  "filter-type:s"           => { name => 'filter_type' },
-                                  "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
-                                  "filter-start-time:s"     => { name => 'filter_start_time' },
-                                  "ok-status:s"             => { name => 'ok_status', default => '%{status} == 0' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '%{status} == 1' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} > 1' },
-                                  "warning-long:s"          => { name => 'warning_long' },
-                                  "critical-long:s"         => { name => 'critical_long' },
-                                  "warning-frozen:s"        => { name => 'warning_frozen' },
-                                  "critical-frozen:s"       => { name => 'critical_frozen', default => '%{state} =~ /active|queue/ && %{kb} == 0' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'hostname:s'              => { name => 'hostname' },
+        'remote'                  => { name => 'remote' },
+        'ssh-option:s@'           => { name => 'ssh_option' },
+        'ssh-path:s'              => { name => 'ssh_path' },
+        'ssh-command:s'           => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'               => { name => 'timeout', default => 30 },
+        'sudo'                    => { name => 'sudo' },
+        'command:s'               => { name => 'command', default => 'bpdbjobs' },
+        'command-path:s'          => { name => 'command_path' },
+        'command-options:s'       => { name => 'command_options', default => '-report -most_columns' },
+        'exec-only'               => { name => 'exec_only' },
+        'filter-policy-name:s'    => { name => 'filter_policy_name' },
+        'filter-type:s'           => { name => 'filter_type' },
+        'filter-end-time:s'       => { name => 'filter_end_time', default => 86400 },
+        'filter-start-time:s'     => { name => 'filter_start_time' },
+        'ok-status:s'             => { name => 'ok_status', default => '%{status} == 0' },
+        'warning-status:s'        => { name => 'warning_status', default => '%{status} == 1' },
+        'critical-status:s'       => { name => 'critical_status', default => '%{status} > 1' },
+        'warning-long:s'          => { name => 'warning_long' },
+        'critical-long:s'         => { name => 'critical_long' },
+        'warning-frozen:s'        => { name => 'warning_frozen' },
+        'critical-frozen:s'       => { name => 'critical_frozen', default => '%{state} =~ /active|queue/ && %{kb} == 0' },
+    });
     
     return $self;
 }
@@ -261,36 +235,28 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $instance_mode = $self;
-    $self->change_macros();
+    $self->change_macros(macros => [
+        'ok_status', 'warning_status', 'critical_status', 'warning_long', 
+        'critical_long', 'warning_frozen', 'critical_frozen']
+    );
 }
 
 sub policy_long_output {
     my ($self, %options) = @_;
     
-    return "checking policy '" . $options{instance_value}->{display} . "'";
+    return "Checking policy '" . $options{instance_value}->{display} . "'";
 }
 
 sub prefix_policy_output {
     my ($self, %options) = @_;
     
-    return "policy '" . $options{instance_value}->{display} . "' ";
+    return "Policy '" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_job_output {
     my ($self, %options) = @_;
     
-    return "job '" . $options{instance_value}->{display} . "' ";
-}
-
-sub change_macros {
-    my ($self, %options) = @_;
-    
-    foreach (('ok_status', 'warning_status', 'critical_status', 'warning_long', 'critical_long', 'warning_frozen', 'critical_frozen')) {
-        if (defined($self->{option_results}->{$_})) {
-            $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
-        }
-    }
+    return "Job '" . $options{instance_value}->{display} . "' [Type: " . $options{instance_value}->{type} . "] [State: " . $options{instance_value}->{state} . "] " ;
 }
 
 my %job_type = (
@@ -326,8 +292,15 @@ sub manage_selection {
                                                     sudo => $self->{option_results}->{sudo},
                                                     command => $self->{option_results}->{command},
                                                     command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});    
+                                                    command_options => $self->{option_results}->{command_options});
     
+    if (defined($self->{option_results}->{exec_only})) {
+        $self->{output}->output_add(severity => 'OK',
+                                    short_msg => $stdout);
+        $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+        $self->{output}->exit();
+    }
+
     $self->{global} = { total => 0 };
     $self->{policy} = {};
     my $current_time = time();
@@ -337,7 +310,7 @@ sub manage_selection {
             ($values[0], $values[1], $values[2], $values[3], $values[4], $values[5], $values[8], $values[10], $values[14], $values[33]);
         
         $job_pname = defined($job_pname) && $job_pname ne '' ? $job_pname : 'unknown';
-        $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : undef;
+        $job_status = defined($job_status) && $job_status =~ /[0-9]/ ? $job_status : -1;
         if (defined($self->{option_results}->{filter_policy_name}) && $self->{option_results}->{filter_policy_name} ne '' &&
             $job_pname !~ /$self->{option_results}->{filter_policy_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job_pname . "/" . $job_id . "': no matching filter.", debug => 1);
@@ -362,9 +335,12 @@ sub manage_selection {
         $self->{policy}->{$job_pname} = { job => {}, display => $job_pname } if (!defined($self->{policy}->{$job_pname}));
         my $elapsed_time = $current_time - $job_start_time;
         $self->{policy}->{$job_pname}->{job}->{$job_id} = {
-            display => $job_id, elapsed => $elapsed_time, 
-            status => $job_status, state => $job_state{$job_state}, type => $job_type{$job_type},
-            kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : undef,
+            display => $job_id,
+            elapsed => $elapsed_time, 
+            status => $job_status,
+            state => $job_state{$job_state},
+            type => $job_type{$job_type},
+            kb => defined($job_kb) && $job_kb =~ /[0-9]+/ ? $job_kb : '0',
             parentid => defined($job_parentid) ? $job_parentid : '',
             jobid => $job_id,
             schedule => defined($job_schedule) ? $job_schedule : '',
@@ -423,6 +399,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-report -most_columns').
+
+=item B<--exec-only>
+
+Print command output
 
 =item B<--filter-policy-name>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -31,12 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-                         'audioengine-usage'    => 'apps::inin::mediaserver::snmp::mode::audioengineusage',
-                         'cmdsrv-usage'         => 'apps::inin::mediaserver::snmp::mode::cmdsrvusage',
-                         'disk-usage'           => 'apps::inin::mediaserver::snmp::mode::diskusage',
-                         'component'            => 'apps::inin::mediaserver::snmp::mode::component',
-                         'memory-usage'         => 'apps::inin::mediaserver::snmp::mode::memoryusage',
-                         );
+        'audioengine-usage'    => 'apps::inin::mediaserver::snmp::mode::audioengineusage',
+        'cmdsrv-usage'         => 'apps::inin::mediaserver::snmp::mode::cmdsrvusage',
+        'component'            => 'apps::inin::mediaserver::snmp::mode::component',
+        'disk-usage'           => 'apps::inin::mediaserver::snmp::mode::diskusage',
+        'memory-usage'         => 'apps::inin::mediaserver::snmp::mode::memoryusage',
+    );
 
     return $self;
 }

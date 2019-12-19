@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -46,13 +46,13 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    { "datasource:s@"      => { name => 'data_source' },
-                      "username:s@"        => { name => 'username' },
-                      "password:s@"        => { name => 'password' },
-                      "connect-options:s@" => { name => 'connect_options' },
-                      "sql-errors-exit:s"  => { name => 'sql_errors_exit', default => 'unknown' },
-                      "timeout:i"          => { name => 'timeout' },
+        $options{options}->add_options(arguments => {
+            'datasource:s@'      => { name => 'data_source' },
+            'username:s@'        => { name => 'username' },
+            'password:s@'        => { name => 'password' },
+            'connect-options:s@' => { name => 'connect_options' },
+            'sql-errors-exit:s'  => { name => 'sql_errors_exit', default => 'unknown' },
+            'timeout:s'          => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
@@ -92,9 +92,10 @@ sub class_handle_ALRM {
 
 sub handle_ALRM {
     my $self = shift;
-    
+
+    $self->disconnect();
     $self->{output}->output_add(severity => $self->{sql_errors_exit},
-                                short_msg => "Timeout");
+                                short_msg => 'Timeout');
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -145,7 +146,7 @@ sub check_options {
     }
     
     if (!defined($self->{data_source}) || $self->{data_source} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify data_source arguments.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify data_source arguments.');
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
     if (defined($self->{connect_options}) && $self->{connect_options} ne '') {
@@ -190,11 +191,29 @@ sub is_version_minimum {
     
     return 1;
 }
+
+sub set_version {
+    my ($self) = @_;
+    
+    $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
+}
+
+sub disconnect {
+    my ($self) = @_;
+    
+    if (defined($self->{instance})) {
+        $self->{statement_handle} = undef;
+        $self->{instance}->disconnect();
+        $self->{instance} = undef;
+    }
+}
     
 sub connect {
     my ($self, %options) = @_;
     my $dontquit = (defined($options{dontquit}) && $options{dontquit} == 1) ? 1 : 0;
 
+    return if (defined($self->{instance}));
+    
     # Set ENV
     if (defined($self->{env})) {
         foreach (keys %{$self->{env}}) {
@@ -207,12 +226,12 @@ sub connect {
         "DBI:". $self->{data_source},
         $self->{username},
         $self->{password},
-        { "RaiseError" => 0, "PrintError" => 0, "AutoCommit" => 1, %{$self->{connect_options_hash}} }
+        { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
     );
     alarm(0) if (defined($self->{timeout}));
 
     if (!defined($self->{instance})) {
-        my $err_msg = sprintf("Cannot connect: %s", defined($DBI::errstr) ? $DBI::errstr : "(no error string)");
+        my $err_msg = sprintf('Cannot connect: %s', defined($DBI::errstr) ? $DBI::errstr : '(no error string)');
         if ($dontquit == 0) {
             $self->{output}->add_option_msg(short_msg => $err_msg);
             $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
@@ -220,7 +239,7 @@ sub connect {
         return (-1, $err_msg);
     }
     
-    $self->{version} = $self->{instance}->get_info(18); # SQL_DBMS_VER
+    $self->set_version();
     return 0;
 }
 
@@ -256,18 +275,25 @@ sub fetchrow_hashref {
 
 sub query {
     my ($self, %options) = @_;
+    my $continue_error = defined($options{continue_error}) && $options{continue_error} == 1 ? 1 : 0;
     
     $self->{statement_handle} = $self->{instance}->prepare($options{query});
     if (!defined($self->{statement_handle})) {
-        $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{instance}->errstr);
+        return 1 if ($continue_error == 1);
+        $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $self->{instance}->errstr);
+        $self->disconnect();
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
     }
 
     my $rv = $self->{statement_handle}->execute;
     if (!$rv) {
-        $self->{output}->add_option_msg(short_msg => "Cannot execute query: " . $self->{statement_handle}->errstr);
+        return 1 if ($continue_error == 1);
+        $self->{output}->add_option_msg(short_msg => 'Cannot execute query: ' . $self->{statement_handle}->errstr);
+        $self->disconnect();
         $self->{output}->option_exit(exit_litteral => $self->{sql_errors_exit});
-    }    
+    }
+    
+    return 0;
 }
 
 1;

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -30,11 +30,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "exclude:s"               => { name => 'exclude', },
-                                });
+    $options{options}->add_options(arguments => { 
+        "exclude:s" => { name => 'exclude', },
+    });
 
     return $self;
 }
@@ -50,8 +48,9 @@ sub manage_selection {
     $self->{sql}->connect();
 
     $self->{sql}->query(query => q{
-SELECT datname FROM pg_database
-});
+            SELECT datname FROM pg_database
+        }
+    );
     $self->{list_db} = [];
     while ((my $row = $self->{sql}->fetchrow_hashref())) {
         if (defined($self->{option_results}->{exclude}) && $row->{datname} !~ /$self->{option_results}->{exclude}/) {

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -26,7 +26,8 @@ use network::alcatel::omniswitch::snmp::mode::components::resources qw(%oids);
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(backplane|chassis|container|fan|module|other|port|psu|sensor|stack|unknown)$';
+    $self->{regexp_threshold_overload_check_section_option} = 
+        '^(?:backplane|chassis|container|fan|module|other|port|psu|sensor|stack|unknown)\.(?:oper|admin|status)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -61,16 +62,28 @@ sub snmp_execute {
     
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [ 
-        { oid => $oids{entPhysicalClass} },
-        { oid => $oids{alaChasEntPhysFanStatus} },
+        { oid => $oids{common}->{entPhysicalClass} },
+        { oid => $oids{aos6}->{alaChasEntPhysFanStatus} },
+        { oid => $oids{aos7}->{alaChasEntPhysFanStatus} },
     ]);
     $self->{results}->{entity} = $self->{snmp}->get_multiple_table(oids => [ 
-        { oid => $oids{entPhysicalDescr} },
-        { oid => $oids{entPhysicalName} },
-        { oid => $oids{chasEntPhysAdminStatus} },
-        { oid => $oids{chasEntPhysOperStatus} },
-        { oid => $oids{chasEntPhysPower} },
+        { oid => $oids{common}->{entPhysicalDescr} },
+        { oid => $oids{common}->{entPhysicalName} },
+        { oid => $oids{aos6}->{chasEntPhysAdminStatus} },
+        { oid => $oids{aos6}->{chasEntPhysOperStatus} },
+        { oid => $oids{aos6}->{chasEntPhysPower} },
+        { oid => $oids{aos7}->{chasEntPhysAdminStatus} },
+        { oid => $oids{aos7}->{chasEntPhysOperStatus} },
+        { oid => $oids{aos7}->{chasEntPhysPower} },
     ], return_type => 1);
+
+    $self->{type} = 'aos6';
+    foreach (keys %{$self->{results}->{entity}}) {
+        if (/^$oids{aos7}->{entreprise_alcatel_base}\./) {
+            $self->{type} = 'aos7';
+            last;
+        }
+    }
 }
 
 sub new {
@@ -78,10 +91,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+    });
     
     return $self;
 }

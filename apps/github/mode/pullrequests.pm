@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -32,23 +32,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-        {
-            "hostname:s"        => { name => 'hostname', default => 'api.github.com' },
-            "port:s"            => { name => 'port', default => '443' },
-            "proto:s"           => { name => 'proto', default => 'https' },
-            "credentials"       => { name => 'credentials' },
-            "username:s"        => { name => 'username' },
-            "password:s"        => { name => 'password' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            "owner:s"           => { name => 'owner' },
-            "repository:s"      => { name => 'repository' },
-            "timeout:s"         => { name => 'timeout' },
-        });
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname', default => 'api.github.com' },
+        "port:s"            => { name => 'port', default => '443' },
+        "proto:s"           => { name => 'proto', default => 'https' },
+        "timeout:s"         => { name => 'timeout' },
+        "warning:s"         => { name => 'warning' },
+        "critical:s"        => { name => 'critical' },
+        "owner:s"           => { name => 'owner' },
+        "repository:s"      => { name => 'repository' },
+    });
 
-    $self->{http} = centreon::plugins::http->new(output => $self->{output});
+    $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
@@ -133,17 +128,9 @@ Port used by GitHub's API (Default: '443')
 
 Specify https if needed (Default: 'https')
 
-=item B<--credentials>
+=item B<--timeout>
 
-Specify this option if you access webpage over basic authentification
-
-=item B<--username>
-
-Specify username
-
-=item B<--password>
-
-Specify password
+Threshold for HTTP timeout (Default: 5)
 
 =item B<--warning>
 
@@ -160,10 +147,6 @@ Specify GitHub's owner
 =item B<--repository>
 
 Specify GitHub's repository
-
-=item B<--timeout>
-
-Threshold for HTTP timeout (Default: 5)
 
 =back
 

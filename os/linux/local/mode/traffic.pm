@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,74 +20,180 @@
 
 package os::linux::local::mode::traffic;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
-use centreon::plugins::statefile;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::misc;
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+ 
+    my $msg = sprintf('status : %s', $self->{result_values}->{status});
+    return $msg;
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+    
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
+sub custom_traffic_perfdata {
+    my ($self, %options) = @_;
+
+    my ($warning, $critical);
+    if ($self->{instance_mode}->{option_results}->{units} eq '%' && defined($self->{result_values}->{speed})) {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{speed}, cast_int => 1);
+    } elsif ($self->{instance_mode}->{option_results}->{units} eq 'b/s') {
+        $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
+        $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
+    }
+
+    $self->{output}->perfdata_add(
+        label => 'traffic_' . $self->{result_values}->{label}, unit => 'b/s',
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => sprintf("%.2f", $self->{result_values}->{traffic_per_seconds}),
+        warning => $warning,
+        critical => $critical,
+        min => 0, max => $self->{result_values}->{speed}
+    );
+}
+
+sub custom_traffic_threshold {
+    my ($self, %options) = @_;
+
+    my $exit = 'ok';
+    if ($self->{instance_mode}->{option_results}->{units} eq '%' && defined($self->{result_values}->{speed})) {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    } elsif ($self->{instance_mode}->{option_results}->{units} eq 'b/s') {
+        $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    }
+    return $exit;
+}
+
+sub custom_traffic_output {
+    my ($self, %options) = @_;
+
+    my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);
+    my $msg = sprintf("Traffic %s : %s/s (%s)",
+                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-');
+    return $msg;
+}
+
+sub custom_traffic_calc {
+    my ($self, %options) = @_;
+
+    my $diff_traffic = ($options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}} - $options{old_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+
+    $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
+    if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) &&
+        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} ne '' && 
+        $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
+        $self->{result_values}->{traffic_prct} = $self->{result_values}->{traffic_per_seconds} * 100 / $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
+        $self->{result_values}->{speed} = $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}};
+    }
+
+    $self->{result_values}->{label} = $options{extra_options}->{label_ref};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
+    ];
+    
+    $self->{maps_counters}->{interface} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'in', set => {
+                key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
+                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+        { label => 'out', set => {
+                key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
+                per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
+                closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
+                closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'ifconfig' },
-                                  "command-path:s"    => { name => 'command_path', default => '/sbin' },
-                                  "command-options:s" => { name => 'command_options', default => '-a 2>&1' },
-                                  "filter-state:s"    => { name => 'filter_state', },
-                                  "warning-in:s"      => { name => 'warning_in' },
-                                  "critical-in:s"     => { name => 'critical_in' },
-                                  "warning-out:s"     => { name => 'warning_out' },
-                                  "critical-out:s"    => { name => 'critical_out' },
-                                  "units:s"           => { name => 'units', default => 'B' },
-                                  "name:s"            => { name => 'name' },
-                                  "regexp"              => { name => 'use_regexp' },
-                                  "regexp-isensitive"   => { name => 'use_regexpi' },
-                                  "speed:s"             => { name => 'speed' },
-                                  "no-loopback"         => { name => 'no_loopback', },
-                                  "skip"                => { name => 'skip' },
-                                });
-    $self->{result} = {};
-    $self->{hostname} = undef;
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
+    $options{options}->add_options(arguments => {
+        "hostname:s"        => { name => 'hostname' },
+        "remote"            => { name => 'remote' },
+        "ssh-option:s@"     => { name => 'ssh_option' },
+        "ssh-path:s"        => { name => 'ssh_path' },
+        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
+        "timeout:s"         => { name => 'timeout', default => 30 },
+        "sudo"              => { name => 'sudo' },
+        "command:s"         => { name => 'command', default => 'ip' },
+        "command-path:s"    => { name => 'command_path', default => '/sbin' },
+        "command-options:s" => { name => 'command_options', default => '-s addr 2>&1' },
+        "filter-state:s"    => { name => 'filter_state', },
+        "units:s"           => { name => 'units', default => 'b/s' },
+        "name:s"            => { name => 'name' },
+        "regexp"            => { name => 'use_regexp' },
+        "regexp-isensitive" => { name => 'use_regexpi' },
+        "speed:s"           => { name => 'speed' },
+        "no-loopback"       => { name => 'no_loopback', },
+        "unknown-status:s"  => { name => 'unknown_status', default => '' },
+        "warning-status:s"  => { name => 'warning_status', default => '' },
+        "critical-status:s" => { name => 'critical_status', default => '%{status} ne "RU"' },
+    });
+    
     return $self;
+}
+
+sub prefix_interface_output {
+    my ($self, %options) = @_;
+
+    return "Interface '" . $options{instance_value}->{display} . "' ";
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning-in', value => $self->{option_results}->{warning_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'in' threshold '" . $self->{option_results}->{warning_in} . "'.");
-        $self->{output}->option_exit();
+    $self->{hostname} = $self->{option_results}->{hostname};
+    if (!defined($self->{hostname})) {
+        $self->{hostname} = 'me';
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-in', value => $self->{option_results}->{critical_in})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'in' threshold '" . $self->{option_results}->{critical_in} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-out', value => $self->{option_results}->{warning_out})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'out' threshold '" . $self->{option_results}->{warning_out} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-out', value => $self->{option_results}->{critical_out})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'out' threshold '" . $self->{option_results}->{critical_out} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' && $self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
-        $self->{output}->add_option_msg(short_msg => "Speed must be a positive number '" . $self->{option_results}->{speed} . "' (can be a float also).");
-        $self->{output}->option_exit();
+    if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
+        if ($self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
+            $self->{output}->add_option_msg(short_msg => "Speed must be a positive number '" . $self->{option_results}->{speed} . "' (can be a float also).");
+            $self->{output}->option_exit();
+        } else {
+            $self->{option_results}->{speed} *= 1000000;
+        }
     }
     if (defined($self->{option_results}->{units}) && $self->{option_results}->{units} eq '%' && 
         (!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '')) {
@@ -95,27 +201,35 @@ sub check_options {
         $self->{output}->option_exit();
     }
     
-    $self->{statefile_value}->check_options(%options);
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub manage_selection {
+sub do_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    while ($stdout =~ /^(\S+)(.*?)(\n\n|\n$)/msg) {
+    $self->{interface} = {};
+    my $stdout = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
+    # ifconfig
+    my $interface_pattern = '^(\S+)(.*?)(\n\n|\n$)';
+    if ($stdout =~ /^\d+:\s+\S+:\s+</ms) {
+        # ip addr
+        $interface_pattern = '^\d+:\s+(\S+)(.*?)(?=\n\d|\Z$)';
+    }
+    
+    while ($stdout =~ /$interface_pattern/msg) {
         my ($interface_name, $values) = ($1, $2);
+        
         $interface_name =~ s/:$//;
         my $states = '';
-        $states .= 'R' if ($values =~ /RUNNING/ms);
+        $states .= 'R' if ($values =~ /RUNNING|LOWER_UP/ms);
         $states .= 'U' if ($values =~ /UP/ms);
         
         next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
@@ -129,148 +243,36 @@ sub manage_selection {
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $interface_name ne $self->{option_results}->{name});
 
-        if ($values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi || $values =~ /RX packets\s+\d+\s+bytes\s+(\S+).*?TX packets\s+\d+\s+bytes\s+(\S+)/msi) {
-            $self->{result}->{$interface_name} = {state => $states, in => $1, out => $2};
+        $self->{interface}->{$interface_name} = {
+            display => $interface_name,
+            status => $states,
+            speed_in => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : '',
+            speed_out => defined($self->{option_results}->{speed}) ? $self->{option_results}->{speed} : '',
+        };
+
+        # ip addr patterns
+        if ($values =~ /RX:\s+bytes.*?(\d+).*?TX: bytes.*?(\d+)/msi) {
+           $self->{interface}->{$interface_name}->{in} = $1;
+           $self->{interface}->{$interface_name}->{out} = $2;
+        } elsif ($values =~ /RX bytes:(\S+).*?TX bytes:(\S+)/msi || $values =~ /RX packets\s+\d+\s+bytes\s+(\S+).*?TX packets\s+\d+\s+bytes\s+(\S+)/msi) {
+            $self->{interface}->{$interface_name}->{in} = $1;
+            $self->{interface}->{$interface_name}->{out} = $2;
         }
     }
     
-    if (scalar(keys %{$self->{result}}) <= 0) {
-        if (defined($self->{option_results}->{name})) {
-            $self->{output}->add_option_msg(short_msg => "No interface found for name '" . $self->{option_results}->{name} . "'.");
-        } else {
-            $self->{output}->add_option_msg(short_msg => "No interface found.");
-        }
+    if (scalar(keys %{$self->{interface}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No interface found.");
         $self->{output}->option_exit();
     }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-	
-    $self->manage_selection();
 
-    my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "cache_linux_local_" . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $new_datas->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All traffic are ok.');
-    }
-    
-    foreach my $name (sort(keys %{$self->{result}})) {
- 
-        if ($self->{result}->{$name}->{state} !~ /RU/) {
-            if (!defined($self->{option_results}->{skip})) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => "Interface '" . $name . "' is not up or/and running");
-            } else {
-                # Avoid getting "buffer creation..." alone
-                if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
-                    $self->{output}->output_add(severity => 'OK',
-                                                short_msg => "Interface '" . $name . "' is not up or/and running (normal state)");
-                }
-                $self->{output}->output_add(long_msg => "Skip interface '" . $name . "': not up or/and running.");
-            }
-            next;
-        }
-        
-        # Some interface are running but not have bytes in/out
-        if (!defined($self->{result}->{$name}->{in})) {
-            if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp})) {
-                    $self->{output}->output_add(severity => 'OK',
-                                                short_msg => "Interface '" . $name . "' is up and running but can't get traffic (no values)");
-            }
-            $self->{output}->output_add(long_msg => "Skip interface '" . $name . "': can't get traffic.");
-            next;
-        }
- 
-        $new_datas->{'in_' . $name} = $self->{result}->{$name}->{in} * 8;
-        $new_datas->{'out_' . $name} = $self->{result}->{$name}->{out} * 8;
-        
-        my $old_in = $self->{statefile_value}->get(name => 'in_' . $name);
-        my $old_out = $self->{statefile_value}->get(name => 'out_' . $name);
-        if (!defined($old_timestamp) || !defined($old_in) || !defined($old_out)) {
-            next;
-        }
-        if ($new_datas->{'in_' . $name} < $old_in) {
-            # We set 0. Has reboot.
-            $old_in = 0;
-        }
-        if ($new_datas->{'out_' . $name} < $old_out) {
-            # We set 0. Has reboot.
-            $old_out = 0;
-        }
-
-        my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
-        if ($time_delta <= 0) {
-            # At least one second. two fast calls ;)
-            $time_delta = 1;
-        }
-        my $in_absolute_per_sec = ($new_datas->{'in_' . $name} - $old_in) / $time_delta;
-        my $out_absolute_per_sec = ($new_datas->{'out_' . $name} - $old_out) / $time_delta;
-        
-        my ($exit, $interface_speed, $in_prct, $out_prct);
-        if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
-            $interface_speed = $self->{option_results}->{speed} * 1000000;
-            $in_prct = $in_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
-            $out_prct = $out_absolute_per_sec * 100 / ($self->{option_results}->{speed} * 1000000);
-            if ($self->{option_results}->{units} eq '%') {
-                my $exit1 = $self->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-                my $exit2 = $self->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
-                $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-            }
-            $in_prct = sprintf("%.2f", $in_prct);
-            $out_prct = sprintf("%.2f", $out_prct);
-        } else {
-            $in_prct = '-';
-            $out_prct = '-';
-        }
-        if ($self->{option_results}->{units} ne '%') {
-            my $exit1 = $self->{perfdata}->threshold_check(value => $in_absolute_per_sec, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-            my $exit2 = $self->{perfdata}->threshold_check(value => $out_absolute_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
-            $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-        }
-       
-        ###########
-        # Manage Output
-        ###########
-        
-        my ($in_value, $in_unit) = $self->{perfdata}->change_bytes(value => $in_absolute_per_sec, network => 1);
-        my ($out_value, $out_unit) = $self->{perfdata}->change_bytes(value => $out_absolute_per_sec, network => 1);
-        $self->{output}->output_add(long_msg => sprintf("Interface '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
-                                       $in_value . $in_unit, $in_prct,
-                                       $out_value . $out_unit, $out_prct));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Interface '%s' Traffic In : %s/s (%s %%), Out : %s/s (%s %%) ", $name,
-                                            $in_value . $in_unit, $in_prct,
-                                            $out_value . $out_unit, $out_prct));
-        }
-
-        my $extra_label = '';
-        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'traffic_in' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $in_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
-        $self->{output}->perfdata_add(label => 'traffic_out' . $extra_label, unit => 'b/s',
-                                      value => sprintf("%.2f", $out_absolute_per_sec),
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $interface_speed),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $interface_speed),
-                                      min => 0, max => $interface_speed);
-    }
-    
-    $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->do_selection();
+    $self->{cache_name} = "cache_linux_local_" . $self->{hostname} . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'));
 }
 
 1;
@@ -313,7 +315,7 @@ Use 'sudo' to execute the command.
 
 =item B<--command>
 
-Command to get information (Default: 'ifconfig').
+Command to get information (Default: 'ip').
 Can be changed if you have output in a file.
 
 =item B<--command-path>
@@ -322,7 +324,7 @@ Command path (Default: '/sbin').
 
 =item B<--command-options>
 
-Command options (Default: '-a 2>&1').
+Command options (Default: '-s addr 2>&1').
 
 =item B<--warning-in>
 
@@ -340,9 +342,24 @@ Threshold warning in percent for 'out' traffic.
 
 Threshold critical in percent for 'out' traffic.
 
+=item B<--unknown-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{display}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}, %{display}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{status} ne "RU"').
+Can used special variables like: %{status}, %{display}
+
 =item B<--units>
 
-Units of thresholds (Default: 'B') ('%', 'B').
+Units of thresholds (Default: 'b/s') ('%', 'b/s').
 Percent can be used only if --speed is set.
 
 =item B<--name>
@@ -360,10 +377,6 @@ Allows to use regexp non case-sensitive (with --regexp).
 =item B<--filter-state>
 
 Filter interfaces type (regexp can be used).
-
-=item B<--skip>
-
-Skip errors on interface status (not up and running).
 
 =item B<--speed>
 

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -63,16 +63,19 @@ sub check_fan_envmon {
 
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_ciscoEnvMonFanStatusEntry}, instance => $instance);
 
-        next if ($self->check_filter(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance, name => $result->{ciscoEnvMonFanStatusDescr}));
         next if ($result->{ciscoEnvMonFanState} =~ /not present/i && 
-                 $self->absent_problem(section => 'fan', instance => $instance));
+                 $self->absent_problem(section => 'fan', instance => $instance, name => $result->{ciscoEnvMonFanStatusDescr}));
         $self->{components}->{fan}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("fan '%s' status is %s [instance: %s].",
-                                    $result->{ciscoEnvMonFanStatusDescr}, $result->{ciscoEnvMonFanState},
-                                    $instance
-                                    ));
-        my $exit = $self->get_severity(section => 'fan', value => $result->{ciscoEnvMonFanState});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' status is %s [instance: %s].",
+                $result->{ciscoEnvMonFanStatusDescr}, $result->{ciscoEnvMonFanState},
+                $instance
+            )
+        );
+        my $exit = $self->get_severity(section => 'fan', instance => $instance, value => $result->{ciscoEnvMonFanState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity =>  $exit,
                                         short_msg => sprintf("fan '%s' status is %s",
@@ -94,12 +97,16 @@ sub check_fan_entity {
         my $fan_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cefcFanTrayOperStatus}, instance => $instance);
         
-        next if ($self->check_filter(section => 'fan', instance => $instance));
+        next if ($self->check_filter(section => 'fan', instance => $instance, name => $fan_descr));
         
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("Fan '%s' status is %s [instance: %s]",
-                                    $fan_descr, $result->{cefcFanTrayOperStatus}, $instance));
-        my $exit = $self->get_severity(section => 'fan', value => $result->{cefcFanTrayOperStatus});
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Fan '%s' status is %s [instance: %s]",
+                $fan_descr, $result->{cefcFanTrayOperStatus}, $instance
+            )
+        );
+        my $exit = $self->get_severity(section => 'fan', instance => $instance, value => $result->{cefcFanTrayOperStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => sprintf("Fan '%s/%s' status is %s", $fan_descr, $instance, $result->{cefcFanTrayOperStatus}));

@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -20,73 +20,125 @@
 
 package snmp_standard::mode::printererror;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my %errors_printer = (
-    0 => ["Printer is low paper", 'WARNING'], 
-    1 => ["Printer has no paper", 'WARNING'],
-    2 => ["Printer is low toner", 'WARNING'],
-    3 => ["Printer has no toner", 'WARNING'], 
-    4 => ["Printer has a door open", 'WARNING'], 
-    5 => ["Printer is jammed", 'WARNING'], 
-    6 => ["Printer is offline", 'WARNING'], 
-    7 => ["Printer needs service requested", 'WARNING'], 
-    
-    8 => ["Printer has input tray missing", 'WARNING'], 
-    9 => ["Printer has output tray missing", 'WARNING'], 
-    10 => ["Printer has maker supply missing", 'WARNING'], 
-    11 => ["Printer output is near full", 'WARNING'], 
-    12 => ["Printer output is full", 'WARNING'], 
-    13 => ["Printer has input tray empty", 'WARNING'], 
-    14 => ["Printer is 'overdue prevent maint'", 'WARNING'], 
-);
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
+    return 0;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'printer', type => 3, cb_prefix_output => 'prefix_printer_output', cb_long_output => 'printer_long_output', indent_long_output => '    ', message_multiple => 'All printers are ok',
+            group => [
+                { name => 'errors', message_multiple => 'Printer is ok', type => 1, skipped_code => { -10 => 1 } },
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{errors} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' } ],
+                closure_custom_calc => $self->can('custom_status_calc'),
+                output_template => "status is '%s'",
+                output_use => 'status',
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+}
+
+sub prefix_printer_output {
+    my ($self, %options) = @_;
+
+    return "Printer '" . $options{instance_value}->{display} . "' ";
+}
+
+sub printer_long_output {
+    my ($self, %options) = @_;
+
+    return "checking printer '" . $options{instance_value}->{display} . "'";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+    $options{options}->add_options(arguments => { 
+        'ok-status:s'       => { name => 'ok_status', default => '%{status} =~ /ok/' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /.*/' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
+    });
 
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['ok_status', 'unknown_status', 'warning_status', 'critical_status']);
 }
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
+my %errors_printer = (
+    0 => 'low paper', 
+    1 => 'no paper',
+    2 => 'low toner',
+    3 => 'no toner', 
+    4 => 'door open', 
+    5 => 'jammed', 
+    6 => 'offline', 
+    7 => 'service requested', 
+    8 => 'input tray missing', 
+    9 => 'output tray missing', 
+    10 => 'maker supply missing',
+    11 => 'output near full',
+    12 => 'output full', 
+    13 => 'input tray empty', 
+    14 => 'overdue prevent maint', 
+);
 
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "Printer is ok.");
-    
+sub manage_selection {
+    my ($self, %options) = @_;
+
     my $oid_hrPrinterDetectedErrorState = '.1.3.6.1.2.1.25.3.5.1.2';
-    my $result = $self->{snmp}->get_table(oid => $oid_hrPrinterDetectedErrorState, nothing_quit => 1);
-    
+    my $result = $options{snmp}->get_table(oid => $oid_hrPrinterDetectedErrorState, nothing_quit => 1);
+
+    $self->{printer} = {};
     foreach (keys %$result) {
+        /\.(\d+)$/;
+        my $instance = $1;
         # 16 bits value
         my $value = unpack('S', $result->{$_});
-        
+        if (!defined($value)) {
+            $value = ord($result->{$_});
+        }
+
+        $self->{printer}->{$instance} = { display => $instance, errors => {} };
+        my $i = 0;
         foreach my $key (keys %errors_printer) {        
-            if (($value & (1 << $key)) &&
-                (!$self->{output}->is_status(value => ${$errors_printer{$key}}[1], compare => 'ok', litteral => 1))) {
-                $self->{output}->output_add(severity => ${$errors_printer{$key}}[1],
-                                            short_msg => sprintf(${$errors_printer{$key}}[0]));
+            if (($value & (1 << $key))) {
+                $self->{printer}->{$instance}->{errors}->{$i} = { status => $errors_printer{$key} };
+                $i++;
             }
         }
+        
+        if ($i == 0) {
+            $self->{printer}->{$instance}->{errors}->{0} = { status => 'ok' };
+            next;
+        }
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -98,6 +150,26 @@ __END__
 Check printer errors (HOST-RESOURCES-MIB).
 
 =over 8
+
+=item B<--ok-status>
+
+Set warning threshold for status (Default: '%{status} =~ /ok/').
+Can used special variables like: %{status}
+
+=item B<--unknown-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{status}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%{status} =~ /.*/').
+Can used special variables like: %{status}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}
 
 =back
 

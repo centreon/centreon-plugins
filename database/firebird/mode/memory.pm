@@ -1,5 +1,5 @@
 #
-# Copyright 2017 Centreon (http://www.centreon.com/)
+# Copyright 2019 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
 # the needs in IT infrastructure and application monitoring for
@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'used', set => {
+        { label => 'used', nlabel => 'database.usage.bytes',  set => {
                 key_values => [ { name => 'database_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'database' },
                 closure_custom_output => $self->can('custom_used_output'),
@@ -41,7 +41,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_used_perfdata'),
             }
         },
-        { label => 'attachment', set => {
+        { label => 'attachment', nlabel => 'attachment.usage.bytes', set => {
                 key_values => [ { name => 'attachment_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'attachment' },
                 closure_custom_output => $self->can('custom_unit_output'),
@@ -49,7 +49,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        { label => 'transaction', set => {
+        { label => 'transaction', nlabel => 'transaction.usage.bytes', set => {
                 key_values => [ { name => 'transaction_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'transaction' },
                 closure_custom_output => $self->can('custom_unit_output'),
@@ -57,7 +57,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        { label => 'statement', set => {
+        { label => 'statement', nlabel => 'statement.usage.bytes', set => {
                 key_values => [ { name => 'statement_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'statement' },
                 closure_custom_output => $self->can('custom_unit_output'),
@@ -65,7 +65,7 @@ sub set_counters {
                 closure_custom_perfdata => $self->can('custom_unit_perfdata'),
             }
         },
-        { label => 'call', set => {
+        { label => 'call', nlabel => 'call.usage.bytes', set => {
                 key_values => [ { name => 'call_used' }, { name => 'database_allocated' } ],
                 closure_custom_calc => $self->can('custom_unit_calc'), closure_custom_calc_extra_options => { label_ref => 'call' },
                 closure_custom_output => $self->can('custom_unit_output'),
@@ -93,21 +93,27 @@ sub custom_used_output {
 sub custom_used_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => 'used', unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => 'used', unit => 'B',
+        nlabel => $self->{nlabel},                                
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_unit_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B',
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{label}, unit => 'B',
+        nlabel => $self->{nlabel},
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_unit_output {
@@ -146,10 +152,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $self->{version} = '1.0';
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
     
     return $self;
 }
