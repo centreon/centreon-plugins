@@ -604,6 +604,12 @@ sub exit {
     exit $self->{errors}->{$self->{myerrors}->{$self->{global_status}}};
 }
 
+sub get_option {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{$options{option}};
+}
+
 sub get_most_critical {
     my ($self, %options) = @_;
     my $current_status = 0; # For 'OK'
