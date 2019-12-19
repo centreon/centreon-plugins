@@ -65,6 +65,14 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'charge-remaining-minutes', nlabel => 'battery.charge.remaining.minutes', display_ok => 0, set => {
+                key_values => [ { name => 'minute_remain' } ],
+                output_template => 'minutes remaining: %s',
+                perfdatas => [
+                    { label => 'charge_remaining', value => 'minute_remain_absolute', template => '%s', min => 0, unit => 'minutes' },
+                ],
+            }
+        },
         { label => 'current', nlabel => 'battery.current.ampere', display_ok => 0, set => {
                 key_values => [ { name => 'current', no_value => 0 } ],
                 output_template => 'current: %s A',
@@ -169,8 +177,8 @@ Can used special variables like: %{status}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'charge-remaining' (%), 'current' (A), 'voltage' (V), 'temperature' (C).
-
+Can be: 'charge-remaining' (%), 'charge-remaining-minutes',
+'current' (A), 'voltage' (V), 'temperature' (C).
 
 =back
 
