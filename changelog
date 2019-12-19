@@ -1,11 +1,13 @@
-2019-12-XX Quentin Garnier <qgarnier@centreon.com>
+2019-12-19 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: CouchDB Rest API
  * Plugin added: Maltem Insight Performance Rest API
  * Plugin added: Hikvision camera SNMP
  * Plugin added: Avaya CM SNMP
  * Plugin added: Palo Alto SSH
+ * Plugin added: Rapid Recovery Quest SNMP
  * Mode added: [linux/snmp] 'udpcon'
  * Mode added: [cisco/standard/snmp] 'load'
+ * Mode added: [3cx/restapi] 'extensions'
  * Fix: Ctrl+F "Fix" on commits page
 
 2019-10-16 Colin Gagnaire <cgagnaire@centreon.com>
