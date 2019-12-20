@@ -129,6 +129,7 @@ sub manage_selection {
         next if (defined($self->{iline}->{$instance}));
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+        $result->{xupsInputCurrent} = 0 if (defined($result->{xupsInputCurrent}) && $result->{xupsInputCurrent} eq '');
         $self->{iline}->{$instance} = { display => $instance, %$result };
     }
     
