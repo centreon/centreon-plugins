@@ -62,6 +62,7 @@ sub new {
         'regexp'                  => { name => 'use_regexp' },
         'regexp-isensitive'       => { name => 'use_regexpi' },
         'filter-device:s'         => { name => 'filter_device' },
+        'filter-path:s'           => { name => 'filter_path' },
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
     });
@@ -104,8 +105,13 @@ sub manage_selection {
             $self->{option_results}->{filter_device} ne '' && $result->{dskDevice} !~ /$self->{option_results}->{filter_device}/) {
             $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter disk device", $result->{dskPath}), debug => 1);
             next;
-        }   
-        
+        }
+        if (defined($result->{dskPath}) && defined($self->{option_results}->{filter_path}) &&
+            $self->{option_results}->{filter_path} ne '' && $result->{dskPath} !~ /$self->{option_results}->{filter_path}/) {
+            $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter disk path", $result->{dskPath}), debug => 1);
+            next;
+        }
+
         if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath})) {
             if ($self->{option_results}->{diskpath} !~ /(^|\s|,)$instance(\s*,|$)/) {
                 $self->{output}->output_add(long_msg => sprintf("skipping '%s' : filter id disk path", $result->{dskPath}), debug => 1);
@@ -195,7 +201,11 @@ Regexp dst to transform display value. (security risk!!!)
 
 =item B<--filter-device>
 
-Filter device name (Can be a regexp).
+Filter devices by name (regexp).
+
+=item B<--filter-path>
+
+Filter devices by path (regexp).
 
 =back
 
