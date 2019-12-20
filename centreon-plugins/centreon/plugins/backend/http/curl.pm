@@ -212,12 +212,6 @@ sub set_proxy {
     my ($self, %options) = @_;
 
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
-        if ($options{request}->{proxyurl} =~ /^(?:http|https):\/\/(.*?):(.*?)@/) {
-            $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_PROXYUSERNAME'), parameter => $1);
-            $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_PROXYPASSWORD'), parameter => $2);
-            $options{request}->{proxyurl} =~ s/\/\/$1:$2@//;
-        }
-
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_PROXY'), parameter => $options{request}->{proxyurl});
     }
 
