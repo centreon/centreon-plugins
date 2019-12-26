@@ -128,7 +128,6 @@ sub manage_selection {
     );
 
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
-    use Data::Dumper; print Data::Dumper::Dumper($result);
     $result->{xupsBatCurrent} = defined($result->{xupsBatCurrent}) ? $result->{xupsBatCurrent} * 0.1 : 0;
     $result->{xupsBatTimeRemaining} = defined($result->{xupsBatTimeRemaining}) ? int($result->{xupsBatTimeRemaining} / 60) : undef;
     $result->{status} = $result->{xupsBatteryAbmStatus};
