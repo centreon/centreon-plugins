@@ -20,94 +20,120 @@
 
 package hardware::ups::powerware::snmp::mode::batterystatus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
-my %battery_status = (
-    1 => ['batteryCharging', 'OK'], 
-    2 => ['batteryDischarging', 'WARNING'], 
-    3 => ['batteryFloating', 'OK'], 
-    4 => ['batteryResting', 'OK'],
-    5 => ['unknown', 'UNKNOWN'],
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+    
+    my $msg = sprintf("battery status is '%s'", $self->{result_values}->{status});
+    return $msg;
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+    ];
+        
+    $self->{maps_counters}->{global} = [
+         { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+        { label => 'charge-remaining', , nlabel => 'battery.charge.remaining.percent', set => {
+                key_values => [ { name => 'xupsBatCapacity' } ],
+                output_template => 'remaining capacity: %s %%',
+                perfdatas => [
+                    { value => 'xupsBatCapacity_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => 'charge-remaining-minutes', nlabel => 'battery.charge.remaining.minutes', display_ok => 0, set => {
+                key_values => [ { name => 'xupsBatTimeRemaining' } ],
+                output_template => 'remaining time: %s minutes',
+                perfdatas => [
+                    { value => 'xupsBatTimeRemaining_absolute', template => '%s', min => 0, unit => 'm' },
+                ],
+            }
+        },
+        { label => 'current', nlabel => 'battery.current.ampere', display_ok => 0, set => {
+                key_values => [ { name => 'xupsBatCurrent', no_value => 0 } ],
+                output_template => 'current: %s A',
+                perfdatas => [
+                    { value => 'xupsBatCurrent_absolute', template => '%s', unit => 'A' },
+                ],
+            }
+        },
+        { label => 'voltage', nlabel => 'battery.voltage.volt', display_ok => 0, set => {
+                key_values => [ { name => 'xupsBatVoltage', no_value => 0 } ],
+                output_template => 'voltage: %s V',
+                perfdatas => [
+                    { value => 'xupsBatVoltage_absolute', template => '%s', unit => 'V' },
+                ],
+            }
+        },
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /batteryDischarging/i' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
+    });
 
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    my $oid_xupsBattery = '.1.3.6.1.4.1.534.1.2';
-    my $oid_xupsBatteryAbmStatus = '.1.3.6.1.4.1.534.1.2.5.0';
-    my $oid_xupsBatTimeRemaining = '.1.3.6.1.4.1.534.1.2.1.0'; # in seconds
-    my $oid_xupsBatCapacity = '.1.3.6.1.4.1.534.1.2.4.0';
-    my $oid_xupsBatVoltage = '.1.3.6.1.4.1.534.1.2.2.0'; # in dV
-    my $oid_xupsBatCurrent = '.1.3.6.1.4.1.534.1.2.3.0'; # in dA
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_xupsBattery, nothing_quit => 1);
+my $map_battery_status = {
+    1 => 'batteryCharging', 2 => 'batteryDischarging',
+    3 => 'batteryFloating', 4 => 'batteryResting',
+    5 => 'unknown',
+};
 
-    my $current = defined($result->{$oid_xupsBatCurrent}) ? $result->{$oid_xupsBatCurrent} * 0.1 : 0;
-    my $voltage = defined($result->{$oid_xupsBatVoltage}) ? $result->{$oid_xupsBatVoltage} * 0.1 : 0;
-    my $min_remain = defined($result->{$oid_xupsBatTimeRemaining}) ? int($result->{$oid_xupsBatTimeRemaining} / 60) : 'unknown';
-    my $charge_remain = defined($result->{$oid_xupsBatCapacity}) ? $result->{$oid_xupsBatCapacity} : 'unknown';
-    my $status = defined($result->{$oid_xupsBatteryAbmStatus}) ? $result->{$oid_xupsBatteryAbmStatus} : 5; # we put unknown ???
-  
-    $self->{output}->output_add(severity => ${$battery_status{$status}}[1],
-                                short_msg => sprintf("Battery status is %s", ${$battery_status{$status}}[0]));
-    my $exit_code = 'ok';
-    if ($charge_remain ne 'unknown') {
-        $exit_code = $self->{perfdata}->threshold_check(value => $charge_remain, 
-                                                        threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->perfdata_add(label => 'load', unit => '%',
-                                      value => $charge_remain,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
-    }
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("Charge remaining: %s%% (%s minutes remaining)", $charge_remain, $min_remain));
+my $mapping = {
+    xupsBatTimeRemaining => { oid => '.1.3.6.1.4.1.534.1.2.1' }, # in seconds
+    xupsBatVoltage       => { oid => '.1.3.6.1.4.1.534.1.2.2' }, # in V
+    xupsBatCurrent       => { oid => '.1.3.6.1.4.1.534.1.2.3' }, # in dA
+    xupsBatCapacity      => { oid => '.1.3.6.1.4.1.534.1.2.4' },
+    xupsBatteryAbmStatus => { oid => '.1.3.6.1.4.1.534.1.2.5', map => $map_battery_status },
+};
+
+sub manage_selection {
+    my ($self, %options) = @_;
     
-    if ($current != 0) {
-        $self->{output}->perfdata_add(label => 'current', unit => 'A',
-                                      value => $current,
-                                      );
-    }
-    if ($voltage != 0) {
-        $self->{output}->perfdata_add(label => 'voltage', unit => 'V',
-                                      value => $voltage,
-                                      );
-    }
-                                  
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        nothing_quit => 1
+    );
+
+    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
+    use Data::Dumper; print Data::Dumper::Dumper($result);
+    $result->{xupsBatCurrent} = defined($result->{xupsBatCurrent}) ? $result->{xupsBatCurrent} * 0.1 : 0;
+    $result->{xupsBatTimeRemaining} = defined($result->{xupsBatTimeRemaining}) ? int($result->{xupsBatTimeRemaining} / 60) : undef;
+    $result->{status} = $result->{xupsBatteryAbmStatus};
+
+    $self->{global} = $result;
 }
 
 1;
@@ -116,17 +142,35 @@ __END__
 
 =head1 MODE
 
-Check Battery Status and battery charge remaining (XUPS-MIB)
+Check battery status.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-counters>
 
-Threshold warning in percent of charge remaining.
+Only display some counters (regexp can be used).
+Example: --filter-counters='status|current'
 
-=item B<--critical>
+=item B<--unknown-status>
 
-Threshold critical in percent of charge remaining.
+Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
+Can used special variables like: %{status}.
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '%{status} =~ /batteryDischarging/i').
+Can used special variables like: %{status}.
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '').
+Can used special variables like: %{status}.
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: Can be: 'charge-remaining' (%), 'charge-remaining-minutes',
+'current' (A), 'voltage' (V).
 
 =back
 
