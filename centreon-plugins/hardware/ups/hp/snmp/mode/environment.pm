@@ -33,20 +33,38 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'temperature', nlabel => 'environment.ambient.temperature.celsius', set => {
-                key_values => [ { name => 'temperature' } ],
-                output_template => 'ambient temperature: %.2f C',
+        { label => 'internal-temperature', nlabel => 'environment.internal.temperature.celsius', set => {
+                key_values => [ { name => 'internal_temperature' } ],
+                output_template => 'internal temperature: %.2f C',
                 perfdatas => [
-                    { value => 'temperature_absolute', template => '%.2f',
+                    { value => 'internal_temperature_absolute', template => '%.2f',
                       min => 0, unit => 'C' },
                 ],
             }
         },
-        { label => 'humidity', nlabel => 'environment.humidity.percentage', set => {
-                key_values => [ { name => 'humidity' } ],
-                output_template => 'humidity: %.2f %%',
+        { label => 'internal-humidity', nlabel => 'environment.internal.humidity.percentage', set => {
+                key_values => [ { name => 'internal_humidity' } ],
+                output_template => 'internal humidity: %.2f %%',
                 perfdatas => [
-                    { value => 'humidity_absolute', template => '%.2f', 
+                    { value => 'internal_humidity_absolute', template => '%.2f', 
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => 'remote-temperature', nlabel => 'environment.remote.temperature.celsius', set => {
+                key_values => [ { name => 'remote_temperature' } ],
+                output_template => 'remote temperature: %.2f C',
+                perfdatas => [
+                    { value => 'remote_temperature_absolute', template => '%.2f',
+                      min => 0, unit => 'C' },
+                ],
+            }
+        },
+        { label => 'remote-humidity', nlabel => 'environment.remote.humidity.percentage', set => {
+                key_values => [ { name => 'internal_humidity' } ],
+                output_template => 'remote humidity: %.2f %%',
+                perfdatas => [
+                    { value => 'remote_humidity_absolute', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -85,17 +103,18 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    $self->{global} = {};
-    $self->{global}->{temperature} = defined($snmp_result->{$oids->{upsEnvAmbientTemp}}) && $snmp_result->{$oids->{upsEnvAmbientTemp}} ne '' && $snmp_result->{$oids->{upsEnvAmbientTemp}} != 0 ?
-        $snmp_result->{$oids->{upsEnvAmbientTemp}} : 
-            (defined($snmp_result->{$oids->{upsEnvRemoteTemp}}) && $snmp_result->{$oids->{upsEnvRemoteTemp}} ne '' && $snmp_result->{$oids->{upsEnvRemoteTemp}} != 0 ? 
-                $snmp_result->{$oids->{upsEnvRemoteTemp}} : undef);
-    $self->{global}->{humidity} = defined($snmp_result->{$oids->{upsEnvAmbientHumidity}}) && $snmp_result->{$oids->{upsEnvAmbientHumidity}} ne '' && $snmp_result->{$oids->{upsEnvAmbientHumidity}} != 0 ?
-        $snmp_result->{$oids->{upsEnvAmbientHumidity}} : 
-            (defined($snmp_result->{$oids->{upsEnvRemoteHumidity}}) && $snmp_result->{$oids->{upsEnvRemoteHumidity}} ne '' && $snmp_result->{$oids->{upsEnvRemoteHumidity}} != 0 ? 
-                $snmp_result->{$oids->{upsEnvRemoteHumidity}} : undef);
+    $self->{global} = {
+        internal_temperature => defined($snmp_result->{$oids->{upsEnvAmbientTemp}}) && $snmp_result->{$oids->{upsEnvAmbientTemp}} ne '' && $snmp_result->{$oids->{upsEnvAmbientTemp}} != 0 ? 
+            $snmp_result->{$oids->{upsEnvAmbientTemp}} : undef,
+        internal_humidity => defined($snmp_result->{$oids->{upsEnvAmbientHumidity}}) && $snmp_result->{$oids->{upsEnvAmbientHumidity}} ne '' && $snmp_result->{$oids->{upsEnvAmbientHumidity}} != 0 ?
+            $snmp_result->{$oids->{upsEnvAmbientHumidity}} : undef,
+        remote_temperature => defined($snmp_result->{$oids->{upsEnvRemoteTemp}}) && $snmp_result->{$oids->{upsEnvRemoteTemp}} ne '' && $snmp_result->{$oids->{upsEnvRemoteTemp}} != 0 ? 
+            $snmp_result->{$oids->{upsEnvRemoteTemp}} : undef,
+        remote_humidity =>  defined($snmp_result->{$oids->{upsEnvRemoteHumidity}}) && $snmp_result->{$oids->{upsEnvRemoteHumidity}} ne '' && $snmp_result->{$oids->{upsEnvRemoteHumidity}} != 0 ? 
+            $snmp_result->{$oids->{upsEnvRemoteHumidity}} : undef,
+    };
 
-    if (!defined($self->{option_results}->{'critical-environment-ambient-temperature-celsius'}) || $self->{option_results}->{'critical-environment-ambient-temperature-celsius'} eq '') {
+    if (!defined($self->{option_results}->{'critical-environment-internal-temperature-celsius'}) || $self->{option_results}->{'critical-environment-internal-temperature-celsius'} eq '') {
         my $crit_val = '';
         $crit_val = $snmp_result->{$oids->{upsEnvAmbientLowerLimit}} . ':' 
             if (defined($snmp_result->{$oids->{upsEnvAmbientLowerLimit}}) && 
@@ -103,7 +122,18 @@ sub manage_selection {
         $crit_val .= $snmp_result->{$oids->{upsEnvAmbientUpperLimit}} 
             if (defined($snmp_result->{$oids->{upsEnvAmbientUpperLimit}}) && 
                 $snmp_result->{$oids->{upsEnvAmbientUpperLimit}} ne '' && $snmp_result->{$oids->{upsEnvAmbientUpperLimit}} != 0);
-        $self->{perfdata}->threshold_validate(label => 'critical-environment-ambient-temperature-celsius', value => $crit_val);
+        $self->{perfdata}->threshold_validate(label => 'critical-environment-internal-temperature-celsius', value => $crit_val);
+    }
+
+    if (!defined($self->{option_results}->{'critical-environment-remote-temperature-celsius'}) || $self->{option_results}->{'critical-environment-remote-temperature-celsius'} eq '') {
+        my $crit_val = '';
+        $crit_val = $snmp_result->{$oids->{upsEnvRemoteTempLowerLimit}} . ':' 
+            if (defined($snmp_result->{$oids->{upsEnvRemoteTempLowerLimit}}) && 
+                $snmp_result->{$oids->{upsEnvRemoteTempLowerLimit}} ne '' && $snmp_result->{$oids->{upsEnvRemoteTempLowerLimit}} != 0);
+        $crit_val .= $snmp_result->{$oids->{upsEnvRemoteTempUpperLimit}} 
+            if (defined($snmp_result->{$oids->{upsEnvRemoteTempUpperLimit}}) && 
+                $snmp_result->{$oids->{upsEnvRemoteTempUpperLimit}} ne '' && $snmp_result->{$oids->{upsEnvRemoteTempUpperLimit}} != 0);
+        $self->{perfdata}->threshold_validate(label => 'critical-environment-remote-temperature-celsius', value => $crit_val);
     }
 }
 
@@ -119,8 +149,8 @@ Check environment.
 
 =item B<--warning-*> B<--critical-*>
 
-Thresholds.
-Can be: 'temperature', 'humidity'.
+Can be: 'internal-temperature', 'internal-humidity',
+'remote-temperature', 'remote-humidity'.
 
 =back
 
