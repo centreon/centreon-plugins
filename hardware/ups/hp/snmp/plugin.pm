@@ -31,11 +31,12 @@ sub new {
     
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'battery-status'   => 'hardware::ups::hp::snmp::mode::batterystatus',
-        'environment'      => 'hardware::ups::hp::snmp::mode::environment',
-        'input-lines'      => 'hardware::ups::hp::snmp::mode::inputlines',
-        'uptime'           => 'snmp_standard::mode::uptime',
-        'output-lines'     => 'hardware::ups::hp::snmp::mode::outputlines',
+        'battery-status' => 'hardware::ups::hp::snmp::mode::batterystatus',
+        'environment'    => 'hardware::ups::hp::snmp::mode::environment',
+        'input-lines'    => 'hardware::ups::hp::snmp::mode::inputlines',
+        'output-lines'   => 'hardware::ups::hp::snmp::mode::outputlines',
+        'time'           => 'hardware::ups::hp::snmp::mode::time',
+        'uptime'         => 'snmp_standard::mode::uptime'
     );
 
     return $self;
