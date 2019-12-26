@@ -33,20 +33,38 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'temperature', set => {
-                key_values => [ { name => 'temperature' } ],
-                output_template => 'Ambiant Temperature: %.2f C',
+        { label => 'internal-temperature', nlabel => 'environment.internal.temperature.celsius', set => {
+                key_values => [ { name => 'internal_temperature' } ],
+                output_template => 'internal temperature: %.2f C',
                 perfdatas => [
-                    { label => 'temperature', value => 'temperature_absolute', template => '%.2f',
+                    { label => 'internal_temperature', value => 'internal_temperature_absolute', template => '%.2f',
                       min => 0, unit => 'C' },
                 ],
             }
         },
-        { label => 'humidity', set => {
-                key_values => [ { name => 'humidity' } ],
-                output_template => 'Humidity: %.2f %%',
+        { label => 'internal-humidity', nlabel => 'environment.internal.humidity.percentage', set => {
+                key_values => [ { name => 'internal_humidity' } ],
+                output_template => 'internal humidity: %.2f %%',
                 perfdatas => [
-                    { label => 'humidity', value => 'humidity_absolute', template => '%.2f', 
+                    { label => 'internal_humidity', value => 'internal_humidity_absolute', template => '%.2f', 
+                      min => 0, max => 100, unit => '%' },
+                ],
+            }
+        },
+        { label => 'remote-temperature', nlabel => 'environment.remote.temperature.celsius', set => {
+                key_values => [ { name => 'remote_temperature' } ],
+                output_template => 'remote temperature: %.2f C',
+                perfdatas => [
+                    { label => 'remote_temperature', value => 'remote_temperature_absolute', template => '%.2f',
+                      min => 0, unit => 'C' },
+                ],
+            }
+        },
+        { label => 'remote-humidity', nlabel => 'environment.remote.humidity.percentage', set => {
+                key_values => [ { name => 'internal_humidity' } ],
+                output_template => 'remote humidity: %.2f %%',
+                perfdatas => [
+                    { label => 'remote_humidity', value => 'remote_humidity_absolute', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -58,11 +76,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
@@ -81,21 +98,25 @@ sub manage_selection {
         xupsEnvRemoteHumidityLowerLimit => '.1.3.6.1.4.1.534.1.6.11.0',
         xupsEnvRemoteHumidityUpperLimit => '.1.3.6.1.4.1.534.1.6.11.0',
     };
-    my $snmp_result = $options{snmp}->get_leef(oids => [
-        values %$oids
-        ], nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            values %$oids
+        ],
+        nothing_quit => 1
+    );
 
-    $self->{global} = {};
-    $self->{global}->{temperature} = defined($snmp_result->{$oids->{xupsEnvAmbientTemp}}) && $snmp_result->{$oids->{xupsEnvAmbientTemp}} ne '' && $snmp_result->{$oids->{xupsEnvAmbientTemp}} != 0 ?
-        $snmp_result->{$oids->{xupsEnvAmbientTemp}} : 
-            (defined($snmp_result->{$oids->{xupsEnvRemoteTemp}}) && $snmp_result->{$oids->{xupsEnvRemoteTemp}} ne '' && $snmp_result->{$oids->{xupsEnvRemoteTemp}} != 0 ? 
-                $snmp_result->{$oids->{xupsEnvRemoteTemp}} : undef);
-    $self->{global}->{humidity} = defined($snmp_result->{$oids->{xupsEnvAmbientHumidity}}) && $snmp_result->{$oids->{xupsEnvAmbientHumidity}} ne '' && $snmp_result->{$oids->{xupsEnvAmbientHumidity}} != 0 ?
-        $snmp_result->{$oids->{xupsEnvAmbientHumidity}} : 
-            (defined($snmp_result->{$oids->{xupsEnvRemoteHumidity}}) && $snmp_result->{$oids->{xupsEnvRemoteHumidity}} ne '' && $snmp_result->{$oids->{xupsEnvRemoteHumidity}} != 0 ? 
-                $snmp_result->{$oids->{xupsEnvRemoteHumidity}} : undef);
+    $self->{global} = {
+        internal_temperature => defined($snmp_result->{$oids->{xupsEnvAmbientTemp}}) && $snmp_result->{$oids->{xupsEnvAmbientTemp}} ne '' && $snmp_result->{$oids->{xupsEnvAmbientTemp}} != 0 ? 
+            $snmp_result->{$oids->{xupsEnvAmbientTemp}} : undef,
+        internal_humidity => defined($snmp_result->{$oids->{xupsEnvAmbientHumidity}}) && $snmp_result->{$oids->{xupsEnvAmbientHumidity}} ne '' && $snmp_result->{$oids->{xupsEnvAmbientHumidity}} != 0 ?
+            $snmp_result->{$oids->{xupsEnvAmbientHumidity}} : undef,
+        remote_temperature => defined($snmp_result->{$oids->{xupsEnvRemoteTemp}}) && $snmp_result->{$oids->{xupsEnvRemoteTemp}} ne '' && $snmp_result->{$oids->{xupsEnvRemoteTemp}} != 0 ? 
+            $snmp_result->{$oids->{xupsEnvRemoteTemp}} : undef,
+        remote_humidity =>  defined($snmp_result->{$oids->{xupsEnvRemoteHumidity}}) && $snmp_result->{$oids->{xupsEnvRemoteHumidity}} ne '' && $snmp_result->{$oids->{xupsEnvRemoteHumidity}} != 0 ? 
+            $snmp_result->{$oids->{xupsEnvRemoteHumidity}} : undef,
+    };
 
-    if (!defined($self->{option_results}->{'critical-temperature'}) || $self->{option_results}->{'critical-temperature'} eq '') {
+    if (!defined($self->{option_results}->{'critical-internal-temperature'}) || $self->{option_results}->{'critical-internal-temperature'} eq '') {
         my $crit_val = '';
         $crit_val = $snmp_result->{$oids->{xupsEnvAmbientLowerLimit}} . ':' 
             if (defined($snmp_result->{$oids->{xupsEnvAmbientLowerLimit}}) && 
@@ -103,7 +124,18 @@ sub manage_selection {
         $crit_val .= $snmp_result->{$oids->{xupsEnvAmbientUpperLimit}} 
             if (defined($snmp_result->{$oids->{xupsEnvAmbientUpperLimit}}) && 
                 $snmp_result->{$oids->{xupsEnvAmbientUpperLimit}} ne '' && $snmp_result->{$oids->{xupsEnvAmbientUpperLimit}} != 0);
-        $self->{perfdata}->threshold_validate(label => 'critical-temperature', value => $crit_val);
+        $self->{perfdata}->threshold_validate(label => 'critical-internal-temperature', value => $crit_val);
+    }
+
+    if (!defined($self->{option_results}->{'critical-remote-temperature'}) || $self->{option_results}->{'critical-remote-temperature'} eq '') {
+        my $crit_val = '';
+        $crit_val = $snmp_result->{$oids->{xupsEnvRemoteTempLowerLimit}} . ':' 
+            if (defined($snmp_result->{$oids->{xupsEnvRemoteTempLowerLimit}}) && 
+                $snmp_result->{$oids->{xupsEnvRemoteTempLowerLimit}} ne '' && $snmp_result->{$oids->{xupsEnvRemoteTempLowerLimit}} != 0);
+        $crit_val .= $snmp_result->{$oids->{xupsEnvRemoteTempUpperLimit}} 
+            if (defined($snmp_result->{$oids->{xupsEnvRemoteTempUpperLimit}}) && 
+                $snmp_result->{$oids->{xupsEnvRemoteTempUpperLimit}} ne '' && $snmp_result->{$oids->{xupsEnvRemoteTempUpperLimit}} != 0);
+        $self->{perfdata}->threshold_validate(label => 'critical-remote-temperature', value => $crit_val);
     }
 }
 
@@ -117,15 +149,11 @@ Check environment (temperature and humidity) (XUPS-MIB).
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'temperature', 'humidity'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'temperature', 'humidity'.
+Thresholds.
+Can be: 'internal-temperature', 'internal-humidity',
+'remote-temperature', 'remote-humidity'.
 
 =back
 
