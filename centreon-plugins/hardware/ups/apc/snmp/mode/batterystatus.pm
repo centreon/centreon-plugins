@@ -109,13 +109,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                "unknown-status:s"        => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-                                "warning-status:s"        => { name => 'warning_status', default => '%{status} =~ /batteryLow/i' },
-                                "critical-status:s"       => { name => 'critical_status', default => '%{replace} =~ /yes/i' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /batteryLow/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{replace} =~ /yes/i' },
+    });
 
     return $self;
 }
@@ -191,7 +190,7 @@ Example: --filter-counters='^status|load$'
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{status} =~ /unknown/i').
+Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
 Can used special variables like: %{status}, %{replace}
 
 =item B<--warning-status>
@@ -204,14 +203,9 @@ Can used special variables like: %{status}, %{replace}
 Set critical threshold for status (Default: '%{replace} =~ /yes/i').
 Can used special variables like: %{status}, %{replace}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'load', 'voltage', 'current', 'temperature', 'time'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'load', 'voltage', 'current', 'temperature', 'time'.
 
 =back
