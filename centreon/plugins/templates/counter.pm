@@ -147,7 +147,7 @@ sub new {
                 $thlabel = $self->get_threshold_prefix(name => $key) . $label;
             }
             $thlabel =~ s/\./-/g;
-            
+
             if (!defined($_->{threshold}) || $_->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
                     'warning-' . $thlabel . ':s'     => { name => 'warning-' . $thlabel },
