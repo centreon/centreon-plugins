@@ -129,7 +129,6 @@ sub manage_selection {
 
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
     $result->{upsBatCurrent} = defined($result->{upsBatCurrent}) ? $result->{upsBatCurrent} * 0.1 : 0;
-    $result->{upsBatVoltage} = defined($result->{upsBatVoltage}) ? $result->{upsBatVoltage} * 0.1 : 0;
     $result->{upsBatTimeRemaining} = defined($result->{upsBatTimeRemaining}) ? int($result->{upsBatTimeRemaining} / 60) : undef;
     $result->{status} = $result->{upsBatteryAbmStatus};
 
