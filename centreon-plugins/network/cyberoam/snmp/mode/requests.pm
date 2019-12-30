@@ -28,7 +28,7 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
     ];
@@ -86,7 +86,7 @@ sub set_counters {
 
 sub prefix_output {
     my ($self, %options) = @_;
-    
+
     return "Requests: ";
 }
 
@@ -94,11 +94,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -116,18 +115,25 @@ sub manage_selection {
     my $oid_pop3Hits = '.1.3.6.1.4.1.21067.2.1.2.9.1.0';
     my $oid_imapHits = '.1.3.6.1.4.1.21067.2.1.2.9.2.0';
     my $oid_smtpHits = '.1.3.6.1.4.1.21067.2.1.2.9.3.0';
-    my $result = $options{snmp}->get_leef(oids => [$oid_liveUsers, $oid_httpHits, $oid_ftpHits, $oid_pop3Hits,
-                                                   $oid_imapHits, $oid_smtpHits], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_liveUsers, $oid_httpHits, $oid_ftpHits, $oid_pop3Hits,
+            $oid_imapHits, $oid_smtpHits
+        ],
+        nothing_quit => 1
+    );
 
     $self->{cache_name} = "cyberoam_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
-    
-    $self->{global} = { live_users => $result->{$oid_liveUsers},
-                        http_hits => $result->{$oid_httpHits},
-                        ftp_hits => $result->{$oid_ftpHits},
-                        pop3_hits => $result->{$oid_pop3Hits},
-                        imap_hits => $result->{$oid_imapHits}, 
-                        smtp_hits => $result->{$oid_smtpHits} };
+
+    $self->{global} = {
+        live_users => $result->{$oid_liveUsers},
+        http_hits => $result->{$oid_httpHits},
+        ftp_hits => $result->{$oid_ftpHits},
+        pop3_hits => $result->{$oid_pop3Hits},
+        imap_hits => $result->{$oid_imapHits}, 
+        smtp_hits => $result->{$oid_smtpHits}
+    };
 }
 
 1;
