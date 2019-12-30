@@ -32,7 +32,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => 'checking fans');
-    $self->{components}->{chassis} = { name => 'fans', total => 0, skip => 0 };
+    $self->{components}->{fan} = { name => 'fans', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'fan'));
 
     $self->get_chassis() if (!defined($self->{chassis}));
