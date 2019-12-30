@@ -27,7 +27,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => 'checking power supplies');
-    $self->{components}->{psu} = { name => 'psus', total => 0, skip => 0 };
+    $self->{components}->{psu} = { name => 'psu', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
 
     $self->get_chassis() if (!defined($self->{chassis}));
