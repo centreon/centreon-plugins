@@ -41,7 +41,6 @@ sub custom_compaction_output {
     return $msg;
 }
 
-
 sub set_counters {
     my ($self, %options) = @_;
 
