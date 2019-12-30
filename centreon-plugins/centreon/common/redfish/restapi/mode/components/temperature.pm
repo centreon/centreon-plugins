@@ -50,7 +50,7 @@ sub check {
                 long_msg => sprintf(
                     "temperature '%s/%s' status is '%s' [instance: %s, state: %s, value: %s]",
                     $chassis_name, $temp_name, $temp->{Status}->{Health}, $instance, $temp->{Status}->{State},
-                    $temp->{ReadingCelsius},
+                    $temp->{ReadingCelsius}
                 )
             );
 
@@ -70,10 +70,12 @@ sub check {
                 );
             }
 
+            next if (!defined($temp->{ReadingCelsius}) || $temp->{ReadingCelsius} == 0);
+
             my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $temp->{ReadingCelsius});
             if ($checked == 0) {
-                my $warn_th = ':' . $temp->{UpperThresholdCritical};
-                my $crit_th = ':' . $temp->{UpperThresholdFatal};
+                my $warn_th = defined($temp->{UpperThresholdCritical}) ? ':' . $temp->{UpperThresholdCritical} : '';
+                my $crit_th = defined($temp->{UpperThresholdFatal}) ? ':' . $temp->{UpperThresholdFatal} : '';
                 $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
                 $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
                 $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
