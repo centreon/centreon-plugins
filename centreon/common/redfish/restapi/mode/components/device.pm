@@ -42,6 +42,7 @@ sub check {
             my $instance = $chassis->{Id} . '.' . $device->{Id};
 
             $device->{Status}->{Health} = defined($device->{Status}->{Health}) ? $device->{Status}->{Health} : 'n/a';
+            $device->{Status}->{State} = defined($device->{Status}->{State}) ? $device->{Status}->{State} : 'n/a';
             next if ($self->check_filter(section => 'device', instance => $instance));
             $self->{components}->{device}->{total}++;
             
