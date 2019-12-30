@@ -47,6 +47,7 @@ sub check {
             my $fan_name = $fan->{Name};
             my $instance = $chassis->{Id} . '.' . $fan->{MemberId};
 
+            $fan->{Status}->{Health} = defined($fan->{Status}->{Health}) ? $fan->{Status}->{Health} : 'n/a';
             next if ($self->check_filter(section => 'fan', instance => $instance));
             $self->{components}->{fan}->{total}++;
             

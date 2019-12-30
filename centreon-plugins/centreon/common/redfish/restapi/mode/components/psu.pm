@@ -38,10 +38,11 @@ sub check {
         $chassis->{Power}->{result} = $self->get_power(chassis => $chassis) if (!defined($chassis->{Power}->{result}));
         next if (!defined($chassis->{Power}->{result}->{PowerSupplies}));
 
-        foreach my $psu (@{$chassis->{Thermal}->{result}->{PowerSupplies}}) {
+        foreach my $psu (@{$chassis->{Power}->{result}->{PowerSupplies}}) {
             my $psu_name = 'psu:' . $psu->{MemberId};
             my $instance = $chassis->{Id} . '.' . $psu->{MemberId};
 
+            $psu->{Status}->{Health} = defined($psu->{Status}->{Health}) ? $psu->{Status}->{Health} : 'n/a';
             next if ($self->check_filter(section => 'psu', instance => $instance));
             $self->{components}->{psu}->{total}++;
             
