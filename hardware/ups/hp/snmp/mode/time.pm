@@ -24,6 +24,7 @@ use base qw(snmp_standard::mode::ntp);
 
 use strict;
 use warnings;
+use DateTime;
 
 sub get_target_time {
     my ($self, %options) = @_;
