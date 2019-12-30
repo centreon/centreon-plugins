@@ -28,11 +28,12 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'sea_msg', type => 1, cb_prefix_output => 'prefix_seamsg_output', message_multiple => 'All messages are ok' },
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'queue', set => {
                 key_values => [ { name => 'queue' } ],
@@ -61,7 +62,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{sea_msg} = [
         { label => 'msg-in', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
@@ -94,12 +95,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                "filter-type:s" => { name => 'filter_type' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'filter-type:s' => { name => 'filter_type' },
+    });
+
     return $self;
 }
 
@@ -114,22 +114,16 @@ my $oid_seaStatisticsQueuedMessages = '.1.3.6.1.4.1.2604.1.1.1.5';
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $oid_liveUsers = '.1.3.6.1.4.1.21067.2.1.2.6.0';
-    my $oid_httpHits = '.1.3.6.1.4.1.21067.2.1.2.7.0';
-    my $oid_ftpHits = '.1.3.6.1.4.1.21067.2.1.2.8.0';
-    my $oid_pop3Hits = '.1.3.6.1.4.1.21067.2.1.2.9.1.0';
-    my $oid_imapHits = '.1.3.6.1.4.1.21067.2.1.2.9.2.0';
-    my $oid_smtpHits = '.1.3.6.1.4.1.21067.2.1.2.9.3.0';
+
     my $results = $options{snmp}->get_table(oid => $oid_sophosStatisticsEmail, nothing_quit => 1);
 
     $self->{cache_name} = "sophos_es_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_type}) ? md5_hex($self->{option_results}->{filter_type}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
-    
+
     $self->{global} = { total_in => 0, total_out => 0 };
     $self->{global}->{queue} = defined($results->{$oid_seaStatisticsQueuedMessages}) ? $results->{$oid_seaStatisticsQueuedMessages} : undef;
-    
+
     $self->{sea_msg} = {};
     foreach my $oid (keys %$results) {
         next if ($oid !~ /^$mapping->{counterType}->{oid}\.(.*)$/);
@@ -141,11 +135,13 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping  '" . $result->{counterType} . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{sea_msg}->{lc($result->{counterType})} = { display => lc($result->{counterType}), 
-            in => $result->{counterInbound}, out => $result->{counterOutbound}
+
+        $self->{sea_msg}->{lc($result->{counterType})} = {
+            display => lc($result->{counterType}), 
+            in => $result->{counterInbound},
+            out => $result->{counterOutbound}
         };
-        
+
         $self->{global}->{total_in} += $result->{counterInbound};
         $self->{global}->{total_out} += $result->{counterOutbound};
     }
@@ -170,14 +166,9 @@ Filter message type (can be a regexp).
 Only display some counters (regexp can be used).
 Example: --filter-counters='queue'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-
-=item B<--critical-*>
-
-Threshold critical.
-
+Thresholds.
 Can be: queue, total-msg-in, total-msg-out, msg-in, msg-out.
 
 =back
