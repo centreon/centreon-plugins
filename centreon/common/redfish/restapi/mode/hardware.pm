@@ -38,6 +38,7 @@ sub set_system {
             ['ok', 'OK'],
             ['warning', 'WARNING'],
             ['critical', 'CRITICAL'],
+            ['n/a', 'OK'],
         ],
         state => [
             # can be: absent, deferring, disabled, enabled, 

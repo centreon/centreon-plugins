@@ -42,6 +42,7 @@ sub check {
             my $temp_name = $temp->{Name};
             my $instance = $chassis->{Id} . '.' . $temp->{MemberId};
 
+            $temp->{Status}->{Health} = defined($temp->{Status}->{Health}) ? $temp->{Status}->{Health} : 'n/a';
             next if ($self->check_filter(section => 'temperature', instance => $instance));
             $self->{components}->{temperature}->{total}++;
             

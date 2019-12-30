@@ -184,7 +184,7 @@ sub authenticate {
             $self->{output}->option_exit();
         }
 
-        my $token = $self->{http}->get_header(name => 'X-Auth-Token');
+        $token = $self->{http}->get_header(name => 'X-Auth-Token');
         if (!defined($token)) {
             $self->{output}->add_option_msg(short_msg => "Error retrieving token");
             $self->{output}->option_exit();
