@@ -79,7 +79,7 @@ sub set_counters {
         },
         { label => 'voltage', nlabel => 'line.output.voltage.volt', set => {
                 key_values => [ { name => 'upsOutputVoltage', no_value => 0 } ],
-                output_template => 'Voltage: %s V',
+                output_template => 'voltage: %s V',
                 perfdatas => [
                     { value => 'upsOutputVoltage_absolute', template => '%s', 
                       unit => 'V', label_extra_instance => 1 },
@@ -191,17 +191,17 @@ Check output lines metrics.
 =item B<--unknown-source>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{status}.
+Can used special variables like: %{source}.
 
 =item B<--warning-source>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}.
+Can used special variables like: %{source}.
 
 =item B<--critical-source>
 
 Set critical threshold for status (Default: '%{source} !~ /normal/i').
-Can used special variables like: %{status}.
+Can used special variables like: %{source}.
 
 =item B<--warning-*> B<--critical-*>
 
