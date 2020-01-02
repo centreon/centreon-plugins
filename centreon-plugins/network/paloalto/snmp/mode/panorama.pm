@@ -20,122 +20,83 @@
 
 package network::paloalto::snmp::mode::panorama;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
-my $thresholds = {
-    panorama => [
-        ['^connected$', 'OK'],
-        ['^not-connected$', 'CRITICAL'],
-    ],
-};
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return "connection status is '" . $self->{result_values}->{status} . "'";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'pan', type => 1, cb_prefix_output => 'prefix_pan_output', message_multiple => 'All panorama connection statuses are ok', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{pan} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'status' }, { name => 'display' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
+    ];
+}
+
+sub prefix_pan_output {
+    my ($self, %options) = @_;
+
+    return "panorama '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                "threshold-overload:s@"  => { name => 'threshold_overload' },
-                                "exclude:s"              => { name => 'exclude' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /not-connected/i' },
+    });
 
     return $self;
 }
 
-sub check_threshold_overload {
-    my ($self, %options) = @_;
-    
-    $self->{overload_th} = {};
-    foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
-        if ($val !~ /^(.*?),(.*)$/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload option '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        my ($section, $status, $filter) = ('panorama', $1, $2);
-        if ($self->{output}->is_litteral_status(status => $status) == 0) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status};
-    }
-}
-
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    $self->check_threshold_overload();
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-sub check_exclude {
+sub manage_selection {
     my ($self, %options) = @_;
-
-    if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} =~ /(^|\s|,)${options{section}}[^,]*#\Q$options{instance}\E#/) {
-        $self->{output}->output_add(long_msg => sprintf("Skipping $options{instance} instance."));
-        return 1;
-    }
-    return 0;
-}
-
-sub get_severity {
-    my ($self, %options) = @_;
-    my $status = 'UNKNOWN'; # default 
-    
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i) {
-                $status = $_->{status};
-                return $status;
-            }
-        }
-    }
-    foreach (@{$thresholds->{$options{section}}}) {           
-        if ($options{value} =~ /$$_[0]/i) {
-            $status = $$_[1];
-            return $status;
-        }
-    }
-    
-    return $status;
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_panMgmtPanoramaConnected = '.1.3.6.1.4.1.25461.2.1.2.4.1.0';
     my $oid_panMgmtPanorama2Connected = '.1.3.6.1.4.1.25461.2.1.2.4.2.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_panMgmtPanoramaConnected, $oid_panMgmtPanorama2Connected], nothing_quit => 1);
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'Panorama connection statuses are ok.');
-    if (!$self->check_exclude(section => 'panorama', instance => 1)) {
-        my $exit = $self->get_severity(section => 'panorama', value => $result->{$oid_panMgmtPanoramaConnected});
-        $self->{output}->output_add(long_msg => sprintf("panorama '1' connection status is %s",
-                                                         $result->{$oid_panMgmtPanoramaConnected}));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("panorama '1' connection status is %s",
-                                                             $result->{$oid_panMgmtPanoramaConnected}));
-        }
-    }
-    if (!$self->check_exclude(section => 'panorama', instance => 2)) {
-        my $exit = $self->get_severity(section => 'panorama', value => $result->{$oid_panMgmtPanorama2Connected});
-        $self->{output}->output_add(long_msg => sprintf("panorama '2' connection status is %s",
-                                                         $result->{$oid_panMgmtPanorama2Connected}));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("panorama '2' connection status is %s",
-                                                             $result->{$oid_panMgmtPanorama2Connected}));
-        }
-    }
-    
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [$oid_panMgmtPanoramaConnected, $oid_panMgmtPanorama2Connected],
+        nothing_quit => 1
+    );
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{pan} = {
+        1 => {
+            display => 1,
+            status => $snmp_result->{$oid_panMgmtPanoramaConnected},
+        },
+        2 => {
+            display => 2,
+            status => $snmp_result->{$oid_panMgmtPanorama2Connected},
+        }
+    };
 }
 
 1;
@@ -148,15 +109,15 @@ Check panorama connection status.
 
 =over 8
 
-=item B<--threshold-overload>
+=item B<--warning-status>
 
-Set to overload default threshold value.
-Example: --threshold-overload='warning,(not-connected)'
+Set warning threshold for status (Default: '').
+Can used special variables like:  %{status}, %{display}
 
-=item B<--exclude>
+=item B<--critical-status>
 
-Exclude some parts (comma seperated list)
-Can also exclude specific instance: --exclude=panorama#2#
+Set critical threshold for status (Default: '%{status} =~ /not-connected/i').
+Can used special variables like: %{status}, %{display}
 
 =back
 

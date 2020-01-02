@@ -91,11 +91,10 @@ sub manage_selection {
 
     my $oid_panGPGWUtilizationMaxTunnels = '.1.3.6.1.4.1.25461.2.1.2.5.1.2.0';
     my $oid_panGPGWUtilizationActiveTunnels = '.1.3.6.1.4.1.25461.2.1.2.5.1.3.0';
-    #my $snmp_result = $options{snmp}->get_leef(
-    #    oids => [$oid_panGPGWUtilizationMaxTunnels, $oid_panGPGWUtilizationActiveTunnels],
-    #    nothing_quit => 1
-    #);
-    my $snmp_result = { $oid_panGPGWUtilizationMaxTunnels => 10000, $oid_panGPGWUtilizationActiveTunnels => 1000 };
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [$oid_panGPGWUtilizationMaxTunnels, $oid_panGPGWUtilizationActiveTunnels],
+        nothing_quit => 1
+    );
 
     my ($used, $total) = ($snmp_result->{$oid_panGPGWUtilizationActiveTunnels}, $snmp_result->{$oid_panGPGWUtilizationMaxTunnels});
 
