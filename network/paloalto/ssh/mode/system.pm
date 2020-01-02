@@ -59,7 +59,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'system', type => 0, message_separator => ' - ' }
+        { name => 'system', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{system} = [
@@ -87,12 +87,30 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'sessions-traffic', nlabel => 'system.sessions.traffic.count', set => {
+                key_values => [ { name => 'throughput', diff => 1 } ],
+                output_template => 'session traffic: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { value => 'throughput_absolute', template => '%s',
+                      unit => 'b/s', min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-total-active', nlabel => 'system.sessions.total.active.count', display_ok => 0, set => {
+                key_values => [ { name => 'active_sessions' } ],
+                output_template => 'total active sessions: %s',
+                perfdatas => [
+                    { value => 'active_sessions_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -144,6 +162,24 @@ sub manage_selection {
         threat_version => $result->{system}->{'threat-version'},
         oper_mode      => $result->{system}->{'operational-mode'},
     };
+
+    #Device is up          : 40 days 5 hours 53 mins 12 sec
+    #Packet rate           : 15872/s
+    #Throughput            : 111588 Kbps
+    #Total active sessions : 12769
+    #Active TCP sessions   : 5217
+    #Active UDP sessions   : 7531
+    #Active ICMP sessions  : 19
+    $result = $options{custom}->execute_command(command => 'show system statistics session', text_output => 1);
+    if ($result =~ /^Throughput\s*:\s*(\d+)\s+(..)/mi) {
+        $self->{system}->{throughput} = centreon::plugins::misc::convert_bytes(value => $1, unit => $2);
+    }
+    if ($result =~ /^Total\s+active\s+sessions\s*:\s*(\d+)/mi) {
+        $self->{system}->{active_sessions} = $1;
+    }
+
+    $self->{cache_name} = "paloalto_" . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -174,7 +210,8 @@ Can used special variables like: %{oper_mode}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'av-update' (s), 'threat-update' (s).
+Can be: 'av-update' (s), 'threat-update' (s),
+'sessions-traffic' (b/s), 'sessions-total-active'.
 
 =back
 

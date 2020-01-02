@@ -104,6 +104,7 @@ sub get_hostname {
 ##############
 # Specific methods
 ##############
+
 sub execute_command {
     my ($self, %options) = @_;
 
@@ -121,6 +122,10 @@ sub execute_command {
     );
 
     $self->{output}->output_add(long_msg => "command response: $stdout", debug => 1);
+    if (defined($options{text_output})) {
+        return $stdout;
+    }
+
     if ($stdout !~ /(<response status="(.*?)">.*<\/response>)/ms) {
         $self->{output}->add_option_msg(short_msg => "Cannot find xml response");
         $self->{output}->option_exit();
