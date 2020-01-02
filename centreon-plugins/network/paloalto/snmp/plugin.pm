@@ -32,7 +32,7 @@ sub new {
     $self->{version} = '0.5';
     %{$self->{modes}} = (
         'cluster-status'  => 'network::paloalto::snmp::mode::clusterstatus',
-        'cpu'             => 'snmp_standard::mode::cpu',
+        'cpu'             => 'network::paloalto::snmp::mode::cpu',
         'gp-usage'        => 'network::paloalto::snmp::mode::gpusage',
         'hardware'        => 'snmp_standard::mode::hardwaredevice',
         'interfaces'      => 'snmp_standard::mode::interfaces', 
