@@ -52,7 +52,7 @@ sub custom_hosts_checked_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'hosts active checked 1/5/15/60 min: %d/%d/%d/%d',
+        'hosts active checked last 1/5/15/60 min: %d/%d/%d/%d',
         $self->{result_values}->{last1min_absolute},
         $self->{result_values}->{last5min_absolute},
         $self->{result_values}->{last15min_absolute},
@@ -64,7 +64,7 @@ sub custom_services_checked_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'services active checked 1/5/15/60 min: %d/%d/%d/%d',
+        'services active checked last 1/5/15/60 min: %d/%d/%d/%d',
         $self->{result_values}->{last1min_absolute},
         $self->{result_values}->{last5min_absolute},
         $self->{result_values}->{last15min_absolute},
