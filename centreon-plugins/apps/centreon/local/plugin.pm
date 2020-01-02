@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'bamservice'               => 'apps::centreon::local::mode::bamservice',
         'broker-stats'             => 'apps::centreon::local::mode::brokerstats',
+        'centengine-stats'         => 'apps::centreon::local::mode::centenginestats',
         'centreon-plugins-version' => 'apps::centreon::local::mode::centreonpluginsversion',
         'downtime-trap'            => 'apps::centreon::local::mode::downtimetrap',
         'dummy'                    => 'apps::centreon::local::mode::dummy',
