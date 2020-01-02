@@ -55,7 +55,6 @@ sub set_counters {
                 ],
             }
         },
-
     ];
 }
 
@@ -98,16 +97,19 @@ sub manage_selection {
         my $cpu_num = $1;
 
         $cpu += $result->{$key};
-        $self->{cpu_core}->{$i} = { display => $i,
-                                    cpu => $result->{$key} };
+        $self->{cpu_core}->{$i} = {
+            display => $i,
+            cpu => $result->{$key}
+        };
 
         $i++;
     }
 
     my $avg_cpu = $cpu / $i;
-    $self->{cpu_avg} = { average => $avg_cpu,
-                         count => $i };
-
+    $self->{cpu_avg} = {
+        average => $avg_cpu,
+        count => $i
+    };
 }
 
 1;
