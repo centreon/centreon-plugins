@@ -187,32 +187,36 @@ sub manage_selection {
     $self->{database} = {};
     foreach my $row (@$result) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' && 
-                 $$row[0] !~ /$self->{option_results}->{filter_database}/);
+                 $row->[0] !~ /$self->{option_results}->{filter_database}/);
         if (!defined($self->{database}->{$$row[0]})) {
-            $self->{database}->{$$row[0]} = {
-                display => $$row[0],
+            $self->{database}->{$row->[0]} = {
+                display => $row->[0],
                 global_db => { free => 0, used => 0 },
                 table => {}
             };
         }
 
-        if (($$row[2] =~ /innodb/i && ($innodb_per_table == 1 || $innodb_ibdata_done == 0))) {
-            $self->{global}->{free} += $$row[3];
-            $self->{global}->{used} += $$row[4];
+        if (($row->[2] =~ /innodb/i && ($innodb_per_table == 1 || $innodb_ibdata_done == 0))) {
+            $self->{global}->{free} += $row->[3];
+            $self->{global}->{used} += $row->[4];
             $innodb_ibdata_done = 1;
         }
+        if ($row->[2] !~ /innodb/i) {
+            $self->{global}->{free} += $row->[3];
+            $self->{global}->{used} += $row->[4];
+        }
         
-        if ($$row[2] !~ /innodb/i ||
-            ($$row[2] =~ /innodb/i && $innodb_per_table == 1)
+        if ($row->[2] !~ /innodb/i ||
+            ($row->[2] =~ /innodb/i && $innodb_per_table == 1)
         ) {
-            $self->{database}->{$$row[0]}->{global_db}->{free} += $$row[3];
-            $self->{database}->{$$row[0]}->{global_db}->{used} += $$row[4];
+            $self->{database}->{$row->[0]}->{global_db}->{free} += $row->[3];
+            $self->{database}->{$row->[0]}->{global_db}->{used} += $row->[4];
             
-            $self->{database}->{$$row[0]}->{table}->{$$row[1]} = {
-                display => $$row[1],
-                free => $$row[3],
-                used => $$row[4],
-                frag => $$row[5]
+            $self->{database}->{$row->[0]}->{table}->{$$row[1]} = {
+                display => $row->[1],
+                free => $row->[3],
+                used => $row->[4],
+                frag => $row->[5]
             };
         }
     }
