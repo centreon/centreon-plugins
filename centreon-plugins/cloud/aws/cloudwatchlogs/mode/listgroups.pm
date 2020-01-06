@@ -44,9 +44,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->cloudwatchlogs_describe_log_groups(
-        region => $self->{option_results}->{region}
-    );
+    return $options{custom}->cloudwatchlogs_describe_log_groups();
 }
 
 sub run {

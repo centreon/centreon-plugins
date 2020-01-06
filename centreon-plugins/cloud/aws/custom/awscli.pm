@@ -66,6 +66,12 @@ sub new {
     return $self;
 }
 
+sub get_region {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{region};
+}
+
 sub set_options {
     my ($self, %options) = @_;
 
@@ -293,7 +299,7 @@ sub cloudwatchlogs_describe_log_groups_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "logs describe-log-groups --region $options{region} --output json";
+    my $cmd_options = "logs describe-log-groups --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
     return $cmd_options; 
@@ -313,7 +319,7 @@ sub cloudwatchlogs_filter_log_events_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "logs filter-log-events --region $options{region} --output json --log-group-name '$options{group_name}'";
+    my $cmd_options = "logs filter-log-events --region $self->{option_results}->{region} --output json --log-group-name '$options{group_name}'";
     $cmd_options .= " --start-time $options{start_time}" if (defined($options{start_time}));
     if (defined($options{stream_names})) {
         $cmd_options .= " --log-stream-names";
