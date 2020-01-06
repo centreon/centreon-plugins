@@ -48,6 +48,7 @@ sub new {
             "username:s@" => { name => 'username' },
             "password:s@" => { name => 'password' },
             "timeout:s@"  => { name => 'timeout' },
+			"ssl-opt:s@"  => { name => 'ssl_opt' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -231,6 +232,10 @@ Cisco Prime password.
 =item B<--timeout>
 
 Set HTTP timeout
+
+=item B<--ssl-opt>
+
+Set SSL options (--ssl-opt="SSL_version => TLSv1" --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE").
 
 =back
 
