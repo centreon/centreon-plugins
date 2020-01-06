@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
         'list-groups'  => 'cloud::aws::cloudwatchlogs::mode::listgroups',
+        'get-logs'     => 'cloud::aws::cloudwatchlogs::mode::getlogs',
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

@@ -60,6 +60,12 @@ sub new {
     return $self;
 }
 
+sub get_region {
+    my ($self, %options) = @_;
+
+    return $self->{option_results}->{region};
+}
+
 sub set_options {
     my ($self, %options) = @_;
 
