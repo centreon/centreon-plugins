@@ -48,7 +48,7 @@ sub new {
             "username:s@" => { name => 'username' },
             "password:s@" => { name => 'password' },
             "timeout:s@"  => { name => 'timeout' },
-			"ssl-opt:s@"  => { name => 'ssl_opt' },
+            "ssl-opt:s@"  => { name => 'ssl_opt' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
