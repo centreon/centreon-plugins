@@ -38,7 +38,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'aws-secret-key:s'    => { name => 'aws_secret_key' },
@@ -62,7 +62,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    
+
     return $self;
 }
 
@@ -127,12 +127,12 @@ sub check_options {
 
 sub execute {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $options{cmd_options};
     $cmd_options .= " --debug" if ($self->{output}->is_debug());
 
     $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $cmd_options . "'", debug => 1);
-    
+
     my ($response) = centreon::plugins::misc::execute(
         output => $self->{output},
         options => $self->{option_results},
@@ -159,7 +159,7 @@ sub execute {
 
 sub cloudwatch_get_metrics_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "cloudwatch get-metric-statistics --region $options{region} --namespace $options{namespace}" . 
@@ -175,7 +175,7 @@ sub cloudwatch_get_metrics_set_cmd {
 
 sub cloudwatch_get_metrics {
     my ($self, %options) = @_;
-    
+
     my $metric_results = {};
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601;
     my $end_time = DateTime->now->iso8601;
@@ -203,23 +203,23 @@ sub cloudwatch_get_metrics {
                 $metric_results->{$raw_results->{Label}}->{sum} = 0 if (!defined($metric_results->{$raw_results->{Label}}->{sum}));
                 $metric_results->{$raw_results->{Label}}->{sum} += $point->{Sum};
             }
-            
+
             $metric_results->{$raw_results->{Label}}->{points}++;
         }
-        
+
         if (defined($metric_results->{$raw_results->{Label}}->{average})) {
             $metric_results->{$raw_results->{Label}}->{average} /= $metric_results->{$raw_results->{Label}}->{points};
         }
     }
-    
+
     return $metric_results;
 }
 
 sub discovery_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-    
+
     my $cmd_options = $options{service} . " " . $options{command} . " --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
@@ -228,7 +228,7 @@ sub discovery_set_cmd {
 
 sub discovery {
     my ($self, %options) = @_;
-    
+
     my $cmd_options = $self->discovery_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
 
@@ -237,7 +237,7 @@ sub discovery {
 
 sub cloudwatch_get_alarms_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "cloudwatch describe-alarms --region $options{region} --output json";
@@ -251,7 +251,7 @@ sub cloudwatch_get_alarms {
 
     my $cmd_options = $self->cloudwatch_get_alarms_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     my $alarm_results = [];
     foreach my $alarm (@{$raw_results->{MetricAlarms}}) {
         push @$alarm_results, {
@@ -262,17 +262,18 @@ sub cloudwatch_get_alarms {
             StateUpdatedTimestamp => $alarm->{StateUpdatedTimestamp},
         };
     }
+
     return $alarm_results;
 }
 
 sub cloudwatch_list_metrics_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "cloudwatch list-metrics --region $options{region} --output json";
-    $cmd_options .= " --namespace $options{namespace}" if defined($options{namespace});
-    $cmd_options .= " --metric-name $options{metric}" if defined($options{metric});
+    $cmd_options .= " --namespace $options{namespace}" if (defined($options{namespace}));
+    $cmd_options .= " --metric-name $options{metric}" if (defined($options{metric}));
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
     return $cmd_options; 
@@ -283,13 +284,60 @@ sub cloudwatch_list_metrics {
 
     my $cmd_options = $self->cloudwatch_list_metrics_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     return $raw_results->{Metrics};
+}
+
+sub cloudwatchlogs_describe_log_groups_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "logs describe-log-groups --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options; 
+}
+
+sub cloudwatchlogs_describe_log_groups {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->cloudwatchlogs_describe_log_groups_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{logGroups};
+}
+
+sub cloudwatchlogs_filter_log_events_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "logs filter-log-events --region $options{region} --output json --log-group-name '$options{group_name}'";
+    $cmd_options .= " --start-time $options{start_time}" if (defined($options{start_time}));
+    if (defined($options{stream_names})) {
+        $cmd_options .= " --log-stream-names";
+        foreach (@{$options{stream_names}}) {
+            $cmd_options .= " '$_'";
+        }
+    }
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options; 
+}
+
+sub cloudwatchlogs_filter_log_events {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->cloudwatchlogs_filter_log_events_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{events};
 }
 
 sub ec2_get_instances_status_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "ec2 describe-instance-status --include-all-instances --no-dry-run --region $options{region} --output json";
@@ -303,7 +351,7 @@ sub ec2_get_instances_status {
 
     my $cmd_options = $self->ec2_get_instances_status_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     my $instance_results = {};
     foreach (@{$raw_results->{InstanceStatuses}}) {
         $instance_results->{$_->{InstanceId}} = {
@@ -311,13 +359,13 @@ sub ec2_get_instances_status {
             status => => $_->{InstanceStatus}->{Status}
         };
     }
-    
+
     return $instance_results;
 }
 
 sub ec2_list_resources_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "ec2 describe-instances --no-dry-run --region $options{region} --output json";
@@ -331,7 +379,7 @@ sub ec2_list_resources {
 
     my $cmd_options = $self->ec2_list_resources_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     my $resource_results = [];
     foreach my $reservation (@{$raw_results->{Reservations}}) {
         foreach my $instance (@{$reservation->{Instances}}) {
@@ -360,13 +408,13 @@ sub ec2_list_resources {
             
         }
     }
-    
+
     return $resource_results;
 }
 
 sub asg_get_resources_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "autoscaling describe-auto-scaling-groups --region $options{region} --output json";
@@ -380,13 +428,13 @@ sub asg_get_resources {
 
     my $cmd_options = $self->asg_get_resources_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-        
+
     return \@{$raw_results->{AutoScalingGroups}};
 }
 
 sub rds_get_instances_status_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
@@ -400,18 +448,18 @@ sub rds_get_instances_status {
 
     my $cmd_options = $self->rds_get_instances_status_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     my $instance_results = {};
     foreach (@{$raw_results->{DBInstances}}) {
         $instance_results->{$_->{DBInstanceIdentifier}} = { state => $_->{DBInstanceStatus} };
     }
-    
+
     return $instance_results;
 }
 
 sub rds_list_instances_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
@@ -425,7 +473,7 @@ sub rds_list_instances {
 
     my $cmd_options = $self->rds_list_instances_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     my $instance_results = [];
     foreach my $instance (@{$raw_results->{DBInstances}}) {
         push @{$instance_results}, {
@@ -436,13 +484,13 @@ sub rds_list_instances {
             DBInstanceStatus => $instance->{DBInstanceStatus},
         };
     }
-    
+
     return $instance_results;
 }
 
 sub rds_list_clusters_set_cmd {
     my ($self, %options) = @_;
-    
+
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
     my $cmd_options = "rds describe-db-clusters --region $options{region} --output json";
@@ -456,7 +504,7 @@ sub rds_list_clusters {
 
     my $cmd_options = $self->rds_list_clusters_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     my $cluster_results = [];
     foreach my $cluster (@{$raw_results->{DBClusters}}) {
         push @{$cluster_results}, {
@@ -466,7 +514,7 @@ sub rds_list_clusters {
             Status => $cluster->{Status},
         };
     }
-    
+
     return $cluster_results;
 }
 

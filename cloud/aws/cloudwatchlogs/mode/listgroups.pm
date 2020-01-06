@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::cloudwatch::mode::listmetrics;
+package cloud::aws::cloudwatchlogs::mode::listgroups;
 
 use base qw(centreon::plugins::mode);
 
@@ -31,8 +31,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'namespace:s' => { name => 'namespace' },
-        'metric:s'    => { name => 'metric' },
     });
 
     return $self;
@@ -46,38 +44,27 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{metrics} = $options{custom}->cloudwatch_list_metrics(
-        region => $self->{option_results}->{region},
-        namespace => $self->{option_results}->{namespace},
-        metric => $self->{option_results}->{metric}
+    return $options{custom}->cloudwatchlogs_describe_log_groups(
+        region => $self->{option_results}->{region}
     );
-}
-
-sub get_dimensions_str {
-    my ($self, %options) = @_;
-
-    my $dimensions = '';
-    my $append = '';
-    foreach (@{$options{dimensions}}) {
-        $dimensions .= $append . "Name=$_->{Name},Value=$_->{Value}";
-        $append = ',';
-    }
-
-    return $dimensions;
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (@{$self->{metrics}}) {
-        $self->{output}->output_add(long_msg => sprintf("[Namespace = %s][Dimensions = %s][Metric = %s]",
-            $_->{Namespace}, $self->get_dimensions_str(dimensions => $_->{Dimensions}), $_->{MetricName}));
+    my $log_groups = $self->manage_selection(%options);
+    foreach (@$log_groups) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                '[group name = %s]',
+                $_->{logGroupName}
+            )
+        );
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List metrics:'
+        short_msg => 'List log groups:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -86,18 +73,16 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['namespace', 'metric', 'dimensions']);
+    $self->{output}->add_disco_format(elements => ['group_name']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach (@{$self->{metrics}}) {
+    my $log_groups = $self->manage_selection(%options);
+    foreach (@$log_groups) {
         $self->{output}->add_disco_entry(
-            namespace => $_->{Namespace},
-            metric => $_->{MetricName},
-            dimensions => $self->get_dimensions_str(dimensions => $_->{Dimensions}),
+            group_name => $_->{logGroupName}
         );
     }
 }
@@ -108,17 +93,9 @@ __END__
 
 =head1 MODE
 
-List cloudwatch metrics.
+List cloudwatch logs groups.
 
 =over 8
-
-=item B<--namespace>
-
-Set cloudwatch namespace.
-
-=item B<--metric>
-
-Set cloudwatch metric.
 
 =back
 
