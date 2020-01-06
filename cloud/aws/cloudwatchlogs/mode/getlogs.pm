@@ -69,7 +69,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'group-name:s'      => { name => 'group_name' },
-        'stream-names:s@'   => { name => 'stream_names' },
+        'stream-name:s@'    => { name => 'stream_name' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '' },
@@ -99,13 +99,13 @@ sub manage_selection {
         statefile =>
             'cache_aws_' . $self->{mode} . '_' . $options{custom}->get_region() .
             (defined($self->{option_results}->{group_name}) ? md5_hex($self->{option_results}->{group_name}) : md5_hex('all')) . '_' .
-            (defined($self->{option_results}->{stream_names}) ? md5_hex(join(',' . $self->{option_results}->{stream_names})) : md5_hex('all'))
+            (defined($self->{option_results}->{stream_name}) ? md5_hex(join(',' . $self->{option_results}->{stream_name})) : md5_hex('all'))
     );
     my $last_time = $self->{statefile_cache}->get(name => 'last_time');
     my $current_time = time();
     $self->{statefile_cache}->write(data => { last_time => $current_time });
 
-    if (defined($last_time)) {
+    if (!defined($last_time)) {
         $self->{output}->output_add(
             severity => 'OK',
             short_msg => 'first execution. create cache'
@@ -117,7 +117,7 @@ sub manage_selection {
     $self->{alarms}->{global} = { alarm => {} };
     my $results = $options{custom}->cloudwatchlogs_filter_log_events(
         group_name => $self->{option_results}->{group_name},
-        stream_names => $self->{option_results}->{stream_names},
+        stream_names => $self->{option_results}->{stream_name},
         start_time => $last_time * 1000
     );
 
@@ -148,7 +148,7 @@ Set log group name (Required).
 
 =item B<--stream-name>
 
-Filters the results to only logs from the log streams (multiple option).
+Filters the results to only logs from the log stream (multiple option).
 
 =item B<--unknown-status>
 
