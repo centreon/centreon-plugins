@@ -33,7 +33,8 @@ sub custom_status_output {
         $self->{result_values}->{status},
         $self->{result_values}->{ip},
         $self->{result_values}->{group},
-        $self->{result_values}->{location});
+        $self->{result_values}->{location}
+    );
     return $msg;
 }
 
@@ -50,7 +51,7 @@ sub custom_status_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_init => 'skip_global' },
         { name => 'ap', type => 1, cb_prefix_output => 'prefix_output',
@@ -67,7 +68,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{ap} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'wlanAPName' }, { name => 'wlanAPIpAddress' }, { name => 'wlanAPGroupName' },
@@ -126,11 +127,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-ip:s"       => { name => 'filter_ip' },
-        "filter-name:s"     => { name => 'filter_name' },
-        "filter-group:s"    => { name => 'filter_group' },
-        "warning-status:s"  => { name => 'warning_status' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /up/i' },
+        'filter-ip:s'       => { name => 'filter_ip' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-group:s'    => { name => 'filter_group' },
+        'warning-status:s'  => { name => 'warning_status' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /up/i' },
     });
 
     return $self;
@@ -143,23 +144,21 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-my %map_status = (
-    1 => 'up', 2 => 'down'
-);
+my $map_status = { 1 => 'up', 2 => 'down' };
 
 my $oid_wlsxWlanAPTable = '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1';
 
 my $mapping_info = {
     wlanAPIpAddress => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.2' },
-    wlanAPName => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.3' },
-    wlanAPGroupName=> { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.4' },
+    wlanAPName      => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.3' },
+    wlanAPGroupName => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.4' },
 };
 my $mapping_stat = {
-    wlanAPUpTime => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.12' },
-    wlanAPLocation => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.14' },
-    wlanAPStatus => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.20', map => \%map_status },
-    wlanAPNumBootstraps => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.21' },
-    wlanAPNumReboots => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.22' },
+    wlanAPUpTime        => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.12' },
+    wlanAPLocation      => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.14' },
+    wlanAPStatus        => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.19', map => $map_status },
+    wlanAPNumBootstraps => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.20' },
+    wlanAPNumReboots    => { oid => '.1.3.6.1.4.1.14823.2.2.1.5.2.1.4.1.21' },
 };
 
 sub manage_selection {
@@ -167,7 +166,7 @@ sub manage_selection {
 
     $self->{global}->{connected} = 0;
     $self->{ap} = {};
-    
+
     my $snmp_info = $options{snmp}->get_table(
         oid => $oid_wlsxWlanAPTable,
         start => $mapping_info->{wlanAPIpAddress}->{oid},
@@ -203,12 +202,12 @@ sub manage_selection {
         
         $self->{ap}->{$instance} = { %{$result} };
     }
-    
+
     if (scalar(keys %{$self->{ap}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No AP found.");
         $self->{output}->option_exit();
     }
-    
+
     $options{snmp}->load(
         oids => [
             $mapping_stat->{wlanAPUpTime}->{oid},
@@ -222,17 +221,17 @@ sub manage_selection {
     );
 
     my $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping_stat->{wlanAPUpTime}->{oid}\.(.*)/);
         my $instance = $1;
-        
+
         my $result = $options{snmp}->map_instance(
             mapping => $mapping_stat,
             results => $snmp_result,
             instance => $instance
         );
-        
+
         $self->{ap}->{$instance} = { %{$self->{ap}->{$instance}}, %{$result}, wlanAPUpTime => $result->{wlanAPUpTime} / 100 };
         $self->{global}->{connected}++;
     }
@@ -248,21 +247,14 @@ Check AP status (WLSX-WLAN-MIB).
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'connected-current' (global), 'uptime',
 'controller-bootstrap', 'reboot', 'status' (per AP).
+
 'status' can use special variables like: %{name},
 %{status}, %{ip}, %{group}, %{location} (Default: '')
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'connected-current' (global), 'uptime',
-'controller-bootstrap', 'reboot', 'status' (per AP).
-'status' can use special variables like: %{name},
-%{status}, %{ip}, %{group}, %{location} (Default: '%{status} !~ /up/i')
 
 =item B<--filter-*>
 
