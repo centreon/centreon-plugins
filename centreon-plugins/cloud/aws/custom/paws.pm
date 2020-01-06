@@ -232,6 +232,58 @@ sub cloudwatch_list_metrics {
     return $metric_results;
 }
 
+sub cloudwatchlogs_describe_log_groups {
+    my ($self, %options) = @_;
+
+    my $log_groups_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $cw = Paws->service('CloudWatchLogs', caller => $lwp_caller, region => $options{region});
+        my %cw_options = ();
+        while ((my $list_log_groups = $cw->DescribeLogGroups(%cw_options))) {
+            foreach (@{$list_log_groups->{logGroups}}) {
+                push @$log_groups_results, $_;
+            }
+            
+            last if (!defined($list_log_groups->{NextToken}));
+            $cw_options{NextToken} = $list_log_groups->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $log_groups_results;
+}
+
+sub cloudwatchlogs_filter_log_events {
+    my ($self, %options) = @_;
+
+    my $log_groups_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $cw = Paws->service('CloudWatchLogs', caller => $lwp_caller, region => $options{region});
+        my %cw_options = ();
+        $cw_options{StartTime} = $options{start_time} if (defined($options{start_time}));
+        $cw_options{LogStreamNames} = [@{$options{LogStreamNames}}] if (defined($options{LogStreamNames}));
+        while ((my $list_log_groups = $cw->FilterLogEvents(%cw_options))) {
+            foreach (@{$list_log_groups->{logGroups}}) {
+                push @$log_groups_results, $_;
+            }
+            
+            last if (!defined($list_log_groups->{NextToken}));
+            $cw_options{NextToken} = $list_log_groups->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $log_groups_results;
+}
+
 sub ec2_get_instances_status {
     my ($self, %options) = @_;
     
