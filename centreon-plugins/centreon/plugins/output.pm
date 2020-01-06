@@ -511,17 +511,21 @@ sub display {
     if (defined($self->{option_results}->{output_xml})) {
         $self->create_xml_document();
         if ($self->{is_output_xml}) {
-            $self->output_xml(exit_litteral => $self->get_litteral_status(), 
-                              nolabel => $nolabel, 
-                              force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
+            $self->output_xml(
+                exit_litteral => $self->get_litteral_status(), 
+                nolabel => $nolabel, 
+                force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output
+            );
             return ;
         }
     } elsif (defined($self->{option_results}->{output_json})) {
         $self->create_json_document();
         if ($self->{is_output_json}) {
-            $self->output_json(exit_litteral => $self->get_litteral_status(), 
-                               nolabel => $nolabel,
-                               force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);
+            $self->output_json(
+                exit_litteral => $self->get_litteral_status(), 
+                nolabel => $nolabel,
+                force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output
+            );
             return ;
         }
     } elsif (defined($self->{option_results}->{output_openmetrics})) {
