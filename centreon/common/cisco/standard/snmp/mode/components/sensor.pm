@@ -97,24 +97,25 @@ my %perfdata_unit = (
 
 # In MIB 'CISCO-ENTITY-SENSOR-MIB'
 my $mapping = {
-    entSensorType => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.1', map => \%map_sensor_type },
-    entSensorScale => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.2', map => \%map_scale },
-    entSensorPrecision => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.3' },
-    entSensorValue => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.4' },
-    entSensorStatus => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.5', map => \%map_sensor_status },
+    entSensorType            => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.1', map => \%map_sensor_type },
+    entSensorScale           => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.2', map => \%map_scale },
+    entSensorPrecision       => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.3' },
+    entSensorValue           => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.4' },
+    entSensorStatus          => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.5', map => \%map_sensor_status },
+    entSensorValueUpdateRate => { oid => '.1.3.6.1.4.1.9.9.91.1.1.1.1.7' }, # 0 means no threshold check
 };
 my $mapping2 = {
     entSensorThresholdSeverity => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.2', map => \%map_severity },
     entSensorThresholdRelation => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.3', map => \%map_relation },
-    entSensorThresholdValue => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.4' },
+    entSensorThresholdValue    => { oid => '.1.3.6.1.4.1.9.9.91.1.2.1.1.4' },
 };
-my $oid_entSensorValueEntry = '.1.3.6.1.4.1.9.9.91.1.1.1.1';
+my $oid_entSensorValueEntry     = '.1.3.6.1.4.1.9.9.91.1.1.1.1';
 my $oid_entSensorThresholdEntry = '.1.3.6.1.4.1.9.9.91.1.2.1.1';
-my $oid_entPhysicalDescr = '.1.3.6.1.2.1.47.1.1.1.1.2';
+my $oid_entPhysicalDescr        = '.1.3.6.1.2.1.47.1.1.1.1.2';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_entSensorValueEntry, end => $mapping->{entSensorStatus}->{oid} }, 
         { oid => $oid_entSensorThresholdEntry, end => $mapping2->{entSensorThresholdValue}->{oid} };
 }
@@ -140,7 +141,7 @@ sub get_default_warning_threshold {
             $low_th = $value;
         }
     }
-    
+
     # when it's the same value. Means no threshold.
     if (defined($low_th) && defined($high_th) && $high_th <= $low_th) {
         return '';
@@ -148,6 +149,7 @@ sub get_default_warning_threshold {
     my $th = '';
     $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
     $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
+    $th = '~:' . $high_th if (defined($high_th) && !defined($low_th));
 
     return $th;
 }
@@ -161,7 +163,7 @@ sub get_default_critical_threshold {
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_entSensorThresholdEntry}, instance => $options{instance} . '.' . $instance);
         next if ($result->{entSensorThresholdSeverity} !~ /major|critical/);
-        
+
         my $value = $result->{entSensorThresholdValue} * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision})));
         if ($result->{entSensorThresholdRelation} eq 'greaterOrEqual') {
             $high_th = $value - (1 * (10 ** ($options{result}->{entSensorScale}) * (10 ** -($options{result}->{entSensorPrecision}))));
@@ -181,45 +183,55 @@ sub get_default_critical_threshold {
     my $th = '';
     $th = centreon::plugins::misc::expand_exponential(value => $low_th) . ':' if (defined($low_th));
     $th .= centreon::plugins::misc::expand_exponential(value => $high_th) if (defined($high_th));
-    
+    $th = '~:' . $high_th if (defined($high_th) && !defined($low_th));
+
     return $th;
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking sensors");
     $self->{components}->{sensor} = {name => 'sensors', total => 0, skip => 0};
     return if ($self->check_filter(section => 'sensor'));
-    
+
+    my $verify_th_update = {};
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_entSensorValueEntry}})) {
         next if ($oid !~ /^$mapping->{entSensorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_entSensorValueEntry}, instance => $instance);
-        
+
         next if (!defined($self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance}));
         my $sensor_descr = $self->{results}->{$oid_entPhysicalDescr}->{$oid_entPhysicalDescr . '.' . $instance};
-        
+
         next if ($self->check_filter(section => 'sensor', instance => $result->{entSensorType} . '.' . $instance));
         $self->{components}->{sensor}->{total}++;
 
         $result->{entSensorValue} = defined($result->{entSensorValue}) ? 
            $result->{entSensorValue} * (10 ** ($result->{entSensorScale}) * (10 ** -($result->{entSensorPrecision}))) : undef;
-        
-        $self->{output}->output_add(long_msg => sprintf("Sensor '%s' status is '%s' [instance: %s] [value: %s %s]", 
-                                    $sensor_descr, $result->{entSensorStatus},
-                                    $instance, 
-                                    defined($result->{entSensorValue}) ? $result->{entSensorValue} : '-',
-                                    $result->{entSensorType}));
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Sensor '%s' status is '%s' [instance: %s] [value: %s %s]", 
+                $sensor_descr, $result->{entSensorStatus},
+                $instance, 
+                defined($result->{entSensorValue}) ? $result->{entSensorValue} : '-',
+                $result->{entSensorType}
+            )
+        );
         my $exit = $self->get_severity(section => $result->{entSensorType}, label => 'sensor', value => $result->{entSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Sensor '%s/%s' status is '%s'", 
-                                                             $sensor_descr, $instance, $result->{entSensorStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Sensor '%s/%s' status is '%s'", 
+                    $sensor_descr, $instance, $result->{entSensorStatus}
+                )
+            );
         }
-     
+
         next if (!defined($result->{entSensorValue}) || $result->{entSensorValue} !~ /[0-9]/);
-        
+
         my $component = 'sensor.' . $result->{entSensorType};
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $result->{entSensorValue});
         if ($checked == 0) {
@@ -231,20 +243,65 @@ sub check {
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $component  . '-instance-' . $instance);
             $exit2 = $self->{perfdata}->threshold_check(
                 value => $result->{entSensorValue}, 
-                threshold => [ { label => 'critical-' . $component  . '-instance-' . $instance, exit_litteral => 'critical' }, 
-                               { label => 'warning-' . $component . '-instance-' . $instance, exit_litteral => 'warning' }
+                threshold => [
+                    { label => 'critical-' . $component  . '-instance-' . $instance, exit_litteral => 'critical' }, 
+                    { label => 'warning-' . $component . '-instance-' . $instance, exit_litteral => 'warning' }
                 ]
             );
         }
+
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Sensor '%s/%s' is %s %s", $sensor_descr, $instance, $result->{entSensorValue}, $perfdata_unit{$result->{entSensorType}}));
+            # we verify if it's a entSensorValueUpdateRate is not zero
+            if ($checked == 0) {
+                $verify_th_update->{$instance} = { result => $result, warn => $warn, crit => $crit, sensor_descr => $sensor_descr, status => $exit2 };
+                next;
+            }
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Sensor '%s/%s' is %s %s",
+                    $sensor_descr, $instance, $result->{entSensorValue}, $perfdata_unit{$result->{entSensorType}}
+                )
+            );
         }
+
         $self->{output}->perfdata_add(
             label => $component, unit => $perfdata_unit{$result->{entSensorType}},
             nlabel => 'hardware.' . $component, 
             instances => $sensor_descr,
             value => $result->{entSensorValue},
+            warning => $warn,
+            critical => $crit
+        );
+    }
+
+    return if (scalar(keys %$verify_th_update) <= 0);
+    my $snmp_result = $self->{snmp}->get_leef(oids => [map($mapping->{entSensorValueUpdateRate}->{oid} . '.' . $_, keys(%$verify_th_update))]);
+    foreach (keys %$verify_th_update) {
+        my ($warn, $crit) = ($verify_th_update->{$_}->{warn}, $verify_th_update->{$_}->{crit});
+        if (defined($snmp_result->{$mapping->{entSensorValueUpdateRate}->{oid} . '.' . $_}) &&
+            $snmp_result->{$mapping->{entSensorValueUpdateRate}->{oid} . '.' . $_} == 0) {
+            ($warn, $crit) = ('', '');
+        }
+
+        if (!$self->{output}->is_status(value => $verify_th_update->{$_}->{status}, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $verify_th_update->{$_}->{status},
+                short_msg => sprintf(
+                    "Sensor '%s/%s' is %s %s",
+                    $verify_th_update->{$_}->{sensor_descr}, $_,
+                    $verify_th_update->{$_}->{result}->{entSensorValue},
+                    $perfdata_unit{  $verify_th_update->{$_}->{result}->{entSensorType} }
+                )
+            );
+        }
+
+        $self->{output}->perfdata_add(
+            label => 'sensor.' . $verify_th_update->{$_}->{result}->{entSensorType},
+            unit => $perfdata_unit{ $verify_th_update->{$_}->{result}->{entSensorType} },
+            nlabel => 'hardware.sensor.' . $verify_th_update->{$_}->{result}->{entSensorType}, 
+            instances => $verify_th_update->{$_}->{sensor_descr},
+            value => $verify_th_update->{$_}->{result}->{entSensorValue},
             warning => $warn,
             critical => $crit
         );

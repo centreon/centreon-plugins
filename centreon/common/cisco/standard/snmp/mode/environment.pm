@@ -28,18 +28,18 @@ use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|temperature|voltage|module|physical|sensor)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|sensor.*)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         fan => [
             ['unknown', 'UNKNOWN'],
             ['down', 'CRITICAL'],
             ['up', 'OK'],
-            
+
             ['normal', 'OK'],
             ['warning', 'WARNING'],
             ['critical', 'CRITICAL'],
@@ -93,7 +93,7 @@ sub set_system {
             ['nonoperational', 'CRITICAL'],
         ],
     };
-    
+
     $self->{components_path} = 'centreon::common::cisco::standard::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'temperature', 'voltage', 'module', 'physical', 'sensor'];
 }
@@ -119,28 +119,31 @@ my %map_type_mon = (
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
-    
+
     push @{$self->{request}}, { oid => $oid_entPhysicalDescr }, { oid => $oid_ciscoEnvMonPresent };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
     while (my ($key, $value) = each %{$self->{results}->{$oid_entPhysicalDescr}}) {
         $self->{results}->{$oid_entPhysicalDescr}->{$key} = centreon::plugins::misc::trim($value);
     }
-    $self->{output}->output_add(long_msg => sprintf("Environment type: %s", 
-                                defined($self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}) && defined($map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} ) ? 
-                                $map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} : 'unknown'));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            'Environment type: %s', 
+            defined($self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}) && defined($map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} ) ? 
+                $map_type_mon{$self->{results}->{$oid_ciscoEnvMonPresent}->{$oid_ciscoEnvMonPresent . '.0'}} : 'unknown'
+        )
+    );
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
