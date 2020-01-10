@@ -282,6 +282,7 @@ sub check {
         if (defined($snmp_result->{$mapping->{entSensorValueUpdateRate}->{oid} . '.' . $_}) &&
             $snmp_result->{$mapping->{entSensorValueUpdateRate}->{oid} . '.' . $_} == 0) {
             ($warn, $crit) = ('', '');
+            $verify_th_update->{$_}->{status} = 'ok';
         }
 
         if (!$self->{output}->is_status(value => $verify_th_update->{$_}->{status}, compare => 'ok', litteral => 1)) {
