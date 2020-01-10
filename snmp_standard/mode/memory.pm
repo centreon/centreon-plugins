@@ -164,6 +164,21 @@ sub new {
     return $self;
 }
 
+sub compat_threshold_counter {
+    my ($self, %options) = @_;
+
+    foreach ('warning', 'critical') {
+        next if (!defined($options{option_results}->{$_ . '-' . $options{compat}->{th}}) || $options{option_results}->{$_ . '-' . $options{compat}->{th}} eq '');
+        if (defined($options{compat}->{free})) {
+            $options{option_results}->{$_ . '-' . $options{compat}->{th} . '-free'} = $options{option_results}->{$_ . '-' . $options{compat}->{th}};
+            $options{option_results}->{$_ . '-' . $options{compat}->{th}} = undef;
+        } elsif (defined($options{compat}->{units}) && $options{compat}->{units} eq '%') {
+            $options{option_results}->{$_ . '-' . $options{compat}->{th} . '-prct'} = $options{option_results}->{$_ . '-' . $options{compat}->{th}};
+            $options{option_results}->{$_ . '-' . $options{compat}->{th}} = undef;
+        }
+    }
+}
+
 sub check_options {
     my ($self, %options) = @_;
 
