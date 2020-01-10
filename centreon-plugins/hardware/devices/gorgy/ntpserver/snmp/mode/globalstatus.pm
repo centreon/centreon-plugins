@@ -143,8 +143,7 @@ sub manage_selection {
         oids => [
             $mapping->{currentSyncState}->{oid} . '.0',
             $mapping->{timeBaseState}->{oid} . '.0',
-            $mapping->{powerDownFlags}->{oid} . '.0',
-            $mapping->{ntpRequestsNumber}->{oid} . '.0',
+            $mapping->{ntpRequestsNumber}->{oid} . '.0'
         ],
         nothing_quit => 1
     );
