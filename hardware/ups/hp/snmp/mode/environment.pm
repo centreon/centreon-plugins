@@ -61,7 +61,7 @@ sub set_counters {
             }
         },
         { label => 'remote-humidity', nlabel => 'environment.remote.humidity.percentage', set => {
-                key_values => [ { name => 'internal_humidity' } ],
+                key_values => [ { name => 'remote_humidity' } ],
                 output_template => 'remote humidity: %.2f %%',
                 perfdatas => [
                     { value => 'remote_humidity_absolute', template => '%.2f', 
