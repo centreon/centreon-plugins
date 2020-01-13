@@ -193,18 +193,18 @@ sub authenticate {
 sub request_api {
     my ($self, %options) = @_;
 
-    #my $plop = do {
-    #    local $/ = undef;
-    #    if (!open my $fh, "<", '/tmp/plop2.txt') {
-    #        $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-    #        $self->{output}->option_exit();
-    #    }
-    #    <$fh>;
-    #};
-    #eval {
-    #    $plop = XMLin($plop, ForceArray => $options{ForceArray}, KeyAttr => []);
-    #};
-    #return $plop;
+    my $plop = do {
+        local $/ = undef;
+        if (!open my $fh, "<", '/tmp/plop3.txt') {
+            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
+            $self->{output}->option_exit();
+        }
+        <$fh>;
+    };
+    eval {
+        $plop = XMLin($plop, ForceArray => $options{ForceArray}, KeyAttr => []);
+    };
+    return $plop;
 
     $self->settings();
     if (!defined($self->{session_cookie})) {
