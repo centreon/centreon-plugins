@@ -195,8 +195,8 @@ sub request_api {
 
     my $plop = do {
         local $/ = undef;
-        if (!open my $fh, "<", '/tmp/plop3.txt') {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
+        if (!open my $fh, "<", '/tmp/plop4.txt') {
+            $self->{output}->add_option_msg(short_msg => "Could not open file");
             $self->{output}->option_exit();
         }
         <$fh>;
