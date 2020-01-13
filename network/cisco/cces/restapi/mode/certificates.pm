@@ -43,7 +43,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{certificates} = [
-        { label => 'certificate-expires', nlabel => 'system.certificate.expires.seconds', set => {
+        { label => 'certificate-expire', nlabel => 'system.certificate.expire.seconds', set => {
                 key_values => [ { name => 'validity_time' }, { name => 'generation_time' } ],
                 closure_custom_output => $self->can('custom_validity_output'),
                 perfdatas => [
@@ -126,7 +126,7 @@ Check certificates validity.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'peripherals-connected'.
+Can be: 'certificate-expire'.
 
 =back
 
