@@ -226,9 +226,9 @@ sub run_global {
 
         next if (defined($self->{option_results}->{filter_counters}) && $self->{option_results}->{filter_counters} ne '' &&
             $_->{label} !~ /$self->{option_results}->{filter_counters}/);
-    
+
         $obj->set(instance => defined($force_instance) ? $force_instance : $options{config}->{name});
-    
+
         my ($value_check) = $obj->execute(new_datas => $self->{new_datas}, values => $self->{$options{config}->{name}});
 
         next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
@@ -252,39 +252,45 @@ sub run_global {
             $short_msg .= $short_msg_append . $output;
             $short_msg_append = $message_separator;
         }
-        
+
         $obj->perfdata(extra_instance => $multiple_parent);
     }
 
     my ($prefix_output, $suffix_output);
-    $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}) 
+    $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}) 
         if (defined($options{config}->{cb_prefix_output}));
     $prefix_output = '' if (!defined($prefix_output));
-    
-    $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
+
+    $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}, instance_value => $self->{$options{config}->{name}}) 
         if (defined($options{config}->{cb_suffix_output}));
     $suffix_output = '' if (!defined($suffix_output));
-    
+
     if ($called_multiple == 1 && $long_msg ne '') {
         $self->{output}->output_add(long_msg => $options{indent_long_output} . $prefix_output. $long_msg . $suffix_output);
     }
-    
+
     my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
     if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
         if ($called_multiple == 0) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => $prefix_output . $short_msg . $suffix_output);
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => $prefix_output . $short_msg . $suffix_output
+            );
         } else {
-            $self->run_multiple_prefix_output(severity => $exit,
-                                              short_msg => $prefix_output . $short_msg . $suffix_output);
+            $self->run_multiple_prefix_output(
+                severity => $exit,
+                short_msg => $prefix_output . $short_msg . $suffix_output
+            );
         }
     } else {
         if ($long_msg ne '' && $multiple_parent == 0) {
             if ($called_multiple == 0) {
                 $self->{output}->output_add(short_msg => $prefix_output . $long_msg . $suffix_output) ;
             } else {
-                $self->run_multiple_prefix_output(severity => 'ok',
-                                                  short_msg => $prefix_output . $long_msg . $suffix_output);
+                $self->run_multiple_prefix_output(
+                    severity => 'ok',
+                    short_msg => $prefix_output . $long_msg . $suffix_output
+                );
             }
         }
     }
@@ -400,20 +406,26 @@ sub run_group {
     }
     
     if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $options{config}->{message_multiple});
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $options{config}->{message_multiple}
+        );
     }
 
     my $format_output = defined($options{config}->{format_output}) ? $options{config}->{format_output} : '%s problem(s) detected';
-    
+
     my ($global_exit, $total_problems) = ([], 0);
     foreach my $id (sort keys %{$self->{$options{config}->{name}}}) {
         $self->{most_critical_instance} = 'ok';
         if (defined($options{config}->{cb_long_output})) {
-            $self->{output}->output_add(long_msg => $self->call_object_callback(method_name => $options{config}->{cb_long_output},
-                                                                                instance_value => $self->{$options{config}->{name}}->{$id}));
+            $self->{output}->output_add(
+                long_msg => $self->call_object_callback(
+                    method_name => $options{config}->{cb_long_output},
+                    instance_value => $self->{$options{config}->{name}}->{$id}
+                )
+            );
         }
-        
+
         foreach my $group (@{$options{config}->{group}}) {
             $self->{$group->{name}} = $self->{$options{config}->{name}}->{$id}->{$group->{name}};
             
