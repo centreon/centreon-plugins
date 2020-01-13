@@ -141,7 +141,7 @@ sub output {
     if (defined($self->{closure_custom_output})) {
         return $self->{closure_custom_output}->($self);
     }
-    my $first = $self->{key_values}->[0]->{name};
+    my $first = defined($self->{key_values}->[0]) ? $self->{key_values}->[0]->{name} : undef;
     my ($value, $unit) = (defined($first) ? $self->{result_values}->{$first . '_absolute'} : '', $self->{output_absolute_unit});
     
     if (!defined($self->{output_use})) {
