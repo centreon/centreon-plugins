@@ -25,12 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub prefix_global_output {
-    my ($self, %options) = @_;
-
-    return $options{instance_value}->{label} . ' ';
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
