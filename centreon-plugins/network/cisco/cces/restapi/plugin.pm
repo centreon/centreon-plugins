@@ -36,6 +36,7 @@ sub new {
         'calls-summary' => 'network::cisco::cces::restapi::mode::callssummary',
         'calls-rt'      => 'network::cisco::cces::restapi::mode::callsrt',
         'diagnostics'   => 'network::cisco::cces::restapi::mode::diagnostics',
+        'sessions'      => 'network::cisco::cces::restapi::mode::sessions',
     );
 
     $self->{custom_modes}{api} = 'network::cisco::cces::restapi::custom::api';

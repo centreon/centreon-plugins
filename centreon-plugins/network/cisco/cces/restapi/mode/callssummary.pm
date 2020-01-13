@@ -59,7 +59,6 @@ sub set_counters {
         { label => 'total-finished', nlabel => 'calls.total.finished.count', set => {
                 key_values => [ { name => 'new_calls' } ],
                 output_template => 'total calls finished: %d',
-                output_change_bytes => 1,
                 perfdatas => [
                     { value => 'new_calls_absolute', template => '%d', min => 0 },
                 ],
