@@ -145,8 +145,8 @@ sub manage_selection {
         
         next if (defined($self->{option_results}->{memory}) && defined($last_time) && $last_time > $create_time);
         if (defined($self->{option_results}->{filter_msg}) && $self->{option_results}->{filter_msg} ne '' &&
-            $result->{radwllMilOduAgnLastEventsText} !~ /$self->{option_results}->{perleEntityAlarmDescr}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{radwllMilOduAgnLastEventsText} . "': no matching filter.", debug => 1);
+            $result->{perleEntityAlarmDescr} !~ /$self->{option_results}->{filter_msg}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{perleEntityAlarmDescr} . "': no matching filter.", debug => 1);
             next;
         }
         
