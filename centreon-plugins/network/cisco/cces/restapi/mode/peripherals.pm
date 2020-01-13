@@ -80,7 +80,7 @@ sub manage_selection {
         if (defined($self->{option_results}->{filter_since}) && $self->{option_results}->{filter_since} =~ /\d+/) {
             my $last_seen = Date::Parse::str2time($_->{LastSeen});
             if (!defined($last_seen)) {
-                $self->{manager}->{output}->output_add(
+                $self->{output}->output_add(
                     severity => 'UNKNOWN',
                     short_msg => "can't parse date '" . $_->{LastSeen} . "'"
                 );

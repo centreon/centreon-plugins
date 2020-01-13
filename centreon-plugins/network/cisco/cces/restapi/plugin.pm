@@ -35,6 +35,7 @@ sub new {
         'components'    => 'network::cisco::cces::restapi::mode::components',
         'calls-summary' => 'network::cisco::cces::restapi::mode::callssummary',
         'calls-rt'      => 'network::cisco::cces::restapi::mode::callsrt',
+        'certificates'  => 'network::cisco::cces::restapi::mode::certificates',
         'diagnostics'   => 'network::cisco::cces::restapi::mode::diagnostics',
         'peripherals'   => 'network::cisco::cces::restapi::mode::peripherals',
         'sessions'      => 'network::cisco::cces::restapi::mode::sessions'
