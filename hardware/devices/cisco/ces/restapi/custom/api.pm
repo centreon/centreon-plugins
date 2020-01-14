@@ -193,7 +193,6 @@ sub authenticate {
 sub request_api {
     my ($self, %options) = @_;
 
-    return {};
     $self->settings();
     if (!defined($self->{session_cookie})) {
         $self->authenticate(statefile => $self->{cache});
