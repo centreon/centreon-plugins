@@ -83,11 +83,11 @@ Check database connection time.
 
 =over 8
 
-=item B<--warning-connection-time-milliseconds>
+=item B<--warning-connection-time>
 
 Threshold warning in milliseconds.
 
-=item B<--critical-connection-time-milliseconds>>
+=item B<--critical-connection-time>
 
 Threshold critical in milliseconds.
 
