@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::diagnostics;
+package hardware::devices::cisco::ces::restapi::mode::diagnostics;
 
 use base qw(centreon::plugins::templates::counter);
 

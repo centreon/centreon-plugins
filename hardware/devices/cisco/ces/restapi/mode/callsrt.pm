@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::callsrt;
+package hardware::devices::cisco::ces::restapi::mode::callsrt;
 
 use base qw(centreon::plugins::templates::counter);
 

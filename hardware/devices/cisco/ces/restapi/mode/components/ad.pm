@@ -18,13 +18,15 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::components::ad;
+package hardware::devices::cisco::ces::restapi::mode::components::ad;
 
 use strict;
 use warnings;
 
 sub check_ad {
     my ($self, %options) = @_;
+
+    return if (!defined($options{entry}));
 
     my $instance = $options{instance};
     next if ($self->check_filter(section => 'ad', instance => $instance));

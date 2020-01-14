@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::components::vis;
+package hardware::devices::cisco::ces::restapi::mode::components::camera;
 
 use strict;
 use warnings;
@@ -26,32 +26,32 @@ use warnings;
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => 'checking video input sources');
-    $self->{components}->{vis} = { name => 'video input sources', total => 0, skip => 0 };
-    return if ($self->check_filter(section => 'vis'));
+    $self->{output}->output_add(long_msg => 'checking cameras');
+    $self->{components}->{camera} = { name => 'cameras', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'camera'));
 
-    return if (!defined($self->{results}->{Video}->{Input}->{Source}));
+    return if (!defined($self->{results}->{Cameras}->{Camera}));
 
-    foreach (@{$self->{results}->{Video}->{Input}->{Source}}) {
+    foreach (@{$self->{results}->{Cameras}->{Camera}}) {
         my $instance = $_->{item};
 
-        next if ($self->check_filter(section => 'vis', instance => $instance));
-        $self->{components}->{vis}->{total}++;
+        next if ($self->check_filter(section => 'camera', instance => $instance));
+        $self->{components}->{camera}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "video input source '%s' format status is '%s' [instance: %s]",
+                "camera '%s' connection status is '%s' [instance: %s]",
                 $instance,
-                $_->{FormatStatus},
-                $instance
+                $_->{Connected},
+                $instance,
             )
         );
 
-        my $exit = $self->get_severity(section => 'format_status', value => $_->{FormatStatus});
+        my $exit = $self->get_severity(label => 'connected', section => 'camera.status', value => $_->{Connected});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("video input source '%s' format status is '%s'", $instance, $_->{FormatStatus})
+                short_msg => sprintf("camera '%s' connection status is '%s'", $instance, $_->{Connected})
             );
         }
     }

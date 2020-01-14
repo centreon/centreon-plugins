@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::custom::api;
+package hardware::devices::cisco::ces::restapi::custom::api;
 
 use base qw(centreon::plugins::mode);
 
@@ -193,6 +193,7 @@ sub authenticate {
 sub request_api {
     my ($self, %options) = @_;
 
+    return {};
     $self->settings();
     if (!defined($self->{session_cookie})) {
         $self->authenticate(statefile => $self->{cache});

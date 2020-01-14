@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::plugin;
+package hardware::devices::cisco::ces::restapi::plugin;
 
 use strict;
 use warnings;
@@ -32,16 +32,16 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'components'    => 'network::cisco::cces::restapi::mode::components',
-        'calls-summary' => 'network::cisco::cces::restapi::mode::callssummary',
-        'calls-rt'      => 'network::cisco::cces::restapi::mode::callsrt',
-        'certificates'  => 'network::cisco::cces::restapi::mode::certificates',
-        'diagnostics'   => 'network::cisco::cces::restapi::mode::diagnostics',
-        'peripherals'   => 'network::cisco::cces::restapi::mode::peripherals',
-        'sessions'      => 'network::cisco::cces::restapi::mode::sessions'
+        'components'    => 'hardware::devices::cisco::ces::restapi::mode::components',
+        'calls-summary' => 'hardware::devices::cisco::ces::restapi::mode::callssummary',
+        'calls-rt'      => 'hardware::devices::cisco::ces::restapi::mode::callsrt',
+        'certificates'  => 'hardware::devices::cisco::ces::restapi::mode::certificates',
+        'diagnostics'   => 'hardware::devices::cisco::ces::restapi::mode::diagnostics',
+        'peripherals'   => 'hardware::devices::cisco::ces::restapi::mode::peripherals',
+        'sessions'      => 'hardware::devices::cisco::ces::restapi::mode::sessions'
     );
 
-    $self->{custom_modes}{api} = 'network::cisco::cces::restapi::custom::api';
+    $self->{custom_modes}{api} = 'hardware::devices::cisco::ces::restapi::custom::api';
     return $self;
 }
 

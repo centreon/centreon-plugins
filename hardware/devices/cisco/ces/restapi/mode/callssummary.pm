@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::callssummary;
+package hardware::devices::cisco::ces::restapi::mode::callssummary;
 
 use base qw(centreon::plugins::templates::counter);
 
