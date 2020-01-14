@@ -899,9 +899,6 @@ sub map_instance {
             $results->{$name} = $options{results}->{$entry};
         } elsif (defined($options{results}->{$options{mapping}->{$name}->{oid}}->{$entry})) {
             $results->{$name} = $options{results}->{$options{mapping}->{$name}->{oid}}->{$entry};
-        } elsif (defined($options{mapping}->{$name}->{location}) && 
-                defined($options{results}->{$options{mapping}->{$name}->{location}}->{$entry})) {
-            $results->{$name} = $options{results}->{$options{mapping}->{$name}->{location}}->{$entry};
         } else {
             $results->{$name} = defined($options{default}) ? $options{default} : undef;
         }
