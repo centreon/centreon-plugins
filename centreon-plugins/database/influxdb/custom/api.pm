@@ -269,7 +269,7 @@ Set timeout in seconds (Default: 10).
 
 =item B<--unknown-http-status>
 
-Threshold warning for http response code.
+Threshold unknown for http response code.
 (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-http-status>
