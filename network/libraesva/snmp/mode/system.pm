@@ -127,12 +127,11 @@ my $mapping = {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    #my $snmp_result = $options{snmp}->get_leef(
-    #    oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
-    #    nothing_quit => 1
-    #);
-    #$self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
-    $self->{global} = { spamMessages => 10 };
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        nothing_quit => 1
+    );
+    $self->{global} = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => '0');
 
     $self->{cache_name} = 'libraesva_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
