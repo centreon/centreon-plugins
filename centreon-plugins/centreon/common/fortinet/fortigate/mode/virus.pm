@@ -20,180 +20,122 @@
 
 package centreon::common::fortinet::fortigate::mode::virus;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
 
-my $oid_fgVdEntName = '.1.3.6.1.4.1.12356.101.3.2.1.1.2';
-my $oid_fgAvVirusDetected = '.1.3.6.1.4.1.12356.101.8.2.1.1.1';
-my $oid_fgAvVirusBlocked = '.1.3.6.1.4.1.12356.101.8.2.1.1.2';
+sub set_counters {
+    my ($self, %options) = @_;
+    
+    $self->{maps_counters_type} = [
+        { name => 'domain', type => 1, cb_prefix_output => 'prefix_domain_output', message_multiple => 'All virtualdomains virus stats are ok' }
+    ];
+    
+    $self->{maps_counters}->{domain} = [
+        { label => 'virus-detected', nlabel => 'domain.virus.detected.count', set => {
+                key_values => [ { name => 'fgAvVirusDetected', diff => 1 }, { name => 'display' } ],
+                output_template => 'virus detected: %s',
+                perfdatas => [
+                    { label => 'virus_detected', value => 'fgAvVirusDetected_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'virus-detected-psec', nlabel => 'domain.virus.detected.persecond', display_ok => 0, set => {
+                key_values => [ { name => 'fgAvVirusDetected', diff => 1 }, { name => 'display' } ],
+                output_template => 'virus detected: %.2f/s',
+                per_second => 1,
+                perfdatas => [
+                    { label => 'domain.virus.detected.persecond', value => 'fgAvVirusDetected_per_second', template => '%.2f',
+                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'virus-blocked', nlabel => 'domain.virus.blocked.count', set => {
+                key_values => [ { name => 'fgAvVirusBlocked', diff => 1 }, { name => 'display' } ],
+                output_template => 'virus blocked: %s',
+                perfdatas => [
+                    { label => 'virus_blocked', value => 'fgAvVirusBlocked_absolute', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        },
+        { label => 'virus-blocked-psec', nlabel => 'domain.virus.blocked.persecond', display_ok => 0, set => {
+                key_values => [ { name => 'fgAvVirusBlocked', diff => 1 }, { name => 'display' } ],
+                output_template => 'virus blocked: %.2f/s',
+                per_second => 1,
+                perfdatas => [
+                    { label => 'domain.virus.blocked.persecond', value => 'fgAvVirusBlocked_per_second', template => '%.2f',
+                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        }
+    ];
+}
+
+sub prefix_domain_output {
+    my ($self, %options) = @_;
+    
+    return "Domain '" . $options{instance_value}->{display} . "' ";
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning-virus-detected:s"    => { name => 'warning_virus_detected' },
-                                  "critical-virus-detected:s"   => { name => 'critical_virus_detected' },
-                                  "warning-virus-blocked:s"     => { name => 'warning_virus_blocked' },
-                                  "critical-virus-blocked:s"    => { name => 'critical_virus_blocked' },
-                                  "name:s"                      => { name => 'name' },
-                                  "regexp"                      => { name => 'use_regexp' },
-                                });
-    $self->{virtualdomain_id_selected} = [];
-    $self->{statefile_value} = centreon::plugins::statefile->new(%options);
-    
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
+
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning-virus-detected', value => $self->{option_results}->{warning_virus_detected})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'virus-detected' threshold '" . $self->{option_results}->{warning_virus_detected} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-virus-detected', value => $self->{option_results}->{critical_virus_detected})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'virus-detected' threshold '" . $self->{option_results}->{critical_virus_detected} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-virus-blocked', value => $self->{option_results}->{warning_virus_blocked})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning 'virus-blocked' threshold '" . $self->{option_results}->{warning_virus_blocked} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-virus-blocked', value => $self->{option_results}->{critical_virus_blocked})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical 'virus-blocked' threshold '" . $self->{option_results}->{critical_virus_blocked} . "'.");
-        $self->{output}->option_exit();
-    }
-    $self->{statefile_value}->check_options(%options);
-}
+my $mapping = {
+    fgAvVirusDetected       => { oid => '.1.3.6.1.4.1.12356.101.8.2.1.1.1' },
+    fgAvVirusBlocked        => { oid => '.1.3.6.1.4.1.12356.101.8.2.1.1.2' },
+};
+my $oid_fgAvStatsEntry = '.1.3.6.1.4.1.12356.101.8.2.1.1';
+my $oid_fgVdEntName    = '.1.3.6.1.4.1.12356.101.3.2.1.1.2';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result_names} = $self->{snmp}->get_table(oid => $oid_fgVdEntName, nothing_quit => 1);
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result_names}})) {
-        next if ($oid !~ /\.([0-9]+)$/);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_fgVdEntName },
+            { oid => $oid_fgAvStatsEntry, end => $mapping->{fgAvVirusBlocked}->{oid} },
+        ],
+        nothing_quit => 1
+    );
+
+    $self->{domain} = {};
+    foreach my $oid (keys %{$snmp_result->{$oid_fgVdEntName}}) {
+        next if ($oid !~ /^$oid_fgVdEntName\.(.*)/);
         my $instance = $1;
-        
-        # Get all without a name
-        if (!defined($self->{option_results}->{name})) {
-            push @{$self->{virtualdomain_id_selected}}, $instance; 
+
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $snmp_result->{$oid_fgVdEntName}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $snmp_result->{$oid_fgVdEntName}->{$oid}  . "': no matching filter.");
             next;
         }
-        
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} eq $self->{option_results}->{name}) {
-            push @{$self->{virtualdomain_id_selected}}, $instance; 
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result_names}->{$oid} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{virtualdomain_id_selected}}, $instance;
-        }
-    }
 
-    if (scalar(@{$self->{virtualdomain_id_selected}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No virtualdomains found for name '" . $self->{option_results}->{name} . "'.");
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_fgAvStatsEntry}, instance => $instance);
+
+        $self->{domain}->{$instance} = $result;
+        $self->{domain}->{$instance}->{display} = $snmp_result->{$oid_fgVdEntName}->{$oid};
+    }
+    
+    if (scalar(keys %{$self->{domain}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'no domain found.');
         $self->{output}->option_exit();
     }
-}
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-    $self->{snmp_port} = $self->{snmp}->get_port();
-
-    $self->manage_selection();
-    $self->{snmp}->load(oids => [$oid_fgAvVirusDetected, $oid_fgAvVirusBlocked], instances => $self->{virtualdomain_id_selected});
-    my $result = $self->{snmp}->get_leef();
-    
-    my $new_datas = {};
-    $self->{statefile_value}->read(statefile => "cache_fortigate_" . $self->{hostname}  . '_' . $self->{snmp_port} . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all')));
-    $new_datas->{last_timestamp} = time();
-    my $old_timestamp = $self->{statefile_value}->get(name => 'last_timestamp');
-    
-    if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All virtualdomains virus stats are ok.');
-    }
-    
-    foreach my $instance (sort @{$self->{virtualdomain_id_selected}}) {
-        my $name = $self->{result_names}->{$oid_fgVdEntName . '.' . $instance};
-        my $virus_blocked = $result->{$oid_fgAvVirusBlocked . '.' . $instance};
-        my $virus_detected = $result->{$oid_fgAvVirusDetected . '.' . $instance};
-        
-        $new_datas->{'virus_blocked_' . $instance} = $virus_blocked;
-        $new_datas->{'virus_detected_' . $instance} = $virus_detected;
-        
-        my $old_virus_detected = $self->{statefile_value}->get(name => 'virus_detected_' . $instance);
-        my $old_virus_blocked = $self->{statefile_value}->get(name => 'virus_blocked_' . $instance);
-        if (!defined($old_timestamp) || !defined($old_virus_detected) || !defined($old_virus_blocked)) {
-            next;
-        }
-        if ($new_datas->{'virus_blocked_' . $instance} < $old_virus_blocked) {
-            # We set 0. Has reboot.
-            $old_virus_blocked = 0;
-        }
-        if ($new_datas->{'virus_detected_' . $instance} < $old_virus_detected) {
-            # We set 0. Has reboot.
-            $old_virus_detected = 0;
-        }
-        
-        my $time_delta = $new_datas->{last_timestamp} - $old_timestamp;
-        if ($time_delta <= 0) {
-            # At least one second. two fast calls ;)
-            $time_delta = 1;
-        }
-
-        my $virus_detected_per_sec = ($new_datas->{'virus_detected_' . $instance} - $virus_detected) / $time_delta;
-        my $virus_blocked_per_sec = ($new_datas->{'virus_blocked_' . $instance} - $virus_blocked) / $time_delta;
-        my $total_virus_blocked = $new_datas->{'virus_blocked_' . $instance} - $virus_blocked;
-        my $total_virus_detected = $new_datas->{'virus_detected_' . $instance} - $virus_detected;
-       
-        ###########
-        # Manage Output
-        ###########
-        my $exit1 = $self->{perfdata}->threshold_check(value => $total_virus_detected, threshold => [ { label => 'critical-virus-detected', 'exit_litteral' => 'critical' }, { label => 'warning-virus-detected', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $total_virus_blocked, threshold => [ { label => 'critical-virus-blocked', 'exit_litteral' => 'critical' }, { label => 'warning-virus-blocked', exit_litteral => 'warning' } ]);
-
-        my $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
-        $self->{output}->output_add(long_msg => sprintf("Virtualdomain '%s' Virus Blocked : %.2f/s (%d), Detected : %.2f/s (%d) ",
-                                                        $name, $virus_blocked_per_sec, $total_virus_blocked,
-                                                        $virus_detected_per_sec, $total_virus_detected));
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1) || (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}))) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Virtualdomain '%s' Virus Blocked : %.2f/s (%d), Detected : %.2f/s (%d) ",
-                                                        $name, $virus_blocked_per_sec, $total_virus_blocked,
-                                                        $virus_detected_per_sec, $total_virus_detected));
-        }
-
-        my $extra_label = '';
-        $extra_label = '_' . $name if (!defined($self->{option_results}->{name}) || defined($self->{option_results}->{use_regexp}));
-        $self->{output}->perfdata_add(label => 'virus_blocked' . $extra_label,
-                                      value => $total_virus_blocked,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-virus-blocked'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-virus-blocked'),
-                                      min => 0);
-        $self->{output}->perfdata_add(label => 'virus_detected' . $extra_label,
-                                      value => $total_virus_detected,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-virus-detected'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-virus-detected'),
-                                      min => 0);
-    }
-    
-    $self->{statefile_value}->write(data => $new_datas);    
-    if (!defined($old_timestamp)) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => "Buffer creation...");
-    }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{cache_name} = "fortinet_fortigate_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
 
 1;
@@ -206,29 +148,15 @@ Check virus blocked and detected.
 
 =over 8
 
-=item B<--warning-virus-detected>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning of total virus detected.
+Thresholds.
+Can be: 'virus-detected', ''virus-detected-psec', 
+'virus-blocked', 'virus-blocked-psec'.
 
-=item B<--critical-virus-detected>
+=item B<--filter-name>
 
-Threshold critical of total virus detected.
-
-=item B<--warning-virus-blocked>
-
-Threshold warning of total virus blocked.
-
-=item B<--critical-virus-blocked>
-
-Threshold critical of total virus blocked.
-
-=item B<--name>
-
-Set the virtualdomains name.
-
-=item B<--regexp>
-
-Allows to use regexp to filter virtualdomains name (with option --name).
+Filter virtual domain name (can be a regexp).
 
 =back
 
