@@ -40,7 +40,7 @@ sub set_system {
             ['uioCritical', 'OK'],
             ['sensorStatusNotApplicable', 'OK'],
             
-            ['disconnected', 'WARNING'],
+            ['disconnected', 'OK'],
             ['connected', 'OK'],
         ],
     };
@@ -51,7 +51,7 @@ sub set_system {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_load_components => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_load_components => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
@@ -139,8 +139,8 @@ my $oid_iemStatusProbesEntry = '.1.3.6.1.4.1.318.1.1.10.2.3.2.1';
 sub load {
     my ($self) = @_;
 
-    push @{$self->{request}}, { oid => $oid_uioSensorStatusEntry, start => $mapping->{uioSensorStatusSensorName}->{oid} },
-        { oid => $oid_iemStatusProbesEntry, start => $mapping->{iemStatusProbeName}->{oid}, end => $mapping->{iemStatusProbeCurrentHumid}->{oid} };
+    push @{$self->{request}}, { oid => $oid_uioSensorStatusEntry, start => $mapping->{uioSensorStatusSensorName}->{oid}, end => $mapping->{uioSensorStatusAlarmStatus}->{oid} },
+        { oid => $oid_iemStatusProbesEntry, start => $mapping_iem->{iemStatusProbeName}->{oid}, end => $mapping_iem->{iemStatusProbeCurrentHumid}->{oid} };
 }
 
 sub check_uoi {
@@ -148,7 +148,7 @@ sub check_uoi {
 
     my ($exit, $warn, $crit, $checked);
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_uioSensorStatusEntry}})) {
-        next if ($oid !~ /^$mapping->{uioSensorStatusAlarmStatus}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{uioSensorStatusSensorName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_uioSensorStatusEntry}, instance => $instance);
 
@@ -157,7 +157,7 @@ sub check_uoi {
         $self->{components}->{sensor}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "sensor '%s' status is '%s' [instance = %s] [temperature = %s C] [humidity = %s %%]",
+                "universal sensor '%s' status is '%s' [instance = %s] [temperature = %s C] [humidity = %s %%]",
                 $result->{uioSensorStatusSensorName}, $result->{uioSensorStatusAlarmStatus}, $instance,
                 $result->{uioSensorStatusTemperatureDegC} != -1 ? $result->{uioSensorStatusTemperatureDegC} : '-',
                 $result->{uioSensorStatusHumidity} != -1 ? $result->{uioSensorStatusHumidity} : '-'
@@ -167,7 +167,7 @@ sub check_uoi {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Sensor '%s' status is '%s'", $result->{uioSensorStatusSensorName}, $result->{uioSensorStatusAlarmStatus})
+                short_msg => sprintf("universal sensor '%s' status is '%s'", $result->{uioSensorStatusSensorName}, $result->{uioSensorStatusAlarmStatus})
             );
         }
 
@@ -177,15 +177,15 @@ sub check_uoi {
                 $self->{output}->output_add(
                     severity => $exit,
                     short_msg => sprintf(
-                        "sensor temperature '%s' is %s C",
+                        "universal sensor temperature '%s' is %s C",
                         $result->{uioSensorStatusSensorName},
                         $result->{uioSensorStatusTemperatureDegC}
                     )
                 );
             }
             $self->{output}->perfdata_add(
-                label => 'temp', unit => 'C',
-                nlabel => 'sensor.temperature.celsius', 
+                label => 'universal_temp', unit => 'C',
+                nlabel => 'sensor.universal.temperature.celsius', 
                 instances => $result->{uioSensorStatusSensorName},
                 value => $result->{uioSensorStatusTemperatureDegC},
                 warning => $warn,
@@ -200,15 +200,15 @@ sub check_uoi {
             $self->{output}->output_add(
                 severity => $exit,
                 short_msg => sprintf(
-                    "sensor humidity '%s' is %s %%",
+                    "universal sensor humidity '%s' is %s %%",
                     $result->{uioSensorStatusSensorName},
                     $result->{uioSensorStatusHumidity}
                 )
             );
         }
         $self->{output}->perfdata_add(
-            label => 'humidity', unit => '%',
-            nlabel => 'sensor.humidity.percentage',
+            label => 'universal_humidity', unit => '%',
+            nlabel => 'sensor.universal.humidity.percentage',
             instances => $result->{uioSensorStatusSensorName},
             value => $result->{uioSensorStatusHumidity},
             warning => $warn,
@@ -232,7 +232,7 @@ sub check_iem {
         $self->{components}->{sensor}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "sensor '%s' status is '%s' [instance = %s] [temperature = %s %s] [humidity = %s %%]",
+                "integrated sensor '%s' status is '%s' [instance = %s] [temperature = %s %s] [humidity = %s %%]",
                 $result->{iemStatusProbeName}, $result->{iemStatusProbeStatus}, $instance,
                 $result->{iemStatusProbeCurrentTemp} != -1 ? $result->{iemStatusProbeCurrentTemp} : '-',
                 $result->{iemStatusProbeTempUnits},
@@ -243,7 +243,7 @@ sub check_iem {
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit,
-                short_msg => sprintf("Sensor '%s' status is '%s'", $result->{iemStatusProbeName}, $result->{iemStatusProbeStatus})
+                short_msg => sprintf("integrated sensor '%s' status is '%s'", $result->{iemStatusProbeName}, $result->{iemStatusProbeStatus})
             );
         }
 
@@ -253,7 +253,7 @@ sub check_iem {
                 $self->{output}->output_add(
                     severity => $exit,
                     short_msg => sprintf(
-                        "sensor temperature '%s' is %s %s",
+                        "integrated sensor temperature '%s' is %s %s",
                         $result->{iemStatusProbeName},
                         $result->{iemStatusProbeCurrentTemp},
                         $result->{iemStatusProbeTempUnits}
@@ -261,9 +261,9 @@ sub check_iem {
                 );
             }
             $self->{output}->perfdata_add(
-                label => 'temp',
+                label => 'integrated_temp',
                 unit => $result->{iemStatusProbeTempUnits} eq 'celsius' ? 'C' : 'F',
-                nlabel => 'sensor.temperature.' . $result->{iemStatusProbeTempUnits}, 
+                nlabel => 'sensor.integrated.temperature.' . $result->{iemStatusProbeTempUnits}, 
                 instances => $result->{iemStatusProbeName},
                 value => $result->{iemStatusProbeCurrentTemp},
                 warning => $warn,
@@ -278,15 +278,15 @@ sub check_iem {
             $self->{output}->output_add(
                 severity => $exit,
                 short_msg => sprintf(
-                    "sensor humidity '%s' is %s %%",
+                    "integrated sensor humidity '%s' is %s %%",
                     $result->{iemStatusProbeName},
                     $result->{iemStatusProbeCurrentHumid}
                 )
             );
         }
         $self->{output}->perfdata_add(
-            label => 'humidity', unit => '%',
-            nlabel => 'sensor.humidity.percentage',
+            label => 'integrated_humidity', unit => '%',
+            nlabel => 'sensor.integrated.humidity.percentage',
             instances => $result->{iemStatusProbeName},
             value => $result->{iemStatusProbeCurrentHumid},
             warning => $warn,
