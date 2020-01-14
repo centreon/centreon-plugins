@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::components::aoc;
+package hardware::devices::cisco::ces::restapi::mode::components::aoc;
 
 use strict;
 use warnings;

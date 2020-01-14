@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::components::temperature;
+package hardware::devices::cisco::ces::restapi::mode::components::webex;
 
 use strict;
 use warnings;
@@ -26,30 +26,30 @@ use warnings;
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => 'checking temperature');
-    $self->{components}->{temperature} = { name => 'temperature', total => 0, skip => 0 }  ;
-    return if ($self->check_filter(section => 'temperature'));
+    $self->{output}->output_add(long_msg => 'checking webex');
+    $self->{components}->{webex} = { name => 'webex', total => 0, skip => 0 }  ;
+    return if ($self->check_filter(section => 'webex'));
 
-    return if (!defined($self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature}));
+    return if (!defined($self->{results}->{Webex}));
 
     my $instance = 1;
-    return if ($self->check_filter(section => 'temperature', instance => $instance));
-    $self->{components}->{temperature}->{total}++;
+    return if ($self->check_filter(section => 'webex', instance => $instance));
+    $self->{components}->{webex}->{total}++;
 
     $self->{output}->output_add(
         long_msg => sprintf(
-            "temperature '%s' status is '%s' [instance: %s]",
+            "webex '%s' status is '%s' [instance: %s]",
             $instance,
-            $self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature}->{Status},
+            $self->{results}->{Webex}->{Status},
             $instance
         )
     );
 
-    my $exit = $self->get_severity(section => 'temperature', value => $self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature}->{Status});
+    my $exit = $self->get_severity(section => 'webex', value => $self->{results}->{Webex}->{Status});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(
             severity => $exit,
-            short_msg => sprintf("temperarture '%s' status is '%s'", $instance, $self->{results}->{SystemUnit}->{Hardware}->{Monitoring}->{Temperature})
+            short_msg => sprintf("webex '%s' status is '%s'", $instance, $self->{results}->{Webex}->{Status})
         );
     }
 }

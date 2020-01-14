@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::cces::restapi::mode::components::vic;
+package hardware::devices::cisco::ces::restapi::mode::components::vic;
 
 use strict;
 use warnings;
