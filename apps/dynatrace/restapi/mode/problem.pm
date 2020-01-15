@@ -25,28 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use List::MoreUtils qw(uniq);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
 
     my $msg = '';
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{impactLevel} = $options{new_datas}->{$self->{instance} . '_impactLevel'};
-    $self->{result_values}->{severityLevel} = $options{new_datas}->{$self->{instance} . '_severityLevel'};
-    $self->{result_values}->{entityName} = $options{new_datas}->{$self->{instance} . '_entityName'};
-    $self->{result_values}->{eventType} = $options{new_datas}->{$self->{instance} . '_eventType'};
-    $self->{result_values}->{entityId} = $options{new_datas}->{$self->{instance} . '_entityId'};
-    $self->{result_values}->{startTime} = $options{new_datas}->{$self->{instance} . '_startTime'};
-    $self->{result_values}->{endTime} = $options{new_datas}->{$self->{instance} . '_endTime'};
-    $self->{result_values}->{commentCount} = $options{new_datas}->{$self->{instance} . '_commentCount'};
-    return 0;
 }
 
 sub set_counters {
@@ -71,7 +56,7 @@ sub set_counters {
     $self->{maps_counters}->{problem} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'impactLevel' }, { name => 'severityLevel' }, { name => 'entityName' }, { name => 'eventType' }, { name => 'entityId' }, { name => 'startTime' }, { name => 'endTime' }, { name => 'commentCount' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
