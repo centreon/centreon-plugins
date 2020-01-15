@@ -58,12 +58,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'problems-open', nlabel => 'problems.open.current', set => {
+        { label => 'problems-open', nlabel => 'problems.open.count', set => {
                 key_values => [ { name => 'problems_open' } ],
-                output_template => 'problems open : %s',
+                output_template => 'Number of problems open : %s',
                 perfdatas => [
-                    { label => 'problems_open',  template => '%s', value => 'problems_open_absolute',
-                      min => 0 },
+                    { template => '%s', value => 'problems_open_absolute', min => 0 },
                 ],
             }
         },
