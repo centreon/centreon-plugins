@@ -118,10 +118,6 @@ sub manage_selection {
             commentCount => $item->{commentCount},
         };
     }
-
-use Data::Dumper;
-print Dumper($self->{problem});
-
 }
 
 1;
