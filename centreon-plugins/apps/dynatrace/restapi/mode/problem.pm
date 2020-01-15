@@ -53,7 +53,20 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'problem', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'No problem' }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'problems-open', nlabel => 'problems.open.current', set => {
+                key_values => [ { name => 'problems_open' } ],
+                output_template => 'problems open : %s',
+                perfdatas => [
+                    { label => 'problems_open',  template => '%s', value => 'problems_open_absolute',
+                      min => 0 },
+                ],
+            }
+        },
     ];
 
     $self->{maps_counters}->{problem} = [
@@ -103,6 +116,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $problem = $options{custom}->api_problem(relative_time => $options{options}->{relative_time});
+    my $problems_open = 0;
     $self->{problem} = {};
     foreach my $item (@{$problem}) {
         $self->{problem}->{$item->{displayName}} = {
@@ -117,7 +131,14 @@ sub manage_selection {
             endTime => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
             commentCount => $item->{commentCount},
         };
+        if ($item->{status} eq 'OPEN') {
+            $problems_open++;
+        }
     }
+
+    $self->{global} = {
+        problems_open => $problems_open,
+    };
 }
 
 1;
@@ -150,6 +171,11 @@ Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{e
 
 Set critical threshold for status (Default: '%{status} eq "OPEN"').
 Can use special variables like: %{status}, %{impactLevel}, %{severityLevel}, %{entityName}, %{eventType}, %{entityId}, %{startTime}, %{endTime}, %{commentCount}
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'problems-open'.
 
 =back
 
