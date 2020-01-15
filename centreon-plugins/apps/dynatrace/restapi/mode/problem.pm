@@ -30,7 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold 
 sub custom_status_output { 
     my ($self, %options) = @_;
 
-    my $msg = '';
+    my $msg = 'detected';
     return $msg;
 }
 
@@ -39,13 +39,13 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'problem', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'No problem' }
+        { name => 'problem', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'No problem detected' }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'problems-open', nlabel => 'problems.open.count', set => {
                 key_values => [ { name => 'problems_open' } ],
-                output_template => 'Number of problems open : %s',
+                output_template => 'Number of open problems : %s',
                 perfdatas => [
                     { template => '%s', value => 'problems_open_absolute', min => 0 },
                 ],
@@ -68,7 +68,7 @@ sub set_counters {
 sub prefix_service_output {
     my ($self, %options) = @_;
 
-    return "Problem '" . $options{instance_value}->{displayName} ."'";
+    return "Problem '" . $options{instance_value}->{displayName} ."' ";
 }
 
 sub new {
