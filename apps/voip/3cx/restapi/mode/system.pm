@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
@@ -35,14 +35,6 @@ sub custom_status_output {
     }
     $msg .= ': ' . $self->{result_values}->{error};
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{error} = $options{new_datas}->{$self->{instance} . '_error'};
-    $self->{result_values}->{service} = $options{new_datas}->{$self->{instance} . '_service'};
-    return 0;
 }
 
 sub set_counters {
@@ -77,7 +69,7 @@ sub set_counters {
     $self->{maps_counters}->{service} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'error' }, { name => 'service' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
