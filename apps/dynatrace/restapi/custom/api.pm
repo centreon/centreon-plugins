@@ -47,7 +47,7 @@ sub new {
             "hostname:s"            => { name => 'hostname' },
             "port:s"                => { name => 'port'},
             "proto:s"               => { name => 'proto' },
-            "api-token:s"           => { name => 'api_token' },
+            "api-password:s"        => { name => 'api_password' },
             "timeout:s"             => { name => 'timeout', default => 30 },
         });
     }
@@ -91,14 +91,14 @@ sub check_options {
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : undef;
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_token}) || $self->{api_token} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-token option.");
+    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
         $self->{output}->option_exit();
     }
 
@@ -120,7 +120,7 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
-    $self->{http}->add_header(key => 'Authorization', value => 'Api-Token ' . $self->{option_results}->{api_token});
+    $self->{http}->add_header(key => 'Authorization', value => 'Api-Token ' . $self->{option_results}->{api_password});
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
@@ -189,7 +189,7 @@ Set Dynatrace Port (Default: '443').
 
 Specify http if needed (Default: 'https').
 
-=item B<--api-token>
+=item B<--api-password>
 
 Set Dynatrace API token.
 
