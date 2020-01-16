@@ -45,6 +45,7 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
             "hostname:s"            => { name => 'hostname' },
+            "environment-id:s"      => { name => 'environment_id' },
             "port:s"                => { name => 'port'},
             "proto:s"               => { name => 'proto' },
             "api-password:s"        => { name => 'api_password' },
@@ -86,7 +87,8 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : 'live.dynatrace.com';
+    $self->{environment_id} = (defined($self->{option_results}->{environment_id})) ? $self->{option_results}->{environment_id} : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
@@ -95,6 +97,10 @@ sub check_options {
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+        $self->{output}->option_exit();
+    }
+    if (!defined($self->{environment_id}) || $self->{environment_id} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --environment-id option.");
         $self->{output}->option_exit();
     }
     if (!defined($self->{api_password}) || $self->{api_password} eq '') {
@@ -108,7 +114,11 @@ sub check_options {
 sub build_options_for_httplib {
     my ($self, %options) = @_;
 
-    $self->{option_results}->{hostname} = $self->{hostname};
+    if ($self->{hostname} eq 'live.dynatrace.com') {
+        $self->{option_results}->{hostname} = $self->{environment_id} . '.' . $self->{hostname};
+    } else {
+        $self->{option_results}->{hostname} = $self->{hostname};
+    }
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{ssl_opt} = $self->{ssl_opt};
@@ -154,7 +164,7 @@ sub request_api {
 sub internal_problem {
     my ($self, %options) = @_;
 
-    my $status = $self->request_api(method => 'GET', url_path =>'/api/v1/problem/feed?relativeTime=' . $self->{option_results}->{relative_time});
+    my $status = $self->request_api(method => 'GET', url_path => (($self->{hostname} eq 'live.dynatrace.com') ? '' : '/e') . '/api/v1/problem/feed?relativeTime=' . $self->{option_results}->{relative_time});
     return $status;
 }
 
@@ -179,7 +189,11 @@ Dynatrace Rest API
 
 =item B<--hostname>
 
-Set hostname or IP of Dynatrace server.
+Set hostname or IP of Dynatrace server (Default: live.dynatrace.com).
+
+=item B<--environment-id>
+
+Set Dynatrace environment ID.
 
 =item B<--port>
 
