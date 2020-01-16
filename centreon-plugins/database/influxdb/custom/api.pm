@@ -125,9 +125,6 @@ sub build_options_for_httplib {
     $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = $self->{proto};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{warning_status} = '';
-    $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 300';
 
     if (defined($self->{username}) && $self->{username} ne '') {
         $self->{option_results}->{credentials} = 1;
@@ -272,7 +269,7 @@ Set timeout in seconds (Default: 10).
 
 =item B<--unknown-http-status>
 
-Threshold warning for http response code.
+Threshold unknown for http response code.
 (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
 =item B<--warning-http-status>
