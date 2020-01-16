@@ -18,20 +18,26 @@
 # limitations under the License.
 #
 
-package apps::dynatrace::restapi::mode::problem;
+package apps::monitoring::dynatrace::restapi::mode::problems;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use List::MoreUtils qw(uniq);
+use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
 
-    my $msg = 'detected';
-    return $msg;
+    return sprintf(
+        "problem '%s' [type: %s] [severity: %s] [impact: %s] [entity: %s]",
+        $self->{result_values}->{displayName},
+        $self->{result_values}->{eventType},
+        $self->{result_values}->{severityLevel},
+        $self->{result_values}->{impactLevel},
+        $self->{result_values}->{entityName}
+    );
 }
 
 sub set_counters {
@@ -39,15 +45,17 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'problem', type => 1, cb_prefix_output => 'prefix_service_output', message_multiple => 'No problem detected' }
+        { name => 'problems', type => 2, message_multiple => '0 problems detected', display_counter_problem => { label => 'problems', min => 0 },
+          group => [ { name => 'problem' } ]
+        }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'problems-open', nlabel => 'problems.open.count', set => {
+        { label => 'problems-open', nlabel => 'problems.open.count', display_ok => 0, set => {
                 key_values => [ { name => 'problems_open' } ],
-                output_template => 'Number of open problems : %s',
+                output_template => 'number of open problems : %s',
                 perfdatas => [
-                    { template => '%s', value => 'problems_open_absolute', min => 0 },
+                    { value => 'problems_open_absolute', template => '%s', value => 'problems_open_absolute', min => 0 },
                 ],
             }
         },
@@ -55,7 +63,10 @@ sub set_counters {
 
     $self->{maps_counters}->{problem} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'impactLevel' }, { name => 'severityLevel' }, { name => 'entityName' }, { name => 'eventType' }, { name => 'entityId' }, { name => 'startTime' }, { name => 'endTime' }, { name => 'commentCount' } ],
+                key_values => [ { name => 'status' }, { name => 'impactLevel' }, { name => 'severityLevel' }, 
+                    { name => 'entityName' }, { name => 'eventType' }, { name => 'entityId' }, { name => 'displayName' }, 
+                    { name => 'startTime' }, { name => 'endTime' }, { name => 'commentCount' } 
+                ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -100,29 +111,31 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $problem = $options{custom}->api_problem(relative_time => $options{options}->{relative_time});
-    my $problems_open = 0;
+
+    $self->{global} = { problems_open => 0 };
     $self->{problem} = {};
+
+    $self->{problems}->{global} = { problem => {} };
+    my $i = 1;
     foreach my $item (@{$problem}) {
-        $self->{problem}->{$item->{displayName}} = {
+        $self->{problems}->{global}->{problem}->{$i} = {
             displayName => $item->{displayName},
             status => $item->{status},
             impactLevel => $item->{impactLevel},
             severityLevel => $item->{severityLevel},
-            entityName => join(",", uniq map { "$_->{entityName}" } @{$item->{rankedImpacts}}),
-            eventType => join(",", uniq map { "$_->{eventType}" } @{$item->{rankedImpacts}}),
-            entityId => join(",", uniq map { "$_->{entityId}" } @{$item->{rankedImpacts}}),
+            entityName => join(",", centreon::plugins::misc::uniq(map { "$_->{entityName}" } @{$item->{rankedImpacts}})),
+            eventType => join(",", centreon::plugins::misc::uniq(map { "$_->{eventType}" } @{$item->{rankedImpacts}})),
+            entityId => join(",", centreon::plugins::misc::uniq(map { "$_->{entityId}" } @{$item->{rankedImpacts}})),
             startTime => $item->{startTime} / 1000,
             endTime => $item->{endTime} > -1 ? $item->{endTime} / 1000 : -1,
             commentCount => $item->{commentCount},
         };
         if ($item->{status} eq 'OPEN') {
-            $problems_open++;
+            $self->{global}->{problems_open}++;
         }
-    }
 
-    $self->{global} = {
-        problems_open => $problems_open,
-    };
+        $i++;
+    }
 }
 
 1;
@@ -131,7 +144,7 @@ __END__
 
 =head1 MODE
 
-Check problem
+Check problems.
 
 =over 8
 
@@ -139,7 +152,6 @@ Check problem
 
 Set request relative time (Default: 'min').
 Can use: min, 5mins, 10mins, 15mins, 30mins, hour, 2hours, 6hours, day, 3days, week, month.
-
 
 =item B<--unknown-status>
 
