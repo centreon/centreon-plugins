@@ -51,6 +51,9 @@ sub new {
             "api-username:s"        => { name => 'api_username' },
             "api-password:s"        => { name => 'api_password' },
             "timeout:s"             => { name => 'timeout', default => 30 },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' },
         });
     }
     
@@ -96,6 +99,9 @@ sub check_options {
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : undef;
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300' ;
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -190,8 +196,11 @@ sub request_api {
 
     $self->settings();
 
-    my $content = $self->{http}->request(%options, 
-        warning_status => '', unknown_status => '', critical_status => '%{http_code} < 200 or %{http_code} >= 300'
+    my $content = $self->{http}->request(
+        %options,
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status},
     );
 
     # Some content may be strangely returned, for example :
@@ -333,6 +342,16 @@ Set 3CX Password.
 =item B<--timeout>
 
 Threshold for HTTP timeout (Default: '30').
+
+=item B<--unknown-http-status>
+Threshold unknown for http response code.
+(Default: '%{http_code} < 200 or %{http_code} >= 300')
+
+=item B<--warning-http-status>
+Threshold warning for http response code.
+
+=item B<--critical-http-status>
+Threshold critical for http response code.
 
 =back
 
