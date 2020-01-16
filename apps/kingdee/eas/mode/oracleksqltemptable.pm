@@ -21,76 +21,71 @@
 
 package apps::kingdee::eas::mode::oracleksqltemptable;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_datasource_output', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{datasource} = [
+        { label => 'table-ksqltemp', nlabel => 'datasource.table.ksqltemp.count', set => {
+                key_values => [ { name => 'ksqltemp_count' } ],
+                output_template => 'ksqltemp table: %s',
+                perfdatas => [
+                    { value => 'ksqltemp_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        }
+    ];
+}
+
+sub prefix_datasource_output {
+    my ($self, %options) = @_;
+
+    return "Datasource '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-            "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkoraclevt.jsp" },
-            "datasource:s"      => { name => 'datasource' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {
+        'urlpath:s'    => { name => 'url_path', default => "/easportal/tools/nagios/checkoraclevt.jsp" },
+        'datasource:s' => { name => 'datasource' },
+    });
 
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{datasource}) || $self->{option_results}->{datasource} eq "") {
         $self->{output}->add_option_msg(short_msg => "Missing datasource name.");
         $self->{output}->option_exit();
     }
     $self->{option_results}->{url_path} .= "?ds=" . $self->{option_results}->{datasource};
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-        
-    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
+    my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
     if ($webcontent !~ /^COUNT.*?=\d+/i) {
-        $self->{output}->output_add(
-            severity  => 'UNKNOWN',
-            short_msg => "Cannot find ksql temptable status."
-        );
+        $self->{output}->add_option_msg(short_msg => 'Cannot find ksql temptable status.');
         $self->{output}->option_exit();
     }
-        
-    my $count = $1 if $webcontent =~ /^COUNT.*?=(\d+)/i;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $count, threshold => [ 
-                                                  { label => 'critical', 'exit_litteral' => 'critical' }, 
-                                                  { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit, short_msg => sprintf("KSQLTempTableCount: %d", $count));
- 
-    $self->{output}->perfdata_add(label => "KSQLTempTableCount", unit => '',
-                                  value => sprintf("%d", $count),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
- 
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{datasource}->{$self->{option_results}->{datasource}} = { display => $self->{option_results}->{datasource} };
+    $self->{datasource}->{$self->{option_results}->{datasource}}->{ksqltemp_count} = $1 if ($webcontent =~ /^COUNT.*?=(\d+)/i);
 }
 
 1;
@@ -111,13 +106,10 @@ Set path to get status page. (Default: '/easportal/tools/nagios/checkoraclevt.js
 
 Specify the datasource name.
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Warning Threshold. 
-
-=item B<--critical>
-
-Critical Threshold. 
+Thresholds.
+Can be: 'table-ksqltemp'.
 
 =back
 
