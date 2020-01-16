@@ -21,81 +21,66 @@
 
 package apps::kingdee::eas::mode::classloading;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'class-loaded', nlabel => 'java.class.loaded.count', set => {
+                key_values => [ { name => 'loadedclass' } ],
+                output_template => 'class loaded: %s',
+                perfdatas => [
+                    { value => 'loadedclass_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'class-unloaded', nlabel => 'java.class.unloaded.count', set => {
+                key_values => [ { name => 'unloadedclass', diff => 1 } ],
+                output_template => 'class unloaded: %s',
+                perfdatas => [
+                    { value => 'unloadedclass_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-            "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkclassloading.jsp" },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {
+        'urlpath:s' => { name => 'url_path', default => "/easportal/tools/nagios/checkclassloading.jsp" },
+    });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-        
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
     if ($webcontent !~ /(LoadedClassCount|UnloadedClassCount)/i) {
-        $self->{output}->output_add(
-            severity  => 'UNKNOWN',
-            short_msg => "Cannot find classloading status."
-        );
+        $self->{output}->add_option_msg(short_msg => 'Cannot find classloading status.');
         $self->{output}->option_exit();
     }
-    
-    my ($loadedclasscount, $unloadedclasscount) = (0, 0);
 
-    if ($webcontent =~ /LoadedClassCount=\s*(\d+)/mi) {
-        $loadedclasscount = $1;
-    }
-    if ($webcontent =~ /UnloadedClassCount=\s*(\d+)/mi) {
-        $unloadedclasscount = $1;
-    }
+    $self->{global} = { loadedclass => 0, unloadedclass => 0 };
+    $self->{global}->{loadedclass} = $1 if ($webcontent =~ /LoadedClassCount=\s*(\d+)/mi);
+    $self->{global}->{unloadedclass} = $1 if ($webcontent =~ /UnloadedClassCount=\s*(\d+)/mi);
 
-    my $exit = $self->{perfdata}->threshold_check(value => $loadedclasscount, 
-                                 threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, 
-                                                { label => 'warning', 'exit_litteral' => 'warning' } ]);
-    
-    $self->{output}->output_add(severity => $exit, short_msg => sprintf("ClassLoaded: %d", $loadedclasscount));
-    $self->{output}->output_add(severity => $exit, short_msg => sprintf("ClassUnloaded: %d", $unloadedclasscount));
-
-    $self->{output}->perfdata_add(label => "LoadedClassCount", unit => '',
-                                  value => sprintf("%d", $loadedclasscount),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-    $self->{output}->perfdata_add(label => "c[UnloadedClassCount]", unit => '',
-                                  value => sprintf("%d", $unloadedclasscount),
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{cache_name} = 'kingdee_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -112,13 +97,10 @@ Check EAS application classLoading status.
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkclassloading.jsp')
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Warning Threshold for class loaded
-
-=item B<--critical>
-
-Critical Threshold for class unloaded
+Thresholds.
+Can be: 'class-loaded', 'class-unloaded'.
 
 =back
 
