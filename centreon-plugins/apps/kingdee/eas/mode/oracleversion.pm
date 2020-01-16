@@ -31,13 +31,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-            "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkoracleversion.jsp" },
-            "datasource:s"      => { name => 'datasource' },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {
+        'urlpath:s'    => { name => 'url_path', default => "/easportal/tools/nagios/checkoracleversion.jsp" },
+        'datasource:s' => { name => 'datasource' },
+    });
 
     return $self;
 }
@@ -51,33 +48,21 @@ sub check_options {
         $self->{output}->option_exit();
     }
     $self->{option_results}->{url_path} .= "?ds=" . $self->{option_results}->{datasource};
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
 sub run {
     my ($self, %options) = @_;
-        
+
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 	if ($webcontent !~ /^BANNER=/i) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find oracle version info."
-		);
+		$self->{output}->add_option_msg(short_msg => 'Cannot find oracle version info.');
 		$self->{output}->option_exit();
 	}
-		
-    my $banner = $1 if $webcontent =~ /^BANNER=\'(.*?)\'/i;
+
+    my $banner = '';
+    $banner = $1 if ($webcontent =~ /^BANNER=\'(.*?)\'/i);
 
     $self->{output}->output_add(severity => "ok", short_msg => $banner);
- 
     $self->{output}->display();
     $self->{output}->exit();
 
@@ -100,14 +85,6 @@ Set path to get status page. (Default: '/easportal/tools/nagios/checkoracleversi
 =item B<--datasource>
 
 Specify the datasource name.
-
-=item B<--warning>
-
-Warning Threshold. 
-
-=item B<--critical>
-
-Critical Threshold. 
 
 =back
 

@@ -46,7 +46,6 @@ sub set_counters {
                 ],
             }
         },
-
     ];
 }
 

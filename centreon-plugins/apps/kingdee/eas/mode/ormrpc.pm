@@ -21,224 +21,134 @@
 
 package apps::kingdee::eas::mode::ormrpc;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'threads-active', nlabel => 'ormrpc.threads.active.count', set => {
+                key_values => [ { name => 'active_thread_count' } ],
+                output_template => 'threads active: %s',
+                perfdatas => [
+                    { value => 'active_thread_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'stubs', nlabel => 'ormrpc.stubs.count', display_ok => 0, set => {
+                key_values => [ { name => 'stub_count' } ],
+                output_template => 'stubs: %s',
+                perfdatas => [
+                    { value => 'stub_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'proxies', nlabel => 'ormrpc.proxies.count', display_ok => 0, set => {
+                key_values => [ { name => 'proxy_count' } ],
+                output_template => 'proxies: %s',
+                perfdatas => [
+                    { value => 'proxy_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-client', nlabel => 'ormrpc.sessions.client.count', set => {
+                key_values => [ { name => 'client_session_count' } ],
+                output_template => 'sessions client: %s',
+                perfdatas => [
+                    { value => 'client_session_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'sessions-server', nlabel => 'ormrpc.sessions.server.count', set => {
+                key_values => [ { name => 'server_session_count' } ],
+                output_template => 'sessions server: %s',
+                perfdatas => [
+                    { value => 'server_session_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'clients-invoke-perminute', nlabel => 'ormrpc.clients.invoked.countperminute', display_ok => 0, set => {
+                key_values => [ { name => 'client_invoke_count_per_minute' } ],
+                output_template => 'clients invoke: %s/m',
+                perfdatas => [
+                    { value => 'client_invoke_count_per_minute_absolute', template => '%s', min => 0, unit => '/m' },
+                ],
+            }
+        },
+        { label => 'processed-service-perminute', nlabel => 'ormrpc.processed.service.countperminute', display_ok => 0, set => {
+                key_values => [ { name => 'processed_service_count_per_minute' } ],
+                output_template => 'processed service: %s/m',
+                perfdatas => [
+                    { value => 'processed_service_count_per_minute_absolute', template => '%s', min => 0, unit => '/m' },
+                ],
+            }
+        },
+        { label => 'clients-invoked', nlabel => 'ormrpc.clients.invoked.count', display_ok => 0, set => {
+                key_values => [ { name => 'client_invoke_count', diff => 1 } ],
+                output_template => 'clients invoked: %s',
+                perfdatas => [
+                    { value => 'client_invoke_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'processed-service', nlabel => 'ormrpc.processed.service.count', display_ok => 0, set => {
+                key_values => [ { name => 'processed_service_count', diff => 1 } ],
+                output_template => 'processed service: %s',
+                perfdatas => [
+                    { value => 'processed_service_count', template => '%s', min => 0 },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'orm rpc ';
+}
+
 sub new {
     my ( $class, %options ) = @_;
-    my $self = $class->SUPER::new( package => __PACKAGE__, %options );
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(
-        arguments => {
-            'urlpath:s'  => { name => 'url_path', default => "/easportal/tools/nagios/checkrpc.jsp" },
-            'warning:s'  => { name => 'warning' , default => ",,,,,,"},
-            'critical:s' => { name => 'critical' , default => ",,,,,,"},
-        }
-    );
+    $options{options}->add_options( arguments => {
+        'urlpath:s'  => { name => 'url_path', default => "/easportal/tools/nagios/checkrpc.jsp" },
+    });
 
     return $self;
 }
 
-sub check_options {
-    my ( $self, %options ) = @_;
-    $self->SUPER::init(%options);
-
-    ($self->{warn_activethreadcount}, $self->{warn_stubcount}, $self->{warn_proxycount}, $self->{warn_clientsessioncount} ,$self->{warn_serversessioncount} ,$self->{warn_invokecountpermin} ,$self->{warn_servicecountpermin}) 
-        = split /,/, $self->{option_results}->{"warning"};
-    ($self->{crit_activethreadcount}, $self->{crit_stubcount}, $self->{crit_proxycount}, $self->{crit_clientsessioncount} ,$self->{crit_serversessioncount} ,$self->{crit_invokecountpermin} ,$self->{crit_servicecountpermin}) 
-        = split /,/, $self->{option_results}->{"critical"};
-
-    # warning
-    if (($self->{perfdata}->threshold_validate(label => 'warn_activethreadcount', value => $self->{warn_activethreadcount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning activethreadcount threshold '" . $self->{warn_activethreadcount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn_stubcount', value => $self->{warn_stubcount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning stubcount threshold '" . $self->{warn_stubcount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn_proxycount', value => $self->{warn_proxycount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning proxycount threshold '" . $self->{warn_proxycount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn_clientsessioncount', value => $self->{warn_clientsessioncount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning clientsessioncount threshold '" . $self->{warn_clientsessioncount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn_serversessioncount', value => $self->{warn_serversessioncount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning serversessioncount threshold '" . $self->{warn_serversessioncount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn_invokecountpermin', value => $self->{warn_invokecountpermin})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning invokecountpermin threshold '" . $self->{warn_invokecountpermin} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warn_servicecountpermin', value => $self->{warn_servicecountpermin})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning servicecountpermin threshold '" . $self->{warn_servicecountpermin} . "'.");
-       $self->{output}->option_exit();
-    }
-
-    # critical
-    if (($self->{perfdata}->threshold_validate(label => 'crit_activethreadcount', value => $self->{crit_activethreadcount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical activethreadcount threshold '" . $self->{crit_activethreadcount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit_stubcount', value => $self->{crit_stubcount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical stubcount threshold '" . $self->{crit_stubcount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit_proxycount', value => $self->{crit_proxycount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical proxycount threshold '" . $self->{crit_proxycount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit_clientsessioncount', value => $self->{crit_clientsessioncount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical clientsessioncount threshold '" . $self->{crit_clientsessioncount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit_serversessioncount', value => $self->{crit_serversessioncount})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical serversessioncount threshold '" . $self->{crit_serversessioncount} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit_invokecountpermin', value => $self->{crit_invokecountpermin})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical invokecountpermin threshold '" . $self->{crit_invokecountpermin} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'crit_servicecountpermin', value => $self->{crit_servicecountpermin})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical servicecountpermin threshold '" . $self->{crit_servicecountpermin} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ( $self, %options ) = @_;
+sub manage_selection {
+    my ($self, %options) = @_;
 
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
     if ($webcontent !~ /ActiveThreadCount=\d+/i) {
-        $self->{output}->output_add(
-            severity  => 'UNKNOWN',
-            short_msg => "Cannot find ormrpc status in response: \'" . $webcontent . "\'"
-        );
+        $self->{output}->add_option_msg(short_msg => 'Cannot find ormrpc status');
         $self->{output}->option_exit();
     }
 
-    my ($activethreadcount, $stubcount, $proxycount, $clientsessioncount, $serversessioncount, $invokecountpermin, $servicecountpermin, $invokecount, $servicecount) = (0, 0, 0, 0, 0, 0, 0, 0, 0);
+    $self->{global} = {};
+    $self->{global}->{active_thread_count} = $1 if ($webcontent =~ /ActiveThreadCount=(\d+)/mi);
+    $self->{global}->{stub_count} = $1 if ($webcontent =~ /StubCount=(\d+)/mi);
+    $self->{global}->{proxy_count} = $1 if ($webcontent =~ /ProxyCount=(\d+)/mi);
+    $self->{global}->{client_session_count} = $1 if ($webcontent =~ /ClientSessionCount=(\d+)/mi);
+    $self->{global}->{server_session_count} = $1 if ($webcontent =~ /ServerSessionCount=(\d+)/mi);
+    $self->{global}->{client_invoke_count_per_minute} = $1 if ($webcontent =~ /ClientInvokeCountPerMinute=(\d+)/mi);
+    $self->{global}->{processed_service_count_per_minute} = $1 if ($webcontent =~ /ProcessedServiceCountPerMinute=(\d+)/mi);
+    $self->{global}->{client_invoke_count} = $1 if ($webcontent =~ /ClientInvokeCount=(\d+)/mi);
+    $self->{global}->{processed_service_count}  = $1 if ($webcontent =~ /ProcessedServiceCount=(\d+)/mi);
 
-    $activethreadcount = $1 if $webcontent =~ /ActiveThreadCount=(\d+)/mi ;
-    $stubcount = $1 if $webcontent =~ /StubCount=(\d+)/mi ;
-    $proxycount = $1 if $webcontent =~ /ProxyCount=(\d+)/mi ;
-    $clientsessioncount = $1 if $webcontent =~ /ClientSessionCount=(\d+)/mi ;
-    $serversessioncount = $1 if $webcontent =~ /ServerSessionCount=(\d+)/mi ;
-    $invokecountpermin = $1 if $webcontent =~ /ClientInvokeCountPerMinute=(\d+)/mi ;
-    $servicecountpermin = $1 if $webcontent =~ /ProcessedServiceCountPerMinute=(\d+)/mi ;
-    $invokecount = $1 if $webcontent =~ /ClientInvokeCount=(\d+)/mi ;
-    $servicecount = $1 if $webcontent =~ /ProcessedServiceCount=(\d+)/mi ;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $activethreadcount, 
-        threshold => [ { label => 'crit_activethreadcount', 'exit_litteral' => 'critical' }, 
-                       { label => 'warn_activethreadcount', 'exit_litteral' => 'warning' } ]);
-    $self->{output}->output_add(
-        severity  => $exit,
-        short_msg => sprintf("ActiveThreadCount: %d", $activethreadcount)
-    );
-    $exit = $self->{perfdata}->threshold_check(value => $stubcount, 
-        threshold => [ { label => 'crit_stubcount', 'exit_litteral' => 'critical' }, 
-                       { label => 'warn_stubcount', 'exit_litteral' => 'warning' } ]);
-    $self->{output}->output_add(
-        severity  => $exit,
-        short_msg => sprintf("StubCount: %d", $stubcount)
-    );
-    $exit = $self->{perfdata}->threshold_check(value => $proxycount, 
-        threshold => [ { label => 'crit_proxycount', 'exit_litteral' => 'critical' }, 
-                       { label => 'warn_proxycount', 'exit_litteral' => 'warning' } ]);
-    $self->{output}->output_add(
-        severity  => $exit,
-        short_msg => sprintf("ProxyCount: %d", $proxycount)
-    );
-    $exit = $self->{perfdata}->threshold_check(value => $clientsessioncount, 
-        threshold => [ { label => 'crit_clientsessioncount', 'exit_litteral' => 'critical' }, 
-                       { label => 'warn_clientsessioncount', 'exit_litteral' => 'warning' } ]);
-    $self->{output}->output_add(
-        severity  => $exit,
-        short_msg => sprintf("ClientSessionCount: %d", $clientsessioncount)
-    );
-    $exit = $self->{perfdata}->threshold_check(value => $serversessioncount, 
-        threshold => [ { label => 'crit_serversessioncount', 'exit_litteral' => 'critical' }, 
-                       { label => 'warn_serversessioncount', 'exit_litteral' => 'warning' } ]);
-    $self->{output}->output_add(
-        severity  => $exit,
-        short_msg => sprintf("ServerSessionCount: %d", $serversessioncount)
-    );    
-    $exit = $self->{perfdata}->threshold_check(value => $invokecountpermin, 
-        threshold => [ { label => 'crit_invokecountpermin', 'exit_litteral' => 'critical' }, 
-                       { label => 'warn_invokecountpermin', 'exit_litteral' => 'warning' } ]);
-    $self->{output}->output_add(
-        severity  => $exit,
-        short_msg => sprintf("InvokeCountPerMinute: %d", $invokecountpermin)
-    );    
-    $exit = $self->{perfdata}->threshold_check(value => $servicecountpermin, 
-        threshold => [ { label => 'crit_servicecountpermin', 'exit_litteral' => 'critical' }, 
-                       { label => 'warn_servicecountpermin', 'exit_litteral' => 'warning' } ]);
-    $self->{output}->output_add(
-        severity  => $exit,
-        short_msg => sprintf("ServiceCountPerMinute: %d", $servicecountpermin)
-    );    
-
-    $self->{output}->perfdata_add(
-        label => "ActiveThreadCount",
-        value => $activethreadcount,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_activethreadcount'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_activethreadcount'),
-    );
-    $self->{output}->perfdata_add(
-        label => "StubCount",
-        value => $stubcount,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_stubcount'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_stubcount'),
-    );
-    $self->{output}->perfdata_add(
-        label => "ProxyCount",
-        value => $proxycount,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_proxycount'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_proxycount'),
-    );
-    $self->{output}->perfdata_add(
-        label => "ClientSessionCount",
-        value => $clientsessioncount,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_clientsessioncount'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_clientsessioncount'),
-    );
-    $self->{output}->perfdata_add(
-        label => "ServerSessionCount",
-        value => $serversessioncount,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_serversessioncount'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_serversessioncount'),
-    );    
-    $self->{output}->perfdata_add(
-        label => "InvokeCountPerMinute",
-        value => $invokecountpermin,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_invokecountpermin'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_invokecountpermin'),
-    );    
-    $self->{output}->perfdata_add(
-        label => "ServiceCountPerMinute",
-        value => $servicecountpermin,
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn_servicecountpermin'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit_servicecountpermin'),
-    );    
-    $self->{output}->perfdata_add(
-        label => "c[InvokeCount]",
-        value => $invokecount,
-     );    
-    $self->{output}->perfdata_add(
-        label => "c[ServiceCount]",
-        value => $servicecount,
-     );    
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{cache_name} = 'kingdee_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -255,13 +165,12 @@ Check EAS instance orm rpc status.
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkrpc.jsp')
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Warning Threshold (activethreadcount,stubcount,proxycount,clientsessioncount,serversessioncount,invokecountpermin,servicecountpermin).
-
-=item B<--critical>
-
-Critical Threshold (activethreadcount,stubcount,proxycount,clientsessioncount,serversessioncount,invokecountpermin,servicecountpermin).
+Thresholds.
+Can be: 'threads-active', 'stubs', 'proxies', 'sessions-client',
+'sessions-server', 'clients-invoke-perminute', 'processed-service-perminute',
+'clients-invoked', 'processed-service'.
 
 =back
 
