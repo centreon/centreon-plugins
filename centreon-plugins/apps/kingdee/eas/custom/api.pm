@@ -40,12 +40,12 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s@"     => { name => 'hostname' },
-            "proto:s@"        => { name => 'proto' },
-            "port:s@"         => { name => 'port' },
-            "username:s@"     => { name => 'username' },
-            "password:s@"     => { name => 'password' },
-            "timeout:s@"      => { name => 'timeout' },
+            'hostname:s@' => { name => 'hostname' },
+            'proto:s@'    => { name => 'proto' },
+            'port:s@'     => { name => 'port' },
+            'username:s@' => { name => 'username' },
+            'password:s@' => { name => 'password' },
+            'timeout:s@'  => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -55,7 +55,6 @@ sub new {
     $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
-
 }
 
 sub set_options {
@@ -91,7 +90,7 @@ sub check_options {
     $self->{timeout}    = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
  
     if (!defined($self->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify hostname option.');
         $self->{output}->option_exit();
     }
 
@@ -113,6 +112,18 @@ sub build_options_for_httplib {
     $self->{option_results}->{basic} = 1;
     $self->{option_results}->{username} = $self->{username};
     $self->{option_results}->{password} = $self->{password};
+}
+
+sub get_hostname {
+    my ($self, %options) = @_;
+
+    return $self->{hostname};
+}
+
+sub get_port {
+    my ($self, %options) = @_;
+
+    return $self->{port};
 }
 
 sub settings {

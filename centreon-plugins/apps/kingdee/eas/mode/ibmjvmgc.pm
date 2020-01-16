@@ -21,70 +21,70 @@
 
 package apps::kingdee::eas::mode::ibmjvmgc;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0, skipped_code => { -10 => 1 }  },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'collection', nlabel => 'gc.collection.count', set => {
+                key_values => [ { name => 'collection_count', diff => 1 } ],
+                output_template => 'gc collection count: %s',
+                perfdatas => [
+                    { value => 'collection_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'collection-time', nlabel => 'gc.collection.time.milliseconds', set => {
+                key_values => [ { name => 'collection_time', diff => 1 } ],
+                output_template => 'gc collection time: %s ms',
+                perfdatas => [
+                    { value => 'collection_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                ],
+            }
+        },
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-            "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkgc_j9gen.jsp" },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            });
-    
+    $options{options}->add_options(arguments => {
+        'urlpath:s' => { name => 'url_path', default => "/easportal/tools/nagios/checkgc_j9gen.jsp" },
+    });
+
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
         
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
     if ($webcontent !~ /CollectionCount=\d+/mi) {
-        $self->{output}->output_add(
-            severity  => 'UNKNOWN',
-            short_msg => "Cannot find ibm jdk j9 gc status."
-        );
+        $self->{output}->add_option_msg(short_msg => 'Cannot find ibm jdk j9 gc status');
         $self->{output}->option_exit();
     }
-    
+
     my ($collectioncount, $collectiontime) = (0, 0);
 
-    ($collectioncount, $collectiontime) = ($1, $2) if ($webcontent =~ /CollectionCount=(\d+)\sCollectionTime=(\d+)/mi);
-
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CollectionCount: %d", $collectioncount));
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("CollectionTime: %dms", $collectiontime));
-
-    $self->{output}->perfdata_add(label => "c[CollectionCount]", unit => '',
-                                  value => sprintf("%d", $collectioncount),
-                                  );
-    $self->{output}->perfdata_add(label => "c[CollectionTime]", unit => 'ms',
-                                  value => sprintf("%d", $collectiontime),
-                                  );
+    $self->{global} = {};
+    if ($webcontent =~ /CollectionCount=(\d+)\sCollectionTime=(\d+)/mi) {
+        $self->{global}->{collection_count} = $1;
+        $self->{global}->{collection_time} = $2;
+    }
  
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{cache_name} = 'kingdee_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -101,13 +101,10 @@ Check EAS application jvm gc status.
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkgc_j9.jsp')
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Warning Threshold for class loaded
-
-=item B<--critical>
-
-Critical Threshold for class unloaded
+Thresholds.
+Can be: 'collection', 'collection-time'.
 
 =back
 

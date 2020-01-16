@@ -31,25 +31,24 @@ sub new {
 
 	$self->{version} = '1.0';
 	%{$self->{modes}} = (
-            'classloading'          => 'apps::kingdee::eas::mode::classloading',
-            'memory'                => 'apps::kingdee::eas::mode::memory',
-            'javaruntime'           => 'apps::kingdee::eas::mode::javaruntime',
-            'datasource'            => 'apps::kingdee::eas::mode::datasource',
-            'httphandler'           => 'apps::kingdee::eas::mode::httphandler',
-            'muxhandler'            => 'apps::kingdee::eas::mode::muxhandler',
-            'transaction'           => 'apps::kingdee::eas::mode::transaction',
-            'oraclejvmgc'           => 'apps::kingdee::eas::mode::oraclejvmgc',
-            'ibmjvmgc'              => 'apps::kingdee::eas::mode::ibmjvmgc',
-            'ormrpc'                => 'apps::kingdee::eas::mode::ormrpc',
-            'easlicense'            => 'apps::kingdee::eas::mode::easlicense',
-            'activeusers'           => 'apps::kingdee::eas::mode::activeusers',
-            'oracleversion'         => 'apps::kingdee::eas::mode::oracleversion',
-            'oraclesession'         => 'apps::kingdee::eas::mode::oraclesession',
-            'oracletable'           => 'apps::kingdee::eas::mode::oracletable',
-            'oraclerecyclebin'      => 'apps::kingdee::eas::mode::oraclerecyclebin',
-            'oracleksqltemptable'   => 'apps::kingdee::eas::mode::oracleksqltemptable',
-            'oracleredolog'         => 'apps::kingdee::eas::mode::oracleredolog',
-			);
+        'classloading'        => 'apps::kingdee::eas::mode::classloading',
+        'memory'              => 'apps::kingdee::eas::mode::memory',
+        'javaruntime'         => 'apps::kingdee::eas::mode::javaruntime',
+        'datasource'          => 'apps::kingdee::eas::mode::datasource',
+        'handlers'            => 'apps::kingdee::eas::mode::handlers',
+        'transaction'         => 'apps::kingdee::eas::mode::transaction',
+        'oraclejvmgc'         => 'apps::kingdee::eas::mode::oraclejvmgc',
+        'ibmjvmgc'            => 'apps::kingdee::eas::mode::ibmjvmgc',
+        'ormrpc'              => 'apps::kingdee::eas::mode::ormrpc',
+        'easlicense'          => 'apps::kingdee::eas::mode::easlicense',
+        'activeusers'         => 'apps::kingdee::eas::mode::activeusers',
+        'oracleversion'       => 'apps::kingdee::eas::mode::oracleversion',
+        'oraclesession'       => 'apps::kingdee::eas::mode::oraclesession',
+        'oracletable'         => 'apps::kingdee::eas::mode::oracletable',
+        'oraclerecyclebin'    => 'apps::kingdee::eas::mode::oraclerecyclebin',
+        'oracleksqltemptable' => 'apps::kingdee::eas::mode::oracleksqltemptable',
+        'oracleredolog'       => 'apps::kingdee::eas::mode::oracleredolog',
+    );
 
     $self->{custom_modes}{api} = 'apps::kingdee::eas::custom::api';
 	return $self;

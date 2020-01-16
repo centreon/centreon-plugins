@@ -21,84 +21,74 @@
 
 package apps::kingdee::eas::mode::javaruntime;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use POSIX;
 use centreon::plugins::misc;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'uptime', nlabel => 'java.uptime.milliseconds', set => {
+                key_values => [ { name => 'uptime' }, { name => 'uptime_date' } ],
+                output_template => 'java uptime: %s',
+                output_use => 'uptime_date_absolute',
+                perfdatas => [
+                    { value => 'uptime_absolute', template => '%s',
+                      unit => 'ms' },
+                ],
+            }
+        },
+
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-            "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkjavaruntime.jsp" },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {
+        'urlpath:s' => { name => 'url_path', default => "/easportal/tools/nagios/checkjavaruntime.jsp" },
+    });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-        
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
-
     if ($webcontent !~ /VmName=/mi) {
-        $self->{output}->output_add(
-            severity  => 'UNKNOWN',
-            short_msg => "Cannot find java runtime status."
-        );
+        $self->{output}->add_option_msg(short_msg => 'Cannot find java runtime status.');
         $self->{output}->option_exit();
     }
-        
-    my $vmname = $1 if $webcontent =~ /VmName=\'(.*?)\'/i;
-    my $specversion = $1 if $webcontent =~ /SpecVersion=([\d\.]+)/i;
-    my $vmversion = $1 if $webcontent =~ /VmVersion=(.*?)\s/i;
-    my $vender = $1 if $webcontent =~ /VmVendor=\'(.*?)\'/i;
-    my $uptime = $1 if $webcontent =~ /Uptime=(\d*)/i;   #unit:ms
-    my $startime = $1 if $webcontent =~ /StartTime=(\d*)/i;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $uptime / 1000, threshold => [ 
-                                                  { label => 'critical', 'exit_litteral' => 'critical' }, 
-                                                  { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit, short_msg => sprintf("Uptime: %s", 
-                                  centreon::plugins::misc::change_seconds(value => floor($uptime / 1000), start => 'd'))
-                                  );
-    $self->{output}->output_add(severity => $exit, short_msg => sprintf("%s %s (build %s), %s", 
-                                  $vmname ,$specversion, $vmversion,$vender)
-                                  );
-  
-    $self->{output}->perfdata_add(label => "Uptime", unit => 's',
-                                  value => sprintf("%d", floor($uptime / 1000)),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-    $self->{output}->perfdata_add(label => "SpecVersion", unit => '',
-                                  value => sprintf("%s", $specversion),
-                                  );
+    my ($vmname, $specversion, $vmversion, $vendor, $uptime);
+    $vmname = $1 if ($webcontent =~ /VmName=\'(.*?)\'/i);
+    $specversion = $1 if ($webcontent =~ /SpecVersion=([\d\.]+)/i);
+    $vmversion = $1 if ($webcontent =~ /VmVersion=(.*?)\s/i);
+    $vendor = $1 if ($webcontent =~ /VmVendor=\'(.*?)\'/i);
+    $uptime = $1 if ($webcontent =~ /Uptime=(\d*)/i);   #unit:ms
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            '%s %s (build %s), %s', 
+            $vmname, $specversion, $vmversion, $vendor
+        )
+    );
 
+    $self->{global} = { 
+        uptime => $uptime,
+        uptime_date => centreon::plugins::misc::change_seconds(value => floor($uptime / 1000), start => 'd')
+    };
 }
 
 1;
@@ -115,13 +105,10 @@ Check EAS application java runtime status.
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkjavaruntime.jsp')
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Warning Threshold for uptime (sec)
-
-=item B<--critical>
-
-Critical Threshold for uptime (sec)
+Thresholds.
+Can be: 'uptime'.
 
 =back
 
