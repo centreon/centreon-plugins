@@ -536,6 +536,12 @@ sub set_timezone {
     return {};
 }
 
+sub uniq {
+    my %seen;
+
+    return grep { !$seen{$_}++ } @_;
+}
+
 1;
 
 __END__

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::dynatrace::restapi::plugin;
+package apps::monitoring::dynatrace::restapi::plugin;
 
 use strict;
 use warnings;
@@ -26,16 +26,15 @@ use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
-
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'problem' => 'apps::dynatrace::restapi::mode::problem',
+        'problems' => 'apps::monitoring::dynatrace::restapi::mode::problems',
     );
 
-    $self->{custom_modes}{api} = 'apps::dynatrace::restapi::custom::api';
+    $self->{custom_modes}{api} = 'apps::monitoring::dynatrace::restapi::custom::api';
     return $self;
 }
 

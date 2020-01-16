@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::dynatrace::restapi::custom::api;
+package apps::monitoring::dynatrace::restapi::custom::api;
 
 use base qw(centreon::plugins::mode);
 
@@ -41,15 +41,15 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            "hostname:s"            => { name => 'hostname' },
-            "environment-id:s"      => { name => 'environment_id' },
-            "port:s"                => { name => 'port'},
-            "proto:s"               => { name => 'proto' },
-            "api-password:s"        => { name => 'api_password' },
-            "timeout:s"             => { name => 'timeout', default => 30 },
+            'hostname:s'       => { name => 'hostname' },
+            'environment-id:s' => { name => 'environment_id' },
+            'port:s'           => { name => 'port'},
+            'proto:s'          => { name => 'proto' },
+            'api-password:s'   => { name => 'api_password' },
+            'timeout:s'        => { name => 'timeout', default => 30 },
         });
     }
     
@@ -138,7 +138,6 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-
     my $content = $self->{http}->request(%options, 
         warning_status => '', unknown_status => '%{http_code} < 200 or %{http_code} >= 300', critical_status => ''
     );
