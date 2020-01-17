@@ -23,6 +23,7 @@ package centreon::common::monitoring::openmetrics::custom::web;
 use strict;
 use warnings;
 use centreon::plugins::http;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -37,7 +38,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'hostname:s@'   => { name => 'hostname' },
@@ -91,7 +92,7 @@ sub check_options {
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : '';
     $self->{password} = (defined($self->{option_results}->{password})) ? shift(@{$self->{option_results}->{password}}) : '';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
- 
+
     if (!defined($self->{hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
@@ -121,6 +122,15 @@ sub build_options_for_httplib {
     }
 }
 
+sub get_uuid {
+    my ($self, %options) = @_;
+
+    return md5_hex(
+        ((defined($self->{hostname}) && $self->{hostname} ne '') ? $self->{hostname} : 'none') . '_' .
+        ((defined($self->{port}) && $self->{port} ne '') ? $self->{port} : 'none')
+    );
+}
+
 sub settings {
     my ($self, %options) = @_;
 
@@ -132,7 +142,6 @@ sub scrape {
     my ($self, %options) = @_;
 
     $self->settings();
-
     return $self->{http}->request(critical_status => '', warning_status => '');
 }
 

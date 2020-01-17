@@ -23,6 +23,7 @@ package centreon::common::monitoring::openmetrics::custom::file;
 use strict;
 use warnings;
 use centreon::plugins::misc;
+use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -40,15 +41,15 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"          => { name => 'hostname' },
-            "ssh-option:s@"       => { name => 'ssh_option' },
-            "ssh-path:s"          => { name => 'ssh_path' },
-            "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-            "timeout:s"           => { name => 'timeout', default => 10 },
-            "sudo"                => { name => 'sudo' },
-            "command:s"           => { name => 'command', default => 'cat' },
-            "command-path:s"      => { name => 'command_path' },
-            "command-options:s"   => { name => 'command_options' },
+            'hostname:s'          => { name => 'hostname' },
+            'ssh-option:s@'       => { name => 'ssh_option' },
+            'ssh-path:s'          => { name => 'ssh_path' },
+            'ssh-command:s'       => { name => 'ssh_command', default => 'ssh' },
+            'timeout:s'           => { name => 'timeout', default => 10 },
+            'sudo'                => { name => 'sudo' },
+            'command:s'           => { name => 'command', default => 'cat' },
+            'command-path:s'      => { name => 'command_path' },
+            'command-options:s'   => { name => 'command_options' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'FILE OPTIONS', once => 1);
@@ -90,6 +91,15 @@ sub check_options {
     }
 
     return 0;
+}
+
+sub get_uuid {
+    my ($self, %options) = @_;
+
+    return md5_hex(
+        ((defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') ? $self->{option_results}->{hostname} : 'none') . '_' .
+        ((defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '') ? $self->{option_results}->{command_options} : 'none')
+    );
 }
 
 sub scrape {

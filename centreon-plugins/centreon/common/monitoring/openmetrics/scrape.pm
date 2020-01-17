@@ -39,14 +39,20 @@ sub parse {
 
         $dimensions =~ s/[{}]//g;
         $dimensions =~ s/"/'/g;
-        my %dimensions = map { (split /=/) } split /,/, $dimensions;
+        $dimensions =~ s/$options{strip_chars}//g if (defined($options{strip_chars}));
+        my %dimensions = ();
+        foreach (split /,/, $dimensions) {
+            my ($key, $value) = split /=/;
+            $dimensions{$key} = $value;
+        }
 
         push @{$result->{metrics}->{$metric}->{data}}, {
             value => centreon::plugins::misc::expand_exponential(value => $value),
             dimensions => \%dimensions,
-            dimensions_string => $dimensions };
+            dimensions_string => $dimensions
+        };
     }
-    
+
     return $result->{metrics};
 }
 
