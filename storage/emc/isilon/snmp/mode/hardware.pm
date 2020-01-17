@@ -38,6 +38,8 @@ sub set_system {
         disk => [
             ['healthy', 'OK'],
             ['preparing', 'OK'],
+            ['L3', 'OK'],
+            ['empty', 'OK'],
             ['.*', 'CRITICAL'],
         ],
     };
