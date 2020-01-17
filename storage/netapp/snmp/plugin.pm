@@ -36,6 +36,7 @@ sub new {
         'cp-statistics'    => 'storage::netapp::snmp::mode::cpstatistics',
         'cpuload'          => 'storage::netapp::snmp::mode::cpuload',
         'diskfailed'       => 'storage::netapp::snmp::mode::diskfailed',
+        'failoverstatus'   => 'storage::netapp::snmp::mode::failoverstatus',
         'fan'              => 'storage::netapp::snmp::mode::fan',
         'filesys'          => 'storage::netapp::snmp::mode::filesys',
         'list-filesys'     => 'storage::netapp::snmp::mode::listfilesys',
