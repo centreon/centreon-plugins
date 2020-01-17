@@ -33,6 +33,7 @@ my %map_search_field = (
     A => 'address',
     PTR => 'name',
     CNAME => 'cname',
+    TXT => 'txtdata',
 );
 
 sub search {
@@ -51,12 +52,9 @@ sub search {
     if ($reply) {
         foreach my $rr ($reply->answer) {
             if (!defined($search_type)) {
-                if ($rr->type eq 'A') {
-                    push @results, $rr->address;
-                }
-                if ($rr->type eq 'PTR') {
-                    push @results, $rr->name;
-                }
+                push @results, $rr->address if ($rr->type eq 'A');
+                push @results, $rr->name if ($rr->type eq 'PTR');
+                push @results, $rr->txtdata if ($rr->type eq 'TXT');
                 next;
             }
 
