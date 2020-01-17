@@ -38,25 +38,23 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "ami-hostname:s@"     => { name => 'ami_hostname' },
-                      "ami-port:s@"         => { name => 'ami_port' },
-                      "ami-username:s@"     => { name => 'ami_username' },
-                      "ami-password:s@"     => { name => 'ami_password' },
-                      "timeout:s@"          => { name => 'timeout' },
-                    });
+        $options{options}->add_options(arguments =>  {
+            'ami-hostname:s@' => { name => 'ami_hostname' },
+            'ami-port:s@'     => { name => 'ami_port' },
+            'ami-username:s@' => { name => 'ami_username' },
+            'ami-password:s@' => { name => 'ami_password' },
+            'timeout:s@'      => { name => 'timeout' },
+        });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'AMI API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    $self->{cnx_ami} = undef; 
+    $self->{cnx_ami} = undef;
 
     return $self;
-
 }
 
 sub set_options {
@@ -89,7 +87,7 @@ sub check_options {
     $self->{ami_password} = (defined($self->{option_results}->{ami_password})) ? shift(@{$self->{option_results}->{ami_password}}) : undef;
     $self->{ami_port} = (defined($self->{option_results}->{ami_port})) ? shift(@{$self->{option_results}->{ami_port}}) : 5038;
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? shift(@{$self->{option_results}->{timeout}}) : 10;
- 
+
     if (!defined($self->{ami_hostname})) {
         $self->{output}->add_option_msg(short_msg => "Need to specify --ami-hostname option.");
         $self->{output}->option_exit();
@@ -107,19 +105,19 @@ sub check_options {
         scalar(@{$self->{option_results}->{ami_hostname}}) == 0) {
         return 0;
     }
-    
+
     return 1;
 }
 
 sub get_connect_info {
     my ($self, %options) = @_;
-    
+
     return $self->{ami_hostname}  . '_' . $self->{ami_port};
 }
 
 sub read_ami_protocol_end {
     my ($self, %options) = @_;
-    
+
     if (defined($options{response})) {
         if ($options{response} eq 'Follows') {
             return 1 if ($options{message} =~ /^--END COMMAND--/ms);
@@ -131,13 +129,13 @@ sub read_ami_protocol_end {
             }
         }
     }
-    
+
     return 0;
 }
 
 sub read_ami_protocol {
     my ($self, %options) = @_;
-    
+
     my $select = IO::Select->new($self->{cnx_ami});
     # Three types of message:
     #    Response: Error
@@ -153,7 +151,7 @@ sub read_ami_protocol {
     #    output: xxxx
     #    ...
     #
-    
+
     my ($response, $read_msg);
     my $message = '';
     while (1) {
@@ -170,7 +168,7 @@ sub read_ami_protocol {
         } else {
             $message .= $read_msg;
         }
-        
+
         last if ($self->read_ami_protocol_end(response => $response, message => $message));
     }
 
@@ -181,20 +179,20 @@ sub read_ami_protocol {
         $self->{output}->add_option_msg(short_msg => "Communication issue [" . $message . "]");
         $self->{output}->option_exit();
     }
-    
+
     $self->{output}->output_add(long_msg => $message, debug => 1);
     return $message;
 }
 
 sub write_ami_protocol {
     my ($self, %options) = @_;
-    
+
     $self->{cnx_ami}->send($options{cmd});
 }
 
 sub login {
     my ($self, %options) = @_;
-    
+
     $self->write_ami_protocol(cmd => "Action:login
 Username:$self->{ami_username}
 Secret:$self->{ami_password}
@@ -207,7 +205,7 @@ Events: off
 
 sub connect {
     my ($self, %options) = @_;
-    
+
     $self->{cnx_ami} = IO::Socket::INET->new(
         PeerAddr => $self->{ami_hostname},
         PeerPort => $self->{ami_port},
@@ -218,7 +216,7 @@ sub connect {
         $self->{output}->add_option_msg(short_msg => "Can't bind : $@");
         $self->{output}->option_exit();
     }
-    
+
     $self->{cnx_ami}->autoflush(1);
     $self->login();
 }
