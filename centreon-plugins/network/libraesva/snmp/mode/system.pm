@@ -25,14 +25,21 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return 'cluster status: ' . $self->{result_values}->{cluster_status};
+}
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'mails-sent', nlabel => 'system.mails.sent.count', set => {
                 key_values => [ { name => 'mailSent', diff => 1 } ],
@@ -98,6 +105,14 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'cluster-status', threshold => 0, set => {
+                key_values => [ { name => 'cluster_status' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold,
+            }
+        },
     ];
 }
 
@@ -107,10 +122,24 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'unknown-cluster-status:s'  => { name => 'unknown_cluster_status', default => '' },
+        'warning-cluster-status:s'  => { name => 'warning_cluster_status', default => '' },
+        'critical-cluster-status:s' => { name => 'critical_cluster_status', default => '%{cluster_status} =~ /error/i' },
     });
 
     return $self;
 }
+
+sub check_options {
+    my ($self, %options) = @_; 
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_cluster_status', 'critical_cluster_status', 'unknown_cluster_status']);
+}
+
+my $map_cluster_status = {
+    -1 => 'nocluster', 0 => 'healthy', 1 => 'error' 
+};
 
 my $mapping = {
     mailSent          => { oid => '.1.3.6.1.4.1.41091.1.1.1' },
@@ -121,7 +150,7 @@ my $mapping = {
     virusMessages     => { oid => '.1.3.6.1.4.1.41091.1.1.6' },
     incomingMailQueue => { oid => '.1.3.6.1.4.1.41091.1.1.8' },
     outgoingMailQueue => { oid => '.1.3.6.1.4.1.41091.1.1.9' },
-    clusterStatus     => { oid => '.1.3.6.1.4.1.41091.1.1.10' },
+    cluster_status    => { oid => '.1.3.6.1.4.1.41091.1.1.10', map => $map_cluster_status },
 };
 
 sub manage_selection {
@@ -151,6 +180,21 @@ Check system usage.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^mail-sent$'
+
+=item B<--unknown-status>
+
+Set unknown threshold for status (Default: '').
+Can used special variables like: %{cluster_status}
+
+=item B<--warning-status>
+
+Set warning threshold for status (Default: '').
+Can used special variables like: %{cluster_status}
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{cluster_status} =~ /error/i').
+Can used special variables like: %{cluster_status}
 
 =item B<--warning-*> B<--critical-*>
 
