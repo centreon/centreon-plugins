@@ -86,7 +86,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{table} = [
         { label => 'table-usage', nlabel => 'table.space.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'display' } ],
@@ -154,7 +154,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-database:s'   => { name => 'filter_database' },
     });
@@ -181,14 +181,14 @@ sub manage_selection {
         query => q{SELECT table_schema, table_name, engine, data_free, data_length+index_length as data_used, (DATA_FREE / (DATA_LENGTH+INDEX_LENGTH)) as TAUX_FRAG FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND engine IN ('InnoDB', 'MyISAM')}
     );
     my $result = $options{sql}->fetchall_arrayref();
-    
+
     my $innodb_ibdata_done = 0;
     $self->{global} = { free => 0, used => 0 };
     $self->{database} = {};
     foreach my $row (@$result) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' && 
                  $row->[0] !~ /$self->{option_results}->{filter_database}/);
-        if (!defined($self->{database}->{$$row[0]})) {
+        if (!defined($self->{database}->{$row->[0]})) {
             $self->{database}->{$row->[0]} = {
                 display => $row->[0],
                 global_db => { free => 0, used => 0 },
@@ -196,29 +196,23 @@ sub manage_selection {
             };
         }
 
-        if (($row->[2] =~ /innodb/i && ($innodb_per_table == 1 || $innodb_ibdata_done == 0))) {
+        $self->{database}->{$row->[0]}->{table}->{$row->[1]} = {
+            display => $row->[1]
+        };
+
+        # For a table located in the shared tablespace, this is the free space of the shared tablespace.
+        if ($row->[2] !~ /innodb/i || $innodb_per_table == 1) {
             $self->{global}->{free} += $row->[3];
-            $self->{global}->{used} += $row->[4];
+            $self->{database}->{$row->[0]}->{global_db}->{free} += $row->[3];
+            $self->{database}->{$row->[0]}->{table}->{$row->[1]}->{free} = $row->[3];
+            $self->{database}->{$row->[0]}->{table}->{$row->[1]}->{frag} = $row->[5];
+        } elsif ($innodb_ibdata_done == 0) {
+            $self->{global}->{free} += $row->[3];
             $innodb_ibdata_done = 1;
         }
-        if ($row->[2] !~ /innodb/i) {
-            $self->{global}->{free} += $row->[3];
-            $self->{global}->{used} += $row->[4];
-        }
-        
-        if ($row->[2] !~ /innodb/i ||
-            ($row->[2] =~ /innodb/i && $innodb_per_table == 1)
-        ) {
-            $self->{database}->{$row->[0]}->{global_db}->{free} += $row->[3];
-            $self->{database}->{$row->[0]}->{global_db}->{used} += $row->[4];
-            
-            $self->{database}->{$row->[0]}->{table}->{$$row[1]} = {
-                display => $row->[1],
-                free => $row->[3],
-                used => $row->[4],
-                frag => $row->[5]
-            };
-        }
+        $self->{global}->{used} += $row->[4];
+        $self->{database}->{$row->[0]}->{global_db}->{used} += $row->[4];
+        $self->{database}->{$row->[0]}->{table}->{$row->[1]}->{used} = $row->[4];
     }
 
     if (scalar(keys %{$self->{database}}) <= 0) {
