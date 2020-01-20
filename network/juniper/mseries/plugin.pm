@@ -31,19 +31,19 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'bgp-peer-state'                => 'network::juniper::common::junos::mode::bgppeerstate',
-        'bgp-peer-prefix-statistics'    => 'network::juniper::common::junos::mode::bgppeerprefixstatistics',
-        'cpu-routing'                   => 'network::juniper::common::junos::mode::cpurouting', # routing engine
-        'hardware'                      => 'network::juniper::common::junos::mode::hardware',
-        'interfaces'                    => 'network::juniper::common::junos::mode::interfaces', 
-        'ldp-session-status'            => 'network::juniper::common::junos::mode::ldpsessionstatus',
-        'lsp-status'                    => 'network::juniper::common::junos::mode::lspstatus',
-        'list-bgp-peers'                => 'network::juniper::common::junos::mode::listbgppeers',
-        'list-interfaces'               => 'snmp_standard::mode::listinterfaces',
-        'list-storages'                 => 'snmp_standard::mode::liststorages',
-        'memory-routing'                => 'network::juniper::common::junos::mode::memoryrouting', # routing engine
-        'rsvp-session-status'           => 'network::juniper::common::junos::mode::rsvpsessionstatus',
-        'storage'                       => 'snmp_standard::mode::storage',
+        'bgp-peer-state'             => 'network::juniper::common::junos::mode::bgppeerstate',
+        'bgp-peer-prefix-statistics' => 'network::juniper::common::junos::mode::bgppeerprefixstatistics',
+        'cpu'                        => 'network::juniper::common::junos::mode::cpu',
+        'hardware'                   => 'network::juniper::common::junos::mode::hardware',
+        'interfaces'                 => 'network::juniper::common::junos::mode::interfaces', 
+        'ldp-session-status'         => 'network::juniper::common::junos::mode::ldpsessionstatus',
+        'lsp-status'                 => 'network::juniper::common::junos::mode::lspstatus',
+        'list-bgp-peers'             => 'network::juniper::common::junos::mode::listbgppeers',
+        'list-interfaces'            => 'snmp_standard::mode::listinterfaces',
+        'list-storages'              => 'snmp_standard::mode::liststorages',
+        'memory'                     => 'network::juniper::common::junos::mode::memory',
+        'rsvp-session-status'        => 'network::juniper::common::junos::mode::rsvpsessionstatus',
+        'storage'                    => 'snmp_standard::mode::storage',
     );
 
     return $self;
