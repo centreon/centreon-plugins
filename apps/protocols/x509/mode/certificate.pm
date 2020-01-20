@@ -31,10 +31,12 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = sprintf("Certificate for '%s' expires in '%d' days [%s] - Issuer: '%s'",
+
+    my $msg = sprintf(
+        "Certificate for '%s' expires in '%d' days [%s] - Issuer: '%s'",
         $self->{result_values}->{subject}, $self->{result_values}->{expiration}, $self->{result_values}->{date},
-        $self->{result_values}->{issuer});
+        $self->{result_values}->{issuer}
+    );
     if (defined($self->{result_values}->{alt_subjects}) && $self->{result_values}->{alt_subjects} ne '') {
         $self->{output}->output_add(long_msg => sprintf("Alternative subject names: %s.", $self->{result_values}->{alt_subjects}));
     }
@@ -43,7 +45,7 @@ sub custom_status_output {
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{subject} = $options{new_datas}->{$self->{instance} . '_subject'};
     $self->{result_values}->{issuer} = $options{new_datas}->{$self->{instance} . '_issuer'};
     $self->{result_values}->{expiration} = ($options{new_datas}->{$self->{instance} . '_expiration'} - time()) / 86400;
@@ -58,7 +60,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'subject' }, { name => 'issuer' }, { name => 'expiration' },
@@ -77,16 +79,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-                                    "hostname:s"                => { name => 'hostname' },
-                                    "port:s"                    => { name => 'port' },
-                                    "servername:s"              => { name => 'servername' },
-                                    "ssl-opt:s@"                => { name => 'ssl_opt' },
-                                    "timeout:s"                 => { name => 'timeout', default => '3' },
-                                    "warning-status:s"          => { name => 'warning_status', default => '%{expiration} < 60' },
-                                    "critical-status:s"         => { name => 'critical_status', default => '%{expiration} < 30' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'port:s'            => { name => 'port' },
+        'servername:s'      => { name => 'servername' },
+        'ssl-opt:s@'        => { name => 'ssl_opt' },
+        'timeout:s'         => { name => 'timeout', default => '3' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{expiration} < 60' },
+        'critical-status:s' => { name => 'critical_status', default => '%{expiration} < 30' },
+    });
+
     return $self;
 }
 
@@ -102,7 +104,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set --port option");
         $self->{output}->option_exit();
     }
-    
+
     my $append = '';
     foreach (@{$self->{option_results}->{ssl_opt}}) {
         if ($_ ne '') {
@@ -110,7 +112,7 @@ sub check_options {
             $append = ', ';
         }
     }
-    
+
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
@@ -121,10 +123,8 @@ sub manage_selection {
         my $context = new IO::Socket::SSL::SSL_Context(eval $self->{ssl_context});
         eval { IO::Socket::SSL::set_default_context($context) };
         if ($@) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Error setting SSL context: %s", $@));
-            $self->{output}->display();
-            $self->{output}->exit();
+            $self->{output}->add_option_msg(short_msg => sprintf("Error setting SSL context: %s", $@));
+            $self->{output}->option_exit();
         }
     }
 
@@ -138,22 +138,16 @@ sub manage_selection {
         );
     };
     if ($@) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("%s", $@));
-        $self->{output}->display();
-        $self->{output}->exit();
+        $self->{output}->add_option_msg(short_msg => sprintf("%s", $@));
+        $self->{output}->option_exit();
     }
     if (!defined($socket)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => "Error creating SSL socket: $!, SSL error: $SSL_ERROR");
-        $self->{output}->display();
-        $self->{output}->exit();
+        $self->{output}->add_option_msg(short_msg => "Error creating SSL socket: $!, SSL error: $SSL_ERROR");
+        $self->{output}->option_exit();
     }
     if (defined($SSL_ERROR)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => "SSL error: $SSL_ERROR");
-        $self->{output}->display();
-        $self->{output}->exit();
+        $self->{output}->add_option_msg(short_msg => "SSL error: $SSL_ERROR");
+        $self->{output}->option_exit();
     }
 
     my $subject = $socket->peer_certificate('commonName');
@@ -170,11 +164,11 @@ sub manage_selection {
         $alt_subjects .= $append . $name;
         $append = ', ';
     }
-    
+
     my $notafterdate = Net::SSLeay::P_ASN1_TIME_get_isotime(Net::SSLeay::X509_get_notAfter($socket->peer_certificate()));
     $notafterdate =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)Z$/; # 2033-05-16T20:39:37Z
     my $dt = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6);
-    
+
     $self->{global} = {
         subject => $subject,
         issuer => $issuer,
