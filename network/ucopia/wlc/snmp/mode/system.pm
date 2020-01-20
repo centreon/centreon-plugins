@@ -196,7 +196,7 @@ sub manage_selection {
         cpu_temperature => $result->{cpuTemperature},
         connected_users => $result->{totalConnectedUsers},
         max_users => defined($result->{licenseUsers}) ? $result->{licenseUsers} : '',
-        connected_users_prct => defined($result->{licenseUsers}) ? $result->{totalConnectedUsers} * 100 / $result->{licenseUsers} : undef
+        connected_users_prct => defined($result->{licenseUsers}) && $result->{licenseUsers} != 0 ? $result->{totalConnectedUsers} * 100 / $result->{licenseUsers} : undef
     };
 
     $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => '0');
