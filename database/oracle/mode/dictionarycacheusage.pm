@@ -75,7 +75,7 @@ sub new {
 }
 
 sub manage_selection {
-    my ($self, %options) = @_;    
+    my ($self, %options) = @_;
 
     my $query = q{
         SELECT SUM(gets), SUM(gets-getmisses) FROM v$rowcache

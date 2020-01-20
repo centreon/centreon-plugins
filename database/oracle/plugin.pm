@@ -36,6 +36,7 @@ sub new {
         'connection-time'          => 'centreon::common::protocols::sql::mode::connectiontime',
         'connected-users'          => 'database::oracle::mode::connectedusers',
         'corrupted-blocks'         => 'database::oracle::mode::corruptedblocks',
+        'dataguard'                => 'database::oracle::mode::dataguard',
         'data-files-status'        => 'database::oracle::mode::datafilesstatus',
         'datacache-hitratio'       => 'database::oracle::mode::datacachehitratio',
         'dictionary-cache-usage'   => 'database::oracle::mode::dictionarycacheusage',
