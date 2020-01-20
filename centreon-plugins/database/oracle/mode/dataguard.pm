@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -71,7 +71,7 @@ sub set_counters {
                     { name => 'mrp_status' }, { name => 'mrp_process' },
                     { name => 'log_transport' }
                 ],
-                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_calc => self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
@@ -95,7 +95,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'unknown-status:s'  => { name => 'unknown_status', default => '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{mrp_status} =~ /APPLYING_LOG|WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{mrp_status} !~ /undefined|APPLYING_LOG/i || (%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i)' },
         'critical-status:s' => { name => 'critical_status', default => '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i' },
     });
 
@@ -182,7 +182,7 @@ Can used special variables like: %{roleLast}, %{role}, %{open_mode}, %{mrp_statu
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{mrp_status} =~ /APPLYING_LOG|WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
+Set warning threshold for status (Default: '{mrp_status} !~ /undefined|APPLYING_LOG/i || (%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i)').
 Can used special variables like: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--critical-status>
