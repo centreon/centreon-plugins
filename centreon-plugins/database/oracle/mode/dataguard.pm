@@ -95,7 +95,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'unknown-status:s'  => { name => 'unknown_status', default => '%{mrp_status} =~ /undefined/ || %{log_transport} =~ /undefined/' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{mrp_status} !~ /undefined|APPLYING_LOG/i || (%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i)' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i' },
         'critical-status:s' => { name => 'critical_status', default => '%{roleLast} ne %{role} || %{mrp_status} !~ /undefined|APPLYING_LOG|WAIT_FOR_LOG/i' },
     });
 
@@ -182,7 +182,7 @@ Can used special variables like: %{roleLast}, %{role}, %{open_mode}, %{mrp_statu
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '{mrp_status} !~ /undefined|APPLYING_LOG/i || (%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i)').
+Set warning threshold for status (Default: '%{mrp_status} =~ /WAIT_FOR_LOG/i and %{log_transport} =~ /LGWR/i').
 Can used special variables like: %{roleLast}, %{role}, %{open_mode}, %{mrp_status}, %{mrp_process}, %{log_transport}
 
 =item B<--critical-status>
