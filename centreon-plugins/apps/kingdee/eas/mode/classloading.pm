@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -71,7 +72,7 @@ sub manage_selection {
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
     if ($webcontent !~ /(LoadedClassCount|UnloadedClassCount)/i) {
-        $self->{output}->add_option_msg(short_msg => 'Cannot find classloading status.');
+        $self->{output}->add_option_msg(short_msg => 'cannot find classloading status.');
         $self->{output}->option_exit();
     }
 

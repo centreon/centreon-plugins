@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -102,7 +103,7 @@ sub set_counters {
                 key_values => [ { name => 'processed_service_count', diff => 1 } ],
                 output_template => 'processed service: %s',
                 perfdatas => [
-                    { value => 'processed_service_count', template => '%s', min => 0 },
+                    { value => 'processed_service_count_absolute', template => '%s', min => 0 },
                 ],
             }
         },

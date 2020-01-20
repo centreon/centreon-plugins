@@ -21,78 +21,90 @@
 
 package apps::kingdee::eas::mode::oraclejvmgc;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Digest::MD5 qw(md5_hex);
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', cb_prefix_output => 'prefix_global_output', type => 0 },
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'gc-minor', nlabel => 'java.gc.minor.count', set => {
+                key_values => [ { name => 'minor_gc_count', diff => 1 } ],
+                output_template => 'minor count: %s',
+                perfdatas => [
+                    { value => 'minor_gc_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'gc-minor-time', nlabel => 'java.gc.minor.time.milliseconds', set => {
+                key_values => [ { name => 'minor_gc_time', diff => 1 } ],
+                output_template => 'minor time: %s ms',
+                perfdatas => [
+                    { value => 'minor_gc_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                ],
+            }
+        },
+        { label => 'gc-full', nlabel => 'java.gc.full.count', set => {
+                key_values => [ { name => 'full_gc_count', diff => 1 } ],
+                output_template => 'full count: %s',
+                perfdatas => [
+                    { value => 'full_gc_count_absolute', template => '%s', min => 0 },
+                ],
+            }
+        },
+        { label => 'gc-full-time', nlabel => 'java.gc.full.time.milliseconds', set => {
+                key_values => [ { name => 'full_gc_time', diff => 1 } ],
+                output_template => 'full time: %s ms',
+                perfdatas => [
+                    { value => 'full_gc_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                ],
+            }
+        },
+    ];
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'garbage collector ';
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-            "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkgc_ps.jsp" },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {
+        'urlpath:s' => { name => 'url_path', default => "/easportal/tools/nagios/checkgc_ps.jsp" },
+    });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-        
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 
-    if ( $webcontent !~ /MinorGCCount=\d+/mi ) {
-        $self->{output}->output_add(
-            severity  => 'UNKNOWN',
-            short_msg => "Cannot find jvm gc status."
-        );
+    if ($webcontent !~ /MinorGCCount=(\d+)/mi) {
+        $self->{output}->add_option_msg(short_msg => 'cannot find jvm gc status.');
         $self->{output}->option_exit();
     }
-    
-    my ($minorgccount, $minorgctime, $fullgccount, $fullgctime) = (0, 0, 0, 0);
 
-    ($minorgccount, $minorgctime, $fullgccount, $fullgctime) = ($1, $2, $3, $4) if ($webcontent =~ /MinorGCCount=(\d+)\sMinorGCTime=(\d+)\sFullGCCount=(\d+)\sFullGCTime=(\d+)/mi);
+    $self->{global} = { minor_gc_count => 0 };
+    $self->{global}->{minor_gc_time} = $1 if ($webcontent =~ /MinorGCTime=\s*(\d+)/mi);
+    $self->{global}->{full_gc_count} = $1 if ($webcontent =~ /FullGCCount=\s*(\d+)/mi);
+    $self->{global}->{full_gc_time} = $1 if ($webcontent =~ /FullGCTime=\s*(\d+)/mi);
 
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("MinorGCCount: %d", $minorgccount));
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("MinorGCTime: %dms", $minorgctime));
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("FullGCCount: %d", $fullgccount));
-    $self->{output}->output_add(severity => "ok", short_msg => sprintf("FullGCTime: %dms", $fullgctime));
-
-    $self->{output}->perfdata_add(label => "c[MinorGCCount]", unit => '',
-                                  value => sprintf("%d", $minorgccount),
-                                  );
-    $self->{output}->perfdata_add(label => "c[MinorGCTime]", unit => 'ms',
-                                  value => sprintf("%d", $minorgctime),
-                                  );
-    $self->{output}->perfdata_add(label => "c[FullGCCount]", unit => '',
-                                  value => sprintf("%d", $fullgccount),
-                                  );
-    $self->{output}->perfdata_add(label => "c[FullGCTime]", unit => 'ms',
-                                  value => sprintf("%d", $fullgctime),
-                                  );
-
-    $self->{output}->display();
-    $self->{output}->exit();
-
+    $self->{cache_name} = 'kingdee_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -109,13 +121,10 @@ Check EAS application jvm gc status.
 
 Set path to get status page. (Default: '/easportal/tools/nagios/checkgc_ps.jsp')
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Warning Threshold for class loaded
-
-=item B<--critical>
-
-Critical Threshold for class unloaded
+Thresholds.
+Can be: 'gc-minor', 'gc-minor-time', 'gc-full', 'gc-full-time'.
 
 =back
 
