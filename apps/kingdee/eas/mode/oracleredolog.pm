@@ -43,7 +43,7 @@ sub set_counters {
             }
         },
         { label => 'oracle-redolog-active', nlabel => 'datasource.oracle.redolog.active.count', set => {
-                key_values => [ { name => 'inactive' } ],
+                key_values => [ { name => 'active' } ],
                 output_template => 'active: %s',
                 perfdatas => [
                     { value => 'active_absolute', template => '%s', min => 0, label_extra_instance => 1 },

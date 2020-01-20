@@ -2,7 +2,7 @@
 # Copyright 2020 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
-# the needs in IT infrastructure      application monitoring for
+# the needs in IT infrastructure and application monitoring for
 # service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,105 +14,93 @@
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions     
+# See the License for the specific language governing permissions and
 # limitations under the License.
 #
 # Author : CHEN JUN , aladdin.china@gmail.com
 
 package apps::kingdee::eas::mode::oracletable;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'datasource', type => 1, cb_prefix_output => 'prefix_datasource_output', skipped_code => { -10 => 1 } },
+    ];
+
+    $self->{maps_counters}->{datasource} = [
+        { label => 'table-rows', nlabel => 'datasource.table.rows.count', set => {
+                key_values => [ { name => 'num_rows' } ],
+                output_template => 'number of rows: %s',
+                perfdatas => [
+                    { value => 'num_rows_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'table-actual-rows', nlabel => 'datasource.table.actual.rows.count', set => {
+                key_values => [ { name => 'actual_num_rows' } ],
+                output_template => 'number of actual rows: %s',
+                perfdatas => [
+                    { value => 'actual_num_rows_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                ],
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-            {
-            "urlpath:s"         => { name => 'url_path', default => "/easportal/tools/nagios/checkoracletable.jsp" },
-            "datasource:s"      => { name => 'datasource' },
-            "tablename:s"       => { name => 'tablename' , default => "T_GL_VOUCHER"},
-            "actualrows:s"      => { name => 'actualrows', default => "false" },
-            "warning:s"         => { name => 'warning' },
-            "critical:s"        => { name => 'critical' },
-            });
+    $options{options}->add_options(arguments => {
+        'urlpath:s'    => { name => 'url_path', default => "/easportal/tools/nagios/checkoracletable.jsp" },
+        'datasource:s' => { name => 'datasource' },
+        'tablename:s'  => { name => 'tablename' , default => 'T_GL_VOUCHER' },
+        'actualrows:s' => { name => 'actualrows', default => 'false' },
+    });
 
     return $self;
 }
 
-sub check_options {
+sub prefix_datasource_output {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (!defined($self->{option_results}->{datasource}) || $self->{option_results}->{datasource} eq "") {
-        $self->{output}->add_option_msg(short_msg => "Missing datasource name.");
-        $self->{output}->option_exit();
-    }
-    $self->{option_results}->{url_path} .= "?ds=" . $self->{option_results}->{datasource} 
-                                        . "\&tablename=" . $self->{option_results}->{tablename}
-                                        . "\&actual=" . $self->{option_results}->{actualrows};
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
+    return "Datasource table '" . $options{instance_value}->{display} . "' ";
 }
 
-sub run {
+sub check_options {
     my ($self, %options) = @_;
-        
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{datasource}) || $self->{option_results}->{datasource} eq "") {
+        $self->{output}->add_option_msg(short_msg => 'Missing datasource name.');
+        $self->{output}->option_exit();
+    }
+    $self->{option_results}->{url_path} .= 
+        "?ds=" . $self->{option_results}->{datasource} 
+        . "\&tablename=" . $self->{option_results}->{tablename}
+        . "\&actual=" . $self->{option_results}->{actualrows};
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
     my $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path});
 	if ($webcontent !~ /^TABLE_NAME=\w+/i) {
-		$self->{output}->output_add(
-			severity  => 'UNKNOWN',
-			short_msg => "Cannot find oracle table status. \n" . $webcontent
-		);
+		$self->{output}->add_option_msg(short_msg => 'cannot find oracle table status');
 		$self->{output}->option_exit();
 	}
-		
-    my ($num_rows, $actual_num_rows) = (-1, -1);
-    $num_rows = $1 if $webcontent =~ /NUM_ROWS=(\d+)/i;
-    $actual_num_rows = $1 if $webcontent =~ /ACTUAL_NUM_ROWS=(\d+)/i;
 
-    my $exit;
-    if ($actual_num_rows == -1) {
-        $exit = $self->{perfdata}->threshold_check(value => $num_rows, threshold => [ 
-                                                  { label => 'critical', 'exit_litteral' => 'critical' }, 
-                                                  { label => 'warning', exit_litteral => 'warning' } ]
-                                                  );
-        $self->{output}->output_add(severity => $exit, short_msg => sprintf("NUM_ROWS: %d", $num_rows));
-
-        $self->{output}->perfdata_add(label => "NUM_ROWS", unit => '',
-                                  value => sprintf("%d", $num_rows),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-    } else {
-        $self->{output}->perfdata_add(label => "NUM_ROWS", unit => '', value => sprintf("%d", $num_rows));
-        $exit = $self->{perfdata}->threshold_check(value => $actual_num_rows, threshold => [ 
-                                                  { label => 'critical', 'exit_litteral' => 'critical' }, 
-                                                  { label => 'warning', exit_litteral => 'warning' } ]
-                                                  );
-        $self->{output}->output_add(severity => $exit, short_msg => sprintf("ACTUAL_NUM_ROWS: %d", $actual_num_rows));
- 
-        $self->{output}->perfdata_add(label => "ACTUAL_NUM_ROWS", unit => '',
-                                  value => sprintf("%d", $actual_num_rows),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  );
-    }
-    $self->{output}->output_add(severity => $exit, short_msg => $webcontent);
- 
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $name = $self->{option_results}->{datasource} . ':' . $self->{option_results}->{tablename};
+    $self->{datasource}->{$name} = { display => $name };
+    $self->{datasource}->{$name}->{num_rows} = $1 if ($webcontent =~ /NUM_ROWS=(\d+)/mi);
+    $self->{datasource}->{$name}->{actual_num_rows} = $1 if ($webcontent =~ /ACTUAL_NUM_ROWS=(\d+)/mi);
 }
 
 1;
@@ -142,13 +130,10 @@ Specify the table name , MUST BE uppercase.
 Specify whether check actual rows of table or not , true or false. 
 MAY have performance problem for large table if specify true. 
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Warning Threshold for num_rows , or actual_num_rows if actualrows is true.
-
-=item B<--critical>
-
-Critical Threshold for num_rows , or actual_num_rows if actualrows is true.
+Thresholds.
+Can be: 'table-rows', 'table-actual-rows'.
 
 =back
 

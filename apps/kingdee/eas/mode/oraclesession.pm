@@ -115,7 +115,7 @@ sub manage_selection {
         $self->{datasource}->{$self->{option_results}->{datasource}}->{active} + $self->{datasource}->{$self->{option_results}->{datasource}}->{inactive};
 
     $webcontent = $options{custom}->request(path => $self->{option_results}->{url_path} . '&groupby=wait_class&status=ACTIVE');
-	if ($webcontent !~ /^WAIT_CLASS=.*?COUNT=\d+/i) {
+	if ($webcontent !~ /^WAIT_CLASS=.*?COUNT=\d+/mi) {
 		$self->{output}->add_option_msg(short_msg => 'Cannot find oracle session info.');
 		$self->{output}->option_exit();
 	} 
