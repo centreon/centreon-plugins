@@ -151,6 +151,7 @@ sub check_uoi {
         next if ($oid !~ /^$mapping->{uioSensorStatusSensorName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_uioSensorStatusEntry}, instance => $instance);
+        $instance = 'universal-' . $1;
 
         next if ($self->check_filter(section => 'sensor', instance => $instance));
 
@@ -226,6 +227,7 @@ sub check_iem {
         next if ($oid !~ /^$mapping_iem->{iemStatusProbeName}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping_iem, results => $self->{results}->{$oid_iemStatusProbesEntry}, instance => $instance);
+        $instance = 'integrated-' . $1;
 
         next if ($self->check_filter(section => 'sensor', instance => $instance));
 
@@ -246,6 +248,8 @@ sub check_iem {
                 short_msg => sprintf("integrated sensor '%s' status is '%s'", $result->{iemStatusProbeName}, $result->{iemStatusProbeStatus})
             );
         }
+
+        next if ($result->{iemStatusProbeStatus} eq 'disconnected');
 
         if ($result->{iemStatusProbeCurrentTemp} != -1) {
             ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{iemStatusProbeCurrentTemp});            
