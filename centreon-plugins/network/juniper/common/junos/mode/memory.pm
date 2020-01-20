@@ -144,7 +144,7 @@ __END__
 
 =head1 MODE
 
-Check Memory Usage of routing engine.
+Check memory usage.
 
 =over 8
 
