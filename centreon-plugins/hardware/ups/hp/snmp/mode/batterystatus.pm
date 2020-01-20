@@ -91,7 +91,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'unknown-status:s'  => { name => 'unknown_status', default => '%{status} =~ /unknown/i' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /batteryDischarging/i' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '' },
     });
 
@@ -157,7 +157,7 @@ Can used special variables like: %{status}.
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /batteryDischarging/i').
+Set warning threshold for status (Default: '').
 Can used special variables like: %{status}.
 
 =item B<--critical-status>
