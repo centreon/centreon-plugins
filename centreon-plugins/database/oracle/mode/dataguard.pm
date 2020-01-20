@@ -68,10 +68,10 @@ sub set_counters {
         { label => 'status', threshold => 0, set => {
                 key_values => [
                     { name => 'role' }, { name => 'open_mode' },
-                    { name => 'mrp_status' }, { name => 'mrp_status' },
+                    { name => 'mrp_status' }, { name => 'mrp_process' },
                     { name => 'log_transport' }
                 ],
-                closure_custom_calc => $self->can('catalog_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
