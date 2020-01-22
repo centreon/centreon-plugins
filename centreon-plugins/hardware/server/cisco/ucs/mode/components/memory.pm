@@ -58,17 +58,23 @@ sub check {
         next if ($self->absent_problem(section => 'memory', instance => $memory_dn));
         next if ($self->check_filter(section => 'memory', instance => $memory_dn));
 
-        $self->{output}->output_add(long_msg => sprintf("memory '%s' state is '%s' [presence: %s].",
-                                                        $memory_dn, $result2->{cucsMemoryUnitOperState},
-                                                        $result->{cucsMemoryUnitPresence})
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "memory '%s' state is '%s' [presence: %s].",
+                $memory_dn, $result2->{cucsMemoryUnitOperState},
+                $result->{cucsMemoryUnitPresence}
+            )
+        );
 
         my $exit = $self->get_severity(section => 'memory.presence', label => 'default.presence', value => $result->{cucsMemoryUnitPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("memory '%s' presence is: '%s'",
-                                                             $memory_dn, $result->{cucsMemoryUnitPresence})
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "memory '%s' presence is: '%s'",
+                    $memory_dn, $result->{cucsMemoryUnitPresence}
+                )
+            );
             next;
         }
         
@@ -76,11 +82,13 @@ sub check {
 
         $exit = $self->get_severity(section => 'memory.operability', label => 'default.operability', value => $result2->{cucsMemoryUnitOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("memory '%s' state is '%s'",
-                                                             $memory_dn, $result2->{cucsMemoryUnitOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "memory '%s' state is '%s'",
+                    $memory_dn, $result2->{cucsMemoryUnitOperState}
+                )
+            );
         }
     }
 }

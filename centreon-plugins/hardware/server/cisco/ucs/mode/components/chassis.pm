@@ -56,16 +56,21 @@ sub check {
         
         $self->{components}->{chassis}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("chassis '%s' state is '%s'.",
-                                                        $chassis_dn, $result->{cucsEquipmentChassisOperState})
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "chassis '%s' state is '%s'.",
+                $chassis_dn, $result->{cucsEquipmentChassisOperState}
+            )
+        );
         my $exit = $self->get_severity(section => 'chassis.operability', label => 'default.operability', value => $result->{cucsEquipmentChassisOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("chassis '%s' state is '%s'",
-                                                             $chassis_dn, $result->{cucsEquipmentChassisOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "chassis '%s' state is '%s'",
+                    $chassis_dn, $result->{cucsEquipmentChassisOperState}
+                )
+            );
         }
     }
 }

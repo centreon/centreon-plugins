@@ -49,13 +49,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-severity:s@"  => { name => 'filter_severity', },
-                                  "filter-message:s"    => { name => 'filter_message' },
-                                  "retention:s"         => { name => 'retention' },
-                                  "memory"              => { name => 'memory' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'filter-severity:s@'  => { name => 'filter_severity', },
+        'filter-message:s'    => { name => 'filter_message' },
+        'retention:s'         => { name => 'retention' },
+        'memory'              => { name => 'memory' },
+    });
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{severities} = {};
     return $self;

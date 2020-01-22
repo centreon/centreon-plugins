@@ -57,29 +57,37 @@ sub check {
         next if ($self->absent_problem(section => 'fex', instance => $fex_dn));
         next if ($self->check_filter(section => 'fex', instance => $fex_dn));
 
-        $self->{output}->output_add(long_msg => sprintf("Fabric extender '%s' state is '%s' [presence: %s].",
-                                                        $fex_dn, $result2->{cucsEquipmentFexOperState},
-                                                        $result->{cucsEquipmentFexPresence})
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Fabric extender '%s' state is '%s' [presence: %s].",
+                $fex_dn, $result2->{cucsEquipmentFexOperState},
+                $result->{cucsEquipmentFexPresence}
+            )
+        );
         
         my $exit = $self->get_severity(section => 'fex.presence', label => 'default.presence', value => $result->{cucsEquipmentFexPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fabric extender '%s' presence is: '%s'",
-                                                             $fex_dn, $result->{cucsEquipmentFexPresence})
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Fabric extender '%s' presence is: '%s'",
+                    $fex_dn, $result->{cucsEquipmentFexPresence}
+                )
+            );
             next;
         }
-        
+
         $self->{components}->{fex}->{total}++;
 
         $exit = $self->get_severity(section => 'fex.presence', label => 'default.operability', value => $result2->{cucsEquipmentFexOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fabric extender '%s' state is '%s'.",
-                                                             $fex_dn, $result2->{cucsEquipmentFexOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Fabric extender '%s' state is '%s'.",
+                    $fex_dn, $result2->{cucsEquipmentFexOperState}
+                )
+            );
         }
     }
 }

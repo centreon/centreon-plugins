@@ -57,17 +57,23 @@ sub check {
         next if ($self->absent_problem(section => 'blade', instance => $blade_dn));
         next if ($self->check_filter(section => 'blade', instance => $blade_dn));
 
-        $self->{output}->output_add(long_msg => sprintf("blade '%s' state is '%s' [presence: %s].",
-                                                        $blade_dn, $result2->{cucsComputeBladeOperState},
-                                                        $result->{cucsComputeBladePresence})
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "blade '%s' state is '%s' [presence: %s].",
+                $blade_dn, $result2->{cucsComputeBladeOperState},
+                $result->{cucsComputeBladePresence}
+            )
+        );
         
         my $exit = $self->get_severity(section => 'blade.presence', label => 'default.presence', value => $result->{cucsComputeBladePresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("blade '%s' presence is: '%s'",
-                                                             $blade_dn, $result->{cucsComputeBladePresence})
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "blade '%s' presence is: '%s'",
+                    $blade_dn, $result->{cucsComputeBladePresence}
+                )
+            );
             next;
         }
         
@@ -75,11 +81,13 @@ sub check {
 
         $exit = $self->get_severity(section => 'blade.overall_status', label => 'default.overall_status', value => $result2->{cucsComputeBladeOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("blade '%s' state is '%s'",
-                                                             $blade_dn, $result2->{cucsComputeBladeOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "blade '%s' state is '%s'",
+                    $blade_dn, $result2->{cucsComputeBladeOperState}
+                )
+            );
         }
     }
 }
