@@ -58,29 +58,37 @@ sub check {
         next if ($self->absent_problem(section => 'psu', instance => $psu_dn));
         next if ($self->check_filter(section => 'psu', instance => $psu_dn));
 
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' state is '%s' [presence: %s].",
-                                                        $psu_dn, $result2->{cucsEquipmentPsuOperState},
-                                                        $result->{cucsEquipmentPsuPresence})
-                                    );
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' state is '%s' [presence: %s].",
+                $psu_dn, $result2->{cucsEquipmentPsuOperState},
+                $result->{cucsEquipmentPsuPresence}
+            )
+        );
+
         my $exit = $self->get_severity(section => 'psu.presence', label => 'default.presence', value => $result->{cucsEquipmentPsuPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("power supply '%s' presence is: '%s'",
-                                                             $psu_dn, $result->{cucsEquipmentPsuPresence})
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "power supply '%s' presence is: '%s'",
+                    $psu_dn, $result->{cucsEquipmentPsuPresence}
+                )
+            );
             next;
         }
-        
+
         $self->{components}->{psu}->{total}++;
         
         $exit = $self->get_severity(section => 'psu.operability', label => 'default.operability', value => $result2->{cucsEquipmentPsuOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("power supply '%s' state is '%s'.",
-                                                             $psu_dn, $result2->{cucsEquipmentPsuOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "power supply '%s' state is '%s'.",
+                    $psu_dn, $result2->{cucsEquipmentPsuOperState}
+                )
+            );
         }
     }
 }

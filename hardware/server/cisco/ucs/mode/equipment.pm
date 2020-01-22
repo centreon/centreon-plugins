@@ -28,20 +28,20 @@ use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|chassis|iocard|blade|fex|cpu|memory|localdisk)\.(presence|operability|overall_status)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = $thresholds;
-    
+
     $self->{components_path} = 'hardware::server::cisco::ucs::mode::components';
     $self->{components_module} = ['fan', 'psu', 'chassis', 'iocard', 'blade', 'fex', 'cpu', 'memory', 'localdisk'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -50,10 +50,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -97,4 +96,3 @@ Example: --threshold-overload='fan.operability,OK,poweredOff|removed'
 =back
 
 =cut
-    

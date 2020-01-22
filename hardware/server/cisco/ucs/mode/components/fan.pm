@@ -57,17 +57,23 @@ sub check {
         next if ($self->absent_problem(section => 'fan', instance => $fan_dn));
         next if ($self->check_filter(section => 'fan', instance => $fan_dn));
 
-        $self->{output}->output_add(long_msg => sprintf("fan '%s' state is '%s' [presence: %s].",
-                                                        $fan_dn, $result2->{cucsEquipmentFanOperState},
-                                                        $result->{cucsEquipmentFanPresence})
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "fan '%s' state is '%s' [presence: %s].",
+                $fan_dn, $result2->{cucsEquipmentFanOperState},
+                $result->{cucsEquipmentFanPresence}
+            )
+        );
 
         my $exit = $self->get_severity(section => 'fan.presence', label => 'default.presence', value => $result->{cucsEquipmentFanPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s' presence is: '%s'",
-                                                             $fan_dn, $result->{cucsEquipmentFanPresence})
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "fan '%s' presence is: '%s'",
+                    $fan_dn, $result->{cucsEquipmentFanPresence}
+                )
+            );
             next;
         }
         
@@ -75,11 +81,13 @@ sub check {
 
         $exit = $self->get_severity(section => 'fan.operability', label => 'default.operability', value => $result2->{cucsEquipmentFanOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("fan '%s' state is '%s'",
-                                                             $fan_dn, $result2->{cucsEquipmentFanOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "fan '%s' state is '%s'",
+                    $fan_dn, $result2->{cucsEquipmentFanOperState}
+                )
+            );
         }
     }
 }

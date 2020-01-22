@@ -57,29 +57,37 @@ sub check {
         next if ($self->absent_problem(section => 'cpu', instance => $cpu_dn));
         next if ($self->check_filter(section => 'cpu', instance => $cpu_dn));
 
-        $self->{output}->output_add(long_msg => sprintf("cpu '%s' state is '%s' [presence: %s].",
-                                                        $cpu_dn, $result2->{cucsProcessorUnitOperState},
-                                                        $result->{cucsProcessorUnitPresence})
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cpu '%s' state is '%s' [presence: %s].",
+                $cpu_dn, $result2->{cucsProcessorUnitOperState},
+                $result->{cucsProcessorUnitPresence}
+            )
+        );
 
         my $exit = $self->get_severity(section => 'cpu.presence', label => 'default.presence', value => $result->{cucsProcessorUnitPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("cpu '%s' presence is: '%s'",
-                                                             $cpu_dn, $result->{cucsProcessorUnitPresence})
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "cpu '%s' presence is: '%s'",
+                    $cpu_dn, $result->{cucsProcessorUnitPresence}
+                )
+            );
             next;
         }
-        
+
         $self->{components}->{cpu}->{total}++;
 
         $exit = $self->get_severity(section => 'cpu.operability', label => 'default.operability', value => $result2->{cucsProcessorUnitOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("cpu '%s' state is '%s'",
-                                                             $cpu_dn, $result2->{cucsProcessorUnitOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "cpu '%s' state is '%s'",
+                    $cpu_dn, $result2->{cucsProcessorUnitOperState}
+                )
+            );
         }
     }
 }

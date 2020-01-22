@@ -58,29 +58,37 @@ sub check {
         next if ($self->absent_problem(section => 'iocard', instance => $iocard_dn));
         next if ($self->check_filter(section => 'iocard', instance => $iocard_dn));
 
-        $self->{output}->output_add(long_msg => sprintf("IO cards '%s' state is '%s' [presence: %s].",
-                                                        $iocard_dn, $result2->{cucsEquipmentIOCardOperState},
-                                                        $result->{cucsEquipmentIOCardPresence})
-                                    );
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "IO cards '%s' state is '%s' [presence: %s].",
+                $iocard_dn, $result2->{cucsEquipmentIOCardOperState},
+                $result->{cucsEquipmentIOCardPresence}
+            )
+        );
         
         my $exit = $self->get_severity(section => 'iocard.presence', label => 'default.presence', value => $result->{cucsEquipmentIOCardPresence});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("IO cards '%s' presence is: '%s'",
-                                                             $iocard_dn, $result->{cucsEquipmentIOCardPresence})
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "IO cards '%s' presence is: '%s'",
+                    $iocard_dn, $result->{cucsEquipmentIOCardPresence}
+                )
+            );
             next;
         }
-        
+
         $self->{components}->{iocard}->{total}++;
         
         $exit = $self->get_severity(section => 'iocard.operability', label => 'default.operability', value => $result2->{cucsEquipmentIOCardOperState});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("IO cards '%s' state is '%s'.",
-                                                             $iocard_dn, $result2->{cucsEquipmentIOCardOperState}
-                                                             )
-                                        );
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "IO cards '%s' state is '%s'.",
+                    $iocard_dn, $result2->{cucsEquipmentIOCardOperState}
+                )
+            );
         }
     }
 }
