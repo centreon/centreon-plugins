@@ -163,7 +163,8 @@ sub manage_selection {
             global_cpu => {
                 cpu_average => $response->{data}->{$host_id}->{'cpu.usage.average'},
                 cpu_average_mhz => $response->{data}->{$host_id}->{'cpu.usagemhz.average'},
-                cpu_average_mhz_max => $response->{data}->{$host_id}->{numCpuCores} * $response->{data}->{$host_id}->{cpuMhz},
+                cpu_average_mhz_max => defined($response->{data}->{$host_id}->{numCpuCores}) ?
+                   $response->{data}->{$host_id}->{numCpuCores} * $response->{data}->{$host_id}->{cpuMhz} : undef,
             }, 
         };
         
