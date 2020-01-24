@@ -39,18 +39,18 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            "hostname:s"    => { name => 'hostname' },
-            "port:s"        => { name => 'port' },
-            "proto:s"       => { name => 'proto' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "operator-user" => { name => 'operator_user' },
-            "api-path:s"    => { name => 'api_path' },
-            "timeframe:s"   => { name => 'timeframe' },
-            "timeout:s"     => { name => 'timeout' },
+            'hostname:s'    => { name => 'hostname' },
+            'port:s'        => { name => 'port' },
+            'proto:s'       => { name => 'proto' },
+            'username:s'    => { name => 'username' },
+            'password:s'    => { name => 'password' },
+            'operator-user' => { name => 'operator_user' },
+            'api-path:s'    => { name => 'api_path' },
+            'timeframe:s'   => { name => 'timeframe' },
+            'timeout:s'     => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -58,7 +58,7 @@ sub new {
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
-    
+
     return $self;
 }
 
@@ -94,7 +94,7 @@ sub check_options {
     $self->{password} = (defined($self->{option_results}->{password})) ? $self->{option_results}->{password} : undef;
     $self->{api_path} = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/portal/rest';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
- 
+
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
@@ -143,14 +143,14 @@ sub settings {
 
 sub get_session_cookie {
     my ($self, %options) = @_;
-    
+
     my $form_post = { username => $self->{username}, password => $self->{password} };
     my $encoded;
     eval {
         $encoded = JSON::XS->new->utf8->encode($form_post);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
+        $self->{output}->add_option_msg(short_msg => 'Cannot encode json request');
         $self->{output}->option_exit();
     }
 
@@ -166,7 +166,7 @@ sub get_session_cookie {
 
     my $message = '';
     my $session = '';
-    
+
     foreach my $cookie (@cookies) {
         $message = $1 if ($cookie =~ /^velocloud\.message=(.+?);/);
         $session = $1 if ($cookie =~ /^velocloud\.session=(.+?);/);
@@ -176,7 +176,7 @@ sub get_session_cookie {
         $self->{output}->add_option_msg(short_msg => "Cannot get session cookie: " . $message);
         $self->{output}->option_exit();
     }
-    
+
     $self->{session_cookie} = $session;
 }
 
@@ -188,7 +188,7 @@ sub get_entreprise_id {
     }
 
     $self->settings();
-    
+
     my $content = $self->{http}->request(
         method => 'POST',
         url_path => $self->{api_path} . '/enterprise/getEnterprise'
@@ -202,7 +202,7 @@ sub get_entreprise_id {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
-    
+
     $self->{entreprise_id} = $decoded->{id};
 }
 
@@ -214,7 +214,7 @@ sub request_api {
     }
 
     $self->settings();
-    
+
     my $encoded_form_post;
     eval {
         $encoded_form_post = JSON::XS->new->utf8->encode($options{query_form_post});
@@ -257,13 +257,13 @@ sub list_edges {
     if (!defined($self->{entreprise_id})) {
         $self->get_entreprise_id();
     }
-    
+
     my $response = $self->request_api(
         method => 'POST',
         path => '/enterprise/getEnterpriseEdges',
         query_form_post => { enterpriseId => $self->{entreprise_id} }
     );
-    
+
     return $response;
 }
 

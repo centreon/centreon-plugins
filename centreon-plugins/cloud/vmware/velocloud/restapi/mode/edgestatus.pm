@@ -29,11 +29,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("State is '%s', Service State is '%s', HA State is '%s', Activation State is '%s'",
+    return sprintf(
+        "State is '%s', Service State is '%s', HA State is '%s', Activation State is '%s'",
         $self->{result_values}->{edge_state},
         $self->{result_values}->{service_state},
         $self->{result_values}->{ha_state},
-        $self->{result_values}->{activation_state});
+        $self->{result_values}->{activation_state}
+    );
 }
 
 sub custom_status_calc {
@@ -43,7 +45,7 @@ sub custom_status_calc {
     $self->{result_values}->{service_state} = $options{new_datas}->{$self->{instance} . '_service_state'};
     $self->{result_values}->{ha_state} = $options{new_datas}->{$self->{instance} . '_ha_state'};
     $self->{result_values}->{activation_state} = $options{new_datas}->{$self->{instance} . '_activation_state'};
-    
+
     return 0;
 }
 
@@ -99,10 +101,9 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{edges} = {};
-
     my $results = $options{custom}->list_edges;
 
+    $self->{edges} = {};
     foreach my $edge (@{$results}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_name}/) {

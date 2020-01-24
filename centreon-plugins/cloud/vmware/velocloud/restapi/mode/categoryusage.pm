@@ -27,7 +27,7 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges categories usage are ok', indent_long_output => '    ',
@@ -88,7 +88,7 @@ sub prefix_edge_output {
 
 sub prefix_category_output {
     my ($self, %options) = @_;
-    
+
     return "Category '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
 }
 
@@ -102,14 +102,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s"        => { name => 'filter_edge_name' },
-        "filter-category-name:s"    => { name => 'filter_category_name' },
-        "warning-status:s"          => { name => 'warning_status', default => '' },
-        "critical-status:s"         => { name => 'critical_status', default => '' },
+        'filter-edge-name:s'     => { name => 'filter_edge_name' },
+        'filter-category-name:s' => { name => 'filter_category_name' },
+        'warning-status:s'       => { name => 'warning_status', default => '' },
+        'critical-status:s'      => { name => 'critical_status', default => '' },
     });
-   
+
     return $self;
 }
 
@@ -125,10 +125,9 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{edges} = {};
-
     my $results = $options{custom}->list_edges;
 
+    $self->{edges} = {};
     foreach my $edge (@{$results}) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
@@ -167,11 +166,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No edge found.");
         $self->{output}->option_exit();
     }
-    foreach (keys %{$self->{edges}}) {
-        last if (defined($self->{edges}->{$_}->{categories}));
-        $self->{output}->add_option_msg(short_msg => "No category found.");
-        $self->{output}->option_exit();
-    }
 }
 
 1;
@@ -192,15 +186,9 @@ Filter edge by name (Can be a regexp).
 
 Filter category by name (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'traffic-in', 'traffic-out',
-'packets-in', 'packets-out'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'traffic-in', 'traffic-out',
 'packets-in', 'packets-out'.
 

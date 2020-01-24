@@ -29,7 +29,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf("status is '%s' [vpn state: '%s'] [backup state: '%s']",
+    return sprintf(
+        "status is '%s' [vpn state: '%s'] [backup state: '%s']",
         $self->{result_values}->{state},
         $self->{result_values}->{vpn_state},
         $self->{result_values}->{backup_state}
@@ -86,11 +87,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s"    => { name => 'filter_edge_name' },
-        "filter-link-name:s"    => { name => 'filter_link_name' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/' },
+        'filter-edge-name:s' => { name => 'filter_edge_name' },
+        'filter-link-name:s' => { name => 'filter_link_name' },
+        'unknown-status:s'   => { name => 'unknown_status', default => '' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '%{state} !~ /STABLE/ || %{vpn_state} !~ /STABLE/' },
     });
    
     return $self;
@@ -108,10 +109,9 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{edges} = {};
-
     my $results = $options{custom}->list_edges;
 
+    $self->{edges} = {};
     foreach my $edge (@{$results}) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
@@ -146,11 +146,6 @@ sub manage_selection {
 
     if (scalar(keys %{$self->{edges}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No edge found.");
-        $self->{output}->option_exit();
-    }
-    foreach (keys %{$self->{edges}}) {
-        last if (defined($self->{edges}->{$_}->{links}));
-        $self->{output}->add_option_msg(short_msg => "No link found.");
         $self->{output}->option_exit();
     }
 }

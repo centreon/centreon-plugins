@@ -29,7 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
 
     return $self;
@@ -48,7 +48,7 @@ sub manage_selection {
 
 sub run {
     my ($self, %options) = @_;
-  
+
     $self->manage_selection(%options);
     foreach my $edge (@{$self->{edges}}) {
         $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][description = %s][edge_state = %s]" .
@@ -56,18 +56,24 @@ sub run {
             $edge->{id}, $edge->{name}, $edge->{description}, $edge->{edgeState}, $edge->{serviceState},
             $edge->{haState}, $edge->{activationState}));
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List edges:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List edges:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['id', 'name', 'description', 'edge_state', 'service_state',
-        'ha_state', 'activation_state']);
+
+    $self->{output}->add_disco_format(
+        elements => [
+            'id', 'name', 'description', 'edge_state', 'service_state',
+            'ha_state', 'activation_state'
+        ]
+    );
 }
 
 sub disco_show {
