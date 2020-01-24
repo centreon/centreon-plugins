@@ -37,7 +37,7 @@ sub new {
     $self->{options} = {};
     @{$self->{pod_package}} = ();
     $self->{pod_packages_once} = {};
-    
+
     if ($alternative == 0) {
         require Getopt::Long;
         Getopt::Long->import();
@@ -49,13 +49,13 @@ sub new {
         $centreon::plugins::alternative::Getopt::warn_message = 0;
         centreon::plugins::alternative::Getopt->import();
     }
-    
+
     return $self;
 }
 
 sub set_sanity {
     my ($self, %options) = @_;
-    
+
     if ($alternative == 0) {
         Getopt::Long::Configure('no_pass_through');
     } else {
@@ -67,13 +67,13 @@ sub set_sanity {
 
 sub set_output {
     my ($self, %options) = @_;
-    
+
     $self->{output} = $options{output};
 }
 
 sub display_help {
     my ($self, %options) = @_;
-    
+
     my $stdout;
     foreach (@{$self->{pod_package}}) {
         
@@ -85,7 +85,7 @@ sub display_help {
                       -verbose => 99, 
                       -sections => $_->{sections}) if (defined($where));
         }
-        
+
         $self->{output}->add_option_msg(long_msg => $stdout) if (defined($stdout));
     }
 }
@@ -96,30 +96,30 @@ sub add_help {
     # $options{sections} = string sections
     # $options{help_first} = put at the beginning
     # $options{once} = put help only one time for a package
-    
+
     if (defined($options{once}) && defined($self->{pod_packages_once}->{$options{package}})) {
         return ;
     }
-    
+
     if (defined($options{help_first})) {
         unshift @{$self->{pod_package}}, {package => $options{package}, sections => $options{sections}};
     } else {
         push @{$self->{pod_package}}, { package => $options{package}, sections => $options{sections} };
     }
-    
+
     $self->{pod_packages_once}->{$options{package}} = 1;
 }
 
 sub add_options {
     my ($self, %options) = @_;
     # $options{arguments} = ref to hash table with string and name to store (example: { 'mode:s' => { name => 'mode', default => 'defaultvalue' )
-    
+
     foreach (keys %{$options{arguments}}) {
         if (defined($options{arguments}->{$_}->{redirect})) {
             $self->{options}->{$_} = \$self->{options_stored}->{$options{arguments}->{$_}->{redirect}};
             next;
         }
-        
+
         if (defined($options{arguments}->{$_}->{default})) {
             $self->{options_stored}->{$options{arguments}->{$_}->{name}} = $options{arguments}->{$_}->{default};
         } else {
@@ -142,12 +142,12 @@ sub parse_options {
             $self->{output}->option_exit(nolabel => 1);
         };
     }
-    
+
     GetOptions(
        %{$self->{options}}
     );
     %{$self->{options}} = ();
-    
+
     $SIG{__WARN__} = $save_warn_handler if ($self->{sanity} == 1);
 }
 
@@ -165,7 +165,7 @@ sub get_options {
 
 sub clean {
     my $self = shift;
-    
+
     $self->{options_stored} = {};
 }
 
