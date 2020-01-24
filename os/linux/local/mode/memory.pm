@@ -30,22 +30,22 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'cat' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '/proc/meminfo 2>&1' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'cat' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '/proc/meminfo /etc/redhat-release 2>&1' },
+        'warning:s'         => { name => 'warning' },
+        'critical:s'        => { name => 'critical' },
+    });
+
     return $self;
 }
 
@@ -63,19 +63,30 @@ sub check_options {
     }
 }
 
+sub check_rhel_version {
+    my ($self, %options) = @_;
+
+    $self->{rhel_71} = 0;
+    return if ($options{stdout} !~ /(?:Redhat|CentOS).*?release\s+(\d+)\.(\d+)/mi);
+    $self->{rhel_71} = 1 if ($1 >= 7 && $2 >= 1);
+}
+
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options},
+        no_quit => 1
+    );
+
     # Buffer can be missing. In Openvz container for example.
     my $buffer_used = 0;
-    my ($cached_used, $free, $total_size);
+    my ($cached_used, $free, $total_size, $slab_used);
     foreach (split(/\n/, $stdout)) {
         if (/^MemTotal:\s+(\d+)/i) {
             $total_size = $1 * 1024;
@@ -83,44 +94,59 @@ sub run {
             $cached_used = $1 * 1024;
         } elsif (/^Buffers:\s+(\d+)/i) {
             $buffer_used = $1 * 1024;
+        } elsif (/^Slab:\s+(\d+)/i) {
+            $slab_used = $1 * 1024;
         } elsif (/^MemFree:\s+(\d+)/i) {
             $free = $1 * 1024;
         }
     }
-    
+
     if (!defined($total_size) || !defined($cached_used) || !defined($free)) {
-        $self->{output}->add_option_msg(short_msg => "Some informations missing.");
+        $self->{output}->add_option_msg(short_msg => 'Some informations missing.');
         $self->{output}->option_exit();
     }
-    
+
+    $self->check_rhel_version(stdout => $stdout);
+
     my $physical_used = $total_size - $free;
     my $nobuf_used = $physical_used - $buffer_used - $cached_used;
-    
+    $nobuf_used -= $slab_used if ($self->{rhel_71} == 1);
+
     my $prct_used = $nobuf_used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
     my ($nobuf_value, $nobuf_unit) = $self->{perfdata}->change_bytes(value => $nobuf_used);
     my ($buffer_value, $buffer_unit) = $self->{perfdata}->change_bytes(value => $buffer_used);
     my ($cached_value, $cached_unit) = $self->{perfdata}->change_bytes(value => $cached_used);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram used (-buffers/cache) %s (%.2f%%), Buffer: %s, Cached: %s",
-                                            $nobuf_value . " " . $nobuf_unit, $prct_used,
-                                            $buffer_value . " " . $buffer_unit,
-                                            $cached_value . " " . $cached_unit));
-    
-    $self->{output}->perfdata_add(label => "cached", unit => 'B',
-                                  value => $cached_used,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "buffer", unit => 'B',
-                                  value => $buffer_used,
-                                  min => 0);
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $nobuf_used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
-                                  min => 0, max => $total_size);
- 
+
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf(
+            "Ram used (-buffers/cache) %s (%.2f%%), Buffer: %s, Cached: %s",
+            $nobuf_value . " " . $nobuf_unit, $prct_used,
+            $buffer_value . " " . $buffer_unit,
+            $cached_value . " " . $cached_unit
+        )
+    );
+
+    $self->{output}->perfdata_add(
+        label => "cached", unit => 'B',
+        value => $cached_used,
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => "buffer", unit => 'B',
+        value => $buffer_used,
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => "used", unit => 'B',
+        value => $nobuf_used,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
+        min => 0, max => $total_size
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
