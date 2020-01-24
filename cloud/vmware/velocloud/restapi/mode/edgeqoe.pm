@@ -27,7 +27,7 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges links QOE are ok', indent_long_output => '    ',
@@ -68,6 +68,7 @@ sub set_counters {
             }
         },
     ];
+
     $self->{maps_counters}->{links} = [
         { label => 'qoe-voice', nlabel => 'link.qoe.voice.count', set => {
                 key_values => [ { name => 'voice' }, { name => 'display' }, { name => 'id' } ],
@@ -107,7 +108,7 @@ sub prefix_edge_output {
 
 sub prefix_link_output {
     my ($self, %options) = @_;
-    
+
     return "Link '" . $options{instance_value}->{display} . "' [Id: " . $options{instance_value}->{id} . "] ";
 }
 
@@ -123,8 +124,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s"    => { name => 'filter_edge_name' },
-        "filter-link-name:s"    => { name => 'filter_link_name' },
+        "filter-edge-name:s' => { name => 'filter_edge_name' },
+        "filter-link-name:s' => { name => 'filter_link_name' },
     });
    
     return $self;
@@ -135,17 +136,15 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
-
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{edges} = {};
-
     my $results = $options{custom}->list_edges;
 
+    $self->{edges} = {};
     foreach my $edge (@{$results}) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
@@ -167,16 +166,16 @@ sub manage_selection {
         );
 
         next if (ref($qoes) ne 'HASH');
-        
+
         $self->{edges}->{$edge->{name}}->{global} = {
             voice => $qoes->{overallLinkQuality}->{score}->{0},
             video => $qoes->{overallLinkQuality}->{score}->{1},
             transactional => $qoes->{overallLinkQuality}->{score}->{2},
         };
-        
+
         foreach my $link (@{$links}) {
             next if (!defined($qoes->{$link->{link}->{internalId}}));
-            
+
             if (defined($self->{option_results}->{filter_link_name}) && $self->{option_results}->{filter_link_name} ne '' &&
                 $link->{link}->{displayName} !~ /$self->{option_results}->{filter_link_name}/) {
                 $self->{output}->output_add(long_msg => "skipping '" . $edge->{id} . "'.", debug => 1);
@@ -195,11 +194,6 @@ sub manage_selection {
 
     if (scalar(keys %{$self->{edges}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No edge found.");
-        $self->{output}->option_exit();
-    }
-    foreach (keys %{$self->{edges}}) {
-        last if (defined($self->{edges}->{$_}->{links}));
-        $self->{output}->add_option_msg(short_msg => "No link found.");
         $self->{output}->option_exit();
     }
 }
@@ -222,14 +216,9 @@ Filter edge by name (Can be a regexp).
 
 Filter link by name (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'qoe-voice', 'qoe-video', 'qoe-transactional'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'qoe-voice', 'qoe-video', 'qoe-transactional'.
 
 =back

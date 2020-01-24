@@ -29,9 +29,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s"    => { name => 'filter_edge_name' },
+        'filter-edge-name:s' => { name => 'filter_edge_name' },
     });
 
     return $self;
@@ -44,9 +44,8 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $edges = $options{custom}->list_edges;
 
+    my $edges = $options{custom}->list_edges;
     foreach my $edge (@{$edges}) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
@@ -62,26 +61,35 @@ sub manage_selection {
 
 sub run {
     my ($self, %options) = @_;
-  
+
     $self->manage_selection(%options);
     foreach my $link (@{$self->{links}}) {
-        $self->{output}->output_add(long_msg => sprintf("[id = %s][display_name = %s][name = %s][edge_id = %s]" .
-            "[edge_name = %s][state = %s][vpn_state = %s]",
-            $link->{linkId}, $link->{link}->{displayName}, $link->{name}, $link->{link}->{edgeId},
-            $link->{edgeName}, $link->{link}->{state}, $link->{link}->{vpnState}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[id = %s][display_name = %s][name = %s][edge_id = %s]" .
+                "[edge_name = %s][state = %s][vpn_state = %s]",
+                $link->{linkId}, $link->{link}->{displayName}, $link->{name}, $link->{link}->{edgeId},
+                $link->{edgeName}, $link->{link}->{state}, $link->{link}->{vpnState}
+            )
+        );
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List links:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List links:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
-    $self->{output}->add_disco_format(elements => ['id', 'display_name', 'name', 'edge_id', 'edge_name', 'state',
-        'vpn_state']);
+
+    $self->{output}->add_disco_format(
+        elements => [
+            'id', 'display_name', 'name', 'edge_id', 'edge_name', 'state', 'vpn_state'
+        ]
+    );
 }
 
 sub disco_show {
@@ -118,4 +126,3 @@ Filter edge by name (Can be a regexp).
 =back
 
 =cut
-    

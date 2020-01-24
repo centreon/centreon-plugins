@@ -32,9 +32,33 @@ sub set_counters {
         { name => 'edges', type => 3, cb_prefix_output => 'prefix_edge_output', cb_long_output => 'long_output',
           message_multiple => 'All edges links usage are ok', indent_long_output => '    ',
             group => [
+                { name => 'global', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'links', display_long => 1, cb_prefix_output => 'prefix_link_output',
                   message_multiple => 'All links status are ok', type => 1 },
             ]
+        }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'links-traffic-in', nlabel => 'links.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in' } ],
+                output_template => 'Total Traffic In: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { value => 'traffic_in_absolute', template => '%s',
+                      min => 0, unit => 'b/s', label_extra_instance => 1 },
+                ],
+            }
+        },
+        { label => 'links-traffic-out', nlabel => 'links.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out' } ],
+                output_template => 'Total Traffic Out: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { value => 'traffic_out_absolute', template => '%s',
+                      min => 0, unit => 'b/s', label_extra_instance => 1 },
+                ],
+            }
         }
     ];
 
@@ -140,8 +164,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s"    => { name => 'filter_edge_name' },
-        "filter-link-name:s"    => { name => 'filter_link_name' },
+        'filter-edge-name:s' => { name => 'filter_edge_name' },
+        'filter-link-name:s' => { name => 'filter_link_name' },
     });
    
     return $self;
@@ -159,10 +183,9 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $results = $options{custom}->list_edges();
+
     $self->{edges} = {};
-
-    my $results = $options{custom}->list_edges;
-
     foreach my $edge (@{$results}) {
         if (defined($self->{option_results}->{filter_edge_name}) && $self->{option_results}->{filter_edge_name} ne '' &&
             $edge->{name} !~ /$self->{option_results}->{filter_edge_name}/) {
@@ -170,8 +193,12 @@ sub manage_selection {
             next;
         }
 
-        $self->{edges}->{$edge->{name}}->{id} = $edge->{id};
-        $self->{edges}->{$edge->{name}}->{display} = $edge->{name};
+        $self->{edges}->{$edge->{name}} = {
+            id => $edge->{id},
+            display => $edge->{name},
+            global => {},
+            links => {}
+        };
 
         my $links = $options{custom}->get_links_metrics(
             edge_id => $edge->{id},
@@ -197,16 +224,17 @@ sub manage_selection {
                 packet_loss_out => $link->{bestLossPctTx},
                 packet_loss_in => $link->{bestLossPctRx},
             };
+            if (!defined($self->{edges}->{$edge->{name}}->{global}->{traffic_in})) {
+                $self->{edges}->{$edge->{name}}->{global}->{traffic_in} = 0;
+                $self->{edges}->{$edge->{name}}->{global}->{traffic_out} = 0;
+            }
+            $self->{edges}->{$edge->{name}}->{global}->{traffic_in} += (int($link->{bytesRx} * 8 / $self->{timeframe}));
+            $self->{edges}->{$edge->{name}}->{global}->{traffic_out} += (int($link->{bytesTx} * 8 / $self->{timeframe}));
         }
     }
 
     if (scalar(keys %{$self->{edges}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No edge found.");
-        $self->{output}->option_exit();
-    }
-    foreach (keys %{$self->{edges}}) {
-        last if (defined($self->{edges}->{$_}->{links}));
-        $self->{output}->add_option_msg(short_msg => "No link found.");
+        $self->{output}->add_option_msg(short_msg => 'no edge found.');
         $self->{output}->option_exit();
     }
 }
@@ -229,17 +257,11 @@ Filter edge by name (Can be a regexp).
 
 Filter link by name (Can be a regexp).
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'traffic-in', 'traffic-out', 'latency-in',
-'latency-out', 'jitter-in', 'jitter-out',
-'packet-loss-in', 'packet-loss-out'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'traffic-in', 'traffic-out', 'latency-in',
+Thresholds.
+Can be: 'links-traffic-in', 'links-traffic-out', 
+'traffic-in', 'traffic-out', 'latency-in',
 'latency-out', 'jitter-in', 'jitter-out',
 'packet-loss-in', 'packet-loss-out'.
 
