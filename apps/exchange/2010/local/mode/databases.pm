@@ -31,36 +31,37 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "remote-host:s"     => { name => 'remote_host', },
-                                  "remote-user:s"     => { name => 'remote_user', },
-                                  "remote-password:s" => { name => 'remote_password', },
-                                  "no-ps"             => { name => 'no_ps', },
-                                  "no-mailflow"       => { name => 'no_mailflow', },
-                                  "no-mapi"           => { name => 'no_mapi', },
-                                  "no-copystatus"     => { name => 'no_copystatus', },
-                                  "timeout:s"         => { name => 'timeout', default => 50 },
-                                  "command:s"         => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s"         => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"              => { name => 'ps_exec_only', },
-                                  "ps-database-filter:s"      => { name => 'ps_database_filter', },
-                                  "ps-database-test-filter:s" => { name => 'ps_database_test_filter', },
-                                  "warning-mapi:s"            => { name => 'warning_mapi', },
-                                  "critical-mapi:s"           => { name => 'critical_mapi', default => '%{mapi_result} !~ /Success/i' },
-                                  "warning-mailflow:s"        => { name => 'warning_mailflow', },
-                                  "critical-mailflow:s"       => { name => 'critical_mailflow', default => '%{mailflow_result} !~ /Success/i' },
-                                  "warning-copystatus:s"        => { name => 'warning_copystatus', },
-                                  "critical-copystatus:s"       => { name => 'critical_copystatus', default => '%{copystatus_indexstate} !~ /Healthy/i' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'remote-host:s'     => { name => 'remote_host' },
+        'remote-user:s'     => { name => 'remote_user' },
+        'remote-password:s' => { name => 'remote_password' },
+        'no-ps'             => { name => 'no_ps' },
+        'no-mailflow'       => { name => 'no_mailflow' },
+        'no-mapi'           => { name => 'no_mapi' },
+        'no-copystatus'     => { name => 'no_copystatus' },
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'ps-database-filter:s'      => { name => 'ps_database_filter' },
+        'ps-database-test-filter:s' => { name => 'ps_database_test_filter' },
+        'warning-mapi:s'            => { name => 'warning_mapi' },
+        'critical-mapi:s'           => { name => 'critical_mapi', default => '%{mapi_result} !~ /Success/i' },
+        'warning-mailflow:s'        => { name => 'warning_mailflow' },
+        'critical-mailflow:s'       => { name => 'critical_mailflow', default => '%{mailflow_result} !~ /Success/i' },
+        'warning-copystatus:s'      => { name => 'warning_copystatus' },
+        'critical-copystatus:s'     => { name => 'critical_copystatus', default => '%{copystatus_indexstate} !~ /Healthy/i' },
+    });
+
     return $self;
 }
 
 sub change_macros {
     my ($self, %options) = @_;
-    
+
     foreach (('warning_mapi', 'critical_mapi', 'warning_mailflow', 'critical_mailflow', 'warning_copystatus', 'critical_copystatus')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{data}->{$1}/g;
@@ -77,30 +78,47 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::exchange::2010::databases::get_powershell(remote_host => $self->{option_results}->{remote_host},
-                                                                                     remote_user => $self->{option_results}->{remote_user},
-                                                                                     remote_password => $self->{option_results}->{remote_password},
-                                                                                     no_mailflow => $self->{option_results}->{no_mailflow},
-                                                                                     no_ps => $self->{option_results}->{no_ps},
-                                                                                     no_mapi => $self->{option_results}->{no_mapi},
-                                                                                     no_copystatus => $self->{option_results}->{no_copystatus},
-                                                                                     filter_database => $self->{option_results}->{ps_database_filter},
-                                                                                     filter_database_test => $self->{option_results}->{ps_database_test_filter});
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::exchange::2010::databases::get_powershell(
+            remote_host => $self->{option_results}->{remote_host},
+            remote_user => $self->{option_results}->{remote_user},
+            remote_password => $self->{option_results}->{remote_password},
+            no_mailflow => $self->{option_results}->{no_mailflow},
+            no_mapi => $self->{option_results}->{no_mapi},
+            no_copystatus => $self->{option_results}->{no_copystatus},
+            filter_database => $self->{option_results}->{ps_database_filter},
+            filter_database_test => $self->{option_results}->{ps_database_test_filter}
+        );
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
     centreon::common::powershell::exchange::2010::databases::check($self, stdout => $stdout);
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -163,6 +181,10 @@ Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
 =item B<--ps-exec-only>
 
 Print powershell output.
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-database-filter>
 

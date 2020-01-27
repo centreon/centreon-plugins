@@ -25,7 +25,7 @@ use warnings;
 
 sub escape_jsonstring {
     my (%options) = @_;
-    
+
     my $ps = q{
 function Escape-JSONString($str) {
     if ($str -eq $null) {return ""}

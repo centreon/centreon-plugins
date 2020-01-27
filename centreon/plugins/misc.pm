@@ -316,14 +316,10 @@ sub trim {
 }
 
 sub powershell_encoded {
-    my ($value) = $_[0];
-
     require Encode;
     require MIME::Base64;
-    my $bytes = Encode::encode('utf16LE', $value);
-    my $script = MIME::Base64::encode_base64($bytes, "\n");
-    $script =~ s/\n//g;
-    return $script;
+    my $bytes = Encode::encode('utf16LE', $_[0]);
+    return MIME::Base64::encode_base64($bytes, '');
 }
 
 sub powershell_escape {
@@ -338,8 +334,10 @@ sub powershell_escape {
 sub powershell_json_sanitizer {
     my (%options) = @_;
 
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'JSON::XS',
-                                           error_msg => "Cannot load module 'JSON::XS'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output}, module => 'JSON::XS',
+        error_msg => "Cannot load module 'JSON::XS'."
+    );
     foreach my $line (split /\n/, $options{string}) {
         eval { JSON::XS->new->utf8->decode($line) };
         return $line if (!$@);
@@ -522,8 +520,10 @@ sub set_timezone {
     
     return {} if (!defined($options{name}) || $options{name} eq '');
      
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'DateTime::TimeZone',
-                                           error_msg => "Cannot load module 'DateTime::TimeZone'.");
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output}, module => 'DateTime::TimeZone',
+        error_msg => "Cannot load module 'DateTime::TimeZone'."
+    );
     if (DateTime::TimeZone->is_valid_name($options{name})) {
         return { time_zone => DateTime::TimeZone->new(name => $options{name}) };
     }
@@ -545,4 +545,3 @@ sub uniq {
 1;
 
 __END__
-

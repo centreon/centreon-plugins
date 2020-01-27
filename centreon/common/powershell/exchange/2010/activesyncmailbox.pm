@@ -27,14 +27,10 @@ use centreon::common::powershell::exchange::2010::powershell;
 
 sub get_powershell {
     my (%options) = @_;
-    # options: no_ps
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
     my $no_trust_ssl = (defined($options{no_trust_ssl})) ? '' : '-TrustAnySSLCertificate';
-    
-    return '' if ($no_ps == 1);
-    
+
     my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
-    
+
     $ps .= '
 try {
     $ErrorActionPreference = "Stop"
@@ -56,7 +52,7 @@ Foreach ($result in $results) {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 sub check {
@@ -65,9 +61,11 @@ sub check {
     
     # Following output:
     #[scenario= Options ][result= Failure ][latency= 52,00 ][[error=...]]
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => "ActiveSync to '" . $options{mailbox} . "' is ok.");
-   
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => "ActiveSync to '" . $options{mailbox} . "' is ok."
+    );
+
     my $checked = 0;
     $self->{output}->output_add(long_msg => $options{stdout});
     while ($options{stdout} =~ /\[scenario=(.*?)\]\[result=(.*?)\]\[latency=(.*?)\]\[\[error=(.*?)\]\]/msg) {
