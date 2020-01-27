@@ -160,7 +160,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_loss_output'),
                 threshold_use => 'packets_loss_prct',
                 perfdatas => [
-                    { value => 'packets_loss_prct', template => '%d',
+                    { value => 'packets_loss_prct', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display'  },
                 ],
             }
