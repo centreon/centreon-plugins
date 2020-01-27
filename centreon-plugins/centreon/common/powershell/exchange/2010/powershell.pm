@@ -28,10 +28,6 @@ use centreon::plugins::misc;
 #--remote-host --remote-user --remote-password
 sub powershell_init {
     my (%options) = @_;
-    # options: no_ps
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
     
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    

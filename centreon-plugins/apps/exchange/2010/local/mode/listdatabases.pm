@@ -31,20 +31,20 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "remote-host:s"     => { name => 'remote_host', },
-                                  "remote-user:s"     => { name => 'remote_user', },
-                                  "remote-password:s" => { name => 'remote_password', },
-                                  "no-ps"             => { name => 'no_ps', },
-                                  "timeout:s"         => { name => 'timeout', default => 50 },
-                                  "command:s"         => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s"         => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"              => { name => 'ps_exec_only', },
-                                  "ps-database-filter:s"      => { name => 'ps_database_filter', },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'remote-host:s'     => { name => 'remote_host' },
+        'remote-user:s'     => { name => 'remote_user' },
+        'remote-password:s' => { name => 'remote_password' },
+        'no-ps'             => { name => 'no_ps' },
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s'    => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'ps-exec-only'         => { name => 'ps_exec_only' },
+        'ps-database-filter:s' => { name => 'ps_database_filter' },
+    });
+
     return $self;
 }
 
@@ -56,11 +56,13 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(remote_host => $self->{option_results}->{remote_host},
-                                                                                     remote_user => $self->{option_results}->{remote_user},
-                                                                                     remote_password => $self->{option_results}->{remote_password},
-                                                                                     no_ps => $self->{option_results}->{no_ps},
-                                                                                     filter_database => $self->{option_results}->{ps_database_filter});
+    my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(
+        remote_host => $self->{option_results}->{remote_host},
+        remote_user => $self->{option_results}->{remote_user},
+        remote_password => $self->{option_results}->{remote_password},
+        no_ps => $self->{option_results}->{no_ps},
+        filter_database => $self->{option_results}->{ps_database_filter}
+    );
     $self->{option_results}->{command_options} .= " " . $ps;
     my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
                                                             timeout => $self->{option_results}->{timeout},
@@ -145,6 +147,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

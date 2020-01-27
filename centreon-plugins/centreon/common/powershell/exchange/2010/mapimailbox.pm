@@ -27,10 +27,6 @@ use centreon::common::powershell::exchange::2010::powershell;
 
 sub get_powershell {
     my (%options) = @_;
-    # options: no_ps
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
     
     my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
     
@@ -48,7 +44,7 @@ Write-Host "[name=" $mapi.Database "][server=" $mapi.Server "][result=" $mapi.Re
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 sub check {

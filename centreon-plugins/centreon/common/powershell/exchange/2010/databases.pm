@@ -27,14 +27,11 @@ use centreon::common::powershell::exchange::2010::powershell;
 
 sub get_powershell {
     my (%options) = @_;
-    # options: no_ps, no_mailflow, no_mapi
+    # options: no_mailflow, no_mapi
     my $no_mailflow = (defined($options{no_mailflow})) ? 1 : 0;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
     my $no_mapi = (defined($options{no_mapi})) ? 1 : 0;
     my $no_copystatus = (defined($options{no_copystatus})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
-    
+
     my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
     
     $ps .= '
@@ -108,7 +105,7 @@ Foreach ($DB in $MountedDB) {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 sub check_mapi {

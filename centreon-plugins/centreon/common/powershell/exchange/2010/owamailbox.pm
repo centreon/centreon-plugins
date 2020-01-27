@@ -27,11 +27,7 @@ use centreon::common::powershell::exchange::2010::powershell;
 
 sub get_powershell {
     my (%options) = @_;
-    # options: no_ps
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
     my $no_trust_ssl = (defined($options{no_trust_ssl})) ? '' : '-TrustAnySSLCertificate';
-    
-    return '' if ($no_ps == 1);
     
     my $ps = centreon::common::powershell::exchange::2010::powershell::powershell_init(%options);
     
@@ -56,7 +52,7 @@ Foreach ($result in $results) {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 sub check {

@@ -31,27 +31,28 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "remote-host:s"       => { name => 'remote_host', },
-                                  "remote-user:s"       => { name => 'remote_user', },
-                                  "remote-password:s"   => { name => 'remote_password', },
-                                  "no-ps"               => { name => 'no_ps', },
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "ps-exec-only"            => { name => 'ps_exec_only', },
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', default => '%{result} !~ /Passed/i' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'remote-host:s'     => { name => 'remote_host', },
+        'remote-user:s'     => { name => 'remote_user', },
+        'remote-password:s' => { name => 'remote_password', },
+        'no-ps'             => { name => 'no_ps', },
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'ps-exec-only'      => { name => 'ps_exec_only', },
+        'ps-display'        => { name => 'ps_display' },
+        'warning:s'         => { name => 'warning', },
+        'critical:s'        => { name => 'critical', default => '%{result} !~ /Passed/i' },
+    });
+
     return $self;
 }
 
 sub change_macros {
     my ($self, %options) = @_;
-    
+
     foreach (('warning', 'critical')) {
         if (defined($self->{option_results}->{$_})) {
             $self->{option_results}->{$_} =~ s/%\{(.*?)\}/\$self->{data}->{$1}/g;
@@ -68,27 +69,42 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::exchange::2010::replicationhealth::get_powershell(
-                                                                                  remote_host => $self->{option_results}->{remote_host},
-                                                                                  remote_user => $self->{option_results}->{remote_user},
-                                                                                  remote_password => $self->{option_results}->{remote_password},
-                                                                                  no_ps => $self->{option_results}->{no_ps},
-                                                                                 );
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::exchange::2010::replicationhealth::get_powershell(
+            remote_host => $self->{option_results}->{remote_host},
+            remote_user => $self->{option_results}->{remote_user},
+            remote_password => $self->{option_results}->{remote_password}
+        );
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
     centreon::common::powershell::exchange::2010::replicationhealth::check($self, stdout => $stdout);
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -135,6 +151,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 
