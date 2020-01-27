@@ -25,15 +25,16 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use JSON::XS;
+use centreon::plugins::misc;
 use centreon::common::powershell::wsus::computersstatus;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'up-to-date', set => {
                 key_values => [ { name => 'ComputersUpToDateCount' } ],
@@ -93,21 +94,21 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "timeout:s"             => { name => 'timeout', default => 30 },
-        "command:s"             => { name => 'command', default => 'powershell.exe' },
-        "command-path:s"        => { name => 'command_path' },
-        "command-options:s"     => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        "no-ps"                 => { name => 'no_ps' },
-        "ps-exec-only"          => { name => 'ps_exec_only' },
-        "wsus-server:s"         => { name => 'wsus_server', default => 'localhost' },
-        "wsus-port:s"           => { name => 'wsus_port', default => 8530 },
-        "not-updated-since:s"   => { name => 'not_updated_since', default => 10 },
-        "use-ssl"               => { name => 'use_ssl' },
-        "filter-counters:s"     => { name => 'filter_counters' },
+        'timeout:s'           => { name => 'timeout', default => 30 },
+        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'      => { name => 'command_path' },
+        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'               => { name => 'no_ps' },
+        'ps-exec-only'        => { name => 'ps_exec_only' },
+        'ps-display'          => { name => 'ps_display' },
+        'wsus-server:s'       => { name => 'wsus_server', default => 'localhost' },
+        'wsus-port:s'         => { name => 'wsus_port', default => 8530 },
+        'not-updated-since:s' => { name => 'not_updated_since', default => 10 },
+        'use-ssl'             => { name => 'use_ssl' },
     });
-    
+
     return $self;
 }
 
@@ -121,28 +122,43 @@ sub manage_selection {
 
     my $use_ssl = "\$false";
     $use_ssl = "\$true" if (defined($self->{option_results}->{use_ssl}));
-    
-    my $ps = centreon::common::powershell::wsus::computersstatus::get_powershell(
-        no_ps => $self->{option_results}->{no_ps},
-        wsus_server => $self->{option_results}->{wsus_server},
-        wsus_port => $self->{option_results}->{wsus_port},
-        not_updated_since => $self->{option_results}->{not_updated_since},
-        use_ssl => $use_ssl
-    );
 
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::wsus::computersstatus::get_powershell(
+            wsus_server => $self->{option_results}->{wsus_server},
+            wsus_port => $self->{option_results}->{wsus_port},
+            not_updated_since => $self->{option_results}->{not_updated_since},
+            use_ssl => $use_ssl
+        );
+
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode(centreon::plugins::misc::powershell_json_sanitizer(string => $stdout, output => $self->{output}));
@@ -185,6 +201,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

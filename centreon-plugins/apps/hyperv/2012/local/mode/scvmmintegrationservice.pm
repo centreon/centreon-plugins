@@ -141,43 +141,44 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "scvmm-hostname:s"    => { name => 'scvmm_hostname' },
-                                  "scvmm-username:s"    => { name => 'scvmm_username' },
-                                  "scvmm-password:s"    => { name => 'scvmm_password' },
-                                  "scvmm-port:s"        => { name => 'scvmm_port', default => 8100 },
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "no-ps"               => { name => 'no_ps' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "filter-vm:s"             => { name => 'filter_vm' },
-                                  "filter-description:s"    => { name => 'filter_description' },
-                                  "filter-hostgroup:s"      => { name => 'filter_hostgroup' },
-                                  "filter-status:s"         => { name => 'filter_status' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{vmaddition} =~ /not detected/i' },
-                                  "warning-osshutdown-status:s"     => { name => 'warning_osshutdown_status', default => '' },
-                                  "critical-osshutdown-status:s"    => { name => 'critical_osshutdown_status', default => '' },
-                                  "warning-timesync-status:s"       => { name => 'warning_timesync_status', default => '' },
-                                  "critical-timesync-status:s"      => { name => 'critical_timesync_status', default => '' },
-                                  "warning-dataexchange-status:s"   => { name => 'warning_dataexchange_status', default => '' },
-                                  "critical-dataexchange-status:s"  => { name => 'critical_dataexchange_status', default => '' },
-                                  "warning-heartbeat-status:s"      => { name => 'warning_heartbeat_status', default => '' },
-                                  "critical-heartbeat-status:s"     => { name => 'critical_heartbeat_status', default => '' },
-                                  "warning-backup-status:s"         => { name => 'warning_backup_status', default => '' },
-                                  "critical-backup-status:s"        => { name => 'critical_backup_status', default => '' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'scvmm-hostname:s'    => { name => 'scvmm_hostname' },
+        'scvmm-username:s'    => { name => 'scvmm_username' },
+        'scvmm-password:s'    => { name => 'scvmm_password' },
+        'scvmm-port:s'        => { name => 'scvmm_port', default => 8100 },
+        'timeout:s'           => { name => 'timeout', default => 50 },
+        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'      => { name => 'command_path' },
+        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'               => { name => 'no_ps' },
+        'ps-exec-only'        => { name => 'ps_exec_only' },
+        'ps-display'          => { name => 'ps_display' },
+        'filter-vm:s'         => { name => 'filter_vm' },
+        'filter-description:s' => { name => 'filter_description' },
+        'filter-hostgroup:s'   => { name => 'filter_hostgroup' },
+        'filter-status:s'      => { name => 'filter_status' },
+        'warning-status:s'     => { name => 'warning_status', default => '' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{vmaddition} =~ /not detected/i' },
+        'warning-osshutdown-status:s'     => { name => 'warning_osshutdown_status', default => '' },
+        'critical-osshutdown-status:s'    => { name => 'critical_osshutdown_status', default => '' },
+        'warning-timesync-status:s'       => { name => 'warning_timesync_status', default => '' },
+        'critical-timesync-status:s'      => { name => 'critical_timesync_status', default => '' },
+        'warning-dataexchange-status:s'   => { name => 'warning_dataexchange_status', default => '' },
+        'critical-dataexchange-status:s'  => { name => 'critical_dataexchange_status', default => '' },
+        'warning-heartbeat-status:s'      => { name => 'warning_heartbeat_status', default => '' },
+        'critical-heartbeat-status:s'     => { name => 'critical_heartbeat_status', default => '' },
+        'warning-backup-status:s'         => { name => 'warning_backup_status', default => '' },
+        'critical-backup-status:s'        => { name => 'critical_backup_status', default => '' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     foreach my $label (('scvmm_hostname', 'scvmm_username', 'scvmm_password', 'scvmm_port')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
             my ($label_opt) = $label;
@@ -186,31 +187,48 @@ sub check_options {
             $self->{output}->option_exit();
         }
     }    
-    
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'warning_osshutdown_status', 'critical_osshutdown_status',
+
+    $self->change_macros(macros => [
+        'warning_status', 'critical_status', 'warning_osshutdown_status', 'critical_osshutdown_status',
         'warning_timesync_status', 'critical_timesync_status', 'warning_dataexchange_status', 'critical_dataexchange_status',
-        'warning_heartbeat_status', 'critical_heartbeat_status', 'warning_backup_status', 'critical_backup_status']);
+        'warning_heartbeat_status', 'critical_heartbeat_status', 'warning_backup_status', 'critical_backup_status'
+    ]);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::hyperv::2012::scvmmintegrationservice::get_powershell(
-        scvmm_hostname => $self->{option_results}->{scvmm_hostname},
-        scvmm_username => $self->{option_results}->{scvmm_username},
-        scvmm_password => $self->{option_results}->{scvmm_password},
-        scvmm_port => $self->{option_results}->{scvmm_port},
-        no_ps => $self->{option_results}->{no_ps});
-    
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::hyperv::2012::scvmmintegrationservice::get_powershell(
+            scvmm_hostname => $self->{option_results}->{scvmm_hostname},
+            scvmm_username => $self->{option_results}->{scvmm_username},
+            scvmm_password => $self->{option_results}->{scvmm_password},
+            scvmm_port => $self->{option_results}->{scvmm_port}
+        );
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -220,7 +238,7 @@ sub manage_selection {
     #[VM= test3 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test3 ][VMAddition= Not Detected ]
     #[VM= test4 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test4 ][VMAddition= Not Detected ]
     $self->{vm} = {};
-    
+
     my $id = 1;
     my @lines = split /\n/, $stdout;
     foreach my $line (@lines) {
@@ -228,7 +246,7 @@ sub manage_selection {
         while ($line =~ /\[(.*?)=\s*(.*?)\s*\]/g) {
             $values{lc($1)} = $2;
         }
-        
+
         $values{hostgroup} =~ s/\\/\//g;
         my $filtered = 0;
         foreach (('vm', 'description', 'status', 'hostgroup')) {
@@ -239,7 +257,7 @@ sub manage_selection {
                 last;
             }
         }
-        
+
         $self->{vm}->{$id} = { %values } if ($filtered == 0);
         $id++;
     }
@@ -291,6 +309,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

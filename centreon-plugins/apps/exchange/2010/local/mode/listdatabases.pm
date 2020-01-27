@@ -55,26 +55,43 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(
-        remote_host => $self->{option_results}->{remote_host},
-        remote_user => $self->{option_results}->{remote_user},
-        remote_password => $self->{option_results}->{remote_password},
-        no_ps => $self->{option_results}->{no_ps},
-        filter_database => $self->{option_results}->{ps_database_filter}
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(
+            remote_host => $self->{option_results}->{remote_host},
+            remote_user => $self->{option_results}->{remote_user},
+            remote_password => $self->{option_results}->{remote_password},
+            filter_database => $self->{option_results}->{ps_database_filter}
+        );
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
     );
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'List databases:');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'List databases:'
+        );
         centreon::common::powershell::exchange::2010::listdatabases::list($self, stdout => $stdout);
     }
     
@@ -84,24 +101,29 @@ sub run {
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['name', 'server', 'mounted']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(remote_host => $self->{option_results}->{remote_host},
-                                                                                     remote_user => $self->{option_results}->{remote_user},
-                                                                                     remote_password => $self->{option_results}->{remote_password},
-                                                                                     no_ps => $self->{option_results}->{no_ps},
-                                                                                     filter_database => $self->{option_results}->{ps_database_filter});
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::windows_execute(output => $self->{output},
-                                                            timeout => $self->{option_results}->{timeout},
-                                                            command => $self->{option_results}->{command},
-                                                            command_path => $self->{option_results}->{command_path},
-                                                            command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::exchange::2010::listdatabases::get_powershell(
+            remote_host => $self->{option_results}->{remote_host},
+            remote_user => $self->{option_results}->{remote_user},
+            remote_password => $self->{option_results}->{remote_password},
+            filter_database => $self->{option_results}->{ps_database_filter}
+        );
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+    my ($stdout) = centreon::plugins::misc::windows_execute(
+        output => $self->{output},
+        timeout => $self->{option_results}->{timeout},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     centreon::common::powershell::exchange::2010::listdatabases::disco_show($self, stdout => $stdout);
 }
 

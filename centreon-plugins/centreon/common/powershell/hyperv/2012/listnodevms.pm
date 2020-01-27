@@ -26,9 +26,6 @@ use centreon::plugins::misc;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
@@ -52,7 +49,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 
@@ -65,8 +62,10 @@ sub list {
     
     foreach my $line (split /\n/, $options{stdout}) {
         next if ($line !~ /^\[name=(.*?)\]\[state=(.*?)\]\[status=(.*?)\]\[IsClustered=(.*?)\]\[note=(.*?)\]/);
-        my ($name, $state, $status, $IsClustered, $note) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-                                             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
+        my ($name, $state, $status, $IsClustered, $note) = (
+            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+            centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5)
+        );
 
         $self->{output}->output_add(long_msg => "'" . $name . "' [state = $state, status = " . $status .  ']');
     }
@@ -81,12 +80,18 @@ sub disco_show {
     
     foreach my $line (split /\n/, $options{stdout}) {
         next if ($line !~ /^\[name=(.*?)\]\[state=(.*?)\]\[status=(.*?)\]\[IsClustered=(.*?)\]\[note=(.*?)\]/);
-        my ($name, $state, $status, $IsClustered, $note) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-                                             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
+        my ($name, $state, $status, $IsClustered, $note) = (
+            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+            centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5)
+        );
 
-        $self->{output}->add_disco_entry(name => $name,
-                                         state => $state,
-                                         status => $status, is_clustered => $IsClustered, note => $note);
+        $self->{output}->add_disco_entry(
+            name => $name,
+            state => $state,
+            status => $status,
+            is_clustered => $IsClustered,
+            note => $note
+        );
     }
 }
 

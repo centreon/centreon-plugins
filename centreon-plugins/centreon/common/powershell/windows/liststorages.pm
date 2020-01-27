@@ -26,9 +26,6 @@ use centreon::plugins::misc;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
@@ -50,8 +47,9 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
+
 1;
 
 sub list {
@@ -62,11 +60,12 @@ sub list {
     #...
     foreach my $line (split /\n/, $options{stdout}) {
         next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
-        my ($disk, $type, $desc, $size, $free) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-                                                      centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
+        my ($disk, $type, $desc, $size, $free) = (
+            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+            centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5)
+        );
 
         $self->{output}->output_add(long_msg => "'" . $disk . "' [size = $size, free = $free, desc = $desc, type = $map_type{$type}]");
-
     }
 }
 1;
@@ -81,14 +80,18 @@ sub disco_show {
     #...
     foreach my $line (split /\n/, $options{stdout}) {
         next if ($line !~ /^\[name=(.*?)\]\[type=(.*?)\]\[providername=.*?\]\[desc=(.*?)\]\[size=(.*?)\]\[freespace=(.*?)\]/);
-        my ($disk, $type, $desc, $size, $free) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
-                                             centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5));
+        my ($disk, $type, $desc, $size, $free) = (
+            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), 
+            centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5)
+        );
 
-        $self->{output}->add_disco_entry(name => $disk,
-                                         size => $size,
-                                         free => $free,
-                                         type => $map_type{$type},
-                                         desc => $desc);
+        $self->{output}->add_disco_entry(
+            name => $disk,
+            size => $size,
+            free => $free,
+            type => $map_type{$type},
+            desc => $desc
+        );
     }
 }
 

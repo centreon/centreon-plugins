@@ -31,10 +31,10 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = (
-        'computers-status'          => 'apps::wsus::local::mode::computersstatus',
-        'server-statistics'         => 'apps::wsus::local::mode::serverstatistics',
-        'synchronisation-status'    => 'apps::wsus::local::mode::synchronisationstatus',
-        'updates-status'            => 'apps::wsus::local::mode::updatesstatus',
+        'computers-status'       => 'apps::wsus::local::mode::computersstatus',
+        'server-statistics'      => 'apps::wsus::local::mode::serverstatistics',
+        'synchronisation-status' => 'apps::wsus::local::mode::synchronisationstatus',
+        'updates-status'         => 'apps::wsus::local::mode::updatesstatus',
     );
 
     return $self;

@@ -32,7 +32,7 @@ sub custom_status_threshold {
     my ($self, %options) = @_; 
     my $status = 'ok';
     my $message;
-    
+
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
@@ -58,14 +58,13 @@ sub custom_status_threshold {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status} . ' [type: ' . $self->{result_values}->{type}  . ']';
 
-    return $msg;
+    return 'status : ' . $self->{result_values}->{status} . ' [type: ' . $self->{result_values}->{type}  . ']';
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
@@ -75,20 +74,19 @@ sub custom_status_calc {
 
 sub custom_long_output {
     my ($self, %options) = @_;
-    my $msg = 'started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 
-    return $msg;
+    return 'started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{elapsed});
 }
 
 sub custom_long_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{elapsed} = $options{new_datas}->{$self->{instance} . '_elapsed'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
     $self->{result_values}->{is_running} = $options{new_datas}->{$self->{instance} . '_is_running'};
-    
+
     return -11 if ($self->{result_values}->{is_running} != 1);
 
     return 0;
@@ -96,12 +94,12 @@ sub custom_long_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -11 => 1, -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'total', set => {
                 key_values => [ { name => 'total' } ],
@@ -112,7 +110,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'is_running' } ],
@@ -137,26 +135,26 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "no-ps"               => { name => 'no_ps' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "filter-type:s"           => { name => 'filter_type' },
-                                  "filter-end-time:s"       => { name => 'filter_end_time', default => 86400 },
-                                  "filter-start-time:s"     => { name => 'filter_start_time' },
-                                  "ok-status:s"             => { name => 'ok_status', default => '' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{is_running} == 0 and not %{status} =~ /Success/i' },
-                                  "warning-long:s"          => { name => 'warning_long' },
-                                  "critical-long:s"         => { name => 'critical_long' },
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+        'timeout:s'           => { name => 'timeout', default => 50 },
+        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'      => { name => 'command_path' },
+        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'               => { name => 'no_ps' },
+        'ps-exec-only'        => { name => 'ps_exec_only' },
+        'ps-display'          => { name => 'ps_display' },
+        'filter-name:s'       => { name => 'filter_name' },
+        'filter-type:s'       => { name => 'filter_type' },
+        'filter-end-time:s'   => { name => 'filter_end_time', default => 86400 },
+        'filter-start-time:s' => { name => 'filter_start_time' },
+        'ok-status:s'         => { name => 'ok_status', default => '' },
+        'warning-status:s'    => { name => 'warning_status', default => '' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{is_running} == 0 and not %{status} =~ /Success/i' },
+        'warning-long:s'      => { name => 'warning_long' },
+        'critical-long:s'     => { name => 'critical_long' },
+    });
+
     return $self;
 }
 
@@ -169,25 +167,39 @@ sub check_options {
 
 sub prefix_job_output {
     my ($self, %options) = @_;
-    
+
     return "Job '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::veeam::jobstatus::get_powershell(
-        no_ps => $self->{option_results}->{no_ps});
 
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::veeam::jobstatus::get_powershell();
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -202,13 +214,14 @@ sub manage_selection {
     my $current_time = time();
     foreach my $line (split /\n/, $stdout) {
         next if ($line !~ /^\[name\s*=(.*?)\]\[type\s*=(.*?)\]\[isrunning\s*=(.*?)\]\[result\s*=(.*?)\]\[creationTimeUTC\s*=(.*?)\]\[endTimeUTC\s*=(.*?)\]/i);
-        
-        my ($name, $type, $is_running, $result, $start_time, $end_time) = (centreon::plugins::misc::trim($1), 
-            centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3), centreon::plugins::misc::trim($4), 
-            centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6));
+
+        my ($name, $type, $is_running, $result, $start_time, $end_time) = (
+            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3),
+            centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6)
+        );
         $start_time =~ s/,/\./;
         $end_time =~ s/,/\./;
-        
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $name !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $name . "': no matching filter.", debug => 1);
@@ -273,6 +286,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

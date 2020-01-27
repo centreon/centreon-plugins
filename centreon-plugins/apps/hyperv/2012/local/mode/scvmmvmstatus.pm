@@ -31,8 +31,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -64,7 +63,7 @@ sub set_counters {
 
 sub prefix_vm_output {
     my ($self, %options) = @_;
-    
+
     return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
@@ -72,32 +71,33 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "scvmm-hostname:s"    => { name => 'scvmm_hostname' },
-                                  "scvmm-username:s"    => { name => 'scvmm_username' },
-                                  "scvmm-password:s"    => { name => 'scvmm_password' },
-                                  "scvmm-port:s"        => { name => 'scvmm_port', default => 8100 },
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "no-ps"               => { name => 'no_ps' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "filter-vm:s"         => { name => 'filter_vm' },
-                                  "filter-description:s"=> { name => 'filter_description' },
-                                  "filter-hostgroup:s"  => { name => 'filter_hostgroup' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Running|Stopped/i' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'scvmm-hostname:s'     => { name => 'scvmm_hostname' },
+        'scvmm-username:s'     => { name => 'scvmm_username' },
+        'scvmm-password:s'     => { name => 'scvmm_password' },
+        'scvmm-port:s'         => { name => 'scvmm_port', default => 8100 },
+        'timeout:s'            => { name => 'timeout', default => 50 },
+        'command:s'            => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'       => { name => 'command_path' },
+        'command-options:s'    => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'                => { name => 'no_ps' },
+        'ps-exec-only'         => { name => 'ps_exec_only' },
+        'ps-display'           => { name => 'ps_display' },
+        'filter-vm:s'          => { name => 'filter_vm' },
+        'filter-description:s' => { name => 'filter_description' },
+        'filter-hostgroup:s'   => { name => 'filter_hostgroup' },
+        'warning-status:s'     => { name => 'warning_status', default => '' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{status} !~ /Running|Stopped/i' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);  
-    
+
     foreach my $label (('scvmm_hostname', 'scvmm_username', 'scvmm_password', 'scvmm_port')) {
         if (!defined($self->{option_results}->{$label}) || $self->{option_results}->{$label} eq '') {
             my ($label_opt) = $label;
@@ -111,35 +111,50 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::hyperv::2012::scvmmvmstatus::get_powershell(
-        scvmm_hostname => $self->{option_results}->{scvmm_hostname},
-        scvmm_username => $self->{option_results}->{scvmm_username},
-        scvmm_password => $self->{option_results}->{scvmm_password},
-        scvmm_port => $self->{option_results}->{scvmm_port},
-        no_ps => $self->{option_results}->{no_ps});
-    
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::hyperv::2012::scvmmvmstatus::get_powershell(
+            scvmm_hostname => $self->{option_results}->{scvmm_hostname},
+            scvmm_username => $self->{option_results}->{scvmm_username},
+            scvmm_password => $self->{option_results}->{scvmm_password},
+            scvmm_port => $self->{option_results}->{scvmm_port}
+        );
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
+
     #[name= test-server ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
     #[name= test-server2 ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server2 ]
     $self->{vm} = {};
-    
+
     my $id = 1;
     while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[description=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
         my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5);
-        
+    
         my $filtered = 0;
         $values{hostgroup} =~ s/\\/\//g;
         foreach (('vm', 'description', 'hostgroup')) {
@@ -150,12 +165,12 @@ sub manage_selection {
                 last;
             }
         }
-        
+
         $self->{vm}->{$id} = { display => $values{vm}, vm => $values{vm}, status => $values{status}, hostgroup => $values{hostgroup} }
             if ($filtered == 0);
         $id++;
     }
-    
+
     if (scalar(keys %{$self->{vm}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No virtual machine found.");
         $self->{output}->option_exit();
@@ -208,6 +223,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

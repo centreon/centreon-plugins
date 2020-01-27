@@ -38,7 +38,8 @@ sub new {
         'command:s'         => { name => 'command', default => 'powershell.exe' },
         'command-path:s'    => { name => 'command_path' },
         'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'ps-exec-only'      => { name => 'ps_exec_only', }
+        'ps-exec-only'      => { name => 'ps_exec_only', },
+        'ps-display'        => { name => 'ps_display' }
     });
 
     return $self;
@@ -51,10 +52,20 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::windows::liststorages::get_powershell(no_ps => $self->{option_results}->{no_ps});
 
-    $self->{option_results}->{command_options} .= " " . $ps;
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::windows::liststorages::get_powershell();
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
 
     my ($stdout) = centreon::plugins::misc::windows_execute(
         output => $self->{output},
@@ -64,30 +75,36 @@ sub run {
         command_options => $self->{option_results}->{command_options}
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
     } else {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'List disk:');
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'List disk:'
+        );
         centreon::common::powershell::windows::liststorages::list($self, stdout => $stdout);
     }
-    
+
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['name', 'size', 'free', 'type', 'desc']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::windows::liststorages::get_powershell(no_ps => $self->{option_results}->{no_ps});
-																				
-    $self->{option_results}->{command_options} .= " " . $ps;
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::windows::liststorages::get_powershell();
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
     my ($stdout) = centreon::plugins::misc::windows_execute(
         output => $self->{output},
         timeout => $self->{option_results}->{timeout},
@@ -128,6 +145,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 
