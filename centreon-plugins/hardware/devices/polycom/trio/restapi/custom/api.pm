@@ -96,7 +96,7 @@ sub check_options {
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
-    $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
+    $self->{timeout} = (defined($self->{option_results}->{timeout}) && $self->{option_results}->{timeout} =~ /(\d+)/) ? $1 : 50;
     $self->{api_username} = (defined($self->{option_results}->{api_username})) ? $self->{option_results}->{api_username} : 'Polycom';
     $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
     $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
@@ -104,7 +104,6 @@ sub check_options {
     $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
     $self->{lockfile_dir} = (defined($self->{option_results}->{lockfile_dir})) ? $self->{option_results}->{lockfile_dir} : '/var/lib/centreon/centplugins';
 
-    $self->{timeout} = $1 if ($self->{timeout} =~ /(\d+)/);
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
         $self->{output}->option_exit();
@@ -206,8 +205,12 @@ sub request_api {
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
-    if ($@) {
+    if ($@ || !defined($decoded->{Status})) {
         $self->{output}->add_option_msg(short_msg => "cannot decode response (add --debug option to display returned content)");
+        $self->{output}->option_exit();
+    }
+    if ($decoded->{Status} != 2000) {
+        $self->{output}->add_option_msg(short_msg => 'api error code ' . $decoded->{Status});
         $self->{output}->option_exit();
     }
 
