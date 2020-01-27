@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use JSON::XS;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::misc;
 use centreon::common::powershell::sccm::sitestatus;
 
 my %map_mode = (
@@ -60,11 +61,11 @@ my %map_type = (
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("status is '%s' [Type: %s] [Mode: '%s']",
+    return sprintf("status is '%s' [Type: %s] [Mode: '%s']",
         $self->{result_values}->{status},
         $self->{result_values}->{type},
-        $self->{result_values}->{mode});
-    return $msg;
+        $self->{result_values}->{mode}
+    );
 }
 
 sub custom_status_calc {
@@ -75,17 +76,17 @@ sub custom_status_calc {
     $self->{result_values}->{mode} = $options{new_datas}->{$self->{instance} . '_Mode'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_Status'};
     $self->{result_values}->{secondary_site_status} = $options{new_datas}->{$self->{instance} . '_SecondarySiteCMUpdateStatus'};
-    
+
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'sites', type => 1, cb_prefix_output => 'prefix_output_site', message_multiple => 'All sites status are ok' },
     ];
-    
+
     $self->{maps_counters}->{sites} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'display' }, { name => 'SiteName' }, { name => 'Type' }, { name => 'Mode' },
@@ -109,18 +110,19 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        'timeout:s'             => { name => 'timeout', default => 30 },
-        'command:s'             => { name => 'command', default => 'powershell.exe' },
-        'command-path:s'        => { name => 'command_path' },
-        'command-options:s'     => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'no-ps'                 => { name => 'no_ps' },
-        'ps-exec-only'          => { name => 'ps_exec_only' },
-        'warning-status:s'      => { name => 'warning_status', default => '' },
-        'critical-status:s'     => { name => 'critical_status', default => '' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'             => { name => 'no_ps' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
     });
-    
+
     return $self;
 }
 
@@ -133,12 +135,21 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::sccm::sitestatus::get_powershell(
-        no_ps => $self->{option_results}->{no_ps},
-    );
-    
-    $self->{option_results}->{command_options} .= " " . $ps;
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::sccm::sitestatus::get_powershell();
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
     my ($stdout) = centreon::plugins::misc::execute(
         output => $self->{output},
         options => $self->{option_results},
@@ -147,8 +158,10 @@ sub manage_selection {
         command_options => $self->{option_results}->{command_options}
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -220,6 +233,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

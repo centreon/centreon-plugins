@@ -22,13 +22,9 @@ package centreon::common::powershell::hyperv::2012::nodeintegrationservice;
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub get_powershell {
     my (%options) = @_;
-    my $no_ps = (defined($options{no_ps})) ? 1 : 0;
-    
-    return '' if ($no_ps == 1);
 
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
@@ -55,7 +51,7 @@ Try {
 exit 0
 ';
 
-    return centreon::plugins::misc::powershell_encoded($ps);
+    return $ps;
 }
 
 1;

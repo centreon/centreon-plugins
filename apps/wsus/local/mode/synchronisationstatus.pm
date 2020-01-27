@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use JSON::XS;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::misc;
 use centreon::common::powershell::wsus::synchronisationstatus;
 use DateTime;
 
@@ -60,11 +61,13 @@ sub custom_last_status_calc {
 sub custom_progress_perfdata {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(label => 'synchronisation_progress',
-                                  value => $self->{result_values}->{progress},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-                                  min => 0, max => 100);
+    $self->{output}->perfdata_add(
+        label => 'synchronisation_progress',
+        value => $self->{result_values}->{progress},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
+        min => 0, max => 100
+    );
 }
 
 sub custom_progress_threshold {
@@ -79,11 +82,11 @@ sub custom_progress_threshold {
 sub custom_progress_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Progress: %.2f%% (%d/%d items)",
+    return sprintf("Progress: %.2f%% (%d/%d items)",
         $self->{result_values}->{progress},
         $self->{result_values}->{processed},
-        $self->{result_values}->{total});
-    return $msg;
+        $self->{result_values}->{total}
+    );
 }
 
 sub custom_progress_calc {
@@ -102,11 +105,13 @@ sub custom_progress_calc {
 sub custom_duration_perfdata {
     my ($self, %options) = @_;
 
-    $self->{output}->perfdata_add(label => 'last_synchronisation_duration',
-                                  value => $self->{result_values}->{duration},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
-                                  min => 0, unit => 's');
+    $self->{output}->perfdata_add(
+        label => 'last_synchronisation_duration',
+        value => $self->{result_values}->{duration},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}),
+        min => 0, unit => 's'
+    );
 }
 
 sub custom_duration_threshold {
@@ -121,8 +126,7 @@ sub custom_duration_threshold {
 sub custom_duration_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Duration: %s",  centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration}));
-    return $msg;
+    return sprintf('Duration: %s',  centreon::plugins::misc::change_seconds(value => $self->{result_values}->{duration}));
 }
 
 sub custom_duration_calc {
@@ -144,12 +148,12 @@ sub custom_duration_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'current', type => 0, cb_prefix_output => 'prefix_output_current' },
         { name => 'last', type => 0, cb_prefix_output => 'prefix_output_last' },
     ];
-    
+
     $self->{maps_counters}->{current} = [
         { label => 'synchronisation-status', threshold => 0, set => {
                 key_values => [ { name => 'SynchronizationStatus' } ],
@@ -204,24 +208,25 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "timeout:s"             => { name => 'timeout', default => 30 },
-        "command:s"             => { name => 'command', default => 'powershell.exe' },
-        "command-path:s"        => { name => 'command_path' },
-        "command-options:s"     => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        "no-ps"                 => { name => 'no_ps' },
-        "ps-exec-only"          => { name => 'ps_exec_only' },
-        "wsus-server:s"         => { name => 'wsus_server', default => 'localhost' },
-        "wsus-port:s"           => { name => 'wsus_port', default => 8530 },
-        "use-ssl"               => { name => 'use_ssl' },
-        "warning-synchronisation-status:s"          => { name => 'warning_synchronisation_status', default => '' },
-        "critical-synchronisation-status:s"         => { name => 'critical_synchronisation_status', default => '' },
-        "warning-last-synchronisation-status:s"     => { name => 'warning_last_synchronisation_status', default => '' },
-        "critical-last-synchronisation-status:s"    => { name => 'critical_last_synchronisation_status', default => '%{status} !~ /Succeeded/' },
-        "timezone:s"            => { name => 'timezone', default => 'UTC' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'             => { name => 'no_ps' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'wsus-server:s'     => { name => 'wsus_server', default => 'localhost' },
+        'wsus-port:s'       => { name => 'wsus_port', default => 8530 },
+        'use-ssl'           => { name => 'use_ssl' },
+        'timezone:s'        => { name => 'timezone', default => 'UTC' },
+        'warning-synchronisation-status:s'       => { name => 'warning_synchronisation_status', default => '' },
+        'critical-synchronisation-status:s'      => { name => 'critical_synchronisation_status', default => '' },
+        'warning-last-synchronisation-status:s'  => { name => 'warning_last_synchronisation_status', default => '' },
+        'critical-last-synchronisation-status:s' => { name => 'critical_last_synchronisation_status', default => '%{status} !~ /Succeeded/' },
     });
-    
+
     return $self;
 }
 
@@ -229,8 +234,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_synchronisation_status', 'critical_synchronisation_status',
-        'warning_last_synchronisation_status', 'critical_last_synchronisation_status']);
+    $self->change_macros(macros => [
+        'warning_synchronisation_status', 'critical_synchronisation_status',
+        'warning_last_synchronisation_status', 'critical_last_synchronisation_status']
+    );
 }
 
 sub manage_selection {
@@ -238,23 +245,37 @@ sub manage_selection {
 
     my $use_ssl = "\$false";
     $use_ssl = "\$true" if (defined($self->{option_results}->{use_ssl}));
-    
-    my $ps = centreon::common::powershell::wsus::synchronisationstatus::get_powershell(
-        no_ps => $self->{option_results}->{no_ps},
-        wsus_server => $self->{option_results}->{wsus_server},
-        wsus_port => $self->{option_results}->{wsus_port},
-        use_ssl => $use_ssl
-    );
 
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::wsus::synchronisationstatus::get_powershell(
+            wsus_server => $self->{option_results}->{wsus_server},
+            wsus_port => $self->{option_results}->{wsus_port},
+            use_ssl => $use_ssl
+        );
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -310,6 +331,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

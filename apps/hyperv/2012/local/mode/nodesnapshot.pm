@@ -51,16 +51,14 @@ sub set_counters {
 
 sub custom_snapshot_output {
     my ($self, %options) = @_;
-    my $msg = "[status = " . $self->{result_values}->{status_absolute} . "] checkpoint started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute}) . "' ago";
 
-    return $msg;
+    return "[status = " . $self->{result_values}->{status_absolute} . "] checkpoint started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute}) . "' ago";
 }
 
 sub custom_backing_output {
     my ($self, %options) = @_;
-    my $msg = "[status = " . $self->{result_values}->{status_absolute} . "] backing started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute}) . "' ago";
-
-    return $msg;
+    
+    return "[status = " . $self->{result_values}->{status_absolute} . "] backing started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute}) . "' ago";
 }
 
 sub prefix_vm_output {
@@ -73,36 +71,52 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "no-ps"               => { name => 'no_ps' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "filter-vm:s"         => { name => 'filter_vm' },
-                                  "filter-note:s"       => { name => 'filter_note' },
-                                  "filter-status:s"     => { name => 'filter_status', default => 'running' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'timeout:s'         => { name => 'timeout', default => 50 },
+        'command:s'         => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'             => { name => 'no_ps' },
+        'ps-exec-only'      => { name => 'ps_exec_only' },
+        'ps-display'        => { name => 'ps_display' },
+        'filter-vm:s'       => { name => 'filter_vm' },
+        'filter-note:s'     => { name => 'filter_note' },
+        'filter-status:s'   => { name => 'filter_status', default => 'running' },
+    });
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::hyperv::2012::nodesnapshot::get_powershell(no_ps => $self->{option_results}->{no_ps});
-    
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::hyperv::2012::nodesnapshot::get_powershell();
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -140,8 +154,8 @@ sub manage_selection {
         }
         
         $self->{vm}->{$id} = {
-            display => $name, 
-            snapshot => $chkpt{snapshot} > 0 ? $time - $chkpt{snapshot} : undef, 
+            display => $name,
+            snapshot => $chkpt{snapshot} > 0 ? $time - $chkpt{snapshot} : undef,
             backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef,
             status => $status
         };
@@ -179,6 +193,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

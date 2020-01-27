@@ -79,8 +79,8 @@ sub init {
             $self->{sqldefault}->{psqlcmd}[$i]->{dbname} = $options_result->{db_name}[$i];
         }
     }
-    
-    $self->SUPER::init(%options);    
+
+    $self->SUPER::init(%options);
 }
 
 1;

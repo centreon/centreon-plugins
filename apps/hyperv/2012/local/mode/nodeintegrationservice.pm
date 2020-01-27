@@ -122,23 +122,24 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "timeout:s"           => { name => 'timeout', default => 50 },
-                                  "command:s"           => { name => 'command', default => 'powershell.exe' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-                                  "no-ps"               => { name => 'no_ps' },
-                                  "ps-exec-only"        => { name => 'ps_exec_only' },
-                                  "filter-vm:s"         => { name => 'filter_vm' },
-                                  "filter-note:s"       => { name => 'filter_note' },
-                                  "filter-status:s"     => { name => 'filter_status', default => 'running' },
-                                  "warning-global-status:s"     => { name => 'warning_global_status', default => '%{integration_service_state} =~ /Update required/i' },
-                                  "critical-global-status:s"    => { name => 'critical_global_status', default => '' },
-                                  "warning-service-status:s"    => { name => 'warning_service_status', default => '' },
-                                  "critical-service-status:s"   => { name => 'critical_service_status', default => '%{primary_status} !~ /Ok/i' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'timeout:s'           => { name => 'timeout', default => 50 },
+        'command:s'           => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'      => { name => 'command_path' },
+        'command-options:s'   => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'               => { name => 'no_ps' },
+        'ps-exec-only'        => { name => 'ps_exec_only' },
+        'ps-display'          => { name => 'ps_display' },
+        'filter-vm:s'         => { name => 'filter_vm' },
+        'filter-note:s'       => { name => 'filter_note' },
+        'filter-status:s'     => { name => 'filter_status', default => 'running' },
+        'warning-global-status:s'   => { name => 'warning_global_status', default => '%{integration_service_state} =~ /Update required/i' },
+        'critical-global-status:s'  => { name => 'critical_global_status', default => '' },
+        'warning-service-status:s'  => { name => 'warning_service_status', default => '' },
+        'critical-service-status:s' => { name => 'critical_service_status', default => '%{primary_status} !~ /Ok/i' },
+    });
+
     return $self;
 }
 
@@ -151,18 +152,33 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::hyperv::2012::nodeintegrationservice::get_powershell(no_ps => $self->{option_results}->{no_ps});
-    
-    $self->{option_results}->{command_options} .= " " . $ps;
-    my ($stdout) = centreon::plugins::misc::execute(output => $self->{output},
-                                                    options => $self->{option_results},
-                                                    command => $self->{option_results}->{command},
-                                                    command_path => $self->{option_results}->{command_path},
-                                                    command_options => $self->{option_results}->{command_options});
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::hyperv::2012::nodeintegrationservice::get_powershell();
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
+    my ($stdout) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -245,6 +261,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 

@@ -27,6 +27,7 @@ use warnings;
 use JSON::XS;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::common::powershell::sccm::databasereplicationstatus;
+use centreon::plugins::misc;
 use DateTime;
 
 my %map_link_status = (
@@ -64,8 +65,7 @@ my %map_type = (
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Overall Link status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("Overall Link status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -78,12 +78,12 @@ sub custom_status_calc {
 sub custom_site_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("status is '%s', Site-to-Site state is '%s' [Type: %s] [Last sync: %s]",
+    return sprintf("status is '%s', Site-to-Site state is '%s' [Type: %s] [Last sync: %s]",
         $self->{result_values}->{status},
         $self->{result_values}->{site_to_site_state},
         $self->{result_values}->{type},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{last_sync_time}));
-    return $msg;
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{last_sync_time})
+    );
 }
 
 sub custom_site_status_calc {
@@ -93,23 +93,23 @@ sub custom_site_status_calc {
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_SiteType'};
     $self->{result_values}->{site_to_site_state} = $options{new_datas}->{$self->{instance} . '_SiteToSiteGlobalState'};
     $self->{result_values}->{sync_time} = $options{new_datas}->{$self->{instance} . '_SiteToSiteGlobalSyncTime'};
-    
+
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     $self->{result_values}->{sync_time} =~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)$/;
     my $sync_time = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, %$tz);
-    
+
     $self->{result_values}->{last_sync_time} = time() - $sync_time->epoch;
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'sites', type => 1, cb_prefix_output => 'prefix_output_site', message_multiple => 'All sites status are ok' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'link-status', threshold => 0, set => {
                 key_values => [ { name => 'LinkStatus' } ],
@@ -145,12 +145,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'timeout:s'             => { name => 'timeout', default => 30 },
-        'command:s'             => { name => 'command', default => 'powershell.exe' },
-        'command-path:s'        => { name => 'command_path' },
-        'command-options:s'     => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
-        'no-ps'                 => { name => 'no_ps' },
-        'ps-exec-only'          => { name => 'ps_exec_only' },
+        'timeout:s'              => { name => 'timeout', default => 30 },
+        'command:s'              => { name => 'command', default => 'powershell.exe' },
+        'command-path:s'         => { name => 'command_path' },
+        'command-options:s'      => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
+        'no-ps'                  => { name => 'no_ps' },
+        'ps-exec-only'           => { name => 'ps_exec_only' },
+        'ps-display'             => { name => 'ps_display' },
         'warning-link-status:s'  => { name => 'warning_link_status', default => '' },
         'critical-link-status:s' => { name => 'critical_link_status', default => '' },
         'warning-site-status:s'  => { name => 'warning_site_status', default => '' },
@@ -165,18 +166,29 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_link_status', 'critical_link_status',
-        'warning_site_status', 'critical_site_status']);
+    $self->change_macros(macros => [
+        'warning_link_status', 'critical_link_status',
+        'warning_site_status', 'critical_site_status'
+    ]);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $ps = centreon::common::powershell::sccm::databasereplicationstatus::get_powershell(
-        no_ps => $self->{option_results}->{no_ps},
-    );
-    
-    $self->{option_results}->{command_options} .= " " . $ps;
+
+    if (!defined($self->{option_results}->{no_ps})) {
+        my $ps = centreon::common::powershell::sccm::databasereplicationstatus::get_powershell();
+        if (defined($self->{option_results}->{ps_display})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $ps
+            );
+            $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
+            $self->{output}->exit();
+        }
+
+        $self->{option_results}->{command_options} .= " " . centreon::plugins::misc::powershell_encoded($ps);
+    }
+
     my ($stdout) = centreon::plugins::misc::execute(
         output => $self->{output},
         options => $self->{option_results},
@@ -185,8 +197,10 @@ sub manage_selection {
         command_options => $self->{option_results}->{command_options}
     );
     if (defined($self->{option_results}->{ps_exec_only})) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $stdout);
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $stdout
+        );
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
@@ -252,6 +266,10 @@ Command path (Default: none).
 =item B<--command-options>
 
 Command options (Default: '-InputFormat none -NoLogo -EncodedCommand').
+
+=item B<--ps-display>
+
+Display powershell script.
 
 =item B<--ps-exec-only>
 
