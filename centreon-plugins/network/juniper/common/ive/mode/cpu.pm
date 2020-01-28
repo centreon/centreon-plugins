@@ -29,12 +29,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+    });
 
     return $self;
 }
@@ -60,17 +59,25 @@ sub run {
     my $oid_iveCpuUtil = '.1.3.6.1.4.1.12532.10.0';
     
     my $result = $self->{snmp}->get_leef(oids => [$oid_iveCpuUtil], nothing_quit => 1);
-    my $exit_code = $self->{perfdata}->threshold_check(value => $result->{$oid_iveCpuUtil}, 
-                                threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                short_msg => sprintf("CPU Usage is %.2f%%", 
-                                    $result->{$oid_iveCpuUtil}));
-    $self->{output}->perfdata_add(label => 'cpu', unit => '%',
-                                  value => sprintf("%.2f", $result->{$oid_iveCpuUtil}),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
-    
+    my $exit_code = $self->{perfdata}->threshold_check(
+        value => $result->{$oid_iveCpuUtil}, 
+        threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
+    $self->{output}->output_add(
+        severity => $exit_code,
+        short_msg => sprintf(
+            'CPU Usage is %.2f%%', 
+            $result->{$oid_iveCpuUtil}
+        )
+    );
+    $self->{output}->perfdata_add(
+        label => 'cpu', unit => '%',
+        value => sprintf("%.2f", $result->{$oid_iveCpuUtil}),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0, max => 100
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
