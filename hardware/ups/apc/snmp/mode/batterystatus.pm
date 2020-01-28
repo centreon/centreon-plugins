@@ -116,7 +116,7 @@ sub set_counters {
                 key_values => [ { name => 'last_replace_time' } ],
                 output_template => 'replace last time: %s s',
                 perfdatas => [
-                    { label => 'temperature', value => 'last_replace_time_absolute', template => '%s', 
+                    { label => 'replace_last_time', value => 'last_replace_time_absolute', template => '%s', 
                       unit => 's'},
                 ],
             }
