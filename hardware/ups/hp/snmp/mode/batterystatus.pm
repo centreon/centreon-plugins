@@ -49,7 +49,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'charge-remaining', , nlabel => 'battery.charge.remaining.percent', set => {
+        { label => 'charge-remaining', nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'upsBatCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
                 perfdatas => [
