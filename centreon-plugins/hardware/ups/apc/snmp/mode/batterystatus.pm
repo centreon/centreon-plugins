@@ -55,7 +55,11 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
          { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'upsBasicBatteryStatus' }, { name => 'upsAdvBatteryReplaceIndicator' } ],
+                key_values => [
+                    { name => 'upsBasicBatteryStatus' },
+                    { name => 'upsAdvBatteryReplaceIndicator' },
+                    { name => 'upsBasicBatteryLastReplaceDate' }
+                ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
