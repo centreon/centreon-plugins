@@ -168,8 +168,14 @@ sub check {
         );
         my $exit = $self->get_severity(section => 'sensors', name => $result->{connUnitSensorName}, value => $result->{connUnitSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => "Sensor '%s' status is %s", $result->{connUnitSensorName}, $result->{connUnitSensorStatus});
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Sensor '%s' status is %s",
+                    $result->{connUnitSensorName},
+                    $result->{connUnitSensorStatus}
+                )
+            );
         }
     }
 }
@@ -204,7 +210,6 @@ sub check {
     $self->{output}->output_add(long_msg => "checking ports");
     $self->{components}->{port} = {name => 'ports', total => 0, skip => 0};
     return if ($self->check_filter(section => 'port'));
-
     
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $mapping_port->{connUnitPortName}->{oid} }})) {
         $key =~ /^$mapping_port->{connUnitPortName}->{oid}\.(.*)/;
@@ -213,14 +218,24 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping_port, results => $self->{results}->{ $mapping_port->{connUnitPortStatus}->{oid} }, instance => $instance);
 
         next if ($self->check_filter(section => 'port', instance => $instance, name => $name));
-        
+
         $self->{components}->{port}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("port '%s' status is %s [instance: %s]",
-                                                        $name, $result->{connUnitPortStatus}, $instance));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "port '%s' status is %s [instance: %s]",
+                $name, $result->{connUnitPortStatus}, $instance
+            )
+        );
         my $exit = $self->get_severity(section => 'port', name => $name, value => $result->{connUnitPortStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Port '%s' status is %s", $name, $result->{connUnitPortStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Port '%s' status is %s",
+                    $name,
+                    $result->{connUnitPortStatus}
+                )
+            );
         }
     }
 }
