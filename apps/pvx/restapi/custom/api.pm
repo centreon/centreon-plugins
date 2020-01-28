@@ -54,6 +54,7 @@ sub new {
             "password:s"        => { name => 'password' },
             "timeout:s"         => { name => 'timeout' },
             "timeframe:s"       => { name => 'timeframe' },
+            "timezone:s"        => { name => 'timezone', default => 'UTC' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'RESTAPI OPTIONS', once => 1);
@@ -162,8 +163,8 @@ sub query_range {
     my ($self, %options) = @_;
 
     my $data;
-    my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->epoch;
-    my $end_time = DateTime->now->epoch;
+    my $start_time = DateTime->now(time_zone => $self->{option_results}->{timezone})->subtract(seconds => $options{timeframe})->epoch;
+    my $end_time = DateTime->now(time_zone => $self->{option_results}->{timezone})->epoch;
     my $uri = URI::Encode->new({encode_reserved => 1});
 
     my $query = sprintf("%s SINCE %s UNTIL %s", $options{query}, $start_time, $end_time);
@@ -220,6 +221,11 @@ PVX Rest API custom mode
 =item B<--timeframe>
 
 Set timeframe in seconds (i.e. 3600 to check last hour).
+
+item B<--timezone>
+
+Set your timezone. 
+Can use format: 'Europe/London' or '+0100'.
 
 =item B<--api-key>
 
