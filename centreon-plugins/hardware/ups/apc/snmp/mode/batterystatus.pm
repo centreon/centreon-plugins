@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use DateTime;
 use centreon::plugins::templates::catalog_functions;
 
 sub custom_status_output {
@@ -66,7 +67,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&centreon::plugins::templates::catalog_functions::catalog_status_threshold,
             }
         },
-        { label => 'load', set => {
+        { label => 'load', nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'upsAdvBatteryCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
                 perfdatas => [
@@ -75,7 +76,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'time', set => {
+        { label => 'time', nlabel => 'battery.charge.remaining.minutes', set => {
                 key_values => [ { name => 'upsAdvBatteryRunTimeRemaining' } ],
                 output_template => 'remaining time: %.2f minutes',
                 perfdatas => [
@@ -84,7 +85,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'current', set => {
+        { label => 'current', nlabel => 'battery.current.ampere', set => {
                 key_values => [ { name => 'upsAdvBatteryCurrent' } ],
                 output_template => 'current: %s A',
                 perfdatas => [
@@ -93,7 +94,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'voltage', set => {
+        { label => 'voltage', nlabel => 'battery.voltage.volt', set => {
                 key_values => [ { name => 'upsAdvBatteryActualVoltage' } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
@@ -102,7 +103,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'temperature', set => {
+        { label => 'temperature', nlabel => 'battery.temperature.celsius', set => {
                 key_values => [ { name => 'upsAdvBatteryTemperature' } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
@@ -111,6 +112,15 @@ sub set_counters {
                 ],
             }
         },
+        { label => 'replace-lasttime', nlabel => 'battery.replace.lasttime.seconds', display_ok => 0, set => {
+                key_values => [ { name => 'last_replace_time' } ],
+                output_template => 'replace last time: %s s',
+                perfdatas => [
+                    { label => 'temperature', value => 'last_replace_time_absolute', template => '%s', 
+                      unit => 's'},
+                ],
+            }
+        }
     ];
 }
 
@@ -132,13 +142,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 my $map_battery_status = {
-    1 => 'unknown',
-    2 => 'batteryNormal',
-    3 => 'batteryLow',
+    1 => 'unknown', 2 => 'batteryNormal', 3 => 'batteryLow'
 };
 my $map_replace_status = {
     1 => 'no', 2 => 'yes'
@@ -178,6 +186,10 @@ sub manage_selection {
     $result2->{upsAdvBatteryRunTimeRemaining} = sprintf("%.0f", $result2->{upsAdvBatteryRunTimeRemaining} / 100 / 60)
         if (defined($result2->{upsAdvBatteryRunTimeRemaining}));
     $self->{global} = { %$result, %$result2 };
+    if (defined($result->{upsBasicBatteryLastReplaceDate}) && $result->{upsBasicBatteryLastReplaceDate} =~ /(\d{2})\/(\d{2})\/(\d{4})/) {
+        my $dt = DateTime->new(year => $3, month => $1, day => $2, hour => 0, minute => 0, second => 0);
+        $self->{global}->{last_replace_time} = time() - $dt->epoch;
+    }
 }
 
 1;
@@ -213,7 +225,8 @@ Can used special variables like: %{status}, %{replace}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'load', 'voltage', 'current', 'temperature', 'time'.
+Can be: 'load', 'voltage', 'current', 
+'temperature', 'time', 'replace-lasttime'.
 
 =back
 
