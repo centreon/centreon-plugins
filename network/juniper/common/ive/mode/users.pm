@@ -27,10 +27,11 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, message_separator => ' - ' },
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'web', set => {
                 key_values => [ { name => 'web' } ],
@@ -71,10 +72,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -86,12 +86,19 @@ sub manage_selection {
     my $oid_meetingUserCount = '.1.3.6.1.4.1.12532.9.0';
     my $oid_iveConcurrentUsers = '.1.3.6.1.4.1.12532.12.0';
     my $oid_clusterConcurrentUsers = '.1.3.6.1.4.1.12532.13.0';
-    my $result = $options{snmp}->get_leef(oids => [$oid_signedInWebUsers, $oid_meetingUserCount, 
-                                                   $oid_iveConcurrentUsers, $oid_clusterConcurrentUsers], nothing_quit => 1);
-    $self->{global} = { web => $result->{$oid_signedInWebUsers},
-                        meeting => $result->{$oid_meetingUserCount},
-                        node => $result->{$oid_iveConcurrentUsers},
-                        cluster => $result->{$oid_clusterConcurrentUsers} };    
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_signedInWebUsers, $oid_meetingUserCount, 
+            $oid_iveConcurrentUsers, $oid_clusterConcurrentUsers
+        ],
+        nothing_quit => 1
+    );
+    $self->{global} = {
+        web => $result->{$oid_signedInWebUsers},
+        meeting => $result->{$oid_meetingUserCount},
+        node => $result->{$oid_iveConcurrentUsers},
+        cluster => $result->{$oid_clusterConcurrentUsers}
+    };
 }
 
 1;
@@ -109,17 +116,11 @@ Check users connections (web users, cluster users, node users, meeting users) (J
 Only display some counters (regexp can be used).
 Example: --filter-counters='^web|meeting$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'web', 'meeting', 'node', 'cluster'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'web', 'meeting', 'node', 'cluster'.
 
 =back
 
 =cut
-    

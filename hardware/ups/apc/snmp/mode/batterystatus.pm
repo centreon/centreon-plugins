@@ -28,26 +28,31 @@ use centreon::plugins::templates::catalog_functions;
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = sprintf("Battery status is '%s' [battery needs replace: %s]", $self->{result_values}->{status}, $self->{result_values}->{replace});
-    return $msg;
+
+    return sprintf(
+        "battery status is '%s' [battery needs replace: %s] [last replace date: %s]",
+        $self->{result_values}->{status},
+        $self->{result_values}->{replace},
+        $self->{result_values}->{last_replace_date}
+    );
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_upsBasicBatteryStatus'};
     $self->{result_values}->{replace} = $options{new_datas}->{$self->{instance} . '_upsAdvBatteryReplaceIndicator'};
+    $self->{result_values}->{last_replace_date} = $options{new_datas}->{$self->{instance} . '_upsBasicBatteryLastReplaceDate'};
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
     ];
-        
+
     $self->{maps_counters}->{global} = [
          { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'upsBasicBatteryStatus' }, { name => 'upsAdvBatteryReplaceIndicator' } ],
@@ -59,7 +64,7 @@ sub set_counters {
         },
         { label => 'load', set => {
                 key_values => [ { name => 'upsAdvBatteryCapacity' } ],
-                output_template => 'Remaining capacity : %s %%',
+                output_template => 'remaining capacity: %s %%',
                 perfdatas => [
                     { label => 'load', value => 'upsAdvBatteryCapacity_absolute', template => '%s', 
                       min => 0, max => 100, unit => '%' },
@@ -68,7 +73,7 @@ sub set_counters {
         },
         { label => 'time', set => {
                 key_values => [ { name => 'upsAdvBatteryRunTimeRemaining' } ],
-                output_template => 'Remaining time : %.2f minutes',
+                output_template => 'remaining time: %.2f minutes',
                 perfdatas => [
                     { label => 'load_time', value => 'upsAdvBatteryRunTimeRemaining_absolute', template => '%.2f', 
                       min => 0, unit => 'm' },
@@ -77,7 +82,7 @@ sub set_counters {
         },
         { label => 'current', set => {
                 key_values => [ { name => 'upsAdvBatteryCurrent' } ],
-                output_template => 'Current : %s A',
+                output_template => 'current: %s A',
                 perfdatas => [
                     { label => 'current', value => 'upsAdvBatteryCurrent_absolute', template => '%s', 
                       min => 0, unit => 'A' },
@@ -86,7 +91,7 @@ sub set_counters {
         },
         { label => 'voltage', set => {
                 key_values => [ { name => 'upsAdvBatteryActualVoltage' } ],
-                output_template => 'Voltage : %s V',
+                output_template => 'voltage: %s V',
                 perfdatas => [
                     { label => 'voltage', value => 'upsAdvBatteryActualVoltage_absolute', template => '%s', 
                       unit => 'V' },
@@ -95,7 +100,7 @@ sub set_counters {
         },
         { label => 'temperature', set => {
                 key_values => [ { name => 'upsAdvBatteryTemperature' } ],
-                output_template => 'Temperature : %s C',
+                output_template => 'temperature: %s C',
                 perfdatas => [
                     { label => 'temperature', value => 'upsAdvBatteryTemperature_absolute', template => '%s', 
                       unit => 'C'},
@@ -126,25 +131,25 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
-my %map_battery_status = (
+my $map_battery_status = {
     1 => 'unknown',
     2 => 'batteryNormal',
     3 => 'batteryLow',
-);
-my %map_replace_status = (
-    1 => 'no',
-    2 => 'yes',
-);
+};
+my $map_replace_status = {
+    1 => 'no', 2 => 'yes'
+};
 
 my $mapping = {
-    upsBasicBatteryStatus           => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.1', map => \%map_battery_status },
+    upsBasicBatteryStatus           => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.1', map => $map_battery_status },
     upsBasicBatteryTimeOnBattery    => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.2' },
+    upsBasicBatteryLastReplaceDate  => { oid => '.1.3.6.1.4.1.318.1.1.1.2.1.3' },
 };
 my $mapping2 = {
     upsAdvBatteryCapacity           => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.1' },
     upsAdvBatteryTemperature        => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.2' },
     upsAdvBatteryRunTimeRemaining   => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.3' },
-    upsAdvBatteryReplaceIndicator   => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.4', map => \%map_replace_status },
+    upsAdvBatteryReplaceIndicator   => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.4', map => $map_replace_status },
     upsAdvBatteryActualVoltage      => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.8' },
     upsAdvBatteryCurrent            => { oid => '.1.3.6.1.4.1.318.1.1.1.2.2.9' },
 };
@@ -154,23 +159,21 @@ my $oid_upsAdvBattery = '.1.3.6.1.4.1.318.1.1.1.2.2';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_upsBasicBattery },
-                                                                    { oid => $oid_upsAdvBattery },
-                                                                  ],
-                                                          nothing_quit => 1);
-                                                         
-    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_upsBasicBattery}, instance => '0');
-    my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_upsAdvBattery}, instance => '0');
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_upsBasicBattery },
+            { oid => $oid_upsAdvBattery },
+        ],
+        nothing_quit => 1
+    );
 
-    $result2->{upsAdvBatteryRunTimeRemaining} = sprintf("%.0f", $result2->{upsAdvBatteryRunTimeRemaining} / 100 / 60) if (defined($result2->{upsAdvBatteryRunTimeRemaining}));
-    
-    foreach my $name (keys %{$mapping}) {
-        $self->{global}->{$name} = $result->{$name};
-    }
-    foreach my $name (keys %{$mapping2}) {
-        $self->{global}->{$name} = $result2->{$name};
-    }
+    $self->{global} = {};
+    my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_upsBasicBattery}, instance => '0');
+    my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result->{$oid_upsAdvBattery}, instance => '0');
+
+    $result2->{upsAdvBatteryRunTimeRemaining} = sprintf("%.0f", $result2->{upsAdvBatteryRunTimeRemaining} / 100 / 60)
+        if (defined($result2->{upsAdvBatteryRunTimeRemaining}));
+    $self->{global} = { %$result, %$result2 };
 }
 
 1;
@@ -179,7 +182,7 @@ __END__
 
 =head1 MODE
 
-Check Battery Status and battery charge remaining.
+Check battery status and battery charge remaining.
 
 =over 8
 
