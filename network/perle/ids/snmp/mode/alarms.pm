@@ -136,7 +136,7 @@ sub manage_selection {
         my $create_time = $result->{perleEntityAlarmTimeStamp};
         $result->{perleEntityAlarmTimeStamp} = strftime("%d/%m/%Y %H:%M:%S", localtime($result->{perleEntityAlarmTimeStamp}));
         if (!defined($create_time)) {
-            $self->{manager}->{output}->output_add(
+            $self->{output}->output_add(
                 severity => 'UNKNOWN',
                 short_msg => "Can't get date '" . $create_time . "'"
             );

@@ -142,6 +142,10 @@ sub manage_selection {
 
     my $result = $options{custom}->request_api(url_path => '/api/v1/mgmt/media/sessionStats');
     $self->{channels} = {};
+    if (!defined($result->{data}) || ref($result->{data}) ne 'ARRAY') {
+        $self->{output}->add_option_msg(short_msg => "cannot find session information.");
+        $self->{output}->option_exit();
+    }
     if (!defined($result->{data}->[0]->{Streams})) {
         $self->{output}->output_add(
             severity => 'OK',

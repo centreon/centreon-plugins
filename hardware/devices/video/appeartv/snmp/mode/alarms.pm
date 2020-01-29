@@ -133,7 +133,7 @@ sub manage_selection {
         
         my $create_time = Date::Parse::str2time($result->{msgGenerationTime});
         if (!defined($create_time)) {
-            $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+            $self->{output}->output_add(severity => 'UNKNOWN',
                                                    short_msg => "Can't Parse date '" . $result->{msgGenerationTime} . "'");
             next;
         }

@@ -247,7 +247,7 @@ sub manage_selection {
         foreach (keys %{$response->{data}->{$esxhost_id}->{alarms}}) {
             my $create_time = Date::Parse::str2time($response->{data}->{$esxhost_id}->{alarms}->{$_}->{time});
             if (!defined($create_time)) {
-                $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
+                $self->{output}->output_add(severity => 'UNKNOWN',
                                                        short_msg => "Can't Parse date '" . $response->{data}->{$esxhost_id}->{alarms}->{$_}->{time} . "'");
                 next;
             }
