@@ -89,10 +89,10 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        "relative-time:s"  => { name => 'relative_time', default => 'min' },
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} eq "OPEN"' },
+        'relative-time:s'   => { name => 'relative_time', default => 'min' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} eq "OPEN"' },
     });
 
     return $self;
