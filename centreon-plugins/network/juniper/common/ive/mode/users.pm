@@ -165,7 +165,8 @@ Example: --filter-counters='web|meeting'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'web', 'meeting', 'node', 'cluster'.
+Can be: 'node-users-usage', 'node-users-free', 'node-users-usage-prct',
+'web-users-signedin-usage', 'meeting-users-usage', 'cluster-users-usage'.
 
 =back
 
