@@ -148,24 +148,6 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-    my $tutu = do {
-            local $/ = undef;
-            if (!open my $fh, "<", '/tmp/plop.txt') {
-                $self->{output}->add_option_msg(short_msg => "Could not open file /tmp/plop.txt : $!");
-                $self->{output}->option_exit();
-            }
-            <$fh>;
-    };
-    my $tutu2;
-    eval {
-        $tutu2 = JSON::XS->new->utf8->decode($tutu);
-    };
-    if ($@) {
-        $self->{output}->add_option_msg(short_msg => "cannot decode response (add --debug option to display returned content)");
-        $self->{output}->option_exit();
-    }
-    return $tutu2;
-
     $self->settings();
     my ($fh, $content);
     my $lockfile = $self->{lockfile_dir} . '/polycom_trio_' . md5_hex($self->{hostname}) . '.lock'; 
