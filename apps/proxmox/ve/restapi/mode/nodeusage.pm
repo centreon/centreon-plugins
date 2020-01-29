@@ -29,9 +29,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'state : ' . $self->{result_values}->{state};
 
-    return $msg;
+    return 'state : ' . $self->{result_values}->{state};
 }
 
 sub custom_status_calc {
@@ -39,7 +38,6 @@ sub custom_status_calc {
 
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-
     return 0;
 }
 
@@ -69,8 +67,10 @@ sub custom_memory_perfdata {
 sub custom_memory_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
-                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{prct_used},
+        threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
@@ -81,11 +81,12 @@ sub custom_memory_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    my $msg = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+    return sprintf(
+        'Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_memory_calc {
@@ -116,8 +117,10 @@ sub custom_swap_perfdata {
 sub custom_swap_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
-                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{prct_used},
+        threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
@@ -128,11 +131,12 @@ sub custom_swap_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    my $msg = sprintf("Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+    return sprintf(
+        'Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_swap_calc {
@@ -163,8 +167,10 @@ sub custom_fs_perfdata {
 sub custom_fs_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
-                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{prct_used},
+        threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
@@ -175,11 +181,12 @@ sub custom_fs_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    my $msg = sprintf("Root Filesystem Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+    return sprintf(
+        'Root Filesystem Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_fs_calc {
@@ -198,8 +205,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output',
-          message_multiple => 'All nodes are ok', skipped_code => { -11 => 1 } },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_nodes_output', message_multiple => 'All nodes are ok', skipped_code => { -10 => 1, -11 => 1 } },
     ];
 
     $self->{maps_counters}->{nodes} = [
@@ -310,7 +316,8 @@ sub manage_selection {
             memory_usage => $result->{$node_id}->{Stats}->{memory}->{used},
             memory_total => $result->{$node_id}->{Stats}->{memory}->{total},
             swap_usage => $result->{$node_id}->{Stats}->{swap}->{used},
-            swap_total => $result->{$node_id}->{Stats}->{swap}->{total},
+            swap_total => 
+                defined($result->{$node_id}->{Stats}->{swap}->{total}) && $result->{$node_id}->{Stats}->{swap}->{total} > 0 ? $result->{$node_id}->{Stats}->{swap}->{total} : undef,
             fs_usage => $result->{$node_id}->{Stats}->{rootfs}->{used},
             fs_total => $result->{$node_id}->{Stats}->{rootfs}->{total},
         };

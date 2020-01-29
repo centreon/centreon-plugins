@@ -52,14 +52,18 @@ sub run {
 
     $self->manage_selection(%options);
     foreach my $node_id (sort keys %{$self->{nodes}}) {
-        $self->{output}->output_add(long_msg => '[id = ' . $node_id . "]" .
-            "[name = '" . $self->{nodes}->{$node_id}->{Name} . "']" .
-            "[state = '" . $self->{nodes}->{$node_id}->{State} . "']"
+        $self->{output}->output_add(
+            long_msg => 
+                '[id = ' . $node_id . "]" .
+                "[name = '" . $self->{nodes}->{$node_id}->{Name} . "']" .
+                "[state = '" . $self->{nodes}->{$node_id}->{State} . "']"
         );
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Nodes:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List nodes:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }

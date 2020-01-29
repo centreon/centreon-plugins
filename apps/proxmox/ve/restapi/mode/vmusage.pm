@@ -29,9 +29,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'state : ' . $self->{result_values}->{state};
 
-    return $msg;
+    return 'state : ' . $self->{result_values}->{state};
 }
 
 sub custom_status_calc {
@@ -39,7 +38,6 @@ sub custom_status_calc {
 
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-
     return 0;
 }
 
@@ -49,7 +47,6 @@ sub custom_cpu_calc {
     my $delta_cpu_total = $options{new_datas}->{$self->{instance} . '_cpu_total_usage'} - $options{old_datas}->{$self->{instance} . '_cpu_total_usage'};
     $self->{result_values}->{prct_cpu} = $delta_cpu_total  * 100;
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-
     return 0;
 }
 
@@ -69,8 +66,10 @@ sub custom_memory_perfdata {
 sub custom_memory_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{prct_used},
-                                                  threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{prct_used},
+        threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
@@ -81,11 +80,12 @@ sub custom_memory_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    my $msg = sprintf("Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                      $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        'Memory Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_memory_calc {
@@ -128,11 +128,12 @@ sub custom_swap_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    my $msg = sprintf("Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+    return sprintf(
+        'Swap Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_swap_calc {
