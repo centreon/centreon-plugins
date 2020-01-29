@@ -148,7 +148,6 @@ sub settings {
 sub request_api {
     my ($self, %options) = @_;
 
-=for comment
     my $tutu = do {
             local $/ = undef;
             if (!open my $fh, "<", '/tmp/plop.txt') {
@@ -166,7 +165,6 @@ sub request_api {
         $self->{output}->option_exit();
     }
     return $tutu2;
-=cut
 
     $self->settings();
     my ($fh, $content);

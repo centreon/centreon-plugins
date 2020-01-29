@@ -122,8 +122,8 @@ sub manage_selection {
     foreach my $alarm (@{$alarm_results}) {        
         my $create_time = Date::Parse::str2time($alarm->{opened});
         if (!defined($create_time)) {
-            $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Can't Parse date '" . $alarm->{opened} . "'");
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => "Can't Parse date '" . $alarm->{opened} . "'");
             next;
         }
         

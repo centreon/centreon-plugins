@@ -31,7 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'calls-rt' => 'hardware::devices::polycom::trio::restapi::mode::callsrt',
+        'calls-summary' => 'hardware::devices::polycom::trio::restapi::mode::callssummary',
+        'calls-rt'      => 'hardware::devices::polycom::trio::restapi::mode::callsrt',
+        'device'        => 'hardware::devices::polycom::trio::restapi::mode::device',
+        'network'       => 'hardware::devices::polycom::trio::restapi::mode::network'
     );
 
     $self->{custom_modes}{api} = 'hardware::devices::polycom::trio::restapi::custom::api';

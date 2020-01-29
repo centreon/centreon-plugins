@@ -134,8 +134,8 @@ sub manage_selection {
         
 	my $create_time = $result->{spsActiveAlarmLogTime};
         if (!defined($create_time)) {
-            $self->{manager}->{output}->output_add(severity => 'UNKNOWN',
-                                                   short_msg => "Can't get date '" . $result->{spsActiveAlarmLogTime} . "'");
+            $self->{output}->output_add(severity => 'UNKNOWN',
+                                        short_msg => "Can't get date '" . $result->{spsActiveAlarmLogTime} . "'");
             next;
         }
         

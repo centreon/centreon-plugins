@@ -152,7 +152,7 @@ sub manage_selection {
     foreach (@{$result->{CallHistoryGetResult}->{Entry}}) {
         my $end_time = Date::Parse::str2time($_->{EndTimeUTC});
         if (!defined($end_time)) {
-            $self->{manager}->{output}->output_add(
+            $self->{output}->output_add(
                 severity => 'UNKNOWN',
                 short_msg => "can't parse date '" . $_->{EndTimeUTC} . "'"
             );
