@@ -156,22 +156,36 @@ sub request_api {
         $self->{output}->option_exit();
     }
 
+    my $locked = 0;
     eval {
         local $SIG{ALRM} = sub { die 'timeout' };
 
         alarm($self->{timeout} + 5);
         flock($fh, LOCK_EX);
-        $content = $self->{http}->request(
-            method => 'GET',
-            url_path => $options{url_path},
-            unknown_status => $self->{unknown_http_status},
-            warning_status => $self->{warning_http_status},
-            critical_status => $self->{critical_http_status},
-        );
+        $locked = 1;
+        my $count = 0;
+        while (1) {
+            $content = $self->{http}->request(
+                method => 'GET',
+                url_path => $options{url_path},
+                unknown_status => $self->{unknown_http_status},
+                warning_status => $self->{warning_http_status},
+                critical_status => $self->{critical_http_status},
+            );
+            last if ($self->{http}->get_code() != 403);
+            if ($count == 5) {
+                $self->{output}->add_option_msg(short_msg => 'cannot get data from polycom trio - tried 5 times');
+                $self->{output}->option_exit();
+            }
+            sleep(10);
+            $count++;
+        }
         alarm(0);
         flock($fh, LOCK_UN);
+        $locked = 0;
     };
     if ($@) {
+        flock($fh, LOCK_UN) if ($locked == 1);
         $self->{output}->add_option_msg(short_msg => 'plugin timeout: ' . $@);
         $self->{output}->option_exit();
     }
