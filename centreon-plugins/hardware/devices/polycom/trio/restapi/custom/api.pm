@@ -51,7 +51,7 @@ sub new {
             'proto:s'           => { name => 'proto' },
             'api-username:s'    => { name => 'api_username', default => 'Polycom' },
             'api-password:s'    => { name => 'api_password' },
-            'timeout:s'         => { name => 'timeout', default => 30 },
+            'timeout:s'         => { name => 'timeout', default => 50 },
             'lockfile-dir:s'    => { name => 'lockfile_dir', default => '/var/lib/centreon/centplugins' },
             'unknown-http-status:s'  => { name => 'unknown_http_status' },
             'warning-http-status:s'  => { name => 'warning_http_status' },
