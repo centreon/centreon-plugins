@@ -128,7 +128,7 @@ sub new {
                 #              'username' => 'XXXXX',
                 #              'password' => 'XXXXXX'}
             },
-            vsan_sdk_path => '/usr/share/perl5/VMware',
+            vsan_sdk_path => '/usr/local/share/perl5/VMware',
         );
 
     $self->{return_child} = {};
