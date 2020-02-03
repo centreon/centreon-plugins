@@ -29,11 +29,11 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{vm} = [
         { label => 'cpu', set => {
                 key_values => [ { name => 'vmCpuUsagePercent' }, { name => 'display' } ],
@@ -98,17 +98,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' },
     });
-    
+
     return $self;
 }
 
 sub prefix_vm_output {
     my ($self, %options) = @_;
-    
+
     return "Virtual machine '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -135,8 +135,10 @@ sub manage_selection {
     }
     
     $self->{vm} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_vmEntry,
-                                                nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_vmEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vmName}->{oid}\.(.*)$/);
@@ -149,19 +151,20 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{vmName} . "': no matching filter.", debug => 1);
             next;
         }
-        
+    
         $result->{vmRxBytes} *= 8;
         $result->{vmTxBytes} *= 8;
-        $self->{vm}->{$instance} = { display => $result->{vmName}, 
-            %$result,
+        $self->{vm}->{$instance} = {
+            display => $result->{vmName}, 
+            %$result
         };
     }
-    
+
     if (scalar(keys %{$self->{vm}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No virtual machine found.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{cache_name} = "nutanix_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));

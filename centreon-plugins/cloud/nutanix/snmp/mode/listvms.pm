@@ -35,11 +35,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"   => { name => 'filter_name' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
     return $self;
 }
 
@@ -51,14 +50,18 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $self->{snmp}->get_multiple_table(oids => [
+    my $snmp_result = $self->{snmp}->get_multiple_table(
+        oids => [
             { oid => $mapping->{vmName}->{oid} },
             { oid => $mapping->{vmPowerState}->{oid} },
-        ], return_type => 1, nothing_quit => 1);
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
     $self->{vm} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{vmPowerState}->{oid}\.(.*)$/);
-        
+
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
         $result->{vmName} = centreon::plugins::misc::trim($result->{vmName});
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -66,7 +69,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping virtual machine '" . $result->{vmName} . "'.", debug => 1);
             next;
         }
-        
+
         $self->{vm}->{$result->{vmName}} = { %{$result} };
     }
 }
@@ -79,16 +82,18 @@ sub run {
     foreach my $name (sort keys %{$self->{vm}}) {
         $self->{output}->output_add(long_msg => "[name = " . $self->{vm}->{$name}->{vmName} . "] [state = " . $self->{vm}->{$name}->{vmPowerState}  . "]");
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Virtual Machines:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List Virtual Machines:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['name', 'state']);
 }
 
@@ -98,8 +103,10 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $name (sort keys %{$self->{vm}}) {        
-        $self->{output}->add_disco_entry(name => $self->{vm}->{$name}->{vmName},
-                                         state => $self->{vm}->{$name}->{vmPowerState});
+        $self->{output}->add_disco_entry(
+            name => $self->{vm}->{$name}->{vmName},
+            state => $self->{vm}->{$name}->{vmPowerState}
+        );
     }
 }
 
@@ -120,4 +127,3 @@ Filter by virtual machine name.
 =back
 
 =cut
-    

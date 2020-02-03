@@ -41,10 +41,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"   => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
     return $self;
 }
 
@@ -56,14 +55,18 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $self->{snmp}->get_multiple_table(oids => [
+    my $snmp_result = $self->{snmp}->get_multiple_table(
+        oids => [
             { oid => $mapping->{dstDiskId}->{oid} },
             { oid => $mapping->{dstState}->{oid} },
-        ], return_type => 1, nothing_quit => 1);
+        ],
+        return_type => 1,
+        nothing_quit => 1
+    );
     $self->{disk} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{dstState}->{oid}\.(.*)$/);
-        
+
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
         $result->{dstDiskId} = centreon::plugins::misc::trim($result->{dstDiskId});
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -71,7 +74,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping disk '" . $result->{dstDiskId} . "'.", debug => 1);
             next;
         }
-        
+
         $self->{disk}->{$result->{dstDiskId}} = { %{$result} };
     }
 }
@@ -84,16 +87,18 @@ sub run {
     foreach my $name (sort keys %{$self->{disk}}) {
         $self->{output}->output_add(long_msg => "[disk_id = " . $self->{disk}->{$name}->{dstDiskId} . "] [state = " . $self->{disk}->{$name}->{dstState}  . "]");
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Disks:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List disks:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['disk_id', 'state']);
 }
 
@@ -103,8 +108,10 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $name (sort keys %{$self->{disk}}) {        
-        $self->{output}->add_disco_entry(disk_id => $self->{disk}->{$name}->{dstDiskId},
-                                         state => $self->{disk}->{$name}->{dstState});
+        $self->{output}->add_disco_entry(
+            disk_id => $self->{disk}->{$name}->{dstDiskId},
+            state => $self->{disk}->{$name}->{dstState}
+        );
     }
 }
 
@@ -125,4 +132,3 @@ Filter by disk id.
 =back
 
 =cut
-    

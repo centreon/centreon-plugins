@@ -32,11 +32,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"   => { name => 'filter_name' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
     return $self;
 }
 
@@ -57,7 +56,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping container '" . $snmp_result->{$oid} . "'.", debug => 1);
             next;
         }
-        
+
         $self->{container}->{$snmp_result->{$oid}} = { name => $snmp_result->{$oid} };
     }
 }
@@ -70,16 +69,18 @@ sub run {
     foreach my $name (sort keys %{$self->{container}}) {
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Containers:');
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List containers:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['name']);
 }
 
@@ -110,4 +111,3 @@ Filter by container name.
 =back
 
 =cut
-    
