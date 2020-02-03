@@ -134,7 +134,7 @@ sub check_options {
         if (defined($options{request}->{$method . '_param'})) {
             $options{request}->{$method . '_params'} = {};
             foreach (@{$options{request}->{$method . '_param'}}) {
-                if (/^([^=]+)={0,1}(.*)$/) {
+                if (/^([^=]+)={0,1}(.*)$/s) {
                     my $key = $1;
                     my $value = defined($2) ? $2 : 1;
                     if (defined($options{request}->{$method . '_params'}->{$key})) {
