@@ -67,8 +67,8 @@ sub check_rhel_version {
     my ($self, %options) = @_;
 
     $self->{rhel_71} = 0;
-    return if ($options{stdout} !~ /(?:Redhat|CentOS).*?release\s+(\d+)\.(\d+)/mi);
-    $self->{rhel_71} = 1 if ($1 >= 7 && $2 >= 1);
+    return if ($options{stdout} !~ /(?:Redhat|CentOS|Red[ \-]Hat).*?release\s+(\d+)\.(\d+)/mi);
+    $self->{rhel_71} = 1 if ($1 >= 8 || ($1 == 7 && $2 >= 1));
 }
 
 sub run {
@@ -110,7 +110,12 @@ sub run {
 
     my $physical_used = $total_size - $free;
     my $nobuf_used = $physical_used - $buffer_used - $cached_used;
-    $nobuf_used -= $slab_used if ($self->{rhel_71} == 1);
+    
+    my ($slab_value, $slab_unit);
+    ($slab_value, $slab_unit) = $self->{perfdata}->change_bytes(value => $slab_used) if (defined($slab_used));
+    if ($self->{rhel_71} == 1) {
+        $nobuf_used -= $slab_used;
+    }
 
     my $prct_used = $nobuf_used * 100 / $total_size;
     my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
@@ -122,30 +127,38 @@ sub run {
     $self->{output}->output_add(
         severity => $exit,
         short_msg => sprintf(
-            "Ram used (-buffers/cache) %s (%.2f%%), Buffer: %s, Cached: %s",
-            $nobuf_value . " " . $nobuf_unit, $prct_used,
+            'Ram used (-buffers/cache%s) %s (%.2f%%), Buffer: %s, Cached: %s%s',
+            ($self->{rhel_71} == 1 && defined($slab_used)) ? '/slab' : '',
+            $nobuf_value . " " . $nobuf_unit,
+            $prct_used,
             $buffer_value . " " . $buffer_unit,
-            $cached_value . " " . $cached_unit
+            $cached_value . " " . $cached_unit,
+            (defined($slab_used)) ? ', Slab: ' . $slab_value . ' ' . $slab_unit : '',
         )
     );
 
     $self->{output}->perfdata_add(
-        label => "cached", unit => 'B',
+        label => 'cached', unit => 'B',
         value => $cached_used,
         min => 0
     );
     $self->{output}->perfdata_add(
-        label => "buffer", unit => 'B',
+        label => 'buffer', unit => 'B',
         value => $buffer_used,
         min => 0
     );
     $self->{output}->perfdata_add(
-        label => "used", unit => 'B',
+        label => 'used', unit => 'B',
         value => $nobuf_used,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size),
         min => 0, max => $total_size
     );
+    $self->{output}->perfdata_add(
+        label => 'slab', unit => 'B',
+        value => $slab_used,
+        min => 0
+    ) if (defined($slab_used));
 
     $self->{output}->display();
     $self->{output}->exit();
