@@ -43,21 +43,20 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname', default => 'api.prowlapp.com' },
-        "port:s"            => { name => 'port', default => 443 },
-        "proto:s"           => { name => 'proto', default => 'https' },
-        "urlpath:s"         => { name => 'url_path', default => "/publicapi/add" },
-        "apikey:s"          => { name => 'apikey' },
-        "providerkey:s"     => { name => 'providerkey' },
-        "priority:s"        => { name => 'priority' },
-        "application:s"     => { name => 'application' },
-        "event:s"           => { name => 'event' },
-        "message:s"         => { name => 'message' },
-        "timeout:s"         => { name => 'timeout' },
+        'hostname:s'    => { name => 'hostname', default => 'api.prowlapp.com' },
+        'port:s'        => { name => 'port', default => 443 },
+        'proto:s'       => { name => 'proto', default => 'https' },
+        'urlpath:s'     => { name => 'url_path', default => "/publicapi/add" },
+        'apikey:s'      => { name => 'apikey' },
+        'providerkey:s' => { name => 'providerkey' },
+        'priority:s'    => { name => 'priority' },
+        'application:s' => { name => 'application' },
+        'event:s'       => { name => 'event' },
+        'message:s'     => { name => 'message' },
+        'timeout:s'     => { name => 'timeout' },
     });
 
     $self->{http} = centreon::plugins::http->new(%options);
-
     return $self;
 }
 
@@ -107,7 +106,6 @@ sub run {
         $decoded = XMLin($response);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $response, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode xml response: $@");
         $self->{output}->option_exit();
     }
