@@ -44,31 +44,59 @@ sub check {
 
         $self->{components}->{disk}->{total}++;
         
-        $self->{output}->output_add(long_msg => sprintf("Disk '%s' status is '%s', health is '%s', state is '%s' [instance = %s] [temperature = %s C]",
-                                    $result->{'serial-number'}, $result->{status}, $result->{health}, $result->{state}, $instance,
-                                    $result->{'temperature-numeric'}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "Disk '%s' status is '%s', health is '%s', state is '%s' [instance = %s] [temperature = %s C]",
+                $result->{'serial-number'}, $result->{status}, $result->{health}, $result->{state}, $instance,
+                $result->{'temperature-numeric'}
+            )
+        );
+
         my $exit1 = $self->get_severity(section => 'disk', value => $result->{status});
         if (!$self->{output}->is_status(value => $exit1, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit1,
-                                        short_msg => sprintf("Disk '%s' status is '%s'", $result->{'serial-number'}, $result->{status}));
+            $self->{output}->output_add(
+                severity => $exit1,
+                short_msg => sprintf(
+                    "Disk '%s' status is '%s'",
+                    $result->{'serial-number'},
+                    $result->{status}
+                )
+            );
         }
         my $exit2 = $self->get_severity(section => 'disk', value => $result->{health});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Disk '%s' health is '%s'", $result->{'serial-number'}, $result->{health}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Disk '%s' health is '%s'",
+                    $result->{'serial-number'},
+                    $result->{health}
+                )
+            );
         }
         my $exit3 = $self->get_severity(section => 'disk', value => $result->{state});
         if (!$self->{output}->is_status(value => $exit3, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit3,
-                                        short_msg => sprintf("Disk '%s' state is '%s'", $result->{'serial-number'}, $result->{state}));
+            $self->{output}->output_add(
+                severity => $exit3,
+                short_msg => sprintf(
+                    "Disk '%s' state is '%s'",
+                    $result->{'serial-number'},
+                    $result->{state}
+                )
+            );
         }
         
         next if ($result->{'temperature-numeric'} !~ /[0-9]/);
         my ($exit4, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'disk', instance => $instance, value => $result->{'temperature-numeric'});        
         if (!$self->{output}->is_status(value => $exit4, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit4,
-                                        short_msg => sprintf("Disk '%s' temperature is %s C", $result->{'serial-number'}, $result->{'temperature-numeric'}));
+            $self->{output}->output_add(
+                severity => $exit4,
+                short_msg => sprintf(
+                    "Disk '%s' temperature is %s C",
+                    $result->{'serial-number'},
+                    $result->{'temperature-numeric'}
+                )
+            );
         }
         $self->{output}->perfdata_add(
             label => 'temperature', unit => 'C',
