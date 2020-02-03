@@ -59,7 +59,7 @@ sub GetOptions {
     my $search_str = ',' . join(',', keys %opts) . ',';
     my $num_args = scalar(@ARGV);
     for (my $i = 0; $i < $num_args;) {
-        if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)(.*)/) {
+        if (defined($ARGV[$i]) && $ARGV[$i] =~ /^--(.*?)(?:=|$)((?s).*)/) {
             my ($option, $value) = ($1, $2);
             
             # find type of option
