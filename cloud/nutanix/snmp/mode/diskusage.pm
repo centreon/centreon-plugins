@@ -29,14 +29,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = 'state : ' . $self->{result_values}->{state};
-    return $msg;
+
+    return 'state : ' . $self->{result_values}->{state};
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_dstState'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -59,11 +58,13 @@ sub custom_usage_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => $label . $extra_label, unit => 'B',
-                                  value => $value_perf,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  min => 0, max => $self->{result_values}->{total});
+    $self->{output}->perfdata_add(
+        label => $label . $extra_label, unit => 'B',
+        value => $value_perf,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
+        min => 0, max => $self->{result_values}->{total}
+    );
 }
 
 sub custom_usage_threshold {
@@ -86,11 +87,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -102,17 +104,16 @@ sub custom_usage_calc {
     $self->{result_values}->{used} = $self->{result_values}->{total} - $self->{result_values}->{free};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'disk', type => 1, cb_prefix_output => 'prefix_disk_output', message_multiple => 'All disks are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{disk} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'dstState' }, { name => 'display' } ],
@@ -164,16 +165,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '' },
-                                  "units:s"             => { name => 'units', default => '%' },
-                                  "free"                => { name => 'free' },
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' },
+    });
+
     return $self;
 }
 
@@ -186,7 +186,7 @@ sub check_options {
 
 sub prefix_disk_output {
     my ($self, %options) = @_;
-    
+
     return "Disk '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -212,10 +212,12 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Need to use SNMP v2c or v3.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{disk} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_dstEntry,
-                                                nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_dstEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{dstDiskId}->{oid}\.(.*)$/);
@@ -228,14 +230,16 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{dstDiskId} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         my $inodes_used;
         $inodes_used = 100 - ($result->{dstNumFreeInodes} * 100 / $result->{dstNumTotalInodes}) if ($result->{dstNumTotalInodes} > 0);
-        $self->{disk}->{$instance} = { display => $result->{dstDiskId}, 
-            %$result, inodes_used =>  $inodes_used,
+        $self->{disk}->{$instance} = {
+            display => $result->{dstDiskId}, 
+            %$result,
+            inodes_used => $inodes_used
         };
     }
-    
+
     if (scalar(keys %{$self->{disk}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No disk found.");
         $self->{output}->option_exit();

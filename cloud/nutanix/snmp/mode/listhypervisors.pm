@@ -33,10 +33,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"   => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' },
+    });
     return $self;
 }
 
@@ -57,7 +56,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping hypervisor '" . $snmp_result->{$oid} . "'.", debug => 1);
             next;
         }
-        
+
         $self->{hypervisor}->{$snmp_result->{$oid}} = { name => $snmp_result->{$oid} };
     }
 }
@@ -110,4 +109,3 @@ Filter by hypervisor name.
 =back
 
 =cut
-    
