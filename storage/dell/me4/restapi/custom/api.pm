@@ -57,7 +57,8 @@ sub new {
     $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
-    
+    $self->{set_lang} = 0;
+
     return $self;
 }
 
@@ -195,25 +196,23 @@ sub request_api {
     }
 
     $self->settings();
-    
-    my $lang = $self->{http}->request(method => 'GET', url_path => '/api/set/cli-parameters/locale/English');
 
-    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port} .
-        $options{url_path} . "'", debug => 1);
-
+    if ($self->{set_lang} == 0) {
+        $self->{http}->request(method => 'GET', url_path => '/api/set/cli-parameters/locale/English');
+        $self->{set_lang} = 1;
+    }
     my $content = $self->{http}->request(%options);
     
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
     }
-    
+
     my $decoded;
     eval {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
