@@ -1,4 +1,4 @@
-2020-01-04 Quentin Garnier <qgarnier@centreon.com>
+2020-02-04 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Allied Telesis SNMP
  * Plugin added: UPS HP SNMP
  * Plugin added: HP ILO Rest API
