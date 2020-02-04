@@ -135,20 +135,20 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "vm-hostname:s"         => { name => 'vm_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "scope-host:s"          => { name => 'scope_host' },
-        "filter-description:s"  => { name => 'filter_description' },
-        "filter-os:s"           => { name => 'filter_os' },
-        "filter-uuid:s"         => { name => 'filter_uuid' },
-        "display-description"   => { name => 'display_description' },
-        "datastore-name:s"      => { name => 'datastore_name' },
-        "filter-datastore:s"    => { name => 'filter_datastore' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'vm-hostname:s'        => { name => 'vm_hostname' },
+        'filter'               => { name => 'filter' },
+        'scope-datacenter:s'   => { name => 'scope_datacenter' },
+        'scope-cluster:s'      => { name => 'scope_cluster' },
+        'scope-host:s'         => { name => 'scope_host' },
+        'filter-description:s' => { name => 'filter_description' },
+        'filter-os:s'          => { name => 'filter_os' },
+        'filter-uuid:s'        => { name => 'filter_uuid' },
+        'display-description'  => { name => 'display_description' },
+        'datastore-name:s'     => { name => 'datastore_name' },
+        'filter-datastore:s'   => { name => 'filter_datastore' },
+        'unknown-status:s'     => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
+        'warning-status:s'     => { name => 'warning_status', default => '' },
+        'critical-status:s'    => { name => 'critical_status', default => '' },
     });
     
     return $self;
@@ -157,7 +157,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
@@ -165,8 +165,18 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{vm} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'datastorevm');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'datastorevm'
+    );
+
+    if ($response->{code} == 200) {
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $response->{short_message}
+        );
+        return ;
+    }
 
     foreach my $vm_id (keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
@@ -181,11 +191,11 @@ sub manage_selection {
                 total_latency => $response->{data}->{$vm_id}->{'disk.maxTotalLatency.latest'},
             },
         };
-        
+
         if (defined($self->{option_results}->{display_description})) {
             $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
         }
-        
+
         foreach my $ds_name (sort keys %{$response->{data}->{$vm_id}->{datastore}}) {
             $self->{vm}->{$vm_name}->{datastore}->{$ds_name} = { display => $ds_name, 
                 read => $response->{data}->{$vm_id}->{datastore}->{$ds_name}->{'disk.numberRead.summation'},
@@ -262,14 +272,9 @@ Can used special variables like:  %{connection_state}, %{power_state}
 Set critical threshold for status (Default: '').
 Can used special variables like:  %{connection_state}, %{power_state}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'max-total-latency', 'read', 'write'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'max-total-latency', 'read', 'write'.
 
 =back

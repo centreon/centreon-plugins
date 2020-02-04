@@ -155,14 +155,17 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{datastore} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'datastoreiops');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'datastoreiops'
+    );
 
     if ($response->{code} == 200) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $response->{short_message});
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $response->{short_message}
+        );
         return ;
-        
     }
 
     foreach my $ds_id (keys %{$response->{data}}) {

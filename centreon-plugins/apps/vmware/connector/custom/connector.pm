@@ -183,11 +183,11 @@ sub connector_response_status {
         $self->{output}->add_option_msg(short_msg => 'response format incorrect - need connector vmware version >= 3.x.x');
         $self->{output}->option_exit();
     }
-    
+
     foreach (('unknown_connector_status', 'warning_connector_status', 'critical_connector_status')) {
         $self->{$_} =~ s/%\{(.*?)\}/\$self->{result}->{$1}/g;
     }
-        
+
     # Check response
     my $status = 'ok';
     my $message;
@@ -213,8 +213,10 @@ sub connector_response_status {
 
     if (!$self->{output}->is_status(value => $status, compare => 'ok', litteral => 1)) {
         $self->{output}->output_add(long_msg => $self->{result}->{extra_message}, debug => 1);
-        $self->{output}->output_add(severity => $status,
-                                    short_msg => $self->{result}->{short_message});
+        $self->{output}->output_add(
+            severity => $status,
+            short_msg => $self->{result}->{short_message}
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
