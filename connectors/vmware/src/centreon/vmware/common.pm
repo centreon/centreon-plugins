@@ -33,7 +33,7 @@ my $flag = ZMQ_NOBLOCK | ZMQ_SNDMORE;
 
 sub set_response {
     my (%options) = @_;
-    
+
     $manager_response->{code} = $options{code} if (defined($options{code}));
     $manager_response->{short_message} = $options{short_message} if (defined($options{short_message}));
     $manager_response->{extra_message} = $options{extra_message} if (defined($options{extra_message}));
@@ -43,7 +43,7 @@ sub set_response {
 
 sub init_response {
     my (%options) = @_;
-    
+
     $manager_response->{code} = 0;
     $manager_response->{vmware_connector_version} = '3.1.0';
     $manager_response->{short_message} = 'OK';
@@ -70,7 +70,7 @@ sub response {
             $response_str = '{ "code": -1, "short_message": "Cannot encode result" }';
         }
     }
-    
+
     if (defined($options{reinit})) {
          my $context = zmq_init();
          $options{endpoint} = zmq_socket($context, ZMQ_DEALER);
@@ -104,7 +104,7 @@ sub vmware_error {
 
 sub connect_vsphere {
     my (%options) = @_;
-    
+
     $options{logger}->writeLogInfo("'$options{whoaim}' Vsphere connection in progress");
     eval {
         $SIG{ALRM} = sub { die('TIMEOUT'); };
@@ -114,9 +114,9 @@ sub connect_vsphere {
             user_name => $options{username},
             password => $options{password}
         );
-        
+
         get_vsan_vim(%options) if ($options{vsan_enabled} == 1);
-        
+
         alarm(0);
     };
     if ($@) {
@@ -138,7 +138,7 @@ sub connect_vsphere {
 sub heartbeat {
     my (%options) = @_;
     my $stime;
-    
+
     eval {
         $stime = $options{connector}->{session1}->get_service_instance()->CurrentTime();
         $options{connector}->{keeper_session_time} = time();
@@ -157,7 +157,7 @@ sub heartbeat {
             $options{connector}->{last_time_check} = time();
         }
     }
-    
+
     $options{connector}->{logger}->writeLogInfo("'" . $options{connector}->{whoaim} . "' Get current time = " . Data::Dumper::Dumper($stime));
 }
 
@@ -206,12 +206,13 @@ sub get_view {
 sub search_in_datastore {
     my (%options) = @_;
     my $result;
-    
-    my $files = FileQueryFlags->new(fileSize => 1,
-                                    fileType => 1,
-                                    modification => 1,
-                                    fileOwner => 1
-                                    );
+
+    my $files = FileQueryFlags->new(
+        fileSize => 1,
+        fileType => 1,
+        modification => 1,
+        fileOwner => 1
+    );
     my $hostdb_search_spec = HostDatastoreBrowserSearchSpec->new(
         details => $files,
         searchCaseInsensitive => $options{searchCaseInsensitive},
@@ -219,8 +220,10 @@ sub search_in_datastore {
         query => $options{query}
     );
     eval {
-        $result = $options{browse_ds}->SearchDatastoreSubFolders(datastorePath => $options{ds_name},
-                                        searchSpec => $hostdb_search_spec);
+        $result = $options{browse_ds}->SearchDatastoreSubFolders(
+            datastorePath => $options{ds_name},
+            searchSpec => $hostdb_search_spec
+        );
     };
     if ($@) {
         return (undef, $@) if (defined($options{return}) && $options{return} == 1);
@@ -233,20 +236,26 @@ sub search_in_datastore {
 sub get_perf_metric_ids {
     my (%options) = @_;
     my $filtered_list = [];
-   
+
     foreach (@{$options{metrics}}) {
         if (defined($options{connector}->{perfcounter_cache}->{$_->{label}})) {
             if ($options{interval} != 20 && $options{connector}->{perfcounter_cache}->{$_->{label}}{level} > $options{connector}->{sampling_periods}->{$options{interval}}->{level}) {
-                set_response(code => -1,
-                             short_message => sprintf("Cannot get counter '%s' for the sampling period '%s' (counter level: %s, sampling level: %s)",
-                                $_->{label}, $options{interval}, 
-                                $options{connector}->{perfcounter_cache}->{$_->{label}}{level},
-                                $options{connector}->{sampling_periods}->{$options{interval}}->{level}));
+                set_response(
+                    code => -1,
+                    short_message => sprintf(
+                        "Cannot get counter '%s' for the sampling period '%s' (counter level: %s, sampling level: %s)",
+                        $_->{label}, $options{interval}, 
+                        $options{connector}->{perfcounter_cache}->{$_->{label}}{level},
+                        $options{connector}->{sampling_periods}->{$options{interval}}->{level}
+                    )
+                );
                 return undef;
             }
             foreach my $instance (@{$_->{instances}}) {    
-                my $metric = PerfMetricId->new(counterId => $options{connector}->{perfcounter_cache}->{$_->{label}}{key},
-                                               instance => $instance);
+                my $metric = PerfMetricId->new(
+                    counterId => $options{connector}->{perfcounter_cache}->{$_->{label}}{key},
+                    instance => $instance
+                );
                 push @$filtered_list, $metric;
             }
         } else {
@@ -260,85 +269,102 @@ sub get_perf_metric_ids {
 
 sub performance_builder_specific {
     my (%options) = @_;
-    
+
     my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
     my @perf_query_spec;
     foreach my $entry (@{$options{metrics}}) {
-        my $perf_metric_ids = get_perf_metric_ids(connector => $options{connector}, 
-                                                  metrics => $entry->{metrics}, 
-                                                  interval => $options{interval});
+        my $perf_metric_ids = get_perf_metric_ids(
+            connector => $options{connector}, 
+            metrics => $entry->{metrics}, 
+            interval => $options{interval}
+        );
         return undef if (!defined($perf_metric_ids));
-        
+
         my $tstamp = time();
         my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
-        my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        my $startTime = sprintf(
+            "%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]
+        );
         (@t) = gmtime($tstamp);
-        my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+        my $endTime = sprintf(
+            "%04d-%02d-%02dT%02d:%02d:%02dZ",
+            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]
+        );
         if ($options{interval} == 20) {
-            push @perf_query_spec, PerfQuerySpec->new(entity => $entry->{entity},
-                                    metricId => $perf_metric_ids,
-                                    format => 'normal',
-                                    intervalId => 20,
-                                    startTime => $startTime,
-                                    endTime => $endTime
-                                    );
-                                    #maxSample => 1);
+            push @perf_query_spec, PerfQuerySpec->new(
+                entity => $entry->{entity},
+                metricId => $perf_metric_ids,
+                format => 'normal',
+                intervalId => 20,
+                startTime => $startTime,
+                endTime => $endTime
+            );
+            #maxSample => 1);
         } else {
-            push @perf_query_spec, PerfQuerySpec->new(entity => $entry->{entity},
-                                    metricId => $perf_metric_ids,
-                                    format => 'normal',
-                                    intervalId => $options{interval},
-                                    startTime => $startTime,
-                                    endTime => $endTime
-                                    );
-                                    #maxSample => 1);
+            push @perf_query_spec, PerfQuerySpec->new(
+                entity => $entry->{entity},
+                metricId => $perf_metric_ids,
+                format => 'normal',
+                intervalId => $options{interval},
+                startTime => $startTime,
+                endTime => $endTime
+            );
+            #maxSample => 1);
         }
     }
-    
+
     return $options{connector}->{perfmanager_view}->QueryPerf(querySpec => \@perf_query_spec);
 }
 
 sub performance_builder_global {
     my (%options) = @_;
-    
+
     my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
     my @perf_query_spec;
-    my $perf_metric_ids = get_perf_metric_ids(connector => $options{connector}, 
-                                              metrics => $options{metrics}, 
-                                              interval => $options{interval});
+    my $perf_metric_ids = get_perf_metric_ids(
+        connector => $options{connector}, 
+        metrics => $options{metrics}, 
+        interval => $options{interval}
+    );
     return undef if (!defined($perf_metric_ids));
-    
+
     my $tstamp = time();
     my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
-    my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+    my $startTime = sprintf(
+        "%04d-%02d-%02dT%02d:%02d:%02dZ",
+        (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]
+    );
     (@t) = gmtime($tstamp);
-    my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
-        
+    my $endTime = sprintf(
+        "%04d-%02d-%02dT%02d:%02d:%02dZ",
+        (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]
+    );
+
     foreach (@{$options{views}}) {
         if ($options{interval} == 20) {
-            push @perf_query_spec, PerfQuerySpec->new(entity => $_,
-                                    metricId => $perf_metric_ids,
-                                    format => 'normal',
-                                    intervalId => 20,
-                                    startTime => $startTime,
-                                    endTime => $endTime);
-                                    #maxSample => 1);
+            push @perf_query_spec, PerfQuerySpec->new(
+                entity => $_,
+                metricId => $perf_metric_ids,
+                format => 'normal',
+                intervalId => 20,
+                startTime => $startTime,
+                endTime => $endTime
+            );
+            #maxSample => 1);
         } else {
-            push @perf_query_spec, PerfQuerySpec->new(entity => $_,
-                                    metricId => $perf_metric_ids,
-                                    format => 'normal',
-                                    intervalId => $options{interval},
-                                    startTime => $startTime,
-                                    endTime => $endTime
-                                    );
-                                    #maxSample => 1);
+            push @perf_query_spec, PerfQuerySpec->new(
+                entity => $_,
+                metricId => $perf_metric_ids,
+                format => 'normal',
+                intervalId => $options{interval},
+                startTime => $startTime,
+                endTime => $endTime
+            );
+            #maxSample => 1);
         }
     }
-    
+
     return $options{connector}->{perfmanager_view}->QueryPerf(querySpec => \@perf_query_spec);
 }
 
@@ -346,7 +372,7 @@ sub generic_performance_values_historic {
     my ($obj_vmware, $views, $perfs, $interval, %options) = @_;
     my $counter = 0;
     my %results;
-    
+
     # overload the default sampling choosen
     if (defined($options{sampling_period}) && $options{sampling_period} ne '') {
         $interval = $options{sampling_period};
@@ -362,16 +388,22 @@ sub generic_performance_values_historic {
     }
     eval {
         my $perfdata;
-        
+
         if (defined($views)) {
-            $perfdata = performance_builder_global(connector => $obj_vmware,
-                                                   views => $views,
-                                                   metrics => $perfs,
-                                                   interval => $interval, time_shift => $options{time_shift});
+            $perfdata = performance_builder_global(
+                connector => $obj_vmware,
+                views => $views,
+                metrics => $perfs,
+                interval => $interval,
+                time_shift => $options{time_shift}
+            );
         } else {
-            $perfdata = performance_builder_specific(connector => $obj_vmware,
-                                                     metrics => $perfs,
-                                                     interval => $interval, time_shift => $options{time_shift});
+            $perfdata = performance_builder_specific(
+                connector => $obj_vmware,
+                metrics => $perfs,
+                interval => $interval,
+                time_shift => $options{time_shift}
+            );
         }
         return undef if (!defined($perfdata));
 
@@ -388,7 +420,7 @@ sub generic_performance_values_historic {
                     set_response(code => -1, short_message => 'Cannot get value for counters. Maybe there is time sync problem (check the esxd server and the target also)');
                     return undef;
                 }
-                
+
                 my $aggregated_counter_value = 0;
                 foreach my $counter_value (@{$_->value}) {
                     $aggregated_counter_value += $counter_value;
@@ -396,7 +428,7 @@ sub generic_performance_values_historic {
                 if (scalar(@{$_->value}) > 1) {
                     $aggregated_counter_value /= scalar(@{$_->value});
                 }
-                
+
                 if (defined($options{multiples}) && $options{multiples} == 1) {
                     if (defined($options{multiples_result_by_entity}) && $options{multiples_result_by_entity} == 1) {
                         $results{$val->{entity}->{value}} = {} if (!defined($results{$val->{entity}->{value}}));
@@ -412,8 +444,14 @@ sub generic_performance_values_historic {
     };
     if ($@) {
         if ($@ =~ /querySpec.interval.*InvalidArgumentFault/msi) {
-            set_response(code => -1, short_message => sprintf("Interval '%s' is surely not supported for the managed entity (caller: %s)",
-                                                              $interval, join('--', caller)));
+            set_response(
+                code => -1,
+                short_message => sprintf(
+                    "Interval '%s' is surely not supported for the managed entity (caller: %s)",
+                    $interval,
+                    join('--', caller)
+                )
+            );
         } else {
             $obj_vmware->{logger}->writeLogError("'" . $obj_vmware->{whoaim} . "' $@");
         }
@@ -459,20 +497,26 @@ sub search_entities {
     my (%options) = @_;
     my $properties = ['name'];
     my $begin_views = [];
-    
+
     foreach my $scope (['scope_datacenter', 'Datacenter'], ['scope_cluster', 'ClusterComputeResource'], ['scope_host', 'HostSystem']) {
         if (defined($options{command}->{$$scope[0]}) && $options{command}->{$$scope[0]} ne '') {
             my $filters = { name => qr/$options{command}->{$$scope[0]}/ };
             if (scalar(@$begin_views) > 0) {
                 my $temp_views = [];
                 while ((my $view = shift @$begin_views)) {
-                    my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $$scope[1], properties => $properties, filter => $filters, 
-                                                             begin_entity => $view, output_message => 0);
+                    my ($status, $views) = find_entity_views(
+                        connector => $options{command}->{connector},
+                        view_type => $$scope[1],
+                        properties => $properties,
+                        filter => $filters, 
+                        begin_entity => $view,
+                        output_message => 0
+                    );
                     next if ($status == 0);
                     return undef if ($status == -1);
                     push @$temp_views, @$views;
                 }
-                
+
                 if (scalar(@$temp_views) == 0) {
                     set_response(code => 1, short_message => "Cannot find '$$scope[1]' object");
                     return undef;
@@ -486,12 +530,18 @@ sub search_entities {
             }
         }
     }
-    
+
     if (scalar(@$begin_views) > 0) {
         my $results = [];
         foreach my $view (@$begin_views) {
-            my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $options{view_type}, properties => $options{properties}, filter => $options{filter}, 
-                                                     begin_entity => $view, output_message => 0);
+            my ($status, $views) = find_entity_views(
+                connector => $options{command}->{connector},
+                view_type => $options{view_type},
+                properties => $options{properties},
+                filter => $options{filter}, 
+                begin_entity => $view,
+                output_message => 0
+            );
             next if ($status == 0);
             return undef if ($status == -1);
             push @$results, @$views;
@@ -559,19 +609,19 @@ sub performance_errors {
 
 sub get_interval_min  {
     my (%options) = @_;
-    
+
     my $interval = $options{speriod};
     my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
     if (defined($options{sampling_period}) && $options{sampling_period} ne '') {
         $interval = $options{sampling_period};
     }
-    
+
     return int(($interval + $time_shift) / 60);
 }
 
 sub is_accessible {
     my (%options) = @_;
-     
+
     if ($options{accessible} !~ /^true|1$/) {
         return 0;
     }
@@ -580,7 +630,7 @@ sub is_accessible {
 
 sub is_connected {
     my (%options) = @_;
-     
+
     if ($options{state} !~ /^connected$/i) {
         return 0;
     }
@@ -589,7 +639,7 @@ sub is_connected {
 
 sub is_running {
     my (%options) = @_;
-    
+
     if ($options{power} !~ /^poweredOn$/i) {
         return 0;
     }
@@ -598,7 +648,7 @@ sub is_running {
 
 sub is_maintenance {
     my (%options) = @_;
-    
+
     if ($options{maintenance} =~ /^true|1$/) {
         return 0;
     }
@@ -607,14 +657,14 @@ sub is_maintenance {
 
 sub substitute_name {
     my (%options) = @_;
-    
+
     $options{value} =~ s/%2f/\//g;
     return $options{value};
 }
 
 sub strip_cr {
     my (%options) = @_;
-    
+
     $options{value} =~ s/^\s+.*\s+$//mg;
     $options{value} =~ s/\r//mg;
     $options{value} =~ s/\n/ -- /mg;
@@ -659,7 +709,7 @@ sub get_vsan_vim {
     my $session_id = $options{connector}->{session1}->get_session_id();
     my $url = URI::URL->new($options{connector}->{session1}->get_service_url());
     my $api_type = $options{connector}->{session1}->get_service_content()->about->apiType;
-    
+
     my $service_url_path = "sdk/vimService";
     my $path = "vsanHealth";
     if ($api_type eq "HostAgent") {
@@ -695,15 +745,19 @@ sub vsan_create_mo_view {
 
 sub vsan_get_performances {
     my (%options) = @_;
-    
+
     my $time_shift = defined($options{time_shift}) ? $options{time_shift} : 0;
     my $tstamp = time();
     my (@t) = gmtime($tstamp - $options{interval} - $time_shift);
-    my $startTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+    my $startTime = sprintf(
+        "%04d-%02d-%02dT%02d:%02d:%02dZ",
+        (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]
+    );
     (@t) = gmtime($tstamp);
-    my $endTime = sprintf("%04d-%02d-%02dT%02d:%02d:%02dZ",
-            (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]);
+    my $endTime = sprintf(
+        "%04d-%02d-%02dT%02d:%02d:%02dZ",
+        (1900+$t[5]),(1+$t[4]),$t[3],$t[2],$t[1],$t[0]
+    );
     my $querySpec = VsanPerfQuerySpec->new(
         entityRefId => $options{entityRefId}, # for example: 'virtual-machine:*'
         labels => $options{labels}, # for example: ['iopsRead, iopsWrite']

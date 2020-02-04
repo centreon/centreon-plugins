@@ -105,7 +105,12 @@ sub run {
             }
         }
     }
-    
+
+    if (scalar(@ds_array) == 0) {
+        centreon::vmware::common::set_response(code => 200, short_message => "no virtual machines running or no datastore found");
+        return ;
+    }
+
     @properties = ('info');
     my $result2 = centreon::vmware::common::get_views($self->{connector}, \@ds_array, \@properties);
     return if (!defined($result2));
