@@ -1,3 +1,20 @@
+2020-01-04 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Allied Telesis SNMP
+ * Plugin added: UPS HP SNMP
+ * Plugin added: HP ILO Rest API
+ * Plugin added: UPS Phoenixtec SNMP
+ * Plugin added: AWS Cloudwatch logs
+ * Plugin added: Cisco Collaboration Endpoint Rest API
+ * Plugin added: Polycom Trio Rest API
+ * Plugin added: Libraesva SNMP
+ * Plugin added: Dynatrace Rest API
+ * Plugin added: Hyperledger Exporter
+ * Plugin added: Prowl notification
+ * Mode added: [paloalto/snmp] 'gp-usage'
+ * Mode added: [centreon/local] 'centengine-stats'
+ * Mode added: [oracle] 'dataguard'
+ * Mode added: [netapp/snmp] 'failover'
+
 2019-12-19 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: CouchDB Rest API
  * Plugin added: Maltem Insight Performance Rest API
