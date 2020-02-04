@@ -65,6 +65,7 @@ sub set_counters {
             }
         },
     ];
+
     $self->{maps_counters}->{instances} = [
         { label => 'traffic', set => {
                 key_values => [ { name => 'traffic' }, { name => 'key' }, { name => 'instance_label' } ],
@@ -116,16 +117,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "instance:s"            => { name => 'instance', default => 'layer' },
-                                    "top:s"                 => { name => 'top' },
-                                    "filter:s"              => { name => 'filter' },
-                                    "from:s"                => { name => 'from' },
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+        'instance:s' => { name => 'instance', default => 'layer' },
+        'top:s'      => { name => 'top' },
+        'filter:s'   => { name => 'filter' },
+        'from:s'     => { name => 'from' },
+    });
+
     return $self;
 }
 
