@@ -165,7 +165,8 @@ sub manage_selection {
             severity => 'OK',
             short_msg => $response->{short_message}
         );
-        return ;
+        $self->{output}->display();
+        $self->{output}->exit();
     }
 
     foreach my $ds_id (keys %{$response->{data}}) {
