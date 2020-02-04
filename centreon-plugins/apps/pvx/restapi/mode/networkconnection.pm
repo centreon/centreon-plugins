@@ -83,15 +83,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "instance:s"            => { name => 'instance', default => 'layer' },
-                                    "top:s"                 => { name => 'top' },
-                                    "filter:s"              => { name => 'filter' },
-                                    "from:s"                => { name => 'from' },
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        'instance:s' => { name => 'instance', default => 'layer' },
+        'top:s'      => { name => 'top' },
+        'filter:s'   => { name => 'filter' },
+        'from:s'     => { name => 'from' },
+    });
+
     return $self;
 }
 

@@ -32,7 +32,7 @@ my $oid_powerSupplyTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.12.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_powerSupplyTableEntry };
 }
 
@@ -51,15 +51,23 @@ sub check {
         next if ($self->check_filter(section => 'psu', instance => $instance));
         $self->{components}->{psu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is '%s' [instance = %s]",
-                                    $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}, $instance, 
-                                    ));
-   
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "power supply '%s' status is '%s' [instance = %s]",
+                $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}, $instance, 
+            )
+        );
 
         my $exit = $self->get_severity(label => 'default.status', section => 'psu.status', value => $result->{powerSupplyStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power supply '%s' status is '%s'", $result->{powerSupplyLocationName}, $result->{powerSupplyStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Power supply '%s' status is '%s'",
+                    $result->{powerSupplyLocationName},
+                    $result->{powerSupplyStatus}
+                )
+            );
         }
     }
 }
