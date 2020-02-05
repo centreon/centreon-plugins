@@ -99,26 +99,15 @@ sub run {
             value => $datacenter->vmFolder->value
         );
 
-        my ($status, childs);
-        my $clusters = [];
-        ($status, $childs) = centreon::vmware::common::find_entity_views(
+        my ($status, $clusters) = centreon::vmware::common::find_entity_views(
             connector => $self->{connector},
-            view_type => 'ClusterComputeResource',
+            view_type => 'ComputeResource', # ClusterComputeResource extends ComputeResource. so no need to check it
             properties => \@properties,
             filter => $filters, 
             begin_entity => $datacenter,
             output_message => 0
         );
-        push $clusters, @$childs if (defined($childs));
-        ($status, $childs) = centreon::vmware::common::find_entity_views(
-            connector => $self->{connector},
-            view_type => 'ComputeResource',
-            properties => \@properties,
-            filter => $filters, 
-            begin_entity => $datacenter,
-            output_message => 0
-        );
-        push $clusters, @$childs if (defined($childs));
+        next if ($status <= 0);
 
         foreach my $cluster (@$clusters) {
             next if (!$cluster->{'host'});
