@@ -71,7 +71,7 @@ sub set_counters {
                     { name => 'mrp_status' }, { name => 'mrp_process' },
                     { name => 'log_transport' }
                 ],
-                closure_custom_calc => self->can('custom_status_calc'),
+                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
