@@ -134,8 +134,8 @@ sub manage_selection {
         }
     );
     @result = $options{sql}->fetchrow_array();
-    $self->{global}->{mrp_process} = defined($result[0]) ? $result[0] : 'undefined';
-    $self->{global}->{mrp_status} = defined($result[1]) ? $result[1] : 'undefined';
+    $self->{global}->{mrp_process} = defined($result[0]) && $result[0] ne '' ? $result[0] : 'undefined';
+    $self->{global}->{mrp_status} = defined($result[1]) && $result[1] ne '' ? $result[1] : 'undefined';
 
     $options{sql}->query(
         query => q{
@@ -143,7 +143,7 @@ sub manage_selection {
         }
     );
     @result = $options{sql}->fetchrow_array();
-    $self->{global}->{log_transport} = defined($result[0]) ? $result[0] : 'undefined';
+    $self->{global}->{log_transport} = defined($result[0]) && $result[0] ne '' ? $result[0] : 'undefined';
 
     $options{sql}->query(
         query => q{
@@ -157,7 +157,7 @@ sub manage_selection {
         }
     );
     @result = $options{sql}->fetchrow_array();
-    $self->{global}->{lag_minutes} = defined($result[1]) ? $result[1] : -1;
+    $self->{global}->{lag_minutes} = defined($result[1]) && $result[1] ne '' ? $result[1] : -1;
 
     $options{sql}->disconnect();
 
