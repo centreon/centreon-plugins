@@ -156,7 +156,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-database:s'   => { name => 'filter_database' },
+        'filter-database:s' => { name => 'filter_database' },
+        'filter-table:s'    => { name => 'filter_table' },
     });
 
     return $self;
@@ -186,8 +187,17 @@ sub manage_selection {
     $self->{global} = { free => 0, used => 0 };
     $self->{database} = {};
     foreach my $row (@$result) {
-        next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' && 
-                 $row->[0] !~ /$self->{option_results}->{filter_database}/);
+        if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' && 
+            $row->[0] !~ /$self->{option_results}->{filter_database}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $row->[0] . '.' . $row->[1] . "': no matching filter.", debug => 1);
+            next
+        }
+        if (defined($self->{option_results}->{filter_table}) && $self->{option_results}->{filter_table} ne '' &&
+            $row->[1] !~ /$self->{option_results}->{filter_table}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $row->[0] . '.' . $row->[1] . "': no matching filter.", debug => 1);
+            next
+        }
+        
         if (!defined($self->{database}->{$row->[0]})) {
             $self->{database}->{$row->[0]} = {
                 display => $row->[0],
@@ -227,13 +237,17 @@ __END__
 
 =head1 MODE
 
-Check MySQL databases size.
+Check MySQL databases size and tables.
 
 =over 8
 
 =item B<--filter-database>
 
 Filter database to checks (Can be a regexp).
+
+=item B<--filter-table>
+
+Filter table name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 

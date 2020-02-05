@@ -26,7 +26,6 @@ use base qw(centreon::plugins::script_sql);
 
 sub new {
     my ($class, %options) = @_;
-    
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
@@ -45,7 +44,6 @@ sub new {
         'slow-queries'                 => 'database::mysql::mode::slowqueries',
         'sql'                          => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
-        'tables-size'                  => 'database::mysql::mode::tablessize',
         'threads-connected'            => 'database::mysql::mode::threadsconnected',
         'uptime'                       => 'database::mysql::mode::uptime',
     );
