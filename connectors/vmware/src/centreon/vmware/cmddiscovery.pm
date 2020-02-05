@@ -59,12 +59,15 @@ sub get_folders {
     $parent .= '/' . $folder->name;
     $self->{paths}->{$value} = $parent;
 
-	my $children = $folder->childEntity || return;
-	for my $child (@{$children}) {
-		next if $child->type ne 'Folder';
+    my $children = $folder->childEntity || return;
+    for my $child (@{$children}) {
+        next if ($child->type ne 'Folder');
 
-        $self->get_folders(folder => centreon::vmware::common::get_view($self->{connector}, $child), parent => $parent,
-            value => $child->value);
+        $self->get_folders(
+            folder => centreon::vmware::common::get_view($self->{connector}, $child),
+            parent => $parent,
+            value => $child->value
+        );
 	}
 }
 
@@ -79,96 +82,106 @@ sub run {
     my $filters = $self->build_filter(label => 'name', search_option => 'datacenter', is_regexp => 'filter');
     my @properties = ('name', 'hostFolder', 'vmFolder');
 
-    my $datacenters = centreon::vmware::common::search_entities(command => $self, view_type => 'Datacenter',
-        properties => \@properties, filter => $filters);
+    my $datacenters = centreon::vmware::common::search_entities(
+        command => $self, 
+        view_type => 'Datacenter',
+        properties => \@properties,
+        filter => $filters
+    );
     return if (!defined($datacenters));
 
     foreach my $datacenter (@{$datacenters}) {
-        my @properties = ('childType', 'childEntity');
-        
-        $self->get_folders(folder => centreon::vmware::common::get_view($self->{connector}, $datacenter->vmFolder),
-            parent => '', value => $datacenter->vmFolder->value);
+        my @properties = ('name', 'host');
 
-        my @array;
-        if (defined $datacenter->hostFolder) {
-            push @array, $datacenter->hostFolder;
-        }
+        $self->get_folders(
+            folder => centreon::vmware::common::get_view($self->{connector}, $datacenter->vmFolder),
+            parent => '',
+            value => $datacenter->vmFolder->value
+        );
 
-        my $childs = centreon::vmware::common::get_views($self->{connector}, \@array, \@properties);
-        next if (!defined($childs));
+        my ($status, childs);
+        my $clusters = [];
+        ($status, $childs) = centreon::vmware::common::find_entity_views(
+            connector => $self->{connector},
+            view_type => 'ClusterComputeResource',
+            properties => \@properties,
+            filter => $filters, 
+            begin_entity => $datacenter,
+            output_message => 0
+        );
+        push $clusters, @$childs if (defined($childs));
+        ($status, $childs) = centreon::vmware::common::find_entity_views(
+            connector => $self->{connector},
+            view_type => 'ComputeResource',
+            properties => \@properties,
+            filter => $filters, 
+            begin_entity => $datacenter,
+            output_message => 0
+        );
+        push $clusters, @$childs if (defined($childs));
 
-        foreach my $child (@{$childs}) {
-            next if (!$child->childEntity);
-            my %types = map { $_ => 1 } @{$child->childType};
-            my %entities = map { $_->type => 1 } @{$child->childEntity};
-            next if (!defined($types{ComputeResource}) || (!defined($entities{ClusterComputeResource}) &&
-                !defined($entities{ComputeResource})));
-            my @properties = ('name', 'host');
-        
-            my $clusters = centreon::vmware::common::get_views($self->{connector}, \@{$child->childEntity}, \@properties);
-            next if (!defined($clusters));
+        foreach my $cluster (@$clusters) {
+            next if (!$cluster->{'host'});
 
-            foreach my $cluster (@{$clusters}) {
-                next if (!$cluster->host);
+            my @properties = ('name', 'vm', 'config.virtualNicManagerInfo.netConfig', 'config.product.version',
+                'config.product.productLineId', 'hardware.systemInfo.vendor', 'hardware.systemInfo.model',
+                'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState');
 
-                my @properties = ('name', 'vm', 'config.virtualNicManagerInfo.netConfig', 'config.product.version',
-                    'config.product.productLineId', 'hardware.systemInfo.vendor', 'hardware.systemInfo.model',
-                    'hardware.systemInfo.uuid', 'runtime.powerState', 'runtime.inMaintenanceMode', 'runtime.connectionState');
-                
-                my $esxs = centreon::vmware::common::get_views($self->{connector}, \@{$cluster->host}, \@properties);
-                next if (!defined($esxs));
+            my $esxs = centreon::vmware::common::get_views($self->{connector}, \@{$cluster->host}, \@properties);
+            next if (!defined($esxs));
 
-                foreach my $esx (@{$esxs}) {
-                    my %esx;
-                    
-                    $esx{type} = "esx";
-                    $esx{name} = $esx->name;
-                    $esx{os} = $esx->{'config.product.productLineId'} . ' ' . $esx->{'config.product.version'};
-                    $esx{hardware} = $esx->{'hardware.systemInfo.vendor'} . ' ' . $esx->{'hardware.systemInfo.model'};
-                    $esx{power_state} = $esx->{'runtime.powerState'}->val;
-                    $esx{connection_state} = $esx->{'runtime.connectionState'}->val;
-                    $esx{maintenance} = $esx->{'runtime.inMaintenanceMode'};
-                    $esx{datacenter} = $datacenter->name;
-                    $esx{cluster} = $cluster->name;
+            foreach my $esx (@$esxs) {
+                my %esx;
 
-                    foreach my $nic (@{$esx->{'config.virtualNicManagerInfo.netConfig'}}) {
-                        my %lookup = map { $_->{'key'} => $_->{'spec'}->{'ip'}->{'ipAddress'} } @{$nic->{'candidateVnic'}};
-                        foreach my $vnic (@{$nic->{'selectedVnic'}}) {
-                            push @{$esx{'ip_' . $nic->{'nicType'}}}, $lookup{$vnic};
-                        }
+                $esx{type} = "esx";
+                $esx{name} = $esx->name;
+                $esx{os} = $esx->{'config.product.productLineId'} . ' ' . $esx->{'config.product.version'};
+                $esx{hardware} = $esx->{'hardware.systemInfo.vendor'} . ' ' . $esx->{'hardware.systemInfo.model'};
+                $esx{power_state} = $esx->{'runtime.powerState'}->val;
+                $esx{connection_state} = $esx->{'runtime.connectionState'}->val;
+                $esx{maintenance} = $esx->{'runtime.inMaintenanceMode'};
+                $esx{datacenter} = $datacenter->name;
+                $esx{cluster} = $cluster->name;
+
+                foreach my $nic (@{$esx->{'config.virtualNicManagerInfo.netConfig'}}) {
+                    my %lookup = map { $_->{'key'} => $_->{'spec'}->{'ip'}->{'ipAddress'} } @{$nic->{'candidateVnic'}};
+                    foreach my $vnic (@{$nic->{'selectedVnic'}}) {
+                        push @{$esx{'ip_' . $nic->{'nicType'}}}, $lookup{$vnic};
                     }
-                    
-                    push @disco_data, \%esx if ($self->{resource_type} eq 'esx');
-                    next if ($self->{resource_type} ne 'vm');
-                    next if (!$esx->vm);
+                }
 
-                    @properties = ('parent', 'config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
-                        'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState');
+                push @disco_data, \%esx if (defined($self->{resource_type}) && $self->{resource_type} eq 'esx');
+                next if (!defined($self->{resource_type}) || $self->{resource_type} ne 'vm');
+                next if (!$esx->vm);
 
-                    my $vms = centreon::vmware::common::get_views($self->{connector}, \@{$esx->vm}, \@properties);
-                    next if (!defined($vms));
-                
-                    foreach my $vm (@{$vms}) {
-                        next if ($vm->{'config.template'} eq 'true');
-                        my %vm;
-                        
-                        $vm{type} = "vm";
-                        $vm{name} = $vm->{'config.name'};
-                        $vm{uuid} = $vm->{'config.uuid'};
-                        $vm{folder} = (defined($vm->parent) && $vm->parent->type eq 'Folder') ? $self->{paths}->{$vm->parent->value} : '';
-                        $vm{annotation} = $vm->{'config.annotation'};
-                        $vm{os} = $vm->{'config.guestId'};
-                        $vm{hardware} = $vm->{'config.version'};
-                        $vm{guest_name} = $vm->{'guest.hostName'};
-                        $vm{guest_ip} = $vm->{'guest.ipAddress'};
-                        $vm{guest_state} = $vm->{'guest.guestState'};
-                        $vm{power_state} = $vm->{'runtime.powerState'}->val;
-                        $vm{datacenter} = $datacenter->name;
-                        $vm{cluster} = $cluster->name;
-                        $vm{esx} = $esx->name;
-                            
-                        push @disco_data, \%vm;
-                    }
+                @properties = (
+                    'parent', 'config.name', 'config.annotation', 'config.template', 'config.uuid', 'config.version',
+                    'config.guestId', 'guest.guestState', 'guest.hostName', 'guest.ipAddress', 'runtime.powerState'
+                );
+
+                my $vms = centreon::vmware::common::get_views($self->{connector}, \@{$esx->vm}, \@properties);
+                next if (!defined($vms));
+
+                foreach my $vm (@{$vms}) {
+                    next if ($vm->{'config.template'} eq 'true');
+                    my %vm;
+
+                    $vm{type} = 'vm';
+                    $vm{name} = $vm->{'config.name'};
+                    $vm{uuid} = $vm->{'config.uuid'};
+                    $vm{folder} = (defined($vm->parent) && $vm->parent->type eq 'Folder') ? $self->{paths}->{$vm->parent->value} : '';
+                    $vm{annotation} = $vm->{'config.annotation'};
+                    $vm{os} = $vm->{'config.guestId'};
+                    $vm{hardware} = $vm->{'config.version'};
+                    $vm{guest_name} = $vm->{'guest.hostName'};
+                    $vm{guest_ip} = $vm->{'guest.ipAddress'};
+                    $vm{guest_state} = $vm->{'guest.guestState'};
+                    $vm{power_state} = $vm->{'runtime.powerState'}->val;
+                    $vm{datacenter} = $datacenter->name;
+                    $vm{cluster} = $cluster->name;
+                    $vm{esx} = $esx->name;
+
+                    push @disco_data, \%vm;
                 }
             }
         }
@@ -178,7 +191,7 @@ sub run {
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
     $disco_stats->{discovered_items} = @disco_data;
     $disco_stats->{results} = \@disco_data;
-    
+
     centreon::vmware::common::set_response(data => $disco_stats);
 }
 
