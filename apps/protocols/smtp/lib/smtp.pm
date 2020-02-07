@@ -44,29 +44,36 @@ sub message {
     
     my $result;
     eval {
-            local $SIG{ALRM} = sub { die 'timeout' };
-            alarm($self->{option_results}->{timeout});
-            $result = $smtp_handle->send(-to => $self->{option_results}->{smtp_to},
-                                         -from => $self->{option_results}->{smtp_from},
-                                         %smtp_options);
-    
-            alarm(0);
+        local $SIG{ALRM} = sub { die 'timeout' };
+        alarm($self->{option_results}->{timeout});
+        $result = $smtp_handle->send(
+            -to => $self->{option_results}->{smtp_to},
+            -from => $self->{option_results}->{smtp_from},
+            %smtp_options
+        );
+        alarm(0);
     };
     if ($@) {
-        $self->{output}->output_add(severity => 'unknown',
-                                    short_msg => 'Unable to send message: ' . $@);
+        $self->{output}->output_add(
+            severity => 'unknown',
+            short_msg => 'Unable to send message: ' . $@
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
     if ($result == -1) {
-        $self->{output}->output_add(severity => 'critical',
-                                    short_msg => 'Unable to send message.');
+        $self->{output}->output_add(
+            severity => 'critical',
+            short_msg => 'Unable to send message.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
     
-    $self->{output}->output_add(severity => 'ok',
-                                short_msg => 'Message sent');
+    $self->{output}->output_add(
+        severity => 'ok',
+        short_msg => 'Message sent'
+    );
 }
 
 sub connect {
@@ -98,30 +105,37 @@ sub connect {
     my ($stdout, $error_msg);
     {
         eval {
-            local $SIG{ALRM} = sub { die 'timeout' };
+            local $SIG{ALRM} = sub { die "timeout\n" };
             local *STDOUT;
             open STDOUT, '>', \$stdout;
             alarm($self->{option_results}->{timeout});
-            ($smtp_handle, $error_msg) = Email::Send::SMTP::Gmail->new(-smtp=> $self->{option_results}->{hostname},
-                                                        %smtp_options);
+            ($smtp_handle, $error_msg) = Email::Send::SMTP::Gmail->new(
+                -smtp=> $self->{option_results}->{hostname},
+                %smtp_options
+            );
             alarm(0);
         };
     }
 
     if ($@) {
-        $self->{output}->output_add(severity => $connection_exit,
-                                    short_msg => 'Unable to connect to SMTP: ' . $@);
+        chomp $@;
+        $self->{output}->output_add(
+            severity => $connection_exit,
+            short_msg => 'Unable to connect to SMTP: ' . $@
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
     if ($smtp_handle == -1) {
         chomp $stdout;
-        $self->{output}->output_add(severity => $connection_exit,
-                                    short_msg => 'Unable to connect to SMTP: ' . (defined($stdout) ? $stdout : $error_msg));
+        $self->{output}->output_add(
+            severity => $connection_exit,
+            short_msg => 'Unable to connect to SMTP: ' . (defined($stdout) ? $stdout : $error_msg)
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
+
     $connected = 1;
 }
 
