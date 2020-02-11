@@ -120,18 +120,18 @@ sub run {
  
     my $results = $self->manage_selection(%options);
     foreach (values %$results) {
-        my $entry = '';
-        foreach my $label (@$order) {
-            $entry .= '[' . $label . ' = ' . $_->{$label} . '] ';
+       	my $label = $_->{pid}.'_'.$_->{name}.'_';
+       	foreach my $attr (@$order) {
+       	   $self->{output}->perfdata_add(label => $label.$attr,value => $_->{$attr});
         }
-        $self->{output}->output_add(long_msg => $entry);
     }
+
     
     $self->{output}->output_add(
         severity => 'OK',
         short_msg => 'List processes:'
     );
-    $self->{output}->display(nolabel => 1, force_ignore_perfdata => 0, force_long_output => 1);
+    $self->{output}->display();
     $self->{output}->exit();
 }
 
