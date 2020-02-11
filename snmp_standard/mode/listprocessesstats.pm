@@ -22,8 +22,6 @@ package snmp_standard::mode::listprocessesstats;
 
 use base qw(centreon::plugins::mode);
 use centreon::plugins::statefile;
-use Digest::MD5 qw(md5_hex);
-use Data::Dumper;
 
 use strict;
 use warnings;
