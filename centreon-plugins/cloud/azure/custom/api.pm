@@ -42,20 +42,20 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "subscription:s"            => { name => 'subscription' },
-            "tenant:s"                  => { name => 'tenant' },
-            "client-id:s"               => { name => 'client_id' },
-            "client-secret:s"           => { name => 'client_secret' },
-            "login-endpoint:s"          => { name => 'login_endpoint' },
-            "management-endpoint:s"     => { name => 'management_endpoint' },
-            "timeframe:s"               => { name => 'timeframe' },
-            "interval:s"                => { name => 'interval' },
-            "aggregation:s@"            => { name => 'aggregation' },
-            "zeroed"                    => { name => 'zeroed' },
-            "timeout:s"                 => { name => 'timeout' },
+            'subscription:s'        => { name => 'subscription' },
+            'tenant:s'              => { name => 'tenant' },
+            'client-id:s'           => { name => 'client_id' },
+            'client-secret:s'       => { name => 'client_secret' },
+            'login-endpoint:s'      => { name => 'login_endpoint' },
+            'management-endpoint:s' => { name => 'management_endpoint' },
+            'timeframe:s'           => { name => 'timeframe' },
+            'interval:s'            => { name => 'interval' },
+            'aggregation:s@'        => { name => 'aggregation' },
+            'zeroed'                => { name => 'zeroed' },
+            'timeout:s'             => { name => 'timeout' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -64,7 +64,7 @@ sub new {
     $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{cache} = centreon::plugins::statefile->new(%options);
-    
+
     return $self;
 }
 
@@ -177,9 +177,11 @@ sub get_access_token {
         
         $self->settings();
 
-        my $content = $self->{http}->request(method => 'POST', query_form_post => $post_data,
-                                             full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token',
-                                             hostname => '');
+        my $content = $self->{http}->request(
+            method => 'POST', query_form_post => $post_data,
+            full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token',
+            hostname => ''
+        );
 
         if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
             $self->{output}->add_option_msg(short_msg => "Login endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
@@ -191,7 +193,7 @@ sub get_access_token {
             $decoded = JSON::XS->new->utf8->decode($content);
         };
         if ($@) {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
+            $self->{output}->output_add(long_msg => $@, debug => 1);
             $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
             $self->{output}->option_exit();
         }
@@ -205,7 +207,7 @@ sub get_access_token {
         my $datas = { last_timestamp => time(), access_token => $decoded->{access_token}, expires_on => $decoded->{expires_on} };
         $options{statefile}->write(data => $datas);
     }
-    
+
     return $access_token;
 }
 
@@ -232,7 +234,7 @@ sub request_api {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
+        $self->{output}->output_add(long_msg => $@, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
@@ -255,15 +257,19 @@ sub convert_duration {
 
     my $duration;
     if ($options{time_string} =~ /^P.*S$/) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
-                                               error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
+            error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'."
+        );
 
         my $format = DateTime::Format::Duration::ISO8601->new;
         my $d = $format->parse_duration($options{time_string});
         $duration = $d->minutes * 60 + $d->seconds;
     } elsif ($options{time_string} =~ /^(\d+):(\d+):(\d+)\.\d+$/) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Duration',
-                                               error_msg => "Cannot load module 'DateTime::Format::Duration'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => 'DateTime::Duration',
+            error_msg => "Cannot load module 'DateTime::Format::Duration'."
+        );
 
         my $d = DateTime::Duration->new(hours => $1, minutes => $2, seconds => $3);
         $duration = $d->minutes * 60 + $d->seconds;
@@ -291,7 +297,7 @@ sub azure_get_metrics_set_url {
 
 sub azure_get_metrics {
     my ($self, %options) = @_;
-    
+
     my $results = {};
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
     my $end_time = DateTime->now->iso8601.'Z';
@@ -326,12 +332,12 @@ sub azure_get_metrics {
                 }
             }
         }
-        
+
         if (defined($results->{$metric_name}->{average})) {
             $results->{$metric_name}->{average} /= $results->{$metric_name}->{points};
         }
     }
-    
+
     return $results, $response;
 }
 
@@ -347,16 +353,16 @@ sub azure_get_resource_health_set_url {
 
 sub azure_get_resource_health {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_get_resource_health_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response;
 }
 
 sub azure_list_resources_set_url {
     my ($self, %options) = @_;
-    
+
     my $filter = '';
     my %filter;
     $filter{resource_type} = "resourceType eq '" . $options{namespace} . '/' . $options{resource_type} . "'" if (defined($options{namespace}) && $options{namespace} ne '' && defined($options{resource_type}) && $options{resource_type} ne '');
@@ -375,16 +381,16 @@ sub azure_list_resources_set_url {
     
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resources?api-version=" . $self->{api_version};
     $url .= "&\$filter=" . $encoded_filter if (defined($encoded_filter) && $encoded_filter ne '');
-    
+
     return $url; 
 }
 
 sub azure_list_resources {
     my ($self, %options) = @_;
-        
+
     my $full_url = $self->azure_list_resources_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -400,7 +406,7 @@ sub azure_list_vms_set_url {
 
 sub azure_list_vms {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_vms_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
@@ -411,16 +417,14 @@ sub azure_list_groups_set_url {
     my ($self, %options) = @_;
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups?api-version=" . $self->{api_version};
-            
     return $url; 
 }
 
 sub azure_list_groups {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_groups_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
     return $response->{value};
 }
 
@@ -429,16 +433,15 @@ sub azure_list_deployments_set_url {
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
         $options{resource_group} . "/providers/Microsoft.Resources/deployments?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
 sub azure_list_deployments {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_deployments_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
     return $response->{value};
 }
 
@@ -448,16 +451,14 @@ sub azure_list_vaults_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.RecoveryServices/vaults?api-version=" . $self->{api_version};
-    
     return $url; 
 }
 
 sub azure_list_vaults {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_vaults_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
     return $response->{value};
 }
 
@@ -467,16 +468,15 @@ sub azure_list_backup_jobs_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
         $options{resource_group} . "/providers/Microsoft.RecoveryServices/vaults/" .
         $options{vault_name} . "/backupJobs?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
 sub azure_list_backup_jobs {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_backup_jobs_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
     return $response->{value};
 }
 
@@ -486,16 +486,16 @@ sub azure_list_backup_items_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
         $options{resource_group} . "/providers/Microsoft.RecoveryServices/vaults/" .
         $options{vault_name} . "/backupProtectedItems?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
 sub azure_list_backup_items {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_backup_items_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -505,16 +505,16 @@ sub azure_list_expressroute_circuits_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/expressRouteCircuits?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
 sub azure_list_expressroute_circuits {
     my ($self, %options) = @_;
-    
+
     my $full_url = $self->azure_list_expressroute_circuits_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
-    
+
     return $response->{value};
 }
 
@@ -523,7 +523,7 @@ sub azure_list_vpn_gateways_set_url {
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourcegroups/" .
         $options{resource_group} . "/providers/Microsoft.Network/virtualNetworkGateways?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
@@ -542,7 +542,7 @@ sub azure_list_virtualnetworks_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/virtualNetworks?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
@@ -562,7 +562,7 @@ sub azure_list_vnet_peerings_set_url {
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Network/virtualNetworks/" . $options{vnet_name} if (defined($options{vnet_name}) && $options{vnet_name} ne '');
     $url .= "/virtualNetworkPeerings?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
@@ -581,7 +581,7 @@ sub azure_list_sqlservers_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription};
     $url .= "/resourceGroups/" . $options{resource_group} if (defined($options{resource_group}) && $options{resource_group} ne '');
     $url .= "/providers/Microsoft.Sql/servers?api-version=" . $self->{api_version};
-    
+
     return $url; 
 }
 
