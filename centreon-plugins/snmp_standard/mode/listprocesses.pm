@@ -32,14 +32,19 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
+        'add-stats'     => { name => 'add_stats' },
     });
 
+    $self->{order} = ['name', 'path', 'parameters', 'type', 'pid', 'status'];
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+    if (defined($self->{option_results}->{add_stats})) {
+        push @{$self->{order}}, 'cpu', 'mem';
+    }
 }
 
 my $map_type = {
@@ -56,7 +61,27 @@ my $mapping = {
     type       => { oid => '.1.3.6.1.2.1.25.4.2.1.6', map => $map_type }, # hrSWRunType
     status     => { oid => '.1.3.6.1.2.1.25.4.2.1.7', map => $map_status }, # hrSWRunStatus
 };
-my $order = ['name', 'path', 'parameters', 'type', 'pid', 'status'];
+my $mapping2 = {
+    cpu  => { oid => '.1.3.6.1.2.1.25.5.1.1.1' }, # hrSWRunPerfCPU
+    mem  => { oid => '.1.3.6.1.2.1.25.5.1.1.2' }, # hrSWRunPerfMem
+};
+
+sub manage_stats {
+    my ($self, %options) = @_;
+
+    $options{snmp}->load(oids => [
+            map($_->{oid}, values(%$mapping2))
+        ],
+        instances => [keys %{$options{results}}],
+        instance_regexp => '^(.*)$'
+    );
+    my $snmp_result = $options{snmp}->get_leef();
+    foreach (keys %{$options{results}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
+
+        $options{results}->{$_} = { %{$options{results}->{$_}}, %$result };
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -83,6 +108,7 @@ sub manage_selection {
         $results->{$instance} = { %$result, pid => $instance };
     }
 
+    $self->manage_stats(results => $results, %options) if ($self->{option_results}->{add_stats});
     return $results;
 }
 
@@ -92,12 +118,12 @@ sub run {
     my $results = $self->manage_selection(%options);
     foreach (values %$results) {
         my $entry = '';
-        foreach my $label (@$order) {
+        foreach my $label (@{$self->{order}}) {
             $entry .= '[' . $label . ' = ' . $_->{$label} . '] ';
         }
         $self->{output}->output_add(long_msg => $entry);
     }
-    
+
     $self->{output}->output_add(
         severity => 'OK',
         short_msg => 'List processes:'
@@ -109,7 +135,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => $order);
+    $self->{output}->add_disco_format(elements => $self->{order});
 }
 
 sub disco_show {
@@ -135,7 +161,10 @@ List processes.
 
 Filter by service name (can be a regexp).
 
+=item B<--add-stats>
+
+Add cpu and memory stats.
+
 =back
 
 =cut
-    
