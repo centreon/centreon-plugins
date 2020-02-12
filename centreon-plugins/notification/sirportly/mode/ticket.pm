@@ -63,50 +63,18 @@ sub new {
     return $self;
 }
 
-
 sub check_options {
     my ($self, %options) = @_;
 
     $self->SUPER::init(%options);
-    if (!defined($self->{option_results}->{api_token})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --api-token option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{api_secret})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --api-secret option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{brand})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --brand option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{department})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --department option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{submit_status})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --submit-status option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{close_status})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --close-status option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{priority})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --priority option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{item_id})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --item-id option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{subject})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --subject option");
-        $self->{output}->option_exit();
-    }
-    if (!defined($self->{option_results}->{message})) {
-        $self->{output}->add_option_msg(short_msg => "You need to set --message option");
-        $self->{output}->option_exit();
+    foreach (('api_token', 'api_secret', 'brand', 'department', 'submit_status',
+        'close_status', 'priority', 'item_id', 'subject', 'message')) {
+        if (!defined($self->{option_results}->{$_})) {
+            my $option = $_;
+            $option =~ s/_/-/g;
+            $self->{output}->add_option_msg(short_msg => "You need to set --$option option");
+            $self->{output}->option_exit();
+        }
     }
 
     $self->{http}->set_options(%{$self->{option_results}});
@@ -165,10 +133,7 @@ sub proceed {
                 }
             }
         }
-    }
-
-    # Update an existing ticket
-    elsif (defined($ticket_info)) {
+    } elsif (defined($ticket_info)) { # Update an existing ticket
         $post_param = [
             "ticket=$ticket_info->[0]",
             "contact=$self->{option_results}->{contact_name}",
@@ -184,12 +149,9 @@ sub proceed {
             $decoded = JSON::XS->new->decode($response);
         };
         if ($@) {
-            $ticket_info->[0] = "failed";
+            $ticket_info->[0] = 'failed';
         }
-    }
-
-    # Open a new ticket
-    else {
+    } else { # Open a new ticket
         $post_param = [
             "contact_name=$self->{option_results}->{contact_name}",
             "contact_method_type=$self->{option_results}->{contact_type}",
@@ -253,7 +215,7 @@ sub run {
             subject  => $cache->{$cache_index}->{subject},
             message  => $cache->{$cache_index}->{message},
         );
-        if (!defined($ticket_reference) || $ticket_reference ne "failed") {
+        if (!defined($ticket_reference) || $ticket_reference ne 'failed') {
             delete($cache->{$cache_index});
             $self->{cache}->write(data => {cache => $cache});
             $cache_done++;
@@ -263,8 +225,10 @@ sub run {
     }
 
     # Exit
-    $self->{output}->output_add(severity => ($cache_size == $cache_done) ? 'OK' : 'CRITICAL',
-                                short_msg => "Proceeded " . $cache_done . "/" . $cache_size . " notifications");
+    $self->{output}->output_add(
+        severity => ($cache_size == $cache_done) ? 'OK' : 'CRITICAL',
+        short_msg => "Proceeded " . $cache_done . "/" . $cache_size . " notifications"
+    );
     $self->{output}->display(force_ignore_perfdata => 1);
     $self->{output}->exit();
 }
