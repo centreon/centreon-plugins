@@ -32,17 +32,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', },
-         "ssl"          => { name => 'use_ssl' },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '30' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s' => { name => 'hostname' },
+        'port:s'     => { name => 'port', },
+        'ssl'        => { name => 'use_ssl' },
+        'ssl-opt:s@' => { name => 'ssl_opt' },
+        'username:s' => { name => 'username' },
+        'password:s' => { name => 'password' },
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'timeout:s'  => { name => 'timeout', default => '30' }
+    });
+
     return $self;
 }
 
@@ -63,26 +64,40 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Please set the hostname option");
         $self->{output}->option_exit();
     }
+
+    my $append = '';
+    $self->{ssl_options} = '';
+    foreach (@{$self->{option_results}->{ssl_opt}}) {
+        if ($_ ne '') {
+            $self->{ssl_options} .= $append . $_;
+            $append = ', ';
+        }
+    }
 }
 
 sub run {
     my ($self, %options) = @_;
-    
+
     my $timing0 = [gettimeofday];
-    
     apps::protocols::imap::lib::imap::connect($self, connection_exit => 'critical');  
     apps::protocols::imap::lib::imap::quit();
 
     my $timeelapsed = tv_interval($timing0, [gettimeofday]);
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3f ", $timeelapsed));
-    $self->{output}->perfdata_add(label => "time",
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $timeelapsed,
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf("Response time %.3f ", $timeelapsed)
+    );
+    $self->{output}->perfdata_add(
+        label => 'time',
+        value => sprintf('%.3f', $timeelapsed),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+    );
 
     $self->{output}->display();
     $self->{output}->exit();
@@ -109,7 +124,10 @@ Port used
 =item B<--ssl>
 
 Use SSL connection.
-(no attempt is made to check the certificate validity by default).
+
+=item B<--ssl-opt>
+
+Set SSL options: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE" --ssl-opt="SSL_version => 'TLSv1'"
 
 =item B<--username>
 

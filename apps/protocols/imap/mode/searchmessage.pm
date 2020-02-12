@@ -31,20 +31,21 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', },
-         "ssl"          => { name => 'use_ssl' },
-         "username:s"   => { name => 'username' },
-         "password:s"   => { name => 'password' },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '30' },
-         "search:s"     => { name => 'search' },
-         "delete"       => { name => 'delete' },
-         "folder:s"     => { name => 'folder', default => 'INBOX' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s' => { name => 'hostname' },
+        'port:s'     => { name => 'port', },
+        'ssl'        => { name => 'use_ssl' },
+        'ssl-opt:s@' => { name => 'ssl_opt' },
+        'username:s' => { name => 'username' },
+        'password:s' => { name => 'password' },
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'timeout:s'  => { name => 'timeout', default => '30' },
+        'search:s'   => { name => 'search' },
+        'delete'     => { name => 'delete' },
+        'folder:s'   => { name => 'folder', default => 'INBOX' }
+    });
+
     return $self;
 }
 
@@ -62,32 +63,47 @@ sub check_options {
     }
 
     if (!defined($self->{option_results}->{hostname})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the --hostname option");
+        $self->{output}->add_option_msg(short_msg => 'Please set the --hostname option');
         $self->{output}->option_exit();
     }
     if (!defined($self->{option_results}->{search})) {
-        $self->{output}->add_option_msg(short_msg => "Please set the --search option");
+        $self->{output}->add_option_msg(short_msg => 'Please set the --search option');
         $self->{output}->option_exit();
+    }
+
+    my $append = '';
+    $self->{ssl_options} = '';
+    foreach (@{$self->{option_results}->{ssl_opt}}) {
+        if ($_ ne '') {
+            $self->{ssl_options} .= $append . $_;
+            $append = ', ';
+        }
     }
 }
 
 sub run {
     my ($self, %options) = @_;
-    
+
     apps::protocols::imap::lib::imap::connect($self);    
     my ($num) = apps::protocols::imap::lib::imap::search($self);
     apps::protocols::imap::lib::imap::quit();
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $num,
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("%d message found(s)", $num));
-    $self->{output}->perfdata_add(label => "numbers",
-                                  value => $num,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
 
-    
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $num,
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf('%d message(s) found', $num)
+    );
+    $self->{output}->perfdata_add(
+        label => 'numbers',
+        value => $num,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -113,7 +129,10 @@ Port used
 =item B<--ssl>
 
 Use SSL connection.
-(no attempt is made to check the certificate validity by default).
+
+=item B<--ssl-opt>
+
+Set SSL options: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE" --ssl-opt="SSL_version => 'TLSv1'"
 
 =item B<--username>
 
