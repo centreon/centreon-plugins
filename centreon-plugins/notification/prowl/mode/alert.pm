@@ -145,7 +145,7 @@ Set path to the notifications API (Default: '/publicapi/add').
 
 Specify API key(s), separated by commas.
 
-=item B<--apikey>
+=item B<--providerkey>
 
 Specify API providerkey.
 
