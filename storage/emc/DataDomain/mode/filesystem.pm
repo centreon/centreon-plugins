@@ -28,11 +28,11 @@ use storage::emc::DataDomain::lib::functions;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'fs', type => 1, cb_prefix_output => 'prefix_fs_output', message_multiple => 'All filesystems are ok.' },
     ];
-    
+
     $self->{maps_counters}->{fs} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'display' } ],
@@ -51,13 +51,13 @@ sub set_counters {
 
 sub prefix_fs_output {
     my ($self, %options) = @_;
-    
+
     return "Filesystem '" . $options{instance_value}->{display} . "' ";
 }
 
 sub custom_used_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{total} = $options{new_datas}->{$self->{instance} . '_free'} + $options{new_datas}->{$self->{instance} . '_used'};
     $self->{result_values}->{free} = $options{new_datas}->{$self->{instance} . '_free'};
@@ -74,10 +74,12 @@ sub custom_used_output {
     my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($free_value, $free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
 
-    return sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_value . " " . $total_unit,
-                   $used_value . " " . $used_unit, $self->{result_values}->{used_prct},
-                   $free_value . " " . $free_unit, $self->{result_values}->{free_prct});
+    return sprintf(
+        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_value . " " . $total_unit,
+        $used_value . " " . $used_unit, $self->{result_values}->{used_prct},
+        $free_value . " " . $free_unit, $self->{result_values}->{free_prct}
+    );
 }
 
 sub new {
@@ -86,10 +88,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'name'                    => { name => 'use_name' },
-        'filesystem:s'            => { name => 'filesystem' },
-        'regexp'                  => { name => 'use_regexp' },
-        'regexp-isensitive'       => { name => 'use_regexpi' },                                  
+        'name'              => { name => 'use_name' },
+        'filesystem:s'      => { name => 'filesystem' },
+        'regexp'            => { name => 'use_regexp' },
+        'regexp-isensitive' => { name => 'use_regexpi' },                                  
     });
     
     return $self;
@@ -101,7 +103,7 @@ my ($oid_fileSystemResourceName, $oid_fileSystemSpaceUsed, $oid_fileSystemSpaceA
 
 sub add_result {
     my ($self, %options) = @_;
-    
+
     $self->{fs}->{$options{instance}} = {};
     $self->{fs}->{$options{instance}}->{display} = $self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $options{instance}};    
     $self->{fs}->{$options{instance}}->{free} = int($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemSpaceAvail . '.' . $options{instance}} * 1024 * 1024 * 1024);
@@ -110,7 +112,7 @@ sub add_result {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     $self->{results} = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_sysDescr },
@@ -119,8 +121,10 @@ sub manage_selection {
         nothing_quit => 1
     );
     if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $self->{results}->{$oid_sysDescr}->{$oid_sysDescr . '.0'}))) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot get DataDomain OS version.');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot get DataDomain OS version.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -133,7 +137,7 @@ sub manage_selection {
         $oid_fileSystemSpaceUsed = '.1.3.6.1.4.1.19746.1.3.2.1.1.4';
         $oid_fileSystemSpaceAvail = '.1.3.6.1.4.1.19746.1.3.2.1.1.5';
     }
- 
+
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{filesystem})) {
         if (!defined($self->{results}->{$oid_fileSystemSpaceEntry}->{$oid_fileSystemResourceName . '.' . $self->{option_results}->{filesystem}})) {
             $self->{output}->add_option_msg(short_msg => "No filesystem found for id '" . $self->{option_results}->{filesystem} . "'.");
@@ -160,7 +164,7 @@ sub manage_selection {
             }
         }    
     }
-    
+
     if (scalar(keys %{$self->{fs}}) <= 0 && !defined($options{disco})) {
         if (defined($self->{option_results}->{device})) {
             $self->{output}->add_option_msg(short_msg => "No filesystem found '" . $self->{option_results}->{filesystem} . "'.");
