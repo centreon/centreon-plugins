@@ -109,8 +109,7 @@ sub proceed {
         $ticket_info = JSON::XS->new->decode($response)->{results}[0];
     };
 
-    # Close the ticket
-    if ($options{priority} =~ /^(UP|OK)$/i) {
+    if ($options{priority} =~ /^(UP|OK)$/i) { # Close the ticket
         if (defined($ticket_info)) {
             $post_param = [
                 "ticket=$ticket_info->[0]",
@@ -124,11 +123,11 @@ sub proceed {
                     "user=" . (defined($self->{option_results}->{close_user}) ? $self->{option_results}->{close_user} : ""),
                     "status=$self->{option_results}->{close_status}",
                 ];
-                my $decoded = $self->{http}->request(method => 'POST', url_path =>'/api/v2/tickets/update', post_param => $post_param);
+                my $response = $self->{http}->request(method => 'POST', url_path =>'/api/v2/tickets/update', post_param => $post_param, warning_status => '', unknown_status => '', critical_status => '');
                 eval {
-                    $decoded = JSON::XS->new->decode($response);
+                    JSON::XS->new->decode($response);
                 };
-                if ($@) {
+                if ($@) { # We only check we received a response from Sirportly, thus we don't take the risk to hold the queue/cache processing
                     $ticket_info->[0] = "failed";
                 }
             }
@@ -144,11 +143,11 @@ sub proceed {
             "ticket=$ticket_info->[0]",
             "priority=" . (defined($priority_mapping{lc($options{priority})}) ? $priority_mapping{lc($options{priority})} : $options{priority}),
         ];
-        my $decoded = $self->{http}->request(method => 'POST', url_path =>'/api/v2/tickets/update', post_param => $post_param);
+        my $response = $self->{http}->request(method => 'POST', url_path =>'/api/v2/tickets/update', post_param => $post_param, warning_status => '', unknown_status => '', critical_status => '');
         eval {
-            $decoded = JSON::XS->new->decode($response);
+            JSON::XS->new->decode($response);
         };
-        if ($@) {
+        if ($@) { # We only check we received a response from Sirportly, thus we don't take the risk to hold the queue/cache processing
             $ticket_info->[0] = 'failed';
         }
     } else { # Open a new ticket
@@ -170,7 +169,7 @@ sub proceed {
         eval {
             $decoded = JSON::XS->new->decode($response);
         };
-        if ($@ || !defined($decoded->{reference})) {
+        if ($@ || !defined($decoded->{reference})) { # Here we check Sirportly correctly received the new ticket, as it's the most important step
             $ticket_info->[0] = "failed";
         } else {
             $ticket_info->[0] = $decoded->{reference};
@@ -301,7 +300,7 @@ Specify the Sirportly status to be used when submitting the ticket.
 
 =item B<--close-status>
 
-Specify the Sirportly status to be used when closing the ticket.
+Specify the Sirportly status to be used when closing the ticket (only if still in submit status).
 
 =item B<--priority-mapping>
 
