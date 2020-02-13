@@ -41,13 +41,14 @@ sub check {
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
     
     if (defined($result->{mtxrHlVoltage}) && $result->{mtxrHlVoltage} =~ /[0-9]+/) {
-        
         $self->{output}->output_add(long_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10));
 
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'voltage', instance => $instance, value => $result->{mtxrHlVoltage} / 10);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Voltage is '%s' V", $result->{mtxrHlVoltage} / 10)
+            );
         }
         $self->{output}->perfdata_add(
             label => 'voltage', unit => 'V',
