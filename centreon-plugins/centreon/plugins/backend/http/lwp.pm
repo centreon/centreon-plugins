@@ -109,7 +109,8 @@ sub set_proxy {
     }
     if (defined($options{request}->{proxyurl}) && $options{request}->{proxyurl} ne '') {
         my $proxyurl = $options{request}->{proxyurl};
-        if ($options{request}->{proto} eq "https" || $options{request}->{full_url} =~ /^https/) {
+        if ($options{request}->{proto} eq "https" ||
+            (defined($options{request}->{full_url}) && $options{request}->{full_url} =~ /^https/)) {
             $proxyurl = 'connect://' . $2 if ($proxyurl =~ /^(http|https):\/\/(.*)/);
         }
         $self->{ua}->proxy(['http', 'https'], $proxyurl);
