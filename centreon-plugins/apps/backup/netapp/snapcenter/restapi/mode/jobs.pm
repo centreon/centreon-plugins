@@ -123,13 +123,13 @@ sub date2ts {
     my ($self, %options) = @_;
 
     return undef if (!defined($options{date}) || $options{date} eq '');
-    if ($options{date} !~ /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{1,2}):(\d{2})\s+(AM|PM)/i) {
+    if ($options{date} !~ /^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{1,2}):(\d{2})(?:\s+(AM|PM))?/i) {
         $self->{output}->add_option_msg(short_msg => "unknown date format: $options{date}");
         $self->{output}->option_exit();
     }
 
     my $hour = $4;
-    $hour += 12 if ($7 eq 'PM');
+    $hour += 12 if (defined($7) && $7 eq 'PM');
     my $dt = DateTime->new(
         year => $3, 
         month => $1, 
