@@ -35,9 +35,9 @@ sub load {}
 
 sub check_psu {
     my ($self, %options) = @_;
-    
+
     return if (!defined($options{value}));
-    
+
     $self->{output}->output_add(
         long_msg => sprintf(
             "psu %s status is '%s'",
@@ -47,8 +47,10 @@ sub check_psu {
 
     my $exit = $self->get_severity(section => 'psu.' . $options{type}, value => $options{value});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("psu %s status is '%s'", $options{type}, $options{value}));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("psu %s status is '%s'", $options{type}, $options{value})
+        );
     }
     
     $self->{components}->{psu}->{total}++;
@@ -73,8 +75,10 @@ sub check {
 
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'psu', instance => $instance, value => $result->{mtxrHlPower} / 10);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower} / 10));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Power is '%s' W", $result->{mtxrHlPower} / 10)
+            );
         }
         $self->{output}->perfdata_add(
             label => 'power', unit => 'W',

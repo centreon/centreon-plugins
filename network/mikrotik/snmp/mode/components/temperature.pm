@@ -34,24 +34,25 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking temperature");
-    $self->{components}->{temperature} = {name => 'temperature', total => 0, skip => 0};
+    $self->{components}->{temperature} = { name => 'temperature', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
-    
+
     my $instance = 0;
     my ($exit, $warn, $crit, $checked);
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
     
     if (defined($result->{mtxrHlTemperature}) && $result->{mtxrHlTemperature} =~ /[0-9]+/) {
-        
         $self->{output}->output_add(long_msg => sprintf("System temperature (SoC or PCB) is '%s' C", $result->{mtxrHlTemperature} / 10));
 
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => '1', value => $result->{mtxrHlTemperature} / 10);
-	if ($result->{mtxrHlTemperature} == -2730) { # RouterOS returns this when the SNMP agent hangs...
-		$exit = 'UNKNOWN';
-	}
+        if ($result->{mtxrHlTemperature} == -2730) { # RouterOS returns this when the SNMP agent hangs...
+            $exit = 'UNKNOWN';
+        }
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("System temperature (SoC or PCB) is '%s' C", $result->{mtxrHlTemperature} / 10));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("System temperature (SoC or PCB) is '%s' C", $result->{mtxrHlTemperature} / 10)
+            );
         }
         $self->{output}->perfdata_add(
             label => 'temperature', unit => 'C',
@@ -68,12 +69,14 @@ sub check {
         $self->{output}->output_add(long_msg => sprintf("Processor temperature is '%s' C", $result->{mtxrHlProcessorTemperature} / 10));
 
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => '2', value => $result->{mtxrHlProcessorTemperature} / 10);
-	if ($result->{mtxrHlProcessorTemperature} == -2730) { # RouterOS returns this when the SNMP agent hangs...
-		$exit = 'UNKNOWN';
-	}
+        if ($result->{mtxrHlProcessorTemperature} == -2730) { # RouterOS returns this when the SNMP agent hangs...
+            $exit = 'UNKNOWN';
+        }
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Processor temperature is '%s' C", $result->{mtxrHlProcessorTemperature} / 10));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Processor temperature is '%s' C", $result->{mtxrHlProcessorTemperature} / 10)
+            );
         }
         $self->{output}->perfdata_add(
             label => 'temperature', unit => 'C',

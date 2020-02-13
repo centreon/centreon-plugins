@@ -47,8 +47,10 @@ sub check {
 
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => '1', value => $result->{mtxrHlFanSpeed1});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '1' speed is '%s' RPM", $result->{mtxrHlFanSpeed1}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '1' speed is '%s' RPM", $result->{mtxrHlFanSpeed1})
+            );
         }
         $self->{output}->perfdata_add(
             label => 'fan_speed', unit => 'rpm',
@@ -61,13 +63,14 @@ sub check {
         $self->{components}->{fan}->{total}++;
     }
     if (defined($result->{mtxrHlFanSpeed2}) && $result->{mtxrHlFanSpeed2} =~ /[0-9]+/) {
-        
         $self->{output}->output_add(long_msg => sprintf("Fan '2' speed is '%s' RPM", $result->{mtxrHlFanSpeed2}));
 
         ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'fan', instance => '2', value => $result->{mtxrHlFanSpeed2});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Fan '2' speed is '%s' RPM", $result->{mtxrHlFanSpeed2}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Fan '2' speed is '%s' RPM", $result->{mtxrHlFanSpeed2})
+            );
         }
         $self->{output}->perfdata_add(
             label => 'fan_speed', unit => 'rpm',
