@@ -40,6 +40,7 @@ sub new {
         'force-oid:s'     => { name => 'force_oid' },
         'check-overload'  => { name => 'check_overload' },
         'reboot-window:s' => { name => 'reboot_window', default => 5000 },
+        'unknown-if-zero' => { name => 'unknown_if_zero' },
         'unit:s'          => { name => 'unit', default => 's' },
     });
 
@@ -127,6 +128,9 @@ sub run {
         value => floor($value / $unitdiv->{$self->{option_results}->{unit}}), 
         threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
     );
+    if (($value == 0) && defined($self->{option_results}->{unknown_if_zero})) {
+        $exit_code = 'UNKONWN';
+    }
     $self->{output}->perfdata_add(
         label => 'uptime', unit => $self->{option_results}->{unit},
         value => floor($value / $unitdiv->{$self->{option_results}->{unit}}),

@@ -62,9 +62,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'ntp-hostname:s' => { name => 'ntp_hostname' },
-        'ntp-port:s'     => { name => 'ntp_port', default => 123 },
-        'timezone:s'     => { name => 'timezone' },
+        'ntp-hostname:s'  => { name => 'ntp_hostname' },
+        'ntp-port:s'      => { name => 'ntp_port', default => 123 },
+        'timezone:s'      => { name => 'timezone' },
+        'unknown-if-zero' => { name => 'unknown_if_zero' },
     });
 
     return $self;
@@ -145,7 +146,16 @@ sub manage_selection {
     $self->{offset} = { 
         offset => sprintf("%d", $offset),
         date => $remote_date_formated,
-    };    
+    };
+
+    if (($disant_time == 0) && defined($self->{option_results}->{unknown_if_zero})) {
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => $remote_date_formated
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
 }
 
 1;
