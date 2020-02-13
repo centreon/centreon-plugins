@@ -33,16 +33,16 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "warning:s"         => { name => 'warning' },
-        "critical:s"        => { name => 'critical' },
-        "force-oid:s"       => { name => 'force_oid' },
-        "check-overload"    => { name => 'check_overload' },
-        "reboot-window:s"   => { name => 'reboot_window', default => 5000 },
-        "unit:s"            => { name => 'unit', default => 's' },
+        'warning:s'       => { name => 'warning' },
+        'critical:s'      => { name => 'critical' },
+        'force-oid:s'     => { name => 'force_oid' },
+        'check-overload'  => { name => 'check_overload' },
+        'reboot-window:s' => { name => 'reboot_window', default => 5000 },
+        'unit:s'          => { name => 'unit', default => 's' },
     });
-    
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
 }
@@ -64,7 +64,7 @@ sub check_options {
     if ($self->{option_results}->{unit} eq '' || !defined($unitdiv->{$self->{option_results}->{unit}})) {
         $self->{option_results}->{unit} = 's';
     }
-    
+
     $self->{statefile_cache}->check_options(%options);
 }
 
@@ -119,12 +119,14 @@ sub run {
             $value = $result->{$oid_sysUpTime};
         }
     }
-    
+
     $value = $self->check_overload(timeticks => $value);
     $value = floor($value / 100);
-    
-    my $exit_code = $self->{perfdata}->threshold_check(value => floor($value / $unitdiv->{$self->{option_results}->{unit}}), 
-                              threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
+
+    my $exit_code = $self->{perfdata}->threshold_check(
+        value => floor($value / $unitdiv->{$self->{option_results}->{unit}}), 
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
     $self->{output}->perfdata_add(
         label => 'uptime', unit => $self->{option_results}->{unit},
         value => floor($value / $unitdiv->{$self->{option_results}->{unit}}),

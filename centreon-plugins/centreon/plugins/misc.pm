@@ -392,6 +392,10 @@ sub change_seconds {
         $str_append = ' ';
     }
 
+    if ($str eq '') {
+        $str = $options{value};
+        $str .= $options{start} if (defined($options{start}));
+    }
     return $str;
 }
 
