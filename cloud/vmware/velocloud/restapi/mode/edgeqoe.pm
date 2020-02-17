@@ -124,8 +124,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-edge-name:s' => { name => 'filter_edge_name' },
-        "filter-link-name:s' => { name => 'filter_link_name' },
+        'filter-edge-name:s' => { name => 'filter_edge_name' },
+        'filter-link-name:s' => { name => 'filter_link_name' },
     });
    
     return $self;
