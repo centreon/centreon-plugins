@@ -59,8 +59,43 @@ my $sysTrunkName = '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.1';
 my $sysTrunkStatus = '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.2';
 my $sysTrunkOperBw = '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.5';
 
+my $sysTrunkCfgMember      = '.1.3.6.1.4.1.3375.2.1.2.12.3';
+my $sysTrunkCfgMemberTable = '.1.3.6.1.4.1.3375.2.1.2.12.3.2';
+my $sysTrunkCfgMemberName  = '.1.3.6.1.4.1.3375.2.1.2.12.3.2.1.2';
+
+my $ifDescr = '.1.3.6.1.2.1.2.2.1.2';
+my $ifOperStatus = '.1.3.6.1.2.1.2.2.1.8';
+
+my $ifOperStatusMap = {
+  1 => 'up',
+  2 => 'down',
+  3 => 'testing',
+  4 => 'unknown',
+  5 => 'dormant',
+  6 => 'notPresent',
+  7 => 'lowerLayerDown',
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
+
+    # Get interfaces descriptions
+    my $result_interface = $self->{snmp}->get_table(oid => $ifDescr, nothing_quit => 1);
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$result_interface})) {
+        next if ($oid !~ /^$ifDescr\.(.*)$/);
+        my $instance = $1;
+        $self->{ifDescr}->{$result_interface->{$oid}} = $instance;
+    }
+
+    # Get interfaces operating statuses
+    my $result_interface_status = $self->{snmp}->get_table(oid => $ifOperStatus, nothing_quit => 1);
+
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$result_interface_status})) {
+        next if ($oid !~ /^$ifOperStatus\.(.*)$/);
+        my $instance = $1;
+        $self->{ifOperStatus}->{$instance} = $result_interface_status->{$oid};
+    }
 
     $self->{result} = $self->{snmp}->get_table(oid => $sysTrunkTable, nothing_quit => 1);
 
@@ -93,10 +128,35 @@ sub run {
 
     $self->manage_selection();
     foreach my $instance (sort @{$self->{trunks_selected}}) { 
-        $self->{output}->output_add(long_msg => sprintf("'%s' [status: %s] [speed: %s]",
+        my $sysTrunkCfgMemberNameInstance = $sysTrunkCfgMemberName . '.' .  $instance;
+        my $member_result = $self->{snmp}->get_table(oid => $sysTrunkCfgMemberNameInstance, nothing_quit => 1);
+
+        foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$member_result})) {
+            next if ($oid !~ /^$sysTrunkCfgMemberName\.(.*)$/);
+
+            my $trunk_member_status = 'interface not found';
+            if($self->{ifDescr}->{$member_result->{$oid}}) {
+                if($self->{ifOperStatus}->{$self->{ifDescr}->{$member_result->{$oid}}}) {
+                    $trunk_member_status = $ifOperStatusMap->{$self->{ifOperStatus}->{$self->{ifDescr}->{$member_result->{$oid}}}};
+                }
+                else {
+                    $trunk_member_status = 'interface status not found';
+                    $self->{output}->output_add(severity => 'WARNING', short_msg => "member " . $member_result->{$oid} . ': ' . $trunk_member_status);
+                }
+            }
+            else {
+                $self->{output}->output_add(severity => 'WARNING', short_msg => "member " . $member_result->{$oid} . ': ' . $trunk_member_status);
+            }
+
+            $self->{result}->{$sysTrunkCfgMemberName . '.' . $instance} .= " " . $member_result->{$oid} . "(" . $trunk_member_status . ")";
+        }
+
+        $self->{output}->output_add(long_msg => sprintf("'%s' [status: %s] [speed: %s] [members:%s]",
                                                 $self->{result}->{$sysTrunkName . '.' . $instance},
                                                 $map_trunk_status{$self->{result}->{$sysTrunkStatus . '.' . $instance}},
-                                                $self->{result}->{$sysTrunkOperBw . '.' . $instance}));
+                                                $self->{result}->{$sysTrunkOperBw . '.' . $instance},
+                                                $self->{result}->{$sysTrunkCfgMemberName . '.' . $instance}
+                                                ));
     }
     
     $self->{output}->output_add(severity => 'OK',
