@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 use DateTime;
 use centreon::plugins::misc;
+use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
