@@ -360,6 +360,24 @@ sub azure_get_resource_health {
     return $response;
 }
 
+sub azure_get_resource_alert_set_url {
+    my ($self, %options) = @_;
+
+    my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/providers/Microsoft.AlertsManagement/alertsSummary" .
+        "?api-version=" . $self->{api_version} . "&groupby=" . $options{group_by} . "&targetResourceGroup=" . $options{resource_group} . "&targetResourceName=" . $options{resource}. "&timeRange=" . $options{time_range};
+
+    return $url;
+}
+
+sub azure_get_resource_alert {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_get_resource_alert_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
 sub azure_list_resources_set_url {
     my ($self, %options) = @_;
 
