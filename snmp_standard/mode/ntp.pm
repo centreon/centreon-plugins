@@ -114,6 +114,15 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my ($disant_time, $remote_date, $timezone) = $self->get_target_time(%options);
+    if ($disant_time == 0) {
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Couldn't get system date: Local Time: 0"
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
+    }
+
     my $ref_time;
     if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
@@ -137,7 +146,7 @@ sub manage_selection {
 
     my $offset = $disant_time - $ref_time;
     my $remote_date_formated = sprintf(
-        'Local Time : %02d-%02d-%02dT%02d:%02d:%02d (%s)',
+        'Local Time: %02d-%02d-%02dT%02d:%02d:%02d (%s)',
         $remote_date->[0], $remote_date->[1], $remote_date->[2],
         $remote_date->[3], $remote_date->[4], $remote_date->[5], $timezone
     );
