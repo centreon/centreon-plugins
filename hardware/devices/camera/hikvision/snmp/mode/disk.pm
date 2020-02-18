@@ -129,7 +129,7 @@ Check disk usage.
 
 =over 8
 
-=item B<--warning-*> B<--critical-usage>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
