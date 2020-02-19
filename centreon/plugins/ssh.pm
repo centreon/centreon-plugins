@@ -53,6 +53,13 @@ sub new {
     );
     $self->{backend_plink} = centreon::plugins::backend::ssh::plink->new(%options);
 
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output},
+        module => 'centreon::plugins::backend::ssh::libssh',
+        error_msg => "Cannot load module 'centreon::plugins::backend::ssh::libssh'."
+    );
+    $self->{backend_libssh} = centreon::plugins::backend::ssh::libssh->new(%options);
+
     $self->{output} = $options{output};
     return $self;
 }

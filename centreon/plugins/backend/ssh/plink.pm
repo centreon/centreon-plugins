@@ -47,7 +47,7 @@ sub check_options {
 
     $self->{ssh_command} = defined($options{option_results}->{plink_command}) && $options{option_results}->{plink_command} ne '' ? 
         $options{option_results}->{plink_command} : 'plink';
-    $self->{ssh_path} = $options{option_results}->{sshcli_path};
+    $self->{ssh_path} = $options{option_results}->{plink_path};
     $self->{ssh_option} = defined($options{option_results}->{plink_option}) ? $options{option_results}->{plink_option} : [];
     $self->{ssh_port} = defined($options{option_results}->{ssh_port}) && $options{option_results}->{ssh_port} =~ /(\d+)/ ? $1 : 22;
     $self->{ssh_priv_key} = $options{option_results}->{ssh_priv_key};
@@ -122,6 +122,6 @@ Specify plink options (example: --plink-option='-T').
 
 =head1 DESCRIPTION
 
-B<sshcli>.
+B<plink>.
 
 =cut
