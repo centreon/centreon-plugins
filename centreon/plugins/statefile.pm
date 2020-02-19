@@ -80,11 +80,16 @@ sub check_options {
             }
         }
         
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Redis',
-                                               error_msg => "Cannot load module 'Redis'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Redis',
+            error_msg => "Cannot load module 'Redis'."
+        );
         eval {
-            $self->{redis_cnx} = Redis->new(server => $options{option_results}->{redis_server}, 
-                                            eval $self->{redis_attributes});
+            $self->{redis_cnx} = Redis->new(
+                server => $options{option_results}->{redis_server}, 
+                eval $self->{redis_attributes}
+            );
             if (defined($self->{redis_cnx}) && 
                 defined($options{option_results}->{redis_db}) &&
                 $options{option_results}->{redis_db} ne ''
@@ -96,13 +101,19 @@ sub check_options {
     
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
     if ($self->{statefile_dir} ne $default_dir && defined($options{option_results}->{statefile_concat_cwd})) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Cwd',
-                                               error_msg => "Cannot load module 'Cwd'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Cwd',
+            error_msg => "Cannot load module 'Cwd'."
+        );
         $self->{statefile_dir} = Cwd::cwd() . '/' . $self->{statefile_dir};
     }
     if (defined($options{option_results}->{statefile_storable})) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Storable',
-                                               error_msg => "Cannot load module 'Storable'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Storable',
+            error_msg => "Cannot load module 'Storable'."
+        );
         $self->{storable} = 1;
     }
     $self->{statefile_suffix} = $options{option_results}->{statefile_suffix};
@@ -111,7 +122,7 @@ sub check_options {
 
 sub error {
     my ($self) = shift;
-     
+
     if (@_) {
         $self->{error} = $_[0];
     }
@@ -140,7 +151,7 @@ sub read {
             return 0;
         }
     }
-    
+
     if (defined($self->{redis_cnx})) {
         my $val = $self->{redis_cnx}->get($self->{statefile_dir} . "/" . $self->{statefile});
         if (defined($val)) {
@@ -152,7 +163,7 @@ sub read {
         
         return 0;
     }
-    
+
     if (! -e $self->{statefile_dir} . '/' . $self->{statefile}) {
         if (! -w $self->{statefile_dir} || ! -x $self->{statefile_dir}) {
             $self->error(1);
@@ -173,7 +184,7 @@ sub read {
         # Empty file. Not a problem. Maybe plugin not manage not values
         return 0;
     }
-    
+
     if ($self->{storable} == 1) {
         open FILE, $self->{statefile_dir} . '/' . $self->{statefile};
         eval {
@@ -227,15 +238,19 @@ sub write {
     my ($self, %options) = @_;
 
     if ($self->{memcached_ok} == 1) {
-        Memcached::libmemcached::memcached_set($self->{memcached}, $self->{statefile_dir} . '/' . $self->{statefile}, 
-                                               Data::Dumper->Dump([$options{data}], ['datas']), $self->{memexpiration});
+        Memcached::libmemcached::memcached_set(
+            $self->{memcached}, $self->{statefile_dir} . '/' . $self->{statefile}, 
+            Data::Dumper->Dump([$options{data}], ['datas']), $self->{memexpiration}
+        );
         if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS$/i) {
             return ;
         }
     }
     if (defined($self->{redis_cnx})) {
-        return if (defined($self->{redis_cnx}->set($self->{statefile_dir} . '/' . $self->{statefile}, Data::Dumper->Dump([$options{data}], ['datas']),
-                                                  'EX', $self->{memexpiration})));
+        return if (defined($self->{redis_cnx}->set(
+            $self->{statefile_dir} . '/' . $self->{statefile}, Data::Dumper->Dump([$options{data}], ['datas']),
+            'EX', $self->{memexpiration}))
+        );
     }
     open FILE, '>', $self->{statefile_dir} . '/' . $self->{statefile};
     if ($self->{storable} == 1) {

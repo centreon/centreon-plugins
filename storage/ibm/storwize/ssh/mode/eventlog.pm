@@ -36,16 +36,7 @@ sub new {
         'critical:s'          => { name => 'critical', },
         'filter-event-id:s'   => { name => 'filter_event_id'  },
         'filter-message:s'    => { name => 'filter_message' },
-        'retention:s'         => { name => 'retention' },
-        'hostname:s'          => { name => 'hostname' },
-        'ssh-option:s@'       => { name => 'ssh_option' },
-        'ssh-path:s'          => { name => 'ssh_path' },
-        'ssh-command:s'       => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'           => { name => 'timeout', default => 30 },
-        'sudo'                => { name => 'sudo' },
-        'command:s'           => { name => 'command' },
-        'command-path:s'      => { name => 'command_path' },
-        'command-options:s'   => { name => 'command_options' },
+        'retention:s'         => { name => 'retention' }
     });
 
     return $self;
@@ -63,9 +54,6 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
         $self->{output}->option_exit();
     }
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
 
     my $last_timestamp = '';
     if (defined($self->{option_results}->{retention}) && $self->{option_results}->{retention} =~ /^\d+$/) {
@@ -77,37 +65,10 @@ sub check_options {
     $self->{ls_command} = "svcinfo lseventlog -message no -alert yes -filtervalue '${last_timestamp}fixed=no' -delim :";
 }
 
-sub get_hasharray {
-    my ($self, %options) = @_;
-
-    my $result = [];
-    return $result if ($options{content} eq '');
-    my ($header, @lines) = split /\n/, $options{content};
-    my @header_names = split /$options{delim}/, $header;
-
-    for (my $i = 0; $i <= $#lines; $i++) {
-        my @content = split /$options{delim}/, $lines[$i];
-        my $data = {};
-        for (my $j = 0; $j <= $#header_names; $j++) {
-            $data->{$header_names[$j]} = $content[$j];
-        }
-        push @$result, $data;
-    }
-
-    return $result;
-}
-
 sub run {
     my ($self, %options) = @_;
 
-    my $content = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ls_command} . " ; exit ;",
-        command_path => $self->{option_results}->{command_path},
-        command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
-    );
+    my $content = $options{custom}->execute_command(command => $self->{ls_command});
     my $result = $self->get_hasharray(content => $content, delim => ':');
 
     my ($num_eventlog_checked, $num_errors) = (0, 0);
@@ -133,7 +94,7 @@ sub run {
         );
         $num_errors++;
     }
-    
+
     $self->{output}->output_add(long_msg => sprintf("Number of message checked: %s", $num_eventlog_checked));
     my $exit = $self->{perfdata}->threshold_check(value => $num_errors, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(
@@ -147,7 +108,7 @@ sub run {
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
         min => 0
     );
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -181,42 +142,6 @@ Filter on event message.
 =item B<--retention>
 
 Get eventlog of X last seconds. For the last minutes: --retention=60
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information. Used it you have output in a file.
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options.
 
 =back
 

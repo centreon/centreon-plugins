@@ -22,7 +22,7 @@ package storage::ibm::storwize::ssh::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -35,6 +35,7 @@ sub new {
         'eventlog'     => 'storage::ibm::storwize::ssh::mode::eventlog',
         'pool-usage'   => 'storage::ibm::storwize::ssh::mode::poolusage',
     );
+    $self->{custom_modes}{api} = 'storage::ibm::storwize::ssh::custom::api';
 
     return $self;
 }

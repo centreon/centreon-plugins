@@ -25,7 +25,7 @@ use warnings;
 
 sub load {
     my ($self) = @_;
-    
+
     $self->{ssh_commands} .= 'echo "==========lssystemstats=========="; lssystemstats ; echo "===============";';
 }
 
@@ -38,20 +38,28 @@ sub check {
 
     return if ($self->{results} !~ /==========lssystemstats==.*?\n(.*?)==============/msi);
     my $content = $1;
-    
-    my $result = $self->get_hasharray(content => $content, delim => '\s+');
+
+    my $result = $self->{custom}->get_hasharray(content => $content, delim => '\s+');
     foreach (@$result) {
         next if ($self->check_filter(section => 'systemstats', instance => $_->{stat_name}));
         $self->{components}->{systemstats}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("system stat '%s' value is '%s' [instance: %s].",
-                                    $_->{stat_name}, $_->{stat_current},
-                                    $_->{stat_name}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "system stat '%s' value is '%s' [instance: %s].",
+                $_->{stat_name},
+                $_->{stat_current},
+                $_->{stat_name}
+            )
+        );
         my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'systemstats', instance => $_->{stat_name}, value => $_->{stat_current});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("System stat '%s' value is '%s'", $_->{stat_name}, $_->{stat_current}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "System stat '%s' value is '%s'", $_->{stat_name}, $_->{stat_current}
+                )
+            );
         }
         $self->{output}->perfdata_add(
             label => "sstat",

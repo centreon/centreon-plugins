@@ -25,7 +25,7 @@ use warnings;
 
 sub load {
     my ($self) = @_;
-    
+
     $self->{ssh_commands} .= 'echo "==========lsmdisk=========="; lsmdisk -delim : ; echo "===============";';
 }
 
@@ -38,21 +38,30 @@ sub check {
 
     return if ($self->{results} !~ /==========lsmdisk==.*?\n(.*?)==============/msi);
     my $content = $1;
-    
-    my $result = $self->get_hasharray(content => $content, delim => ':');
+
+    my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
         next if ($self->check_filter(section => 'mdisk', instance => $_->{id}));
         $self->{components}->{mdisk}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("mdisk '%s' status is '%s' [instance: %s].",
-                                    $_->{name}, $_->{status},
-                                    $_->{id}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "mdisk '%s' status is '%s' [instance: %s].",
+                $_->{name},
+                $_->{status},
+                $_->{id}
+            )
+        );
         my $exit = $self->get_severity(section => 'mdisk', value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("MDisk '%s' status is '%s'",
-                                                             $_->{name}, $_->{status}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "MDisk '%s' status is '%s'",
+                    $_->{name},
+                    $_->{status}
+                )
+            );
         }
     }
 }

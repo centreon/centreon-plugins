@@ -39,16 +39,20 @@ sub windows_execute {
     my $result;
     my ($stdout, $pid, $ended) = ('');
     my ($exit_code, $cmd);
-    
+
     $cmd = $options{command_path} . '/' if (defined($options{command_path}));
     $cmd .= $options{command} . ' ' if (defined($options{command}));
     $cmd .= $options{command_options} if (defined($options{command_options}));
-    
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'Win32::Job',
-                                           error_msg => "Cannot load module 'Win32::Job'.");
-    centreon::plugins::misc::mymodule_load(output => $options{output}, module => 'Time::HiRes',
-                                           error_msg => "Cannot load module 'Time::HiRes'.");
-    
+
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output}, module => 'Win32::Job',
+        error_msg => "Cannot load module 'Win32::Job'."
+    );
+    centreon::plugins::misc::mymodule_load(
+        output => $options{output}, module => 'Time::HiRes',
+        error_msg => "Cannot load module 'Time::HiRes'."
+    );
+
     $| = 1;
     pipe FROM_CHILD, TO_PARENT or do {
         $options{output}->add_option_msg(short_msg => "Internal error: can't create pipe from child to parent: $!");
@@ -91,10 +95,10 @@ sub windows_execute {
         },
         0.1
     );
-        
+
     $result = $job->status;
     close FROM_CHILD;    
-    
+
     if ($ended == 0) {
         $options{output}->add_option_msg(short_msg => 'Command too long to execute (timeout)...');
         $options{output}->option_exit();
@@ -104,13 +108,13 @@ sub windows_execute {
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
         return ($stdout, $result->{$pid}->{exitcode});
     }
-    
+
     if ($result->{$pid}->{exitcode} != 0) {
         $stdout =~ s/\n/ - /g;
         $options{output}->add_option_msg(short_msg => "Command error: $stdout");
         $options{output}->option_exit();
     }
-    
+
     return ($stdout, $result->{$pid}->{exitcode});
 }
 
@@ -124,7 +128,7 @@ sub unix_execute {
     $redirect_stderr = $options{redirect_stderr} if (defined($options{redirect_stderr}));
     my $wait_exit = 1;
     $wait_exit = $options{wait_exit} if (defined($options{wait_exit}));
-    
+
     # Build command line
     # Can choose which command is done remotely (can filter and use local file)
     if (defined($options{options}->{remote}) && 
@@ -133,19 +137,20 @@ sub unix_execute {
 
         $cmd = $options{options}->{ssh_path} . '/' if (defined($options{options}->{ssh_path}));
         $cmd .= $options{options}->{ssh_command} if (defined($options{options}->{ssh_command}));
-        
+
         foreach (@{$options{options}->{ssh_option}}) {
-            my ($lvalue, $rvalue) = split /=/;
-            push @$args, $lvalue if (defined($lvalue));
-            push @$args, $rvalue if (defined($rvalue));
+            if (/^(.*?)(?:=(.*))?$/) {
+                push @$args, $1 if (defined($1));
+                push @$args, $2 if (defined($2));
+            }
         }
-        
+
         if (defined($options{options}->{ssh_address}) && $options{options}->{ssh_address} ne '') {
             push @$args, $options{options}->{ssh_address};
         } else {
             push @$args, $options{options}->{hostname};
         }
-		
+
         $sub_cmd = 'sudo ' if (defined($options{sudo}));
         $sub_cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $sub_cmd .= $options{command} . ' ' if (defined($options{command}));
@@ -173,7 +178,7 @@ sub unix_execute {
         $cmd .= $options{command_path} . '/' if (defined($options{command_path}));
         $cmd .= $options{command} . ' ' if (defined($options{command}));
         $cmd .= $options{command_options} if (defined($options{command_options}));
-        
+
         ($lerror, $stdout, $exit_code) = backtick(
             command => $cmd,
             timeout => $options{options}->{timeout},
@@ -187,23 +192,23 @@ sub unix_execute {
         print $stdout;
         exit $exit_code;
     }
-    
+
     $stdout =~ s/\r//g;
     if ($lerror <= -1000) {
         $options{output}->add_option_msg(short_msg => $stdout);
         $options{output}->option_exit();
     }
-    
+
     if (defined($options{no_quit}) && $options{no_quit} == 1) {
         return ($stdout, $exit_code);
     }
-    
+
     if ($exit_code != 0 && (!defined($options{no_errors}) || !defined($options{no_errors}->{$exit_code}))) {
         $stdout =~ s/\n/ - /g;
         $options{output}->add_option_msg(short_msg => "Command error: $stdout");
         $options{output}->option_exit();
     }
-    
+
     return $stdout;
 }
 
@@ -211,7 +216,7 @@ sub mymodule_load {
     my (%options) = @_;
     my $file;
     ($file = ($options{module} =~ /\.pm$/ ? $options{module} : $options{module} . '.pm')) =~ s{::}{/}g;
-    
+
     eval {
         local $SIG{__DIE__} = 'IGNORE';
         require $file;
@@ -239,7 +244,7 @@ sub backtick {
     my @output;
     my $pid;
     my $return_code;
-    
+
     my $sig_do;
     if ($arg{wait_exit} == 0) {
         $sig_do = 'IGNORE';
