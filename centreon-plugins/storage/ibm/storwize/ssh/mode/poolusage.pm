@@ -28,14 +28,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -43,7 +42,7 @@ sub custom_status_calc {
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
-    
+
     my $label = 'used';
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
@@ -69,7 +68,7 @@ sub custom_usage_perfdata {
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
-    
+
     my ($exit, $threshold_value);
     $threshold_value = $self->{result_values}->{used};
     $threshold_value = $self->{result_values}->{free} if (defined($self->{instance_mode}->{option_results}->{free}));
@@ -83,15 +82,16 @@ sub custom_usage_threshold {
 
 sub custom_usage_output {
     my ($self, %options) = @_;
-    
+
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -103,17 +103,17 @@ sub custom_usage_calc {
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
     $self->{result_values}->{prct_free} = 100 - $self->{result_values}->{prct_used};
-    
+
     return 0;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All pools are ok' }
     ];
-    
+
     $self->{maps_counters}->{pool} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
@@ -140,22 +140,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
-        "warning-status:s"    => { name => 'warning_status', default => '%{status} =~ /degraded/i' },
-        "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /offline/i' },
-        "units:s"             => { name => 'units', default => '%' },
-        "free"                => { name => 'free' },
-        "hostname:s"          => { name => 'hostname' },
-        "ssh-option:s@"       => { name => 'ssh_option' },
-        "ssh-path:s"          => { name => 'ssh_path' },
-        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"           => { name => 'timeout', default => 30 },
-        "sudo"                => { name => 'sudo' },
-        "command:s"           => { name => 'command' },
-        "command-path:s"      => { name => 'command_path' },
-        "command-options:s"   => { name => 'command_options' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /degraded/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /offline/i' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' },
     });
-    
+
     return $self;
 }
 
@@ -163,29 +154,21 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub prefix_pool_output {
     my ($self, %options) = @_;
-    
+
     return "Pool '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my ($content) = $options{custom}->execute_command(command => 'lsmdiskgrp -delim : -bytes');
     $self->{pool} = {};
-    my $content = centreon::plugins::misc::execute(output => $self->{output},
-                                                   options => $self->{option_results},
-                                                   sudo => $self->{option_results}->{sudo},
-                                                   command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : "lsmdiskgrp -delim : -bytes ; exit ;",
-                                                   command_path => $self->{option_results}->{command_path},
-                                                   command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef);
-    my $result = $self->get_hasharray(content => $content, delim => ':');
+    my $result = $options{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $_->{name} !~ /$self->{option_results}->{filter_name}/) {
@@ -193,36 +176,18 @@ sub manage_selection {
             next;
         }
         
-        $self->{pool}->{$_->{id}} = { display => $_->{name},
-                                      status => $_->{status},
-                                      total => $_->{used_capacity} + $_->{free_capacity}, used => $_->{used_capacity}
-                                    };
+        $self->{pool}->{$_->{id}} = {
+            display => $_->{name},
+            status => $_->{status},
+            total => $_->{used_capacity} + $_->{free_capacity},
+            used => $_->{used_capacity}
+        };
     }
-    
+
     if (scalar(keys %{$self->{pool}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No pool found.");
+        $self->{output}->add_option_msg(short_msg => 'No pool found.');
         $self->{output}->option_exit();
     }
-}
-
-sub get_hasharray {
-    my ($self, %options) = @_;
-
-    my $result = [];
-    return $result if ($options{content} eq '');
-    my ($header, @lines) = split /\n/, $options{content};
-    my @header_names = split /$options{delim}/, $header;
-    
-    for (my $i = 0; $i <= $#lines; $i++) {
-        my @content = split /$options{delim}/, $lines[$i];
-        my $data = {};
-        for (my $j = 0; $j <= $#header_names; $j++) {
-            $data->{$header_names[$j]} = $content[$j];
-        }
-        push @$result, $data;
-    }
-    
-    return $result;
 }
 
 1;
@@ -254,14 +219,9 @@ Can used special variables like: %{status}, %{display}
 Set critical threshold for status (Default: '%{status} =~ /offline/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'usage'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'usage'.
 
 =item B<--units>
@@ -271,42 +231,6 @@ Units of thresholds (Default: '%') ('%', 'B').
 =item B<--free>
 
 Thresholds are on free space left.
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information. Used it you have output in a file.
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options.
 
 =back
 

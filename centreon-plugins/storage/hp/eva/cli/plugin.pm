@@ -35,7 +35,7 @@ sub new {
         'storage-usage'    => 'storage::hp::eva::cli::mode::storageusage',
     );
     $self->{custom_modes}{api} = 'storage::hp::eva::cli::custom::api';
-    
+
     return $self;
 }
 

@@ -25,35 +25,44 @@ use warnings;
 
 sub load {
     my ($self) = @_;
-    
+
     $self->{ssh_commands} .= 'echo "==========lsenclosurepsu=========="; lsenclosurepsu -delim : ; echo "===============";';
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking enclosure psus");
     $self->{components}->{enclosurepsu} = {name => 'enclosure psus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'enclosurepsu'));
 
     return if ($self->{results} !~ /==========lsenclosurepsu==.*?\n(.*?)==============/msi);
     my $content = $1;
-    
-    my $result = $self->get_hasharray(content => $content, delim => ':');
+
+    my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
         my $instance = $_->{enclosure_id} . '.' . $_->{PSU_id};
         next if ($self->check_filter(section => 'enclosurepsu', instance => $instance));
         $self->{components}->{enclosurepsu}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("enclosure power supply '%s' status is '%s' [instance: %s].",
-                                    $instance, $_->{status},
-                                    $instance
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "enclosure power supply '%s' status is '%s' [instance: %s].",
+                $instance,
+                $_->{status},
+                $instance
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'enclosurepsu', value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Enclosure power supply '%s' status is '%s'",
-                                                             $instance, $_->{status}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Enclosure power supply '%s' status is '%s'",
+                    $instance,
+                    $_->{status}
+                )
+            );
         }
     }
 }

@@ -25,34 +25,43 @@ use warnings;
 
 sub load {
     my ($self) = @_;
-    
+
     $self->{ssh_commands} .= 'echo "==========lsnode=========="; lsnode -delim : ; echo "===============";';
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking nodes");
     $self->{components}->{node} = {name => 'nodes', total => 0, skip => 0};
     return if ($self->check_filter(section => 'node'));
 
     return if ($self->{results} !~ /==========lsnode==.*?\n(.*?)==============/msi);
     my $content = $1;
-    
-    my $result = $self->get_hasharray(content => $content, delim => ':');
+
+    my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
         next if ($self->check_filter(section => 'node', instance => $_->{id}));
         $self->{components}->{node}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("node '%s' status is '%s' [instance: %s].",
-                                    $_->{name}, $_->{status},
-                                    $_->{id}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "node '%s' status is '%s' [instance: %s].",
+                $_->{name},
+                $_->{status},
+                $_->{id}
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'node', value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Node '%s' status is '%s'",
-                                                             $_->{name}, $_->{status}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Node '%s' status is '%s'",
+                    $_->{name},
+                    $_->{status}
+                )
+            );
         }
     }
 }

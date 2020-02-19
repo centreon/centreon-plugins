@@ -25,13 +25,13 @@ use warnings;
 
 sub load {
     my ($self) = @_;
-    
+
     $self->{ssh_commands} .= 'echo "==========lsarray=========="; lsarray -delim : ; echo "===============";';
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking arrays");
     $self->{components}->{array} = {name => 'arrays', total => 0, skip => 0};
     return if ($self->check_filter(section => 'array'));
@@ -39,20 +39,29 @@ sub check {
     return if ($self->{results} !~ /==========lsarray==.*?\n(.*?)==============/msi);
     my $content = $1;
     
-    my $result = $self->get_hasharray(content => $content, delim => ':');
+    my $result = $self->{custom}->get_hasharray(content => $content, delim => ':');
     foreach (@$result) {
         next if ($self->check_filter(section => 'array', instance => $_->{mdisk_id}));
         $self->{components}->{array}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("array '%s' status is '%s' [instance: %s].",
-                                    $_->{mdisk_name}, $_->{status},
-                                    $_->{mdisk_id}
-                                    ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "array '%s' status is '%s' [instance: %s].",
+                $_->{mdisk_name},
+                $_->{status},
+                $_->{mdisk_id}
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'array', value => $_->{status});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity =>  $exit,
-                                        short_msg => sprintf("Array '%s' status is '%s'",
-                                                             $_->{mdisk_name}, $_->{status}));
+            $self->{output}->output_add(
+                severity =>  $exit,
+                short_msg => sprintf(
+                    "Array '%s' status is '%s'",
+                    $_->{mdisk_name},
+                    $_->{status}
+                )
+            );
         }
     }
 }

@@ -65,70 +65,29 @@ sub set_system {
     };
     
     $self->{components_path} = 'storage::ibm::storwize::ssh::mode::components';
-    $self->{components_module} = ['array', 'drive', 'enclosure', 'enclosurebattery', 'enclosurecanister',
-                                  'enclosurepsu', 'host', 'portfc', 'portsas', 'vdisk', 'node', 'quorum', 'mdisk', 'systemstats'];
+    $self->{components_module} = [
+        'array', 'drive', 'enclosure', 'enclosurebattery', 'enclosurecanister',
+        'enclosurepsu', 'host', 'portfc', 'portsas', 'vdisk', 'node', 'quorum', 'mdisk', 'systemstats'
+    ];
 }
 
 sub ssh_execute {
     my ($self, %options) = @_;
-    
-    $self->{results} = centreon::plugins::misc::execute(output => $self->{output},
-                                                        options => $self->{option_results},
-                                                        sudo => $self->{option_results}->{sudo},
-                                                        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands} . " exit ;",
-                                                        command_path => $self->{option_results}->{command_path},
-                                                        command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef);
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
+    ($self->{results}) = $options{custom}->execute_command(command => $self->{ssh_commands});
+    $self->{custom} = $options{custom};
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options' },
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     $self->{ssh_commands} = '';
     return $self;
-}
-
-sub get_hasharray {
-    my ($self, %options) = @_;
-
-    my $result = [];
-    return $result if ($options{content} eq '');
-    my ($header, @lines) = split /\n/, $options{content};
-    my @header_names = split /$options{delim}/, $header;
-    
-    for (my $i = 0; $i <= $#lines; $i++) {
-        my @content = split /$options{delim}/, $lines[$i];
-        my $data = {};
-        for (my $j = 0; $j <= $#header_names; $j++) {
-            $data->{$header_names[$j]} = $content[$j];
-        }
-        push @$result, $data;
-    }
-    
-    return $result;
 }
 
 1;
@@ -172,42 +131,6 @@ Example: --warning='systemstats,cpu_pc,30'
 
 Set critical threshold for temperatures (syntax: type,regexp,threshold)
 Example: --critical='systemstats,cpu_pc,40'
-
-=item B<--hostname>
-
-Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information. Used it you have output in a file.
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options.
 
 =back
 
