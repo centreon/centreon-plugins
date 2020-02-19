@@ -76,6 +76,7 @@ sub connect {
 
     return if ($self->{connected} == 1);
 
+    $self->{ssh}->options(host => $options{hostname});
     if ($self->{ssh}->connect(SkipKeyProblem => $self->{ssh_strict_connect}) != $self->{constant_cb}->(name => 'SSH_OK')) {
         $self->{output}->add_option_msg(short_msg => 'connect issue: ' . $self->{ssh}->error());
         $self->{output}->option_exit();
@@ -84,14 +85,15 @@ sub connect {
     if ($self->{ssh}->auth_publickey_auto() != $self->{constant_cb}->(name => 'SSH_AUTH_SUCCESS')) {
         if (defined($self->{ssh_username}) && $self->{ssh_username} ne '' &&
             defined($self->{ssh_password}) && $self->{ssh_password} ne '' &&
-            $self->{ssh}->auth_password(password => $self->{ssh_password}) != $self->{constant_cb}->(name => 'SSH_AUTH_SUCCESS')) {
-            my $msg_error = $self->{ssh}->error(GetErrorSession => 1);
-            $self->{output}->add_option_msg(short_msg => sprintf("auth issue: %s", defined($msg_error) && $msg_error ne '' ? $msg_error : 'pubkey issue'));
-            $self->{output}->option_exit();
+            $self->{ssh}->auth_password(password => $self->{ssh_password}) == $self->{constant_cb}->(name => 'SSH_AUTH_SUCCESS')) {
+            $self->{connected} = 1;
+            return ;
         }
-    }
 
-    $self->{connected} = 1;
+        my $msg_error = $self->{ssh}->error(GetErrorSession => 1);
+        $self->{output}->add_option_msg(short_msg => sprintf("auth issue: %s", defined($msg_error) && $msg_error ne '' ? $msg_error : 'pubkey issue'));
+        $self->{output}->option_exit();
+    }
 }
 
 sub execute {
@@ -100,7 +102,8 @@ sub execute {
     if (defined($options{timeout}) && $options{timeout} =~ /(\d+)/) {
         $self->{ssh}->options(timeout => $options{timeout});
     }
-    $self->connect();
+
+    $self->connect(hostname => $options{hostname});
 
     my $cmd = '';
     $cmd = 'sudo ' if (defined($options{sudo}));
@@ -108,43 +111,34 @@ sub execute {
     $cmd .= $options{command} . ' ' if (defined($options{command}));
     $cmd .= $options{command_options} if (defined($options{command_options}));
 
-    my $ret;
-    if (defined($options{ssh_pipe})) {
-        $ret = $self->{ssh}->execute_simple(
-            input_data => $cmd,
-            timeout => $options{timeout},
-            timeout_nodata => $options{timeout}
-        );
-    } else {
-        $ret = $self->{ssh}->execute_simple(
-            cmd => $cmd,
-            timeout => $options{timeout},
-            timeout_nodata => $options{timeout}
-        );
-    }
+    # ssh_pipe useless ? maybe.
+    my $ret = $self->{ssh}->execute_simple(
+        cmd => $cmd,
+        timeout => $options{timeout},
+        timeout_nodata => $options{timeout}
+    );
+
+    $self->{output}->output_add(long_msg => $ret->{stdout}, debug => 1) if (defined($ret->{stdout}));
+    $self->{output}->output_add(long_msg => $ret->{stderr}, debug => 1) if (defined($ret->{stderr}));
 
     my ($content, $exit_code);
     if ($ret->{exit} == $self->{constant_cb}->(name => 'SSH_OK')) {
         $content = $ret->{stdout};
         $exit_code = $ret->{exit_code};
     } elsif ($ret->{exit} == $self->{constant_cb}->(name => 'SSH_AGAIN')) { # AGAIN means timeout
-        $self->{output}->output_add(long_msg => $ret->{stdout}, debug => 1);
-        $self->{output}->output_add(long_msg => $ret->{stderr}, debug => 1);
         $self->{output}->add_option_msg(short_msg => sprintf('command execution timeout'));
         $self->{output}->option_exit();
     } else {
         $self->{output}->add_option_msg(short_msg =>
             sprintf(
                 'command execution error: %s',
-                $ret->{session}->error(GetErrorSession => 1)
+                $self->{ssh}->error(GetErrorSession => 1)
             )
         );
         $self->{output}->option_exit();
     }
 
     if ($exit_code != 0) {
-        $self->{output}->output_add(long_msg => $ret->{stdout}, debug => 1);
-        $self->{output}->output_add(long_msg => $ret->{stderr}, debug => 1);
         $self->{output}->add_option_msg(short_msg => sprintf('command execution error [exit code: %s]', $exit_code));
         $self->{output}->option_exit();
     }
