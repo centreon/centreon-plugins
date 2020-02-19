@@ -22,7 +22,7 @@ package centreon::plugins::backend::ssh::libsshconstants;
 
 use strict;
 use warnings;
-use Libssh::Session qw(:constants);
+use Libssh::Session qw(:all);
 
 sub get_constant_value {
     my (%options) = @_;
