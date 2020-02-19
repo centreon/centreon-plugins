@@ -69,7 +69,7 @@ sub run {
     my ($self, %options) = @_;
 
     my $content = $options{custom}->execute_command(command => $self->{ls_command});
-    my $result = $self->get_hasharray(content => $content, delim => ':');
+    my $result = $options{custom}->get_hasharray(content => $content, delim => ':');
 
     my ($num_eventlog_checked, $num_errors) = (0, 0);
     foreach (@$result) {
