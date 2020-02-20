@@ -27,12 +27,13 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_overload_check_section_option} = '^(temperature|humidity|dewpoint|airflow|doorswitch|camera|otherstate)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|humidity|dewpoint|airflow)$';
-    
+
+    $self->{cb_hook1} = 'get_version';
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         default => [        
             ['normal', 'OK'],
@@ -43,15 +44,37 @@ sub set_system {
             ['failure', 'CRITICAL'],
         ],
     };
-    
+
     $self->{components_path} = 'hardware::sensors::netbotz::snmp::mode::components';
-    $self->{components_module} = ['temperature', 'humidity', 'dewpoint', 'airflow', 
-        'doorswitch', 'camera', 'otherstate'];
+    $self->{components_module} = [
+        'temperature', 'humidity', 'dewpoint', 'airflow', 
+        'doorswitch', 'camera', 'otherstate'
+    ];
+}
+
+sub get_version {
+    my ($self, %options) = @_;
+
+    my $v1_netBotzErrorStatus = '.1.3.6.1.4.1.5528.100.100';
+    my $v5_netBotzErrorStatus = '.1.3.6.1.4.1.52674.500.100.0';
+    my $result = $options{snmp}->get_leef(
+        oids => [$v1_netBotzErrorStatus, $v1_netBotzErrorStatus . '.0', $v5_netBotzErrorStatus]
+    );
+
+    $self->{is_v5} = 0;
+    $self->{netbotz_branch} = '5528.100';
+    if (defined($result->{$v5_netBotzErrorStatus})) {
+        $self->{is_v5} = 1;
+        $self->{netbotz_branch} = '52674.500';
+    } elsif (!defined($result->{$v1_netBotzErrorStatus}) && !defined($result->{$v1_netBotzErrorStatus . '.0'})) {
+        $self->{output}->add_option_msg(short_msg => 'cannot find netbotz version');
+        $self->{output}->option_exit();
+    }
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -60,11 +83,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
