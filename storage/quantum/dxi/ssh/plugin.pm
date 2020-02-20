@@ -22,7 +22,7 @@ package storage::quantum::dxi::ssh::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -45,6 +45,7 @@ sub new {
         'system-status'          => 'storage::quantum::dxi::ssh::mode::systemstatus',
         'throughput'             => 'storage::quantum::dxi::ssh::mode::throughput',
     );
+    $self->{custom_modes}{api} = 'storage::quantum::dxi::ssh::custom::api';
 
     return $self;
 }

@@ -27,64 +27,49 @@ use warnings;
 
 sub custom_volume_perfdata {
     my ($self, %options) = @_;
-    
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B/s',
-                                  value => $self->{result_values}->{volume},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
-                                  );
+
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{label}, unit => 'B/s',
+        value => $self->{result_values}->{volume},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
+    );
 }
 
 sub custom_volume_threshold {
     my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{volume},
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{volume},
+        threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
 sub custom_volume_output {
     my ($self, %options) = @_;
-    
+
     my ($volume_value, $volume_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{volume});
-    my $msg = sprintf("%s: %s %s/s", $self->{result_values}->{display}, $volume_value, $volume_unit);
-    return $msg;
+    return sprintf("%s: %s %s/s", $self->{result_values}->{display}, $volume_value, $volume_unit);
 }
 
 sub custom_volume_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{volume} = $self->{instance_mode}->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    $self->{result_values}->{volume} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{display} = $options{extra_options}->{display_ref};
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
-    
+
     return 0;
-}
-
-sub convert_to_bytes {
-    my ($class, %options) = @_;
-    
-    my ($value, $unit) = split(/\s+/, $options{raw_value});
-    if ($unit =~ /kb*/i) {
-        $value = $value * 1024;
-    } elsif ($unit =~ /mb*/i) {
-        $value = $value * 1024 * 1024;
-    } elsif ($unit =~ /gb*/i) {
-        $value = $value * 1024 * 1024 * 1024;
-    } elsif ($unit =~ /tb*/i) {
-        $value = $value * 1024 * 1024 * 1024 * 1024;
-    }
-
-    return $value;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'read-rate', set => {
                 key_values => [ { name => 'read_rate' } ],
@@ -111,50 +96,24 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        "hostname:s"          => { name => 'hostname' },
-        "ssh-option:s@"       => { name => 'ssh_option' },
-        "ssh-path:s"          => { name => 'ssh_path' },
-        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"           => { name => 'timeout', default => 30 },
-        "sudo"                => { name => 'sudo' },
-        "command:s"           => { name => 'command', default => 'syscli' },
-        "command-path:s"      => { name => 'command_path' },
-        "command-options:s"   => { name => 'command_options', default => '--get ingestrate' },
+
+    $options{options}->add_options(arguments => {
     });
-    
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                sudo => $self->{option_results}->{sudo},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                );
+    my $stdout = $options{custom}->execute_command(command => 'syscli --get ingestrate');
     # Output data:
     #     Write Throughput = 0.03 MB/s
     #     Read Throughput = 6.98 MB/s
-
+    $self->{global} = {};
     foreach (split(/\n/, $stdout)) {
-        $self->{global}->{write_rate} = $1 if ($_ =~ /.*Write\sThroughput\s=\s(.*)$/i);
-        $self->{global}->{read_rate} = $1 if ($_ =~ /.*Read\sThroughput\s=\s(.*)$/i);
+        $self->{global}->{write_rate} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Write\sThroughput\s=\s(.*)$/i)
+        $self->{global}->{read_rate} = $options{custom}->convert_to_bytes(raw_value => $1)  if (/.*Read\sThroughput\s=\s(.*)$/i);
     }
 }
 
@@ -168,51 +127,10 @@ Check ingest throughput rate.
 
 =over 8
 
-=item B<--hostname>
+=item B<--warning-*> B<--critical-*>
 
-Hostname to query.
-
-=item B<--warning-*>
-
-Threshold warning.
+Thresholds.
 Can be: 'read-rate', 'write-rate'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'read-rate', 'write-rate'.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'syscli').
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options (Default: '--get ingestrate').
 
 =back
 

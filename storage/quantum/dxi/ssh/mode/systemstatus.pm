@@ -28,14 +28,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = "status is '" . $self->{result_values}->{status} . "' [type = " . $self->{result_values}->{type} . "] [value = " . $self->{result_values}->{value} . "]";
-    return $msg;
+
+    return "status is '" . $self->{result_values}->{status} . "' [type = " . $self->{result_values}->{type} . "] [value = " . $self->{result_values}->{value} . "]";
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
     $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
@@ -51,11 +50,11 @@ sub prefix_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 1, cb_prefix_output => 'prefix_output', message_multiple => 'All component status are ok' },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'status', set => {
                 key_values => [ { name => 'status' }, { name => 'name' }, { name => 'type' }, { name => 'value' } ],
@@ -72,22 +71,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'syscli' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '--getstatus systemboard' },
-                                  "warning-status:s"    => { name => 'warning_status' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} !~ /Normal/i' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'warning-status:s'    => { name => 'warning_status' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{status} !~ /Normal/i' }
+    });
+
     return $self;
 }
 
@@ -95,25 +84,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
-    
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                sudo => $self->{option_results}->{sudo},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                );
+    my $stdout = $options{custom}->execute_command(command => 'syscli --getstatus systemboard');
     # Output data:
     #   System Board Components
     #   Total count = 45
@@ -133,13 +110,14 @@ sub manage_selection {
     #     Value = 31 degrees C
     #     Status = Normal
 
+    $self->{global} = {};
     my $id;
     foreach (split(/\n/, $stdout)) {
-        $id = $1 if ($_ =~ /.*\[Component\s=\s(.*)\]$/i);
-        $self->{global}->{$id}->{status} = $1 if ($_ =~ /.*Status\s=\s(.*)$/i && defined($id) && $id ne '');
-        $self->{global}->{$id}->{name} = $1 if ($_ =~ /.*Name\s=\s(.*)$/i && defined($id) && $id ne '');
-        $self->{global}->{$id}->{type} = $1 if ($_ =~ /.*Type\s=\s(.*)$/i && defined($id) && $id ne '');
-        $self->{global}->{$id}->{value} = $1 if ($_ =~ /.*Value\s=\s(.*)$/i && defined($id) && $id ne '');
+        $id = $1 if (/.*\[Component\s=\s(.*)\]$/i);
+        $self->{global}->{$id}->{status} = $1 if (/.*Status\s=\s(.*)$/i && defined($id) && $id ne '');
+        $self->{global}->{$id}->{name} = $1 if (/.*Name\s=\s(.*)$/i && defined($id) && $id ne '');
+        $self->{global}->{$id}->{type} = $1 if (/.*Type\s=\s(.*)$/i && defined($id) && $id ne '');
+        $self->{global}->{$id}->{value} = $1 if (/.*Value\s=\s(.*)$/i && defined($id) && $id ne '');
     }
 }
 
@@ -153,10 +131,6 @@ Check system board status.
 
 =over 8
 
-=item B<--hostname>
-
-Hostname to query.
-
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
@@ -166,38 +140,6 @@ Can used special variables like: %{name}, %{status}
 
 Set critical threshold for status (Default: '%{status} !~ /Normal/i').
 Can used special variables like: %{name}, %{status}
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'syscli').
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options (Default: '--getstatus systemboard').
 
 =back
 
