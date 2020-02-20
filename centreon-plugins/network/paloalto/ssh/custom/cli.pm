@@ -22,6 +22,7 @@ package network::paloalto::ssh::custom::cli;
 
 use strict;
 use warnings;
+use centreon::plugins::ssh;
 use centreon::plugins::misc;
 use XML::Simple;
 
@@ -42,9 +43,6 @@ sub new {
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
             'hostname:s'        => { name => 'hostname' },
-            'ssh-option:s@'     => { name => 'ssh_option' },
-            'ssh-path:s'        => { name => 'ssh_path' },
-            'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
             'timeout:s'         => { name => 'timeout', default => 45 },
             'command:s'         => { name => 'command' },
             'command-path:s'    => { name => 'command_path' },
@@ -55,6 +53,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
+    $self->{ssh} = centreon::plugins::ssh->new(%options);
 
     return $self;
 }
@@ -86,10 +85,13 @@ sub check_options {
 
     $self->{option_results}->{remote} = 1;
     if (defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '') {
-        $self->{option_results}->{remote} = undef;
+        $self->{option_results}->{remote} = 0;
     } elsif (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => 'Need to set hostname option.');
         $self->{output}->option_exit();
+    }
+    if ($self->{option_results}->{remote} == 1) {
+        $self->{ssh}->check_options(option_results => $self->{option_results});
     }
  
     return 0;
@@ -112,14 +114,26 @@ sub execute_command {
         "set cli op-command-xml-output on\n" .
         $options{command} . "\n";
 
-    my ($stdout, $exit) = centreon::plugins::misc::execute(
-        ssh_pipe => 1,
-        output => $self->{output},
-        options => $self->{option_results},
-        command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands},
-        command_path => $self->{option_results}->{command_path},
-        command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
-    );
+    my $stdout;
+    if ($self->{option_results}->{remote} == 1) {
+        ($stdout) = $self->{ssh}->execute(
+            ssh_pipe => 1,
+            hostname => $self->{option_results}->{hostname},
+            command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands},
+            command_path => $self->{option_results}->{command_path},
+            command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef,
+            timeout => $self->{option_results}->{timeout}
+        );
+    } else {
+        ($stdout) = centreon::plugins::misc::execute(
+            ssh_pipe => 1,
+            output => $self->{output},
+            options => { timeout => $self->{option_results}->{timeout} },
+            command => $self->{option_results}->{command},
+            command_path => $self->{option_results}->{command_path},
+            command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef
+        );
+    }
 
     $self->{output}->output_add(long_msg => "command response: $stdout", debug => 1);
     if (defined($options{text_output})) {
@@ -168,18 +182,6 @@ my ssh
 =item B<--hostname>
 
 Hostname to query.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
 
 =item B<--timeout>
 
