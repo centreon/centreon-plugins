@@ -25,20 +25,13 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub custom_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{severity} = $options{new_datas}->{$self->{instance} . '_severity'};
-    $self->{result_values}->{count} = $options{new_datas}->{$self->{instance} . '_count'};
-    return 0;
-}
-
 sub custom_output {
     my ($self, %options) = @_;
     
-    return sprintf("Alert severity: '%s', Count: '%d'",
-        $self->{result_values}->{severity},
-        $self->{result_values}->{count}
+    return sprintf(
+        "alert severity: '%s', Count: '%d'",
+        $self->{result_values}->{severity_absolute},
+        $self->{result_values}->{count_absolute}
     );
 }
 
@@ -46,37 +39,26 @@ sub custom_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        label => $self->{result_values}->{severity},
-        value => $self->{result_values}->{count},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        nlabel => 'alerts.' . $self->{result_values}->{severity_aboluste} . '.count',
+        value => $self->{result_values}->{count_absolute},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
     );
-}
-
-sub custom_threshold_check {
-    my ($self, %options) = @_;
-
-    my $exit = $self->{perfdata}->threshold_check(
-        value => $self->{result_values}->{count},
-        threshold => [ { label => 'critical', exit_litteral => 'critical' },
-                       { label => 'warning', exit_litteral => 'warning' } ]);
-    return $exit;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alert', type => 1, message_multiple => 'All alert are ok' },
+        { name => 'alert', type => 1, message_multiple => 'All alerts are ok' },
     ];
 
     $self->{maps_counters}->{alert} = [
-        { label => 'severity', threshold => 0, set => {
+        { label => 'count', set => {
                 key_values => [ { name => 'severity' }, { name => 'count' } ],
-                closure_custom_calc => $self->can('custom_calc'),
                 closure_custom_output => $self->can('custom_output'),
+                threshold_use => 'count_absolute',
                 closure_custom_perfdata => $self->can('custom_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_threshold_check'),
             }
         },
     ];
@@ -84,19 +66,17 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "resource:s"        => { name => 'resource' },
-        "resource-group:s"  => { name => 'resource_group' },
-        "group-by:s"  => { name => 'group_by', default => 'severity' },
-        "time-range:s"  => { name => 'time_range', default => '1h' },
-        "warning:s"  => { name => 'warning', default => '' },
-        "critical:s" => { name => 'critical', default => '' },
-        "filter:s" => { name => 'filter', default => '.*' },
+        'resource:s'       => { name => 'resource' },
+        'resource-group:s' => { name => 'resource_group', default => '' },
+        'group-by:s'       => { name => 'group_by', default => 'severity' },
+        'time-range:s'     => { name => 'time_range', default => '1h' },
+        'filter:s'         => { name => 'filter', default => '.*' },
     });
-    
+
     return $self;
 }
 
@@ -105,25 +85,15 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{option_results}->{api_version} = '2018-05-05';
-
-    if (!defined($self->{option_results}->{resource})) {
+    if (!defined($self->{option_results}->{resource}) || $self->{option_results}->{resource} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group option or --resource <id>.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_group_by} = $self->{option_results}->{group_by}  if ($self->{option_results}->{group_by} =~ /^(alertRule|alertState|monitorCondition|monitorService|severity|signalType)$/i);
     $self->{az_time_range} = $self->{option_results}->{time_range} if ($self->{option_results}->{time_range} =~ /^(1d|1h|30d|7d)$/);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
 }
 
 sub manage_selection {
@@ -163,8 +133,7 @@ __END__
 
 =head1 MODE
 
-Check check alert count.
-
+Check alerts.
 
 =over 8
 
@@ -180,13 +149,10 @@ Set resource group (Required if resource's name is used).
 
 Filter on alert name Can be a regexp).
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Thresholds warning.
-
-=item B<--critical>
-
-Thresholds critical.
+Thresholds.
+Can be: 'count'.
 
 =back
 
