@@ -22,56 +22,79 @@ package hardware::sensors::netbotz::snmp::mode::components::humidity;
 
 use strict;
 use warnings;
-use hardware::sensors::netbotz::snmp::mode::components::resources qw(%map_status);
-
-my $mapping = {
-    humiSensorId            => { oid => '.1.3.6.1.4.1.5528.100.4.1.2.1.1' },
-    humiSensorValue         => { oid => '.1.3.6.1.4.1.5528.100.4.1.2.1.2' },
-    humiSensorErrorStatus   => { oid => '.1.3.6.1.4.1.5528.100.4.1.2.1.3', map => \%map_status },
-    humiSensorLabel         => { oid => '.1.3.6.1.4.1.5528.100.4.1.2.1.4' },
-};
-
-my $oid_humiSensorEntry = '.1.3.6.1.4.1.5528.100.4.1.2.1';
+use hardware::sensors::netbotz::snmp::mode::components::resources qw($map_status);
 
 sub load {
     my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_humiSensorEntry };
+
+    $self->{mapping_humidity} = {
+        humiSensorId            => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.1.2.1.1' },
+        humiSensorValue         => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.1.2.1.2' },
+        humiSensorErrorStatus   => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.1.2.1.3', map => $map_status },
+        humiSensorLabel         => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.1.2.1.4' }
+    };
+    $self->{oid_humiSensorEntry} = '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.1.2.1';
+    push @{$self->{request}}, {
+        oid => $self->{oid_humiSensorEntry},
+        end => $self->{mapping_humidity}->{humiSensorLabel}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking humidities");
-    $self->{components}->{humidity} = {name => 'humidity', total => 0, skip => 0};
+    $self->{components}->{humidity} = { name => 'humidity', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'humidity'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_humiSensorEntry}})) {
-        next if ($oid !~ /^$mapping->{humiSensorErrorStatus}->{oid}\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oid_humiSensorEntry} }})) {
+        next if ($oid !~ /^$self->{mapping_humidity}->{humiSensorErrorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_humiSensorEntry}, instance => $instance);
-        
+        my $result = $self->{snmp}->map_instance(
+            mapping => $self->{mapping_humidity},
+            results => $self->{results}->{ $self->{oid_humiSensorEntry} },
+            instance => $instance
+        );
+
         next if ($self->check_filter(section => 'humidity', instance => $instance));
         $self->{components}->{humidity}->{total}++;
-        
+
         $result->{humiSensorValue} *= 0.1;
         my $label = defined($result->{humiSensorLabel}) && $result->{humiSensorLabel} ne '' ? $result->{humiSensorLabel} : $result->{humiSensorId};
-        $self->{output}->output_add(long_msg => sprintf("humidity '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $label, $result->{humiSensorErrorStatus}, $instance, 
-                                    $result->{humiSensorValue}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "humidity '%s' status is '%s' [instance = %s] [value = %s]",
+                $label,
+                $result->{humiSensorErrorStatus},
+                $instance, 
+                $result->{humiSensorValue}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'humidity', value => $result->{humiSensorErrorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Humidity '%s' status is '%s'", $label, $result->{humiSensorErrorStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Humidity '%s' status is '%s'",
+                    $label,
+                    $result->{humiSensorErrorStatus}
+                )
+            );
         }
-             
+
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'humidity', instance => $instance, value => $result->{humiSensorValue});
-        
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Humidity '%s' is %s %%", $label, $result->{humiSensorValue}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Humidity '%s' is %s %%",
+                    $label,
+                    $result->{humiSensorValue}
+                )
+            );
         }
+
         $self->{output}->perfdata_add(
             label => 'humidity', unit => '%',
             nlabel => 'hardware.sensor.humidity.percentage',

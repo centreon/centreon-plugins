@@ -24,32 +24,32 @@ use strict;
 use warnings;
 use Exporter;
 
-our %map_status;
-our %map_door_value;
-our %map_camera_value;
+our $map_status;
+our $map_door_value;
+our $map_camera_value;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(%map_status %map_door_value %map_camera_value);
+our @EXPORT_OK = qw($map_status $map_door_value $map_camera_value);
 
-%map_status = (
+$map_status = {
     0 => 'normal',
-    1 => 'info', 
-    2 => 'warning', 
-    3 => 'error', 
-    4 => 'critical', 
-    5 => 'failure',
-);
+    1 => 'info',
+    2 => 'warning',
+    3 => 'error',
+    4 => 'critical',
+    5 => 'failure'
+};
 
-%map_door_value = (
-    -1 => 'null', 
-    0 => 'open', 
-    1 => 'closed', 
-);
+$map_door_value = {
+    -1 => 'null',
+    0 => 'open',
+    1 => 'closed'
+};
 
-%map_camera_value = (
-    -1 => 'null', 
-    0 => 'noMotion', 
-    1 => 'motionDetected', 
-);
+$map_camera_value = {
+    -1 => 'null',
+    0 => 'noMotion',
+    1 => 'motionDetected'
+};
 
 1;

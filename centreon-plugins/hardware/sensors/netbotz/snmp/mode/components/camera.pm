@@ -22,47 +22,64 @@ package hardware::sensors::netbotz::snmp::mode::components::camera;
 
 use strict;
 use warnings;
-use hardware::sensors::netbotz::snmp::mode::components::resources qw(%map_status %map_camera_value);
-
-my $mapping = {
-    cameraMotionSensorId            => { oid => '.1.3.6.1.4.1.5528.100.4.2.3.1.1' },
-    cameraMotionSensorValue         => { oid => '.1.3.6.1.4.1.5528.100.4.2.3.1.2', map => \%map_camera_value },
-    cameraMotionSensorErrorStatus   => { oid => '.1.3.6.1.4.1.5528.100.4.2.3.1.3', map => \%map_status },
-    cameraMotionSensorLabel         => { oid => '.1.3.6.1.4.1.5528.100.4.2.3.1.4' },
-};
-
-my $oid_cameraMotionSensorEntry = '.1.3.6.1.4.1.5528.100.4.2.3.1';
+use hardware::sensors::netbotz::snmp::mode::components::resources qw($map_status $map_camera_value);
 
 sub load {
     my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $oid_cameraMotionSensorEntry };
+
+    $self->{mapping_camera} = {
+        cameraMotionSensorId          => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.2.3.1.1' },
+        cameraMotionSensorValue       => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.2.3.1.2', map => $map_camera_value },
+        cameraMotionSensorErrorStatus => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.2.3.1.3', map => $map_status },
+        cameraMotionSensorLabel       => { oid => '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.2.3.1.4' }
+    };
+    $self->{oid_cameraMotionSensorEntry} = '.1.3.6.1.4.1.' . $self->{netbotz_branch} . '.4.2.3.1';
+    push @{$self->{request}}, { 
+        oid => $self->{oid_cameraMotionSensorEntry},
+        end => $self->{mapping_camera}->{cameraMotionSensorLabel}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking cameras");
-    $self->{components}->{camera} = {name => 'cameras', total => 0, skip => 0};
+    $self->{components}->{camera} = { name => 'cameras', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'camera'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_cameraMotionSensorEntry}})) {
-        next if ($oid !~ /^$mapping->{cameraMotionSensorErrorStatus}->{oid}\.(.*)$/);
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $self->{oid_cameraMotionSensorEntry} }})) {
+        next if ($oid !~ /^$self->{mapping_camera}->{cameraMotionSensorErrorStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cameraMotionSensorEntry}, instance => $instance);
-        
+        my $result = $self->{snmp}->map_instance(
+            mapping => $self->{mapping_camera},
+            results => $self->{results}->{ $self->{oid_cameraMotionSensorEntry} },
+            instance => $instance
+        );
+
         next if ($self->check_filter(section => 'camera', instance => $instance));
         $self->{components}->{camera}->{total}++;
-        
+
         my $label = defined($result->{cameraMotionSensorLabel}) && $result->{cameraMotionSensorLabel} ne '' ? $result->{cameraMotionSensorLabel} : $result->{cameraMotionSensorId};
-        $self->{output}->output_add(long_msg => sprintf("camera motion '%s' status is '%s' [instance = %s] [value = %s]",
-                                    $label, $result->{cameraMotionSensorErrorStatus}, $instance, 
-                                    $result->{cameraMotionSensorValue}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "camera motion '%s' status is '%s' [instance = %s] [value = %s]",
+                $label,
+                $result->{cameraMotionSensorErrorStatus},
+                $instance, 
+                $result->{cameraMotionSensorValue}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'camera', value => $result->{cameraMotionSensorErrorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Camera motion '%s' status is '%s'", $label, $result->{cameraMotionSensorErrorStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Camera motion '%s' status is '%s'",
+                    $label,
+                    $result->{cameraMotionSensorErrorStatus}
+                )
+            );
         }
     }
 }
