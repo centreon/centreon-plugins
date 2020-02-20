@@ -28,9 +28,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = 'Reclamation status: ' . $self->{result_values}->{reclamation_status};
-    return $msg;
+
+    return 'Reclamation status: ' . $self->{result_values}->{reclamation_status};
 }
 
 sub custom_status_calc {
@@ -42,64 +41,49 @@ sub custom_status_calc {
 
 sub custom_volume_perfdata {
     my ($self, %options) = @_;
-    
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B',
-                                  value => $self->{result_values}->{volume},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
-                                  );
+
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{label}, unit => 'B',
+        value => $self->{result_values}->{volume},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
+    );
 }
 
 sub custom_volume_threshold {
     my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{volume},
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{volume},
+        threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
 sub custom_volume_output {
     my ($self, %options) = @_;
-    
+
     my ($volume_value, $volume_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{volume});
-    my $msg = sprintf("%s: %s %s", $self->{result_values}->{display}, $volume_value, $volume_unit);
-    return $msg;
+    return sprintf('%s: %s %s', $self->{result_values}->{display}, $volume_value, $volume_unit);
 }
 
 sub custom_volume_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{volume} = $self->{instance_mode}->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    $self->{result_values}->{volume} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{display} = $options{extra_options}->{display_ref};
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
     
     return 0;
 }
 
-sub convert_to_bytes {
-    my ($class, %options) = @_;
-    
-    my ($value, $unit) = split(/\s+/, $options{raw_value});
-    if ($unit =~ /kb*/i) {
-        $value = $value * 1024;
-    } elsif ($unit =~ /mb*/i) {
-        $value = $value * 1024 * 1024;
-    } elsif ($unit =~ /gb*/i) {
-        $value = $value * 1024 * 1024 * 1024;
-    } elsif ($unit =~ /tb*/i) {
-        $value = $value * 1024 * 1024 * 1024 * 1024;
-    }
-
-    return $value;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'reclamation_status' } ],
@@ -152,22 +136,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"          => { name => 'hostname' },
-                                  "ssh-option:s@"       => { name => 'ssh_option' },
-                                  "ssh-path:s"          => { name => 'ssh_path' },
-                                  "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"           => { name => 'timeout', default => 30 },
-                                  "sudo"                => { name => 'sudo' },
-                                  "command:s"           => { name => 'command', default => 'syscli' },
-                                  "command-path:s"      => { name => 'command_path' },
-                                  "command-options:s"   => { name => 'command_options', default => '--getstatus reclamation' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{reclamation_status} !~ /ready/i' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{reclamation_status} !~ /ready/i' },
+    });
+
     return $self;
 }
 
@@ -175,25 +149,13 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }
-
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                sudo => $self->{option_results}->{sudo},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                );
+    my $stdout = $options{custom}->execute_command(command => 'syscli --getstatus reclamation');
     # Output data:
     #    Reclamation Status =
     #    Stage Status Progress = 100 %
@@ -204,12 +166,13 @@ sub manage_selection {
     #    Number of Stages = 2
     #    Reclaimable Space = 187.87 GB
 
+    $self->{global} = {};
     foreach (split(/\n/, $stdout)) {
-        $self->{global}->{reclamation_status} = $1 if ($_ =~ /.*Reclamation\sStatus\s=\s(.*)$/i);
-        $self->{global}->{stage_status_progress} = $1 if ($_ =~ /.*Stage\sStatus\sProgress\s=\s(.*)\s%$/i);
-        $self->{global}->{total_progress} = $1 if ($_ =~ /.*Total\sProgress\s=\s(.*)\s%$/i);
-        $self->{global}->{data_scanned} = $1 if ($_ =~ /.*Data\sScanned\s=\s(.*)$/i);
-        $self->{global}->{reclaimable_space} = $1 if ($_ =~ /.*Reclaimable\sSpace\s=\s(.*)$/i);
+        $self->{global}->{reclamation_status} = $1 if (/.*Reclamation\sStatus\s=\s(.*)$/i);
+        $self->{global}->{stage_status_progress} = $1 if (/.*Stage\sStatus\sProgress\s=\s(.*)\s%$/i);
+        $self->{global}->{total_progress} = $1 if (/.*Total\sProgress\s=\s(.*)\s%$/i);
+        $self->{global}->{data_scanned} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Data\sScanned\s=\s(.*)$/i);
+        $self->{global}->{reclaimable_space} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Reclaimable\sSpace\s=\s(.*)$/i);
     }
 }
 
@@ -222,10 +185,6 @@ __END__
 Check reclamation status and volumes.
 
 =over 8
-
-=item B<--hostname>
-
-Hostname to query.
 
 =item B<--filter-counters>
 
@@ -242,47 +201,10 @@ Can used special variables like: %{reclamation_status}
 Set critical threshold for status (Default: '%{reclamation_status} !~ /ready/i').
 Can used special variables like: %{reclamation_status}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'status-progress', 'compacted', 'still-to-compact'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'status-progress', 'compacted', 'still-to-compact'.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'syscli').
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options (Default: '--getstatus reclamation').
 
 =back
 

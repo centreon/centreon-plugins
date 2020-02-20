@@ -27,64 +27,49 @@ use warnings;
 
 sub custom_volume_perfdata {
     my ($self, %options) = @_;
-    
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label}, unit => 'B',
-                                  value => $self->{result_values}->{volume},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
-                                  );
+
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{label}, unit => 'B',
+        value => $self->{result_values}->{volume},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label})
+    );
 }
 
 sub custom_volume_threshold {
     my ($self, %options) = @_;
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{volume},
-                                               threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{volume},
+        threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
 sub custom_volume_output {
     my ($self, %options) = @_;
-    
+
     my ($volume_value, $volume_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{volume});
-    my $msg = sprintf("%s: %s %s", $self->{result_values}->{display}, $volume_value, $volume_unit);
-    return $msg;
+    return sprintf('%s: %s %s', $self->{result_values}->{display}, $volume_value, $volume_unit);
 }
 
 sub custom_volume_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{volume} = $self->{instance_mode}->convert_to_bytes(raw_value => $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}});
+    $self->{result_values}->{volume} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{label_ref}};
     $self->{result_values}->{display} = $options{extra_options}->{display_ref};
     $self->{result_values}->{label} = $options{extra_options}->{label_ref};
-    
+
     return 0;
-}
-
-sub convert_to_bytes {
-    my ($class, %options) = @_;
-    
-    my ($value, $unit) = split(/\s+/, $options{raw_value});
-    if ($unit =~ /kb*/i) {
-        $value = $value * 1024;
-    } elsif ($unit =~ /mb*/i) {
-        $value = $value * 1024 * 1024;
-    } elsif ($unit =~ /gb*/i) {
-        $value = $value * 1024 * 1024 * 1024;
-    } elsif ($unit =~ /tb*/i) {
-        $value = $value * 1024 * 1024 * 1024 * 1024;
-    }
-
-    return $value;
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'size-before-reduction', set => {
                 key_values => [ { name => 'size_before_reduction' } ],
@@ -192,43 +177,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "hostname:s"          => { name => 'hostname' },
-        "ssh-option:s@"       => { name => 'ssh_option' },
-        "ssh-path:s"          => { name => 'ssh_path' },
-        "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"           => { name => 'timeout', default => 30 },
-        "sudo"                => { name => 'sudo' },
-        "command:s"           => { name => 'command', default => 'syscli' },
-        "command-path:s"      => { name => 'command_path' },
-        "command-options:s"   => { name => 'command_options', default => '--get datareductionstat' },
     });
-    
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
-        $self->{option_results}->{remote} = 1;
-    }    
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {};
-
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(output => $self->{output},
-                                                                options => $self->{option_results},
-                                                                sudo => $self->{option_results}->{sudo},
-                                                                command => $self->{option_results}->{command},
-                                                                command_path => $self->{option_results}->{command_path},
-                                                                command_options => $self->{option_results}->{command_options},
-                                                                );
+    my $stdout = $options{custom}->execute_command(command => 'syscli --get datareductionstat');
     # Output data:
     #     Data Size Before Reduction = 346.08 TB
     #     - Incoming Namespace = 0.00 MB
@@ -242,18 +201,19 @@ sub manage_selection {
     #     - Deduplication Ratio = 3.95 : 1
     #     - Compression Ratio = 1.33 : 1
 
+    $self->{global} = {};
     foreach (split(/\n/, $stdout)) {
-        $self->{global}->{size_before_reduction} = $1 if ($_ =~ /.*Data\sSize\sBefore\sReduction\s=\s(.*)$/i);
-        $self->{global}->{incoming_namespace} = $1 if ($_ =~ /.*Incoming\sNamespace\s=\s(.*)$/i);
-        $self->{global}->{nfs_deduplicated_shares} = $1 if ($_ =~ /.*NFS\sDeduplicated\sShares\s=\s(.*)$/i);
-        $self->{global}->{cifs_smb_deduplicated_shares} = $1 if ($_ =~ /.*CIFS\/SMB\sDeduplicated\sShares\s=\s(.*)$/i);
-        $self->{global}->{application_specific_deduplicated_shares} = $1 if ($_ =~ /.*Application\sSpecific\sDeduplicated\sShares\s=\s(.*)$/i);
-        $self->{global}->{deduplicated_partitions} = $1 if ($_ =~ /.*Deduplicated\sPartitions\s=\s(.*)$/i);
-        $self->{global}->{ost_storage_servers} = $1 if ($_ =~ /.*OST\sStorage\sServers\s=\s(.*)$/i);
-        $self->{global}->{size_after_reduction} = $1 if ($_ =~ /.*Data\sSize\sAfter\sReduction\s=\s(.*)$/i);
-        $self->{global}->{total_reduction_ratio} = $1 if ($_ =~ /.*Total\sReduction\sRatio\s=\s(.*)\s:\s1$/i);
-        $self->{global}->{deduplication_ratio} = $1 if ($_ =~ /.*Deduplication\sRatio\s=\s(.*)\s:\s1$/i);
-        $self->{global}->{compression_ratio} = $1 if ($_ =~ /.*Compression\sRatio\s=\s(.*)\s:\s1$/i);
+        $self->{global}->{size_before_reduction} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Data\sSize\sBefore\sReduction\s=\s(.*)$/i);
+        $self->{global}->{incoming_namespace} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Incoming\sNamespace\s=\s(.*)$/i);
+        $self->{global}->{nfs_deduplicated_shares} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*NFS\sDeduplicated\sShares\s=\s(.*)$/i);
+        $self->{global}->{cifs_smb_deduplicated_shares} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*CIFS\/SMB\sDeduplicated\sShares\s=\s(.*)$/i);
+        $self->{global}->{application_specific_deduplicated_shares} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Application\sSpecific\sDeduplicated\sShares\s=\s(.*)$/i);
+        $self->{global}->{deduplicated_partitions} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Deduplicated\sPartitions\s=\s(.*)$/i);
+        $self->{global}->{ost_storage_servers} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*OST\sStorage\sServers\s=\s(.*)$/i);
+        $self->{global}->{size_after_reduction} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Data\sSize\sAfter\sReduction\s=\s(.*)$/i);
+        $self->{global}->{total_reduction_ratio} = $1 if (/.*Total\sReduction\sRatio\s=\s(.*)\s:\s1$/i);
+        $self->{global}->{deduplication_ratio} = $1 if (/.*Deduplication\sRatio\s=\s(.*)\s:\s1$/i);
+        $self->{global}->{compression_ratio} = $1 if (/.*Compression\sRatio\s=\s(.*)\s:\s1$/i);
     }
 }
 
@@ -267,64 +227,19 @@ Check data reduction statistics.
 
 =over 8
 
-=item B<--hostname>
-
-Hostname to query.
-
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='ratio'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'size-before-reduction', 'size-after-reduction', 'incoming-namespace',
 'nfs-deduplicated-shares', cifs-smb-deduplicated-shares',
 'application-specific-deduplicated-shares', 'deduplicated-partitions',
 'ost-storage-servers', 'total-reduction-ratio',
 'deduplication-ratio', 'compression-ratio'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'size-before-reduction', 'size-after-reduction', 'incoming-namespace',
-'nfs-deduplicated-shares', cifs-smb-deduplicated-shares',
-'application-specific-deduplicated-shares', 'deduplicated-partitions',
-'ost-storage-servers', 'total-reduction-ratio',
-'deduplication-ratio', 'compression-ratio'.
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'syscli').
-
-=item B<--command-path>
-
-Command path.
-
-=item B<--command-options>
-
-Command options (Default: '--get datareductionstat').
 
 =back
 
