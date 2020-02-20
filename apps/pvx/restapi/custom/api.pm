@@ -58,7 +58,7 @@ sub new {
             'timezone:s'  => { name => 'timezone', default => 'UTC' }
         });
     }
-    $options{options}->add_help(package => __PACKAGE__, sections => 'RESTAPI OPTIONS', once => 1);
+    $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};    
@@ -169,8 +169,8 @@ sub query_range {
 
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{timezone});
     my $dt = DateTime->now(%$tz);
-    my $start_time = $dt->subtract(seconds => $options{timeframe})->epoch;
-    my $end_time = $dt->now->epoch;
+    my $start_time = $dt->subtract(seconds => $options{timeframe})->epoch();
+    my $end_time = $dt->epoch();
     my $uri = URI::Encode->new({encode_reserved => 1});
 
     my $query = sprintf('%s SINCE %s UNTIL %s', $options{query}, $start_time, $end_time);
