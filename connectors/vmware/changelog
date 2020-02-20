@@ -1,3 +1,8 @@
+2020-02-20 Quentin Garnier <qgarnier@centreon.com> - 3.1.1
+ * Fix: discovery folders management
+ * Fix: no virtual machines running for 'datastore-vm'
+ * Fix: undefined error for 'thinprovisioning-vm'
+
 2019-08-27 Quentin Garnier <qgarnier@centreon.com> - 3.1.0
  * Enhancement: add 'status-cluster' and 'vsan-cluster-usage'
  * Fix: Can listen only on localhost (issue #81)
