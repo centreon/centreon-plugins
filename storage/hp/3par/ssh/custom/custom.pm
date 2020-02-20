@@ -82,18 +82,10 @@ sub set_defaults {
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{remote} = 1;
-    if (defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '') {
-        $self->{remote} = 0;
-    } elsif (!defined($self->{option_results}->{hostname}) || $self->{option_results}->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to set hostname option.");
-        $self->{output}->option_exit();
-    }
-
-    if ($self->{remote} == 1) {
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         $self->{ssh}->check_options(option_results => $self->{option_results});
     }
- 
+
     return 0;
 }
 
@@ -111,7 +103,7 @@ sub execute_command {
     }
 
     my $content;
-    if ($self->{remote} == 1) {
+    if (defined($self->{option_results}->{hostname}) && $self->{option_results}->{hostname} ne '') {
         ($content) = $self->{ssh}->execute(
             ssh_pipe => 1,
             hostname => $self->{option_results}->{hostname},
@@ -121,6 +113,10 @@ sub execute_command {
             timeout => $self->{option_results}->{timeout}
         );
     } else {
+        if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
+            $self->{output}->add_option_msg(short_msg => 'please set --hostname option for ssh connection (or --command for local)');
+            $self->{output}->option_exit();
+        }
         ($content) = centreon::plugins::misc::execute(
             ssh_pipe => 1,
             output => $self->{output},
