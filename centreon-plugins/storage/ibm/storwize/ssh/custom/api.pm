@@ -125,7 +125,7 @@ sub execute_command {
         );
     } else {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
-            $self->{output}->add_option_msg(short_msg => 'please set --hostname option for ssh connection (or --command)');
+            $self->{output}->add_option_msg(short_msg => 'please set --hostname option for ssh connection (or --command for local)');
             $self->{output}->option_exit();
         }
         ($content) = centreon::plugins::misc::execute(
