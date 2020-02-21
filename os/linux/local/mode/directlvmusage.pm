@@ -28,11 +28,11 @@ use centreon::plugins::misc;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'dlvm', type => 1, cb_prefix_output => 'prefix_dlvm_output', message_multiple => 'All direct LVM are ok' }
     ];
-    
+
     $self->{maps_counters}->{dlvm} = [
         { label => 'data-usage', set => {
                 key_values => [ { name => 'data' }, { name => 'display' } ],
@@ -65,23 +65,22 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'lvs' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '--separator="," 2>&1' },
-                                  "filter-lv:s"       => { name => 'filter_lv', },
-                                  "filter-vg:s"       => { name => 'filter_vg', },
-                                });
-    $self->{result} = {};
+
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'lvs' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '--separator="," 2>&1' },
+        'filter-lv:s'       => { name => 'filter_lv' },
+        'filter-vg:s'       => { name => 'filter_vg' }
+    });
+
     return $self;
 }
 
@@ -98,7 +97,6 @@ sub manage_selection {
         no_quit => 1
     );
     $self->{dlvm} = {};
-    
     #  LV,VG,Attr,LSize,Pool,Origin,Data%,Meta%,Move,Log,Cpy%Sync,Convert
     #  thinpool,docker,twi-aot---,71.25g,,,1.95,0.06,,,,
     #  lv_controlm,vg_sys,-wi-ao----,5.00g,,,,,,,,
@@ -109,7 +107,7 @@ sub manage_selection {
         my @fields = split /,/, $line;
         my ($vg, $lv, $data, $meta) = ($fields[1], $fields[0], $fields[6], $fields[7]);
         next if (!defined($data) || $data !~ /[0-9]/);
-        
+
         my $display = centreon::plugins::misc::trim($vg) . '.' . centreon::plugins::misc::trim($lv);
         if (defined($self->{option_results}->{filter_lv}) && $self->{option_results}->{filter_lv} ne '' &&
             $lv !~ /$self->{option_results}->{filter_lv}/) {
@@ -121,7 +119,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $display . "': no matching filter.", debug => 1);
             next;
         }
- 
+
         $self->{dlvm}->{$display} = { display => $display, data => $data, meta => $meta };
     }
     
