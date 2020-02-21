@@ -35,6 +35,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
+        'unknown:s'       => { name => 'unknown' },
         'warning:s'       => { name => 'warning' },
         'critical:s'      => { name => 'critical' },
         'force-oid:s'     => { name => 'force_oid' },
@@ -53,6 +54,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 
+    if (($self->{perfdata}->threshold_validate(label => 'unknown', value => $self->{option_results}->{unknown})) == 0) {
+       $self->{output}->add_option_msg(short_msg => "Wrong unknown threshold '" . $self->{option_results}->{unknown} . "'.");
+       $self->{output}->option_exit();
+    }
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
@@ -125,7 +130,11 @@ sub run {
 
     my $exit_code = $self->{perfdata}->threshold_check(
         value => floor($value / $unitdiv->{$self->{option_results}->{unit}}), 
-        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+        threshold => [
+            { label => 'critical', exit_litteral => 'critical' },
+            { label => 'warning', exit_litteral => 'warning' },
+            { label => 'unknown', exit_litteral => 'unknown' }
+        ]
     );
     $self->{output}->perfdata_add(
         label => 'uptime', unit => $self->{option_results}->{unit},
@@ -156,6 +165,10 @@ __END__
 Check system uptime.
 
 =over 8
+
+=item B<--unknown>
+
+Threshold unknown in seconds.
 
 =item B<--warning>
 
