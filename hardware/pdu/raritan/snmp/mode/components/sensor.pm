@@ -56,33 +56,43 @@ sub check {
             my $instance = $1 . '.' . $2 . '.' . $instance_type;
             my $result = $self->{snmp}->map_instance(mapping => $mapping->{$options{type}}, results => $self->{results}, instance => $instance);
             my $result2 = $self->{snmp}->map_instance(mapping => $mapping->{$options{type} . '_label'}, results => $self->{results}, instance => $1 . '.' . $2);
-            
+
             $instance = defined($result2->{Label}) && $result2->{Label} ne '' ? $result2->{Label} : $1 . '.' . $2;
-            
+
             next if ($self->check_filter(section => $component, instance => $instance));
-            
+
             if ($long_msg == 0) {
                 $self->{output}->output_add(long_msg => "Checking " . $component);
                 $long_msg = 1;
             }
-            
+
             $self->{components}->{$component}->{total}++;
 
             my $value = (defined($result->{Value}) && $result->{Value} ne '') ? $result->{Value} : '-';
             if ($value =~ /[0-9]/) {
                 $value *= 10 ** -int($result->{Decimal});
             }
-            $self->{output}->output_add(long_msg => sprintf("'%s' %s state is '%s' [instance: %s, value: %s, unit: %s, label: %s]", 
-                                        $instance, $component, $result->{State},
-                                        $instance, $value, $result->{Unit}->{unit}, $result2->{Label}));
-            my $exit = $self->get_severity(section => $component, label => $value_type, 
-                                           instance => $instance, value => $result->{State});
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "'%s' %s state is '%s' [instance: %s, value: %s, unit: %s, label: %s]", 
+                    $instance, $component, $result->{State},
+                    $instance, $value, $result->{Unit}->{unit}, $result2->{Label}
+                )
+            );
+            my $exit = $self->get_severity(
+                section => $component, label => $value_type, 
+                instance => $instance, value => $result->{State}
+            );
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("'%s' %s state is '%s'", 
-                                                $instance, $component, $result->{State}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "'%s' %s state is '%s'", 
+                        $instance, $component, $result->{State}
+                    )
+                );
             }
-            
+
             if ($value =~ /[0-9]/) {
                 next if ($value =~ /^0$/ && $result->{Unit}->{unit} eq '');
                 my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $value);
@@ -112,12 +122,17 @@ sub check {
                     $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $component . '-instance-' . $instance);
                 }
                 if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-                    $self->{output}->output_add(severity => $exit2,
-                                                short_msg => sprintf("'%s' %s value is %s %s", 
-                                                                     $instance, $component, $value, $result->{Unit}->{unit}));
+                    $self->{output}->output_add(
+                        severity => $exit2,
+                        short_msg => sprintf(
+                            "'%s' %s value is %s %s", 
+                            $instance, $component, $value, $result->{Unit}->{unit}
+                        )
+                    );
                 }
-                
-                my $nunit = (!defined($result->{Unit}->{nunit}) ? $result->{Unit}->{nunit} : lc($result->{Unit}->{unit}));
+    
+                my $nunit = (defined($result->{Unit}->{nunit}) ? $result->{Unit}->{nunit} : lc($result->{Unit}->{unit}));
+
                 $self->{output}->perfdata_add(
                     label => $component, unit => $result->{Unit}->{unit},
                     nlabel => 'hardware.sensor.' . $options{type} . '.' . lc($component) . '.' . $nunit,
