@@ -137,8 +137,8 @@ Check system.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'sdcard-usage', 'temperature-internal', 'temperature-external'n
-'temperature-gps', 'illumination-right', 'illumination-left'.
+Can be: 'sdcard-usage', 'temperature-internal', 'temperature-external',
+'temperature-gps', 'illumination-right', 'illumination-left', 'video-framerate'.
 
 =back
 
