@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::sessions;
+package centreon::common::fortinet::fortigate::snmp::mode::sessions;
 
 use base qw(centreon::plugins::mode);
 
@@ -30,13 +30,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                  "warning-avg:s"           => { name => 'warning_avg', default => '' },
-                                  "critical-avg:s"          => { name => 'critical_avg', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning:s'      => { name => 'warning', },
+        'critical:s'     => { name => 'critical', },
+        'warning-avg:s'  => { name => 'warning_avg', default => '' },
+        'critical-avg:s' => { name => 'critical_avg', default => '' },
+    });
 
     return $self;
 }
@@ -93,25 +92,35 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_fgSysSesCount = '.1.3.6.1.4.1.12356.101.4.1.8.0';
     my $oid_fgSysSesRate1 = '.1.3.6.1.4.1.12356.101.4.1.11.0';
     my $oid_fgSysSesRate10 = '.1.3.6.1.4.1.12356.101.4.1.12.0';
     my $oid_fgSysSesRate30 = '.1.3.6.1.4.1.12356.101.4.1.13.0';
     my $oid_fgSysSesRate60 = '.1.3.6.1.4.1.12356.101.4.1.14.0';
-    my $result = $self->{snmp}->get_leef(oids => [$oid_fgSysSesCount, $oid_fgSysSesRate1, 
-                                                  $oid_fgSysSesRate10, $oid_fgSysSesRate30, $oid_fgSysSesRate60], nothing_quit => 1);
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesCount}, 
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Current active sessions: %d", $result->{$oid_fgSysSesCount}));
-    $self->{output}->perfdata_add(label => "sessions",
-                                  value => $result->{$oid_fgSysSesCount},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
+    my $result = $options{snmp}->get_leef(
+        oids => [
+            $oid_fgSysSesCount, $oid_fgSysSesRate1, 
+            $oid_fgSysSesRate10, $oid_fgSysSesRate30, $oid_fgSysSesRate60
+        ],
+        nothing_quit => 1
+    );
+
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $result->{$oid_fgSysSesCount}, 
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf('Current active sessions: %d', $result->{$oid_fgSysSesCount})
+    );
+    $self->{output}->perfdata_add(
+        label => "sessions",
+        value => $result->{$oid_fgSysSesCount},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
     
     my $exit1 = $self->{perfdata}->threshold_check(value => $result->{$oid_fgSysSesRate1}, 
                                threshold => [ { label => 'crit1', exit_litteral => 'critical' }, { label => 'warn1', exit_litteral => 'warning' } ]);
@@ -127,26 +136,34 @@ sub run {
                                                       $result->{$oid_fgSysSesRate1}, $result->{$oid_fgSysSesRate10}, 
                                                       $result->{$oid_fgSysSesRate30}, $result->{$oid_fgSysSesRate60}));
             
-    $self->{output}->perfdata_add(label => 'session_avg_setup1',
-                                  value => $result->{$oid_fgSysSesRate1},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'session_avg_setup10',
-                                  value => $result->{$oid_fgSysSesRate10},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn10'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit10'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'session_avg_setup30',
-                                  value => $result->{$oid_fgSysSesRate30},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn30'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit30'),
-                                  min => 0);
-    $self->{output}->perfdata_add(label => 'session_avg_setup60',
-                                  value => $result->{$oid_fgSysSesRate60},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn60'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit60'),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'session_avg_setup1',
+        value => $result->{$oid_fgSysSesRate1},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => 'session_avg_setup10',
+        value => $result->{$oid_fgSysSesRate10},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn10'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit10'),
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => 'session_avg_setup30',
+        value => $result->{$oid_fgSysSesRate30},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn30'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit30'),
+        min => 0
+    );
+    $self->{output}->perfdata_add(
+        label => 'session_avg_setup60',
+        value => $result->{$oid_fgSysSesRate60},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn60'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit60'),
+        min => 0
+    );
     
     $self->{output}->display();
     $self->{output}->exit();
@@ -181,4 +198,3 @@ Threshold critical of average setup rate (1min,10min,30min,60min).
 =back
 
 =cut
-    

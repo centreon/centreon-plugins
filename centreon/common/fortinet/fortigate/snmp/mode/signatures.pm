@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::signatures;
+package centreon::common::fortinet::fortigate::snmp::mode::signatures;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -130,14 +130,13 @@ sub get_epoch_from_signature {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_fgSysVersionAv = '.1.3.6.1.4.1.12356.101.4.2.1.0';
     my $oid_fgSysVersionIps = '.1.3.6.1.4.1.12356.101.4.2.2.0';
     my $oid_fgSysVersionAvEt = '.1.3.6.1.4.1.12356.101.4.2.3.0';
     my $oid_fgSysVersionIpsEt = '.1.3.6.1.4.1.12356.101.4.2.4.0';
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_fgSysVersionAv, $oid_fgSysVersionIps, $oid_fgSysVersionAvEt, $oid_fgSysVersionIpsEt], nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(oids => [$oid_fgSysVersionAv, $oid_fgSysVersionIps, $oid_fgSysVersionAvEt, $oid_fgSysVersionIpsEt], nothing_quit => 1);
 
     my $av_epoch = $self->get_epoch_from_signature(date => $result->{$oid_fgSysVersionAv});
     my $ips_epoch = $self->get_epoch_from_signature(date => $result->{$oid_fgSysVersionIps});

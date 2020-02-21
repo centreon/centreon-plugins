@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::apusage;
+package centreon::common::fortinet::fortigate::snmp::mode::apusage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,9 +29,8 @@ use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status} . ' [admin: ' . $self->{result_values}->{admin} . ']';
 
-    return $msg;
+    return 'status : ' . $self->{result_values}->{status} . ' [admin: ' . $self->{result_values}->{admin} . ']';
 }
 
 sub custom_status_calc {
@@ -45,11 +44,11 @@ sub custom_status_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All access points are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{ap} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'admin' }, { name => 'display' } ],
@@ -111,7 +110,7 @@ sub set_counters {
 
 sub prefix_ap_output {
     my ($self, %options) = @_;
-    
+
     return "Access point '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -121,19 +120,19 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s"     => { name => 'filter_name' },
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{admin} eq "enable" and %{status} !~ /online/i' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{admin} eq "enable" and %{status} !~ /online/i' },
     });
-    
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
@@ -181,7 +180,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping access point '" . $result->{fgWcWtpConfigWtpName} . "'.", debug => 1);
             next;
         }
-        
+
         $self->{ap}->{$instance} = {
             display => $result->{fgWcWtpConfigWtpName},
             admin => $result->{fgWcWtpConfigWtpAdmin},
@@ -204,7 +203,7 @@ sub manage_selection {
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
-    
+
     foreach (keys %{$self->{ap}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
         
@@ -215,7 +214,7 @@ sub manage_selection {
         $self->{ap}->{$_}->{cpu} = $result->{fgWcWtpSessionWtpCpuUsage};
         $self->{ap}->{$_}->{memory} = $result->{fgWcWtpSessionWtpMemoryUsage};
     }
-    
+
     $self->{cache_name} = "fortigate_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));

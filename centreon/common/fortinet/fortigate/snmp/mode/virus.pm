@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::virus;
+package centreon::common::fortinet::fortigate::snmp::mode::virus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,11 +28,11 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'domain', type => 1, cb_prefix_output => 'prefix_domain_output', message_multiple => 'All virtualdomains virus stats are ok' }
     ];
-    
+
     $self->{maps_counters}->{domain} = [
         { label => 'virus-detected', nlabel => 'domain.virus.detected.count', set => {
                 key_values => [ { name => 'fgAvVirusDetected', diff => 1 }, { name => 'display' } ],
@@ -77,7 +77,7 @@ sub set_counters {
 
 sub prefix_domain_output {
     my ($self, %options) = @_;
-    
+
     return "Domain '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -127,7 +127,7 @@ sub manage_selection {
         $self->{domain}->{$instance} = $result;
         $self->{domain}->{$instance}->{display} = $snmp_result->{$oid_fgVdEntName}->{$oid};
     }
-    
+
     if (scalar(keys %{$self->{domain}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'no domain found.');
         $self->{output}->option_exit();

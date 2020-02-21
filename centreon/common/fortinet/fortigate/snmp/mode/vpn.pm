@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::vpn;
+package centreon::common::fortinet::fortigate::snmp::mode::vpn;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -30,8 +30,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_state_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s'", $self->{result_values}->{state});
-    return $msg;
+    return sprintf("state is '%s'", $self->{result_values}->{state});
 }
 
 sub custom_state_calc {

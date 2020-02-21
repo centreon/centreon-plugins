@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::listvirtualdomains;
+package centreon::common::fortinet::fortigate::snmp::mode::listvirtualdomains;
 
 use base qw(centreon::plugins::mode);
 
@@ -31,12 +31,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'name:s' => { name => 'name' },
+        'regexp' => { name => 'use_regexp' }
+    });
     $self->{virtualdomain_id_selected} = [];
 
     return $self;
@@ -85,8 +84,10 @@ sub run {
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List virtualdomains:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List virtualdomains:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -129,4 +130,3 @@ Allows to use regexp to filter virtualdomain name (with option --name).
 =back
 
 =cut
-    
