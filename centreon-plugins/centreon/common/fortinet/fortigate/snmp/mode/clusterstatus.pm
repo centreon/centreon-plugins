@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::clusterstatus;
+package centreon::common::fortinet::fortigate::snmp::mode::clusterstatus;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,13 +29,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("status is '%s' [Hostname: %s] [Role: %s] [Checksum: %s]",
+    return sprintf(
+        "status is '%s' [Hostname: %s] [Role: %s] [Checksum: %s]",
         $self->{result_values}->{sync_status},
         $self->{result_values}->{hostname},
         $self->{result_values}->{role},
         $self->{result_values}->{checksum},
     );
-    return $msg;
 }
 
 sub prefix_status_output {
@@ -57,6 +57,7 @@ sub set_counters {
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' },
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'total-nodes', display_ok => 0, set => {
                 key_values => [ { name => 'total_nodes' } ],
@@ -93,7 +94,8 @@ sub set_counters {
                 ],
             }
         },
-    ];        
+    ];
+
     $self->{maps_counters}->{nodes} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' }, { name => 'checksum' } ],
@@ -110,7 +112,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '%{sync_status} =~ /not synchronized/' },
@@ -145,16 +147,12 @@ my $mapping = {
     fgHaStatsMasterSerial   => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' },
 };
 my $oid_fgHaStatsEntry = '.1.3.6.1.4.1.12356.101.13.2.1.1';
-
 my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1.0';
 
 sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->{nodes} = {};
-
-    my $mode = $self->{snmp}->get_leef(oids => [ $oid_fgHaSystemMode ], nothing_quit => 1);
+    my $mode = $options{snmp}->get_leef(oids => [ $oid_fgHaSystemMode ], nothing_quit => 1);
     
     if ($map_ha_mode{$mode->{$oid_fgHaSystemMode}} =~ /standalone/) {
         $self->{output}->add_option_msg(short_msg => "No cluster configuration (standalone mode)");
@@ -163,26 +161,28 @@ sub manage_selection {
 
     $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode{$mode->{$oid_fgHaSystemMode}});
 
-    $self->{results} = $options{snmp}->get_table(
+    my $snmp_result = $options{snmp}->get_table(
         oid => $oid_fgHaStatsEntry,
         nothing_quit => 1
     );
 
     $self->{global} = { synchronized => 0, not_synchronized => 0, total_nodes => 0 };
+    $self->{nodes} = {};
+
     my $checksums = {};
-    foreach my $oid (keys %{$self->{results}}) {
+    foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
         my $instance = $1;
         
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         $checksums->{$result->{fgHaStatsGlobalChecksum}} = 1;
         $self->{nodes}->{$instance} = {
             serial => $result->{fgHaStatsSerial},
             hostname => $result->{fgHaStatsHostname},
             sync_status => $result->{fgHaStatsSyncStatus},
-            role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? "master" : "slave",
-            checksum => $result->{fgHaStatsGlobalChecksum},
+            role => ($result->{fgHaStatsMasterSerial} eq '' || $result->{fgHaStatsMasterSerial} =~ /$result->{fgHaStatsSerial}/) ? 'master' : 'slave',
+            checksum => $result->{fgHaStatsGlobalChecksum}
         };
         $result->{fgHaStatsSyncStatus} =~ s/ /_/;
         $self->{global}->{$result->{fgHaStatsSyncStatus}}++;

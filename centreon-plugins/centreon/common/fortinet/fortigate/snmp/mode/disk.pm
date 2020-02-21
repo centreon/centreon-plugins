@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::disk;
+package centreon::common::fortinet::fortigate::snmp::mode::disk;
 
 use base qw(centreon::plugins::mode);
 
@@ -29,12 +29,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' }
+    });
 
     return $self;
 }
@@ -42,7 +41,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
@@ -55,37 +54,48 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_fgSysDiskUsage = '.1.3.6.1.4.1.12356.101.4.1.6.0'; # in MB
     my $oid_fgSysDiskCapacity = '.1.3.6.1.4.1.12356.101.4.1.7.0'; # in MB
-    $self->{result} = $self->{snmp}->get_leef(oids => [ $oid_fgSysDiskUsage, $oid_fgSysDiskCapacity ], 
-                                              nothing_quit => 1);
-    
+    $self->{result} = $options{snmp}->get_leef(
+        oids => [ $oid_fgSysDiskUsage, $oid_fgSysDiskCapacity ], 
+        nothing_quit => 1
+    );
+
     if (!defined($self->{result}->{$oid_fgSysDiskCapacity}) || $self->{result}->{$oid_fgSysDiskCapacity} == 0) {
-        $self->{output}->output_add(severity => 'ok',
-                                    short_msg => sprintf("No disk present."));
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => sprintf("No disk present.")
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
+
     my $fgSysDiskUsage = $self->{result}->{$oid_fgSysDiskUsage} * 1024 * 1024;
     my $fgSysDiskCapacity = $self->{result}->{$oid_fgSysDiskCapacity} * 1024 * 1024;
-    
+
     my $prct = $fgSysDiskUsage * 100 / $fgSysDiskCapacity;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $prct, 
-                                                  threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $prct, 
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
     my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $fgSysDiskCapacity);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Disk Usage: %.2f%% used [Total: %s]", 
-                                                     $prct, $size_value . " " . $size_unit));
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $fgSysDiskUsage,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $fgSysDiskCapacity, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $fgSysDiskCapacity, cast_int => 1),
-                                  min => 0, max => $fgSysDiskCapacity);
-    
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf(
+            "Disk Usage: %.2f%% used [Total: %s]", 
+            $prct, $size_value . " " . $size_unit
+        )
+    );
+    $self->{output}->perfdata_add(
+        label => "used", unit => 'B',
+        value => $fgSysDiskUsage,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $fgSysDiskCapacity, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $fgSysDiskCapacity, cast_int => 1),
+        min => 0, max => $fgSysDiskCapacity
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }

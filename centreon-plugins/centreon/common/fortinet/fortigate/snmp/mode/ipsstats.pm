@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::fortinet::fortigate::mode::ipsstats;
+package centreon::common::fortinet::fortigate::snmp::mode::ipsstats;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,11 +28,11 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'domain', type => 1, cb_prefix_output => 'prefix_domain_output', message_multiple => 'All IPS domain statistics are ok' }
     ];
-    
+
     $self->{maps_counters}->{domain} = [
         { label => 'intrusions-detected', nlabel => 'domain.intrusions.detected.count', set => {
                 key_values => [ { name => 'fgIpsIntrusionsDetected', diff => 1 }, { name => 'display' } ],
@@ -165,15 +165,14 @@ sub manage_selection {
     foreach my $oid (keys %{$snmp_result->{$oid_fgVdEntName}}) {
         next if ($oid !~ /^$oid_fgVdEntName\.(.*)/);
         my $instance = $1;
-        
+
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $snmp_result->{$oid_fgVdEntName}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $snmp_result->{$oid_fgVdEntName}->{$oid}  . "': no matching filter.");
             next;
         }
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_fgIpsStatsEntry}, instance => $instance);
-        
         $self->{domain}->{$instance} = $result;
         $self->{domain}->{$instance}->{display} = $snmp_result->{$oid_fgVdEntName}->{$oid};
     }
@@ -198,17 +197,9 @@ Check virtual domain IPS statistics.
 
 =over 8
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'intrusions-detected', 'intrusions-blocked', 
-'crit-sev-detections', 'high-sev-detections', 'med-sev-detections', 
-'low-sev-detections', 'info-sev-detections', 'signature-detections',
-'anomaly-detections'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'intrusions-detected', 'intrusions-blocked', 
 'crit-sev-detections', 'high-sev-detections', 'med-sev-detections', 
 'low-sev-detections', 'info-sev-detections', 'signature-detections',
