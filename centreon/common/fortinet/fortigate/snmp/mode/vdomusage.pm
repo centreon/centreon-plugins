@@ -180,6 +180,17 @@ sub set_counters {
         },
     ];
 
+    $self->{maps_counters}->{vdom_status} = [
+         { label => 'status', threshold => 0,  set => {
+                key_values => [ { name => 'op_mode' }, { name => 'ha_state' }, { name => 'display' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
+            }
+        }
+    ];
+
     $self->{maps_counters}->{vdom_traffic} = [
         { label => 'traffic-in', nlabel => 'virtualdomain.traffic.in.bitspersecond', set => {
                 key_values => [],
@@ -216,7 +227,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'     => { name => 'filter_name' },
+        'filter-vdomain:s'  => { name => 'filter_vdomain' },
         'add-traffic'       => { name => 'add_traffic' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '' }
@@ -316,8 +327,8 @@ sub manage_selection {
         my $instance = $1;
         my $name = $snmp_result->{$oid_fgVdEntName}->{$_};
 
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
+        if (defined($self->{option_results}->{filter_vdomain}) && $self->{option_results}->{filter_vdomain} ne '' &&
+            $name !~ /$self->{option_results}->{filter_vdomain}/) {
             $self->{output}->output_add(long_msg => "skipping virtual domain '" . $name . "'.", debug => 1);
             next;
         }
@@ -354,7 +365,7 @@ sub manage_selection {
 
     $self->{cache_name} = 'fortinet_fortigate_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_vdomain}) ? md5_hex($self->{option_results}->{filter_vdomain}) : md5_hex('all'));
 }
 
 1;
@@ -367,7 +378,7 @@ Check virtual domains.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-vdomain>
 
 Filter by virtual domain name (can be a regexp).
 
