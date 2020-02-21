@@ -20,141 +20,146 @@
 
 package centreon::common::fortinet::fortigate::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
-my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1'; # '.0' to have the mode
-my $oid_fgHaStatsMemUsage = '.1.3.6.1.4.1.12356.101.13.2.1.1.4';
-my $oid_fgHaStatsMasterSerial = '.1.3.6.1.4.1.12356.101.13.2.1.1.16';
+sub custom_usage_output {
+    my ($self, %options) = @_;
 
-my %maps_ha_mode = (
-    1 => 'standalone',
-    2 => 'activeActive',
-    3 => 'activePassive',
-);
+    return sprintf("memory total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)",
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+        $self->{result_values}->{prct_used_absolute},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
+        $self->{result_values}->{prct_free_absolute}
+    );
+}
+
+sub prefix_cluster_output {
+    my ($self, %options) = @_;
+
+    return "Cluster '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 0 },
+        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output' }
+    ];
+
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 },
+                ]
+            }
+        },
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 },
+                ]
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'memory used : %.2f %%',
+                perfdatas => [
+                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                      unit => '%' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{cluster} = [
+        { label => 'cluster-usage-prct', nlabel => 'cluster.memory.usage.percentage', display_ok => 0, set => {
+                key_values => [ { name => 'memory' } ],
+                output_template => 'memory used: %.2f %%',
+                perfdatas => [
+                    { value => 'memory_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
+                ]
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' },
         'cluster'    => { name => 'cluster' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+my $oid_fgSystemInfo = '.1.3.6.1.4.1.12356.101.4.1';
+my $oid_fgSysMemUsage = '.1.3.6.1.4.1.12356.101.4.1.4';
+my $oid_fgSysMemCapacity = '.1.3.6.1.4.1.12356.101.4.1.5';
+my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1'; # '.0' to have the mode
+my $oid_fgHaStatsMemUsage = '.1.3.6.1.4.1.12356.101.13.2.1.1.4';
+my $oid_fgHaStatsHostname = '.1.3.6.1.4.1.12356.101.13.2.1.1.11';
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
+my $maps_ha_mode = { 1 => 'standalone', 2 => 'activeActive', 3 => 'activePassive' };
 
 sub memory_ha {
     my ($self, %options) = @_;
 
-    if ($options{ha_mode} == 2) {
-        # We don't care. we use index
-        foreach my $key ($options{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsMemUsage}})) {
-            next if ($key !~ /^$oid_fgHaStatsMemUsage\.([0-9]+)$/);
-            my $num = $1;
+    $self->{cluster} = {};
+    foreach ($options{snmp}->oid_lex_sort(keys %{$options{snmp_result}->{$oid_fgHaStatsMemUsage}})) {
+        /\.(\d+)$/;
 
-            $self->{output}->output_add(long_msg => sprintf("Memory master $num Usage is %.2f%%", $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}));
-            $self->{output}->perfdata_add(
-                label => 'used_master' . $num, unit => '%',
-                value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}),
-                min => 0, max => 100
-            );
-        }
-    } elsif ($options{ha_mode} == 3) {
-        if (scalar(keys %{$self->{result}->{$oid_fgHaStatsMasterSerial}}) == 0) {
-            $self->{output}->output_add(long_msg => 'Skip memory cluster: Cannot find master node.');
-        }
-
-        foreach my $key ($options{snmp}->oid_lex_sort(keys %{$self->{result}->{$oid_fgHaStatsMemUsage}})) {
-            next if ($key !~ /^$oid_fgHaStatsMemUsage\.([0-9]+)$/);
-
-            my $label = $self->{result}->{$oid_fgHaStatsMasterSerial}->{$oid_fgHaStatsMasterSerial . '.' . $1} eq '' ? 
-                'master' : 'slave';
-            
-            $self->{output}->output_add(long_msg => sprintf("Memory %s Usage is %.2f%%", $label, $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}));
-            $self->{output}->perfdata_add(
-                label => 'used_' . $label, unit => '%',
-                value => sprintf("%.2f", $self->{result}->{$oid_fgHaStatsMemUsage}->{$key}),
-                min => 0, max => 100
-            );
-        }
+        $self->{cluster}->{ $options{snmp_result}->{$oid_fgHaStatsHostname}->{$oid_fgHaStatsHostname . '.' . $1} } = {
+            display => $options{snmp_result}->{$oid_fgHaStatsHostname}->{$oid_fgHaStatsHostname . '.' . $1},
+            memory => $options{snmp_result}->{$oid_fgHaStatsMemUsage}->{$_}
+        };
     }
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-
-    my $oid_fgSystemInfo = '.1.3.6.1.4.1.12356.101.4.1';
-    my $oid_fgSysMemUsage = '.1.3.6.1.4.1.12356.101.4.1.4';
-    my $oid_fgSysMemCapacity = '.1.3.6.1.4.1.12356.101.4.1.5';
 
     my $table_oids = [ { oid => $oid_fgSystemInfo, start => $oid_fgSysMemUsage, end => $oid_fgSysMemCapacity } ];
     if (defined($self->{option_results}->{cluster})) {
         push @$table_oids, { oid => $oid_fgHaSystemMode },
             { oid => $oid_fgHaStatsMemUsage },
-            { oid => $oid_fgHaStatsMasterSerial };
+            { oid => $oid_fgHaStatsHostname };
     }
 
-    $self->{result} = $options{snmp}->get_multiple_table(
+    my $snmp_result = $options{snmp}->get_multiple_table(
         oids => $table_oids, 
         nothing_quit => 1
     );
 
-    my $fgSysMemUsage = $self->{result}->{$oid_fgSystemInfo}->{$oid_fgSysMemUsage . '.0'};
-    my $fgSysMemCapacity = $self->{result}->{$oid_fgSystemInfo}->{$oid_fgSysMemCapacity . '.0'};
-    
-    my $exit = $self->{perfdata}->threshold_check(
-        value => $fgSysMemUsage, 
-        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
-    );
-    my ($size_value, $size_unit) = $self->{perfdata}->change_bytes(value => $fgSysMemCapacity * 1024);
-    $self->{output}->output_add(
-        severity => $exit,
-        short_msg => sprintf(
-            "Memory Usage: %.2f%% used [Total: %s]", 
-            $fgSysMemUsage,
-            $size_value . " " . $size_unit
-        )
-    );
-    $self->{output}->perfdata_add(
-        label => "used", unit => 'B',
-        value => int(($fgSysMemCapacity * 1024 * $fgSysMemUsage) / 100),
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $fgSysMemCapacity * 1024, cast_int => 1),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $fgSysMemCapacity * 1024, cast_int => 1),
-        min => 0, max => $fgSysMemCapacity * 1024
-    );
+    $self->{memory} = {
+        prct_used => $snmp_result->{$oid_fgSystemInfo}->{$oid_fgSysMemUsage . '.0'},
+        total => $snmp_result->{$oid_fgSystemInfo}->{$oid_fgSysMemCapacity . '.0'} * 1024
+    };
+    $self->{memory}->{prct_free} = 100 - $self->{memory}->{prct_used};
+    $self->{memory}->{used} = int(($self->{memory}->{total} * $self->{memory}->{prct_used}) / 100);
+    $self->{memory}->{free} = $self->{memory}->{total} - $self->{memory}->{used};
 
     if (defined($self->{option_results}->{cluster})) {
-        # Check if mode cluster
-        my $ha_mode = $self->{result}->{$oid_fgHaSystemMode}->{$oid_fgHaSystemMode . '.0'};
-        my $ha_output = defined($maps_ha_mode{$ha_mode}) ? $maps_ha_mode{$ha_mode} : 'unknown';
-        $self->{output}->output_add(long_msg => 'High availabily mode is ' . $ha_output . '.');
-        if (defined($ha_mode) && $ha_mode != 1) {
-            $self->memory_ha(snmp => $options{snmp}, ha_mode => $ha_mode);
+        my $ha_mode = $snmp_result->{$oid_fgHaSystemMode}->{$oid_fgHaSystemMode . '.0'};
+        my $ha_mode_str = defined($maps_ha_mode->{$ha_mode}) ? $maps_ha_mode->{$ha_mode} : 'unknown';
+        $self->{output}->output_add(long_msg => 'high availabily mode is ' . $ha_mode_str);
+        if ($ha_mode_str =~ /active/) {
+            $self->memory_ha(snmp => $options{snmp}, snmp_result => $snmp_result);
         }
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -167,13 +172,10 @@ Check system memory usage (FORTINET-FORTIGATE).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning in percent.
-
-=item B<--critical>
-
-Threshold critical in percent.
+Thresholds.
+Can be: 'usage-free', 'usage-prct', 'cluster-usage-prct'.
 
 =item B<--cluster>
 
