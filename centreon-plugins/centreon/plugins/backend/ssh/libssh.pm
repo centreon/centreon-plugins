@@ -68,7 +68,7 @@ sub check_options {
         if (defined($options{option_results}->{ssh_priv_key}) && $options{option_results}->{ssh_priv_key} ne '');
     $self->{ssh}->options(user => $options{option_results}->{ssh_username})
         if (defined($options{option_results}->{ssh_username}) && $options{option_results}->{ssh_username} ne '');
-    $self->{ssh_strict_connect} = defined($options{option_results}->{libssh_strict_connect}) ? 1 : 0;
+    $self->{ssh_strict_connect} = defined($options{option_results}->{libssh_strict_connect}) ? 0 : 1;
 }
 
 sub connect {
