@@ -50,7 +50,7 @@ sub set_counters {
                       min => 0, max => 100, unit => '%' },
                 ],
             }
-        },
+        }
     ];
 }
 
