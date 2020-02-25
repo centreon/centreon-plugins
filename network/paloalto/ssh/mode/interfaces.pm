@@ -49,7 +49,7 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'interfaces.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'total interaces: %s',
+                output_template => 'total interfaces: %s',
                 perfdatas => [
                     { value => 'total_absolute', template => '%s', min => 0 },
                 ],
