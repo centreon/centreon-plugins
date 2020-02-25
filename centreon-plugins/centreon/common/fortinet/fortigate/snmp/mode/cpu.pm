@@ -89,7 +89,8 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'cluster'    => { name => 'cluster' }
+        'cluster'     => { name => 'cluster' },
+        'filter-core' => { name => 'filter_core' },
     });
 
     return $self;
@@ -132,12 +133,18 @@ sub manage_selection {
         nothing_quit => 1
     );
 
-    my ($cpu, $i) = (0, 0);
+    my ($cpu, $i) = (0, -1);
     $self->{cpu_core} = {};
     foreach ($options{snmp}->oid_lex_sort(keys %{$snmp_result->{$oid_fgProcessorUsage}})) {
+        $i++;
+        if (defined($self->{option_results}->{filter_core}) && $self->{option_results}->{filter_core} ne '' &&
+            $i !~ /$self->{option_results}->{filter_core}/) {
+            $self->{output}->output_add(long_msg => "skipping core cpu '" . $i . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $self->{cpu_core}->{$i} = { display => $i, cpu => $snmp_result->{$oid_fgProcessorUsage}->{$_} };
         $cpu += $snmp_result->{$oid_fgProcessorUsage}->{$_};
-        $i++;
     }
 
     $self->{cpu_avg} = {
@@ -172,6 +179,10 @@ Can be: 'core', 'average', 'cluster-average'.
 =item B<--cluster>
 
 Add cluster cpu informations.
+
+=item B<--filter-core>
+
+Core cpu to monitor (can be a regexp).
 
 =back
 
