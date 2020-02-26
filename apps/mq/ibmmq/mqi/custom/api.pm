@@ -161,7 +161,7 @@ sub connect {
 
     $self->{connected} = 1;
 
-    my @results = $self->execute_command(command => 'InquireQueueManager', attrs => { QAttrs => ['QMgrName'] });
+    my @results = $self->execute_command(command => 'InquireQueueManager');
     $self->{qmgr_name} = $results[0]->{QMgrName};
 }
 
@@ -169,15 +169,20 @@ sub execute_command {
     my ($self, %options) = @_;
 
     $self->connect();
-
     my @results;
-    my $method = $self->{mq_command}->can($options{command});
-    if ($method) {
-        @results = $self->{mq_command}->$method(%{$options{attrs}});
-        if (!@results) {
-            $self->{output}->add_option_msg(short_msg => "method '$options{command}' issue: " . $self->{mq_command}->ReasonText());
-            $self->{output}->option_exit();
-        }
+    if ($options{command} eq 'InquireQueueManager') {
+        @results = $self->{mq_command}->InquireQueueManager(%{$options{attrs}});
+    } elsif ($options{command} eq 'InquireQueueManagerStatus') {
+        @results = $self->{mq_command}->InquireQueueManagerStatus(%{$options{attrs}});
+    } elsif ($options{command} eq 'InquireChannelStatus') {
+        @results = $self->{mq_command}->InquireChannelStatus(%{$options{attrs}});
+    } elsif ($options{command} eq 'InquireQueueStatus') {
+        @results = $self->{mq_command}->InquireQueueStatus(%{$options{attrs}});
+    }
+
+    if (!@results) {
+        $self->{output}->add_option_msg(short_msg => "method '$options{command}' issue: " . $self->{mq_command}->ReasonText());
+        $self->{output}->option_exit();
     }
 
     return @results;
