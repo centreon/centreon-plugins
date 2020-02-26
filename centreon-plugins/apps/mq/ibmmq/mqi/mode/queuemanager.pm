@@ -82,7 +82,7 @@ sub manage_selection {
 
     my $result = $options{custom}->execute_command(
         command => 'InquireQueueManagerStatus',
-        attrs => { QAttrs => 'All' }
+        attrs => { }
     );
     use Data::Dumper;
     print Data::Dumper::Dumper($result);
