@@ -47,17 +47,17 @@ sub new {
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'RETENTION OPTIONS', once => 1);
     }
-    
+
     $self->{error} = 0;
     $self->{output} = $options{output};
     $self->{datas} = {};
     $self->{storable} = 0;
     $self->{memcached_ok} = 0;
     $self->{memcached} = undef;
-    
+
     $self->{statefile_dir} = undef;
     $self->{statefile_suffix} = undef;
-    
+
     return $self;
 }
 
@@ -65,12 +65,15 @@ sub check_options {
     my ($self, %options) = @_;
 
     if (defined($options{option_results}) && defined($options{option_results}->{memcached})) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'Memcached::libmemcached',
-                                               error_msg => "Cannot load module 'Memcached::libmemcached'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'Memcached::libmemcached',
+            error_msg => "Cannot load module 'Memcached::libmemcached'."
+        );
         $self->{memcached} = Memcached::libmemcached->new();
         Memcached::libmemcached::memcached_server_add($self->{memcached}, $options{option_results}->{memcached});
     }
-    
+
     # Check redis
     if (defined($options{option_results}->{redis_server})) {
         $self->{redis_attributes} = '';
@@ -79,7 +82,7 @@ sub check_options {
                 $self->{redis_attributes} .= "$_ => " . $options{option_results}->{redis_attribute}->{$_} . ', ';
             }
         }
-        
+
         centreon::plugins::misc::mymodule_load(
             output => $self->{output},
             module => 'Redis',
@@ -98,7 +101,7 @@ sub check_options {
             }
         };
     }
-    
+
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
     if ($self->{statefile_dir} ne $default_dir && defined($options{option_results}->{statefile_concat_cwd})) {
         centreon::plugins::misc::mymodule_load(
@@ -133,13 +136,12 @@ sub read {
     my ($self, %options) = @_;
     $self->{statefile_suffix} = defined($options{statefile_suffix}) ? $options{statefile_suffix} : $self->{statefile_suffix};
     $self->{statefile_dir} = defined($options{statefile_dir}) ? $options{statefile_dir} : $self->{statefile_dir};
-    $self->{statefile} = defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : 
-                            $self->{statefile};
+    $self->{statefile} = defined($options{statefile}) ? $options{statefile} . $self->{statefile_suffix} : $self->{statefile};
     $self->{no_quit} = defined($options{no_quit}) && $options{no_quit} == 1 ? 1 : 0;
 
     if (defined($self->{memcached})) {
         # if "SUCCESS" or "NOT FOUND" is ok. Other with use the file
-        my $val = Memcached::libmemcached::memcached_get($self->{memcached}, $self->{statefile_dir} . "/" . $self->{statefile});
+        my $val = Memcached::libmemcached::memcached_get($self->{memcached}, $self->{statefile_dir} . '/' . $self->{statefile});
         if (defined($self->{memcached}->errstr) && $self->{memcached}->errstr =~ /^SUCCESS|NOT FOUND$/i) {
             $self->{memcached_ok} = 1;
             if (defined($val)) {
@@ -160,7 +162,7 @@ sub read {
             $datas = {};
             return 1;
         }
-        
+
         return 0;
     }
 
