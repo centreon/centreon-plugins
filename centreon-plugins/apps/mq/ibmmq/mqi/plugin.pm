@@ -36,7 +36,7 @@ sub new {
         'queues'        => 'apps::mq::ibmmq::mqi::mode::queues',
         'queue-manager' => 'apps::mq::ibmmq::mqi::mode::queuemanager'
     );
-                        
+
     $self->{custom_modes}{api} = 'apps::mq::ibmmq::mqi::custom::api';
     return $self;
 }

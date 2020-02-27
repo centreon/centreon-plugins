@@ -161,8 +161,8 @@ sub connect {
 
     $self->{connected} = 1;
 
-    my @results = $self->execute_command(command => 'InquireQueueManager');
-    $self->{qmgr_name} = $results[0]->{QMgrName};
+    my $results = $self->execute_command(command => 'InquireQueueManager');
+    $self->{qmgr_name} = $results->[0]->{QMgrName};
 }
 
 sub execute_command {
@@ -185,7 +185,7 @@ sub execute_command {
         $self->{output}->option_exit();
     }
 
-    return @results;
+    return \@results;
 }
 
 1;

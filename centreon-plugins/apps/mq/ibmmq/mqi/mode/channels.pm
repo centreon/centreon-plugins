@@ -30,7 +30,43 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return "state: '" . $self->{result_values}->{state} . "'";
+    return sprintf(
+        'status: %s [message channel agent: %s]',
+        $self->{result_values}->{channel_status},
+        $self->{result_values}->{mca_status}
+    );
+}
+
+sub custom_traffic_in_perfdata {
+    my ($self) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel}, unit => 'b/s',
+        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{channel_name_absolute}],
+        value => $self->{result_values}->{traffic_in_per_second},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_traffic_out_perfdata {
+    my ($self) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel}, unit => 'b/s',
+        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{channel_name_absolute}],
+        value => $self->{result_values}->{traffic_out_per_second},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub prefix_channel_output {
+    my ($self, %options) = @_;
+
+    return "Channel '" . $options{instance_value}->{qmgr_name} . ':' . $options{instance_value}->{channel_name} . "' ";
 }
 
 sub set_counters {
@@ -42,38 +78,31 @@ sub set_counters {
 
     $self->{maps_counters}->{channel} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'qmgr_name' }, { name => 'channel_name' },
+                    { name => 'channel_status' }, { name => 'mca_status' }
+                ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'queue-msg', nlabel => 'queue.messages.count', set => {
-                key_values => [ { name => 'queue_messages' }, { name => 'display' } ],
-                output_template => 'current queue messages : %s',
-                perfdatas => [
-                    { label => 'queue_msg', value => 'queue_messages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+        { label => 'traffic-in', nlabel => 'channel.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'qmgr_name' }, { name => 'channel_name' } ],
+                output_template => 'traffic in: %s %s/s',
+                per_second => 1, output_change_bytes => 2,
+                closure_custom_perfdata => $self->can('custom_traffic_in_perfdata')
             }
         },
-        { label => 'queue-msg-ready', nlabel => 'queue.messages.ready.count', set => {
-                key_values => [ { name => 'queue_messages_ready' }, { name => 'display' } ],
-                output_template => 'current queue messages ready : %s',
-                perfdatas => [
-                    { label => 'queue_msg_ready', value => 'queue_messages_ready_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+        { label => 'traffic-out', nlabel => 'channel.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'qmgr_name' }, { name => 'channel_name' } ],
+                output_template => 'traffic out: %s %s/s',
+                per_second => 1, output_change_bytes => 2,
+                closure_custom_perfdata => $self->can('custom_traffic_out_perfdata')
             }
-        },
+        }
     ];
-}
-
-sub prefix_channel_output {
-    my ($self, %options) = @_;
-
-    return "Channel '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -82,9 +111,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'     => { name => 'filter_name' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} ne "running"' },
+        'critical-status:s' => { name => 'critical_status', default => '%{channel_status} !~ /running/i' },
     });
     return $self;
 }
@@ -93,7 +122,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -103,31 +132,20 @@ sub manage_selection {
         command => 'InquireChannelStatus',
         attrs => { }
     );
-    use Data::Dumper; print Data::Dumper::Dumper($result);
-    exit(1);
-    
 
     $self->{channel} = {};
     foreach (@$result) {
-        my $name = $_->{vhost} . ':' . $_->{name};
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
-            && $_->{name} !~ /$self->{option_results}->{filter_name}/);
-
-        $self->{channel}->{$name} = {
-            display => $name,
-            queue_messages_ready => $_->{messages_ready},
-            queue_messages => $_->{messages},
-            state => $_->{state},
+        $self->{channel}->{$_->{ChannelName}} = {
+            qmgr_name => $options{custom}->get_qmgr_name(),
+            channel_name => $_->{ChannelName},
+            channel_status => lc($_->{ChannelStatus}),
+            mca_status => lc($_->{MCAStatus}),
+            traffic_in => $_->{BytesReceived} * 8,
+            traffic_out => $_->{BytesSent} * 8
         };
     }
 
-    if (scalar(keys %{$self->{channel}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => 'No channel found');
-        $self->{output}->option_exit();
-    }
-
     $self->{cache_name} = "ibmmq_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
@@ -141,24 +159,25 @@ Check channels.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--unknown-status>
 
-Filter channel name (Can use regexp).
+Set unknown threshold for status (Default: '').
+Can used special variables like: %{channel_status}, %{mca_status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{display}
+Can used special variables like: %{channel_status}, %{mca_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{state} ne "running"').
-Can used special variables like: %{state}, %{display}
+Set critical threshold for status (Default: '%{channel_status} !~ /running/i').
+Can used special variables like: %{channel_status}, %{mca_status}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'queue-msg', 'queue-msg-ready'.
+Can be: 'traffic-in', 'traffic-out'.
 
 =back
 

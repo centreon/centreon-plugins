@@ -29,32 +29,59 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'status: ' . $self->{result_values}->{status};
+    return sprintf(
+        'status: %s [command server: %s] [channel initiator: %s]',
+         $self->{result_values}->{mgr_status},
+         $self->{result_values}->{command_server_status},
+         $self->{result_values}->{channel_initiator_status}
+    );
 }
 
-sub set_counters {
+sub custom_connections_perfdata {
     my ($self, %options) = @_;
 
-    $self->{maps_counters_type} = [
-        { name => 'qmgr', type => 0, prefix_output => 'prefix_qmgr_output', skipped_code => { -10 => 1 } },
-    ];
-
-    $self->{maps_counters}->{vhost} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
-            }
-        }
-    ];
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => $self->{result_values}->{display_absolute},
+        value => $self->{result_values}->{connection_count_absolute},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
 }
 
 sub prefix_qmgr_output {
     my ($self, %options) = @_;
 
     return "Queue manager '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'qmgr', type => 0, cb_prefix_output => 'prefix_qmgr_output', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{qmgr} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [
+                    { name => 'mgr_status' }, { name => 'channel_initiator_status' },
+                    { name => 'command_server_status' }, { name => 'display' }
+                ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
+            }
+        },
+        { label => 'connections', nlabel => 'queuemanager.connections.count', set => {
+                key_values => [ { name => 'connection_count' }, { name => 'display' } ],
+                output_template => 'current number of connections: %s',
+                closure_custom_perfdata => $self->can('custom_connections_perfdata')
+            }
+        }
+    ];
 }
 
 sub new {
@@ -65,8 +92,9 @@ sub new {
     $options{options}->add_options(arguments => {
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} ne "ok"' },
+        'critical-status:s' => { name => 'critical_status', default => '%{mgr_status} !~ /running/i' },
     });
+
     return $self;
 }
 
@@ -84,8 +112,14 @@ sub manage_selection {
         command => 'InquireQueueManagerStatus',
         attrs => { }
     );
-    use Data::Dumper;
-    print Data::Dumper::Dumper($result);
+
+    $self->{qmgr} = {
+        display => $options{custom}->get_qmgr_name(),
+        channel_initiator_status => lc($result->[0]->{ChannelInitiatorStatus}),
+        mgr_status => lc($result->[0]->{QMgrStatus}),
+        command_server_status => lc($result->[0]->{CommandServerStatus}),
+        connection_count => $result->[0]->{ConnectionCount}
+    };
 }
 
 1;
@@ -101,22 +135,22 @@ Check queue manager.
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{status}
+Can used special variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{status}
+Can used special variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} ne "ok"').
-Can used special variables like: %{status}
+Set critical threshold for status (Default: '%{mgr_status} !~ /running/i').
+Can used special variables like: %{mgr_status}, %{channel_initiator_status}, %{command_server_status}
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'queue-msg-ready', 'queue-msg'.
+Can be: 'connections'.
 
 =back
 

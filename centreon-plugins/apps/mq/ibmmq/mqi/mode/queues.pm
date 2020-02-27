@@ -24,13 +24,60 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use  centreon::plugins::misc;
 
-sub custom_status_output {
+sub custom_oldest_output {
     my ($self, %options) = @_;
 
-    return "state: '" . $self->{result_values}->{state} . "'";
+    return sprintf(
+        'oldest message: %s',
+         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{oldest_msg_age_absolute})
+    );
+}
+
+sub custom_connections_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{queue_name_absolute}],
+        value => $self->{result_values}->{open_input_count_absolute},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_qdepth_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{queue_name_absolute}],
+        value => $self->{result_values}->{current_qdepth_absolute},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub custom_oldest_perfdata {
+    my ($self, %options) = @_;
+
+    $self->{output}->perfdata_add(
+        nlabel => $self->{nlabel},
+        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{queue_name_absolute}],
+        value => $self->{result_values}->{oldest_msg_age_absolute},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        min => 0
+    );
+}
+
+sub prefix_queue_output {
+    my ($self, %options) = @_;
+
+    return "Queue '" . $options{instance_value}->{qmgr_name} . ':' . $options{instance_value}->{queue_name} . "' ";
 }
 
 sub set_counters {
@@ -41,59 +88,36 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{queue} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+        { label => 'connections-input', nlabel => 'queue.connections.input.count', set => {
+                key_values => [ { name => 'open_input_count' }, { name => 'qmgr_name' }, { name => 'queue_name' } ],
+                output_template => 'current input connections: %s',
+                closure_custom_perfdata => $self->can('custom_connections_perfdata')
             }
         },
-        { label => 'queue-msg', nlabel => 'queue.messages.count', set => {
-                key_values => [ { name => 'queue_messages' }, { name => 'display' } ],
-                output_template => 'current queue messages : %s',
-                perfdatas => [
-                    { label => 'queue_msg', value => 'queue_messages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+        { label => 'messages-depth', nlabel => 'queue.messages.depth.count', set => {
+                key_values => [ { name => 'current_qdepth' }, { name => 'qmgr_name' }, { name => 'queue_name' } ],
+                output_template => 'current messages depth: %s',
+                closure_custom_perfdata => $self->can('custom_qdepth_perfdata')
             }
         },
-        { label => 'queue-msg-ready', nlabel => 'queue.messages.ready.count', set => {
-                key_values => [ { name => 'queue_messages_ready' }, { name => 'display' } ],
-                output_template => 'current queue messages ready : %s',
-                perfdatas => [
-                    { label => 'queue_msg_ready', value => 'queue_messages_ready_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+        { label => 'message-oldest', nlabel => 'queue.message.oldest.seconds', set => {
+                key_values => [ { name => 'oldest_msg_age' }, { name => 'qmgr_name' }, { name => 'queue_name' } ],
+                closure_custom_output => $self->can('custom_oldest_output'),
+                closure_custom_perfdata => $self->can('custom_oldest_perfdata')
             }
-        },
+        }
     ];
-}
-
-sub prefix_queue_output {
-    my ($self, %options) = @_;
-
-    return "Queue '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'     => { name => 'filter_name' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} ne "running"' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -103,21 +127,18 @@ sub manage_selection {
         command => 'InquireQueueStatus',
         attrs => { QStatusAttrs => ['QName', 'CurrentQDepth', 'OpenInputCount', 'OldestMsgAge'] }
     );
-    use Data::Dumper; print Data::Dumper::Dumper($result);
-    exit(1);
-    
 
     $self->{queue} = {};
     foreach (@$result) {
-        my $name = $_->{vhost} . ':' . $_->{name};
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
-            && $_->{name} !~ /$self->{option_results}->{filter_name}/);
+            && $_->{QName} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{queue}->{$name} = {
-            display => $name,
-            queue_messages_ready => $_->{messages_ready},
-            queue_messages => $_->{messages},
-            state => $_->{state},
+        $self->{queue}->{$_->{QName}} = {
+            qmgr_name => $options{custom}->get_qmgr_name(),
+            queue_name => $_->{QName},
+            open_input_count => $_->{OpenInputCount},
+            current_qdepth => $_->{CurrentQDepth},
+            oldest_msg_age => $_->{OldestMsgAge} # in seconds
         };
     }
 
@@ -125,10 +146,6 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => 'No queue found');
         $self->{output}->option_exit();
     }
-
-    $self->{cache_name} = "ibmmq_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -145,20 +162,10 @@ Check queues.
 
 Filter queue name (Can use regexp).
 
-=item B<--warning-status>
-
-Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{display}
-
-=item B<--critical-status>
-
-Set critical threshold for status (Default: '%{state} ne "running"').
-Can used special variables like: %{state}, %{display}
-
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'queue-msg', 'queue-msg-ready'.
+Can be: 'connections-input', 'messages-depth', 'message-oldest'.
 
 =back
 
