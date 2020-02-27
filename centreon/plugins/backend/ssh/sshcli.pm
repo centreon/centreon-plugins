@@ -57,7 +57,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    push @{$self->{ssh_option}}, '-o=BatchMode yes';
+    push @{$self->{ssh_option}}, '-o="BatchMode yes"';
     push @{$self->{ssh_option}}, '-l=' . $self->{ssh_username} if (defined($self->{ssh_username}) && $self->{ssh_username} ne '');
     push @{$self->{ssh_option}}, '-p=' . $self->{ssh_port} if (defined($self->{ssh_port}) && $self->{ssh_port} ne '');
     push @{$self->{ssh_option}}, '-i=' . $self->{ssh_priv_key} if (defined($self->{ssh_priv_key}) && $self->{ssh_priv_key} ne '');
@@ -66,22 +66,30 @@ sub check_options {
 sub execute {
     my ($self, %options) = @_;
 
+    push @{$self->{ssh_option}}, '-T' if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1);
+
     my ($content, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
         sudo => $options{sudo},
         command => $options{command},
         command_path => $options{command_path},
         command_options => $options{command_options},
+        ssh_pipe => $options{ssh_pipe},
         options => {
             remote => 1,
             ssh_address => $options{hostname},
             ssh_command => $self->{ssh_command},
             ssh_path => $self->{ssh_path},
             ssh_option => $self->{ssh_option},
-            ssh_pipe => $options{ssh_pipe},
             timeout => $options{timeout}
         }
     );
+
+    if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
+        # Last failed login: Tue Feb 25 09:30:20 EST 2020 from 10.40.1.160 on ssh:notty
+        # There was 1 failed login attempt since the last successful login.
+        $content =~ s/^(?:Last failed login:|There was.*?failed login).*?\n//msg;
+    }
 
     return ($content, $exit_code);
 }
