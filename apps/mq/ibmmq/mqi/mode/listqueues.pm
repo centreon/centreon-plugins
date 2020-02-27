@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::mq::rabbitmq::restapi::mode::listqueues;
+package apps::mq::ibmmq::mqi::mode::listqueues;
 
 use base qw(centreon::plugins::mode);
 
@@ -42,14 +42,16 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $result = $options{custom}->query(url_path => '/api/queues/?columns=vhost,name,state');
+
+    my $result = $options{custom}->execute_command(
+        command => 'InquireQueueStatus',
+        attrs => { QStatusAttrs => ['QName'] }
+    );
+
     $self->{queue} = {};
     foreach (@$result) {
-        $self->{queue}->{$_->{vhost} . ':' . $_->{name}} = {
-            vhost => $_->{vhost},
-            name => $_->{name},
-            state => $_->{state},
+        $self->{queue}->{$_->{QName}} = {
+            name => $_->{QName}
         };
     }
 }
@@ -59,9 +61,11 @@ sub run {
 
     $self->manage_selection(%options);
     foreach (sort keys %{$self->{queue}}) {
-        $self->{output}->output_add(long_msg => sprintf(
-            "[name = %s][vhost = %s][state = %s]",
-            $self->{queue}->{$_}->{name}, $self->{queue}->{$_}->{vhost}, $self->{queue}->{$_}->{state})
+        $self->{output}->output_add(long_msg =>
+            sprintf(
+                '[name = %s]',
+                $self->{queue}->{$_}->{name}
+            )
         );
     }
     $self->{output}->output_add(
@@ -76,7 +80,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'vhost', 'state']);
+    $self->{output}->add_disco_format(elements => ['name']);
 }
 
 sub disco_show {
