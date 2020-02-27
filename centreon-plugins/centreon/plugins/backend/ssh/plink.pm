@@ -64,22 +64,29 @@ sub check_options {
 sub execute {
     my ($self, %options) = @_;
 
+    push @{$self->{ssh_option}}, '-T' if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1);
+
     my ($content, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
         sudo => $options{sudo},
         command => $options{command},
         command_path => $options{command_path},
         command_options => $options{command_options},
+        ssh_pipe => $options{ssh_pipe},
         options => {
             remote => 1,
             ssh_address => $options{hostname},
             ssh_command => $self->{ssh_command},
             ssh_path => $self->{ssh_path},
             ssh_option => $self->{ssh_option},
-            ssh_pipe => $options{ssh_pipe},
             timeout => $options{timeout}
         }
     );
+
+    if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
+        # Using username "root".
+        $content =~ s/^Using username ".*?"\.\n//msg;
+    }
 
     # plink exit code is 0 even connection is abandoned
     if ($content =~ /server.*?key fingerprint.*connection abandoned/msi) {
