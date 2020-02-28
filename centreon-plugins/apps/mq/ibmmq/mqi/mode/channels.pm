@@ -114,7 +114,7 @@ sub new {
         'filter-name:s'     => { name => 'filter_name' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{channel_status} !~ /running/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{channel_status} !~ /running|idle/i' },
     });
     return $self;
 }
@@ -196,7 +196,7 @@ Can used special variables like: %{channel_status}, %{mca_status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{channel_status} !~ /running/i').
+Set critical threshold for status (Default: '%{channel_status} !~ /running|idle/i').
 Can used special variables like: %{channel_status}, %{mca_status}
 
 =item B<--warning-*> B<--critical-*>
