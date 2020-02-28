@@ -298,6 +298,7 @@ sub check_relaunch_get_args {
 
     my $args = ['--plugin=' . $self->{plugin}, @ARGV];
     push @$args, '--ignore-warn-msg' if (defined($self->{ignore_warn_msg}));
+    push @$args, '--help' if (defined($self->{help}));
     push @$args, '--global-timeout', $self->{global_timeout} if (defined($self->{global_timeout}));
     foreach ((
         ['output_xml', 0], ['output_json', 0], ['output_openmetrics', 0], 
