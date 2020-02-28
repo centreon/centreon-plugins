@@ -111,6 +111,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-name:s'     => { name => 'filter_name' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '%{channel_status} !~ /running/i' },
@@ -132,9 +133,16 @@ sub manage_selection {
         command => 'InquireChannelStatus',
         attrs => { }
     );
+    my $names = $options{custom}->execute_command(
+        command => 'InquireChannelNames',
+        attrs => { }
+    );
 
     $self->{channel} = {};
     foreach (@$result) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
+            && $_->{ChannelName} !~ /$self->{option_results}->{filter_name}/);
+
         $self->{channel}->{$_->{ChannelName}} = {
             qmgr_name => $options{custom}->get_qmgr_name(),
             channel_name => $_->{ChannelName},
@@ -143,6 +151,19 @@ sub manage_selection {
             traffic_in => $_->{BytesReceived} * 8,
             traffic_out => $_->{BytesSent} * 8
         };
+    }
+
+    foreach (@$names) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
+            && $_ !~ /$self->{option_results}->{filter_name}/);
+        if (!defined($self->{channel}->{$_})) {
+            $self->{channel}->{$_->{ChannelName}} = {
+                qmgr_name => $options{custom}->get_qmgr_name(),
+                channel_name => $_,
+                channel_status => 'idle',
+                mca_status => '-',
+            };
+        }
     }
 
     $self->{cache_name} = "ibmmq_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
@@ -158,6 +179,10 @@ __END__
 Check channels.
 
 =over 8
+
+=item B<--filter-name>
+
+Filter channel name (Can use regexp).
 
 =item B<--unknown-status>
 

@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'channels'      => 'apps::mq::ibmmq::mqi::mode::channels',
+        'list-channels' => 'apps::mq::ibmmq::mqi::mode::listchannels',
         'list-queues'   => 'apps::mq::ibmmq::mqi::mode::listqueues',
         'queues'        => 'apps::mq::ibmmq::mqi::mode::queues',
         'queue-manager' => 'apps::mq::ibmmq::mqi::mode::queuemanager'
