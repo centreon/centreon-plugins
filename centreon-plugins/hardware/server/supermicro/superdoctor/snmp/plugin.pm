@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::supermicro::snmp::plugin;
+package hardware::server::supermicro::superdoctor::snmp::plugin;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'hardware' => 'hardware::server::supermicro::snmp::mode::hardware',
+        'hardware' => 'hardware::server::supermicro::superdoctor::snmp::mode::hardware',
     );
 
     return $self;

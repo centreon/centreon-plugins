@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package hardware::server::supermicro::snmp::mode::hardware;
+package hardware::server::supermicro::superdoctor::snmp::mode::hardware;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -45,7 +45,7 @@ sub set_system {
         ],
     };
     
-    $self->{components_path} = 'hardware::server::supermicro::snmp::mode::components';
+    $self->{components_path} = 'hardware::server::supermicro::superdoctor::snmp::mode::components';
     $self->{components_module} = ['sensor', 'memory', 'disk', 'cpu'];
 }
 
@@ -53,10 +53,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -111,7 +110,7 @@ Example: --critical='sensor.temperature,.*,40'
 
 =cut
 
-package hardware::server::supermicro::snmp::mode::components::sensor;
+package hardware::server::supermicro::superdoctor::snmp::mode::components::sensor;
 
 use strict;
 use warnings;
@@ -151,37 +150,53 @@ sub check {
         next if ($oid !~ /^$mapping->{smHealthMonitorReading}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_smHealthMonitorEntry}, instance => $instance);
-        
+
         next if (defined($result->{smHealthMonitorMonitor}) && $result->{smHealthMonitorMonitor} eq 'not monitored');
-        
+
         next if ($self->check_filter(section => 'sensor', instance => $result->{smHealthMonitorType} . '.' . $instance));
-        
+
         $self->{components}->{sensor}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("sensor '%s' status is '%s' [instance = %s, value = %s]",
-                                                        $result->{smHealthMonitorName}, 
-                                                        defined($result->{smHealthMonitorStatus}) ? $result->{smHealthMonitorStatus} : 'undefined', 
-                                                        $result->{smHealthMonitorType} . '.' . $instance,
-                                                        defined($result->{smHealthMonitorReading}) ? $result->{smHealthMonitorReading} : '-'));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "sensor '%s' status is '%s' [instance = %s, value = %s]",
+                $result->{smHealthMonitorName}, 
+                defined($result->{smHealthMonitorStatus}) ? $result->{smHealthMonitorStatus} : 'undefined', 
+                $result->{smHealthMonitorType} . '.' . $instance,
+                defined($result->{smHealthMonitorReading}) ? $result->{smHealthMonitorReading} : '-'
+            )
+        );
+
         if (defined($result->{smHealthMonitorStatus})) {
             my $exit = $self->get_severity(label => 'sensor', section => 'sensor.' . $result->{smHealthMonitorType}, value => $result->{smHealthMonitorStatus});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Sensor '%s' status is '%s'", $result->{smHealthMonitorName}, $result->{smHealthMonitorStatus}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "Sensor '%s' status is '%s'",
+                        $result->{smHealthMonitorName},
+                        $result->{smHealthMonitorStatus}
+                    )
+                );
             }
         }
-        
+
         next if ($result->{smHealthMonitorReading} !~ /[0-9]/);
         $result->{smHealthMonitorReadingUnit} = '' if (defined($result->{smHealthMonitorReadingUnit}) && $result->{smHealthMonitorReadingUnit} =~ /N\/A/i);
-        
+
         my $component = 'sensor.' . $result->{smHealthMonitorType};
         my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => $component, instance => $instance, value => $result->{smHealthMonitorReading});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Sensor '%s' is %s %s", $result->{smHealthMonitorName}, $result->{smHealthMonitorReading}, 
-                                                            defined($result->{smHealthMonitorReadingUnit}) ? $result->{smHealthMonitorReadingUnit} : ''));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Sensor '%s' is %s %s",
+                    $result->{smHealthMonitorName},
+                    $result->{smHealthMonitorReading}, 
+                    defined($result->{smHealthMonitorReadingUnit}) ? $result->{smHealthMonitorReadingUnit} : ''
+                )
+            );
         }
-        
+
         # need some snmpwalk to do unit mapping!! experimental
         $self->{output}->perfdata_add(
             label => $component, unit => $result->{smHealthMonitorReadingUnit},
@@ -196,7 +211,7 @@ sub check {
 
 1;
 
-package hardware::server::supermicro::snmp::mode::components::memory;
+package hardware::server::supermicro::superdoctor::snmp::mode::components::memory;
 
 use strict;
 use warnings;
@@ -211,7 +226,7 @@ my $oid_memEntry = '.1.3.6.1.4.1.10876.100.1.3.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_memEntry, end => $mapping_memory->{memDeviceStatus}->{oid} };
 }
 
@@ -228,23 +243,34 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping_memory, results => $self->{results}->{$oid_memEntry}, instance => $instance);
 
         next if ($self->check_filter(section => 'memory', instance => $instance));
-        
+
         $self->{components}->{memory}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("memory '%s' status is '%s' [instance = %s]",
-                                                        $result->{memTag}, 
-                                                        $result->{memDeviceStatus}, $instance));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "memory '%s' status is '%s' [instance = %s]",
+                $result->{memTag}, 
+                $result->{memDeviceStatus},
+                $instance
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'memory', value => $result->{memDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Memory '%s' status is '%s'", $result->{memTag}, $result->{memDeviceStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Memory '%s' status is '%s'",
+                    $result->{memTag},
+                    $result->{memDeviceStatus}
+                )
+            );
         }
     }
 }
 
 1;
 
-package hardware::server::supermicro::snmp::mode::components::disk;
+package hardware::server::supermicro::superdoctor::snmp::mode::components::disk;
 
 use strict;
 use warnings;
@@ -259,7 +285,7 @@ my $oid_diskEntry = '.1.3.6.1.4.1.10876.100.1.4.1';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_diskEntry, end => $mapping_disk->{diskSmartStatus}->{oid} };
 }
 
@@ -276,23 +302,34 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping_disk, results => $self->{results}->{$oid_diskEntry}, instance => $instance);
 
         next if ($self->check_filter(section => 'disk', instance => $instance));
-        
+
         $self->{components}->{memory}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("disk '%s' status is '%s' [instance = %s]",
-                                                        $result->{diskName}, 
-                                                        $result->{diskSmartStatus}, $instance));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "disk '%s' status is '%s' [instance = %s]",
+                $result->{diskName}, 
+                $result->{diskSmartStatus},
+                $instance
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'disk', value => $result->{diskSmartStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Disk '%s' status is '%s'", $result->{diskName}, $result->{diskSmartStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Disk '%s' status is '%s'",
+                    $result->{diskName},
+                    $result->{diskSmartStatus}
+                )
+            );
         }
     }
 }
 
 1;
 
-package hardware::server::supermicro::snmp::mode::components::cpu;
+package hardware::server::supermicro::superdoctor::snmp::mode::components::cpu;
 
 use strict;
 use warnings;
@@ -305,7 +342,7 @@ my $mapping_cpu = {
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $mapping_cpu->{cpuDeviceStatus}->{oid} };
 }
 
@@ -322,16 +359,27 @@ sub check {
         my $result = $self->{snmp}->map_instance(mapping => $mapping_cpu, results => $self->{results}->{$mapping_cpu->{cpuDeviceStatus}->{oid}}, instance => $instance);
 
         next if ($self->check_filter(section => 'cpu', instance => $instance));
-        
+
         $self->{components}->{cpu}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("cpu '%s' status is '%s' [instance = %s]",
-                                                        $instance, 
-                                                        $result->{cpuDeviceStatus}, $instance));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cpu '%s' status is '%s' [instance = %s]",
+                $instance, 
+                $result->{cpuDeviceStatus},
+                $instance
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default', section => 'cpu', value => $result->{cpuDeviceStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("CPU '%s' status is '%s'", $instance, $result->{cpuDeviceStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "CPU '%s' status is '%s'",
+                    $instance,
+                    $result->{cpuDeviceStatus}
+                )
+            );
         }
     }
 }
