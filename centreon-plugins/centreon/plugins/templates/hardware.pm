@@ -27,20 +27,20 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     # To check with a regexp
     #$self->{regexp_threshold_overload_check_section_option} = '';
     #$self->{cb_threshold_overload_check_section_option} = 'callbackname';
-    
+
     #$self->{regexp_threshold_numeric_check_section_option} = '';
     #$self->{cb_threshold_numeric_check_section_option} = 'callbackname';
-    
+
     # Some callbacks 
     #$self->{cb_hook1} = 'callbackname'; # before the loads
     #$self->{cb_hook2} = 'callbackname'; # between loads and requests
     #$self->{cb_hook3} = 'callbackname'; # after requests
     #$self->{cb_hook4} = 'callbackname'; # after output
-    
+
     # Example for threshold:
     #$self->{thresholds} = {
     #    fan => [
@@ -52,24 +52,24 @@ sub set_system {
     
     # Unset the call to load components
     #$self->{components_exec_load} = 0;
-    
+
     # Set the path_info
     #$self->{components_path} = 'network::xxxx::mode::components';
-    
+
     # Set the components
     #$self->{components_module} = ['cpu', 'memory', ...];
 }
 
 sub call_object_callback {
     my ($self, %options) = @_;
-    
+
     if (defined($options{method_name})) {
         my $method = $self->can($options{method_name});
         if ($method) {
             return $self->$method(%options);
         }
     }
-    
+
     return undef;
 }
 
@@ -77,7 +77,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
         'component:s'             => { name => 'component', default => '.*' },
@@ -85,7 +85,7 @@ sub new {
         'threshold-overload:s@'   => { name => 'threshold_overload' },
         'add-name-instance'       => { name => 'add_name_instance' },
     });
-    
+
     $self->{performance} = (defined($options{no_performance}) && $options{no_performance} == 1) ?
         0 : 1;
     if ($self->{performance} == 1) {
@@ -94,7 +94,7 @@ sub new {
             'critical:s@'   => { name => 'critical' },
         });
     }
-    
+
     $self->{filter_exclude} = (defined($options{no_filter_exclude}) && $options{no_filter_exclude} == 1) ?
         0 : 1;
     if ($self->{filter_exclude} == 1) {
@@ -110,12 +110,12 @@ sub new {
             'absent-problem:s@'       => { name => 'absent_problem' },
         });
     }
-    
+
     $self->{load_components} = (defined($options{no_load_components}) && $options{no_load_components} == 1) ?
         0 : 1;
     $self->{components} = {};
     $self->{no_components} = undef;
-    
+
     $self->{components_module} = [];
     $self->{components_exec_load} = 1;
     $self->set_system();
@@ -132,14 +132,14 @@ sub new {
     }
 
     $self->{request} = [];
-    
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (defined($self->{option_results}->{no_component})) {
         if ($self->{option_results}->{no_component} ne '') {
             $self->{no_components} = $self->{option_results}->{no_component};
@@ -147,7 +147,7 @@ sub check_options {
             $self->{no_components} = 'critical';
         }
     }
-    
+
     if ($self->{filter_exclude} == 1) {
         $self->{filter} = [];
         foreach my $val (@{$self->{option_results}->{filter}}) {
@@ -156,7 +156,7 @@ sub check_options {
             push @{$self->{filter}}, { filter => $values[0], instance => $values[1] }; 
         }
     }
-    
+
     if ($self->{absent} == 1) {
         $self->{absent_problem} = [];
         foreach my $val (@{$self->{option_results}->{absent_problem}}) {
@@ -165,7 +165,7 @@ sub check_options {
             push @{$self->{absent_problem}}, { filter => $values[0], instance => $values[1] }; 
         }
     }
-    
+
     $self->{overload_th} = {};
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         next if (!defined($val) || $val eq '');
@@ -186,8 +186,11 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        $self->call_object_callback(method_name => $self->{cb_threshold_overload_check_section_option}, 
-                                    section => $section, option_value => $val);
+        $self->call_object_callback(
+            method_name => $self->{cb_threshold_overload_check_section_option}, 
+            section => $section,
+            option_value => $val
+        );
 
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
@@ -196,7 +199,7 @@ sub check_options {
         $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
         push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
     }
-    
+
     if ($self->{performance} == 1) {
         $self->{numeric_threshold} = {};
         foreach my $option (('warning', 'critical')) {
@@ -212,8 +215,12 @@ sub check_options {
                     $self->{output}->add_option_msg(short_msg => "Wrong $option option '" . $val . "'.");
                     $self->{output}->option_exit();
                 }   
-                $self->call_object_callback(method_name => $self->{cb_threshold_numeric_check_section_option}, 
-                                            section => $section, option_name => $option, option_value => $val);
+                $self->call_object_callback(
+                    method_name => $self->{cb_threshold_numeric_check_section_option}, 
+                    section => $section,
+                    option_name => $option,
+                    option_value => $val
+                );
 
                 my $position = 0;
                 if (defined($self->{numeric_threshold}->{$section})) {
@@ -228,7 +235,7 @@ sub check_options {
             }
         }
     }
-    
+
     if ($self->{count} == 1) {
         foreach my $comp (@{$self->{components_module}}) {
             foreach my $threshold (('warning', 'critical')) {
@@ -243,12 +250,13 @@ sub check_options {
 
 sub load_components {
     my ($self, %options) = @_;
-    
+
     foreach (@{$self->{components_module}}) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = $self->{components_path} . "::$_";
-            centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $mod_name,
-                                                   error_msg => "Cannot load module '$mod_name'.") if ($self->{load_components} == 1);
+            centreon::plugins::misc::mymodule_load(
+                output => $self->{output}, module => $mod_name,
+                error_msg => "Cannot load module '$mod_name'.") if ($self->{load_components} == 1);
             $self->{loaded} = 1;
             if ($self->{components_exec_load} == 1) {
                 my $func = $mod_name->can('load');
@@ -260,7 +268,7 @@ sub load_components {
 
 sub exec_components {
     my ($self, %options) = @_;
-    
+
     foreach (@{$self->{components_module}}) {
         if (/$self->{option_results}->{component}/) {
             my $mod_name = $self->{components_path} . "::$_";
@@ -272,7 +280,7 @@ sub exec_components {
 
 sub display {
     my ($self, %options) = @_;
-    
+
     my $total_components = 0;
     my $display_by_component = '';
     my $display_by_component_append = '';
@@ -287,10 +295,14 @@ sub display {
         if ($self->{count} == 1) {
             ($exit, $warn, $crit) = $self->get_severity_count(label => $comp, value => $self->{components}->{$comp}->{total});
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("'%s' components '%s' checked",
-                                                            $self->{components}->{$comp}->{total},
-                                                            $comp));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf(
+                        "'%s' components '%s' checked",
+                        $self->{components}->{$comp}->{total},
+                        $comp
+                    )
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'count_' . $comp,
@@ -309,17 +321,22 @@ sub display {
     }
 
     $exit = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
-    
+
     if ($self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(short_msg => sprintf('All %s components are ok [%s].', 
-                                                        $total_components,
-                                                        $display_by_component)
-                                    );
+        $self->{output}->output_add(
+            short_msg => sprintf(
+                'All %s components are ok [%s].', 
+                $total_components,
+                $display_by_component
+            )
+        );
     }
 
     if (defined($self->{option_results}->{no_component}) && $total_components == 0) {
-        $self->{output}->output_add(severity => $self->{no_components},
-                                    short_msg => 'No components are checked.');
+        $self->{output}->output_add(
+            severity => $self->{no_components},
+            short_msg => 'No components are checked.'
+        );
     }
 }
 
@@ -334,22 +351,22 @@ sub run {
         $self->{output}->add_option_msg(short_msg => "Wrong option. Cannot find component '" . $self->{option_results}->{component} . "'.");
         $self->{output}->option_exit();
     }
-    
+
     $self->call_object_callback(method_name => $self->{cb_hook2}, %options);
     $self->exec_components(%options);
     $self->call_object_callback(method_name => $self->{cb_hook3}, %options);
-    
+
     $self->display();
 
     $self->call_object_callback(method_name => $self->{cb_hook4}, %options);
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
 
 sub check_filter {
     my ($self, %options) = @_;
-    
+
     # Old compatibility variable. We'll be deleted
     if (defined($self->{option_results}->{exclude})) {
         if (defined($options{instance})) {
@@ -376,7 +393,7 @@ sub check_filter {
             }
         }
     }
-    
+
     return 0;
 }
 
@@ -387,16 +404,21 @@ sub absent_problem {
     foreach (@{$self->{absent_problem}}) {
         if ($options{section} =~ /$_->{filter}/) {
             if (!defined($_->{instance}) || $options{instance} =~ /$_->{instance}/) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Component '%s' instance '%s' is not present", 
-                                                                 $options{section}, $options{instance}));
+                $self->{output}->output_add(
+                    severity => 'CRITICAL',
+                    short_msg => sprintf(
+                        "Component '%s' instance '%s' is not present", 
+                        $options{section},
+                        $options{instance}
+                    )
+                );
                 $self->{output}->output_add(long_msg => sprintf("Skipping $options{section} section $options{instance} instance (not present)"));
                 $self->{components}->{$options{section}}->{skip}++;
                 return 1;
             }
         }
     }
-    
+
     return 0;
 }
 
@@ -404,10 +426,14 @@ sub get_severity_count {
     my ($self, %options) = @_;
     my $status = 'OK'; # default
     my $thresholds = { warning => undef, critical => undef };
-    
-    $status = $self->{perfdata}->threshold_check(value => $options{value},
-                                                 threshold => [ { label => 'critical-count-' . $options{label}, 'exit_litteral' => 'critical' }, 
-                                                                { label => 'warning-count-' . $options{label}, 'exit_litteral' => 'warning' } ]);
+
+    $status = $self->{perfdata}->threshold_check(
+        value => $options{value},
+        threshold => [
+            { label => 'critical-count-' . $options{label}, 'exit_litteral' => 'critical' }, 
+            { label => 'warning-count-' . $options{label}, 'exit_litteral' => 'warning' }
+        ]
+    );
     $thresholds->{critical} = $self->{perfdata}->get_perfdata_for_output(label => 'critical-count-' . $options{label});
     $thresholds->{warning} = $self->{perfdata}->get_perfdata_for_output(label => 'warning-count-' . $options{label});
 
@@ -432,14 +458,14 @@ sub get_severity_numeric {
         }
         $status = $self->{output}->get_most_critical(status => $exits) if (scalar(@{$exits}) > 0);
     }
-    
+
     return ($status, $thresholds->{warning}, $thresholds->{critical}, $checked);
 }
 
 sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
-    
+
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
             if ($options{value} =~ /$_->{filter}/i && 
@@ -449,6 +475,7 @@ sub get_severity {
             }
         }
     }
+
     my $label = defined($options{label}) ? $options{label} : $options{section};
     foreach (@{$self->{thresholds}->{$label}}) {
         if ($options{value} =~ /$$_[0]/i) {
@@ -456,7 +483,7 @@ sub get_severity {
             return $status;
         }
     }
-    
+
     return $status;
 }
     
