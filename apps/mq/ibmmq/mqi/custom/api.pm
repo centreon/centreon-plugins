@@ -178,6 +178,8 @@ sub execute_command {
         @results = $self->{mq_command}->InquireChannelStatus(%{$options{attrs}});
     } elsif ($options{command} eq 'InquireQueueStatus') {
         @results = $self->{mq_command}->InquireQueueStatus(%{$options{attrs}});
+    } elsif ($options{command} eq 'InquireChannelNames') {
+        @results = $self->{mq_command}->InquireChannelNames(%{$options{attrs}});
     }
 
     if (!@results) {
