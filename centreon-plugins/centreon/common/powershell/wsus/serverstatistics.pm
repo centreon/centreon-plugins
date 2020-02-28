@@ -56,17 +56,18 @@ Try {
 
     $wsusStatus = $wsusObject.GetStatus()
     
-    $returnObject = New-Object -TypeName PSObject
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetCount" -Value $wsusStatus.ComputerTargetCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "CustomComputerTargetGroupCount" -Value $wsusStatus.CustomComputerTargetGroupCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdateCount" -Value $wsusStatus.UpdateCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ApprovedUpdateCount" -Value $wsusStatus.ApprovedUpdateCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "DeclinedUpdateCount" -Value $wsusStatus.DeclinedUpdateCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "NotApprovedUpdateCount" -Value $wsusStatus.NotApprovedUpdateCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UpdatesWithStaleUpdateApprovalsCount" -Value $wsusStatus.UpdatesWithStaleUpdateApprovalsCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ExpiredUpdateCount" -Value $wsusStatus.ExpiredUpdateCount
+    $item = @{
+        ComputerTargetCount = $wsusStatus.ComputerTargetCount;
+        CustomComputerTargetGroupCount = $wsusStatus.CustomComputerTargetGroupCount;
+        UpdateCount = $wsusStatus.UpdateCount;
+        ApprovedUpdateCount = $wsusStatus.ApprovedUpdateCount;
+        DeclinedUpdateCount = $wsusStatus.DeclinedUpdateCount;
+        NotApprovedUpdateCount = $wsusStatus.NotApprovedUpdateCount;
+        UpdatesWithStaleUpdateApprovalsCount = $wsusStatus.UpdatesWithStaleUpdateApprovalsCount;
+        ExpiredUpdateCount = $wsusStatus.ExpiredUpdateCount
+    }
     
-    $jsonString = $returnObject | ConvertTo-JSON-20
+    $jsonString = $item | ConvertTo-JSON-20
     Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception

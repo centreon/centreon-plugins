@@ -25,8 +25,9 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::powershell::veeam::jobstatus;
-use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::misc;
+use JSON::XS;
 
 sub custom_status_threshold {
     my ($self, %options) = @_; 
@@ -36,7 +37,7 @@ sub custom_status_threshold {
     eval {
         local $SIG{__WARN__} = sub { $message = $_[0]; };
         local $SIG{__DIE__} = sub { $message = $_[0]; };
-        
+
         # To exclude some OK
         if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
             eval "$self->{instance_mode}->{option_results}->{ok_status}") {
@@ -203,54 +204,60 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
-    #[name = xxxx ][type = Backup ][isrunning = False ][result = Success ][creationTimeUTC =  1512875246.2 ][endTimeUTC =  1512883615.377 ]
-    #[name = xxxx ][type = Backup ][isrunning = False ][result = ][creationTimeUTC = ][endTimeUTC = ]
-    #[name = xxxx ][type = BackupSync ][isrunning = True ][result =  None ][creationTimeUTC =  1513060425.027 ][endTimeUTC = -2208992400 ]
 
-    #is_running = 2 (never running)
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #  { name: 'xxxx', type: 'Backup', isRunning: False, result: 'Success', creationTimeUTC: 1512875246.2, endTimeUTC: 1512883615.377 },
+    #  { name: 'xxxx', type: 'Backup', isRunning: False, result: '', creationTimeUTC: '', endTimeUTC: '' },
+    #  { name: 'xxxx', type: 'BackupSync', isRunning: True, result: 'None', creationTimeUTC: 1513060425.027, endTimeUTC: -2208992400 }
+    #]
+
     $self->{global} = { total => 0 };
     $self->{job} = {};
     my $current_time = time();
-    foreach my $line (split /\n/, $stdout) {
-        next if ($line !~ /^\[name\s*=(.*?)\]\[type\s*=(.*?)\]\[isrunning\s*=(.*?)\]\[result\s*=(.*?)\]\[creationTimeUTC\s*=(.*?)\]\[endTimeUTC\s*=(.*?)\]/i);
-
-        my ($name, $type, $is_running, $result, $start_time, $end_time) = (
-            centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2), centreon::plugins::misc::trim($3),
-            centreon::plugins::misc::trim($4), centreon::plugins::misc::trim($5), centreon::plugins::misc::trim($6)
-        );
-        $start_time =~ s/,/\./;
-        $end_time =~ s/,/\./;
+    foreach my $job (@$decoded) {
+        $job->{creationTimeUTC} =~ s/,/\./;
+        $job->{endTimeUTC} =~ s/,/\./;
 
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $name !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $name . "': no matching filter.", debug => 1);
+            $job->{name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $type !~ /$self->{option_results}->{filter_type}/) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $name . "': no matching filter type.", debug => 1);
+            $job->{type} !~ /$self->{option_results}->{filter_type}/) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_end_time}) && $self->{option_results}->{filter_end_time} =~ /[0-9]+/ &&
-            defined($end_time) && $end_time =~ /[0-9]+/ && $end_time < $current_time - $self->{option_results}->{filter_end_time}) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $name . "': end time too old.", debug => 1);
+            $job->{endTimeUTC} =~ /[0-9]+/ && $job->{endTimeUTC} < $current_time - $self->{option_results}->{filter_end_time}) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': end time too old.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_start_time}) && $self->{option_results}->{filter_start_time} =~ /[0-9]+/ &&
-            defined($start_time) && $start_time =~ /[0-9]+/ && $start_time < $current_time - $self->{option_results}->{filter_start_time}) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $name . "': start time too old.", debug => 1);
+            $job->{creationTimeUTC} =~ /[0-9]+/ && $job->{creationTimeUTC} < $current_time - $self->{option_results}->{filter_start_time}) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': start time too old.", debug => 1);
             next;
         }
-        
+
         my $elapsed_time;
-        $elapsed_time = $current_time - $start_time if ($start_time =~ /[0-9]/);
-        $self->{job}->{$name} = {
-            display => $name,
+        $elapsed_time = $current_time - $job->{creationTimeUTC} if ($job->{creationTimeUTC} =~ /[0-9]/);
+        
+        #is_running = 2 (never running)
+        $self->{job}->{ $job->{name} } = {
+            display => $job->{name},
             elapsed => $elapsed_time,
-            type => $type,
-            is_running => ($is_running =~ /True/) ? 1 : ($start_time !~ /[0-9]/ ? 2 : 0),
-            status => $result ne '' ? $result : '-',
+            type => $job->{type},
+            is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($job->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
+            status => $job->{result} ne '' ? $job->{result} : '-'
         };
         $self->{global}->{total}++;
     }

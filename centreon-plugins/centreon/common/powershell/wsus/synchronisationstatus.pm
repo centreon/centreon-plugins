@@ -58,15 +58,16 @@ Try {
     $syncProgress = $wsusObject.GetSubscription().GetSynchronizationProgress()
     $lastSync = $wsusObject.GetSubscription().GetLastSynchronizationInfo()
         
-    $returnObject = New-Object -TypeName PSObject
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "SynchronizationStatus" -Value $syncStatus.ToString()
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "TotalItems" -Value $syncProgress.TotalItems
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ProcessedItems" -Value $syncProgress.ProcessedItems
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationResult" -Value $lastSync.Result.ToString()
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationStartTime" -Value $lastSync.StartTime
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "LastSynchronizationEndTime" -Value $lastSync.EndTime
+    $item = @{
+        SynchronizationStatus = $syncStatus.ToString();
+        TotalItems = $syncProgress.TotalItems;
+        ProcessedItems = $syncProgress.ProcessedItems;
+        LastSynchronizationResult = $lastSync.Result.ToString();
+        LastSynchronizationStartTime = $lastSync.StartTime;
+        LastSynchronizationEndTime = $lastSync.EndTime
+    }
     
-    $jsonString = $returnObject | ConvertTo-JSON-20
+    $jsonString = $item | ConvertTo-JSON-20
     Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
