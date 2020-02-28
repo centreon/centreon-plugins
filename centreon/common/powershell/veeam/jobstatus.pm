@@ -22,6 +22,7 @@ package centreon::common::powershell::veeam::jobstatus;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -29,7 +30,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
 
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 If (@(Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -gt 0) {
     If (@(Get-PSSnapin | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -eq 0) {
         Try {
@@ -49,20 +55,30 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
+    $items = New-Object System.Collections.Generic.List[Hashtable];
+
     $jobs = Get-VBRJob
     foreach ($job in $jobs) {
-        Write-Host "[name = " $job.Name "]" -NoNewline
-        Write-Host "[type = " $job.JobType "]" -NoNewline
-        Write-Host "[isrunning = " $job.isRunning "]" -NoNewline
+        $item = @{}
+        $item.name = $job.Name
+        $item.type = $job.JobType
+        $item.isRunning = $job.isRunning
+        $item.result = ""
+        $item.creationTimeUTC = ""
+        $item.endTimeUTC = ""
+
         $lastsession = $job.findlastsession()
         if ($lastsession) {
-            Write-Host "[result = " $lastsession.Result "]" -NoNewline
-            Write-Host "[creationTimeUTC = " (get-date -date $lastsession.creationTime.ToUniversalTime() -Uformat ' . "'%s'" . ') "]" -NoNewline
-            Write-Host "[endTimeUTC = " (get-date -date $lastsession.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ') "]"
-        } else {
-            Write-Host "[result = ][creationTimeUTC = ][endTimeUTC = ]"
+            $item.result = $lastsession.Result
+            $item.creationTimeUTC = (get-date -date $lastsession.creationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
+            $item.endTimeUTC = (get-date -date $lastsession.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
         }
+
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray 1
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

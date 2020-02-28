@@ -336,20 +336,6 @@ sub powershell_escape {
     return $value;
 }
 
-sub powershell_json_sanitizer {
-    my (%options) = @_;
-
-    centreon::plugins::misc::mymodule_load(
-        output => $options{output}, module => 'JSON::XS',
-        error_msg => "Cannot load module 'JSON::XS'."
-    );
-    foreach my $line (split /\n/, $options{string}) {
-        eval { JSON::XS->new->utf8->decode($line) };
-        return $line if (!$@);
-    }
-    return -1;
-}
-
 sub minimal_version {
     my ($version_src, $version_dst) = @_;
         

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package centreon::common::powershell::wsus::updatesstatus;
+package centreon::common::powershell::veeam::tapejobs;
 
 use strict;
 use warnings;
@@ -36,14 +36,17 @@ $culture = new-object "System.Globalization.CultureInfo" "en-us"
     $ps .= centreon::common::powershell::functions::convert_to_json(%options);
 
     $ps .= '
-$wsusServer = "' . $options{wsus_server} . '"
-$useSsl = ' . $options{use_ssl} . '
-$wsusPort = ' . $options{wsus_port} . '
-
-Try {
-    [void][reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration") 
-} Catch {
-    Write-Host $Error[0].Exception
+If (@(Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -gt 0) {
+    If (@(Get-PSSnapin | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -eq 0) {
+        Try {
+            Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} | Add-PSSnapin -ErrorAction STOP
+        } Catch {
+            Write-Host $Error[0].Exception
+            exit 1
+        }
+    }
+} else {
+    Write-Host "Snap-In Veeam no present or not registered"
     exit 1
 }
 
@@ -52,19 +55,22 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
-    $wsusObject = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer($wsusServer, $useSsl, $wsusPort)
+    $items = New-Object System.Collections.Generic.List[Hashtable];
 
-    $wsusStatus = $wsusObject.GetStatus()
+    $jobs = Get-VBRtapeJob
+    foreach ($job in $jobs) {
+        $item = @{
+            name = $job.Name;
+            enabled = $job.Enabled;
+            type = $job.Type;
+            lastResult = $job.LastResult;
+            lastState = $job.LastState
+        }
 
-    $item = @{
-        UpdatesWithClientErrorsCount = $wsusStatus.UpdatesWithClientErrorsCount;
-        UpdatesWithServerErrorsCount = $wsusStatus.UpdatesWithServerErrorsCount;
-        UpdatesNeedingFilesCount = $wsusStatus.UpdatesNeedingFilesCount;
-        UpdatesNeededByComputersCount = $wsusStatus.UpdatesNeededByComputersCount;
-        UpdatesUpToDateCount = $wsusStatus.UpdatesUpToDateCount
+        $items.Add($item)
     }
-    
-    $jsonString = $item | ConvertTo-JSON-20
+
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray 1
     Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
@@ -83,6 +89,6 @@ __END__
 
 =head1 DESCRIPTION
 
-Method to get WSUS updates informations.
+Method to get veeam tape job status informations.
 
 =cut

@@ -22,6 +22,7 @@ package centreon::common::powershell::veeam::listjobs;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -29,7 +30,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
 
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 If (@(Get-PSSnapin -Registered | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -gt 0) {
     If (@(Get-PSSnapin | Where-Object {$_.Name -Match "VeeamPSSnapin"} ).count -eq 0) {
         Try {
@@ -49,11 +55,20 @@ $ProgressPreference = "SilentlyContinue"
 Try {
     $ErrorActionPreference = "Stop"
 
+    $items = New-Object System.Collections.Generic.List[Hashtable];
+
     $jobs = Get-VBRJob
     foreach ($job in $jobs) {
-        Write-Host "[name = " $job.Name "]" -NoNewline
-        Write-Host "[type = " $job.JobType "]"
+        $item = @{
+            name = $job.Name;
+            type = $job.JobType
+        }
+
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20 -forceArray 1
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

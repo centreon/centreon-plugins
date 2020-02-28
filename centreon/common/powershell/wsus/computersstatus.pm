@@ -62,15 +62,16 @@ Try {
 
     $computerTargetScope = new-object Microsoft.UpdateServices.Administration.ComputerTargetScope
     $unassignedComputersCount = $wsusObject.GetComputerTargetGroup([Microsoft.UpdateServices.Administration.ComputerTargetGroupId]::UnassignedComputers).GetComputerTargets().Count
-    
-    $returnObject = New-Object -TypeName PSObject
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetsNeedingUpdatesCount" -Value $wsusStatus.ComputerTargetsNeedingUpdatesCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputerTargetsWithUpdateErrorsCount" -Value $wsusStatus.ComputerTargetsWithUpdateErrorsCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersUpToDateCount" -Value $wsusStatus.ComputersUpToDateCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "ComputersNotContactedSinceCount" -Value $computersNotContactedSinceCount
-    Add-Member -InputObject $returnObject -MemberType NoteProperty -Name "UnassignedComputersCount" -Value $unassignedComputersCount
-    
-    $jsonString = $returnObject | ConvertTo-JSON-20
+
+    $item = @{
+        ComputerTargetsNeedingUpdatesCount = $wsusStatus.ComputerTargetsNeedingUpdatesCount;
+        ComputerTargetsWithUpdateErrorsCount = $wsusStatus.ComputerTargetsWithUpdateErrorsCount;
+        ComputersUpToDateCount = $wsusStatus.ComputersUpToDateCount;
+        ComputersNotContactedSinceCount = $computersNotContactedSinceCount;
+        UnassignedComputersCount = $unassignedComputersCount
+    } 
+
+    $jsonString = $item | ConvertTo-JSON-20
     Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception

@@ -117,20 +117,25 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
     $self->{jobs} = {};
-    my @lines = split /\n/, $stdout;
-    foreach my $line (@lines) {
-        next if ($line !~ /^\[name\s*=(.*?)\]\[type\s*=(.*?)\]/i);
-        my ($name, $type) = (centreon::plugins::misc::trim($1), centreon::plugins::misc::trim($2));
-        
+    foreach my $job (@$decoded) {        
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && 
-            $name !~ /$self->{option_results}->{filter_name}/i) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $name . "': no type or no matching filter type", debug => 1);
+            $job->{name} !~ /$self->{option_results}->{filter_name}/i) {
+            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no type or no matching filter type", debug => 1);
             next;
         }
 
-        $self->{jobs}->{$name} = { type => $type };
+        $self->{jobs}->{ $job->{name} } = { type => $job->{type} };
     }
 }
 
