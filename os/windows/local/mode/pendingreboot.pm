@@ -27,6 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::windows::pendingreboot;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use JSON::XS;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -62,14 +63,16 @@ sub set_counters {
     ];
     $self->{maps_counters}->{pendingreboot} = [
         { label => 'status', , threshold => 0, set => {
-                key_values => [ { name => 'CBServicing' }, { name => 'RebootPending' }, { name => 'WindowsUpdate' }, 
-                    { name => 'CCMClientSDK' }, { name => 'PendComputerRename' }, { name => 'PendFileRename' } ],
+                key_values => [
+                    { name => 'CBServicing' }, { name => 'RebootPending' }, { name => 'WindowsUpdate' }, 
+                    { name => 'CCMClientSDK' }, { name => 'PendComputerRename' }, { name => 'PendFileRename' }
+                ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -132,12 +135,24 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
-    #[CBServicing=False][WindowsUpdate=False][CCMClientSDK=][PendComputerRename=False][PendFileRename=False][PendFileRenVal=][RebootPending=False]
-    $self->{pendingreboot} = {};
-    while ($stdout =~ /\[(.*?)=\s*(.*?)\s*\]/mg) {
-        $self->{pendingreboot}->{$1} = $2;
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
     }
+
+    #{ CBServicing: false, WindowsUpdate: false, CCMClientSDK: null, PendComputerRename: false, PendFileRename: false, PendFileRenVal: null, RebootPending: false }
+    foreach (keys %$decoded) {
+        $decoded->{$_} = '-' if (!defined($decoded->{$_}));
+        $decoded->{$_} = 'true' if ($decoded->{$_} =~ /true|1/i);
+        $decoded->{$_} = 'false' if ($decoded->{$_} =~ /false|0/i);
+    }
+
+    $self->{pendingreboot} = $decoded;
 }
 
 1;

@@ -22,6 +22,7 @@ package centreon::common::powershell::windows::pendingreboot;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -29,6 +30,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
@@ -107,13 +114,18 @@ Try {
         $SCCM = $null 
     }
 
-    Write-Host ("[CBServicing={0}]" -f $CBSRebootPend ) -NoNewline
-    Write-Host ("[WindowsUpdate={0}]" -f $WUAURebootReq ) -NoNewline
-    Write-Host ("[CCMClientSDK={0}]" -f $SCCM ) -NoNewline
-    Write-Host ("[PendComputerRename={0}]" -f $CompPendRen ) -NoNewline
-    Write-Host ("[PendFileRename={0}]" -f $PendFileRename ) -NoNewline
-    Write-Host ("[PendFileRenVal={0}]" -f $RegValuePFRO ) -NoNewline
-    Write-Host ("[RebootPending={0}]" -f ($CompPendRen -or $CBSRebootPend -or $WUAURebootReq -or $SCCM -or $PendFileRename) )    
+    $item = @{
+        CBServicing = $CBSRebootPend;
+        WindowsUpdate = $WUAURebootReq;
+        CCMClientSDK = $SCCM;
+        PendComputerRename = $CompPendRen;
+        PendFileRename = $PendFileRename;
+        PendFileRenVal = $RegValuePFRO;
+        RebootPending = ($CompPendRen -or $CBSRebootPend -or $WUAURebootReq -or $SCCM -or $PendFileRename)
+    }
+
+    $jsonString = $item | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1
