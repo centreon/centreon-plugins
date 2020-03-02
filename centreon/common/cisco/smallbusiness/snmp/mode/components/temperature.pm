@@ -22,54 +22,74 @@ package centreon::common::cisco::smallbusiness::snmp::mode::components::temperat
 
 use strict;
 use warnings;
+use centreon::common::cisco::smallbusiness::snmp::mode::components::resources qw($oid_rlPhdUnitEnvParamEntry);
+
+my $map_entity_sensor = { 1 => 'ok', 2 => 'unavailable', 3 => 'nonoperational' };
 
 my $mapping = {
-    rlPhdUnitEnvParamTempSensorValue                  => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.10' },
-    rlPhdUnitEnvParamTempSensorWarningThresholdValue  => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.12' },
-    rlPhdUnitEnvParamTempSensorCriticalThresholdValue => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.13' },
+    new => {
+        rlPhdUnitEnvParamTempSensorValue                  => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.10' },
+        rlPhdUnitEnvParamTempSensorStatus                 => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.11', map => $map_entity_sensor },
+        rlPhdUnitEnvParamTempSensorWarningThresholdValue  => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.12' },
+        rlPhdUnitEnvParamTempSensorCriticalThresholdValue => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.13' }
+    },
+    old => {
+        rlPhdUnitEnvParamTempSensorValue  => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.9' },
+        rlPhdUnitEnvParamTempSensorStatus => { oid => '.1.3.6.1.4.1.9.6.1.101.53.15.1.10', map => $map_entity_sensor },
+    }
 };
-my $oid_rlPhdUnitEnvParamEntry = '.1.3.6.1.4.1.9.6.1.101.53.15.1';
 
-sub load {
-    my ($self) = @_;
-    
-    push @{$self->{request}}, {
-        oid => $oid_rlPhdUnitEnvParamEntry,
-        start => $mapping->{rlPhdUnitEnvParamTempSensorValue}->{oid},
-        end => $mapping->{rlPhdUnitEnvParamTempSensorCriticalThresholdValue}->{oid},
-    };
-}
+sub load {}
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking temperatures");
-    $self->{components}->{temperature} = {name => 'temperatures', total => 0, skip => 0};
+    $self->{components}->{temperature} = { name => 'temperatures', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'temperature'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_rlPhdUnitEnvParamEntry}})) {
-        next if ($oid !~ /^$mapping->{rlPhdUnitEnvParamTempSensorValue}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{new}->{rlPhdUnitEnvParamTempSensorValue}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_rlPhdUnitEnvParamEntry}, instance => $instance);
-        
+        my $result = $self->{snmp}->map_instance(
+            mapping => $self->{sb_new} == 1 ? $mapping->{new} : $mapping->{old},
+            results => $self->{results}->{$oid_rlPhdUnitEnvParamEntry},
+            instance => $instance
+        );
+
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
 
         $self->{output}->output_add(
             long_msg => sprintf(
-                "temperature '%s' is %s degree centigrade [instance = %s]",
-                $instance, $result->{rlPhdUnitEnvParamTempSensorValue}, $instance, 
+                "temperature '%s' status is '%s' [instance = %s, value: %s degree centigrade]",
+                $instance,
+                $result->{rlPhdUnitEnvParamTempSensorStatus},
+                $instance,
+                $result->{rlPhdUnitEnvParamTempSensorValue}
             )
         );
 
-        my ($exit, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{rlPhdUnitEnvParamTempSensorValue});
-        if ($checked == 0) {
+        my $exit = $self->get_severity(section => 'temperature', value => $result->{rlPhdUnitEnvParamTempSensorStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Temperature '%s' status is '%s'",
+                    $instance,
+                    $result->{rlPhdUnitEnvParamTempSensorStatus}
+                )
+            );
+        }
+
+        my ($exit2, $warn, $crit, $checked) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{rlPhdUnitEnvParamTempSensorValue});
+        if ($checked == 0 && defined($result->{rlPhdUnitEnvParamTempSensorWarningThresholdValue})) {
             my $warn_th = ':' . $result->{rlPhdUnitEnvParamTempSensorWarningThresholdValue};
             my $crit_th = ':' . $result->{rlPhdUnitEnvParamTempSensorCriticalThresholdValue};
             $self->{perfdata}->threshold_validate(label => 'warning-temperature-instance-' . $instance, value => $warn_th);
             $self->{perfdata}->threshold_validate(label => 'critical-temperature-instance-' . $instance, value => $crit_th);
 
-            $exit = $self->{perfdata}->threshold_check(
+            $exit2 = $self->{perfdata}->threshold_check(
                 value => $result->{rlPhdUnitEnvParamTempSensorValue}, 
                 threshold => [
                     { label => 'critical-temperature-instance-' . $instance, exit_litteral => 'critical' },
@@ -79,10 +99,16 @@ sub check {
             $warn = $self->{perfdata}->get_perfdata_for_output(label => 'warning-temperature-instance-' . $instance);
             $crit = $self->{perfdata}->get_perfdata_for_output(label => 'critical-temperature-instance-' . $instance);
         }
-        
+
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' is %s degree centigrade", $instance, $result->{rlPhdUnitEnvParamTempSensorValue}));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf(
+                    "Temperature '%s' is %s degree centigrade",
+                    $instance,
+                    $result->{rlPhdUnitEnvParamTempSensorValue}
+                )
+            );
         }
         $self->{output}->perfdata_add(
             label => 'temp', unit => 'C',
@@ -90,7 +116,7 @@ sub check {
             instances => $instance,
             value => $result->{rlPhdUnitEnvParamTempSensorValue},
             warning => $warn,
-            critical => $crit,
+            critical => $crit
         );
     }
 }

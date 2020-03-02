@@ -24,17 +24,21 @@ use base qw(centreon::plugins::templates::hardware);
 
 use strict;
 use warnings;
+use centreon::common::cisco::smallbusiness::snmp::mode::components::resources qw(
+    $oid_rlPhdUnitEnvParamEntry
+    $oid_rlPhdUnitEnvParamMonitorAutoRecoveryEnable
+);
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_overload_check_section_option} = '^(?:fan|psu|temperature)$';
-     $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
-    
+    $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
-        fan => [
+        default => [
             ['normal', 'OK'],
             ['notPresent', 'OK'],
             ['warning', 'WARNING'],
@@ -42,25 +46,35 @@ sub set_system {
             ['shutdown', 'CRITICAL'],
             ['notFunctioning', 'CRITICAL'],
         ],
-        psu => [
-            ['normal', 'OK'],
-            ['notPresent', 'OK'],
-            ['warning', 'WARNING'],
-            ['critical', 'CRITICAL'],
-            ['shutdown', 'CRITICAL'],
-            ['notFunctioning', 'CRITICAL'],
+        temperature => [
+            ['ok', 'OK'],
+            ['unavailable', 'OK'],
+            ['nonoperational', 'CRITICAL'],
         ],
     };
-    
+
     $self->{components_path} = 'centreon::common::cisco::smallbusiness::snmp::mode::components';
     $self->{components_module} = ['psu', 'fan', 'temperature'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
+    push @{$self->{request}}, {
+        oid => $oid_rlPhdUnitEnvParamEntry,
+        start => '.1.3.6.1.4.1.9.6.1.101.53.15.1.2', # rlPhdUnitEnvParamMainPSStatus
+        end => $oid_rlPhdUnitEnvParamMonitorAutoRecoveryEnable
+    };
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+
+    $self->{sb_new} = 0;
+    foreach (keys %{$self->{results}->{$oid_rlPhdUnitEnvParamEntry}}) {
+        if (/^$oid_rlPhdUnitEnvParamMonitorAutoRecoveryEnable\./) {
+            $self->{sb_new} = 1;
+            last;
+        }
+    }
 }
 
 sub new {
