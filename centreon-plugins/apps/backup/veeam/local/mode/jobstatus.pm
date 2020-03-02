@@ -25,52 +25,15 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::powershell::veeam::jobstatus;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use apps::backup::veeam::local::mode::resources::types qw($job_type $job_result);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 use centreon::plugins::misc;
 use JSON::XS;
-
-sub custom_status_threshold {
-    my ($self, %options) = @_; 
-    my $status = 'ok';
-    my $message;
-
-    eval {
-        local $SIG{__WARN__} = sub { $message = $_[0]; };
-        local $SIG{__DIE__} = sub { $message = $_[0]; };
-
-        # To exclude some OK
-        if (defined($self->{instance_mode}->{option_results}->{ok_status}) && $self->{instance_mode}->{option_results}->{ok_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{ok_status}") {
-            $status = 'ok';
-        } elsif (defined($self->{instance_mode}->{option_results}->{critical_status}) && $self->{instance_mode}->{option_results}->{critical_status} ne '' &&
-            eval "$self->{instance_mode}->{option_results}->{critical_status}") {
-            $status = 'critical';
-        } elsif (defined($self->{instance_mode}->{option_results}->{warning_status}) && $self->{instance_mode}->{option_results}->{warning_status} ne '' &&
-                 eval "$self->{instance_mode}->{option_results}->{warning_status}") {
-            $status = 'warning';
-        }
-    };
-    if (defined($message)) {
-        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
-    }
-
-    return $status;
-}
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
     return 'status : ' . $self->{result_values}->{status} . ' [type: ' . $self->{result_values}->{type}  . ']';
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
-    $self->{result_values}->{is_running} = $options{new_datas}->{$self->{instance} . '_is_running'};
-    return 0;
 }
 
 sub custom_long_output {
@@ -98,7 +61,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -11 => 1, -10 => 1 } },
+        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -11 => 1, -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -106,19 +69,19 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Jobs : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', min => 0 },
-                ],
+                    { label => 'total', value => 'total_absolute', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{job} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' }, { name => 'type' }, { name => 'is_running' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'long', threshold => 0, set => {
@@ -126,9 +89,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_long_calc'),
                 closure_custom_output => $self->can('custom_long_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -153,7 +116,7 @@ sub new {
         'warning-status:s'    => { name => 'warning_status', default => '' },
         'critical-status:s'   => { name => 'critical_status', default => '%{is_running} == 0 and not %{status} =~ /Success/i' },
         'warning-long:s'      => { name => 'warning_long' },
-        'critical-long:s'     => { name => 'critical_long' },
+        'critical-long:s'     => { name => 'critical_long' }
     });
 
     return $self;
@@ -215,9 +178,9 @@ sub manage_selection {
     }
 
     #[
-    #  { name: 'xxxx', type: 'Backup', isRunning: False, result: 'Success', creationTimeUTC: 1512875246.2, endTimeUTC: 1512883615.377 },
-    #  { name: 'xxxx', type: 'Backup', isRunning: False, result: '', creationTimeUTC: '', endTimeUTC: '' },
-    #  { name: 'xxxx', type: 'BackupSync', isRunning: True, result: 'None', creationTimeUTC: 1513060425.027, endTimeUTC: -2208992400 }
+    #  { name: 'xxxx', type: 0, isRunning: False, result: 0, creationTimeUTC: 1512875246.2, endTimeUTC: 1512883615.377 },
+    #  { name: 'xxxx', type: 0, isRunning: False, result: 1, creationTimeUTC: '', endTimeUTC: '' },
+    #  { name: 'xxxx', type: 1, isRunning: True, result: 0, creationTimeUTC: 1513060425.027, endTimeUTC: -2208992400 }
     #]
 
     $self->{global} = { total => 0 };
@@ -233,7 +196,7 @@ sub manage_selection {
             next;
         }
         if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-            $job->{type} !~ /$self->{option_results}->{filter_type}/) {
+            $job_type->{ $job->{type} } !~ /$self->{option_results}->{filter_type}/) {
             $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter type.", debug => 1);
             next;
         }
@@ -250,14 +213,15 @@ sub manage_selection {
 
         my $elapsed_time;
         $elapsed_time = $current_time - $job->{creationTimeUTC} if ($job->{creationTimeUTC} =~ /[0-9]/);
-        
+
         #is_running = 2 (never running)
         $self->{job}->{ $job->{name} } = {
             display => $job->{name},
             elapsed => $elapsed_time,
-            type => $job->{type},
+            type => $job_type->{ $job->{type} },
             is_running => $job->{isRunning} =~ /True|1/ ? 1 : ($job->{creationTimeUTC} !~ /[0-9]/ ? 2 : 0),
-            status => $job->{result} ne '' ? $job->{result} : '-'
+            status => defined($job_result->{ $job->{result} }) && $job_result->{ $job->{result} } ne '' ?
+                $job_result->{ $job->{result} } : '-'
         };
         $self->{global}->{total}++;
     }

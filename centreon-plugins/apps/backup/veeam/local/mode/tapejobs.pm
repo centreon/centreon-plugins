@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::common::powershell::veeam::tapejobs;
+use apps::backup::veeam::local::mode::resources::types qw($job_tape_type $job_tape_result $job_tape_state);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 use centreon::plugins::misc;
 use JSON::XS;
@@ -154,8 +155,8 @@ sub manage_selection {
     }
 
     #[
-    #  { name: 'xxxx', type: 'BackupToTape', Enabled: True, lastResult: 'Success', lastState: 'Stopped' },
-    #  { name: 'xxxx', type: 'FileToTape', Enabled: True, lastResult: 'None', lastState: 'Working' }
+    #  { name: 'xxxx', type: 0, Enabled: True, lastResult: 0, lastState: 0 },
+    #  { name: 'xxxx', type: 1, Enabled: True, lastResult: 1, lastState: 1 }
     #]
 
     $self->{global} = { total => 0 };
@@ -174,10 +175,10 @@ sub manage_selection {
         
         $self->{job}->{ $job->{name} } = {
             display => $job->{name},
-            type => $job->{type},
+            type => $job_tape_type->{ $job->{type} },
             enabled => $job->{enabled} =~ /True|1/ ? 1 : 0,
-            last_result => $job->{lastResult},
-            last_state => $job->{lastState}
+            last_result => $job_tape_result->{ $job->{lastResult} },
+            last_state => $job_tape_state->{ $job->{lastState} }
         };
         $self->{global}->{total}++;
     }

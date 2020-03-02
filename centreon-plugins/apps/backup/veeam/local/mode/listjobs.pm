@@ -24,8 +24,10 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
+use apps::backup::veeam::local::mode::resources::types qw($job_type);
 use centreon::common::powershell::veeam::listjobs;
 use centreon::plugins::misc;
+use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -40,7 +42,7 @@ sub new {
         'no-ps'             => { name => 'no_ps' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
-        'filter-name:s'     => { name => 'filter_name' },
+        'filter-name:s'     => { name => 'filter_name' }
     });
 
     return $self;
@@ -128,14 +130,14 @@ sub manage_selection {
     }
 
     $self->{jobs} = {};
-    foreach my $job (@$decoded) {        
+    foreach my $job (@$decoded) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' && 
             $job->{name} !~ /$self->{option_results}->{filter_name}/i) {
-            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no type or no matching filter type", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping job '" . $job->{name} . "': no matching filter name", debug => 1);
             next;
         }
 
-        $self->{jobs}->{ $job->{name} } = { type => $job->{type} };
+        $self->{jobs}->{ $job->{name} } = { type => $job_type->{ $job->{type} } };
     }
 }
 

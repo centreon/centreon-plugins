@@ -61,7 +61,7 @@ Try {
     foreach ($job in $jobs) {
         $item = @{
             name = $job.Name;
-            type = $job.JobType
+            type = $job.JobType.value__
         }
 
         $items.Add($item)
