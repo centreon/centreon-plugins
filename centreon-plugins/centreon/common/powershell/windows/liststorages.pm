@@ -34,7 +34,7 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
-	
+
     $disks = Get-CimInstance Win32_LogicalDisk
 
 } Catch {
@@ -68,8 +68,8 @@ sub list {
         $self->{output}->output_add(long_msg => "'" . $disk . "' [size = $size, free = $free, desc = $desc, type = $map_type{$type}]");
     }
 }
-1;
 
+1;
 
 sub disco_show {
     my ($self, %options) = @_;
@@ -104,4 +104,3 @@ __END__
 Method to list Windows Disks.
 
 =cut
-

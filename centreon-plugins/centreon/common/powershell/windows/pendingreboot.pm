@@ -33,13 +33,13 @@ $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
-    
+
     $ComputerName = "$env:COMPUTERNAME"
     $CompPendRen,$PendFileRename,$Pending,$SCCM = $false,$false,$false,$false
-    
+
     ## Setting CBSRebootPend to null since not all versions of Windows has this value 
     $CBSRebootPend = $null 
-             
+
     ## Querying WMI for build version 
     $WMI_OS = Get-WmiObject -Class Win32_OperatingSystem -Property BuildNumber, CSName -ComputerName $ComputerName -ErrorAction Stop 
  
@@ -52,27 +52,27 @@ Try {
         $RegSubKeysCBS = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Component Based Servicing\\") 
         $CBSRebootPend = $RegSubKeysCBS.sNames -contains "RebootPending"     
     } 
-               
+
     ## Query WUAU from the registry 
     $RegWUAURebootReq = $WMI_Reg.EnumKey($HKLM,"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\WindowsUpdate\\Auto Update\\") 
     $WUAURebootReq = $RegWUAURebootReq.sNames -contains "RebootRequired" 
-             
+
     ## Query PendingFileRenameOperations from the registry 
     $RegSubKeySM = $WMI_Reg.GetMultiStringValue($HKLM,"SYSTEM\\CurrentControlSet\\Control\\Session Manager\\","PendingFileRenameOperations") 
     $RegValuePFRO = $RegSubKeySM.sValue 
- 
+
     ## Query ComputerName and ActiveComputerName from the registry 
     $ActCompNm = $WMI_Reg.GetStringValue($HKLM,"SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ActiveComputerName\\","ComputerName")       
 	$CompNm = $WMI_Reg.GetStringValue($HKLM,"SYSTEM\\CurrentControlSet\\Control\\ComputerName\\ComputerName\\","ComputerName") 
 	If ($ActCompNm -ne $CompNm) {
         $CompPendRen = $true 
     } 
-             
+
     ## If PendingFileRenameOperations has a value set $RegValuePFRO variable to $true 
     If ($RegValuePFRO) { 
         $PendFileRename = $true 
     }
-    
+
     ## Determine SCCM 2012 Client Reboot Pending Status 
     ## To avoid nested "if" statements and unneeded WMI calls to determine if the CCM_ClientUtilities class exist, setting EA = 0 
     $CCMClientSDK = $null 
@@ -95,7 +95,7 @@ Try {
     } Catch { 
         $CCMClientSDK = $null 
     } 
- 
+
     If ($CCMClientSDK) { 
         If ($CCMClientSDK.ReturnValue -ne 0) { 
             Write-Warning "Error: DetermineIfRebootPending returned error code $($CCMClientSDK.ReturnValue)"     
@@ -106,7 +106,7 @@ Try {
     } Else { 
         $SCCM = $null 
     }
-    
+
     Write-Host ("[CBServicing={0}]" -f $CBSRebootPend ) -NoNewline
     Write-Host ("[WindowsUpdate={0}]" -f $WUAURebootReq ) -NoNewline
     Write-Host ("[CCMClientSDK={0}]" -f $SCCM ) -NoNewline
@@ -134,4 +134,3 @@ __END__
 Method to get pending reboot informations.
 
 =cut
-
