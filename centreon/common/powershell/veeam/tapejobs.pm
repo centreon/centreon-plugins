@@ -62,9 +62,9 @@ Try {
         $item = @{
             name = $job.Name;
             enabled = $job.Enabled;
-            type = $job.Type;
-            lastResult = $job.LastResult;
-            lastState = $job.LastState
+            type = $job.Type.value__;
+            lastResult = $job.LastResult.value__;
+            lastState = $job.LastState.value__
         }
 
         $items.Add($item)

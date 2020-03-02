@@ -61,15 +61,15 @@ Try {
     foreach ($job in $jobs) {
         $item = @{}
         $item.name = $job.Name
-        $item.type = $job.JobType
+        $item.type = $job.JobType.value__
         $item.isRunning = $job.isRunning
-        $item.result = ""
+        $item.result = -10
         $item.creationTimeUTC = ""
         $item.endTimeUTC = ""
 
         $lastsession = $job.findlastsession()
         if ($lastsession) {
-            $item.result = $lastsession.Result
+            $item.result = $lastsession.Result.value__
             $item.creationTimeUTC = (get-date -date $lastsession.creationTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
             $item.endTimeUTC = (get-date -date $lastsession.EndTime.ToUniversalTime() -Uformat ' . "'%s'" . ')
         }
