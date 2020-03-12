@@ -157,7 +157,7 @@ sub manage_selection {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
             && $_ !~ /$self->{option_results}->{filter_name}/);
         if (!defined($self->{channel}->{$_})) {
-            $self->{channel}->{$_->{ChannelName}} = {
+            $self->{channel}->{$_} = {
                 qmgr_name => $options{custom}->get_qmgr_name(),
                 channel_name => $_,
                 channel_status => 'idle',
