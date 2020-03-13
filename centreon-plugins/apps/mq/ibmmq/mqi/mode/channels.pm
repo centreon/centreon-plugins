@@ -192,6 +192,10 @@ Check channels.
 
 Filter channel name (Can use regexp).
 
+=item B<--filter-type>
+
+Filter channel type (Can use regexp).
+
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
