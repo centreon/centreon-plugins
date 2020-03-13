@@ -44,14 +44,15 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $result = $options{custom}->execute_command(
-        command => 'InquireChannelNames',
+        command => 'InquireChannel',
         attrs => {}
     );
 
     $self->{channel} = {};
     foreach (@$result) {
-        $self->{channel}->{$_} = {
-            name => $_
+        $self->{channel}->{$_->{ChannelName}} = {
+            name => $_->{ChannelName},
+            type => $_->{ChannelType}
         };
     }
 }
@@ -63,8 +64,9 @@ sub run {
     foreach (sort keys %{$self->{channel}}) {
         $self->{output}->output_add(long_msg =>
             sprintf(
-                '[name = %s]',
-                $self->{channel}->{$_}->{name}
+                '[name = %s][type = %s]',
+                $self->{channel}->{$_}->{name}, 
+                $self->{channel}->{$_}->{type}
             )
         );
     }
@@ -80,7 +82,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name']);
+    $self->{output}->add_disco_format(elements => ['name','type']);
 }
 
 sub disco_show {

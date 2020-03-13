@@ -112,6 +112,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-name:s'     => { name => 'filter_name' },
+        'filter-type:s'     => { name => 'filter_type' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '%{channel_status} !~ /running|idle/i' },
@@ -134,7 +135,7 @@ sub manage_selection {
         attrs => { }
     );
     my $names = $options{custom}->execute_command(
-        command => 'InquireChannelNames',
+        command => 'InquireChannel',
         attrs => { }
     );
 
@@ -142,11 +143,14 @@ sub manage_selection {
     foreach (@$result) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
             && $_->{ChannelName} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' 
+            && $_->{ChannelType} !~ /$self->{option_results}->{filter_type}/);
 
         $self->{channel}->{$_->{ChannelName}} = {
             qmgr_name => $options{custom}->get_qmgr_name(),
             channel_name => $_->{ChannelName},
             channel_status => lc($_->{ChannelStatus}),
+            channel_type => $_->{ChannelType},
             mca_status => lc($_->{MCAStatus}),
             traffic_in => $_->{BytesReceived} * 8,
             traffic_out => $_->{BytesSent} * 8
@@ -155,12 +159,16 @@ sub manage_selection {
 
     foreach (@$names) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
-            && $_ !~ /$self->{option_results}->{filter_name}/);
-        if (!defined($self->{channel}->{$_})) {
-            $self->{channel}->{$_} = {
+            && $_->{ChannelName} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' 
+            && $_->{ChannelType} !~ /$self->{option_results}->{filter_type}/);
+    
+        if (!defined($self->{channel}->{$_->{ChannelName}})) {
+            $self->{channel}->{$_->{ChannelName}} = {
                 qmgr_name => $options{custom}->get_qmgr_name(),
-                channel_name => $_,
+                channel_name => $_->{ChannelName},
                 channel_status => 'idle',
+                channel_type => $_->{ChannelType},
                 mca_status => '-',
             };
         }
