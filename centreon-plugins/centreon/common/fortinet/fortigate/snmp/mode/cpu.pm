@@ -90,7 +90,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'cluster'     => { name => 'cluster' },
-        'filter-core' => { name => 'filter_core' },
+        'filter-core:s' => { name => 'filter_core' },
     });
 
     return $self;
