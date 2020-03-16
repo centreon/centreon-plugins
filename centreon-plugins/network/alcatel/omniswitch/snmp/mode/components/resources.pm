@@ -96,14 +96,14 @@ our @EXPORT_OK = qw(%physical_class %phys_oper_status %phys_admin_status %oids $
     aos7 => {
         entreprise_alcatel_base => '.1.3.6.1.4.1.6486.801',
         
-        chasEntPhysAdminStatus => '1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.1',
-        chasEntPhysOperStatus => '1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.2',
-        chasEntPhysPower => '1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.3',
+        chasEntPhysAdminStatus => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.1',
+        chasEntPhysOperStatus => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.2',
+        chasEntPhysPower => '.1.3.6.1.4.1.6486.801.1.1.1.1.1.1.1.3',
     
-        chasTempThreshold => '1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.5',
-        chasDangerTempThreshold => '1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.6',
+        chasTempThreshold => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.5',
+        chasDangerTempThreshold => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.3.1.6',
         
-        alaChasEntPhysFanStatus => '1.3.6.1.4.1.6486.801.1.1.1.3.1.1.11.1.2',
+        alaChasEntPhysFanStatus => '.1.3.6.1.4.1.6486.801.1.1.1.3.1.1.11.1.2',
     },
 );
 
