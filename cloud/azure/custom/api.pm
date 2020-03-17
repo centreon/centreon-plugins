@@ -153,7 +153,7 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
+#    $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
     if (defined($self->{access_token})) {
         $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
     }
@@ -163,7 +163,7 @@ sub settings {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'azure_api_' . md5_hex($self->{subscription}) . '_' . md5_hex($self->{tenant}) . '_' . md5_hex($self->{client_id}));
+    my $has_cache_file = $options{statefile}->read(statefile => 'azure_api_' . md5_hex($self->{subscription}) . '_' . md5_hex($self->{tenant}) . '_' . md5_hex($self->{client_id}) . '_' . md5_hex($self->{management_endpoint}));
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
 
@@ -175,6 +175,7 @@ sub get_access_token {
             '&client_secret=' . $self->{client_secret} .
             '&resource=' . $encoded_management_endpoint;
         
+		$self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
         $self->settings();
 
         my $content = $self->{http}->request(
@@ -374,6 +375,26 @@ sub azure_get_resource_alert {
 
     my $full_url = $self->azure_get_resource_alert_set_url(%options);
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
+sub azure_post_query_set_url {
+    my ($self, %options) = @_;
+    if($self->{management_endpoint} eq 'https://management.azure.com') {
+            $self->{management_endpoint}='https://api.loganalytics.io';
+    }
+    my $url = $self->{management_endpoint} . "/v1/workspaces/" . $options{workspace} . "/query";
+
+    return $url;
+}
+
+sub azure_post_query {
+    my ($self, %options) = @_;
+
+    my $json = encode_json $options{body};
+    my $full_url = $self->azure_post_query_set_url(%options);
+    my $response = $self->request_api(method => 'POST', full_url => $full_url, hostname => '', query_form_post  => $json,  header => [ 'Content-Type: application/json; charset=utf-8' ] );
 
     return $response;
 }
