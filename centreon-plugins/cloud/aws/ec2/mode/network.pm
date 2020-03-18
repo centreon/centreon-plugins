@@ -39,8 +39,8 @@ my %metrics_mapping = (
         'output' => 'Network Out',
         'label' => 'network-out',
         'nlabel' => {
-            'absolute' => 'ec2.network.in.bytes',
-            'per_second' => 'ec2.network.in.bytespersecond',
+            'absolute' => 'ec2.network.out.bytes',
+            'per_second' => 'ec2.network.out.bytespersecond',
         },
         'unit' => 'B',
     },
