@@ -111,6 +111,7 @@ sub new {
                                     "vault-name:s"          => { name => 'vault_name' },
                                     "resource-group:s"      => { name => 'resource_group' },
                                     "filter-name:s"         => { name => 'filter_name' },
+                                    "filter-vmid:s"         => { name => 'filter_vmid' },
                                     "filter-counters:s"     => { name => 'filter_counters' },
                                     "warning-status:s"      => { name => 'warning_status', default => '' },
                                     "critical-status:s"     => { name => 'critical_status', default => '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"' },
@@ -149,6 +150,8 @@ sub manage_selection {
     foreach my $item (@{$items}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $item->{properties}->{friendlyName} !~ /$self->{option_results}->{filter_name}/);
+        next if (defined($self->{option_results}->{filter_vmid}) && $self->{option_results}->{filter_vmid} ne ''
+            && $item->{properties}->{virtualMachineId} !~ /$self->{option_results}->{filter_vmid}/);
         
         $self->{items}->{$item->{id}} = { 
             display => $item->{properties}->{friendlyName},
@@ -192,6 +195,10 @@ Set resource group (Required).
 =item B<--filter-name>
 
 Filter item name (Can be a regexp).
+
+=item B<--filter-vmid>
+
+Filter item virtualMachineId (Can be a regexp).
 
 =item B<--filter-counters>
 
