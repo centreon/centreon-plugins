@@ -202,7 +202,7 @@ sub do_selection {
             error_out => 'TX packets:\d+\s+?errors:(\d+)',
         },
         iproute => {
-            get_interface => '^\d+:\s+(\S+)(.*?)(?=\n\d|\Z$)',
+            get_interface => '^\d+:\s+(\S+):(.*?)(?=\n\d|\Z$)',
             total => 'RX:\s+bytes\s+packets.*?\d+\s+(\d+).*?TX:\s+bytes\s+packets.*?\d+\s+(\d+)',
             discard_in => 'RX:.*?dropped.*?\d+.*?\d+.*?\d+.*?(\d+)',
             discard_out => 'TX:.*?dropped.*?\d+.*?\d+.*?\d+.*?(\d+)',
