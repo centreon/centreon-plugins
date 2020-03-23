@@ -91,15 +91,14 @@ sub prefix_module_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $query_form_post_listening = { method => 'net_listening', params => [],  id => "1", jsonrpc => "2.0" };
-    my $result_listening = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post_listening);
-    
-    my $query_form_post_peer = { method => 'net_peerCount', params => [],  id => "1", jsonrpc => "2.0" };
-    my $result_peer = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post_peer);
+    my $query_form_post = [ { method => 'net_listening', params => [], id => "1", jsonrpc => "2.0" },
+                            { method => 'net_peerCount', params => [], id => "2", jsonrpc => "2.0" } ];
 
-    $self->{network} = { listening => $result_listening->{result},
-                         peers => hex($result_peer->{result}) }
-    
+    my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
+
+    $self->{network} = { listening => @{$result}[0]->{result},
+                         peers => hex(@{$result}[1]->{result}) };
+
 }
 
 1;
