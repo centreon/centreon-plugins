@@ -263,13 +263,7 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
-And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
-'in-overflow' (%), 'in-unknownop' (%), 'in-lengtherror' (%), 'in-codeerror' (%), 'in-carriererror' (%),
-'in-jabber' (%), 'in-drop' (%), 'out-tooshort' (%), 'out-toolong' (%), 'out-underrun' (%),
-'out-collision' (%), 'out-excessivecollision' (%), 'out-multiplecollision' (%), 'out-singlecollision' (%),
-'out-excessivedeferred' (%),'out-deferred' (%), 'out-latecollision' (%), 'out-totalcollision' (%),
-'out-drop' (%), 'out-jabber' (%), 'out-fcserror' (%), 'out-fragment' (%),
-'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--critical-*>
 
@@ -279,13 +273,7 @@ Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'to
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
-And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
-'in-overflow' (%), 'in-unknownop' (%), 'in-lengtherror' (%), 'in-codeerror' (%), 'in-carriererror' (%),
-'in-jabber' (%), 'in-drop' (%), 'out-tooshort' (%), 'out-toolong' (%), 'out-underrun' (%),
-'out-collision' (%), 'out-excessivecollision' (%), 'out-multiplecollision' (%), 'out-singlecollision' (%),
-'out-excessivedeferred' (%),'out-deferred' (%), 'out-latecollision' (%), 'out-totalcollision' (%),
-'out-drop' (%), 'out-jabber' (%), 'out-fcserror' (%), 'out-fragment' (%),
-'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
 
