@@ -30,14 +30,13 @@ use centreon::plugins::misc;
 
 sub custom_status_output {
     my ($self, %options) = @_;
- 
-    my $msg = sprintf('status : %s', $self->{result_values}->{status});
-    return $msg;
+
+    return sprintf('status : %s', $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -81,10 +80,11 @@ sub custom_traffic_output {
     my ($self, %options) = @_;
 
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);
-    my $msg = sprintf("Traffic %s : %s/s (%s)",
-                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-');
-    return $msg;
+    return sprintf(
+        'Traffic %s : %s/s (%s)',
+        ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-'
+    );
 }
 
 sub custom_traffic_calc {
@@ -107,11 +107,11 @@ sub custom_traffic_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{interface} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
@@ -146,28 +146,28 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command', default => 'ip' },
-        "command-path:s"    => { name => 'command_path', default => '/sbin' },
-        "command-options:s" => { name => 'command_options', default => '-s addr 2>&1' },
-        "filter-state:s"    => { name => 'filter_state', },
-        "units:s"           => { name => 'units', default => 'b/s' },
-        "name:s"            => { name => 'name' },
-        "regexp"            => { name => 'use_regexp' },
-        "regexp-isensitive" => { name => 'use_regexpi' },
-        "speed:s"           => { name => 'speed' },
-        "no-loopback"       => { name => 'no_loopback', },
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} ne "RU"' },
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'ip' },
+        'command-path:s'    => { name => 'command_path', default => '/sbin' },
+        'command-options:s' => { name => 'command_options', default => '-s addr 2>&1' },
+        'filter-state:s'    => { name => 'filter_state', },
+        'units:s'           => { name => 'units', default => 'b/s' },
+        'name:s'            => { name => 'name' },
+        'regexp'            => { name => 'use_regexp' },
+        'regexp-isensitive' => { name => 'use_regexpi' },
+        'speed:s'           => { name => 'speed' },
+        'no-loopback'       => { name => 'no_loopback', },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} ne "RU"' },
     });
     
     return $self;
@@ -200,7 +200,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "To use percent, you need to set --speed option.");
         $self->{output}->option_exit();
     }
-    
+
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
@@ -226,16 +226,16 @@ sub do_selection {
     
     while ($stdout =~ /$interface_pattern/msg) {
         my ($interface_name, $values) = ($1, $2);
-        
+
         $interface_name =~ s/:$//;
         my $states = '';
         $states .= 'R' if ($values =~ /RUNNING|LOWER_UP/ms);
         $states .= 'U' if ($values =~ /UP/ms);
-        
+
         next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
                  $states !~ /$self->{option_results}->{filter_state}/);
-        
+
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
             && $interface_name !~ /$self->{option_results}->{name}/i);
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
