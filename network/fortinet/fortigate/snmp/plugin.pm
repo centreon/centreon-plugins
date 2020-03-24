@@ -36,7 +36,7 @@ sub new {
         'cpu'                 => 'centreon::common::fortinet::fortigate::snmp::mode::cpu',
         'disk'                => 'centreon::common::fortinet::fortigate::snmp::mode::disk',
         'hardware'            => 'centreon::common::fortinet::fortigate::snmp::mode::hardware',
-        'interfaces'          => 'snmp_standard::mode::interfaces', 
+        'interfaces'          => 'centreon::common::fortinet::fortigate::snmp::mode::interfaces', 
         'ips-stats'           => 'centreon::common::fortinet::fortigate::snmp::mode::ipsstats',
         'list-interfaces'     => 'snmp_standard::mode::listinterfaces',
         'list-virtualdomains' => 'centreon::common::fortinet::fortigate::snmp::mode::listvirtualdomains',
