@@ -67,6 +67,7 @@ sub execute {
     my ($self, %options) = @_;
 
     push @{$self->{ssh_option}}, '-T' if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1);
+    $options{command} .= $options{cmd_exit} if (defined($options{cmd_exit}) && $options{cmd_exit} ne '');
 
     my ($content, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
