@@ -772,6 +772,7 @@ sub check_options {
     }
 
     if ($options{option_results}->{snmp_version} eq '3') {
+        delete $self->{snmp_params}->{Community};
 
         $self->{snmp_params}->{Context} = $options{option_results}->{snmp_context_name} if (defined($options{option_results}->{snmp_context_name}));
         $self->{snmp_params}->{ContextEngineId} = $options{option_results}->{snmp_context_engine_id} if (defined($options{option_results}->{snmp_context_engine_id}));
