@@ -103,6 +103,7 @@ sub set_counters {
                 { name => 'vdom_memory', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vdom_session', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vdom_traffic', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'vdom_policy', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vdom_status', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
@@ -159,6 +160,18 @@ sub set_counters {
         }
     ];
 
+    $self->{maps_counters}->{vdom_policy} = [
+        { label => 'policies-active', nlabel => 'virtualdomain.policies.active.count', set => {
+                key_values => [ { name => 'active_policies' }, { name => 'display' } ],
+                output_template => 'active policies: %d',
+                perfdatas => [
+                    { value => 'active_policies_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ],
+            }
+        }
+    ];
+
     $self->{maps_counters}->{vdom_session} = [
         { label => 'sessions-active', nlabel => 'virtualdomain.sessions.active.count', set => {
                 key_values => [ { name => 'active_sessions' }, { name => 'display' } ],
@@ -177,7 +190,7 @@ sub set_counters {
                       min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' }
                 ],
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{vdom_status} = [
@@ -217,7 +230,7 @@ sub set_counters {
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
-        },
+        }
     ];
 }
 
@@ -229,6 +242,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-vdomain:s'  => { name => 'filter_vdomain' },
         'add-traffic'       => { name => 'add_traffic' },
+        'add-policy'        => { name => 'add_policy' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '' }
     });
@@ -301,6 +315,19 @@ sub add_traffic {
     }
 }
 
+sub add_policy {
+    my ($self, %options) = @_;
+
+    my $oid_fgFwPolID  = '.1.3.6.1.4.1.12356.101.5.1.2.1.1.1';
+
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_fgFwPolID);
+    foreach (keys %$snmp_result) {
+        /^$oid_fgFwPolID\.(\d+)/;
+        $self->{vdom}->{$1}->{vdom_policy}->{active_policies}++
+            if (defined($self->{vdom}->{$1}));
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -338,8 +365,10 @@ sub manage_selection {
             vdom_cpu => { display => $name },
             vdom_memory => { display => $name },
             vdom_session => { display => $name },
-            vdom_status => { display => $name },
+            vdom_status => { display => $name }
         };
+        $self->{vdom}->{$instance}->{vdom_policy} = { display => $name, active_policies => 0 }
+            if (defined($self->{option_results}->{add_policy}));
     }
 
     return if (scalar(keys %{$self->{vdom}}) <= 0);
@@ -362,6 +391,8 @@ sub manage_selection {
 
     $self->add_traffic(snmp => $options{snmp})
         if (defined($self->{option_results}->{add_traffic}));
+    $self->add_policy(snmp => $options{snmp})
+        if (defined($self->{option_results}->{add_policy}));
 
     $self->{cache_name} = 'fortinet_fortigate_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
@@ -386,6 +417,10 @@ Filter by virtual domain name (can be a regexp).
 
 Add traffic usage by virtual domain.
 
+=item B<--add-policy>
+
+Add number of policies by virtual domain.
+
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
@@ -401,7 +436,7 @@ Can used special variables like: %{op_mode}, %{ha_state}
 Thresholds.
 Can be: 'cpu-utilization', 'sessions-active', 'session-rate',
 'memory-usage-prct', 'license-usage', 'license-free',
-'license-usage-prct', 'traffic-in', 'traffic-out'.
+'license-usage-prct', 'traffic-in', 'traffic-out', 'policies-active'.
 
 =back
 
