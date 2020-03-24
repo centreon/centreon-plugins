@@ -115,7 +115,8 @@ sub execute_command {
             command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $self->{ssh_commands},
             command_path => $self->{option_results}->{command_path},
             command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '' ? $self->{option_results}->{command_options} : undef,
-            timeout => $self->{option_results}->{timeout}
+            timeout => $self->{option_results}->{timeout},
+            cmd_exit => !defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '' ? "exit\n" : undef
         );
     } else {
         if (!defined($self->{option_results}->{command}) || $self->{option_results}->{command} eq '') {
