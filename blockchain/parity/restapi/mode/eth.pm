@@ -26,12 +26,12 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
-sub custom_status_output {
+sub custom_mining_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Listening status: %s ',
-        $self->{result_values}->{listening},
+        'Client mininig status: %s ',
+        $self->{result_values}->{is_mining},
     );
 }
 
@@ -43,14 +43,23 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{eth} = [
-        { label => 'is_minning', nlabel => 'parity.eth.peers.minning.status', set => {
-                key_values => [ { name => 'is_minning' } ],
-                output_template => "Client is minning: %s ",
+        { label => 'is_mining', nlabel => 'parity.eth.peers.mining.status', set => {
+                key_values => [ { name => 'is_mining' } ],
+                output_template => "Client is mining:  " . $self->can('custom_mining_status_output'),
                 perfdatas => [
-                    { label => 'is_minning', value => 'is_minning_absolute', template => '%d', min => 0 }
+                    { label => 'is_mining', value => 'is_mining_absolute', template => '%s', min => 0 }
                 ],                
             }
         },
+        # { label => 'is_mining', nlabel => 'parity.eth.peers.mining.status', threshold => 0, set => {
+        #         key_values => [ { name => 'is_mining' } ],
+        #         output_template => "Client is mining: %s ",
+        #         closure_custom_calc => \&catalog_status_calc,
+        #         closure_custom_output => $self->can('custom_mining_status_output'),
+        #         closure_custom_perfdata => sub { return 0; },
+        #         closure_custom_threshold_check => \&catalog_status_threshold
+        #     }
+        # },
         { label => 'coinbase', nlabel => 'parity.eth.client.coinbase', set => {
                 key_values => [ { name => 'coinbase' } ],
                 output_template => "Client coinbase is: %s ",
@@ -156,39 +165,34 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $query_form_post = [ { method => 'eth_mining', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_coinbase', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_gasPrice', params => [], id => "1", jsonrpc => "2.0" } ,
-                            { method => 'eth_hashrate', params => [], id => "1", jsonrpc => "2.0" } ,
-                            { method => 'eth_blockNumber', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_getBlockByNumber', params => ["latest","false"], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_syncing', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_coinbase', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_coinbase', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_coinbase', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_coinbase', params => [], id => "1", jsonrpc => "2.0" },
-                            { method => 'eth_coinbase', params => [], id => "1", jsonrpc => "2.0" }  ];
+                            { method => 'eth_coinbase', params => [], id => "2", jsonrpc => "2.0" },
+                            { method => 'eth_gasPrice', params => [], id => "3", jsonrpc => "2.0" } ,
+                            { method => 'eth_hashrate', params => [], id => "4", jsonrpc => "2.0" } ,
+                            { method => 'eth_blockNumber', params => [], id => "5", jsonrpc => "2.0" },
+                            { method => 'eth_getBlockByNumber', params => ["latest","false"], id => "6", jsonrpc => "2.0" },
+                            { method => 'eth_syncing', params => [], id => "7", jsonrpc => "2.0" } ];
 
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
 
     # conditional formating:
-    my $res_sync = @{$result}[6]->{result} ? (@{$result}[6]->{result}->{currentBlock} / @{$result}[6]->{result}->{highestBlock}) * 100 : 100;
+    my $res_sync = @{$result}[6]->{result} ? hex((@{$result}[6]->{result}->{currentBlock} / @{$result}[6]->{result}->{highestBlock})) * 100 : 100;
     my $res_startingBlock = $res_sync != 100 ? @{$result}[6]->{result}->{startingBlock} : undef;
     my $res_currentBlock = $res_sync != 100 ? @{$result}[6]->{result}->{currentBlock} : undef;
     my $res_highestBlock = $res_sync != 100 ? @{$result}[6]->{result}->{highestBlock} : undef;
 
     # Unix time conversion
-    my $res_timestamp = localtime((@{$result}[5]->{result}->{timestamp}));  
+    my $res_timestamp = localtime(hex(@{$result}[5]->{result}->{timestamp}));  
 
-    $self->{eth} = { is_minning => @{$result}[0]->{result},
-                         coinbase => @{$result}[1]->{result},
-                         gas_price => @{$result}[2]->{result},
-                         hashrate => hex(@{$result}[3]->{result}),
-                         block_number => @{$result}[4]->{result},
-                         block_time => $res_timestamp,
-                         sync_start => $res_startingBlock,
-                         sync_current => $res_currentBlock,
-                         sync_highest => $res_highestBlock,
-                         sync => $res_sync };
+    $self->{eth} = { is_mining => @{$result}[0]->{result},
+                     coinbase => @{$result}[1]->{result},
+                     gas_price => hex(@{$result}[2]->{result}),
+                     hashrate => hex(@{$result}[3]->{result}),
+                     block_number => hex(@{$result}[4]->{result}),
+                     block_time => $res_timestamp,
+                     sync_start => hex($res_startingBlock),
+                     sync_current => hex($res_currentBlock),
+                     sync_highest => hex($res_highestBlock),
+                     sync => $res_sync };
 
 }
 
