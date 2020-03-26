@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = ( 
-        'net' => 'blockchain::parity::restapi::mode::net',
-        'eth' => 'blockchain::parity::restapi::mode::eth',
+        'net'       => 'blockchain::parity::restapi::mode::net',
+        'eth'       => 'blockchain::parity::restapi::mode::eth',
+        'parity'    => 'blockchain::parity::restapi::mode::parity'
     );
     $self->{custom_modes}{api} = 'blockchain::parity::restapi::custom::api';
     return $self;
