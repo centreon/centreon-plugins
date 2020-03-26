@@ -139,14 +139,14 @@ sub set_counters {
                     { value => 'current_absolute', template => '%.2f', min => 0, unit => 'A' }
                 ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_battery_output {
     my ($self, %options) = @_;
 
-    return "Battery ";
+    return 'Battery ';
 }
 
 sub new {
@@ -228,9 +228,6 @@ sub threshold_eltek_configured {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # we can calculate the time remaining if unit is ah (amperehour).
-
-    my $oid_outputControlUnitOutputEntry = '.1.3.6.1.4.1.12148.10.12.2.1';
     my $snmp_result = $options{snmp}->get_leef(
         oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
         nothing_quit => 1
@@ -248,6 +245,7 @@ sub manage_selection {
         charge_remaining => $result->{batteryRemainingCapacityValue},
         charge_remaining_unit => $result->{powerSystemCapacityScale}
     };
+    # we can calculate the time remaining if unit is ah (amperehour) and current battery is discharging (negative value)
     if ($result->{powerSystemCapacityScale} eq 'ah' && $result->{batteryCurrentsValue} < 0) {
         $self->{battery}->{charge_remaining_time} =
             int($result->{batteryRemainingCapacityValue} * 3600 / $result->{batteryCurrentsValue} * $scale_current * -1);
