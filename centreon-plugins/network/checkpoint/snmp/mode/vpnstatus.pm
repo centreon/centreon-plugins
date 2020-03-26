@@ -127,14 +127,14 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{tunnelPeerObjName} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{vpn}->{$instance} = {
             display => $result->{tunnelPeerObjName}, 
             status => $result->{tunnelState},
             type => $result->{tunnelType}
         };
     }
-    
+
     if (scalar(keys %{$self->{vpn}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No vpn found.");
         $self->{output}->option_exit();
