@@ -233,9 +233,9 @@ Filter by virtual system name (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu-utilization', 'sessions-active', 'session-rate',
-'memory-usage-prct', 'license-usage', 'license-free',
-'license-usage-prct', 'traffic-in', 'traffic-out', 'policies-active'.
+Can be: 'memory-usage', 'traffic-accepted', 'traffic-dropped',
+'traffic-rejected', 'cpu-utilization-1hour', 'cpu-utilization-1min',
+'connections-active'.
 
 =back
 
