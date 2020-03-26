@@ -29,7 +29,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '1.1';
+    $self->{version} = '1.2';
     %{$self->{modes}} = (
         'components'  => 'storage::synology::snmp::mode::hardware',
         'cpu'         => 'snmp_standard::mode::cpu',
@@ -39,6 +39,7 @@ sub new {
         'storage'     => 'snmp_standard::mode::storage',
         'temperature' => 'storage::synology::snmp::mode::temperature',
         'ups'         => 'storage::synology::snmp::mode::ups',
+		'hastatus' => 'storage::synology::snmp::mode::hastatus',
     );
 
     return $self;
