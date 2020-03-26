@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'alarms'  => 'hardware::devices::eltek::enexus::snmp::mode::alarms',
         'battery' => 'hardware::devices::eltek::enexus::snmp::mode::battery',
+        'load'    => 'hardware::devices::eltek::enexus::snmp::mode::load',
         'outputs' => 'hardware::devices::eltek::enexus::snmp::mode::outputs'
     );
 
