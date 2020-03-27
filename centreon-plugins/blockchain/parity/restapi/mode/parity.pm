@@ -125,7 +125,7 @@ sub set_counters {
         },
         { label => 'mempool', nlabel => 'parity.mempol.capacity', set => {
                 key_values => [ { name => 'mempool' } ],
-                output_template => "Mempool: %d % ",
+                output_template => "Mempool: %d %% ",
                 perfdatas => [
                     { label => 'mempool', value => 'mempool_absolute', template => '%d', min => 0 }
                 ],                
