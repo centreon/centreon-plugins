@@ -40,23 +40,24 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s"    => { name => 'hostname' },
-            "port:s"        => { name => 'port' },
-            "protocol:s"    => { name => 'protocol' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "timeout:s"     => { name => 'timeout' },
-            "ssl-opt:s@"    => { name => 'ssl_opt' },
+            'hostname:s' => { name => 'hostname' },
+            'port:s'     => { name => 'port' },
+            'protocol:s' => { name => 'protocol' },
+            'username:s' => { name => 'username' },
+            'password:s' => { name => 'password' },
+            'timeout:s'  => { name => 'timeout' },
+            'ssl-opt:s@' => { name => 'ssl_opt' },
         });
     }
+
     $options{options}->add_help(package => __PACKAGE__, sections => 'DRIVER OPTIONS', once => 1);
 
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
-    
+
     return $self;
 }
 
@@ -127,10 +128,10 @@ sub connect {
     $uri = $self->{protocol} . '://';
     $uri .= $encoded_username . ':' . $encoded_password . '@' if ($encoded_username ne '' && $encoded_password ne '');
     $uri .= $self->{hostname} if ($self->{hostname} ne '');
-    $uri .= ':' . $self->{port} if ($self->{port} ne '');
+    $uri .= ':' . $self->{port} if ($self->{port} ne '' && $self->{protocol} eq 'mongodb+srv');
 
     $self->{output}->output_add(long_msg => 'Connection URI: ' . $uri, debug => 1);
-    
+
     my $ssl = (defined($self->{ssl_opts})) ? $self->{ssl_opts} : 0;
     $self->{client} = MongoDB::MongoClient->new(host => $uri, ssl => $ssl);
     $self->{client}->connect();
@@ -163,7 +164,7 @@ sub run_command {
     if (!defined($self->{client})) {
         $self->connect();
     }
-        
+
     my $db = $self->{client}->get_database($options{database});
     return $db->run_command($options{command});
 }
