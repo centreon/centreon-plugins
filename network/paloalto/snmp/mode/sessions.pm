@@ -210,7 +210,7 @@ sub add_vsys {
     );
 
     foreach my $oid (keys %$snmp_result) {
-        next if $oid !~ /^$mapping_vsys->{panVsysName}->{oid}\.(.*)$/;
+        next if ($oid !~ /^$mapping_vsys->{display}->{oid}\.(.*)$/);
         my $instance = $1;
 
         my $result = $options{snmp}->map_instance(mapping => $mapping_vsys, results => $snmp_result, instance => $instance);
