@@ -30,17 +30,18 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', cb_prefix_output => 'prefix_module_output', type => 0 },
+#        { name => 'global', cb_prefix_output => 'prefix_module_output', type => 0 },
         { name => 'node', cb_prefix_output => 'prefix_module_output', type => 0 },
         { name => 'mempool', cb_prefix_output => 'prefix_module_output', type => 0 },
         { name => 'network', cb_prefix_output => 'prefix_module_output', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'parity_version', nlabel => 'parity.version', set => {
+        { label => 'parity_version', nlabel => 'parity.version', threshold => 0, set => {
                 key_values => [ { name => 'parity_version' } ],
                 output_template => "Parity version is: %s ",
-                closure_custom_perfdata => sub { return 0; }
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => sub { return 0; }
                 # perfdatas => [
                 #     { label => 'parity_version', value => 'parity_version_absolute', template => '%s', min => 0 }
                 # ],                
@@ -67,10 +68,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{node} = [
-        { label => 'enode', nlabel => 'parity.node.enode.uri', set => {
+        { label => 'enode', nlabel => 'parity.node.enode.uri', threshold => 0, set => {
                 key_values => [ { name => 'enode' } ],
                 output_template => "Node enode URI: %s ",
-                closure_custom_perfdata => sub { return 0; }
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => sub { return 0; }
                 # perfdatas => [
                 #     { label => 'enode', value => 'enode_absolute', template => '%s', min => 0 }
                 # ],                
@@ -182,13 +184,15 @@ sub manage_selection {
     # use Data::Dumper;
     # print Dumper($res_parity_version);
 
+    $self->{output}->output_add(long_msg => "[config] chain name: " . @{$result}[1]->{result} . " parity version: " . $res_parity_version . " version_hash: " . @{$result}[0]->{result}->{hash},
+                                severity => 'OK');
 
-    $self->{global} =  { parity_version => $res_parity_version,
-                         parity_version_hash => @{$result}[0]->{result}->{hash},
-                         chain_name => @{$result}[1]->{result} };
+#    $self->{global} =  { parity_version => $res_parity_version,
+#                         parity_version_hash => @{$result}[0]->{result}->{hash},
+#                         chain_name => @{$result}[1]->{result} };
 
-    $self->{node}    = { enode => @{$result}[4]->{result},
-                         node_name => @{$result}[5]->{result} };
+#    $self->{node}    = { enode => @{$result}[4]->{result},
+#                         node_name => @{$result}[5]->{result} };
 
     $self->{network} = { peers_connected => @{$result}[3]->{result}->{connected},
                          peers_max => @{$result}[3]->{result}->{max},
