@@ -29,7 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'warning:s'   => { name => 'warning' },
         'critical:s'  => { name => 'critical' },
@@ -65,7 +65,7 @@ sub run {
     my $oid_fwNumCom = '.1.3.6.1.4.1.2620.1.1.25.3.0';
     my $oid_fwConnTableLimit = '.1.3.6.1.4.1.2620.1.1.25.10.0';
     my $result = $self->{snmp}->get_leef(oids => [$oid_fwNumCom, $oid_fwConnTableLimit], nothing_quit => 1);
-    
+
     my $value = $result->{$oid_fwNumCom};
     my $extra = '';
     my %total_options = ();
@@ -78,7 +78,6 @@ sub run {
         }
     }
 
-    
     my $exit = $self->{perfdata}->threshold_check(value => $value, 
                                                   threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(
