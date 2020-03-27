@@ -148,7 +148,7 @@ sub set_counters {
         },
         { label => 'vsys-active-other', nlabel => 'vsys.sessions.active.other.count', set => {
                 key_values => [ { name => 'panVsysActiveOtherIpCps' }, { name => 'display' } ],
-                output_template => 'Other : %s',
+                output_template => 'other: %s',
                 perfdatas => [
                     { label => 'active_other', value => 'panVsysActiveOtherIpCps_absolute', template => '%s',
                       label_extra_instance => 1, min => 0 }
