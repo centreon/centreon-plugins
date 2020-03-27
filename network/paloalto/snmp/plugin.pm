@@ -40,7 +40,6 @@ sub new {
         'memory'          => 'network::paloalto::snmp::mode::memory',
         'panorama'        => 'network::paloalto::snmp::mode::panorama',
         'sessions'        => 'network::paloalto::snmp::mode::sessions',
-        'vsys-sessions'   => 'network::paloalto::snmp::mode::vsyssessions',
     );
 
     return $self;
