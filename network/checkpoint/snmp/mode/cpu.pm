@@ -29,7 +29,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'warning:s'  => { name => 'warning', },
         'critical:s' => { name => 'critical', },
@@ -41,7 +41,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
        $self->{output}->option_exit();
@@ -59,11 +59,11 @@ sub run {
     my $oid_procUsrTime = '.1.3.6.1.4.1.2620.1.6.7.2.1.0';
     my $oid_procSysTime = '.1.3.6.1.4.1.2620.1.6.7.2.2.0';
     my $oid_procIdleTime = '.1.3.6.1.4.1.2620.1.6.7.2.3.0';
-    
+
     my $result = $self->{snmp}->get_leef(oids => [$oid_procUsrTime, $oid_procSysTime, $oid_procIdleTime], nothing_quit => 1);
-    
+
     my $totalCpuUsed = $result->{$oid_procUsrTime} + $result->{$oid_procSysTime};
-        
+
     my $exit = $self->{perfdata}->threshold_check(value => $totalCpuUsed, 
                                                   threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
     $self->{output}->output_add(severity => $exit,
