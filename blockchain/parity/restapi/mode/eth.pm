@@ -143,7 +143,7 @@ sub set_counters {
         },
         { label => 'sync', nlabel => 'parity.eth.sync.ratio', set => {
                 key_values => [ { name => 'sync' } ],
-                output_template => "Sync ratio is: %d% ",
+                output_template => "Sync ratio is: %d%% ",
                 perfdatas => [
                     { label => 'sync', value => 'sync_absolute', template => '%d', min => 0 }
                 ],                
