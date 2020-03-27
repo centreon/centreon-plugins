@@ -51,7 +51,7 @@ sub set_counters {
                     { name => 'cluster_status' }, { name => 'heartbeat_status' },
                     { name => 'active_node_name' }, { name => 'passive_node_name' }
                 ],
-                closure_custom_calc => \&catalog_status_threshold,
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
