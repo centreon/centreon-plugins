@@ -50,7 +50,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
 
     return $self;
@@ -58,13 +58,11 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
 
     my $start = Time::HiRes::time();
-    $self->{custom}->connect();
+    $options{custom}->connect();
     my $end = Time::HiRes::time();
-    
+
     $self->{global}->{connection_time} = ($end - $start) * 1000;
 }
 

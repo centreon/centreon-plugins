@@ -105,25 +105,22 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
+
+    my $databases = $options{custom}->list_databases();
 
     $self->{databases} = {};
-    
-    my $databases = $self->{custom}->list_databases();
-    
     foreach my $database (sort @{$databases}) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
             && $database !~ /$self->{option_results}->{filter_database}/);
 
-        my $collections = $self->{custom}->list_collections(database => $database);
+        my $collections = $options{custom}->list_collections(database => $database);
 
         $self->{databases}->{$database}->{display} = $database;
 
         foreach my $collection (sort @{$collections}) {
-            my $cl_stats = $self->{custom}->run_command(
+            my $cl_stats = $options{custom}->run_command(
                 database => $database,
-                command => $self->{custom}->ordered_hash(collStats => $collection),
+                command => $options{custom}->ordered_hash(collStats => $collection),
             );
             
             $self->{databases}->{$database}->{collections}->{$collection} = {
