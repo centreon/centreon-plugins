@@ -128,7 +128,7 @@ sub connect {
     $uri = $self->{protocol} . '://';
     $uri .= $encoded_username . ':' . $encoded_password . '@' if ($encoded_username ne '' && $encoded_password ne '');
     $uri .= $self->{hostname} if ($self->{hostname} ne '');
-    $uri .= ':' . $self->{port} if ($self->{port} ne '' && $self->{protocol} eq 'mongodb+srv');
+    $uri .= ':' . $self->{port} if ($self->{port} ne '' && $self->{protocol} ne 'mongodb+srv');
 
     $self->{output}->output_add(long_msg => 'Connection URI: ' . $uri, debug => 1);
 
