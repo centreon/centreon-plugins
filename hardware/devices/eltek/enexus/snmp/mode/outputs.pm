@@ -191,7 +191,7 @@ Can used special variables like: %{status}, %{name}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'current'.
+Can be: 'outputs-disconnected', 'outputs-notenergized'.
 
 =back
 
