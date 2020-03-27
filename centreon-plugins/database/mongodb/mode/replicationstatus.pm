@@ -41,7 +41,6 @@ sub custom_status_output {
 
     my $msg = sprintf("Current member state is '%s'", $self->{result_values}->{state});
     $msg .= sprintf(", syncing to '%s'", $self->{result_values}->{sync_host}) if ($self->{result_values}->{state} ne 'PRIMARY');
-
     return $msg;
 }
 
@@ -50,20 +49,18 @@ sub custom_status_calc {
 
     $self->{result_values}->{state} = $mapping_states{$options{new_datas}->{$self->{instance} . '_myState'}};
     $self->{result_values}->{sync_host} = $options{new_datas}->{$self->{instance} . '_syncSourceHost'};
-
     return 0;
 }
 
 sub custom_member_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("state is '%s' and health is '%s' [slave delay: %s] [priority: %s]",
+    return sprintf("state is '%s' and health is '%s' [slave delay: %s] [priority: %s]",
         $self->{result_values}->{state},
         $self->{result_values}->{health},
         $self->{result_values}->{slave_delay},
-        $self->{result_values}->{priority});
-
-    return $msg;
+        $self->{result_values}->{priority}
+    );
 }
 
 sub custom_member_status_calc {
@@ -131,11 +128,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
-        "warning-member-status:s"      => { name => 'warning_member_status', default => '%{state} !~ /PRIMARY|SECONDARY/' },
-        "critical-member-status:s"     => { name => 'critical_member_status', default => '%{health} !~ /up/' },
+        'warning-status:s'         => { name => 'warning_status', default => '' },
+        'critical-status:s'        => { name => 'critical_status', default => '' },
+        'warning-member-status:s'  => { name => 'warning_member_status', default => '%{state} !~ /PRIMARY|SECONDARY/' },
+        'critical-member-status:s' => { name => 'critical_member_status', default => '%{health} !~ /up/' },
     });
+
     return $self;
 }
 
@@ -143,18 +141,18 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_status', 'critical_status',
-        'warning_member_status', 'critical_member_status']);
+    $self->change_macros(macros => [
+        'warning_status', 'critical_status',
+        'warning_member_status', 'critical_member_status'
+    ]);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
 
-    my $ismaster = $self->{custom}->run_command(
+    my $ismaster = $options{custom}->run_command(
         database => 'admin',
-        command => $self->{custom}->ordered_hash('ismaster' => 1),
+        command => $options{custom}->ordered_hash(ismaster => 1),
     );
 
     if (!defined($ismaster->{me})) {
@@ -164,10 +162,9 @@ sub manage_selection {
 
     $self->{global} = {};
     $self->{members} = {};
-
-    my $repl_conf = $self->{custom}->run_command(
+    my $repl_conf = $options{custom}->run_command(
         database => 'admin',
-        command => $self->{custom}->ordered_hash('replSetGetConfig' => 1),
+        command => $options{custom}->ordered_hash(replSetGetConfig => 1),
     );
 
     my %config;
@@ -175,9 +172,9 @@ sub manage_selection {
         $config{$member->{host}} = { priority => $member->{priority}, slaveDelay => $member->{slaveDelay} }
     }
 
-    my $repl_status = $self->{custom}->run_command(
+    my $repl_status = $options{custom}->run_command(
         database => 'admin',
-        command => $self->{custom}->ordered_hash('replSetGetStatus' => 1),
+        command => $options{custom}->ordered_hash(replSetGetStatus => 1),
     );
 
     $self->{global}->{myState} = $repl_status->{myState};
@@ -191,7 +188,7 @@ sub manage_selection {
             health => $member->{health},
             optimeDate => $member->{optime}->{ts}->{seconds},
             slaveDelay => $config{$member->{name}}->{slaveDelay},
-            priority => $config{$member->{name}}->{priority},
+            priority => $config{$member->{name}}->{priority}
         }
     }
 

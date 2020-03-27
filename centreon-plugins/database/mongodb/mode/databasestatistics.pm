@@ -115,29 +115,26 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-database:s"   => { name => 'filter_database' },
+        'filter-database:s' => { name => 'filter_database' }
     });
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
+
+    my $databases = $options{custom}->list_databases();
 
     $self->{databases} = {};
-    
-    my $databases = $self->{custom}->list_databases();
-
     foreach my $database (sort @{$databases}) {
         next if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' 
             && $database !~ /$self->{option_results}->{filter_database}/);
 
-        my $db_stats = $self->{custom}->run_command(
+        my $db_stats = $options{custom}->run_command(
             database => $database,
-            command => $self->{custom}->ordered_hash('dbStats' => 1),
+            command => $options{custom}->ordered_hash(dbStats => 1),
         );
-        
+
         $self->{databases}->{$db_stats->{db}} = {
             display => $db_stats->{db},
             collections => $db_stats->{collections},
