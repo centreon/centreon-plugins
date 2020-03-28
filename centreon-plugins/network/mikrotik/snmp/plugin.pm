@@ -32,6 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{$self->{modes}} = (
         'cpu'               => 'snmp_standard::mode::cpu',
+        'disk'              => 'network::mikrotik::snmp::mode::disk',
         'environment'       => 'network::mikrotik::snmp::mode::environment',
         'interfaces'        => 'network::mikrotik::snmp::mode::interfaces',
         'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
