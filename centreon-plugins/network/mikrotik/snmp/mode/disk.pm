@@ -51,7 +51,7 @@ __END__
 
 =head1 MODE
 
-Check memory.
+Check disk.
 
 =over 8
 
