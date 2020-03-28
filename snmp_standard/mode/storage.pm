@@ -330,13 +330,15 @@ sub manage_selection {
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
-            $self->{output}->add_option_msg(
-                long_msg => sprintf(
-                    "skipping storage '%s': total size is <= 0 (%s)", 
-                    $name_storage,
-                    int($total_size)
-                )
-            );
+            if ($self->{output}->is_debug()) {
+                $self->{output}->add_option_msg(
+                    long_msg => sprintf(
+                        "skipping storage '%s': total size is <= 0 (%s)",
+                        $name_storage,
+                        int($total_size)
+                    )
+                );
+            }
             next;
         }
         
