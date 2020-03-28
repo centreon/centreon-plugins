@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::mikrotik::snmp::mode::memory;
+package network::mikrotik::snmp::mode::disk;
 
 use base qw(snmp_standard::mode::storage);
 
@@ -28,13 +28,13 @@ use warnings;
 sub default_storage_type {
     my ($self, %options) = @_;
     
-    return '^hrStorageRam$';
+    return '^(?!(hrStorageRam)$)';
 }
 
 sub prefix_storage_output {
     my ($self, %options) = @_;
     
-    return "RAM '" . $options{instance_value}->{display} . "' ";
+    return "Disk '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -97,7 +97,7 @@ Display cache storage datas.
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^hrStorageRam$').
+Filter storage types with a regexp (Default: '^(?!(hrStorageRam)$)').
 
 =back
 
