@@ -31,9 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{ $self->{modes} } = (
-        'connections'       => 'cloud::aws::efs::mode::connections',
-        'datausage'         => 'cloud::aws::efs::mode::datausage',
-        'discovery'         => 'cloud::aws::efs::mode::discovery'
+        'connections' => 'cloud::aws::efs::mode::connections',
+        'datausage'   => 'cloud::aws::efs::mode::datausage',
+        'discovery'   => 'cloud::aws::efs::mode::discovery'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
