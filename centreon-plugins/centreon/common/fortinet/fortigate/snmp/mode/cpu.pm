@@ -147,8 +147,9 @@ sub manage_selection {
         $cpu += $snmp_result->{$oid_fgProcessorUsage}->{$_};
     }
 
+    my $num_core = scalar(keys %{$self->{cpu_core}});
     $self->{cpu_avg} = {
-        average => ($i > 0) ? $cpu / $i : $snmp_result->{$oid_fgSysCpuUsage}->{$oid_fgSysCpuUsage . '.0'}
+        average => $num_core > 0 ? $cpu / $num_core : $snmp_result->{$oid_fgSysCpuUsage}->{$oid_fgSysCpuUsage . '.0'}
     };
 
     if (defined($self->{option_results}->{cluster})) {
