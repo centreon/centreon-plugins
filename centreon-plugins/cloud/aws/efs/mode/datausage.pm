@@ -76,7 +76,7 @@ my %metrics_mapping = (
 
 sub custom_metric_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{timeframe} = $options{new_datas}->{$self->{instance} . '_timeframe'};
     $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_' . $options{extra_options}->{metric}};
     $self->{result_values}->{value_per_sec} = $self->{result_values}->{value} / $self->{result_values}->{timeframe};
@@ -90,7 +90,8 @@ sub custom_metric_threshold {
     my $exit = $self->{perfdata}->threshold_check(
         value => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
         threshold => [ { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'critical' },
-                       { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' } ]);
+                       { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' } ]
+    );
     return $exit;
 }
 
@@ -134,13 +135,13 @@ sub custom_metric_output {
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
-    
+
     return "'" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_statistics_output {
     my ($self, %options) = @_;
-    
+
     return "Statistic '" . $options{instance_value}->{display} . "' Metrics ";
 }
 
@@ -152,7 +153,7 @@ sub long_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
           message_multiple => 'All FS metrics are ok', indent_long_output => '    ',
@@ -183,12 +184,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "type:s"            => { name => 'type' },
-        "name:s@"           => { name => 'name' },
-        "per-sec"           => { name => 'per_sec' },
-        "filter-metric:s"   => { name => 'filter_metric' },
+        'type:s'          => { name => 'type' },
+        'name:s@'         => { name => 'name' },
+        'per-sec'         => { name => 'per_sec' },
+        'filter-metric:s' => { name => 'filter_metric' },
     });
     
     return $self;
@@ -211,7 +212,7 @@ sub check_options {
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
-    
+
     $self->{aws_statistics} = ['Average'];
     if (defined($self->{option_results}->{statistic})) {
         $self->{aws_statistics} = [];
