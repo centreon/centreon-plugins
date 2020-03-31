@@ -78,6 +78,26 @@ sub set_counters {
                       template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
                 ]
             }
+        },
+        { label => 'traffic-in', nlabel => 'network.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
+                output_template => 'traffic in: %s %s/s',
+                per_second => 1, output_change_bytes => 2,
+                perfdatas => [
+                    { value => 'traffic_in_per_second', template => '%s',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        },
+        { label => 'traffic-out', nlabel => 'network.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
+                output_template => 'traffic out: %s %s/s',
+                per_second => 1, output_change_bytes => 2,
+                perfdatas => [
+                    { value => 'traffic_out_per_second', template => '%s',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
         }
     ];
 }
@@ -122,9 +142,16 @@ sub manage_selection {
             auth => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{auth} : 0,
             dhcp => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{assoc} : 0,
             dns => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{dhcp} : 0,
-            success => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{success} : 0
+            success => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{success} : 0,
+            traffic_in => 0, traffic_out => 0
         };
-        
+
+        if (defined($clients->{$id})) {
+            foreach (@{$clients->{$id}}) {
+                $self->{networks}->{$id}->{traffic_in} += $_->{usage}->{recv} * 8;
+                $self->{networks}->{$id}->{traffic_out} += $_->{usage}->{sent} * 8;
+            }
+        }
     }
 
     if (scalar(keys %{$self->{networks}}) <= 0) {
@@ -150,12 +177,8 @@ Filter network name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'volume-data-read-bytespersecond', 'volume-data-written-bytespersecond',
-'volume-reads-count', 'volume-writes-count',
-'volume-data-transfer-bytespersecond', 'volume-iops-ops',
-'volume-cache-write-usage-percentage', 'volume-cache-write-hits-count',
-'volume-cache-write-misses-count', 'volume-cache-read-hits-count',
-'volume-cache-read-misses-count'.
+Can be: 'connections-success', 'connections-auth', 'connections-assoc',
+'connections-dhcp', 'connections-dns', 'traffic-in', 'traffic-out'.
 
 =back
 
