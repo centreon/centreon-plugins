@@ -620,6 +620,13 @@ sub run_multiple {
     }
 }
 
+sub read_statefile_key {
+    my ($self, %options) = @_;
+
+    $self->{statefile_value}->read(statefile => $self->{cache_name});
+    return $self->{statefile_value}->get(name => $options{key});
+}
+
 sub run {
     my ($self, %options) = @_;
     
