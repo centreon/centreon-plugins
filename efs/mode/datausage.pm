@@ -185,8 +185,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "type:s"	        => { name => 'type' },
-        "name:s@"	        => { name => 'name' },
+        "type:s"            => { name => 'type' },
+        "name:s@"           => { name => 'name' },
         "per-sec"           => { name => 'per_sec' },
         "filter-metric:s"   => { name => 'filter_metric' },
     });
@@ -275,7 +275,7 @@ __END__
 Check EFS FileSystem Data IO metrics.
 
 Example:
-perl centreon_plugins.pl --plugin=cloud::aws::s3::plugin --custommode=paws --mode=datausage --region='eu-west-1'
+perl centreon_plugins.pl --plugin=cloud::aws::efs::plugin --custommode=paws --mode=datausage --region='eu-west-1'
 --name='centreon-iso' --filter-metric='DiskReadIOBytes' --critical-data-iobytes-read-sum='10' --verbose
 
 See 'https://docs.aws.amazon.com/efs/latest/ug/monitoring-cloudwatch.html' for more information.
