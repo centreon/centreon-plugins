@@ -264,7 +264,7 @@ my $mapping = {
     channel_number     => { oid => '.1.3.6.1.4.1.9.9.661.1.3.4.1.1.4' }, # c3gGsmChannelNumber
     modem_status       => { oid => '.1.3.6.1.4.1.9.9.661.1.3.1.1.6', map => $map_modem_status }, # c3gModemStatus
     temperature        => { oid => '.1.3.6.1.4.1.9.9.661.1.1.1.12' }, # c3gModemTemperature
-    connection_status  => { oid => '.1.3.6.1.4.1.9.9.661.1.3.1.1.6', map => $map_connection_status }, # c3gConnectionStatus
+    connection_status  => { oid => '.1.3.6.1.4.1.9.9.661.1.1.1.8', map => $map_connection_status }, # c3gConnectionStatus
     sim_status         => { oid => '.1.3.6.1.4.1.9.9.661.1.3.5.1.1.2', map => $map_sim_status }, # c3gGsmSimStatus
     service_status     => { oid => '.1.3.6.1.4.1.9.9.661.1.3.2.1.2', map => $map_service_status }, # c3gGsmCurrentServiceStatus
     traffic_out        => { oid => '.1.3.6.1.4.1.9.9.661.1.3.2.1.19' }, # c3gGsmTotalByteTransmitted
