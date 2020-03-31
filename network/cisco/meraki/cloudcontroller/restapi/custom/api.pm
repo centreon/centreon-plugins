@@ -235,7 +235,7 @@ sub filter_networks {
     }
 
     if (scalar(@$network_ids) > 5) {
-        $self->{output}->add_option_msg(short_msg => 'cannot check than 5 networks at once');
+        $self->{output}->add_option_msg(short_msg => 'cannot check than 5 networks at once (api rate limit)');
         $self->{output}->option_exit();
     }
 
