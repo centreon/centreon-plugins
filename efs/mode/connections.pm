@@ -206,7 +206,7 @@ __END__
 Check EFS FileSystem Connection Count.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::s3::plugin --custommode=paws --mode=connections --region='eu-west-1'
+perl centreon_plugins.pl --plugin=cloud::aws::efs::plugin --custommode=paws --mode=connections --region='eu-west-1'
 --name='centreon-iso' --critical-clientconnections-sum='10' --verbose
 
 See 'https://docs.aws.amazon.com/efs/latest/ug/monitoring-cloudwatch.html' for more information.
