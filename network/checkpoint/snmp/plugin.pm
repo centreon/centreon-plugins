@@ -38,6 +38,7 @@ sub new {
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'memory'          => 'network::checkpoint::snmp::mode::memory',
+        'ra-users'        => 'network::checkpoint::snmp::mode::rausers',
         'uptime'          => 'snmp_standard::mode::uptime',
         'vpn-status'      => 'network::checkpoint::snmp::mode::vpnstatus',
         'vrrp-status'     => 'snmp_standard::mode::vrrp',
