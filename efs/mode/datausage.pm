@@ -276,7 +276,7 @@ Check EFS FileSystem Data IO metrics.
 
 Example:
 perl centreon_plugins.pl --plugin=cloud::aws::efs::plugin --custommode=paws --mode=datausage --region='eu-west-1'
---name='centreon-iso' --filter-metric='DiskReadIOBytes' --critical-data-iobytes-read-sum='10' --verbose
+--name='fs-1234abcd' --filter-metric='DataReadIOBytes' --warning-data-iobytes-read='5' --critical-data-iobytes-read='10' --verbose
 
 See 'https://docs.aws.amazon.com/efs/latest/ug/monitoring-cloudwatch.html' for more information.
 
@@ -286,6 +286,11 @@ See 'https://docs.aws.amazon.com/efs/latest/ug/monitoring-cloudwatch.html' for m
 =item B<--name>
 
 Set the instance name (Required) (Can be multiple).
+
+=item B<--filter-metric>
+
+Filter on a specific metric 
+Can be: DataReadIOBytes, DataWriteIOBytes, MetaDataIOBytes, TotalIOBytes, BurstCreditBalance
 
 =item B<--statistic>
 
