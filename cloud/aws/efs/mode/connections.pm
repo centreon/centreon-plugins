@@ -97,7 +97,7 @@ sub long_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-        
+
     $self->{maps_counters_type} = [
         { name => 'metrics', type => 3, cb_prefix_output => 'prefix_metric_output', cb_long_output => 'long_output',
           message_multiple => 'All FS metrics are ok', indent_long_output => '    ',
@@ -128,10 +128,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-            "name:s@"   => { name => 'name' },
+        'name:s@' => { name => 'name' },
     });
+
     return $self;
 }
 
@@ -153,7 +154,7 @@ sub check_options {
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 172800;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 86400;
     $self->{aws_statistics} = ['Sum'];
-    
+
     foreach my $metric (keys %metrics_mapping) {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
@@ -175,7 +176,7 @@ sub manage_selection {
             timeframe => $self->{aws_timeframe},
             period => $self->{aws_period},
         );
-        
+
         foreach my $metric (@{$self->{aws_metrics}}) {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) &&
