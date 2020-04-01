@@ -217,7 +217,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'          => { name => 'filter_name' },
+        'filter-device-name:s'   => { name => 'filter_device_name' },
         'unknown-status:s'       => { name => 'unknown_status', default => '' },
         'warning-status:s'       => { name => 'warning_status', default => '' },
         'critical-status:s'      => { name => 'critical_status', default => '%{status} =~ /alerting/i' },
@@ -244,7 +244,7 @@ sub manage_selection {
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 300;
     $timespan = time() - $last_timestamp if (defined($last_timestamp));
@@ -252,8 +252,8 @@ sub manage_selection {
     my $cache_devices = $options{custom}->get_cache_devices();
     my $devices = {};
     foreach (values %$cache_devices) {
-        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $_->{name} !~ /$self->{option_results}->{filter_name}/) {
+        if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
+            $_->{name} !~ /$self->{option_results}->{filter_device_name}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $_->{name} . "': no matching filter.", debug => 1);
             next;
         }
@@ -327,7 +327,7 @@ Check devices.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-device-name>
 
 Filter device name (Can be a regexp).
 
