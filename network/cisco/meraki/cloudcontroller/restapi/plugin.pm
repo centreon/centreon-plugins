@@ -33,6 +33,7 @@ sub new {
     %{$self->{modes}} = (
         'api-requests' => 'network::cisco::meraki::cloudcontroller::restapi::mode::apirequests',
         'devices'      => 'network::cisco::meraki::cloudcontroller::restapi::mode::devices',
+        'discovery'    => 'network::cisco::meraki::cloudcontroller::restapi::mode::discovery',
         'networks'     => 'network::cisco::meraki::cloudcontroller::restapi::mode::networks'
     );
 
