@@ -114,7 +114,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-network-name:s' => { name => 'filter_network_name' }
     });
 
     return $self;
@@ -125,14 +125,14 @@ sub manage_selection {
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_network_name}) ? md5_hex($self->{option_results}->{filter_network_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 300;
     $timespan = time() - $last_timestamp if (defined($last_timestamp));
 
     my $cache_networks = $options{custom}->get_cache_networks();
-    my $connections = $options{custom}->get_networks_connection_stats(timespan => $timespan, filter_name => $self->{option_results}->{filter_name});
-    my $clients = $options{custom}->get_networks_clients(timespan => $timespan, filter_name => $self->{option_results}->{filter_name});
+    my $connections = $options{custom}->get_networks_connection_stats(timespan => $timespan, filter_name => $self->{option_results}->{filter_network_name});
+    my $clients = $options{custom}->get_networks_clients(timespan => $timespan, filter_name => $self->{option_results}->{filter_network_name});
 
     $self->{networks} = {};
     foreach my $id (keys %$connections) {
@@ -170,7 +170,7 @@ Check networks.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-network-name>
 
 Filter network name (Can be a regexp).
 
