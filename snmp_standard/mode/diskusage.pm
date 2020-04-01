@@ -111,7 +111,6 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'force-counters32'        => { name => 'force_counters32' },
         'units:s'                 => { name => 'units', default => '%' },
         'free'                    => { name => 'free' },
         'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
@@ -168,7 +167,7 @@ sub manage_selection {
     my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
 
     $self->{snmp}->load(
-        oids => defined($self->{option_results}->{force_counters32}) ? [
+        oids => defined($self->{statefile_cache}->get(name => 'force_counters32')) ? [
             $oid_dskTotal32, $oid_dskUsed32, $oid_dskPercentNode
         ] : [
             $oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh, $oid_dskPercentNode
@@ -192,7 +191,7 @@ sub manage_selection {
         }
         
         my $total_size = 0;
-        if (defined($self->{option_results}->{force_counters32})) {
+        if (defined($self->{statefile_cache}->get(name => 'force_counters32'))) {
             $total_size = $result->{$oid_dskTotal32 . "." . $_} * 1024;
         }
         else {
@@ -203,7 +202,7 @@ sub manage_selection {
             next;
         }
         my $total_used = 0;
-        if (defined($self->{option_results}->{force_counters32})) {
+        if (defined($self->{statefile_cache}->get(name => 'force_counters32'))) {
             $total_used = $result->{$oid_dskUsed32 . "." . $_} * 1024;
         }
         else {
@@ -251,13 +250,18 @@ sub reload_cache {
     $datas->{all_ids} = [];
     
     my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
+    my $oid_dsk64 = '.1.3.6.1.4.1.2021.9.1.12';
     
-    my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result})) {
+    my $result = $self->{snmp}->get_multiple_table(oids => [ { oid => $oid_dskPath }, { oid => $oid_dsk64, end => $oid_dsk64 . '.1' } ]);
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result->{$oid_dskPath}})) {
         next if ($key !~ /\.([0-9]+)$/);        
         my $diskpath_index = $1;
         push @{$datas->{all_ids}}, $diskpath_index;
-        $datas->{"dskPath_" . $diskpath_index} = $self->{output}->to_utf8($result->{$key});
+        $datas->{"dskPath_" . $diskpath_index} = $self->{output}->to_utf8($result->{$oid_dskPath}->{$key});
+    }
+
+    if (!scalar keys %{$result->{$oid_dsk64}}) {
+        $datas->{"force_counters32"} = 1;
     }
 
     if (scalar(@{$datas->{all_ids}}) <= 0) {
@@ -337,10 +341,6 @@ Check usage on partitions (UCD-SNMP-MIB).
 Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
-
-=item B<--force-counters32>
-
-Use 32 bits counters.
 
 =item B<--filter-counters>
 
