@@ -113,6 +113,13 @@ sub get_token {
     return md5_hex($self->{api_token});
 }
 
+sub get_cache_organizations {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    return $self->{cache_organizations};
+}
+
 sub get_cache_networks {
     my ($self, %options) = @_;
 
@@ -328,6 +335,22 @@ sub get_organization_device_statuses {
             $results->{$_->{serial}} = $_;
             $results->{organizationId} = $id;
         }
+    }
+
+    return $results;
+}
+
+sub get_organization_api_requests_overview {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    my $organization_ids = $self->filter_organizations(filter_name => $options{filter_name});
+    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
+    $timespan = 1 if ($timespan <= 0);
+    
+    my $results = {};
+    foreach my $id (@$organization_ids) {
+        $results->{$id} = $self->request_api(endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $options{timespan});
     }
 
     return $results;
