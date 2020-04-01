@@ -309,7 +309,7 @@ sub run_instances {
     
     $self->{lproblems} = 0;
     $self->{multiple} = 1;
-    if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
+    if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $self->{multiple} = 0;
     }
     
@@ -401,7 +401,7 @@ sub run_group {
 
     my $multiple = 1;
     return if (scalar(keys %{$self->{$options{config}->{name}}}) <= 0);
-    if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
+    if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
     }
     
@@ -478,7 +478,7 @@ sub run_multiple_instances {
     my $no_message_multiple = 1;
     
     my $multiple = 1;
-    if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
+    if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
     }
     
@@ -580,13 +580,15 @@ sub run_multiple {
     my ($self, %options) = @_;
 
     my $multiple = 1;
-    if (scalar(keys %{$self->{$options{config}->{name}}}) == 1) {
+    if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
     }
 
     if ($multiple == 1) {
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => $options{config}->{message_multiple});
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => $options{config}->{message_multiple}
+        );
     }
 
     foreach my $instance (sort keys %{$self->{$options{config}->{name}}}) {
