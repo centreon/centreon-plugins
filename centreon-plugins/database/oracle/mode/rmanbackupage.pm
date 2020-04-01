@@ -30,22 +30,22 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        "skip-no-backup"          => { name => 'skip_no_backup', },
-        "filter-type:s"           => { name => 'filter_type', },
-        "timezone:s"              => { name => 'timezone', },
-        "incremental-level"       => { name => 'incremental_level', },
+        'skip-no-backup'    => { name => 'skip_no_backup', },
+        'filter-type:s'     => { name => 'filter_type', },
+        'timezone:s'        => { name => 'timezone', },
+        'incremental-level' => { name => 'incremental_level', },
     });
 
     foreach (('db incr', 'db full', 'archivelog', 'controlfile')) {
         my $label = $_;
         $label =~ s/ /-/g;
         $options{options}->add_options(arguments => {	
-                                                     'warning-' . $label . ':s'     => { name => 'warning-' . $label },
-                                                     'critical-' . $label . ':s'    => { name => 'critical-' . $label },
-                                                     'no-' . $label                 => { name => 'no-' . $label },
-                                      });
+            'warning-' . $label . ':s'  => { name => 'warning-' . $label },
+            'critical-' . $label . ':s' => { name => 'critical-' . $label },
+            'no-' . $label              => { name => 'no-' . $label },
+        });
     }
 
     return $self;
@@ -69,7 +69,7 @@ sub check_options {
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $ENV{TZ} = $self->{option_results}->{timezone};
     }
-    
+
     if (defined($self->{option_results}->{incremental_level})) {
         # the special request don't retrieve controlfiles. But controlfiles are saved with archivelog.
         $self->{option_results}->{'no-controlfile'} = 1;
@@ -135,13 +135,13 @@ sub run {
 
             my @values = localtime($last_time);
             my $dt = DateTime->new(
-                            year       => $values[5] + 1900,
-                            month      => $values[4] + 1,
-                            day        => $values[3],
-                            hour       => $values[2],
-                            minute     => $values[1],
-                            second     => $values[0],
-                            time_zone  => 'UTC',
+                year       => $values[5] + 1900,
+                month      => $values[4] + 1,
+                day        => $values[3],
+                hour       => $values[2],
+                minute     => $values[1],
+                second     => $values[0],
+                time_zone  => 'UTC'
             );
             my $offset = $last_time - $dt->epoch;
             $last_time = $last_time + $offset;
@@ -152,29 +152,37 @@ sub run {
             my $type_perfdata = $type;
             $type_perfdata =~ s/ /_/g;
             $self->{output}->output_add(long_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert));
-            $self->{output}->perfdata_add(label => sprintf('%s_backup_age', $type_perfdata),
-                                          value => $backup_age,
-                                          unit => 's',
-                                          warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $label),
-                                          critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $label),
-                                          min => 0);
+            $self->{output}->perfdata_add(
+                label => sprintf('%s_backup_age', $type_perfdata),
+                value => $backup_age,
+                unit => 's',
+                warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $label),
+                critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $label),
+                min => 0
+            );
             my $exit_code = $self->{perfdata}->threshold_check(value => $backup_age, threshold => [ { label => 'critical-' . $label, exit_litteral => 'critical' }, { label => 'warning-' . $label, exit_litteral => 'warning' } ]);
             
             if (!$self->{output}->is_status(value => $exit_code, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit_code,
-                                            short_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert));
+                $self->{output}->output_add(
+                    severity => $exit_code,
+                    short_msg => sprintf("Last Rman '%s' backups : %s", $type, $backup_age_convert)
+                );
             }
         }
         
         if ($executed == 0 && !defined($self->{option_results}->{'no-' . $label})) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Rman '%s' backups never executed", uc($_)));
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => sprintf("Rman '%s' backups never executed", uc($_))
+            );
         }
     }
 
     if (($count_backups == 0) && (!defined($self->{option_results}->{skip_no_backup}))) {
-        $self->{output}->output_add(severity => 'CRITICAL',
-                                    short_msg => sprintf("Rman backups never executed."));
+        $self->{output}->output_add(
+            severity => 'CRITICAL',
+            short_msg => sprintf("Rman backups never executed.")
+        );
     }
 
     $self->{output}->display();
