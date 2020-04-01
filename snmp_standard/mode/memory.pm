@@ -270,7 +270,11 @@ sub memory_calc {
         ## memCached = Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
         
         $used = (defined($self->{option_results}->{redhat})) ? $total - $available : $total - $available - $buffer - $cached;
-        $free = (defined($self->{option_results}->{redhat})) ? $available : $total - $used;
+        # autodetect_rhel7() may not handle every case, so let's assume $used <= 0 comes from this RedHat specific situation
+        if ($used <= 0 && defined($self->{option_results}->{autodetect_redhat})) {
+            $used = $total - $available;
+        }
+        $free = $total - $used;
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
