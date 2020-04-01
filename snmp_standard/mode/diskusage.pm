@@ -111,7 +111,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'force-counters32'        => { name => 'force_counters32' }
+        'force-counters32'        => { name => 'force_counters32' },
         'units:s'                 => { name => 'units', default => '%' },
         'free'                    => { name => 'free' },
         'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
