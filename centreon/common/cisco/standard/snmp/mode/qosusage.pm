@@ -363,9 +363,21 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_cbQosCMStatsEntry}, instance => $policy_index . '.' . $qos_object_index);
         my $traffic_usage = (defined($result->{cbQosCMPostPolicyByte64}) && $result->{cbQosCMPostPolicyByte64} =~ /[1-9]/) ?
-            $result->{cbQosCMPostPolicyByte64} : (($result->{cbQosCMPostPolicyByteOverflow} << 32) + $result->{cbQosCMPostPolicyByte});
-        my $drop_usage = (defined($result->{cbQosCMDropByte64}) && $result->{cbQosCMDropByte64} =~ /[1-9]/) ?
-            $result->{cbQosCMDropByte64} : (($result->{cbQosCMDropByteOverflow} << 32) + $result->{cbQosCMDropByte});
+            $result->{cbQosCMPostPolicyByte64} :
+            (
+                ($result->{cbQosCMPostPolicyByteOverflow} == 4294967295) ?
+                undef :
+                ($result->{cbQosCMPostPolicyByteOverflow} * 4294967295 + $result->{cbQosCMPostPolicyByte})
+            );
+        my $drop_usage = 
+            (defined($result->{cbQosCMDropByte64}) && $result->{cbQosCMDropByte64} =~ /[1-9]/) ?
+            $result->{cbQosCMDropByte64} :
+            (
+                ($result->{cbQosCMDropByteOverflow} == 4294967295) ?
+                undef :
+                ($result->{cbQosCMDropByteOverflow} * 4294967295 + $result->{cbQosCMDropByte})
+            );
+
         my $total = 'unknown';
         if (defined($qos_data->{shaping})) {
             my $result_shaping = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{$oid_cbQosTSCfgEntry}, instance => $qos_data->{shaping});
@@ -374,8 +386,8 @@ sub manage_selection {
 
         $self->{interface_classmap}->{$policy_index . '.' . $qos_object_index} = {
             display => $name,
-            traffic_usage => $traffic_usage * 8,
-            drop_usage => $drop_usage * 8,
+            traffic_usage => defined($traffic_usage) ? $traffic_usage * 8 : undef,
+            drop_usage => defined($drop_usage) ? $drop_usage * 8 : undef,
             total => $total
         };
 
@@ -385,12 +397,12 @@ sub manage_selection {
         }
 
         $self->{classmap}->{$name} = { display => $class_name, drop_usage => 0, traffic_usage => 0} if (!defined($self->{classmap}->{$name}));
-        $self->{classmap}->{$name}->{traffic_usage} += $traffic_usage * 8;
-        $self->{classmap}->{$name}->{drop_usage} += $drop_usage * 8;
+        $self->{classmap}->{$name}->{traffic_usage} += defined($traffic_usage) ? $traffic_usage * 8 : 0;
+        $self->{classmap}->{$name}->{drop_usage} += defined($drop_usage) ? $drop_usage * 8 : 0;
 
         if (!defined($tabname[3])){
-            $self->{total}->{traffic_usage} += $traffic_usage * 8;
-            $self->{total}->{drop_usage} += $drop_usage * 8;
+            $self->{total}->{traffic_usage} += defined($traffic_usage) ? $traffic_usage * 8 : 0;
+            $self->{total}->{drop_usage} += defined($drop_usage) ? $drop_usage * 8 : 0;
         }
     }
 
