@@ -76,7 +76,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-organization-name:s' => { name => 'filter_organization_name' }
     });
 
     return $self;
@@ -87,13 +87,13 @@ sub manage_selection {
 
     $self->{cache_name} = 'meraki_' . $self->{mode} . '_' . $options{custom}->get_token()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_organization_name}) ? md5_hex($self->{option_results}->{filter_organization_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 300;
     $timespan = time() - $last_timestamp if (defined($last_timestamp));
 
     my $cache_organizations = $options{custom}->get_cache_organizations();
-    my $api_requests = $options{custom}->get_organization_api_requests_overview(timespan => $timespan, filter_name => $self->{option_results}->{filter_name});
+    my $api_requests = $options{custom}->get_organization_api_requests_overview(timespan => $timespan, filter_name => $self->{option_results}->{filter_organization_name});
 
     $self->{organizations} = {};
     foreach my $id (keys %$api_requests) {
@@ -121,7 +121,7 @@ Check api requests.
 
 =over 8
 
-=item B<--filter-name>
+=item B<--filter-organization-name>
 
 Filter organization name (Can be a regexp).
 
