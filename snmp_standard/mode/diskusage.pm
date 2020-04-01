@@ -111,6 +111,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
+        'force-counters32'        => { name => 'force_counters32' }
         'units:s'                 => { name => 'units', default => '%' },
         'free'                    => { name => 'free' },
         'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
@@ -158,6 +159,8 @@ sub manage_selection {
     $self->{snmp} = $options{snmp};
     $self->get_selection();
     
+    my $oid_dskTotal32 = '.1.3.6.1.4.1.2021.9.1.6'; # in kB
+    my $oid_dskUsed32 = '.1.3.6.1.4.1.2021.9.1.8'; # in kB
     my $oid_dskTotalLow = '.1.3.6.1.4.1.2021.9.1.11'; # in kB
     my $oid_dskTotalHigh = '.1.3.6.1.4.1.2021.9.1.12'; # in kB
     my $oid_dskUsedLow = '.1.3.6.1.4.1.2021.9.1.15'; # in kB
@@ -165,7 +168,9 @@ sub manage_selection {
     my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
 
     $self->{snmp}->load(
-        oids => [
+        oids => defined($self->{option_results}->{force_counters32}) ? [
+            $oid_dskTotal32, $oid_dskUsed32, $oid_dskPercentNode
+        ] : [
             $oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh, $oid_dskPercentNode
         ], 
         instances => $self->{diskpath_id_selected},
@@ -178,7 +183,7 @@ sub manage_selection {
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
 
-        if (!defined($result->{$oid_dskTotalHigh . "." . $_})) {
+        if (!defined($result->{$oid_dskTotal32 . "." . $_}) && !defined($result->{$oid_dskTotalHigh . "." . $_})) {
             $self->{output}->add_option_msg(long_msg => sprintf(
                 "skipping partition '%s': not found (need to reload the cache)", 
                 $name_diskpath)
@@ -186,12 +191,24 @@ sub manage_selection {
             next;
         }
         
-        my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
+        my $total_size = 0;
+        if (defined($self->{option_results}->{force_counters32})) {
+            $total_size = $result->{$oid_dskTotal32 . "." . $_} * 1024;
+        }
+        else {
+            $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
+        }
         if ($total_size == 0) {
             $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath));
             next;
         }
-        my $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
+        my $total_used = 0;
+        if (defined($self->{option_results}->{force_counters32})) {
+            $total_used = $result->{$oid_dskUsed32 . "." . $_} * 1024;
+        }
+        else {
+            $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
+        }
 
         my $reserved_value = 0;
         if (defined($self->{option_results}->{space_reservation})) {
@@ -320,6 +337,10 @@ Check usage on partitions (UCD-SNMP-MIB).
 Need to enable "includeAllDisks 10%" on snmpd.conf.
 
 =over 8
+
+=item B<--force-counters32>
+
+Use 32 bits counters.
 
 =item B<--filter-counters>
 
