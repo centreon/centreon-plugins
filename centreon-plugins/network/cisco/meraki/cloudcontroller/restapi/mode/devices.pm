@@ -364,8 +364,9 @@ Can used special variables like: %{link_status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'connections-success', 'connections-auth', 'connections-assoc',
-'connections-dhcp', 'connections-dns', 'traffic-in', 'traffic-out'.
+Can be: 'total-online', 'total-offline', 'total-alerting',
+'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
+'connections-assoc', 'connections-dhcp', 'connections-dns'.
 
 =back
 

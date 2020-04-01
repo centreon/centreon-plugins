@@ -128,8 +128,7 @@ Filter organization name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'connections-success', 'connections-auth', 'connections-assoc',
-'connections-dhcp', 'connections-dns', 'traffic-in', 'traffic-out'.
+Can be: 'api-requests-200', 'api-requests-404', 'api-requests-429'.
 
 =back
 
