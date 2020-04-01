@@ -139,10 +139,10 @@ sub manage_selection {
         $self->{networks}->{$id} = {
             display => $cache_networks->{$id}->{name},
             assoc => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{assoc} : 0,
-            auth => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{auth} : 0,
-            dhcp => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{assoc} : 0,
-            dns => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{dhcp} : 0,
-            success => defined($connections->{$id}->{assoc}) ? $connections->{$id}->{success} : 0,
+            auth => defined($connections->{$id}->{auth}) ? $connections->{$id}->{auth} : 0,
+            dhcp => defined($connections->{$id}->{dhcp}) ? $connections->{$id}->{dhcp} : 0,
+            dns => defined($connections->{$id}->{dns}) ? $connections->{$id}->{dns} : 0,
+            success => defined($connections->{$id}->{success}) ? $connections->{$id}->{success} : 0,
             traffic_in => 0, traffic_out => 0
         };
 
