@@ -31,8 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'devices'  => 'network::cisco::meraki::cloudcontroller::restapi::mode::devices',
-        'networks' => 'network::cisco::meraki::cloudcontroller::restapi::mode::networks'
+        'api-requests' => 'network::cisco::meraki::cloudcontroller::restapi::mode::apirequests',
+        'devices'      => 'network::cisco::meraki::cloudcontroller::restapi::mode::devices',
+        'networks'     => 'network::cisco::meraki::cloudcontroller::restapi::mode::networks'
     );
 
     $self->{custom_modes}{api} = 'network::cisco::meraki::cloudcontroller::restapi::custom::api';
