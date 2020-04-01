@@ -116,8 +116,15 @@ sub get_token {
 sub get_cache_networks {
     my ($self, %options) = @_;
 
-    $self->cache_networks_organizations();
+    $self->cache_meraki_entities();
     return $self->{cache_networks};
+}
+
+sub get_cache_devices {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    return $self->{cache_devices};
 }
 
 sub build_options_for_httplib {
@@ -171,7 +178,7 @@ sub request_api {
     } while (1);
 }
 
-sub cache_networks_organizations {
+sub cache_meraki_entities {
     my ($self, %options) = @_;
 
     return if ($self->{cache_checked} == 1);
@@ -181,16 +188,19 @@ sub cache_networks_organizations {
     my $timestamp_cache = $self->{cache}->get(name => 'last_timestamp');
     $self->{cache_organizations} = $self->{cache}->get(name => 'organizations');
     $self->{cache_networks} = $self->{cache}->get(name => 'networks');
+    $self->{cache_devices} = $self->{cache}->get(name => 'devices');
 
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {
         $self->{cache_organizations} = {};
         $self->{cache_organizations} = $self->get_organizations(disable_cache => 1);
         $self->{cache_networks} = $self->get_networks(organizations => [keys %{$self->{cache_organizations}}], disable_cache => 1);
+        $self->{cache_devices} = $self->get_devices(organizations => [keys %{$self->{cache_organizations}}], disable_cache => 1);
 
         $self->{cache}->write(data => {
             last_timestamp => time(),
             organizations => $self->{cache_organizations},
-            networks => $self->{cache_networks}
+            networks => $self->{cache_networks},
+            devices => $self->{cache_devices}
         });
     }
 }
@@ -198,7 +208,7 @@ sub cache_networks_organizations {
 sub get_organizations {
     my ($self, %options) = @_;
 
-    $self->cache_networks_organizations();
+    $self->cache_meraki_entities();
     return $self->{cache_organizations} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
     my $datas = $self->request_api(endpoint => '/organizations');
     my $results = {};
@@ -210,13 +220,28 @@ sub get_organizations {
 sub get_networks {
     my ($self, %options) = @_;
 
-    $self->cache_networks_organizations();
+    $self->cache_meraki_entities();
     return $self->{cache_networks} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
 
     my $results = {};
     foreach my $id (keys %{$self->{cache_organizations}}) {
         my $datas = $self->request_api(endpoint => '/organizations/' . $id . '/networks');
         $results->{$_->{id}} = $_ foreach (@$datas);
+    }
+
+    return $results;
+}
+
+sub get_devices {
+    my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    return $self->{cache_devices} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
+
+    my $results = {};
+    foreach my $id (keys %{$self->{cache_organizations}}) {
+        my $datas = $self->request_api(endpoint => '/organizations/' . $id . '/devices');
+        $results->{$_->{serial}} = $_ foreach (@$datas);
     }
 
     return $results;
@@ -242,10 +267,25 @@ sub filter_networks {
     return $network_ids;
 }
 
+sub filter_organizations {
+    my ($self, %options) = @_;
+
+    my $organization_ids = [];
+    foreach (values %{$self->{cache_organizations}}) {
+        if (!defined($options{filter_name}) || $options{filter_name} eq '') {
+            push @$organization_ids, $_->{id};
+        } elsif ($_->{name} =~ /$options{filter_name}/) {
+            push @$organization_ids, $_->{id};
+        }
+    }
+
+    return $organization_ids;
+}
+
 sub get_networks_connection_stats {
     my ($self, %options) = @_;
 
-    $self->cache_networks_organizations();
+    $self->cache_meraki_entities();
     my $network_ids = $self->filter_networks(filter_name => $options{filter_name});
 
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
@@ -262,7 +302,7 @@ sub get_networks_connection_stats {
 sub get_networks_clients {
     my ($self, %options) = @_;
 
-    $self->cache_networks_organizations();
+    $self->cache_meraki_entities();
     my $network_ids = $self->filter_networks(filter_name => $options{filter_name});
 
     my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
@@ -276,8 +316,82 @@ sub get_networks_clients {
     return $results;
 }
 
-sub get_device_statuses {
+sub get_organization_device_statuses {
     my ($self, %options) = @_;
+
+    $self->cache_meraki_entities();
+    my $organization_ids = $self->filter_organizations(filter_name => $options{filter_name});
+    my $results = {};
+    foreach my $id (@$organization_ids) {
+        my $datas = $self->request_api(endpoint => '/organizations/' . $id . '/deviceStatuses');
+        foreach (@$datas) {
+            $results->{$_->{serial}} = $_;
+            $results->{organizationId} = $id;
+        }
+    }
+
+    return $results;
+}
+
+sub get_network_device_connection_stats {
+    my ($self, %options) = @_;
+
+    if (scalar(keys %{$options{devices}}) > 5) {
+        $self->{output}->add_option_msg(short_msg => 'cannot check more than 5 devices at once (api rate limit)');
+        $self->{output}->option_exit();
+    }
+
+    $self->cache_meraki_entities();
+    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
+    $timespan = 1 if ($timespan <= 0);
+
+    my $results = {};
+    foreach (keys %{$options{devices}}) {
+        my $data = $self->request_api(endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/connectionStats?timespan=' . $options{timespan});
+        $results->{$_} = $data;
+    }
+
+    return $results;
+}
+
+sub get_network_device_uplink {
+    my ($self, %options) = @_;
+
+    if (scalar(keys %{$options{devices}}) > 5) {
+        $self->{output}->add_option_msg(short_msg => 'cannot check more than 5 devices at once (api rate limit)');
+        $self->{output}->option_exit();
+    }
+
+    $self->cache_meraki_entities();
+
+    my $results = {};
+    foreach (keys %{$options{devices}}) {
+        my $data = $self->request_api(endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/uplink');
+        $results->{$_} = $data;
+    }
+
+    return $results;
+}
+
+sub get_device_clients {
+    my ($self, %options) = @_;
+
+    if (scalar(keys %{$options{devices}}) > 5) {
+        $self->{output}->add_option_msg(short_msg => 'cannot check more than 5 devices at once (api rate limit)');
+        $self->{output}->option_exit();
+    }
+
+    $self->cache_meraki_entities();
+    my $timespan = defined($options{timespan}) ? $options{timespan} : 300;
+    $timespan = 1 if ($timespan <= 0);
+
+    my $results = {};
+    foreach (keys %{$options{devices}}) {
+        my $data = $self->request_api(endpoint => '/devices/' . $_ . '/clients?timespan=' . $options{timespan});
+        $results->{$_} = $data;
+    }
+
+    return $results;
 }
 
 1;
