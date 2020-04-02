@@ -18,23 +18,25 @@
 # limitations under the License.
 #
 
-package apps::hddtemp::remote::plugin;
+package apps::hddtemp::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'temperature' => 'apps::hddtemp::remote::mode::temperature',
-        'list-drives' => 'apps::hddtemp::remote::mode::listdrives',
+        'list-drives'  => 'apps::hddtemp::mode::listdrives',
+        'temperatures' => 'apps::hddtemp::mode::temperatures'
     );
 
+    $self->{custom_modes}{tcp} = 'apps::hddtemp::custom::tcp';
+    $self->{custom_modes}{cli} = 'apps::hddtemp::custom::cli';
     return $self;
 }
 
@@ -44,6 +46,9 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check HDDTEMP Status throuh TCP Socket
+Check drives temperature with hddtemp.
+Two custom modes availables:
+'tcp' (remotely with hddtemp in daemon mode)
+'command' (with hddtemp command. you can execute locally or through ssh).
 
 =cut
