@@ -33,11 +33,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_absolute});
-    return $msg;
+    return sprintf(
+        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_absolute}
+    );
 }
 
 sub set_counters {
@@ -53,10 +54,10 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Partitions count : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 },
-                ],
+                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{diskpath} = [
@@ -65,8 +66,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'storage.space.free.bytes', set => {
@@ -74,8 +75,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'storage.space.usage.percentage', set => {
@@ -83,8 +84,8 @@ sub set_counters {
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
                     { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'inodes', nlabel => 'storage.inodes.usage.percentage', set => {
@@ -92,10 +93,10 @@ sub set_counters {
                 output_template => 'Inodes Used: %s %%',
                 perfdatas => [
                     { label => 'inodes', value => 'inodes_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -179,16 +180,18 @@ sub manage_selection {
         my $name_diskpath = $self->get_display_value(id => $_);
 
         if (!defined($result->{$oid_dskTotalHigh . "." . $_})) {
-            $self->{output}->add_option_msg(long_msg => sprintf(
-                "skipping partition '%s': not found (need to reload the cache)", 
-                $name_diskpath)
+            $self->{output}->add_option_msg(
+                long_msg => sprintf(
+                    "skipping partition '%s': not found (need to reload the cache)", 
+                    $name_diskpath
+                )
             );
             next;
         }
         
         my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
         if ($total_size == 0) {
-            $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath));
+            $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath), debug => 1);
             next;
         }
         my $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
@@ -221,7 +224,7 @@ sub manage_selection {
     }
     
     if (scalar(keys %{$self->{diskpath}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Issue with disk path information (see details)");
+        $self->{output}->add_option_msg(short_msg => 'Issue with disk path information (see details)');
         $self->{output}->option_exit();
     }
 }
@@ -232,9 +235,9 @@ sub reload_cache {
 
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
-    
+
     my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
-    
+
     my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result})) {
         next if ($key !~ /\.([0-9]+)$/);        
@@ -270,11 +273,11 @@ sub get_selection {
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath})) {
         # get by ID
-        my $name = $self->{statefile_cache}->get(name => "dskPath_" . $self->{option_results}->{diskpath});
+        my $name = $self->{statefile_cache}->get(name => 'dskPath_' . $self->{option_results}->{diskpath});
         push @{$self->{diskpath_id_selected}}, $self->{option_results}->{diskpath} if (defined($name));
     } else {
         foreach my $i (@{$all_ids}) {
-            my $filter_name = $self->{statefile_cache}->get(name => "dskPath_" . $i);
+            my $filter_name = $self->{statefile_cache}->get(name => 'dskPath_' . $i);
             next if (!defined($filter_name));
             
             if (!defined($self->{option_results}->{diskpath})) {
@@ -292,7 +295,7 @@ sub get_selection {
             }
         }
     }
-    
+
     if (scalar(@{$self->{diskpath_id_selected}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No disk path found. Can be: filters, cache file.");
         $self->{output}->option_exit();
@@ -301,12 +304,13 @@ sub get_selection {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{statefile_cache}->get(name => "dskPath_" . $options{id});
-    
+    my $value = $self->{statefile_cache}->get(name => 'dskPath_' . $options{id});
+
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
         eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
     }
+
     return $value;
 }
 

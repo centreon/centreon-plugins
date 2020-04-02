@@ -106,7 +106,13 @@ sub custom_usage_threshold {
         $threshold_value = $self->{result_values}->{prct_used};
         $threshold_value = $self->{result_values}->{prct_free} if (defined($self->{instance_mode}->{option_results}->{free}));
     }
-    $exit = $self->{perfdata}->threshold_check(value => $threshold_value, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+    $exit = $self->{perfdata}->threshold_check(
+        value => $threshold_value,
+        threshold => [
+            { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' },
+            { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -116,11 +122,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -160,19 +167,19 @@ sub custom_access_output {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All storages are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'count', nlabel => 'storage.partitions.count', display_ok => 0, set => {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Partitions count : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 },
-                ],
+                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 }
+                ]
             }
         },
     ];
@@ -183,7 +190,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'access', nlabel => 'storage.access', set => {
@@ -191,22 +198,22 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_access_output'),
                 perfdatas => [
                     { label => 'access', value => 'access_absolute', template => '%d', min => 1, max => 2, 
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_storage_output {
     my ($self, %options) = @_;
-    
+
     return "Storage '" . $options{instance_value}->{display} . "' ";
 }
 
 sub default_storage_type {
     my ($self, %options) = @_;
-    
+
     return '^(hrStorageFixedDisk|hrStorageNetworkDisk|hrFSBerkeleyFFS)$';
 }
 
@@ -214,7 +221,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'units:s'                 => { name => 'units', default => '%' },
         'free'                    => { name => 'free' },
@@ -235,7 +242,7 @@ sub new {
 
     $self->{storage_id_selected} = [];
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    
+
     return $self;
 }
 
@@ -248,7 +255,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Space reservation argument must be between 0 and 100 percent.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{option_results}->{oid_filter} = lc($self->{option_results}->{oid_filter});
     if ($self->{option_results}->{oid_filter} !~ /^(hrstoragedescr|hrfsmountpoint)$/) {
         $self->{output}->add_option_msg(short_msg => "Unsupported --oid-filter option.");
@@ -265,7 +272,7 @@ sub check_options {
 
 sub access_result {
     my ($self, %options) = @_;
-    
+
     return {}
         if (!defined($self->{option_results}->{add_access}));
     my $oid_hrFSAccess = '.1.3.6.1.2.1.25.3.8.1.5';
@@ -290,20 +297,20 @@ sub access_result {
             $result->{$_} = $snmp_result->{$oid_hrFSAccess . '.' . $relations->{$_}};
         }
     }
-    
+
     return $result;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     $self->get_selection(snmp => $options{snmp});
-    
+
     my $oid_hrStorageAllocationUnits = '.1.3.6.1.2.1.25.2.3.1.4';
     my $oid_hrStorageSize = '.1.3.6.1.2.1.25.2.3.1.5';
     my $oid_hrStorageUsed = '.1.3.6.1.2.1.25.2.3.1.6';
     my $oid_hrStorageType = '.1.3.6.1.2.1.25.2.3.1.2';
-    
+
     $options{snmp}->load(
         oids => [$oid_hrStorageAllocationUnits, $oid_hrStorageSize, $oid_hrStorageUsed], 
         instances => $self->{storage_id_selected},
@@ -311,7 +318,7 @@ sub manage_selection {
     );
     my $result = $options{snmp}->get_leef();
     my $access_result = $self->access_result(snmp => $options{snmp});
-    
+
     $self->{global}->{count} = 0;
     $self->{storage} = {};
     foreach (sort @{$self->{storage_id_selected}}) {
@@ -330,12 +337,13 @@ sub manage_selection {
         # in bytes hrStorageAllocationUnits
         my $total_size = $result->{$oid_hrStorageSize . "." . $_} * $result->{$oid_hrStorageAllocationUnits . "." . $_};
         if ($total_size <= 0) {
-            $self->{output}->add_option_msg(
+            $self->{output}->output_add(
                 long_msg => sprintf(
                     "skipping storage '%s': total size is <= 0 (%s)", 
                     $name_storage,
                     int($total_size)
-                )
+                ),
+                debug => 1
             );
             next;
         }
