@@ -28,26 +28,27 @@ use warnings;
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%) Free: %s %s (%.2f%%)",
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
-        $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute});
-    return $msg;
-}
-
-sub custom_swap_output {
-    my ($self, %options) = @_;
-    
-    my $msg = sprintf("Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
+    return sprintf(
+        'Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%) Free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
         $self->{result_values}->{prct_used_absolute},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
         $self->{result_values}->{prct_free_absolute}
     );
-    return $msg;
+}
+
+sub custom_swap_output {
+    my ($self, %options) = @_;
+    
+    return sprintf(
+        'Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+        $self->{result_values}->{prct_used_absolute},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
+        $self->{result_values}->{prct_free_absolute}
+    );
 }
 
 sub set_counters {
@@ -57,15 +58,15 @@ sub set_counters {
         { name => 'ram', type => 0, skipped_code => { -10 => 1 } },
         { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{ram} = [
         { label => 'usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
@@ -73,8 +74,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
@@ -82,8 +83,8 @@ sub set_counters {
                 output_template => 'Ram Used : %.2f %%',
                 perfdatas => [
                     { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                      unit => '%' }
+                ]
             }
         },
         { label => 'buffer', nlabel => 'memory.buffer.bytes', set => {
@@ -92,8 +93,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'buffer', value => 'memBuffer_absolute', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                      min => 0, unit => 'B' }
+                ]
             }
         },
         { label => 'cached', nlabel => 'memory.cached.bytes', set => {
@@ -102,8 +103,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'cached', value => 'memCached_absolute', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                      min => 0, unit => 'B' }
+                ]
             }
         },
         { label => 'shared', nlabel => 'memory.shared.bytes', set => {
@@ -112,8 +113,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 perfdatas => [
                     { label => 'shared', value => 'memShared_absolute', template => '%d',
-                      min => 0, unit => 'B' },
-                ],
+                      min => 0, unit => 'B' }
+                ]
             }
         },
     ];
@@ -123,8 +124,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
                     { label => 'swap', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'swap-free', display_ok => 0, nlabel => 'swap.free.bytes', set => {
@@ -132,8 +133,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
                     { label => 'swap_free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'swap-prct', display_ok => 0, nlabel => 'swap.usage.percentage', set => {
@@ -141,10 +142,10 @@ sub set_counters {
                 output_template => 'Swap Used : %.2f %%',
                 perfdatas => [
                     { label => 'swap_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                      unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -152,15 +153,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
-        'units:s'   => { name => 'units', default => '%' },
-        'free'      => { name => 'free' },
-        'swap'      => { name => 'check_swap' },
-        'redhat'    => { name => 'redhat' },
-        'autodetect-redhat' => { name => 'autodetect_redhat' },
+        'units:s'           => { name => 'units', default => '%' },
+        'free'              => { name => 'free' },
+        'swap'              => { name => 'check_swap' },
+        'redhat'            => { name => 'redhat' },
+        'autodetect-redhat' => { name => 'autodetect_redhat' }
     });
-    
+
     return $self;
 }
 
@@ -268,9 +269,14 @@ sub memory_calc {
         ## memShared = MemShared in /proc/meminfo
         ## memBuffer = Buffers in /proc/meminfo
         ## memCached = Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
-        
+
         $used = (defined($self->{option_results}->{redhat})) ? $total - $available : $total - $available - $buffer - $cached;
         $free = (defined($self->{option_results}->{redhat})) ? $available : $total - $used;
+        # if the value is negative. maybe the autodetect failed.
+        if ($used < 0 && defined($self->{option_results}->{autodetect_redhat})) {
+            $used = $total - $available;
+            $free = $available;
+        }
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
