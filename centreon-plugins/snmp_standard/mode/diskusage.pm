@@ -122,12 +122,12 @@ sub new {
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },
-        'space-reservation:s'     => { name => 'space_reservation' },
+        'space-reservation:s'     => { name => 'space_reservation' }
     });
 
     $self->{diskpath_id_selected} = [];
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    
+
     return $self;
 }
 
@@ -153,33 +153,35 @@ sub check_options {
     $self->{statefile_cache}->check_options(%options);
 }
 
+my $mapping = {
+    dskTotal32     => { oid => '.1.3.6.1.4.1.2021.9.1.6' }, # kB
+    dskUsed32      => { oid => '.1.3.6.1.4.1.2021.9.1.8' }, # kB
+    dskPercentNode => { oid => '.1.3.6.1.4.1.2021.9.1.10' },
+    dskTotalLow    => { oid => '.1.3.6.1.4.1.2021.9.1.11' }, # kB
+    dskTotalHigh   => { oid => '.1.3.6.1.4.1.2021.9.1.12' }, # kB
+    dskUsedLow     => { oid => '.1.3.6.1.4.1.2021.9.1.15' }, # kB
+    dskUsedHigh    => { oid => '.1.3.6.1.4.1.2021.9.1.16' } # kB
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{snmp} = $options{snmp};
-    $self->get_selection();
-    
-    my $oid_dskTotalLow = '.1.3.6.1.4.1.2021.9.1.11'; # in kB
-    my $oid_dskTotalHigh = '.1.3.6.1.4.1.2021.9.1.12'; # in kB
-    my $oid_dskUsedLow = '.1.3.6.1.4.1.2021.9.1.15'; # in kB
-    my $oid_dskUsedHigh = '.1.3.6.1.4.1.2021.9.1.16'; # in kB
-    my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
+    $self->get_selection(snmp => $options{snmp});
 
-    $self->{snmp}->load(
-        oids => [
-            $oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh, $oid_dskPercentNode
-        ], 
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
         instances => $self->{diskpath_id_selected},
         nothing_quit => 1
     );
-    my $result = $self->{snmp}->get_leef();
-    
+    my $snmp_result = $options{snmp}->get_leef();
+
     $self->{global}->{count} = 0;
     $self->{diskpath} = {};
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
 
-        if (!defined($result->{$oid_dskTotalHigh . "." . $_})) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        if (!defined($result->{dskTotal32}) && !defined($result->{dskTotalHigh})) {
             $self->{output}->add_option_msg(
                 long_msg => sprintf(
                     "skipping partition '%s': not found (need to reload the cache)", 
@@ -188,13 +190,13 @@ sub manage_selection {
             );
             next;
         }
-        
-        my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
+
+        my $total_size = defined($result->{dskTotalHigh}) ? ((($result->{dskTotalHigh} << 32) + $result->{dskTotalLow}) * 1024) : $result->{dskTotal32} * 1024;
         if ($total_size == 0) {
             $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath), debug => 1);
             next;
         }
-        my $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
+        my $total_used = defined($result->{dskUsedHigh}) ? ((($result->{dskUsedHigh} << 32) + $result->{dskUsedLow}) * 1024) : $result->{dskUsed32} * 1024;
 
         my $reserved_value = 0;
         if (defined($self->{option_results}->{space_reservation})) {
@@ -211,18 +213,18 @@ sub manage_selection {
             $prct_free = 0;
         }
 
-        $self->{diskpath}->{$_} = {
+        $self->{diskpath}->{$name_diskpath} = {
             display => $name_diskpath,
             total => $total_size,
             used => $total_used,
             free => $free,
             prct_free => $prct_free,
             prct_used => $prct_used,
-            inodes => defined($result->{$oid_dskPercentNode . "." . $_}) ? $result->{$oid_dskPercentNode . "." . $_} : undef,
+            inodes => $result->{dskPercentNode}
         };
         $self->{global}->{count}++;
     }
-    
+
     if (scalar(keys %{$self->{diskpath}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => 'Issue with disk path information (see details)');
         $self->{output}->option_exit();
@@ -230,7 +232,7 @@ sub manage_selection {
 }
 
 sub reload_cache {
-    my ($self) = @_;
+    my ($self, %options) = @_;
     my $datas = {};
 
     $datas->{last_timestamp} = time();
@@ -238,8 +240,8 @@ sub reload_cache {
 
     my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
 
-    my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result})) {
+    my $result = $options{snmp}->get_table(oid => $oid_dskPath);
+    foreach my $key (keys %$result) {
         next if ($key !~ /\.([0-9]+)$/);        
         my $diskpath_index = $1;
         push @{$datas->{all_ids}}, $diskpath_index;
@@ -258,7 +260,7 @@ sub get_selection {
     my ($self, %options) = @_;
 
     # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
         $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
         $self->{output}->option_exit();
@@ -266,7 +268,7 @@ sub get_selection {
 
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-            $self->reload_cache();
+            $self->reload_cache(snmp => $options{snmp});
             $self->{statefile_cache}->read();
     }
 
