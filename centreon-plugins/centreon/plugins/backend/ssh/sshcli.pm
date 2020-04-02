@@ -83,7 +83,8 @@ sub execute {
             ssh_path => $self->{ssh_path},
             ssh_option => $self->{ssh_option},
             timeout => $options{timeout}
-        }
+        },
+        no_quit => $options{no_quit}
     );
 
     if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
