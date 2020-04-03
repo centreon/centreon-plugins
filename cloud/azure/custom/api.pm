@@ -635,6 +635,26 @@ sub azure_list_sqldatabases {
     return $response->{value};
 }
 
+sub azure_get_log_analytics_set_url {
+    my ($self, %options) = @_;
+
+    my $uri = URI::Encode->new({encode_reserved => 1});
+    my $encoded_query = $uri->encode($options{query});
+    my $encoded_interval = $uri->encode($options{interval});
+    my $url = $self->{management_endpoint} . '/v1/workspaces/' . $options{workspace_id} . '/query?query=' . $encoded_query . '&timespan=' . $encoded_interval;
+
+    return $url;
+}
+
+sub azure_get_log_analytics {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_get_log_analytics_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
+}
+
 1;
 
 __END__
