@@ -29,13 +29,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"                => { name => 'name' },
-                                  "regexp"                => { name => 'use_regexp' },
-                                });
-    $self->{trunks_selected} = [];
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'name' }
+    });
 
     return $self;
 }
@@ -45,62 +42,67 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-my %map_trunk_status = (
+my $map_trunk_status = {
     0 => 'up',
     1 => 'down',
     2 => 'disable',
     3 => 'uninitialized',
     4 => 'loopback',
-    5 => 'unpopulated',
-);
+    5 => 'unpopulated'
+};
 
-my $sysTrunkTable = '.1.3.6.1.4.1.3375.2.1.2.12.1.2';
-my $sysTrunkName = '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.1';
-my $sysTrunkStatus = '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.2';
-my $sysTrunkOperBw = '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.5';
+my $mapping = {
+    sysTrunkName   => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.1' },
+    sysTrunkStatus => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.2', map => $map_trunk_status },
+    sysTrunkOperBw => { oid => '.1.3.6.1.4.1.3375.2.1.2.12.1.2.1.5' }
+};
+my $oid_sysTrunkTable = '.1.3.6.1.4.1.3375.2.1.2.12.1.2';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{result} = $self->{snmp}->get_table(oid => $sysTrunkTable, nothing_quit => 1);
-
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{result}})) {
-        next if ($oid !~ /^$sysTrunkName\.(.*)$/);
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_sysTrunkTable,
+        end => $mapping->{sysTrunkOperBw}->{oid},
+        nothing_quit => 1
+    );
+    my $trunks = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{sysTrunkName}->{oid}\.(.*)$/);
         my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        # Get all without a name
-        if (!defined($self->{option_results}->{name})) {
-            push @{$self->{trunks_selected}}, $instance; 
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{sysTrunkName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping trunk '" . $result->{sysTrunkName} . "': no matching filter name.", debug => 1);
             next;
         }
-        
-        if (!defined($self->{option_results}->{use_regexp}) && $self->{result}->{$sysTrunkName . '.' . $instance} eq $self->{option_results}->{name}) {
-            push @{$self->{trunks_selected}}, $instance;
-            next;
-        }
-        if (defined($self->{option_results}->{use_regexp}) && $self->{result}->{$sysTrunkName . '.' . $instance} =~ /$self->{option_results}->{name}/) {
-            push @{$self->{trunks_selected}}, $instance;
-            next;
-        }
-        
-        $self->{output}->output_add(long_msg => "Skipping pool '" . $self->{result}->{$sysTrunkName . '.' . $instance} . "': no matching filter name", debug => 1);
+
+        $trunks->{$result->{sysTrunkName}} = $result;
     }
+
+    return $trunks;
 }
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection();
-    foreach my $instance (sort @{$self->{trunks_selected}}) { 
-        $self->{output}->output_add(long_msg => sprintf("'%s' [status: %s] [speed: %s]",
-                                                $self->{result}->{$sysTrunkName . '.' . $instance},
-                                                $map_trunk_status{$self->{result}->{$sysTrunkStatus . '.' . $instance}},
-                                                $self->{result}->{$sysTrunkOperBw . '.' . $instance}));
+    my $trunks = $self->manage_selection(snmp => $options{snmp});
+    foreach (sort keys %$trunks) {
+        $self->{output}->output_add( 
+            long_msg => sprintf(
+                "'%s' [status: %s] [speed: %s]",
+                $_,
+                $trunks->{$_}->{sysTrunkStatus},
+                $trunks->{$_}->{sysTrunkOperBw}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List Trunks:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List trunks:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -113,15 +115,14 @@ sub disco_format {
 
 sub disco_show {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
-    $self->manage_selection(disco => 1);
-    foreach my $instance (sort @{$self->{trunks_selected}}) {        
-        my $name = $self->{result}->{$sysTrunkName . '.' . $instance};
-        my $status = $map_trunk_status{$self->{result}->{$sysTrunkStatus . '.' . $instance}};
-        my $speed = $self->{result}->{$sysTrunkOperBw . '.' . $instance};
-        
-        $self->{output}->add_disco_entry(name => $name, status => $status, speed => $speed);
+    my $trunks = $self->manage_selection(snmp => $options{snmp});
+    foreach (sort keys %$trunks) {        
+        $self->{output}->add_disco_entry(
+            name => $_,
+            status => $trunks->{$_}->{sysTrunkStatus},
+            speed => $trunks->{$_}->{sysTrunkOperBw}
+        );
     }
 }
 
@@ -135,13 +136,9 @@ List Trunks.
 
 =over 8
 
-=item B<--name>
+=item B<--filter-name>
 
-Set the trunk name.
-
-=item B<--regexp>
-
-Allows to use regexp to filter trunk name (with option --name).
+Filter by trunk name (regexp can be used).
 
 =back
 
