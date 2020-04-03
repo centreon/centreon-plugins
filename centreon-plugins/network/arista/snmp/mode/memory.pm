@@ -25,43 +25,142 @@ use base qw(snmp_standard::mode::storage);
 use strict;
 use warnings;
 
-sub default_storage_type {
+sub custom_usage_output {
     my ($self, %options) = @_;
-    
-    return '^(hrStorageRam|hrStorageFlashMemory)';
+
+    return sprintf(
+        'Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%) Free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+        $self->{result_values}->{prct_used_absolute},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
+        $self->{result_values}->{prct_free_absolute}
+    );
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'storage', type => 1, cb_prefix_output => 'prefix_storage_output', message_multiple => 'All memory spaces are ok' },
+        { name => 'ram', type => 0, skipped_code => { -10 => 1 } }
     ];
-    
-    $self->{maps_counters}->{storage} = [
+
+    $self->{maps_counters}->{ram} = [
         { label => 'usage', nlabel => 'memory.usage.bytes', set => {
-                key_values => [ { name => 'display' }, { name => 'used' }, { name => 'size' }, { name => 'allocation_units' } ],
-                closure_custom_calc => $self->can('custom_usage_calc'),
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
-                closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                perfdatas => [
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'Ram Used : %.2f %%',
+                perfdatas => [
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                      unit => '%' }
+                ]
+            }
+        },
+        { label => 'buffer', nlabel => 'memory.buffer.bytes', set => {
+                key_values => [ { name => 'buffer' } ],
+                output_template => 'Buffer: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'buffer_absolute', template => '%d',
+                      min => 0, unit => 'B' }
+                ]
+            }
+        },
+        { label => 'cached', nlabel => 'memory.cached.bytes', set => {
+                key_values => [ { name => 'cached' } ],
+                output_template => 'Cached: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'cached_absolute', template => '%d',
+                      min => 0, unit => 'B' }
+                ]
+            }
+        }
     ];
-}
-
-sub prefix_storage_output {
-    my ($self, %options) = @_;
-    
-    return "Memory space '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     return $self;
+}
+
+my $mapping = {
+    hrStorageDescr           => { oid => '.1.3.6.1.2.1.25.2.3.1.3' },
+    hrStorageAllocationUnits => { oid => '.1.3.6.1.2.1.25.2.3.1.4' },
+    hrStorageSize            => { oid => '.1.3.6.1.2.1.25.2.3.1.5' },
+    hrStorageUsed            => { oid => '.1.3.6.1.2.1.25.2.3.1.6' }
+};
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    my $storage_type_ram = '.1.3.6.1.2.1.25.2.1.2';
+    my $oid_hrstoragetype = '.1.3.6.1.2.1.25.2.3.1.2';
+
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_hrstoragetype, nothing_quit => 1);
+    my $storages = [];
+    foreach (keys %$snmp_result) {
+        next if ($snmp_result->{$_} ne $storage_type_ram);
+        /^$oid_hrstoragetype\.(.*)$/;
+        push @$storages, $1;        
+    }
+
+    $options{snmp}->load(
+        oids => [map($_->{oid}, values(%$mapping))], 
+        instances => $storages,
+        nothing_quit => 1
+    );
+    $snmp_result = $options{snmp}->get_leef();
+
+    my ($total, $used, $cached, $buffer);
+    #.1.3.6.1.2.1.25.2.3.1.3.1 = STRING: RAM
+    #.1.3.6.1.2.1.25.2.3.1.3.2 = STRING: RAM (Buffers)
+    #.1.3.6.1.2.1.25.2.3.1.3.3 = STRING: RAM (Cache)
+    foreach (@$storages) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        my $current = $result->{hrStorageUsed} * $result->{hrStorageAllocationUnits};
+        next if ($current < 0);
+        
+        if ($result->{hrStorageDescr} =~ /RAM.*?Cache/i) {
+            $cached = $current;
+        } elsif ($result->{hrStorageDescr} =~ /RAM.*?Buffers/i) {
+            $buffer = $current;
+        } elsif ($result->{hrStorageDescr} =~ /RAM/i) {
+            $used = $current;
+            $total = $result->{hrStorageSize} * $result->{hrStorageAllocationUnits};
+        }
+    }
+
+    $used -= (defined($cached) ? $cached : 0) - (defined($buffer) ? $buffer : 0);
+    $self->{ram} = {
+        total => $total,
+        cached => $cached,
+        buffer => $buffer,
+        used => $used,
+        free => $total - $used,
+        prct_used => $used * 100 / $total,
+        prct_free => 100 - ($used * 100 / $total)
+    };
 }
 
 1;
@@ -74,49 +173,11 @@ Check memory.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-
-=item B<--critical-usage>
-
-Threshold critical.
-
-=item B<--units>
-
-Units of thresholds (Default: '%') ('%', 'B').
-
-=item B<--free>
-
-Thresholds are on free space left.
-
-=item B<--storage>
-
-Set the storage (number expected) ex: 1, 2,... (empty means 'check all storage').
-
-=item B<--name>
-
-Allows to use storage name with option --storage instead of storage oid index.
-
-=item B<--regexp>
-
-Allows to use regexp to filter storage (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
-
-=item B<--reload-cache-time>
-
-Time in minutes before reloading cache file (default: 180).
-
-=item B<--show-cache>
-
-Display cache storage datas.
-
-=item B<--filter-storage-type>
-
-Filter storage types with a regexp (Default: '^(hrStorageRam|hrStorageFlashMemory)$').
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%),
+'buffer' (B), 'cached' (B).
 
 =back
 
