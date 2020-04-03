@@ -153,7 +153,6 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
     if (defined($self->{access_token})) {
         $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
     }
@@ -163,7 +162,13 @@ sub settings {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'azure_api_' . md5_hex($self->{subscription}) . '_' . md5_hex($self->{tenant}) . '_' . md5_hex($self->{client_id}));
+    my $has_cache_file = $options{statefile}->read(
+        statefile =>
+            'azure_api_' . 
+            md5_hex($self->{subscription}) . '_' . 
+            md5_hex($self->{tenant}) . '_' . 
+            md5_hex($self->{client_id})
+    );
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
 
@@ -180,7 +185,8 @@ sub get_access_token {
         my $content = $self->{http}->request(
             method => 'POST', query_form_post => $post_data,
             full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token',
-            hostname => ''
+            hostname => '',
+            header => [ 'Content-Type: application/x-www-form-urlencoded' ]
         );
 
         if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
@@ -220,10 +226,7 @@ sub request_api {
 
     $self->settings();
 
-    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
-
-    my $content = $self->{http}->request(%options);
-    
+    my $content = $self->{http}->request(%options);    
     if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
         $self->{output}->add_option_msg(short_msg => "Management endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
