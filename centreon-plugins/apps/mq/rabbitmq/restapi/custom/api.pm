@@ -25,7 +25,6 @@ use base qw(centreon::plugins::mode);
 use strict;
 use warnings;
 use centreon::plugins::http;
-use URI::Encode;
 use JSON::XS;
 
 sub new {
