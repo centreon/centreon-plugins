@@ -507,6 +507,22 @@ sub azure_list_sqldatabases {
     return $raw_results;
 }
 
+sub azure_get_log_analytics_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "monitor log-analytics query --workspace '$options{workspace_id}' --analytics-query \"$options{query}\" --timespan '$options{interval}'";
+    return $cmd_options; 
+}
+
+sub azure_get_log_analytics {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->azure_get_log_analytics_set_cmd(%options);
+    return $self->execute(cmd_options => $cmd_options);
+}
+
 1;
 
 __END__
