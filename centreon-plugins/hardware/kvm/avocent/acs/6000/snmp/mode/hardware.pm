@@ -27,26 +27,26 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_overload_check_section_option} = '^(psu)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
-    
+
     $self->{thresholds} = {
         psu => [
             ['statePowerOn', 'OK'],
             ['statePowerOff', 'CRITICAL'],
-            ['powerNotInstalled', 'OK'],
-        ],
+            ['powerNotInstalled', 'OK']
+        ]
     };
-    
+
     $self->{components_path} = 'hardware::kvm::avocent::acs::6000::snmp::mode::components';
     $self->{components_module} = ['psu'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -55,10 +55,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
