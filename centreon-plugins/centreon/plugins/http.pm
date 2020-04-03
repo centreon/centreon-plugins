@@ -82,6 +82,12 @@ sub add_header {
     $self->{add_headers}->{$options{key}} = $options{value};
 }
 
+sub remove_header {
+    my ($self, %options) = @_;
+
+    delete $self->{add_headers}->{$options{key}} if (defined($self->{add_headers}->{$options{key}}));
+}
+
 sub check_options {
     my ($self, %options) = @_;
 
