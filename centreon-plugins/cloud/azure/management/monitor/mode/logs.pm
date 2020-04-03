@@ -86,7 +86,7 @@ sub manage_selection {
     $self->{global} = { total => 0 };
     foreach my $table (@{$log_results->{tables}}) {
         foreach (@{$table->{rows}}) {
-            $self->{global}->{total} += $_->[2];
+            $self->{global}->{total} += $_->[0];
         }
     }
 }
