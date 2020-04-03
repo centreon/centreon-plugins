@@ -35,6 +35,7 @@ sub new {
         'hardware'      => 'hardware::kvm::avocent::acs::8000::snmp::mode::hardware',
         'load'          => 'snmp_standard::mode::loadaverage',
         'memory'        => 'snmp_standard::mode::memory',
+        'serial-ports'  => 'hardware::kvm::avocent::acs::8000::snmp::mode::serialports'
     );
 
     return $self;
