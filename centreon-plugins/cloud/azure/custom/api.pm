@@ -167,7 +167,8 @@ sub get_access_token {
             'azure_api_' . 
             md5_hex($self->{subscription}) . '_' . 
             md5_hex($self->{tenant}) . '_' . 
-            md5_hex($self->{client_id})
+            md5_hex($self->{client_id}) . '_' .
+            md5_hex($self->{management_endpoint})
     );
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
