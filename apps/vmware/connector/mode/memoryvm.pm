@@ -47,7 +47,7 @@ sub custom_usage_perfdata {
     my ($label, $nlabel) = ('used', $self->{nlabel});
     my $value_perf = $self->{result_values}->{used};
     if (defined($self->{instance_mode}->{option_results}->{free})) {
-        ($label, $nlabel) = ('free', 'vm.memory.free.bytes');
+        ($label, $nlabel) = ('free', 'vm.memory.' . $self->{result_values}->{label_ref} . '.free.bytes');
         $value_perf = $self->{result_values}->{free};
     }
 
@@ -58,7 +58,7 @@ sub custom_usage_perfdata {
     }
 
     $self->{output}->perfdata_add(
-        label => $label, unit => 'B',
+        label => $self->{result_values}->{label_ref} . '_' . $label, unit => 'B',
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
         nlabel => $nlabel,
         value => $value_perf,
@@ -88,12 +88,13 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Memory %s Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $self->{result_values}->{label_ref},
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    my $msg = sprintf(
+        'Memory %s Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $self->{result_values}->{label_ref},
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -107,7 +108,7 @@ sub custom_usage_calc {
         $self->{error_msg} = 'size is 0';
         return -20;
     }
-    
+
     $self->{result_values}->{used} = $options{new_datas}->{$self->{instance} . '_' . $self->{result_values}->{label_ref}};
     $self->{result_values}->{free} = $self->{result_values}->{total} - $self->{result_values}->{used};
     $self->{result_values}->{prct_used} = $self->{result_values}->{used} * 100 / $self->{result_values}->{total};
@@ -120,24 +121,21 @@ sub custom_overhead_output {
     my ($self, %options) = @_;
 
     my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{overhead_absolute});
-    my $msg = sprintf("Memory overhead: %s %s", $value, $unit);
-    return $msg;
+    return sprintf('Memory overhead: %s %s', $value, $unit);
 }
 
 sub custom_ballooning_output {
     my ($self, %options) = @_;
 
     my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{vmmemctl_absolute});
-    my $msg = sprintf("Memory ballooning: %s %s", $value, $unit);
-    return $msg;
+    return sprintf('Memory ballooning: %s %s', $value, $unit);
 }
 
 sub custom_shared_output {
     my ($self, %options) = @_;
 
     my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{shared_absolute});
-    my $msg = sprintf("Memory shared: %s %s", $value, $unit);
-    return $msg;
+    return sprintf('Memory shared: %s %s', $value, $unit);
 }
 
 sub set_counters {
@@ -162,30 +160,30 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{global_consumed} = [
-        { label => 'consumed', nlabel => 'vm.memory.usage.bytes', set => {
+        { label => 'consumed', nlabel => 'vm.memory.consumed.usage.bytes', set => {
                 key_values => [ { name => 'consumed' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'consumed' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
     $self->{maps_counters}->{global_active} = [
-        { label => 'active', nlabel => 'vm.memory.active.bytes', set => {
+        { label => 'active', nlabel => 'vm.memory.active.usage.bytes', set => {
                 key_values => [ { name => 'active' }, { name => 'total' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'active' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
     $self->{maps_counters}->{global_overhead} = [
         { label => 'overhead', nlabel => 'vm.memory.overhead.bytes', set => {
@@ -193,10 +191,10 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_overhead_output'),
                 perfdatas => [
                     { label => 'overhead', value => 'overhead_absolute', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{global_vmmemctl} = [
         { label => 'ballooning', nlabel => 'vm.memory.ballooning.bytes', set => {
@@ -204,10 +202,10 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_ballooning_output'),
                 perfdatas => [
                     { label => 'ballooning', value => 'vmmemctl_absolute', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{global_shared} = [
         { label => 'shared', nlabel => 'vm.memory.shared.bytes', set => {
@@ -215,10 +213,10 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_shared_output'),
                 perfdatas => [
                     { label => 'shared', value => 'shared_absolute', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -230,7 +228,7 @@ sub prefix_vm_output {
         $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
     }
     $msg .= ' : ';
-    
+
     return $msg;
 }
 
@@ -241,7 +239,7 @@ sub vm_long_output {
     if (defined($options{instance_value}->{config_annotation})) {
         $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
     }
-    
+
     return $msg;
 }
 
@@ -251,20 +249,20 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "vm-hostname:s"         => { name => 'vm_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "scope-host:s"          => { name => 'scope_host' },
-        "filter-description:s"  => { name => 'filter_description' },
-        "filter-os:s"           => { name => 'filter_os' },
-        "filter-uuid:s"         => { name => 'filter_uuid' },
-        "display-description"   => { name => 'display_description' },
-        "units:s"               => { name => 'units', default => '%' },
-        "free"                  => { name => 'free' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'vm-hostname:s'         => { name => 'vm_hostname' },
+        'filter'                => { name => 'filter' },
+        'scope-datacenter:s'    => { name => 'scope_datacenter' },
+        'scope-cluster:s'       => { name => 'scope_cluster' },
+        'scope-host:s'          => { name => 'scope_host' },
+        'filter-description:s'  => { name => 'filter_description' },
+        'filter-os:s'           => { name => 'filter_os' },
+        'filter-uuid:s'         => { name => 'filter_uuid' },
+        'display-description'   => { name => 'display_description' },
+        'units:s'               => { name => 'units', default => '%' },
+        'free'                  => { name => 'free' },
+        'unknown-status:s'      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
+        'warning-status:s'      => { name => 'warning_status', default => '' },
+        'critical-status:s'     => { name => 'critical_status', default => '' },
     });
     
     return $self;
@@ -281,19 +279,21 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{vm} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'memvm');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'memvm'
+    );
 
     foreach my $vm_id (keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
-        
+
         $self->{vm}->{$vm_name} = { display => $vm_name, 
             global => {
                 connection_state => $response->{data}->{$vm_id}->{connection_state},
                 power_state => $response->{data}->{$vm_id}->{power_state},
             },
         };
-        
+
         foreach (('consumed', 'active', 'overhead', 'vmmemctl', 'shared')) {
             next if (!defined($response->{data}->{$vm_id}->{'mem.' . $_ . '.average'}));
             $self->{vm}->{$vm_name}->{'global_' . $_} = {
@@ -301,7 +301,7 @@ sub manage_selection {
                 total => $response->{data}->{$vm_id}->{memory_size}
             };
         }
-        
+
         if (defined($self->{option_results}->{display_description})) {
             $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
         }
