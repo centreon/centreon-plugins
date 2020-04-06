@@ -1,3 +1,6 @@
+2020-04-06 Quentin Garnier <qgarnier@centreon.com> - 3.1.2
+ * Enhancement: add drs and das config enable 'cluster-status'
+
 2020-02-20 Quentin Garnier <qgarnier@centreon.com> - 3.1.1
  * Fix: discovery folders management
  * Fix: no virtual machines running for 'datastore-vm'

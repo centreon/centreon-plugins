@@ -38,7 +38,7 @@ sub checkArgs {
     my ($self, %options) = @_;
 
     if (defined($options{arguments}->{cluster_name}) && $options{arguments}->{cluster_name} eq '') {
-        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: cluster name cannot be null");
+        centreon::vmware::common::set_response(code => 100, short_message => 'Argument error: cluster name cannot be null');
         return 1;
     }
 
@@ -50,7 +50,7 @@ sub run {
 
     my $vsan_cluster_health;
     my $filters = $self->build_filter(label => 'name', search_option => 'cluster_name', is_regexp => 'filter');
-    my @properties = ('name', 'summary.overallStatus');
+    my @properties = ('name', 'summary.overallStatus', 'configuration');
     if ($self->is_vsan_enabled()) {
         $vsan_cluster_health = centreon::vmware::common::vsan_create_mo_view(
             vsan_vim => $self->{connector}->{vsan_vim},
@@ -59,15 +59,17 @@ sub run {
         );
         push @properties, 'configurationEx';
     }
-    my $views = centreon::vmware::common::search_entities(command => $self, view_type => 'ComputeResource', properties => \@properties, filter => $filters);
+    my $views = centreon::vmware::common::search_entities(command => $self, view_type => 'ClusterComputeResource', properties => \@properties, filter => $filters);
     return if (!defined($views));
-    
+
     my $data = {};
     foreach my $view (@$views) {
         my $entity_value = $view->{mo_ref}->{value};
         $data->{$entity_value} = {
             name => $view->{name},
-            overall_status => $view->{'summary.overallStatus'}->val
+            overall_status => $view->{'summary.overallStatus'}->val,
+            ha_enabled => (defined($view->{configuration}->{dasConfig}->{enabled}) && $view->{configuration}->{dasConfig}->{enabled} =~ /^1|true/i) ? 'true' : 'false',
+            drs_enabled => (defined($view->{configuration}->{drsConfig}->{enabled}) && $view->{configuration}->{drsConfig}->{enabled} =~ /^1|true/i) ? 'true' : 'false'
         };
 
         if (defined($view->{configurationEx}->{vsanConfigInfo}) && $view->{configurationEx}->{vsanConfigInfo}->enabled == 1) {
@@ -75,12 +77,12 @@ sub run {
                 cluster => $view,
                 includeObjUuids => 'false',
                 fetchFromCache =>  'false',
-                fields => ['clusterStatus'],
+                fields => ['clusterStatus']
             );
             $data->{$entity_value}->{vsan_cluster_status} = $summary->clusterStatus->status;
         }
     }
-    
+
     centreon::vmware::common::set_response(data => $data);
 }
 
