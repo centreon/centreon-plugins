@@ -28,20 +28,20 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(%options);
     bless $self, $class;
-    
+
     $self->{commandName} = 'nethost';
-    
+
     return $self;
 }
 
 sub checkArgs {
     my ($self, %options) = @_;
 
-    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq "") {
-        centreon::vmware::common::set_response(code => 100, short_message => "Argument error: esx hostname cannot be null");
+    if (defined($options{arguments}->{esx_hostname}) && $options{arguments}->{esx_hostname} eq '') {
+        centreon::vmware::common::set_response(code => 100, short_message => 'Argument error: esx hostname cannot be null');
         return 1;
     }
-    
+
     return 0;
 }
 
@@ -61,7 +61,7 @@ sub run {
     }
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'HostSystem', properties => \@properties, filter => $filters);
     return if (!defined($result));
-  
+
     my $data = {};
     my $pnic_def_up = {};
     my $query_perfs = [];
@@ -73,7 +73,7 @@ sub run {
 
         $pnic_def_up->{$entity_value} = {};
         my $instances = [];
-        
+
         # Get Name from vswitch
         if (defined($entity_view->{'config.network.vswitch'})) {
             foreach (@{$entity_view->{'config.network.vswitch'}}) {
@@ -85,15 +85,16 @@ sub run {
         # Get Name from proxySwitch
         if (defined($entity_view->{'config.network.proxySwitch'})) {
             foreach (@{$entity_view->{'config.network.proxySwitch'}}) {
-                $data->{$entity_value}->{proxyswitch}->{$_->{name}} = { pnic => [] };
+                my $name = defined($_->{name}) ? $_->{name} : $_->{key};
+                $data->{$entity_value}->{proxyswitch}->{$name} = { pnic => [] };
                 next if (!defined($_->{pnic}));
-                push @{$data->{$entity_value}->{proxyswitch}->{$_->{name}}->{pnic}}, @{$_->{pnic}};
+                push @{$data->{$entity_value}->{proxyswitch}->{$name}->{pnic}}, @{$_->{pnic}};
             }
         }
 
         foreach (@{$entity_view->{'config.network.pnic'}}) {
             $data->{$entity_value}->{pnic}->{$_->device} = { speed => undef, status => 'down', key => $_->{key} };
-            
+
             $number_nic++;
             if (defined($_->linkSpeed)) {
                 $data->{$entity_value}->{pnic}->{$_->device}->{speed} = $_->linkSpeed->speedMb;
@@ -105,29 +106,31 @@ sub run {
         }
 
         push @$query_perfs, {
-                              entity => $entity_view,
-                              metrics => [ 
-                                {label => 'net.received.average', instances => $instances},
-                                {label => 'net.transmitted.average', instances => $instances},
-                                {label => 'net.droppedRx.summation', instances => $instances},
-                                {label => 'net.droppedTx.summation', instances => $instances},
-                                {label => 'net.packetsRx.summation', instances => $instances},
-                                {label => 'net.packetsTx.summation', instances => $instances}
-                              ]
-                             };
+            entity => $entity_view,
+            metrics => [ 
+                {label => 'net.received.average', instances => $instances},
+                {label => 'net.transmitted.average', instances => $instances},
+                {label => 'net.droppedRx.summation', instances => $instances},
+                {label => 'net.droppedTx.summation', instances => $instances},
+                {label => 'net.packetsRx.summation', instances => $instances},
+                {label => 'net.packetsTx.summation', instances => $instances}
+            ]
+        };
     }  
-    
+
     # Nothing to retrieve. problem before already.
     return if (scalar(@$query_perfs) == 0);
-        
-    my $values = centreon::vmware::common::generic_performance_values_historic($self->{connector},
-                        undef, 
-                        $query_perfs,
-                        $self->{connector}->{perfcounter_speriod},
-                        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
-                        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1);
+
+    my $values = centreon::vmware::common::generic_performance_values_historic(
+        $self->{connector},
+        undef, 
+        $query_perfs,
+        $self->{connector}->{perfcounter_speriod},
+        sampling_period => $self->{sampling_period}, time_shift => $self->{time_shift},
+        skip_undef_counter => 1, multiples => 1, multiples_result_by_entity => 1
+    );
     return if (centreon::vmware::common::performance_errors($self->{connector}, $values) == 1);
-    
+
     foreach my $entity_view (@$result) {
         my $entity_value = $entity_view->{mo_ref}->{value};
 
@@ -139,7 +142,7 @@ sub run {
             my $packets_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.packetsTx.summation'}->{key} . ":" . $_}));
             my $dropped_in = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.droppedRx.summation'}->{key} . ":" . $_}));    
             my $dropped_out = centreon::vmware::common::simplify_number(centreon::vmware::common::convert_number($values->{$entity_value}->{$self->{connector}->{perfcounter_cache}->{'net.droppedTx.summation'}->{key} . ":" . $_}));
-            
+
             $data->{$entity_value}->{pnic}->{$_}->{'net.received.average'} = $traffic_in;
             $data->{$entity_value}->{pnic}->{$_}->{'net.transmitted.average'} = $traffic_out;
             $data->{$entity_value}->{pnic}->{$_}->{'net.packetsRx.summation'} = $packets_in;
@@ -148,7 +151,7 @@ sub run {
             $data->{$entity_value}->{pnic}->{$_}->{'net.droppedTx.summation'} = $dropped_out;
         }
     }
-    
+
     centreon::vmware::common::set_response(data => $data);
 }
 
