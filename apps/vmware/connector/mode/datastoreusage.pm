@@ -137,7 +137,7 @@ sub set_counters {
                       min => 0, max => 'total_space', label_extra_instance => 1 },
                 ],
             }
-        },
+        }
     ];
 }
 
@@ -153,14 +153,14 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'datastore-name:s'      => { name => 'datastore_name' },
-        'filter'                => { name => 'filter' },
-        'scope-datacenter:s'    => { name => 'scope_datacenter' },
-        'units:s'               => { name => 'units', default => '%' },
-        'free'                  => { name => 'free' },
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
-        'warning-status:s'      => { name => 'warning_status', default => '' },
-        'critical-status:s'     => { name => 'critical_status', default => '' },
+        'datastore-name:s'   => { name => 'datastore_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'units:s'            => { name => 'units', default => '%' },
+        'free'               => { name => 'free' },
+        'unknown-status:s'   => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '' }
     });
     
     return $self;
@@ -172,8 +172,12 @@ sub check_options {
     # Compatibility
     $self->compat_threshold_counter(%options,
         compat => {
-            th => [ ['usage', { free => 'usage-free', prct => 'usage-prct'} ], [ 'datastore.space.usage.bytes', { free => 'datastore.space.free.bytes', prct => 'datastore.space.usage.percentage' } ] ],
-            units => $options{option_results}->{units}, free => $options{option_results}->{free}
+            th => [
+                [ 'usage', { free => 'usage-free', prct => 'usage-prct'} ],
+                [ 'instance-datastore-space-usage-bytes', { free => 'instance-datastore-space-free-bytes', prct => 'instance-datastore-space-usage-percentage' } ]
+            ],
+            units => $options{option_results}->{units},
+            free => $options{option_results}->{free}
         }
     );
 
