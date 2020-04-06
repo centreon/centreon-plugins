@@ -112,21 +112,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'cluster-name:s'        => { name => 'cluster_name' },
-        'filter'                => { name => 'filter' },
-        'scope-datacenter:s'    => { name => 'scope_datacenter' },
-    });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    $options{options}->add_options(arguments => { 
+        'cluster-name:s'     => { name => 'cluster_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
+    });
+
+    return $self;
 }
 
 sub manage_selection {
