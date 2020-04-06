@@ -48,6 +48,7 @@ sub custom_linkstatus_output {
 sub custom_linkstatus_calc {
     my ($self, %options) = @_;
 
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{link_status} = $options{new_datas}->{$self->{instance} . '_status'};
     return 0;
 }
