@@ -63,7 +63,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     $self->{maps_counters}->{global_cpu} = [
         { label => 'total-cpu', nlabel => 'host.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu_average' } ],
