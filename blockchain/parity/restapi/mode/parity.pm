@@ -24,108 +24,18 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Cache::File;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-#        { name => 'global', cb_prefix_output => 'prefix_module_output', type => 0 },
-        { name => 'node', cb_prefix_output => 'prefix_module_output', type => 0 },
-        { name => 'mempool', cb_prefix_output => 'prefix_module_output', type => 0 },
-        { name => 'network', cb_prefix_output => 'prefix_module_output', type => 0 }
-    ];
-
-    $self->{maps_counters}->{global} = [
-        { label => 'parity_version', nlabel => 'parity.version', threshold => 0, set => {
-                key_values => [ { name => 'parity_version' } ],
-                output_template => "Parity version is: %s ",
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => sub { return 0; }
-                # perfdatas => [
-                #     { label => 'parity_version', value => 'parity_version_absolute', template => '%s', min => 0 }
-                # ],                
-            }
-        },
-        { label => 'parity_version_hash', nlabel => 'parity.version.hash', set => {
-                key_values => [ { name => 'parity_version_hash' } ],
-                output_template => "Parity version hash is: %s ",
-                closure_custom_perfdata => sub { return 0; }
-                # perfdatas => [
-                #     { label => 'parity_version_hash', value => 'parity_version_hash_absolute', template => '%s', min => 0 }
-                # ],                
-            }
-        },
-        { label => 'chain_name', nlabel => 'parity.chain.name', set => {
-                key_values => [ { name => 'chain_name' } ],
-                output_template => "Chain name is: %s ",
-                closure_custom_perfdata => sub { return 0; }
-                # perfdatas => [
-                #     { label => 'chain_name', value => 'chain_name_absolute', template => '%s', min => 0 }
-                # ],                
-            }
-        },
-    ];
-
-    $self->{maps_counters}->{node} = [
-        { label => 'enode', nlabel => 'parity.node.enode.uri', threshold => 0, set => {
-                key_values => [ { name => 'enode' } ],
-                output_template => "Node enode URI: %s ",
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => sub { return 0; }
-                # perfdatas => [
-                #     { label => 'enode', value => 'enode_absolute', template => '%s', min => 0 }
-                # ],                
-            }
-        },
-        { label => 'node_name', nlabel => 'parity.node.name', set => {
-                key_values => [ { name => 'node_name' } ],
-                output_template => "Node name: %s ",
-                closure_custom_perfdata => sub { return 0; }
-                # perfdatas => [
-                #     { label => 'node_name', value => 'node_name_absolute', template => '%s', min => 0 }
-                # ],                
-            }
-        }
-    ];
-
-    $self->{maps_counters}->{network} = [
-        { label => 'peers_connected', nlabel => 'parity.peers.connected', set => {
-                key_values => [ { name => 'peers_connected' } ],
-                output_template => "Number of connected peers: %d ",
-                perfdatas => [
-                    { label => 'peers_connected', value => 'peers_connected_absolute', template => '%d', min => 0 }
-                ],                
-            }
-        },
-        { label => 'peers_max', nlabel => 'parity.peers.max.connected', set => {
-                key_values => [ { name => 'peers_max' } ],
-                output_template => "Maximum number of connected peers: %d ",
-                perfdatas => [
-                    { label => 'peers_max', value => 'peers_max_absolute', template => '%d', min => 0 }
-                ],                
-            }
-        },
-        { label => 'peers', nlabel => 'parity.peers', set => {
-                key_values => [ { name => 'peers' } ],
-                output_template => "Peers: %d ",
-                perfdatas => [
-                    { label => 'peers', value => 'peers_absolute', template => '%d', min => 0 }
-                ],                
-            }
-        }
-    ];
+        { name => 'mempool', cb_prefix_output => 'prefix_module_output', type => 0 }
+    ];  
 
     $self->{maps_counters}->{mempool} = [
-        { label => 'pending_transactions', nlabel => 'parity.pending.transactions', set => {
-                key_values => [ { name => 'pending_transactions' } ],
-                output_template => "Pending transactions: %d ",
-                perfdatas => [
-                    { label => 'pending_transactions', value => 'pending_transactions_absolute', template => '%d', min => 0 }
-                ],                
-            }
-        },
-        { label => 'mempool', nlabel => 'parity.mempol.capacity', set => {
+        { label => 'mempool', nlabel => 'parity.mempol.usage', set => {
                 key_values => [ { name => 'mempool' } ],
                 output_template => "Mempool: %d %% ",
                 perfdatas => [
@@ -172,35 +82,46 @@ sub manage_selection {
                             { method => 'parity_netPeers', params => [], id => "4", jsonrpc => "2.0" },
                             { method => 'parity_enode', params => [], id => "5", jsonrpc => "2.0" },
                             { method => 'parity_nodeName', params => [], id => "6", jsonrpc => "2.0" },
-                            { method => 'parity_transactionsLimit', params => [], id => "7", jsonrpc => "2.0" } ]; # parity_transactionsLimit could be done once, at the beginning of the process 
+                            { method => 'parity_transactionsLimit', params => [], id => "7", jsonrpc => "2.0" } ]; #TO CHECK parity_transactionsLimit could be done once, at the beginning of the process 
                             
-
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
+
+    use Data::Dumper;
+    # print Dumper($result);
 
     # Parity version construction
     my $res_parity_version = @{$result}[0]->{result}->{version}->{major} . '.' . @{$result}[0]->{result}->{version}->{minor} .  '.' . @{$result}[0]->{result}->{version}->{patch};
 
+    # Alerts management 
+    my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
+
+    if (my $cached_version = $cache->get('parity_version')) {
+        if ($res_parity_version ne $cached_version) {
+            #alert
+        }
+    } else {
+        $cache->set('parity_version', $res_parity_version);
+    }
+
+    if (my $cached_name = $cache->get('chain_name')) {
+        if ($cached_name ne @{$result}[1]->{result}) {
+            #alert
+        }
+    } else {
+        $cache->set('chain_name', @{$result}[1]->{result});
+    }
     
     # use Data::Dumper;
-    # print Dumper($res_parity_version);
+    # print Dumper($result);
 
-    $self->{output}->output_add(long_msg => "[config] chain name: " . @{$result}[1]->{result} . " parity version: " . $res_parity_version . " version_hash: " . @{$result}[0]->{result}->{hash},
-                                severity => 'OK');
+    $self->{output}->output_add(long_msg => "[config] chain name: " . @{$result}[1]->{result} . " | parity version: " . $res_parity_version . " | version_hash: " 
+                                            . @{$result}[0]->{result}->{hash}, severity => 'OK');
+    $self->{output}->output_add(long_msg => "[Network] peers_connected: " . @{$result}[3]->{result}->{connected} . " | peers_max: " . @{$result}[3]->{result}->{max} . " | peers: " 
+                                            . scalar(@{$$result[3]->{result}->{peers}}), severity => 'OK');
+    $self->{output}->output_add(long_msg => "[Node] node_name: " . @{$result}[5]->{result} . " | enode: " . @{$result}[4]->{result} , severity => 'OK');
+    $self->{output}->output_add(long_msg => "[Node] pending_transactions: " . scalar(@{$$result[2]->{result}}), severity => 'OK');
 
-#    $self->{global} =  { parity_version => $res_parity_version,
-#                         parity_version_hash => @{$result}[0]->{result}->{hash},
-#                         chain_name => @{$result}[1]->{result} };
-
-#    $self->{node}    = { enode => @{$result}[4]->{result},
-#                         node_name => @{$result}[5]->{result} };
-
-    $self->{network} = { peers_connected => @{$result}[3]->{result}->{connected},
-                         peers_max => @{$result}[3]->{result}->{max},
-                         peers => length(@{$result}[3]->{result}->{peers}) };
-
-    $self->{mempool} = { pending_transactions => length(@{$result}[2]->{result}),
-                         mempool => @{$result}[2]->{result} / @{$result}[6]->{result} * 100 };
-
+    $self->{mempool} = { mempool => scalar(@{$$result[2]->{result}}) / @{$result}[6]->{result} * 100 }; #TO CHECK division entière 
 }
 
 1;
