@@ -28,7 +28,7 @@ use Digest::SHA 'sha1_hex';
 
 my %map_ovh_type = (
     OVH_API_EU => 'https://eu.api.ovh.com/1.0',
-    OVH_API_CA => 'https://ca.api.ovh.com/1.0',
+    OVH_API_CA => 'https://ca.api.ovh.com/1.0'
 );
 
 sub new {
@@ -44,14 +44,14 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
-    
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "ovh-type:s@"                 => { name => 'ovh_type' },
-            "ovh-application-key:s@"      => { name => 'ovh_application_key' },
-            "ovh-application-secret:s@"   => { name => 'ovh_application_secret' },
-            "ovh-consumer-key:s@"         => { name => 'ovh_consumer_key' },
-            "timeout:s@"                  => { name => 'timeout' },
+            'ovh-type:s@'               => { name => 'ovh_type' },
+            'ovh-application-key:s@'    => { name => 'ovh_application_key' },
+            'ovh-application-secret:s@' => { name => 'ovh_application_secret' },
+            'ovh-consumer-key:s@'       => { name => 'ovh_consumer_key' },
+            'timeout:s@'                => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -61,23 +61,17 @@ sub new {
     $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
-
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
     
-    # Manage default value
     foreach (keys %{$options{default}}) {
         if ($_ eq $self->{mode}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
@@ -117,19 +111,19 @@ sub check_options {
         scalar(@{$self->{option_results}->{ovh_application_key}}) == 0) {
         return 0;
     }
-    
+
     return 1;
 }
 
 sub build_options_for_httplib {
     my ($self, %options) = @_;
-  
+
     $self->{option_results}->{timeout} = $self->{timeout};
 }
 
 sub settings {
     my ($self, %options) = @_;    
-    
+
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'X-Ovh-Application', value => $self->{ovh_application_key});
     if (!defined($options{no_signature}) || $options{no_signature} == 0) {
@@ -149,7 +143,7 @@ sub settings {
             $self->{http}->add_header(key => 'Content-type', value => 'application/json');
             $self->{option_results}->{query_form_post} = $content;
         }
-       
+
         $self->{http}->add_header(key => 'X-Ovh-Consumer', value => $self->{ovh_consumer_key});
         $self->{http}->add_header(key => 'X-Ovh-Timestamp', value => $now);
         $self->{http}->add_header(key => 'X-Ovh-Signature', value => '$1$' . sha1_hex(join('+', (
@@ -172,7 +166,7 @@ sub time_delta {
         my $response = $self->get(path => '/auth/time', no_signature => 1, no_decode => 1);
         $self->{time_delta} = $response - time();
     }
-    
+
     return $self->{time_delta};
 }
 
@@ -181,14 +175,18 @@ sub get {
 
     $self->settings(%options);
 
-    my $response = $self->{http}->request(full_url => $map_ovh_type{uc($self->{ovh_type})} . $options{path},
-                                          hostname => '', critical_status => '', warning_status => '');
+    my $response = $self->{http}->request(
+        full_url => $map_ovh_type{uc($self->{ovh_type})} . $options{path},
+        hostname => '',
+        critical_status => '',
+        warning_status => ''
+    );
     my ($client_warning) = $self->{http}->get_header(name => 'Client-Warning');
     if (defined($client_warning) && $client_warning eq 'Internal response') {
         $self->{output}->add_option_msg(short_msg => "Internal LWP::UserAgent error: $response");
         $self->{output}->option_exit();
     }
-    
+
     if (defined($options{no_decode}) && $options{no_decode} == 1) {
         return $response;
     }
@@ -201,7 +199,7 @@ sub get {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
-    
+
     return $content;
 }
 
