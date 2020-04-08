@@ -43,15 +43,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{network} = [
-        { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'listening' } ],
-                closure_custom_calc => \&catalog_status_calc,
-                closure_custom_output => $self->can('custom_status_output'),
-                closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
-            }
-        },
-        { label => 'peers', nlabel => 'parity.network.peers.count', set => {
+       { label => 'peers', nlabel => 'parity.network.peers.count', set => {
                 key_values => [ { name => 'peers' } ],
                 output_template => "connected peers: %s ",
                 perfdatas => [
@@ -96,9 +88,24 @@ sub manage_selection {
 
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
 
-    $self->{network} = { listening => @{$result}[0]->{result},
-                         peers => hex(@{$result}[1]->{result}) };
+    my $peer_count = hex(@{$result}[1]->{result});
 
+    # Alerts management 
+    my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
+
+    if (my $cached_count = $cache->get('peers_count')) {
+        if ($peer_count < $cached_count) {
+            #alert
+        } elsif ($peer_count > $cached_count) {
+            #alert
+        }
+    } else {
+        $cache->set('peers_count', $peer_count);
+    }
+
+    $self->{network} = { peers => hex(@{$result}[1]->{result}) };
+
+    $self->{output}->output_add(long_msg => "[Node] is_listening: " . $peer_count, severity => 'OK');
 }
 
 1;
