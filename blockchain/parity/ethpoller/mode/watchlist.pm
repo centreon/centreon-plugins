@@ -24,12 +24,11 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Cache::File;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -42,13 +41,16 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = "parity_ethpoller_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
     my $results = $options{custom}->request_api(url_path => '/watchlist');
 
     # use Data::Dumper;
     # print Dumper($results);
 
     # Alerts management 
-    my $cache = Cache::File->new( cache_root => './parity-eth-poller-cache' );
+    # my $cache = Cache::File->new( cache_root => './parity-eth-poller-cache' );
 
     foreach my $account (@{$results->{Accounts}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -84,13 +86,13 @@ sub manage_selection {
                             ' | timestamp: ' . localtime(hex($contract->{last_update}->{timestamp})) . ' | blockNumber: ' . $contract->{last_update}->{blockNumber} . 
                             ' | sender: ' . $contract->{last_update}->{sender} . ' | value: ' . $contract->{last_update}->{value} );
 
-        if (my $cached_balance = $cache->get('contract_balance_' . $contract->{id})) {
-            if ($cached_balance != $contract->{balance}) {
-                #alert
-            }
-        } else {
-            $cache->set('contract_balance_' . $contract->{id}, $contract->{balance});
-        }
+        # if (my $cached_balance = $cache->get('contract_balance_' . $contract->{id})) {
+        #     if ($cached_balance != $contract->{balance}) {
+        #         #alert
+        #     }
+        # } else {
+        #     $cache->set('contract_balance_' . $contract->{id}, $contract->{balance});
+        # }
 
     }
 
