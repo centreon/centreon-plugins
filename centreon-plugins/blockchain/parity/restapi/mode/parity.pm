@@ -117,12 +117,12 @@ sub manage_selection {
     # use Data::Dumper;
     # print Dumper($result);
 
-    $self->{output}->output_add(long_msg => "[config] chain name: " . @{$result}[1]->{result} . " | parity version: " . $res_parity_version . " | version_hash: " 
-                                            . @{$result}[0]->{result}->{hash}, severity => 'OK');
-    $self->{output}->output_add(long_msg => "[Network] peers_connected: " . @{$result}[3]->{result}->{connected} . " | peers_max: " . @{$result}[3]->{result}->{max} . " | peers: " 
-                                            . scalar(@{$$result[3]->{result}->{peers}}), severity => 'OK');
-    $self->{output}->output_add(long_msg => "[Node] node_name: " . @{$result}[5]->{result} . " | enode: " . @{$result}[4]->{result} , severity => 'OK');
-    $self->{output}->output_add(long_msg => "[Node] pending_transactions: " . scalar(@{$$result[2]->{result}}), severity => 'OK');
+    $self->{output}->output_add(long_msg => "Config: [chain name: " . @{$result}[1]->{result} . "] [parity version: " . $res_parity_version . "] [version_hash: " 
+                                            . @{$result}[0]->{result}->{hash}  . "]", severity => 'OK');
+    $self->{output}->output_add(long_msg => "Network: [peers_connected: " . @{$result}[3]->{result}->{connected} . "] [peers_max: " . @{$result}[3]->{result}->{max} . "] [peers: " 
+                                            . scalar(@{$$result[3]->{result}->{peers}})  . "]", severity => 'OK');
+    $self->{output}->output_add(long_msg => "Node: [node_name: " . @{$result}[5]->{result} . "] [enode: " . @{$result}[4]->{result}  . "]", severity => 'OK');
+    $self->{output}->output_add(long_msg => "Mempool: [pending_transactions: " . scalar(@{$$result[2]->{result}})  . "]", severity => 'OK');
 
     $self->{mempool} = { mempool => scalar(@{$$result[2]->{result}}) / @{$result}[6]->{result} * 100 }; #TO CHECK division entière 
 }
