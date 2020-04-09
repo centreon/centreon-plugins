@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Cache::File;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
@@ -48,14 +49,6 @@ sub manage_selection {
 
     # Alerts management 
     my $cache = Cache::File->new( cache_root => './parity-eth-poller-cache' );
-
-    if (my $cached_balance = $cache->get('contract_balance')) {
-        if ($cached_balance != $contract->{balance}) {
-            #alert
-        }
-    } else {
-        $cache->set('contract_balance', $contract->{balance});
-    }
 
     foreach my $account (@{$results->{Accounts}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -90,6 +83,15 @@ sub manage_selection {
         $self->{output}->output_add(severity  => 'OK', long_msg => '[Contract ' . $contract->{id} . ']: label: ' . $contract->{label} . ' | balance: ' . $contract->{balance} .
                             ' | timestamp: ' . localtime(hex($contract->{last_update}->{timestamp})) . ' | blockNumber: ' . $contract->{last_update}->{blockNumber} . 
                             ' | sender: ' . $contract->{last_update}->{sender} . ' | value: ' . $contract->{last_update}->{value} );
+
+        if (my $cached_balance = $cache->get('contract_balance_' . $contract->{id})) {
+            if ($cached_balance != $contract->{balance}) {
+                #alert
+            }
+        } else {
+            $cache->set('contract_balance_' . $contract->{id}, $contract->{balance});
+        }
+
     }
 
     foreach my $function (@{$results->{Functions}}) {
