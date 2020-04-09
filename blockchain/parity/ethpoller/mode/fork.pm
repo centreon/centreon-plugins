@@ -65,9 +65,9 @@ sub manage_selection {
     #     $cache->set('fork_timestamp', $res_timestamp);
     # }
 
-    $self->{output}->output_add(severity  => 'OK', long_msg => '[Fork]: fork_timestamp: ' . $res_timestamp . 
-                            ' | fork_occurence: ' . $result->{occurence} . ' | fork_blockNumber: ' . $result->{last_update}->{blockNumber} . 
-                            ' | fork_in: ' . $result->{last_update}->{in} . ' | fork_out: ' . $result->{last_update}->{out} );
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Fork: [fork_timestamp: ' . $res_timestamp . 
+                            '] [fork_occurence: ' . $result->{occurence} . '] [fork_blockNumber: ' . $result->{last_update}->{blockNumber} . 
+                            '] [fork_in: ' . $result->{last_update}->{in} . '] [fork_out: ' . $result->{last_update}->{out} . ']');
 
 }
 

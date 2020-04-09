@@ -180,14 +180,14 @@ sub manage_selection {
                         block_uncles => scalar(@{$$result[5]->{result}->{uncles}}), 
                         block_transactions => scalar(@{$$result[5]->{result}->{transactions}})};
 
-    $self->{output}->output_add(severity  => 'OK', long_msg => '[Node status] is_mining: ' . @{$result}[0]->{result} . ' | sync_start: ' . $res_startingBlock . 
-                                                                ' | sync_current: ' . $res_currentBlock . ' | sync_highest: ' . $res_highestBlock . ' | sync: ' . $res_sync . '%%');
-    $self->{output}->output_add(severity  => 'OK', long_msg => '[Client] coinbase: ' . @{$result}[1]->{result});
-    $self->{output}->output_add(severity  => 'OK', long_msg => '[Global] hashrate: ' . hex(@{$result}[3]->{result}) . 
-                                                                ' | block_number: ' . (defined @{$result}[4]->{result} ? hex(@{$result}[4]->{result}) : 0));
-    $self->{output}->output_add(severity  => 'OK', long_msg => '[Last block] block_time: ' . localtime(hex(@{$result}[5]->{result}->{timestamp})) . ' | block_gas_limit: ' . hex(@{$result}[5]->{result}->{gasLimit}) . 
-                                                                ' | block_miner: ' . @{$result}[5]->{result}->{miner} . ' | block_hash: ' . @{$result}[5]->{result}->{hash} . 
-                                                                ' | last_block_number: ' . hex(@{$result}[5]->{result}->{number}));
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Node status: [is_mining: ' . @{$result}[0]->{result} . '] [sync_start: ' . $res_startingBlock . 
+                                                                '] [sync_current: ' . $res_currentBlock . '] [sync_highest: ' . $res_highestBlock . '] [sync: ' . $res_sync . '%%]');
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Client: [coinbase: ' . @{$result}[1]->{result} . ']');
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Global: [hashrate: ' . hex(@{$result}[3]->{result}) . 
+                                                                '] [block_number: ' . (defined @{$result}[4]->{result} ? hex(@{$result}[4]->{result}) : 0) . ']');
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block: [block_time: ' . localtime(hex(@{$result}[5]->{result}->{timestamp})) . '] [block_gas_limit: ' . hex(@{$result}[5]->{result}->{gasLimit}) . 
+                                                                '] [block_miner: ' . @{$result}[5]->{result}->{miner} . '] [block_hash: ' . @{$result}[5]->{result}->{hash} . 
+                                                                '] [last_block_number: ' . hex(@{$result}[5]->{result}->{number}) . ']');
     
 }
 
