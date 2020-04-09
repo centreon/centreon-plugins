@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use bigint;
 use Digest::MD5 qw(md5_hex);
 
 sub new {
