@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Cache::File;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub new {
