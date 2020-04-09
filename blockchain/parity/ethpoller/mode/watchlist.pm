@@ -59,9 +59,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{output}->output_add(severity  => 'OK', long_msg => '[Account ' . $account->{id} . ']: label: ' . $account->{label} . ' | nonce: ' . $account->{nonce} .
-                            ' | timestamp: ' . localtime(hex($account->{last_update}->{timestamp})) . ' | blockNumber: ' . $account->{last_update}->{blockNumber} . 
-                            ' | receiver: ' . $account->{last_update}->{receiver} . ' | value: ' . $account->{last_update}->{value} );
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Account ' . $account->{id} . ': [label: ' . $account->{label} . '] [nonce: ' . $account->{nonce} .
+                            '] [timestamp: ' . localtime(hex($account->{last_update}->{timestamp})) . '] [blockNumber: ' . $account->{last_update}->{blockNumber} . 
+                            '] [receiver: ' . $account->{last_update}->{receiver} . '] [value: ' . $account->{last_update}->{value} . ']' );
     }
 
     foreach my $minner (@{$results->{Miners}}) {
@@ -71,8 +71,8 @@ sub manage_selection {
             next;
         }
 
-        $self->{output}->output_add(severity  => 'OK', long_msg => '[Minner ' . $minner->{id} . ']: label: ' . $minner->{label} . ' | blocks: ' . $minner->{blocks} .
-                            ' | timestamp: ' . localtime(hex($minner->{last_update}->{timestamp})) . ' | blockNumber: ' . $minner->{last_update}->{blockNumber} );
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Minner ' . $minner->{id} . ': [label: ' . $minner->{label} . '] [blocks: ' . $minner->{blocks} .
+                            '] [timestamp: ' . localtime(hex($minner->{last_update}->{timestamp})) . '] [blockNumber: ' . $minner->{last_update}->{blockNumber}  . ']');
     }
     
     foreach my $contract (@{$results->{Constracts}}) {
@@ -82,9 +82,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{output}->output_add(severity  => 'OK', long_msg => '[Contract ' . $contract->{id} . ']: label: ' . $contract->{label} . ' | balance: ' . $contract->{balance} .
-                            ' | timestamp: ' . localtime(hex($contract->{last_update}->{timestamp})) . ' | blockNumber: ' . $contract->{last_update}->{blockNumber} . 
-                            ' | sender: ' . $contract->{last_update}->{sender} . ' | value: ' . $contract->{last_update}->{value} );
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Contract ' . $contract->{id} . ': [label: ' . $contract->{label} . '] [balance: ' . $contract->{balance} .
+                            '] [timestamp: ' . localtime(hex($contract->{last_update}->{timestamp})) . '] [blockNumber: ' . $contract->{last_update}->{blockNumber} . 
+                            '] [sender: ' . $contract->{last_update}->{sender} . '] [value: ' . $contract->{last_update}->{value} . ']');
 
         # if (my $cached_balance = $cache->get('contract_balance_' . $contract->{id})) {
         #     if ($cached_balance != $contract->{balance}) {
@@ -103,10 +103,10 @@ sub manage_selection {
             next;
         }
 
-        $self->{output}->output_add(severity  => 'OK', long_msg => '[Function ' . $function->{id} . ']: label: ' . $function->{label} . ' | calls: ' . $function->{calls} .
-                            ' | timestamp: ' . localtime(hex($function->{last_update}->{timestamp})) . ' | blockNumber: ' . $function->{last_update}->{blockNumber} . 
-                            ' | sender: ' . $function->{last_update}->{sender} . ' | receiver: ' . $function->{last_update}->{receiver} . 
-                            ' | value: ' . $function->{last_update}->{value} );
+        $self->{output}->output_add(severity  => 'OK', long_msg => '[Function ' . $function->{id} . ']: label: ' . $function->{label} . '] [calls: ' . $function->{calls} .
+                            '] [timestamp: ' . localtime(hex($function->{last_update}->{timestamp})) . '] [blockNumber: ' . $function->{last_update}->{blockNumber} . 
+                            '] [sender: ' . $function->{last_update}->{sender} . '] [receiver: ' . $function->{last_update}->{receiver} . 
+                            '] [value: ' . $function->{last_update}->{value}  . ']');
     }
 
      foreach my $event (@{$results->{Events}}) {
@@ -116,9 +116,9 @@ sub manage_selection {
             next;
         }
 
-        $self->{output}->output_add(severity  => 'OK', long_msg => '[Event ' . $event->{id} . ']: label: ' . $event->{label} . ' | calls: ' . $event->{calls} .
-                            ' | timestamp: ' . localtime(hex($event->{last_update}->{timestamp})) . ' | blockNumber: ' . $event->{last_update}->{blockNumber} . 
-                            ' | sender: ' . $event->{last_update}->{sender} . ' | receiver: ' . $event->{last_update}->{receiver});
+        $self->{output}->output_add(severity  => 'OK', long_msg => '[Event ' . $event->{id} . ']: label: ' . $event->{label} . '] [calls: ' . $event->{calls} .
+                            '] [timestamp: ' . localtime(hex($event->{last_update}->{timestamp})) . '] [blockNumber: ' . $event->{last_update}->{blockNumber} . 
+                            '] [sender: ' . $event->{last_update}->{sender} . '] [receiver: ' . $event->{last_update}->{receiver} . ']');
     }
 
 }
