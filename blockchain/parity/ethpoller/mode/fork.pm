@@ -24,12 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Cache::File;
+use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -43,6 +43,9 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = "parity_ethpoller_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
     my $result = $options{custom}->request_api(url_path => '/fork');
    
     # use Data::Dumper;
@@ -52,15 +55,15 @@ sub manage_selection {
     my $res_timestamp = localtime(hex($result->{last_update}->{timestamp}));  
 
     # Alerts management 
-    my $cache = Cache::File->new( cache_root => './parity-eth-poller-cache' );
+    # my $cache = Cache::File->new( cache_root => './parity-eth-poller-cache' );
 
-    if (my $cached_timestamp = $cache->get('fork_timestamp')) {
-        if ($cached_timestamp ne $res_timestamp) {
-            #alert
-        }
-    } else {
-        $cache->set('fork_timestamp', $res_timestamp);
-    }
+    # if (my $cached_timestamp = $cache->get('fork_timestamp')) {
+    #     if ($cached_timestamp ne $res_timestamp) {
+    #         #alert
+    #     }
+    # } else {
+    #     $cache->set('fork_timestamp', $res_timestamp);
+    # }
 
     $self->{output}->output_add(severity  => 'OK', long_msg => '[Fork]: fork_timestamp: ' . $res_timestamp . 
                             ' | fork_occurence: ' . $result->{occurence} . ' | fork_blockNumber: ' . $result->{last_update}->{blockNumber} . 

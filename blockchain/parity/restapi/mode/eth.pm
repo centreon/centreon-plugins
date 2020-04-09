@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Cache::File;
+use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
@@ -101,7 +101,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -128,6 +128,9 @@ sub prefix_module_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = "parity_restapi_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
     my $query_form_post = [ { method => 'eth_mining', params => [], id => "1", jsonrpc => "2.0" },
                             { method => 'eth_coinbase', params => [], id => "2", jsonrpc => "2.0" },
                             { method => 'eth_gasPrice', params => [], id => "3", jsonrpc => "2.0" } ,
@@ -151,23 +154,23 @@ sub manage_selection {
     my $res_highestBlock = $res_sync != 100 ? hex(@{$result}[6]->{result}->{highestBlock}) : 'none';
 
     # Alerts management 
-    my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
+    # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
 
-    if (my $cached_sync = $cache->get('node_sync')) {
-        if ($cached_sync == 100 && $res_sync < 100) {
-            #alert
-        }
-    } else {
-        $cache->set('node_sync', $res_sync);
-    }
+    # if (my $cached_sync = $cache->get('node_sync')) {
+    #     if ($cached_sync == 100 && $res_sync < 100) {
+    #         #alert
+    #     }
+    # } else {
+    #     $cache->set('node_sync', $res_sync);
+    # }
 
-    if (my $cached_price = $cache->get('gas_price')) {
-        if ($cached_price != $gas_price) {
-            #alert
-        }
-    } else {
-        $cache->set('gas_price', $gas_price);
-    }
+    # if (my $cached_price = $cache->get('gas_price')) {
+    #     if ($cached_price != $gas_price) {
+    #         #alert
+    #     }
+    # } else {
+    #     $cache->set('gas_price', $gas_price);
+    # }
 
     $self->{global} = { gas_price => $gas_price };
 
