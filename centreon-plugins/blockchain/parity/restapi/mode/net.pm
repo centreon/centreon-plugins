@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Cache::File;
+use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
@@ -57,7 +57,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -84,6 +84,9 @@ sub prefix_module_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = "parity_restapi_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
     my $query_form_post = [ { method => 'net_listening', params => [], id => "1", jsonrpc => "2.0" },
                             { method => 'net_peerCount', params => [], id => "2", jsonrpc => "2.0" } ];
 
@@ -92,17 +95,17 @@ sub manage_selection {
     my $peer_count = hex(@{$result}[1]->{result});
 
     # Alerts management 
-    my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
+    # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
 
-    if (my $cached_count = $cache->get('peers_count')) {
-        if ($peer_count < $cached_count) {
-            #alert
-        } elsif ($peer_count > $cached_count) {
-            #alert
-        }
-    } else {
-        $cache->set('peers_count', $peer_count);
-    }
+    # if (my $cached_count = $cache->get('peers_count')) {
+    #     if ($peer_count < $cached_count) {
+    #         #alert
+    #     } elsif ($peer_count > $cached_count) {
+    #         #alert
+    #     }
+    # } else {
+    #     $cache->set('peers_count', $peer_count);
+    # }
 
     $self->{network} = { peers => hex(@{$result}[1]->{result}) };
 

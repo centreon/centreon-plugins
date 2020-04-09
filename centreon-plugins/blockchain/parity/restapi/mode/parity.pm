@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use Cache::File;
+use Digest::MD5 qw(md5_hex);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub set_counters {
@@ -49,7 +49,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -76,6 +76,9 @@ sub prefix_module_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = "parity_restapi_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
     my $query_form_post = [ { method => 'parity_versionInfo', params => [], id => "1", jsonrpc => "2.0" },
                             { method => 'parity_chain', params => [], id => "2", jsonrpc => "2.0" },
                             { method => 'parity_pendingTransactions', params => [], id => "3", jsonrpc => "2.0" } ,
@@ -93,23 +96,23 @@ sub manage_selection {
     my $res_parity_version = @{$result}[0]->{result}->{version}->{major} . '.' . @{$result}[0]->{result}->{version}->{minor} .  '.' . @{$result}[0]->{result}->{version}->{patch};
 
     # Alerts management 
-    my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
+    # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
 
-    if (my $cached_version = $cache->get('parity_version')) {
-        if ($res_parity_version ne $cached_version) {
-            #alert
-        }
-    } else {
-        $cache->set('parity_version', $res_parity_version);
-    }
+    # if (my $cached_version = $cache->get('parity_version')) {
+    #     if ($res_parity_version ne $cached_version) {
+    #         #alert
+    #     }
+    # } else {
+    #     $cache->set('parity_version', $res_parity_version);
+    # }
 
-    if (my $cached_name = $cache->get('chain_name')) {
-        if ($cached_name ne @{$result}[1]->{result}) {
-            #alert
-        }
-    } else {
-        $cache->set('chain_name', @{$result}[1]->{result});
-    }
+    # if (my $cached_name = $cache->get('chain_name')) {
+    #     if ($cached_name ne @{$result}[1]->{result}) {
+    #         #alert
+    #     }
+    # } else {
+    #     $cache->set('chain_name', @{$result}[1]->{result});
+    # }
     
     # use Data::Dumper;
     # print Dumper($result);
