@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::ibm::bladecenter::snmp::mode::cpu;
+package centreon::common::ibm::nos::snmp::mode::cpu;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,25 +29,25 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'cpu', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{cpu} = [
-        { label => 'average', nlabel => 'cpu.utilization.percentage', set => {
-                key_values => [ { name => 'average' } ],
-                output_template => '%.2f %%',
+        { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
+                key_values => [ { name => 'average_1m' } ],
+                output_template => 'CPU(s) average usage: %.2f %% (1min)',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { value => 'average_1m_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     return $self;
@@ -60,7 +60,7 @@ sub manage_selection {
     my $result = $options{snmp}->get_leef(oids => [$oid_mpCpuStatsUtil1Minute], nothing_quit => 1);
 
     $self->{cpu} = {
-        average => $result->{$oid_mpCpuStatsUtil1Minute},
+        average_1m => $result->{$oid_mpCpuStatsUtil1Minute}
     }
 }
 
@@ -74,11 +74,11 @@ Check CPU usage (over the last minute).
 
 =over 8
 
-=item B<--warning-average>
+=item B<--warning-average-1m>
 
 Warning threshold average CPU utilization. 
 
-=item B<--critical-average>
+=item B<--critical-average-1m>
 
 Critical  threshold average CPU utilization. 
 
