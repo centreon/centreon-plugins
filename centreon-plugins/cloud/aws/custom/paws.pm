@@ -478,30 +478,57 @@ sub vpn_list_connections {
 1;
 
 __END__
+
 =head1 NAME
+
 Amazon AWS
+
 =head1 SYNOPSIS
+
 Amazon AWS
+
 =head1 PAWS OPTIONS
+
 =over 8
+
 =item B<--aws-secret-key>
+
 Set AWS secret key.
+
 =item B<--aws-access-key>
+
 Set AWS access key.
+
 =item B<--region>
+
 Set the region name (Required).
+
 =item B<--period>
+
 Set period in seconds.
+
 =item B<--timeframe>
+
 Set timeframe in seconds.
+
 =item B<--statistic>
-Set cloudwatch statistics (Can be: 'minimum', 'maximum', 'average', 'sum').
+
+Set cloudwatch statistics
+(Can be: 'minimum', 'maximum', 'average', 'sum').
+
 =item B<--zeroed>
+
 Set metrics value to 0 if none. Usefull when CloudWatch
 does not return value when not defined.
+
 =item B<--proxyurl>
+
 Proxy URL if any
+
 =back
+
 =head1 DESCRIPTION
+
 B<custom>.
+
 =cut
