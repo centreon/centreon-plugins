@@ -87,7 +87,7 @@ __END__
 
 =head1 MODE
 
-List EC2 instances.
+List VPN instances.
 
 =over 8
 
