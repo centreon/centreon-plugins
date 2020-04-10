@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::lenovo::flexsystem::snmp::mode::disk;
+package centreon::common::ibm::nos::snmp::mode::disk;
 
 use base qw(snmp_standard::mode::storage);
 
@@ -39,7 +39,7 @@ sub prefix_storage_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     return $self;
@@ -51,7 +51,7 @@ __END__
 
 =head1 MODE
 
-Check disk.
+Check disks.
 
 =over 8
 

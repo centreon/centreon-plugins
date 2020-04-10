@@ -30,16 +30,16 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'cpu'               => 'network::ibm::bladecenter::snmp::mode::cpu',
-        'disk'              => 'network::ibm::bladecenter::snmp::mode::disk',
-        'environment'       => 'network::ibm::bladecenter::snmp::mode::environment',
-        'interfaces'        => 'snmp_standard::mode::interfaces',
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'memory'            => 'network::ibm::bladecenter::snmp::mode::memory',
-        'time'              => 'snmp_standard::mode::ntp',
-        'uptime'            => 'snmp_standard::mode::uptime',
-    );
+    $self->{modes} = {
+        'cpu'             => 'centreon::common::ibm::nos::snmp::mode::cpu',
+        'disk'            => 'centreon::common::ibm::nos::snmp::mode::disk',
+        'environment'     => 'centreon::common::ibm::nos::snmp::mode::environment',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'centreon::common::ibm::nos::snmp::mode::memory',
+        'time'            => 'snmp_standard::mode::ntp',
+        'uptime'          => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }

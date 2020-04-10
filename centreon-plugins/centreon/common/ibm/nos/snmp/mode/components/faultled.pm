@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::ibm::bladecenter::snmp::mode::components::faultled;
+package centreon::common::ibm::nos::snmp::mode::components::faultled;
 
 use strict;
 use warnings;
@@ -31,7 +31,7 @@ sub check_faultled {
     my ($self, %options) = @_;
 
     $self->{components}->{faultled}->{total}++;
-        
+
     $self->{output}->output_add(long_msg => 
         sprintf(
             "Fault LED state is %s",
@@ -52,13 +52,14 @@ sub check_faultled {
 
 sub check {
     my ($self) = @_;
-    
-    $self->{output}->output_add(long_msg => "Checking fault LED");
+
+    $self->{output}->output_add(long_msg => 'checking fault LED');
     $self->{components}->{faultled} = { name => 'faultled', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'faultled'));
 
     my $oid_mmspFaultLED = '.1.3.6.1.4.1.26543.2.5.1.3.10.12.0';
-    my $results = $self->{snmp}->get_leef(oids => [$oid_mmspFaultLED], nothing_quit => 1);
+    my $results = $self->{snmp}->get_leef(oids => [$oid_mmspFaultLED]);
+    return if (!defined($results->{$oid_mmspFaultLED}));
 
     check_faultled($self, value => $map_faultled_states{$results->{$oid_mmspFaultLED}});
 }

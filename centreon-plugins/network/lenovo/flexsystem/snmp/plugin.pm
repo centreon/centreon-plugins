@@ -31,14 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu'               => 'network::lenovo::flexsystem::snmp::mode::cpu',
-        'disk'              => 'network::lenovo::flexsystem::snmp::mode::disk',
-        'environment'       => 'network::lenovo::flexsystem::snmp::mode::environment',
-        'interfaces'        => 'snmp_standard::mode::interfaces',
-        'list-interfaces'   => 'snmp_standard::mode::listinterfaces',
-        'memory'            => 'network::lenovo::flexsystem::snmp::mode::memory',
-        'time'              => 'snmp_standard::mode::ntp',
-        'uptime'            => 'snmp_standard::mode::uptime',
+        'cpu'             => 'network::lenovo::flexsystem::snmp::mode::cpu',
+        'disk'            => 'centreon::common::ibm::nos::snmp::mode::disk',
+        'environment'     => 'network::lenovo::flexsystem::snmp::mode::environment',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'memory'          => 'network::lenovo::flexsystem::snmp::mode::memory',
+        'time'            => 'snmp_standard::mode::ntp',
+        'uptime'          => 'snmp_standard::mode::uptime',
     );
 
     return $self;
