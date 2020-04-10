@@ -56,8 +56,10 @@ sub run {
             $_->{id}, $_->{name}, $_->{state} ));
     }
 
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List VPN connections:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List VPN connections:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
