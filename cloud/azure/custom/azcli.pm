@@ -41,20 +41,20 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "subscription:s"      => { name => 'subscription' },
-            "tenant:s"            => { name => 'tenant' },
-            "client-id:s"         => { name => 'client_id' },
-            "client-secret:s"     => { name => 'client_secret' },
-            "timeframe:s"         => { name => 'timeframe' },
-            "interval:s"          => { name => 'interval' },
-            "aggregation:s@"      => { name => 'aggregation' },
-            "zeroed"              => { name => 'zeroed' },
-            "timeout:s"           => { name => 'timeout', default => 50 },
-            "sudo"                => { name => 'sudo' },
-            "command:s"           => { name => 'command', default => 'az' },
-            "command-path:s"      => { name => 'command_path' },
-            "command-options:s"   => { name => 'command_options', default => '' },
-            "proxyurl:s"          => { name => 'proxyurl' },
+            'subscription:s'      => { name => 'subscription' },
+            'tenant:s'            => { name => 'tenant' },
+            'client-id:s'         => { name => 'client_id' },
+            'client-secret:s'     => { name => 'client_secret' },
+            'timeframe:s'         => { name => 'timeframe' },
+            'interval:s'          => { name => 'interval' },
+            'aggregation:s@'      => { name => 'aggregation' },
+            'zeroed'              => { name => 'zeroed' },
+            'timeout:s'           => { name => 'timeout', default => 50 },
+            'sudo'                => { name => 'sudo' },
+            'command:s'           => { name => 'command', default => 'az' },
+            'command-path:s'      => { name => 'command_path' },
+            'command-options:s'   => { name => 'command_options', default => '' },
+            'proxyurl:s'          => { name => 'proxyurl' },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AZCLI OPTIONS', once => 1);
@@ -141,15 +141,21 @@ sub convert_duration {
 
     my $duration;
     if ($options{time_string} =~ /^P.*S$/) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Format::Duration::ISO8601',
-                                               error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'DateTime::Format::Duration::ISO8601',
+            error_msg => "Cannot load module 'DateTime::Format::Duration::ISO8601'."
+        );
 
         my $format = DateTime::Format::Duration::ISO8601->new;
         my $d = $format->parse_duration($options{time_string});
         $duration = $d->minutes * 60 + $d->seconds;
     } elsif ($options{time_string} =~ /^(\d+):(\d+):(\d+)\.\d+$/) {
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => 'DateTime::Duration',
-                                               error_msg => "Cannot load module 'DateTime::Format::Duration'.");
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output},
+            module => 'DateTime::Duration',
+            error_msg => "Cannot load module 'DateTime::Format::Duration'."
+        );
 
         my $d = DateTime::Duration->new(hours => $1, minutes => $2, seconds => $3);
         $duration = $d->minutes * 60 + $d->seconds;
@@ -162,9 +168,9 @@ sub azure_get_metrics_set_cmd {
     my ($self, %options) = @_;
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
-    
+
     my $cmd_options = "monitor metrics list --metrics '" . join('\' \'', @{$options{metrics}}) . "' --start-time $options{start_time} --end-time $options{end_time} " .
-        "--interval $options{interval} --aggregation '" . join('\' \'', @{$options{aggregations}}) . "' --output json --resource '$options{resource}' " .
+        "--interval $options{interval} --aggregation '" . join('\' \'', @{$options{aggregations}}) . "' --only-show-errors --output json --resource '$options{resource}' " .
         "--resource-group '$options{resource_group}' --resource-type '$options{resource_type}' --resource-namespace '$options{resource_namespace}'";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -222,7 +228,7 @@ sub azure_list_resources_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
-    my $cmd_options = "resource list --output json";
+    my $cmd_options = "resource list --only-show-errors --output json";
     $cmd_options .= " --namespace '$options{namespace}'" if (defined($options{namespace}) && $options{namespace} ne '');
     $cmd_options .= " --resource-type '$options{resource_type}'" if (defined($options{resource_type}) && $options{resource_type} ne '');
     $cmd_options .= " --location '$options{location}'" if (defined($options{location}) && $options{location} ne '');
@@ -246,7 +252,7 @@ sub azure_list_vm_sizes_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
-    my $cmd_options = "vm list-sizes --location '$options{location}' --output json";
+    my $cmd_options = "vm list-sizes --location '$options{location}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
         
     return $cmd_options; 
@@ -266,7 +272,7 @@ sub azure_list_vms_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
-    my $cmd_options = "vm list --output json";
+    my $cmd_options = "vm list --only-show-errors --output json";
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --show-details" if (defined($options{show_details}));
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
@@ -288,7 +294,7 @@ sub azure_list_groups_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
     
-    my $cmd_options = "group list --output json";
+    my $cmd_options = "group list --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -308,7 +314,7 @@ sub azure_list_deployments_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "group deployment list --resource-group '$options{resource_group}' --output json";
+    my $cmd_options = "group deployment list --resource-group '$options{resource_group}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -328,7 +334,7 @@ sub azure_list_vaults_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "backup vault list --output json";
+    my $cmd_options = "backup vault list --only-show-errors --output json";
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -349,7 +355,7 @@ sub azure_list_backup_jobs_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "backup job list --resource-group '$options{resource_group}' --vault-name '$options{vault_name}' --output json";
+    my $cmd_options = "backup job list --resource-group '$options{resource_group}' --vault-name '$options{vault_name}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -369,7 +375,7 @@ sub azure_list_backup_items_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "backup item list --resource-group '$options{resource_group}' --vault-name '$options{vault_name}' --output json";
+    my $cmd_options = "backup item list --resource-group '$options{resource_group}' --vault-name '$options{vault_name}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -389,7 +395,7 @@ sub azure_list_expressroute_circuits_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "network express-route list --output json";
+    my $cmd_options = "network express-route list --only-show-errors --output json";
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -410,7 +416,7 @@ sub azure_list_vpn_gateways_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "network vnet-gateway list --resource-group '$options{resource_group}' --output json";
+    my $cmd_options = "network vnet-gateway list --resource-group '$options{resource_group}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -430,7 +436,7 @@ sub azure_list_virtualnetworks_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "network vnet list --output json";
+    my $cmd_options = "network vnet list --only-show-errors --output json";
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -451,7 +457,7 @@ sub azure_list_vnet_peerings_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "network vnet peering list --resource-group '$options{resource_group}' --vnet-name '$options{vnet_name}' --output json";
+    my $cmd_options = "network vnet peering list --resource-group '$options{resource_group}' --vnet-name '$options{vnet_name}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -471,7 +477,7 @@ sub azure_list_sqlservers_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "sql server list --output json";
+    my $cmd_options = "sql server list --only-show-errors --output json";
     $cmd_options .= " --resource-group '$options{resource_group}'" if (defined($options{resource_group}) && $options{resource_group} ne '');
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
@@ -492,7 +498,7 @@ sub azure_list_sqldatabases_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "sql db list --resource-group '$options{resource_group}' --server '$options{server}' --output json";
+    my $cmd_options = "sql db list --resource-group '$options{resource_group}' --server '$options{server}' --only-show-errors --output json";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
     
     return $cmd_options; 
@@ -512,7 +518,7 @@ sub azure_get_log_analytics_set_cmd {
 
     return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
 
-    my $cmd_options = "monitor log-analytics query --workspace '$options{workspace_id}' --analytics-query \"$options{query}\" --timespan '$options{interval}'";
+    my $cmd_options = "monitor log-analytics query --workspace '$options{workspace_id}' --analytics-query \"$options{query}\" --timespan '$options{interval}' --only-show-errors";
     return $cmd_options; 
 }
 
