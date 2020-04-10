@@ -39,6 +39,7 @@ sub new {
         $options{output}->add_option_msg(short_msg => "Class Custom: Need to specify 'options' argument.");
         $options{output}->option_exit();
     }
+
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
             'aws-secret-key:s'    => { name => 'aws_secret_key' },
@@ -52,23 +53,28 @@ sub new {
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
+
     $self->{output} = $options{output};
     $self->{mode} = $options{mode};
+
     return $self;
 }
 
 sub get_region {
     my ($self, %options) = @_;
+
     return $self->{option_results}->{region};
 }
 
 sub set_options {
     my ($self, %options) = @_;
+
     $self->{option_results} = $options{option_results};
 }
 
 sub set_defaults {
     my ($self, %options) = @_;
+
     foreach (keys %{$options{default}}) {
         if ($_ eq $self->{mode}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
@@ -89,16 +95,19 @@ sub check_options {
         $ENV{HTTP_PROXY} = $self->{option_results}->{proxyurl};
         $ENV{HTTPS_PROXY} = $self->{option_results}->{proxyurl};
     }
+
     if (defined($self->{option_results}->{aws_secret_key}) && $self->{option_results}->{aws_secret_key} ne '') {
         $ENV{AWS_SECRET_KEY} = $self->{option_results}->{aws_secret_key};
     }
     if (defined($self->{option_results}->{aws_access_key}) && $self->{option_results}->{aws_access_key} ne '') {
         $ENV{AWS_ACCESS_KEY} = $self->{option_results}->{aws_access_key};
     }
+
     if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
         $self->{output}->option_exit();
     }
+
     if (defined($self->{option_results}->{statistic})) {
         foreach my $statistic (@{$self->{option_results}->{statistic}}) {
             if ($statistic !~ /minimum|maximum|average|sum/) {
@@ -107,6 +116,7 @@ sub check_options {
             }
         }
     }
+
     return 0;
 }
 
@@ -119,6 +129,7 @@ sub cloudwatch_get_metrics {
         my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $options{region});
         my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601;
         my $end_time = DateTime->now->iso8601;
+
         foreach my $metric_name (@{$options{metrics}}) {
             my $metric_result = $cw->GetMetricStatistics(
                 MetricName => $metric_name,
@@ -131,6 +142,7 @@ sub cloudwatch_get_metrics {
                 #Unit => $unit,
                 Dimensions => $options{dimensions},
             );
+
             $metric_results->{$metric_result->{Label}} = { points => 0 };
             foreach my $point (@{$metric_result->{Datapoints}}) {
                 if (defined($point->{Average})) {
@@ -149,6 +161,7 @@ sub cloudwatch_get_metrics {
                     $metric_results->{$metric_result->{Label}}->{sum} = 0 if (!defined($metric_results->{$metric_result->{Label}}->{sum}));
                     $metric_results->{$metric_result->{Label}}->{sum} += $point->{Sum};
                 }
+
                 $metric_results->{$metric_result->{Label}}->{points}++;
             }
 
@@ -161,6 +174,7 @@ sub cloudwatch_get_metrics {
         $self->{output}->add_option_msg(short_msg => "error: $@");
         $self->{output}->option_exit();
     }
+
     return $metric_results;
 }
 
@@ -220,6 +234,7 @@ sub cloudwatch_list_metrics {
         $self->{output}->add_option_msg(short_msg => "error: $@");
         $self->{output}->option_exit();
     }
+
     return $metric_results;
 }
 
@@ -244,6 +259,7 @@ sub cloudwatchlogs_describe_log_groups {
         $self->{output}->add_option_msg(short_msg => "error: $@");
         $self->{output}->option_exit();
     }
+
     return $log_groups_results;
 }
 
@@ -261,6 +277,7 @@ sub cloudwatchlogs_filter_log_events {
             foreach (@{$list_log_groups->{logGroups}}) {
                 push @$log_groups_results, $_;
             }
+
             last if (!defined($list_log_groups->{NextToken}));
             $cw_options{NextToken} = $list_log_groups->{NextToken};
         }
@@ -269,6 +286,7 @@ sub cloudwatchlogs_filter_log_events {
         $self->{output}->add_option_msg(short_msg => "error: $@");
         $self->{output}->option_exit();
     }
+
     return $log_groups_results;
 }
 
@@ -280,6 +298,7 @@ sub ec2_get_instances_status {
         my $lwp_caller = new Paws::Net::LWPCaller();
         my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
         my $instances = $ec2->DescribeInstanceStatus(DryRun => 0, IncludeAllInstances => 1);
+
         foreach (@{$instances->{InstanceStatuses}}) {
             $instance_results->{$_->{InstanceId}} = { state => $_->{InstanceState}->{Name},
                                                       status => => $_->{InstanceStatus}->{Status} };
@@ -301,6 +320,7 @@ sub ec2_list_resources {
         my $lwp_caller = new Paws::Net::LWPCaller();
         my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
         my $list_instances = $ec2->DescribeInstances(DryRun => 0);
+
         foreach my $reservation (@{$list_instances->{Reservations}}) {
             foreach my $instance (@{$reservation->{Instances}}) {
                 my @instance_tags;
@@ -308,7 +328,7 @@ sub ec2_list_resources {
                     my %already = map { $_->{Name} => $_ } @{$resource_results};
                     if ($tag->{Key} eq "aws:autoscaling:groupName") {
                         next if (defined($already{$tag->{Value}}));
-                        push @{$resource_results}, {
+                        push @{$resource_results}, { 
                             Name => $tag->{Value},
                             Type => 'asg',
                         };
@@ -316,7 +336,7 @@ sub ec2_list_resources {
                         push @instance_tags, $tag->{Key} . ":" . $tag->{Value};
                     }
                 }
-                push @{$resource_results}, {
+                push @{$resource_results}, { 
                     Name => $instance->{InstanceId},
                     Type => 'instance',
                     AvailabilityZone => $instance->{Placement}->{AvailabilityZone},
@@ -381,6 +401,7 @@ sub rds_list_instances {
         my $lwp_caller = new Paws::Net::LWPCaller();
         my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
         my $list_instances = $rds->DescribeDBInstances();
+
         foreach my $instance (@{$list_instances->{DBInstances}}) {
             push @{$instance_results}, {
                 Name => $instance->{DBInstanceIdentifier},
@@ -395,16 +416,19 @@ sub rds_list_instances {
         $self->{output}->add_option_msg(short_msg => "error: $@");
         $self->{output}->option_exit();
     }
+
     return $instance_results;
 }
 
 sub rds_list_clusters {
     my ($self, %options) = @_;
+
     my $cluster_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
         my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
         my $list_clusters = $rds->DescribeDBClusters();
+
         foreach my $cluster (@{$list_clusters->{DBClusters}}) {
             push @{$cluster_results}, {
                 Name => $cluster->{DBClusterIdentifier},
@@ -418,6 +442,7 @@ sub rds_list_clusters {
         $self->{output}->add_option_msg(short_msg => "error: $@");
         $self->{output}->option_exit();
     }
+
     return $cluster_results;
 }
 
@@ -453,56 +478,30 @@ sub vpn_list_connections {
 1;
 
 __END__
-
 =head1 NAME
-
 Amazon AWS
-
 =head1 SYNOPSIS
-
 Amazon AWS
-
 =head1 PAWS OPTIONS
-
 =over 8
-
 =item B<--aws-secret-key>
-
 Set AWS secret key.
-
 =item B<--aws-access-key>
-
 Set AWS access key.
-
 =item B<--region>
-
 Set the region name (Required).
-
 =item B<--period>
-
 Set period in seconds.
-
 =item B<--timeframe>
-
 Set timeframe in seconds.
-
 =item B<--statistic>
-
 Set cloudwatch statistics (Can be: 'minimum', 'maximum', 'average', 'sum').
-
 =item B<--zeroed>
-
 Set metrics value to 0 if none. Usefull when CloudWatch
 does not return value when not defined.
-
 =item B<--proxyurl>
-
 Proxy URL if any
-
 =back
-
 =head1 DESCRIPTION
-
 B<custom>.
-
 =cut
