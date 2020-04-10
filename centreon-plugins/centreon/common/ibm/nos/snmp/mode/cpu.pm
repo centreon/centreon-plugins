@@ -29,20 +29,35 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 0, skipped_code => { -10 => 1 } }
+        { name => 'cpu', type => 0, cb_prefix_output => 'prefix_message_output', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{cpu} = [
         { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'average_1m' } ],
-                output_template => 'CPU(s) average usage: %.2f %% (1min)',
+                output_template => '%.2f %% (1min)',
                 perfdatas => [
                     { value => 'average_1m_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' }
                 ]
             }
+        },
+        { label => 'average-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
+                key_values => [ { name => 'average_5m' } ],
+                output_template => '%.2f %% (5min)',
+                perfdatas => [
+                    { value => 'average_5m_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%' }
+                ]
+            }
         }
     ];
+}
+
+sub prefix_message_output {
+    my ($self, %options) = @_;
+
+    return "CPU average usage: ";
 }
 
 sub new {
@@ -57,10 +72,12 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $oid_mpCpuStatsUtil1Minute = '.1.3.6.1.4.1.26543.2.5.1.2.2.3.0';
-    my $result = $options{snmp}->get_leef(oids => [$oid_mpCpuStatsUtil1Minute], nothing_quit => 1);
+    my $oid_mpCpuStatsUtil5Minutes = '.1.3.6.1.4.1.26543.2.5.1.2.2.6.0';
+    my $result = $options{snmp}->get_leef(oids => [$oid_mpCpuStatsUtil1Minute, $oid_mpCpuStatsUtil5Minutes], nothing_quit => 1);
 
     $self->{cpu} = {
-        average_1m => $result->{$oid_mpCpuStatsUtil1Minute}
+        average_1m => $result->{$oid_mpCpuStatsUtil1Minute},
+        average_5m => $result->{$oid_mpCpuStatsUtil5Minutes}
     }
 }
 
@@ -74,13 +91,10 @@ Check CPU usage (over the last minute).
 
 =over 8
 
-=item B<--warning-average-1m>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold average CPU utilization. 
-
-=item B<--critical-average-1m>
-
-Critical  threshold average CPU utilization. 
+Thresholds.
+Can be: 'average-1min' (%), 'average-5min' (%).
 
 =back
 
