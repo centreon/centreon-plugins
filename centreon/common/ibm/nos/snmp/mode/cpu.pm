@@ -76,7 +76,7 @@ sub manage_selection {
     my $result = $options{snmp}->get_leef(oids => [$oid_mpCpuStatsUtil1Minute, $oid_mpCpuStatsUtil5Minutes], nothing_quit => 1);
 
     $self->{cpu} = {
-        average_1m => $result->{$oid_mpCpuStatsUtil1Minute}
+        average_1m => $result->{$oid_mpCpuStatsUtil1Minute},
         average_5m => $result->{$oid_mpCpuStatsUtil5Minutes}
     }
 }
