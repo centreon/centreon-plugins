@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::ibm::bladecenter::snmp::mode::environment;
+package centreon::common::ibm::nos::snmp::mode::environment;
 
 use base qw(centreon::plugins::templates::hardware);
 
@@ -27,32 +27,33 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(faultled|temperature)$';
+
+    $self->{regexp_threshold_overload_check_section_option} = '^(faultled)$';
+    $self->{regexp_threshold_numeric_check_section_option} = '^(?:temperature)$';
 
     $self->{cb_hook2} = 'snmp_execute';
     $self->{thresholds} = {
         'faultled' => [
             ['on', 'CRITICAL'],
-            ['off', 'OK'],
-        ],
+            ['off', 'OK']
+        ]
     };
 
-    $self->{components_path} = 'network::ibm::bladecenter::snmp::mode::components';
+    $self->{components_path} = 'centreon::common::ibm::nos::snmp::mode::components';
     $self->{components_module} = ['faultled', 'temperature'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
     });
 
@@ -78,6 +79,22 @@ Can be: 'faultled', 'temperature'.
 
 Return an error if no compenents are checked.
 If total (with skipped) is 0. (Default: 'critical' returns).
+
+=item B<--threshold-overload>
+
+Set to overload default threshold values (syntax: section,status,regexp)
+It used before default thresholds (order stays).
+Example: --threshold-overload='faulted,WARNING,on'
+
+=item B<--warning>
+
+Set warning threshold for temperatures (syntax: type,regexp,threshold)
+Example: --warning='temperature,.*,30'
+
+=item B<--critical>
+
+Set critical threshold for temperatures (syntax: type,regexp,threshold)
+Example: --critical='temperature,.*,40'
 
 =back
 

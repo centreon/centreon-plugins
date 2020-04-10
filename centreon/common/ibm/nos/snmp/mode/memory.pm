@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::ibm::bladecenter::snmp::mode::memory;
+package centreon::common::ibm::nos::snmp::mode::memory;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -42,7 +42,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'memory', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{memory} = [
@@ -50,35 +50,35 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => 'Used : %.2f %%',
+                output_template => 'Ram Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                      unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     return $self;
@@ -99,7 +99,7 @@ sub manage_selection {
         used => $total - $free,
         free => $free,
         prct_used => $prct_used,
-        prct_free => 100 - $prct_used,
+        prct_free => 100 - $prct_used
     }
 }
 
