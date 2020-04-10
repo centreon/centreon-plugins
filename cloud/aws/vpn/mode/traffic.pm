@@ -29,8 +29,7 @@ my %metrics_mapping = (
     'TunnelState' => {
         'output'    => 'Tunnel State',
         'label'     => 'tunnel-state',
-        'nlabel'    => {
-            'absolute' => 'vpn.tunnel.tunnelstate'},
+        'nlabel'    => { 'absolute' => 'vpn.tunnel.tunnelstate' },
         'unit'      => ''
     },
     'TunnelDataIn' => {
@@ -38,7 +37,7 @@ my %metrics_mapping = (
         'label'     => 'tunnel-datain',
         'nlabel'    => {
             'absolute' => 'vpn.tunnel.datain.bytes',
-            'per_second' => 'vpn.tunnel.datain.bytespersecond',
+            'per_second' => 'vpn.tunnel.datain.bytespersecond'
         },
         'unit'      => 'B'
     },
@@ -47,7 +46,7 @@ my %metrics_mapping = (
         'label'     => 'tunnel-dataout',
         'nlabel'    => {
             'absolute' => 'vpn.tunnel.dataout.bytes',
-            'per_second' => 'vpn.tunnel.dataout.bytespersecond',
+            'per_second' => 'vpn.tunnel.dataout.bytespersecond'
         },
         'unit'      => 'B'
     }
@@ -79,8 +78,10 @@ sub custom_metric_threshold {
 
     my $exit = $self->{perfdata}->threshold_check(
         value       => defined($self->{instance_mode}->{option_results}->{per_sec}) ? $self->{result_values}->{value_per_sec} : $self->{result_values}->{value},
-        threshold   => [ { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label} , exit_litteral => 'critical' },
-                       { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' } ]
+        threshold   => [
+            { label => 'critical-' . $metrics_mapping{$self->{result_values}->{metric}}->{label} , exit_litteral => 'critical' },
+            { label => 'warning-' . $metrics_mapping{$self->{result_values}->{metric}}->{label}, exit_litteral => 'warning' }
+        ]
     );
     return $exit;
 }
@@ -139,11 +140,9 @@ sub custom_metric_output {
 
 sub custom_metric_output_state {
     my ($self, %options) = @_;
-    my $msg = "";
 
     my $value = $self->{result_values}->{value};
-    $msg = sprintf("%s: %.2f", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value);
-    return $msg;
+    return sprintf("%s: %.2f", $metrics_mapping{$self->{result_values}->{metric}}->{output}, $value);
 }
 
 sub prefix_metric_output {
@@ -199,9 +198,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'vpnid:s@'          => { name => 'vpn_id' },
-        'per-sec'           => { name => 'per_sec' },
-        'filter-metric:s'   => { name => 'filter_metric' }
+        'vpnid:s@'        => { name => 'vpn_id' },
+        'per-sec'         => { name => 'per_sec' },
+        'filter-metric:s' => { name => 'filter_metric' }
     });
 
     return $self;
