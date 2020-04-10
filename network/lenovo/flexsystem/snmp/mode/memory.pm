@@ -46,33 +46,33 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+        { label => 'usage', nlabel => 'switch.memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
-                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+        { label => 'usage-free', display_ok => 0, nlabel => 'switch.memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
             }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
-                key_values => [ { name => 'prct_used' } ],
-                output_template => 'Used : %.2f %%',
+        { label => 'usage-prct', display_ok => 0, nlabel => 'switch.memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'display' } ],
+                output_template => 'Ram Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -84,57 +84,52 @@ sub prefix_message_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter:s' => { name => 'filter', default => '.*' }
+        'filter-switch-num:s' => { name => 'filter_switch_num' }
     });
 
     return $self;
 }
 
+my $mapping = {
+    total => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.12.9.1.1.3' }, # totalMemoryStatsRev
+    free  => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.12.9.1.1.4' } # memoryFreeStatsRev
+};
+
+my $oid_memoryStatsEntry = '.1.3.6.1.4.1.20301.2.5.1.2.12.9.1.1';
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_switchNumber = '.1.3.6.1.4.1.20301.2.5.1.2.12.9.1.1.1';
-    my $oid_totalMemoryStatsRev = '.1.3.6.1.4.1.20301.2.5.1.2.12.9.1.1.3'; # in bytes
-    my $oid_memoryFreeStatsRev = '.1.3.6.1.4.1.20301.2.5.1.2.12.9.1.1.4'; # in bytes
-
-    my $result = $options{snmp}->get_table(oid => $oid_switchNumber, nothing_quit => 1);
-    my @instance_oids = ();
-    foreach my $oid (keys %$result) {
-        if ($result->{$oid} =~ /$self->{option_results}->{filter}/i) {
-            push @instance_oids, $oid;
-        }
-    }
-
-    if (scalar(@instance_oids) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find switch number '$self->{option_results}->{filter}'.");
-        $self->{output}->option_exit();
-    }
-
-    $options{snmp}->load(
-        oids => [$oid_totalMemoryStatsRev, $oid_memoryFreeStatsRev],
-        instances => \@instance_oids,
-        instance_regexp => "^" . $oid_switchNumber . '\.(.+)'
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_memoryStatsEntry,
+        start => $mapping->{total}->{oid},
+        end => $mapping->{free}->{oid},
+        nothing_quit => 1
     );
-    my $result2 = $options{snmp}->get_leef();
 
-    foreach my $instance (@instance_oids) {
-        $instance =~ /^$oid_switchNumber\.(.+)/;
-        $instance = $1;
+    $self->{memory} = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{free}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        my $free = $result2->{$oid_memoryFreeStatsRev . '.' . $instance};
-        my $total = $result2->{$oid_totalMemoryStatsRev . '.' . $instance};
-        my $prct_used = ($total - $free) * 100 / $total;
+        if (defined($self->{option_results}->{filter_switch_num}) && $self->{option_results}->{filter_switch_num} ne '' &&
+            $instance !~ /$self->{option_results}->{filter_switch_num}/) {
+            $self->{output}->output_add(long_msg => "skipping member '" . $instance . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        my $prct_used = ($result->{total} - $result->{free}) * 100 / $result->{total};
         $self->{memory}->{$instance} = {
-            display => $result->{$oid_switchNumber . '.' . $instance},
-            total => $total,
-            used => $total - $free,
-            free => $free,
+            display => $instance,
             prct_used => $prct_used,
             prct_free => 100 - $prct_used,
+            used => $result->{total} - $result->{free},
+            %$result
         };
     }
 }
@@ -149,9 +144,9 @@ Check memory usage.
 
 =over 8
 
-=item B<--filter>
+=item B<--filter-switch-num>
 
-Filter switch number (Default: '.*').
+Filter switch number.
 
 =item B<--warning-*> B<--critical-*>
 

@@ -29,73 +29,80 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_message_output', message_multiple => 'All CPU usages are ok' },
+        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_message_output', message_multiple => 'All CPU usages are ok' }
     ];
 
     $self->{maps_counters}->{cpu} = [
-        { label => 'average', nlabel => 'cpu.utilization.percentage', set => {
-                key_values => [ { name => 'average' }, { name => 'display' } ],
-                output_template => '%.2f %%',
+        { label => 'average-1min', nlabel => 'switch.cpu.utilization.1min.percentage', set => {
+                key_values => [ { name => 'average_1min' }, { name => 'display' } ],
+                output_template => '%.2f %% (1min)',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { value => 'average_1min_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
+        { label => 'average-5min', nlabel => 'switch.cpu.utilization.5min.percentage', set => {
+                key_values => [ { name => 'average_5min' }, { name => 'display' } ],
+                output_template => '%.2f %% (5min)',
+                perfdatas => [
+                    { value => 'average_5min_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
     ];
 }
 
 sub prefix_message_output {
     my ($self, %options) = @_;
 
-    return "Switch '" . $options{instance_value}->{display} . "' ";
+    return "Switch '" . $options{instance_value}->{display} . "' CPU average usage: ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter:s' => { name => 'filter', default => '.*' }
+        'filter-switch-num:s' => { name => 'filter_switch_num' }
     });
 
     return $self;
 }
 
+my $mapping = {
+    average_1min => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.5' }, # mpCpuStatsUtil1MinuteSwRev
+    average_5min => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.6' } # mpCpuStatsUtil5MinutesSwRev
+};
+
+my $oid_mpCpuStatsRevTableEntry = '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1';
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_mpCpuSwitchNumberRev = '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.1';
-    my $oid_mpCpuStatsUtil1MinuteSwRev = '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.5';
-
-    my $result = $options{snmp}->get_table(oid => $oid_mpCpuSwitchNumberRev, nothing_quit => 1);
-    my @instance_oids = ();
-    foreach my $oid (keys %$result) {
-        if ($result->{$oid} =~ /$self->{option_results}->{filter}/i) {
-            push @instance_oids, $oid;
-        }
-    }
-
-    if (scalar(@instance_oids) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Cannot find switch number '$self->{option_results}->{filter}'.");
-        $self->{output}->option_exit();
-    }
-
-    $options{snmp}->load(
-        oids => [$oid_mpCpuStatsUtil1MinuteSwRev],
-        instances => \@instance_oids,
-        instance_regexp => "^" . $oid_mpCpuSwitchNumberRev . '\.(.+)'
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_mpCpuStatsRevTableEntry,
+        start => $mapping->{average_1min}->{oid},
+        nothing_quit => 1
     );
-    my $result2 = $options{snmp}->get_leef();
 
-    foreach my $instance (@instance_oids) {
-        $instance =~ /^$oid_mpCpuSwitchNumberRev\.(.+)/;
-        $instance = $1;
-        
+    $self->{cpu} = {};
+    foreach my $oid (keys %$snmp_result) {
+        next if ($oid !~ /^$mapping->{average_1min}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
+
+        if (defined($self->{option_results}->{filter_switch_num}) && $self->{option_results}->{filter_switch_num} ne '' &&
+            $instance !~ /$self->{option_results}->{filter_switch_num}/) {
+            $self->{output}->output_add(long_msg => "skipping member '" . $instance . "': no matching filter.", debug => 1);
+            next;
+        }
+
         $self->{cpu}->{$instance} = {
-            display => $result->{$oid_mpCpuSwitchNumberRev . '.' . $instance},
-            average => $result2->{$oid_mpCpuStatsUtil1MinuteSwRev . '.' . $instance},
+            display => $instance,
+            %$result
         };
     }
 }
@@ -110,17 +117,14 @@ Check CPU usage (over the last minute).
 
 =over 8
 
-=item B<--filter>
+=item B<--filter-switch-num>
 
-Filter switch number (Default: '.*').
+Filter switch number.
 
-=item B<--warning-average>
+=item B<--warning-*> B<--critical-*>
 
-Warning threshold average CPU utilization. 
-
-=item B<--critical-average>
-
-Critical  threshold average CPU utilization. 
+Thresholds.
+Can be: 'average-1min' (%), 'average-5min' (%).
 
 =back
 
