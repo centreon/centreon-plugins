@@ -81,15 +81,15 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'block_difficulty', nlabel => 'parity.eth.block.difficulty', set => {
-                key_values => [ { name => 'block_difficulty' } ],
-                output_template => "Block difficulty: %f ",
-                perfdatas => [
-                    { label => 'block_difficulty', value => 'block_difficulty_absolute', template => '%f', min => 0 }
-                ],                
-            }
-        },
-        { label => 'block_uncles', nlabel => 'parity.eth.block.difficulty', set => {
+        # { label => 'block_difficulty', nlabel => 'parity.eth.block.difficulty', set => {
+        #         key_values => [ { name => 'block_difficulty' } ],
+        #         output_template => "Block difficulty: %f ",
+        #         perfdatas => [
+        #             { label => 'block_difficulty', value => 'block_difficulty_absolute', template => '%f', min => 0 }
+        #         ],                
+        #     }
+        # },
+        { label => 'block_uncles', nlabel => 'parity.eth.block.uncles', set => {
                 key_values => [ { name => 'block_uncles' } ],
                 output_template => "Block uncles: %d ",
                 perfdatas => [
@@ -143,10 +143,11 @@ sub manage_selection {
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
 
     my $gas_price = hex(@{$result}[2]->{result});
-   
-    # use Data::Dumper;
-    # my $length = scalar(@{$$result[5]->{result}->{transactions}});
-    # print Dumper($result) ;
+    my $res_block_time = @{$result}[5]->{result}->{timestamp} == 0 ? '': localtime(hex(@{$result}[5]->{result}->{timestamp}));
+
+    use Data::Dumper;
+    print Dumper($res_block_time) ;
+    print Dumper(@{$result}[5]->{result}->{timestamp});
    
     # conditional formating:
     my $res_sync = @{$result}[6]->{result} ? hex((@{$result}[6]->{result}->{currentBlock} / @{$result}[6]->{result}->{highestBlock})) * 100 : 100;
@@ -177,16 +178,16 @@ sub manage_selection {
 
     $self->{block} =  { block_size => hex(@{$result}[5]->{result}->{size}), 
                         block_gas => hex(@{$result}[5]->{result}->{gasUsed}),
-                        block_difficulty => hex(@{$result}[5]->{result}->{totalDifficulty}), 
+                        # block_difficulty => hex(@{$result}[5]->{result}->{totalDifficulty}), 
                         block_uncles => scalar(@{$$result[5]->{result}->{uncles}}), 
                         block_transactions => scalar(@{$$result[5]->{result}->{transactions}})};
 
     $self->{output}->output_add(severity  => 'OK', long_msg => 'Node status: [is_mining: ' . @{$result}[0]->{result} . '] [sync_start: ' . $res_startingBlock . 
-                                                                '] [sync_current: ' . $res_currentBlock . '] [sync_highest: ' . $res_highestBlock . '] [sync: ' . $res_sync . '%%]');
+                                                                '] [sync_current: ' . $res_currentBlock . '] [sync_highest: ' . $res_highestBlock . '] [sync: ' . $res_sync . '%]');
     $self->{output}->output_add(severity  => 'OK', long_msg => 'Client: [coinbase: ' . @{$result}[1]->{result} . ']');
     $self->{output}->output_add(severity  => 'OK', long_msg => 'Global: [hashrate: ' . hex(@{$result}[3]->{result}) . 
                                                                 '] [block_number: ' . (defined @{$result}[4]->{result} ? hex(@{$result}[4]->{result}) : 0) . ']');
-    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block: [block_time: ' . localtime(hex(@{$result}[5]->{result}->{timestamp})) . '] [block_gas_limit: ' . hex(@{$result}[5]->{result}->{gasLimit}) . 
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block: [block_time: ' . $res_block_time . '] [block_gas_limit: ' . hex(@{$result}[5]->{result}->{gasLimit}) . 
                                                                 '] [block_miner: ' . @{$result}[5]->{result}->{miner} . '] [block_hash: ' . @{$result}[5]->{result}->{hash} . 
                                                                 '] [last_block_number: ' . hex(@{$result}[5]->{result}->{number}) . ']');
     
