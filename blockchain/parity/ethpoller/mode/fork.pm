@@ -52,7 +52,8 @@ sub manage_selection {
     # print Dumper($result);
    
     # Unix time conversion
-    my $res_timestamp = localtime(hex($result->{last_update}->{timestamp}));  
+    my $res_timestamp = $result->{last_update}->{timestamp} == 0 ? '': localtime($result->{last_update}->{timestamp});
+    
 
     # Alerts management 
     # my $cache = Cache::File->new( cache_root => './parity-eth-poller-cache' );
