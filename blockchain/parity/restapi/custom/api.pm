@@ -41,7 +41,8 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            "hostname:s"    => { name => 'hostname' },
+            "hostname:s"    => { name => 'hostname' },                     
+            "port:s"        => { name => 'port' },
             "timeout:s"     => { name => 'timeout' },
             "api-path:s"    => { name => 'api_path' },
         });
@@ -81,6 +82,7 @@ sub check_options {
     my ($self, %options) = @_;
 
     $self->{hostname}   = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{port}       = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 8545;
     $self->{timeout}    = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_path}   = (defined($self->{option_results}->{api_path})) ? $self->{option_results}->{api_path} : '/';
  
@@ -102,7 +104,7 @@ sub build_options_for_httplib {
 
     $self->{option_results}->{hostname} = $self->{hostname};
     $self->{option_results}->{timeout} = $self->{timeout};
-    $self->{option_results}->{port} = 8545;
+    $self->{option_results}->{port} = $self->{port};
     $self->{option_results}->{proto} = 'http';
 }
 
