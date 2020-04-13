@@ -34,7 +34,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-       { label => 'stats_blockInterval', nlabel => 'parity.network.peers.count', set => {
+       { label => 'stats_blockInterval', nlabel => 'parity.stats.block.interval', set => {
                 key_values => [ { name => 'stats_blockInterval' } ],
                 output_template => "Block interval: %d ",
                 perfdatas => [
