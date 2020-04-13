@@ -53,6 +53,8 @@ sub manage_selection {
     # Alerts management 
     # my $cache = Cache::File->new( cache_root => './parity-eth-poller-cache' );
 
+    my $res_timestamp = 0;
+
     foreach my $account (@{$results->{Accounts}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $account->{id} !~ /$self->{option_results}->{filter_name}/) {
@@ -60,8 +62,10 @@ sub manage_selection {
             next;
         }
 
+        $res_timestamp = $account->{last_update}->{timestamp} == 0 ? '': localtime($account->{last_update}->{timestamp});
+
         $self->{output}->output_add(severity  => 'OK', long_msg => 'Account ' . $account->{id} . ': [label: ' . $account->{label} . '] [nonce: ' . $account->{nonce} .
-                            '] [timestamp: ' . localtime(hex($account->{last_update}->{timestamp})) . '] [blockNumber: ' . $account->{last_update}->{blockNumber} . 
+                            '] [timestamp: ' . $res_timestamp . '] [blockNumber: ' . $account->{last_update}->{blockNumber} . 
                             '] [receiver: ' . $account->{last_update}->{receiver} . '] [value: ' . $account->{last_update}->{value} . ']' );
     }
 
@@ -72,8 +76,10 @@ sub manage_selection {
             next;
         }
 
+        $res_timestamp = $minner->{last_update}->{timestamp} == 0 ? '': localtime($minner->{last_update}->{timestamp});
+
         $self->{output}->output_add(severity  => 'OK', long_msg => 'Minner ' . $minner->{id} . ': [label: ' . $minner->{label} . '] [blocks: ' . $minner->{blocks} .
-                            '] [timestamp: ' . localtime(hex($minner->{last_update}->{timestamp})) . '] [blockNumber: ' . $minner->{last_update}->{blockNumber}  . ']');
+                            '] [timestamp: ' . $res_timestamp . '] [blockNumber: ' . $minner->{last_update}->{blockNumber}  . ']');
     }
     
     foreach my $contract (@{$results->{Constracts}}) {
@@ -83,8 +89,10 @@ sub manage_selection {
             next;
         }
 
+        $res_timestamp = $contract->{last_update}->{timestamp} == 0 ? '': localtime($contract->{last_update}->{timestamp});
+
         $self->{output}->output_add(severity  => 'OK', long_msg => 'Contract ' . $contract->{id} . ': [label: ' . $contract->{label} . '] [balance: ' . $contract->{balance} .
-                            '] [timestamp: ' . localtime(hex($contract->{last_update}->{timestamp})) . '] [blockNumber: ' . $contract->{last_update}->{blockNumber} . 
+                            '] [timestamp: ' . $res_timestamp . '] [blockNumber: ' . $contract->{last_update}->{blockNumber} . 
                             '] [sender: ' . $contract->{last_update}->{sender} . '] [value: ' . $contract->{last_update}->{value} . ']');
 
         # if (my $cached_balance = $cache->get('contract_balance_' . $contract->{id})) {
@@ -104,8 +112,10 @@ sub manage_selection {
             next;
         }
 
+        $res_timestamp = $function->{last_update}->{timestamp} == 0 ? '': localtime($function->{last_update}->{timestamp});
+
         $self->{output}->output_add(severity  => 'OK', long_msg => '[Function ' . $function->{id} . ']: label: ' . $function->{label} . '] [calls: ' . $function->{calls} .
-                            '] [timestamp: ' . localtime(hex($function->{last_update}->{timestamp})) . '] [blockNumber: ' . $function->{last_update}->{blockNumber} . 
+                            '] [timestamp: ' . $res_timestamp . '] [blockNumber: ' . $function->{last_update}->{blockNumber} . 
                             '] [sender: ' . $function->{last_update}->{sender} . '] [receiver: ' . $function->{last_update}->{receiver} . 
                             '] [value: ' . $function->{last_update}->{value}  . ']');
     }
@@ -117,8 +127,10 @@ sub manage_selection {
             next;
         }
 
+        $res_timestamp = $event->{last_update}->{timestamp} == 0 ? '': localtime($event->{last_update}->{timestamp});
+
         $self->{output}->output_add(severity  => 'OK', long_msg => '[Event ' . $event->{id} . ']: label: ' . $event->{label} . '] [calls: ' . $event->{calls} .
-                            '] [timestamp: ' . localtime(hex($event->{last_update}->{timestamp})) . '] [blockNumber: ' . $event->{last_update}->{blockNumber} . 
+                            '] [timestamp: ' . $res_timestamp . '] [blockNumber: ' . $event->{last_update}->{blockNumber} . 
                             '] [sender: ' . $event->{last_update}->{sender} . '] [receiver: ' . $event->{last_update}->{receiver} . ']');
     }
 
