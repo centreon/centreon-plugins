@@ -53,7 +53,7 @@ sub set_counters {
 
     $self->{maps_counters}->{ratunnel} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'type' }, { name => 'status' }, { name => 'display' } ],
+                key_values => [ { name => 'display' }, { name => 'status' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -69,10 +69,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-ip:s'       => { name => 'filter_ip' },
+        'filter-name:s'     => { name => 'filter_name' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{type} eq "permanent" and %{status} =~ /down/i' },
-        'filter-name:s'     => { name => 'filter_ip' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /down/i' },
         'buggy-snmp'        => { name => 'buggy_snmp' },
     });
 
@@ -89,7 +88,7 @@ sub check_options {
 sub prefix_vpn_output {
     my ($self, %options) = @_;
 
-    return "RATunnel '" . $options{instance_value}->{display} . "' ";
+    return "Remote User '" . $options{instance_value}->{display} . "' ";
 }
 
 my $map_state = {
@@ -98,8 +97,7 @@ my $map_state = {
 };
 
 my $mapping = {
-    raInternalIpAddr   => { oid => '.1.3.6.1.4.1.2620.500.9000.1.1' },
-    raExternalIpAddr   => { oid => '.1.3.6.1.4.1.2620.500.9000.1.19' },
+    raUserName         => { oid => '.1.3.6.1.4.1.2620.500.9000.1.2' },
     raUserState        => { oid => '.1.3.6.1.4.1.2620.500.9000.1.20', map => $map_state },
 };
 my $oid_raUsersEntry = '.1.3.6.1.4.1.2620.500.9000';
@@ -121,20 +119,19 @@ sub manage_selection {
     }
 
     $self->{global} = { total => 0 };
-    $self->{vs} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{raUserState}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
-        if (defined($self->{option_results}->{filter_ip}) && $self->{option_results}->{filter_ip} ne '' &&
-            $result->{raExternalIpAddr} !~ /$self->{option_results}->{filter_ip}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $result->{raExternalIpAddr} . "': no matching filter.", debug => 1);
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $result->{raUserName} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{raUserName} . "': no matching filter.", debug => 1);
             next;
         }
 
         $self->{ratunnel}->{$instance} = {
-            display => $result->{raExternalIpAddr}, 
+            display => $result->{raUserName}, 
             status => $result->{raUserState},
         };
         $self->{global}->{total}++;
@@ -156,19 +153,19 @@ Check Remote Access users tunnel information
 
 =over 8
 
-=item B<--filter-ip>
+=item B<--filter-name>
 
-Filter ip (can be a regexp).
+Filter on Remote Access Users (can be a regexp).
 
 =item B<--warning-status>
 
 Set warning threshold for status.
-Can used special variables like: %{type}, %{status}, %{display}
+Can used special variables like: %{display}, %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{type} eq "permanent" and %{status} =~ /down/i').
-Can used special variables like: %{type}, %{status}, %{display}
+Set critical threshold for status (Default: '%{status} =~ /down/i').
+Can used special variables like: %{display}, %{status}
 
 =item B<--buggy-snmp>
 
