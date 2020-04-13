@@ -41,9 +41,9 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            "hostname:s"     => { name => 'hostname' },
-            "timeout:s"      => { name => 'timeout' },
-            "api-versions:s" => { name => 'api_version' },
+            'hostname:s'     => { name => 'hostname' },
+            'timeout:s'      => { name => 'timeout' },
+            'api-versions:s' => { name => 'api_version' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -110,20 +110,24 @@ sub request_api {
 
     $self->settings();
     
-    my $content = $self->{http}->request(method => 'GET', url_path => '/' . $self->{api_version} . $options{path},
-        critical_status => '', warning_status => '', unknown_status => '');
+    my $content = $self->{http}->request(
+        method => 'GET',
+        url_path => '/' . $self->{api_version} . $options{path},
+        critical_status => '',
+        warning_status => '', 
+        unknown_status => ''
+    );
 
     my $decoded;
     eval {
         $decoded = decode_json($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response");
         $self->{output}->option_exit();
     }
     if ($self->{http}->get_code() != 200) {
-        $self->{output}->add_option_msg(short_msg => "Connection issue: " . $decoded->{msg});
+        $self->{output}->add_option_msg(short_msg => "Connection issue: " . $decoded->{message});
         $self->{output}->option_exit();
     }
 
@@ -165,4 +169,3 @@ API base url path (Default: '/v1').
 B<custom>.
 
 =cut
-
