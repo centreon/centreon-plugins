@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = ( 
-        'sfdc-instance'       => 'apps::salesforce::restapi::mode::sfdcinstance',
+        'sfdc-instance' => 'apps::salesforce::restapi::mode::sfdcinstance',
     );
     $self->{custom_modes}{api} = 'apps::salesforce::restapi::custom::api';
     return $self;

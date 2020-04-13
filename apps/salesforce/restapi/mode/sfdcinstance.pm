@@ -30,21 +30,26 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        "Salesforce '%s' instance status is '%s' (active:'%s') ",
-        $self->{result_values}->{name},
+        "status is '%s' (active:'%s') ",
         $self->{result_values}->{status},
         $self->{result_values}->{active}
     );
+}
+
+sub prefix_volume_output {
+    my ($self, %options) = @_;
+
+    return "Salesforce '" . $options{instance_value}->{name} . "' instance ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'status', type => 1 },
+        { name => 'salesforce', type => 1, cb_prefix_output => 'prefix_salesforce_output', message_multiple => 'All salesforce instances are ok' }
     ];
 
-    $self->{maps_counters}->{status} = [
+    $self->{maps_counters}->{salesforce} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'active' }, { name => 'name' } ],
                 closure_custom_calc => \&catalog_status_calc,
@@ -61,7 +66,7 @@ sub set_counters {
                       min => 0, label_extra_instance => 1 },
                 ],
             }
-        },
+        }
     ];
 }
 
@@ -75,8 +80,9 @@ sub new {
         'alias'             => { name => 'use_alias' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /OK/' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /OK/' }
     });
+
     return $self;
 }
 
@@ -85,7 +91,6 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
-
 }
 
 sub manage_selection {
@@ -96,14 +101,13 @@ sub manage_selection {
     foreach my $instance (@{$self->{option_results}->{instance}}) {
         my $result = $options{custom}->request_api(path => $instance_path . $instance . '/status');
     
-        $self->{status}->{$instance} = {
+        $self->{salesforce}->{$instance} = {
             active   => $result->{isActive},
             incident => scalar(@{$result->{Incidents}}), 
             name     => $instance,
-            status   => $result->{status},
+            status   => $result->{status}
         };
     }
-
 }
 
 1;
@@ -139,4 +143,3 @@ Set critical threshold for instance status (Default: '%{status} !~ /OK/').
 =back
 
 =cut
-
