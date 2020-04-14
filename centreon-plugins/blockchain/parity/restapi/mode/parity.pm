@@ -89,7 +89,7 @@ sub manage_selection {
                             
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
 
-    use Data::Dumper;
+    # use Data::Dumper;
     # print Dumper($result);
 
     # Parity version construction
