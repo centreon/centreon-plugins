@@ -39,10 +39,10 @@ sub custom_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => 'alerts.' . $self->{result_values}->{severity_aboluste} . '.count',
+        nlabel => 'alerts.' . lc($self->{result_values}->{severity_absolute}) . '.count',
         value => $self->{result_values}->{count_absolute},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
     );
 }
 
@@ -74,7 +74,7 @@ sub new {
         'resource-group:s' => { name => 'resource_group', default => '' },
         'group-by:s'       => { name => 'group_by', default => 'severity' },
         'time-range:s'     => { name => 'time_range', default => '1h' },
-        'filter:s'         => { name => 'filter', default => '.*' },
+        'filter:s'         => { name => 'filter', default => '.*' }
     });
 
     return $self;
