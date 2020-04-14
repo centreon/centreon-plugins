@@ -36,7 +36,7 @@ sub custom_status_output {
     );
 }
 
-sub prefix_volume_output {
+sub prefix_salesforce_output {
     my ($self, %options) = @_;
 
     return "Salesforce '" . $options{instance_value}->{name} . "' instance ";
