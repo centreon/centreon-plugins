@@ -81,7 +81,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>v{
+    $options{options}->add_options(arguments => {
         'resource:s@'      => { name => 'resource' },
         'resource-group:s' => { name => 'resource_group' },
         'filter-metric:s'  => { name => 'filter_metric' }
