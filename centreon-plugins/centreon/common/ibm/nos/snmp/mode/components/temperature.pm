@@ -47,6 +47,11 @@ sub check {
     $temperature = $1 if ($1 > $temperature);
     my $critical_mib = ($warning_mib + $2) / 2;
 
+    if ($warning_mib == $critical_mib) { #seen on some chassis !
+        $warning_mib -= 10;
+        $critical_mib -= 5;
+    }
+
     $self->{components}->{temperature}->{total}++;
 
     $self->{output}->output_add(long_msg => 
