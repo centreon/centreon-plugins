@@ -33,20 +33,20 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu} = [
-        { label => 'average-1min', nlabel => 'switch.cpu.utilization.1min.percentage', set => {
-                key_values => [ { name => 'average_1min' }, { name => 'display' } ],
-                output_template => '%.2f %% (1min)',
+        { label => 'average-1m', nlabel => 'switch.cpu.utilization.1m.percentage', set => {
+                key_values => [ { name => 'average_1m' }, { name => 'display' } ],
+                output_template => '%.2f %% (1m)',
                 perfdatas => [
-                    { value => 'average_1min_absolute', template => '%.2f',
+                    { value => 'average_1m_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'average-5min', nlabel => 'switch.cpu.utilization.5min.percentage', set => {
-                key_values => [ { name => 'average_5min' }, { name => 'display' } ],
-                output_template => '%.2f %% (5min)',
+        { label => 'average-5m', nlabel => 'switch.cpu.utilization.5m.percentage', set => {
+                key_values => [ { name => 'average_5m' }, { name => 'display' } ],
+                output_template => '%.2f %% (5m)',
                 perfdatas => [
-                    { value => 'average_5min_absolute', template => '%.2f',
+                    { value => 'average_5m_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
@@ -73,8 +73,8 @@ sub new {
 }
 
 my $mapping = {
-    average_1min => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.5' }, # mpCpuStatsUtil1MinuteSwRev
-    average_5min => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.6' } # mpCpuStatsUtil5MinutesSwRev
+    average_1m => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.5' }, # mpCpuStatsUtil1MinuteSwRev
+    average_5m => { oid => '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1.6' } # mpCpuStatsUtil5MinutesSwRev
 };
 
 my $oid_mpCpuStatsRevTableEntry = '.1.3.6.1.4.1.20301.2.5.1.2.2.12.1.1';
@@ -84,13 +84,13 @@ sub manage_selection {
 
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_mpCpuStatsRevTableEntry,
-        start => $mapping->{average_1min}->{oid},
+        start => $mapping->{average_1m}->{oid},
         nothing_quit => 1
     );
 
     $self->{cpu} = {};
     foreach my $oid (keys %$snmp_result) {
-        next if ($oid !~ /^$mapping->{average_1min}->{oid}\.(.*)$/);
+        next if ($oid !~ /^$mapping->{average_1m}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
@@ -124,7 +124,7 @@ Filter switch number.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'average-1min' (%), 'average-5min' (%).
+Can be: 'average-1m' (%), 'average-5m' (%).
 
 =back
 
