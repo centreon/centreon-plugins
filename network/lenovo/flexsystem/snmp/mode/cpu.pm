@@ -33,7 +33,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{cpu} = [
-        { label => 'average-1m', nlabel => 'switch.cpu.utilization.1m.percentage', set => {
+        { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'average_1m' }, { name => 'display' } ],
                 output_template => '%.2f %% (1m)',
                 perfdatas => [
@@ -42,7 +42,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'average-5m', nlabel => 'switch.cpu.utilization.5m.percentage', set => {
+        { label => 'average-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
                 key_values => [ { name => 'average_5m' }, { name => 'display' } ],
                 output_template => '%.2f %% (5m)',
                 perfdatas => [
@@ -100,7 +100,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{cpu}->{$instance} = {
+        $self->{cpu}->{'switch' . $instance} = {
             display => $instance,
             %$result
         };
