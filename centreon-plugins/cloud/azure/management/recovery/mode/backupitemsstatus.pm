@@ -28,16 +28,17 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = sprintf("Pre-Check Status '%s', Last Backup Status '%s'",
+
+    return sprintf(
+        "Pre-Check Status '%s', Last Backup Status '%s'",
         $self->{result_values}->{precheck_status},
-        $self->{result_values}->{last_backup_status});
-    return $msg;
+        $self->{result_values}->{last_backup_status}
+    );
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{precheck_status} = $options{new_datas}->{$self->{instance} . '_precheck_status'};
     $self->{result_values}->{last_backup_status} = $options{new_datas}->{$self->{instance} . '_last_backup_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
@@ -52,16 +53,16 @@ sub prefix_global_output {
 
 sub prefix_item_output {
     my ($self, %options) = @_;
-    
+
     return "Backup Item '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', cb_init => 'skip_global' },
-        { name => 'items', type => 1, cb_prefix_output => 'prefix_item_output', message_multiple => 'All items are ok' },
+        { name => 'items', type => 1, cb_prefix_output => 'prefix_item_output', message_multiple => 'All items are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -69,18 +70,18 @@ sub set_counters {
                 key_values => [ { name => 'completed' }  ],
                 output_template => "completed : %s",
                 perfdatas => [
-                    { label => 'total_completed', value => 'completed_absolute', template => '%d', min => 0 },
-                ],
+                    { label => 'total_completed', value => 'completed_absolute', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'total-failed', set => {
                 key_values => [ { name => 'failed' }  ],
                 output_template => "failed : %s",
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 },
-                ],
+                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{items} = [
@@ -89,9 +90,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -105,18 +106,17 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                    "vault-name:s"          => { name => 'vault_name' },
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "filter-name:s"         => { name => 'filter_name' },
-                                    "filter-vmid:s"         => { name => 'filter_vmid' },
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'vault-name:s'      => { name => 'vault_name' },
+        'resource-group:s'  => { name => 'resource_group' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-vmid:s'     => { name => 'filter_vmid' },
+        'filter-counters:s' => { name => 'filter_counters' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{precheck_status} ne "Passed" || %{last_backup_status} eq "Failed"' }
+    });
+
     return $self;
 }
 
@@ -139,33 +139,33 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{global} = {
-        completed => 0, failed => 0, inprogress => 0,
-    };
-    $self->{items} = {};
     my $items = $options{custom}->azure_list_backup_items(
         vault_name => $self->{option_results}->{vault_name},
         resource_group => $self->{option_results}->{resource_group}
     );
+
+    $self->{global} = {
+        completed => 0, failed => 0, inprogress => 0
+    };
+    $self->{items} = {};
     foreach my $item (@{$items}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $item->{properties}->{friendlyName} !~ /$self->{option_results}->{filter_name}/);
         next if (defined($self->{option_results}->{filter_vmid}) && $self->{option_results}->{filter_vmid} ne ''
             && $item->{properties}->{virtualMachineId} !~ /$self->{option_results}->{filter_vmid}/);
-        
+
         $self->{items}->{$item->{id}} = { 
             display => $item->{properties}->{friendlyName},
             precheck_status => $item->{properties}->{healthStatus},
-            last_backup_status => $item->{properties}->{lastBackupStatus},
+            last_backup_status => $item->{properties}->{lastBackupStatus}
         };
 
-        foreach my $status (keys %{$self->{global}}) {
-            $self->{global}->{$status}++ if ($item->{properties}->{lastBackupStatus} =~ /$status/i);
-        }
+        $self->{global}->{ lc($item->{properties}->{lastBackupStatus}) }++
+            if (defined($item->{properties}->{lastBackupStatus}) && defined($self->{global}->{ lc($item->{properties}->{lastBackupStatus}) }));
     }
-    
+
     if (scalar(keys %{$self->{items}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No backup items found.");
+        $self->{output}->add_option_msg(short_msg => 'No backup items found.');
         $self->{output}->option_exit();
     }
 }
