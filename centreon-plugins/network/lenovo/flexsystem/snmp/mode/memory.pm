@@ -46,7 +46,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'usage', nlabel => 'switch.memory.usage.bytes', set => {
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -55,7 +55,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-free', display_ok => 0, nlabel => 'switch.memory.free.bytes', set => {
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -64,7 +64,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'switch.memory.usage.percentage', set => {
+        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'Ram Used : %.2f %%',
                 perfdatas => [
@@ -124,7 +124,7 @@ sub manage_selection {
         }
 
         my $prct_used = ($result->{total} - $result->{free}) * 100 / $result->{total};
-        $self->{memory}->{$instance} = {
+        $self->{memory}->{'switch' . $instance} = {
             display => $instance,
             prct_used => $prct_used,
             prct_free => 100 - $prct_used,
