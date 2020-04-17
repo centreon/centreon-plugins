@@ -96,7 +96,7 @@ sub check {
         }
         $self->{output}->perfdata_add(
             nlabel => 'hardware.temperature.celsius', unit => 'C',
-            instances => 'switch=' . $instance,
+            instances => 'switch' . $instance,
             value => $temperature,
             warning => $warn,
             critical => $crit
