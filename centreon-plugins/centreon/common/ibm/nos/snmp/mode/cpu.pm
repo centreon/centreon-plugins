@@ -35,7 +35,7 @@ sub set_counters {
     $self->{maps_counters}->{cpu} = [
         { label => 'average-1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => 'average_1m' } ],
-                output_template => '%.2f %% (1min)',
+                output_template => '%.2f %% (1m)',
                 perfdatas => [
                     { value => 'average_1m_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' }
@@ -44,7 +44,7 @@ sub set_counters {
         },
         { label => 'average-5m', nlabel => 'cpu.utilization.5m.percentage', set => {
                 key_values => [ { name => 'average_5m' } ],
-                output_template => '%.2f %% (5min)',
+                output_template => '%.2f %% (5m)',
                 perfdatas => [
                     { value => 'average_5m_absolute', template => '%.2f',
                       min => 0, max => 100, unit => '%' }
@@ -94,7 +94,7 @@ Check CPU usage (over the last minute).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'average-1min' (%), 'average-5min' (%).
+Can be: 'average-1m' (%), 'average-5m' (%).
 
 =back
 
