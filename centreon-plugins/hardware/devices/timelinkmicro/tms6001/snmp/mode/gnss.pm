@@ -73,17 +73,9 @@ __END__
 
 =head1 MODE
 
-Check quality of frequency generation
+Check GNSS state
 
 =over 8
-
-=item B<--warning>
-
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
 
 =back
 
