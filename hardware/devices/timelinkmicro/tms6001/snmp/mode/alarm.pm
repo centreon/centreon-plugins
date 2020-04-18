@@ -87,7 +87,7 @@ __END__
 
 =head1 MODE
 
-Check quality of frequency generation
+Check number of alarms
 
 =over 8
 
