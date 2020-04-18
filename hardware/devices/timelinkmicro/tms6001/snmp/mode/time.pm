@@ -87,7 +87,7 @@ __END__
 
 =head1 MODE
 
-Check quality of frequency generation
+Check quality of time generation
 
 =over 8
 

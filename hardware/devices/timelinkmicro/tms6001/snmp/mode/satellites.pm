@@ -87,7 +87,7 @@ __END__
 
 =head1 MODE
 
-Check quality of frequency generation
+Check number of satellites seen
 
 =over 8
 
