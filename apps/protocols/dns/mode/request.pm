@@ -34,18 +34,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "nameservers:s@"       => { name => 'nameservers' },
-         "searchlist:s@"        => { name => 'searchlist' },
-         "dns-options:s@"       => { name => 'dns_options' },
-         "search:s"             => { name => 'search' },
-         "search-type:s"        => { name => 'search_type' },
-         "expected-answer:s"    => { name => 'expected_answer' },
-         "warning:s"            => { name => 'warning' },
-         "critical:s"           => { name => 'critical' },
-         "memory"               => { name => 'memory' },
-         });
+    $options{options}->add_options(arguments => {
+        'nameservers:s@'    => { name => 'nameservers' },
+        'searchlist:s@'     => { name => 'searchlist' },
+        'dns-options:s@'    => { name => 'dns_options' },
+        'search:s'          => { name => 'search' },
+        'search-type:s'     => { name => 'search_type' },
+        'use-ptr-fqdn'      => { name => 'use_ptr_fqdn' },
+        'expected-answer:s' => { name => 'expected_answer' },
+        'warning:s'         => { name => 'warning' },
+        'critical:s'        => { name => 'critical' },
+        'memory'            => { name => 'memory' }
+    });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -96,14 +96,20 @@ sub run {
     my $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     my $result_str = join(', ', @results);
     
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3f second(s) (answer: %s)", $timeelapsed, $result_str));
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'));
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $timeelapsed,
+        threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+    );
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => sprintf("Response time %.3f second(s) (answer: %s)", $timeelapsed, $result_str)
+    );
+    $self->{output}->perfdata_add(
+        label => "time", unit => 's',
+        value => sprintf('%.3f', $timeelapsed),
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+    );
 
     if (defined($self->{option_results}->{expected_answer}) && $self->{option_results}->{expected_answer} ne '') {
         my $match = 0;
@@ -114,8 +120,11 @@ sub run {
         }
         
         if ($match == 0) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("No result values match expected answer (answer: %s)", $result_str));
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => sprintf("No result values match expected answer (answer: %s)", $result_str
+            )
+        );
         }
     }
     
@@ -125,15 +134,17 @@ sub run {
         my $old_result = $self->{statefile_cache}->get(name => "result");
         if (defined($old_result)) {
             if ($old_result ne $result_str) {
-                $self->{output}->output_add(severity => 'CRITICAL',
-                                            short_msg => sprintf("Result has changed [answer: %s] [old answer: %s]", $result_str, $old_result));
+                $self->{output}->output_add(
+                    severity => 'CRITICAL',
+                    short_msg => sprintf("Result has changed [answer: %s] [old answer: %s]", $result_str, $old_result)
+                );
             }
         } else {
             $self->{output}->output_add(long_msg => 'cache file created.');
         }
         $self->{statefile_cache}->write(data => $datas);
     }
-    
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -168,6 +179,10 @@ Set the search value (required).
 
 Set the search type. Can be: 'MX', 'SOA', 'NS', 'A', 'CNAME' or 'PTR'.
 'A' or 'PTR' is used by default (depends if an IP or not).
+
+=item B<--use-ptr-fqdn>
+
+Search is done on conical names for PTR type.
 
 =item B<--expected-answer>
 
