@@ -369,6 +369,36 @@ sub ec2_get_instances_status {
     return $instance_results;
 }
 
+sub ec2spot_get_active_instances_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "ec2 describe-spot-fleet-instances --no-dry-run --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    $cmd_options .= " --spot-fleet-request-id " . $options{spot_fleet_request_id};
+
+    return $cmd_options;
+}
+
+sub ec2spot_get_active_instances_status {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->ec2spot_get_active_instances_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $instance_results = {};
+    foreach (@{$raw_results->{ActiveInstances}}) {
+        $instance_results->{$_->{InstanceId}} = {
+            health      => $_->{InstanceHealth},
+            type        => $_->{InstanceType},
+            request_id  => $_->{SpotInstanceRequestId}
+        };
+    }
+
+    return $instance_results;
+}
+
 sub ec2_list_resources_set_cmd {
     my ($self, %options) = @_;
 
