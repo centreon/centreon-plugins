@@ -294,7 +294,7 @@ List available custom modes.
 
 =item B<--multiple>
 
-Multiple custom mode objects (some mode needs it).
+Multiple custom mode objects (required by some specific modes)
 
 =item B<--pass-manager>
 
