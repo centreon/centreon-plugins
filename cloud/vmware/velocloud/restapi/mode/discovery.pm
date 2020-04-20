@@ -63,6 +63,7 @@ sub run {
         $edge{device_family} = $edge->{deviceFamily};
         $edge{name} = $edge->{name};
         $edge{description} = $edge->{description};
+        $edge{description} =~ s/\n//g if (defined($edge{description}));
         $edge{edge_state} = $edge->{edgeState};
         $edge{service_state} = $edge->{serviceState};
         $edge{ha_state} = $edge->{haState};
