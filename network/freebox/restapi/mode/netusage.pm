@@ -27,9 +27,9 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -38,9 +38,9 @@ sub set_counters {
                 output_template => 'Upload available bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'bw_up', value => 'bw_up_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'bw_up', value => 'bw_up_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
         },
         { label => 'bw-down', set => {
@@ -48,9 +48,9 @@ sub set_counters {
                 output_template => 'Download available bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'bw_down', value => 'bw_down_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'bw_down', value => 'bw_down_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
         },
         { label => 'rate-up', set => {
@@ -58,9 +58,9 @@ sub set_counters {
                 output_template => 'Upload rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_up', value => 'rate_up_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'rate_up', value => 'rate_up_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
         },
         { label => 'rate-down', set => {
@@ -68,9 +68,9 @@ sub set_counters {
                 output_template => 'Download rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_down', value => 'rate_down_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'rate_down', value => 'rate_down_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
         },
         { label => 'vpn-rate-up', set => {
@@ -78,21 +78,21 @@ sub set_counters {
                 output_template => 'Vpn client upload rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'vpn_rate_up', value => 'vpn_rate_up_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'vpn_rate_up', value => 'vpn_rate_up_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
         },
-         { label => 'vpn-rate-down', set => {
+        { label => 'vpn-rate-down', set => {
                 key_values => [ { name => 'vpn_rate_down' } ],
                 output_template => 'Vpn client download rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'vpn_rate_down', value => 'vpn_rate_down_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'vpn_rate_down', value => 'vpn_rate_down_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -100,19 +100,18 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $result = $options{custom}->get_performance(db => 'net', path => 'rrd/');
-    $self->{global} = { %{$result} };
+
+    $self->{global} = $options{custom}->get_performance(db => 'net', path => 'rrd/');
+    $self->{global}->{$_} = int($self->{global}->{$_} * 8) foreach (keys %{$self->{global}});
 }
 
 1;
@@ -130,14 +129,9 @@ Check network usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^bw-up$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'bw-up', 'bw-down', 'rate-up', 'rate-down', 'vpn-rate-up', 'vpn-rate-down'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'bw-up', 'bw-down', 'rate-up', 'rate-down', 'vpn-rate-up', 'vpn-rate-down'.
 
 =back

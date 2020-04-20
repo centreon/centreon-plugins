@@ -27,7 +27,7 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
     ];
@@ -38,9 +38,9 @@ sub set_counters {
                 output_template => 'Dsl available upload bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_up', value => 'rate_up_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'rate_up', value => 'rate_up_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
         },
         { label => 'rate-down', set => {
@@ -48,9 +48,9 @@ sub set_counters {
                 output_template => 'Dsl available download bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_down', value => 'rate_down_absolute', template => '%.2f',
-                      unit => 'b/s', min => 0 },
-                ],
+                    { label => 'rate_down', value => 'rate_down_absolute', template => '%s',
+                      unit => 'b/s', min => 0 }
+                ]
             }
         },
         { label => 'snr-up', set => {
@@ -59,8 +59,8 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'snr_up', value => 'snr_up_absolute', template => '%.2f',
-                      unit => 'dB' },
-                ],
+                      unit => 'dB' }
+                ]
             }
         },
         { label => 'snr-down', set => {
@@ -69,10 +69,10 @@ sub set_counters {
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'snr_down', value => 'snr_down_absolute', template => '%.2f',
-                      unit => 'dB' },
-                ],
+                      unit => 'dB' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -80,21 +80,23 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    my $result = $options{custom}->get_performance(db => 'dsl', path => 'rrd/');
-    $result->{snr_up} *= 10 if (defined($result->{snr_up}));
-    $result->{snr_down} *= 10 if (defined($result->{snr_down}));
-    $self->{global} = { %{$result} };
+
+    $self->{global} = $options{custom}->get_performance(db => 'dsl', path => 'rrd/');
+    $self->{global}->{snr_up} *= 10 if (defined($self->{global}->{snr_up}));
+    $self->{global}->{snr_down} *= 10 if (defined($self->{global}->{snr_down}));
+    $self->{global}->{rate_up} *= int($self->{global}->{rate_up} * 8)
+        if (defined($self->{global}->{rate_up}));
+    $self->{global}->{rate_down} *= int($self->{global}->{rate_down} * 8)
+        if (defined($self->{global}->{rate_down}));
 }
 
 1;
@@ -112,14 +114,9 @@ Check dsl usage.
 Only display some counters (regexp can be used).
 Example: --filter-counters='^rate-up$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'rate-up', 'rate-down', 'snr-up', 'snr-down'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'rate-up', 'rate-down', 'snr-up', 'snr-down'.
 
 =back
