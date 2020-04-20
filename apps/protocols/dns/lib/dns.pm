@@ -26,46 +26,44 @@ use Net::DNS;
 
 my $handle;
 
-my %map_search_field = (
-    MX => 'exchange',
-    SOA => 'mname',
-    NS => 'nsdname',
-    A => 'address',
-    PTR => 'name',
-    CNAME => 'cname',
-    TXT => 'txtdata',
-);
-
 sub search {
     my ($self, %options) = @_;
-    
+
+    my $map_search_field = {
+        MX => 'exchange',
+        SOA => 'mname',
+        NS => 'nsdname',
+        A => 'address',
+        PTR => 'name',
+        CNAME => 'cname',
+        TXT => 'txtdata'
+    };
+
     my @results = ();
     my $search_type = $self->{option_results}->{search_type};
-    if (defined($search_type) && !defined($map_search_field{$search_type})) {
+    if (defined($search_type) && !defined($map_search_field->{$search_type})) {
         $self->{output}->add_option_msg(short_msg => "search-type '$search_type' is unknown or unsupported");
         $self->{output}->option_exit();
     }
-    
+
+    $map_search_field->{PTR} = 'ptrdname' if (defined($self->{option_results}->{use_ptr_fqdn}));
+
     my $error_quit = defined($options{error_quit}) ? $options{error_quit} : undef;
     
     my $reply = $handle->search($self->{option_results}->{search}, $search_type);
     if ($reply) {
         foreach my $rr ($reply->answer) {
-            if (!defined($search_type)) {
-                push @results, $rr->address if ($rr->type eq 'A');
-                push @results, $rr->name if ($rr->type eq 'PTR');
-                push @results, $rr->txtdata if ($rr->type eq 'TXT');
-                next;
-            }
-
-            next if ($rr->type ne $search_type);
-            my $search_field = $map_search_field{$search_type};
-            push @results, $rr->$search_field;
+            my $type = defined($search_type) ? $search_type : $rr->type;
+            next if ($type ne $rr->type);
+            my $attr = $map_search_field->{$type};
+            push @results, $rr->$attr;
         }
     } else {
         if (defined($error_quit)) {
-            $self->{output}->output_add(severity => $error_quit,
-                                        short_msg => sprintf("DNS Query Failed: %s", $handle->errorstring));
+            $self->{output}->output_add(
+                severity => $error_quit,
+                short_msg => sprintf('DNS query failed: %s', $handle->errorstring)
+            );
             $self->{output}->display();
             $self->{output}->exit();
         }
