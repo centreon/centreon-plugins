@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' },
     });
 
     return $self;
@@ -56,10 +56,14 @@ sub run {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $application->{name} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][status = %s]",
-            $application->{id},
-            $application->{name},
-            $application->{lastReportedStatus}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[id = %s][name = %s][status = %s]",
+                $application->{id},
+                $application->{name},
+                $application->{lastReportedStatus}
+            )
+        );
     }
 
     $self->{output}->output_add(severity => 'OK', short_msg => 'Mulesoft Anypoint Applications:');
