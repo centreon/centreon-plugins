@@ -245,22 +245,13 @@ sub get_application_status {
     return $response->{data};
 }
 
-sub get_application_metrics {
-    my ($self, %options) = @_;
-
-    my $url_path = $self->{monitoring_endpoint} . '/applications/flows/' . $options{applicationId};
-    my $response = $self->request_api(method => 'GET', url_path => $url_path);
-
-    return $response->{data};
-}
-
 sub list_servers {
     my ($self, %options) = @_;
 
-    my $url_path = '/servers';
+    my $url_path = $self->{monitoring_endpoint} . '/servers/';
     my $response = $self->request_api(method => 'GET', url_path => $url_path);
 
-    return $response->{servers};
+    return $response->{data};
 }
 
 sub get_server_status {
@@ -269,7 +260,7 @@ sub get_server_status {
     my $url_path = $self->{monitoring_endpoint} . '/servers/' . $options{serverId};
     my $response = $self->request_api(method => 'GET', url_path => $url_path);
 
-    return $response->{server};
+    return $response->{data};
 }
 
 
