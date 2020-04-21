@@ -33,14 +33,18 @@ my $oid_powerSupplyTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.12.1';
 sub load {
     my ($self) = @_;
 
-    push @{$self->{request}}, { oid => $oid_powerSupplyTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_powerSupplyTableEntry,
+        start => $mapping->{powerSupplyStatus}->{oid},
+        end => $mapping->{powerSupplyLocationName}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking power supplies");
-    $self->{components}->{psu} = {name => 'power supplies', total => 0, skip => 0};
+    $self->{components}->{psu} = { name => 'power supplies', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'psu'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_powerSupplyTableEntry}})) {

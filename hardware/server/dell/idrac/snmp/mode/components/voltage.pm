@@ -39,7 +39,11 @@ my $oid_voltageProbeTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.20.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_voltageProbeTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_voltageProbeTableEntry,
+        start => $mapping->{voltageProbeStateSettings}->{oid},
+        end => $mapping->{voltageProbeLowerCriticalThreshold}->{oid}
+    };
 }
 
 sub check {
@@ -58,10 +62,14 @@ sub check {
         $self->{components}->{voltage}->{total}++;
 
         $result->{voltageProbeReading} = (defined($result->{voltageProbeReading})) ? $result->{voltageProbeReading} / 1000 : 'unknown';
-        $self->{output}->output_add(long_msg => sprintf("voltage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
-                                    $result->{voltageProbeLocationName}, $result->{voltageProbeStatus}, $instance, 
-                                    $result->{voltageProbeStateSettings}, $result->{voltageProbeReading}));
-        
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "voltage '%s' status is '%s' [instance = %s] [state = %s] [value = %s]",
+                $result->{voltageProbeLocationName}, $result->{voltageProbeStatus}, $instance, 
+                $result->{voltageProbeStateSettings}, $result->{voltageProbeReading}
+            )
+        );
+
         my $exit = $self->get_severity(label => 'default.state', section => 'voltage.state', value => $result->{voltageProbeStateSettings});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(severity => $exit,
@@ -98,8 +106,10 @@ sub check {
             }
             
             if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-                $self->{output}->output_add(severity => $exit,
-                                            short_msg => sprintf("Voltage '%s' is %s V", $result->{voltageProbeLocationName}, $result->{voltageProbeReading}));
+                $self->{output}->output_add(
+                    severity => $exit,
+                    short_msg => sprintf("Voltage '%s' is %s V", $result->{voltageProbeLocationName}, $result->{voltageProbeReading})
+                );
             }
             $self->{output}->perfdata_add(
                 label => 'voltage', unit => 'V',

@@ -33,7 +33,11 @@ my $oid_networkDeviceTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1100.90.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_networkDeviceTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_networkDeviceTableEntry,
+        start => $mapping->{networkDeviceStatus}->{oid},
+        end => $mapping->{networkDeviceProductName}->{oid}
+    };
 }
 
 sub check {

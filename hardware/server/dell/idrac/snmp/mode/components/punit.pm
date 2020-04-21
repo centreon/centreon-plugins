@@ -34,14 +34,18 @@ my $oid_powerUnitTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.10.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_powerUnitTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_powerUnitTableEntry,
+        start => $mapping->{powerUnitStateSettings}->{oid},
+        end => $mapping->{powerUnitStatus}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking power units");
-    $self->{components}->{punit} = {name => 'power units', total => 0, skip => 0};
+    $self->{components}->{punit} = { name => 'power units', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'punit'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_powerUnitTableEntry}})) {
