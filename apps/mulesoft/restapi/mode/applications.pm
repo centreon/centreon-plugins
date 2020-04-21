@@ -24,18 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    return my $msg = sprintf('Id: %s, Status: %s', $self->{result_values}->{id}, $self->{result_values}->{status});
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
-    return 0;
+    return sprintf('Id: %s, Status: %s', $self->{result_values}->{id}, $self->{result_values}->{status});
 }
 
 sub set_counters {
@@ -48,40 +42,40 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'mulesoft.applications.total.count', set => {
-            key_values      => [ { name => 'total' }  ],
-            output_template => "Total : %s",
-            perfdatas       => [ { value => 'total_absolute', template => '%d', min => 0 } ],
+                key_values      => [ { name => 'total' }  ],
+                output_template => "Total : %s",
+                perfdatas       => [ { value => 'total_absolute', template => '%d', min => 0 } ]
             }
         },
         { label => 'started', nlabel => 'mulesoft.applications.status.started.count', set => {
-            key_values      => [ { name => 'started' }  ],
-            output_template => "Started : %s",
-            perfdatas       => [ { value => 'started_absolute', template => '%d', min => 0 } ]
+                key_values      => [ { name => 'started' }  ],
+                output_template => "Started : %s",
+                perfdatas       => [ { value => 'started_absolute', template => '%d', min => 0 } ]
             }
         },
         { label => 'stopped', nlabel => 'mulesoft.applications.status.stopped.count', set => {
-            key_values      => [ { name => 'stopped' }  ],
-            output_template => "Stopped : %s",
-            perfdatas       => [ { value => 'stopped_absolute', template => '%d', min => 0 } ]
+                key_values      => [ { name => 'stopped' }  ],
+                output_template => "Stopped : %s",
+                perfdatas       => [ { value => 'stopped_absolute', template => '%d', min => 0 } ]
             }
         },
         { label => 'failed', nlabel => 'mulesoft.applications.status.failed.count', set => {
-            key_values      => [ { name => 'failed' }  ],
-            output_template => "Failed : %s",
-            perfdatas       => [ { value => 'failed_absolute', template => '%d', min => 0 } ]
+                key_values      => [ { name => 'failed' }  ],
+                output_template => "Failed : %s",
+                perfdatas       => [ { value => 'failed_absolute', template => '%d', min => 0 } ]
             }
         }
    ];
 
     $self->{maps_counters}->{applications} = [
         { label => 'status', threshold => 0, set => {
-            key_values => [ { name => 'id' }, { name => 'status' }, { name => 'name'}, { name => 'display' } ],
-            closure_custom_calc => $self->can('custom_status_calc'),
-            closure_custom_output => $self->can('custom_status_output'),
-            closure_custom_perfdata => sub { return 0; },
-            closure_custom_threshold_check => \&catalog_status_threshold,
+                key_values => [ { name => 'id' }, { name => 'status' }, { name => 'name'}, { name => 'display' } ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -91,9 +85,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s"        => { name => 'filter_name' },
-        "warning-status:s"     => { name => 'warning_status', default => '' },
-        "critical-status:s"    => { name => 'critical_status', default => '' }
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' }
     });
 
     return $self;
@@ -182,7 +176,6 @@ Typical syntax: --warning-status='%{status} ne "STARTED"'
 Set warning threshold for status (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
 Typical syntax: --critical-status='%{status} ~= m/FAILED/'
-
 
 =back
 
