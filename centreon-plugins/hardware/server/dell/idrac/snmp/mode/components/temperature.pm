@@ -47,7 +47,11 @@ my $oid_temperatureProbeTableEntry = '.1.3.6.1.4.1.674.10892.5.4.700.20.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_temperatureProbeTableEntry, begin => $mapping->{temperatureProbeStateSettings}->{oid}, end => $mapping->{temperatureProbeLowerCriticalThreshold}->{oid} };
+    push @{$self->{request}}, {
+        oid => $oid_temperatureProbeTableEntry,
+        start => $mapping->{temperatureProbeStateSettings}->{oid},
+        end => $mapping->{temperatureProbeLowerCriticalThreshold}->{oid}
+    };
 }
 
 sub check {

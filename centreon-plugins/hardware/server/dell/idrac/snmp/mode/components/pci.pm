@@ -34,14 +34,18 @@ my $oid_pCIDeviceTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1100.80.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_pCIDeviceTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_pCIDeviceTableEntry,
+        start => $mapping->{pCIDeviceStateSettings}->{oid},
+        end => $mapping->{pCIDeviceDescriptionName}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking pci");
-    $self->{components}->{pci} = {name => 'pci', total => 0, skip => 0};
+    $self->{components}->{pci} = { name => 'pci', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'pci'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_pCIDeviceTableEntry}})) {
