@@ -31,8 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'applications'      => 'apps::mulesoft::restapi::mode::applications',
-        'listapplications'  => 'apps::mulesoft::restapi::mode::listapplications'
+        'applications'        => 'apps::mulesoft::restapi::mode::applications',
+        'listapplications'    => 'apps::mulesoft::restapi::mode::listapplications',
+        'servers'             => 'apps::mulesoft::restapi::mode::servers',
+        'listservers'         => 'apps::mulesoft::restapi::mode::listservers',
     );
 
     $self->{custom_modes}{restapi} = 'apps::mulesoft::restapi::custom::api';
