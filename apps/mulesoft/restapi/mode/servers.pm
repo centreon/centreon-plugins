@@ -2,7 +2,7 @@
 # Copyright 2020 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
-# the needs in IT infrastructure and application monitoring for
+# the needs in IT infrastructure and server monitoring for
 # service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,13 +18,14 @@
 # limitations under the License.
 #
 
-package apps::mulesoft::restapi::mode::applications;
+package apps::mulesoft::restapi::mode::servers;
 
 use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use DateTime;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -43,37 +44,31 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'applications', type => 1, cb_prefix_output => 'prefix_application_output', message_multiple => 'All applications are ok' }
+        { name => 'servers', type => 1, cb_prefix_output => 'prefix_server_output', message_multiple => 'All servers are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'mulesoft.applications.total.count', set => {
+        { label => 'total', nlabel => 'mulesoft.servers.total.count', set => {
             key_values      => [ { name => 'total' }  ],
             output_template => "Total : %s",
             perfdatas       => [ { value => 'total_absolute', template => '%d', min => 0 } ],
             }
         },
-        { label => 'started', nlabel => 'mulesoft.applications.status.started.count', set => {
-            key_values      => [ { name => 'started' }  ],
-            output_template => "Started : %s",
-            perfdatas       => [ { value => 'started_absolute', template => '%d', min => 0 } ]
+        { label => 'running', nlabel => 'mulesoft.servers.status.running.count', set => {
+            key_values      => [ { name => 'running' }  ],
+            output_template => "Running : %s",
+            perfdatas       => [ { value => 'running_absolute', template => '%d', min => 0 } ]
             }
         },
-        { label => 'stopped', nlabel => 'mulesoft.applications.status.stopped.count', set => {
-            key_values      => [ { name => 'stopped' }  ],
-            output_template => "Stopped : %s",
-            perfdatas       => [ { value => 'stopped_absolute', template => '%d', min => 0 } ]
-            }
-        },
-        { label => 'failed', nlabel => 'mulesoft.applications.status.failed.count', set => {
-            key_values      => [ { name => 'failed' }  ],
-            output_template => "Failed : %s",
-            perfdatas       => [ { value => 'failed_absolute', template => '%d', min => 0 } ]
+        { label => 'disconnected', nlabel => 'mulesoft.servers.status.disconnected.count', set => {
+            key_values      => [ { name => 'disconnected' }  ],
+            output_template => "Disconnected : %s",
+            perfdatas       => [ { value => 'disconnected_absolute', template => '%d', min => 0 } ]
             }
         }
    ];
 
-    $self->{maps_counters}->{applications} = [
+    $self->{maps_counters}->{servers} = [
         { label => 'status', threshold => 0, set => {
             key_values => [ { name => 'id' }, { name => 'status' }, { name => 'name'}, { name => 'display' } ],
             closure_custom_calc => $self->can('custom_status_calc'),
@@ -93,7 +88,7 @@ sub new {
     $options{options}->add_options(arguments => {
         "filter-name:s"        => { name => 'filter_name' },
         "warning-status:s"     => { name => 'warning_status', default => '' },
-        "critical-status:s"    => { name => 'critical_status', default => '' }
+        "critical-status:s"    => { name => 'critical_status', default => '' },
     });
 
     return $self;
@@ -109,44 +104,43 @@ sub check_options {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Total applications ";
+    return "Total servers ";
 }
 
-sub prefix_application_output {
+sub prefix_server_output {
     my ($self, %options) = @_;
 
-    return "Application '" . $options{instance_value}->{name} . "' ";
+    return "Server '" . $options{instance_value}->{name} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{global} = { started => 0, stopped => 0, failed => 0 };
-    $self->{applications} = {};
-    my $result = $options{custom}->list_applications();
-
-    foreach my $application (@{$result}) {
+    $self->{servers} = {};
+    my $result = $options{custom}->list_servers();
+    my $current_time = DateTime->now();
+    foreach my $server (@{$result}) {
         next if ( defined($self->{option_results}->{filter_name})
             && $self->{option_results}->{filter_name} ne ''
-            && $application->{name} !~ /$self->{option_results}->{filter_name}/ );
-        $self->{applications}->{$application} = {
-            display     => $application,
-            id          => $application->{id},
-            name        => $application->{name},
-            status      => $application->{lastReportedStatus},
+            && $server->{name} !~ /$self->{option_results}->{filter_name}/ );
+        $self->{servers}->{$server} = {
+            display     => $server,
+            id          => $server->{id},
+            name        => $server->{name},
+            status      => $server->{status},
         };
 
-        $self->{global}->{started}++ if $application->{lastReportedStatus} =~ m/STARTED/;
-        $self->{global}->{stopped}++ if $application->{lastReportedStatus} =~ m/STOPPED/;
-        $self->{global}->{failed}++ if $application->{lastReportedStatus} =~ m/FAILED/;
+        $self->{global}->{running}++ if $server->{status} =~ m/RUNNING/;
+        $self->{global}->{disconnected}++ if $server->{status} =~ m/DISCONNECTED/;
     }
 
-    if (scalar(keys %{$self->{applications}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No application found.");
+    if (scalar(keys %{$self->{servers}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No server found.");
         $self->{output}->option_exit();
     }
 
-    $self->{global}->{total} = scalar (keys %{$self->{applications}});
+    $self->{global}->{total} = scalar (keys %{$self->{servers}});
 }
 
 1;
@@ -155,10 +149,10 @@ __END__
 
 =head1 MODE
 
-Check Mulesoft Anypoint Applications status.
+Check Mulesoft Anypoint Servers status.
 
 Example:
-perl centreon_plugins.pl --plugin=apps::mulesoft::restapi::plugin --mode=applications
+perl centreon_plugins.pl --plugin=apps::mulesoft::restapi::plugin --mode=servers
 --environment-id='1234abc-56de-78fg-90hi-1234abcdefg' --organization-id='1234abcd-56ef-78fg-90hi-1234abcdefg'
 --api-username='myapiuser' --api-password='myapipassword' --verbose
 
@@ -168,20 +162,20 @@ More information on'https://anypoint.mulesoft.com/exchange/portals/anypoint-plat
 
 =item B<--filter-name>
 
-Filter by application name (Regexp can be used).
-Example: --filter-name='^application1$'
+Filter by server name (Regexp can be used).
+Example: --filter-name='^server1$'
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --warning-status=%{status} ne "STARTED"
+Typical syntax: --warning-status=%{status} ne "RUNNING"
 
 =item B<--critical-status>
 
 Set warning threshold for status (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --critical-status=%{status} ~= m/FAILED/"
+Typical syntax: --critical-status=%{status} ~= m/DISCONNECTED/"
 
 
 =back

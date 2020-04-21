@@ -2,7 +2,7 @@
 # Copyright 2020 Centreon (http://www.centreon.com/)
 #
 # Centreon is a full-fledged industry-strength solution that meets
-# the needs in IT infrastructure and application monitoring for
+# the needs in IT infrastructure and server monitoring for
 # service performance.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::mulesoft::restapi::mode::listapplications;
+package apps::mulesoft::restapi::mode::listservers;
 
 use base qw(centreon::plugins::mode);
 
@@ -45,24 +45,25 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{data} = $options{custom}->list_applications();
+    $self->{data} = $options{custom}->list_servers();
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->list_applications();
-    foreach my $application (@{$result}) {
+    my $result = $options{custom}->list_servers();
+    foreach my $server (@{$result}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $application->{name} !~ /$self->{option_results}->{filter_name}/);
+            && $server->{name} !~ /$self->{option_results}->{filter_name}/);
 
         $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][status = %s]",
-            $application->{id},
-            $application->{name},
-            $application->{lastReportedStatus}));
+            $server->{id},
+            $server->{name},
+            $server->{status}
+        ));
     }
 
-    $self->{output}->output_add(severity => 'OK', short_msg => 'Mulesoft Anypoint Applications:');
+    $self->{output}->output_add(severity => 'OK', short_msg => 'Mulesoft Anypoint Servers:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -77,11 +78,11 @@ sub disco_show {
     my ($self, %options) = @_;
 
     $self->manage_selection(%options);
-    foreach my $application (@{$self->{data}}) {
+    foreach my $server (@{$self->{data}}) {
         $self->{output}->add_disco_entry(
-            id => $application->{id},
-            name => $application->{name},
-            status => $application->{lastReportedStatus},
+            id => $server->{id},
+            name => $server->{name},
+            status => $server->{status},
         );
     }
 }
@@ -92,13 +93,13 @@ __END__
 
 =head1 MODE
 
-List Mulesoft Anypoint applications.
+List Mulesoft Anypoint Servers.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter application name (Can be a regexp).
+Filter server name (Can be a regexp).
 
 =back
 
