@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' },
     });
 
     return $self;
@@ -42,12 +42,6 @@ sub check_options {
     $self->SUPER::init(%options);
 }
 
-sub manage_selection {
-    my ($self, %options) = @_;
-
-    $self->{data} = $options{custom}->list_servers();
-}
-
 sub run {
     my ($self, %options) = @_;
 
@@ -56,11 +50,14 @@ sub run {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $server->{name} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{output}->output_add(long_msg => sprintf("[id = %s][name = %s][status = %s]",
-            $server->{id},
-            $server->{name},
-            $server->{status}
-        ));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "[id = %s][name = %s][status = %s]",
+                $server->{id},
+                $server->{name},
+                $server->{status}
+            )
+        );
     }
 
     $self->{output}->output_add(severity => 'OK', short_msg => 'Mulesoft Anypoint Servers:');
@@ -77,8 +74,8 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection(%options);
-    foreach my $server (@{$self->{data}}) {
+    my $result = $options{custom}->list_servers();
+    foreach my $server (@{$result}) {
         $self->{output}->add_disco_entry(
             id => $server->{id},
             name => $server->{name},
