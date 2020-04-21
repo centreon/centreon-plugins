@@ -169,13 +169,13 @@ Example: --filter-name='^server1$'
 
 Set warning threshold for status (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --warning-status=%{status} ne "RUNNING"
+Typical syntax: --warning-status='%{status} ne "RUNNING"'
 
 =item B<--critical-status>
 
 Set warning threshold for status (Default: '').
 Threshold can be matched on %{name}, %{id} or %{status} and Regexp can be used.
-Typical syntax: --critical-status=%{status} ~= m/DISCONNECTED/"
+Typical syntax: --critical-status='%{status} ~= m/DISCONNECTED/'
 
 
 =back
