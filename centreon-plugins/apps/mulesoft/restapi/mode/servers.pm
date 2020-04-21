@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
-use DateTime;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -119,7 +118,6 @@ sub manage_selection {
     $self->{global} = { started => 0, stopped => 0, failed => 0 };
     $self->{servers} = {};
     my $result = $options{custom}->list_servers();
-    my $current_time = DateTime->now();
     foreach my $server (@{$result}) {
         next if ( defined($self->{option_results}->{filter_name})
             && $self->{option_results}->{filter_name} ne ''
