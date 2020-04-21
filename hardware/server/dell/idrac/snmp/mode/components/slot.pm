@@ -33,21 +33,25 @@ my $oid_systemSlotTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1200.10.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_systemSlotTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_systemSlotTableEntry,
+        start => $mapping->{systemSlotStatus}->{oid},
+        end => $mapping->{systemSlotSlotExternalSlotName}->{oid}
+    };
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking slots");
-    $self->{components}->{slot} = {name => 'slots', total => 0, skip => 0};
+    $self->{components}->{slot} = { name => 'slots', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'slot'));
 
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_systemSlotTableEntry}})) {
         next if ($oid !~ /^$mapping->{systemSlotStatus}->{oid}\.(.*)$/);
         my $instance = $1;
         my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_systemSlotTableEntry}, instance => $instance);
-        
+
         next if ($self->check_filter(section => 'slot', instance => $instance));
         $self->{components}->{slot}->{total}++;
 

@@ -34,20 +34,24 @@ my $oid_processorDeviceTableEntry = '.1.3.6.1.4.1.674.10892.5.4.1100.30.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_processorDeviceTableEntry };
+    push @{$self->{request}},
+        { oid => $oid_processorDeviceTableEntry, start => $mapping->{processorDeviceStateSettings}->{oid}, end => $mapping->{processorDeviceStatus}->{oid} },
+        { oid => $mapping->{processorDeviceFQDD}->{oid} }
+        ;
 }
 
 sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "Checking processors");
-    $self->{components}->{processor} = {name => 'processors', total => 0, skip => 0};
+    $self->{components}->{processor} = { name => 'processors', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'processor'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_processorDeviceTableEntry}})) {
+    my $snmp_result = { %{$self->{results}->{ $oid_processorDeviceTableEntry }}, %{$self->{results}->{ $mapping->{processorDeviceFQDD}->{oid} }} };
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping->{processorDeviceStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_processorDeviceTableEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         next if ($self->check_filter(section => 'processor', instance => $instance));
         $self->{components}->{processor}->{total}++;

@@ -40,7 +40,11 @@ my $oid_amperageProbeTableEntry = '.1.3.6.1.4.1.674.10892.5.4.600.30.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_amperageProbeTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_amperageProbeTableEntry,
+        start => $mapping->{amperageProbeStateSettings}->{oid},
+        end => $mapping->{amperageProbeLowerCriticalThreshold}->{oid}
+    };
 }
 
 sub check {

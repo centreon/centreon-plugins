@@ -39,7 +39,11 @@ my $oid_coolingDeviceTableEntry = '.1.3.6.1.4.1.674.10892.5.4.700.12.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_coolingDeviceTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_coolingDeviceTableEntry,
+        start => $mapping->{coolingDeviceStateSettings}->{oid},
+        end => $mapping->{coolingDeviceLowerCriticalThreshold}->{oid}
+    };
 }
 
 sub check {

@@ -34,7 +34,11 @@ my $oid_coolingUnitTableEntry = '.1.3.6.1.4.1.674.10892.5.4.700.10.1';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_coolingUnitTableEntry };
+    push @{$self->{request}}, {
+        oid => $oid_coolingUnitTableEntry,
+        start => $mapping->{coolingUnitStateSettings}->{oid},
+        end => $mapping->{coolingUnitStatus}->{oid}
+    };
 }
 
 sub check {
