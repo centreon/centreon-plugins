@@ -35,6 +35,7 @@ sub new {
         'listapplications'    => 'apps::mulesoft::restapi::mode::listapplications',
         'servers'             => 'apps::mulesoft::restapi::mode::servers',
         'listservers'         => 'apps::mulesoft::restapi::mode::listservers',
+        'clusters'            => 'apps::mulesoft::restapi::mode::clusters'
     );
 
     $self->{custom_modes}{restapi} = 'apps::mulesoft::restapi::custom::api';
