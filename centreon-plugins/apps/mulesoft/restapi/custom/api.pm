@@ -150,7 +150,6 @@ sub get_access_token {
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
     if ( $has_cache_file == 0 || !defined($access_token) || (($expires_on - time()) < 10) ) {
-        #my ($username, $password) = ( $self->{api_username}, $self->{api_password} );
         my $login = { username => $self->{api_username}, password => $self->{api_password} };
         my $post_json = JSON::XS->new->utf8->encode($login);
 
@@ -263,6 +262,14 @@ sub get_server_status {
     return $response->{data};
 }
 
+sub list_clusters {
+    my ($self, %options) = @_;
+
+    my $url_path = $self->{monitoring_endpoint} . '/clusters/';
+    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+
+    return $response->{data};
+}
 
 sub cache_hosts {
     my ($self, %options) = @_;
