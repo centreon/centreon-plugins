@@ -121,10 +121,21 @@ sub manage_selection {
         $self->{global}->{total_ipsec}++;
     }
 
+    $result = $options{custom}->execute_command(command => 'show vpn ipsec-sa', ForceArray => ['entry']);
+    foreach (@{$result->{entries}->{entry}}) {
+        if (defined($self->{tunnels}->{$_->{gwid}})) {
+            $self->{tunnels}->{$_->{gwid}}->{tid} = $_->{tid};
+        }
+    }
+
     $result = $options{custom}->execute_command(command => 'show vpn flow', ForceArray => ['entry']);
-    foreach (@{$result->{IPSec}->{entry}}) {
-        $self->{tunnels}->{$_->{gwid}}->{state} = $_->{state};
-        $self->{tunnels}->{$_->{gwid}}->{monitor_status} = $_->{mon};
+    foreach my $gwid (keys %{$self->{tunnels}}) {
+        next if (!defined($self->{tunnels}->{$gwid}->{tid}));
+        foreach (@{$result->{IPSec}->{entry}}) {
+            next if ($self->{tunnels}->{$gwid}->{tid} ne $_->{id});
+            $self->{tunnels}->{$_->{gwid}}->{state} = $_->{state};
+            $self->{tunnels}->{$_->{gwid}}->{monitor_status} = $_->{mon};
+        }
     }
 }
 
