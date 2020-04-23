@@ -41,7 +41,7 @@ sub set_counters {
     $self->SUPER::set_counters(%options);
     
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'fcs-errors', filter => 'add_errors', nlabel => 'interface.packets.in.fcs.errors.count', set => {
+        { label => 'in-fcserror', filter => 'add_errors', nlabel => 'interface.packets.in.fcserror.count', set => {
                 key_values => [ { name => 'infcserror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'),
                 closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'fcserror' },
@@ -66,7 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'bias_current' }, { name => 'display' } ],
                 output_template => 'Bias Current : %s mA',
                 perfdatas => [
-                    { value => 'bias_current_absolute', template => '%s'
+                    { value => 'bias_current_absolute', template => '%s',
                       unit => 'mA', label_extra_instance => 1, instance_use => 'display_absolute' },
                 ]
             }
@@ -259,7 +259,7 @@ Set critical threshold for all error counters.
 
 Threshold warning (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
@@ -269,11 +269,11 @@ And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-po
 
 Threshold critical (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
-And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+And also: 'in-fcserror' (%), 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
 
