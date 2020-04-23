@@ -34,8 +34,8 @@ sub new {
         'environment' => 'network::paloalto::ssh::mode::environment',
         'ha'          => 'network::paloalto::ssh::mode::ha',
         'interfaces'  => 'network::paloalto::ssh::mode::interfaces',
-        'system'      => 'network::paloalto::ssh::mode::system',
-        'vpn'         => 'network::paloalto::ssh::mode::vpn',
+        'ipsec'       => 'network::paloalto::ssh::mode::ipsec',
+        'system'      => 'network::paloalto::ssh::mode::system'
     );
 
     $self->{custom_modes}{ssh} = 'network::paloalto::ssh::custom::cli';
