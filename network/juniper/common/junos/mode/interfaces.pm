@@ -28,11 +28,31 @@ use warnings;
 sub set_oids_errors {
     my ($self, %options) = @_;
     
-    $self->{oid_ifInDiscards} = '.1.3.6.1.2.1.2.2.1.13';
-    $self->{oid_ifInErrors} = '.1.3.6.1.2.1.2.2.1.14';
-    $self->{oid_ifOutDiscards} = '.1.3.6.1.2.1.2.2.1.19';
-    $self->{oid_ifOutErrors} = '.1.3.6.1.2.1.2.2.1.20';
-    $self->{oid_dot3StatsFCSErrors} = '.1.3.6.1.2.1.10.7.2.1.3';
+    $self->{oids_errors}->{oid_ifInDiscard} = '.1.3.6.1.2.1.2.2.1.13';
+    $self->{oids_errors}->{oid_ifInError} = '.1.3.6.1.2.1.2.2.1.14';
+    $self->{oids_errors}->{oid_ifOutDiscard} = '.1.3.6.1.2.1.2.2.1.19';
+    $self->{oids_errors}->{oid_ifOutError} = '.1.3.6.1.2.1.2.2.1.20';
+    $self->{oids_errors}->{oid_ifInFCSError} = '.1.3.6.1.2.1.10.7.2.1.3';
+}
+
+sub set_counters_errors {
+    my ($self, %options) = @_;
+
+    $self->set_oids_errors();
+
+    foreach my $oid (keys %{$self->{oids_errors}}) {
+        $oid =~ /^oid_if(In|Out)(.*)$/;
+        push @{$self->{maps_counters}->{int}},
+            { label => lc($1) . '-' . lc($2), filter => 'add_errors', nlabel => 'interface.packets.' . lc($1) . '.' . lc($2) . '.count', set => {
+                    key_values => [ { name => lc($1.$2), diff => 1 }, { name => 'total_' . lc($1) . '_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                    closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label => $1 . ' ' . $2, label_ref1 => lc($1), label_ref2 => lc($2) },
+                    closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets ' . $1 . ' ' . $2 . ' : %s',
+                    closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                    closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                }
+            },
+        ;
+    }
 }
 
 sub set_counters {
@@ -40,18 +60,6 @@ sub set_counters {
 
     $self->SUPER::set_counters(%options);
     
-    push @{$self->{maps_counters}->{int}}, 
-        { label => 'fcs-errors', filter => 'add_errors', nlabel => 'interface.fcs.errors.count', set => {
-                key_values => [ { name => 'fcserror', diff => 1 }, { name => 'display' } ],
-                output_template => 'FCS Errors : %d',
-                perfdatas => [
-                    { value => 'fcserror_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
-            }
-        },
-    ;
-
     push @{$self->{maps_counters}->{int}},
         { label => 'input-power', filter => 'add_optical', nlabel => 'interface.input.power.dbm', set => {
                 key_values => [ { name => 'input_power' }, { name => 'display' } ],
@@ -98,9 +106,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-            'add-optical'   => { name => 'add_optical' },
-        }
-    );
+        'warning-errors:s'  => { name => 'warning_errors' },
+        'critical-errors:s' => { name => 'critical_errors' },
+        'add-optical'       => { name => 'add_optical' },
+    });
     
     return $self;
 }
@@ -119,28 +128,20 @@ sub check_options {
 
 sub load_errors {
     my ($self, %options) = @_;
-    
-    $self->set_oids_errors();
+
     $self->{snmp}->load(
-        oids => [
-            $self->{oid_ifInDiscards},
-            $self->{oid_ifInErrors},
-            $self->{oid_ifOutDiscards},
-            $self->{oid_ifOutErrors},
-            $self->{oid_dot3StatsFCSErrors}
-        ],
+        oids => [ values %{$self->{oids_errors}} ],
         instances => $self->{array_interface_selected}
     );
 }
 
 sub add_result_errors {
     my ($self, %options) = @_;
-    
-    $self->{int}->{$options{instance}}->{indiscard} = $self->{results}->{$self->{oid_ifInDiscards} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{fcserror} = $self->{results}->{$self->{oid_dot3StatsFCSErrors} . '.' . $options{instance}};
+
+    foreach my $oid (keys %{$self->{oids_errors}}) {
+        $oid =~ /^oid_if(In|Out)(.*)$/;
+        $self->{int}->{$options{instance}}->{lc($1.$2)} = $self->{results}->{$self->{oids_errors}->{$oid} . '.' . $options{instance}};
+    }
 }
 
 my $oid_jnxDomCurrentRxLaserPower = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.5';
@@ -259,21 +260,21 @@ Set critical threshold for all error counters.
 
 Threshold warning (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
-And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+And also: 'in-fcserror' (%), 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--critical-*>
 
 Threshold critical (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
-And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+And also: 'in-fcserror' (%), 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
 
