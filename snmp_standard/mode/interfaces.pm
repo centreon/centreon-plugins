@@ -200,9 +200,11 @@ sub custom_errors_perfdata {
     my ($self, %options) = @_;
 
     if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
+        my $nlabel = $self->{nlabel};
+        $nlabel =~ s/count/percentage/;
         $self->{output}->perfdata_add(
             label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1}, unit => '%',
-            nlabel => 'interface.packets.' . $self->{result_values}->{label1} . '.' . $self->{result_values}->{label2} . '.percentage',
+            nlabel => $nlabel,
             instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
             value => sprintf("%.2f", $self->{result_values}->{prct}),
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}),
