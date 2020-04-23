@@ -201,7 +201,7 @@ sub custom_errors_perfdata {
 
     if ($self->{instance_mode}->{option_results}->{units_errors} eq '%') {
         my $nlabel = $self->{nlabel};
-        $nlabel =~ s/count/percentage/;
+        $nlabel =~ s/count$/percentage/;
         $self->{output}->perfdata_add(
             label => 'packets_' . $self->{result_values}->{label2} . '_' . $self->{result_values}->{label1}, unit => '%',
             nlabel => $nlabel,
@@ -395,7 +395,7 @@ sub set_counters_errors {
     return if ($self->{no_errors} != 0 && $self->{no_set_errors} != 0);
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-discard', filter => 'add_errors', nlabel => 'interface.packets.in.discards.count', set => {
+        { label => 'in-discard', filter => 'add_errors', nlabel => 'interface.packets.in.discard.count', set => {
                 key_values => [ { name => 'indiscard', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'discard' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Discard : %s',
@@ -403,7 +403,7 @@ sub set_counters_errors {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
-        { label => 'in-error', filter => 'add_errors', nlabel => 'interface.packets.in.errors.count', set => {
+        { label => 'in-error', filter => 'add_errors', nlabel => 'interface.packets.in.error.count', set => {
                 key_values => [ { name => 'inerror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'error' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Error : %s',
@@ -411,7 +411,7 @@ sub set_counters_errors {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
-        { label => 'out-discard', filter => 'add_errors', nlabel => 'interface.packets.out.discards.count', set => {
+        { label => 'out-discard', filter => 'add_errors', nlabel => 'interface.packets.out.discard.count', set => {
                 key_values => [ { name => 'outdiscard', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'discard' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Discard : %s',
@@ -419,7 +419,7 @@ sub set_counters_errors {
                 closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
-        { label => 'out-error', filter => 'add_errors', nlabel => 'interface.packets.out.errors.count', set => {
+        { label => 'out-error', filter => 'add_errors', nlabel => 'interface.packets.out.error.count', set => {
                 key_values => [ { name => 'outerror', diff => 1 }, { name => 'total_out_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
                 closure_custom_calc => $self->can('custom_errors_calc'), closure_custom_calc_extra_options => { label_ref1 => 'out', label_ref2 => 'error' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Error : %s',
