@@ -122,7 +122,8 @@ sub new {
         'display-transform-src:s' => { name => 'display_transform_src' },
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },
-        'space-reservation:s'     => { name => 'space_reservation' }
+        'space-reservation:s'     => { name => 'space_reservation' },
+        'force-use-mib-percent'   => { name => 'force_use_mib_percent' }
     });
 
     $self->{diskpath_id_selected} = [];
@@ -156,6 +157,7 @@ sub check_options {
 my $mapping = {
     dskTotal32     => { oid => '.1.3.6.1.4.1.2021.9.1.6' }, # kB
     dskUsed32      => { oid => '.1.3.6.1.4.1.2021.9.1.8' }, # kB
+    dskPercent     => { oid => '.1.3.6.1.4.1.2021.9.1.9' },
     dskPercentNode => { oid => '.1.3.6.1.4.1.2021.9.1.10' },
     dskTotalLow    => { oid => '.1.3.6.1.4.1.2021.9.1.11' }, # kB
     dskTotalHigh   => { oid => '.1.3.6.1.4.1.2021.9.1.12' }, # kB
@@ -213,6 +215,7 @@ sub manage_selection {
             $prct_free = 0;
         }
 
+        $prct_used = $result->{dskPercent} if (defined($self->{option_results}->{force_use_mib_percent}));
         $self->{diskpath}->{$name_diskpath} = {
             display => $name_diskpath,
             total => $total_size,
@@ -371,6 +374,10 @@ Display cache disk path datas.
 
 Some filesystem has space reserved (like ext4 for root).
 The value is in percent of total (Default: none) (results like 'df' command).
+
+=item B<--force-use-mib-percent>
+
+Can be used if you have counters overload by big disks.
 
 =back
 
