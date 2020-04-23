@@ -110,7 +110,7 @@ sub manage_selection {
 
     $self->{global} = { total_ipsec => 0 };
     $self->{tunnels} = {};
-    foreach (@{$result->{tunnels}}) {
+    foreach (@{$result->{entry}}) {
         $self->{tunnels}->{$_->{gwid}} = {
             display => $_->{name},
             ike_phase1_state => defined($_->{created}) && $_->{created} ne '' ? 'up' : 'down',
