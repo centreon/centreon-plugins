@@ -43,7 +43,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interface are ok', skipped_code => { -10 => 1 } },
+        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'All interface are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -51,21 +51,24 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total interfaces: %s',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%s', min => 0 },
-                ],
+                    { value => 'total_absolute', template => '%s', min => 0 }
+                ]
             }
         },
     ];
 
     $self->{maps_counters}->{interface} = [
         { label => 'status',  threshold => 0, set => {
-                key_values => [ { name => 'state' }, { name => 'type' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'state' }, { name => 'type' },
+                    { name => 'ha_state' }, { name => 'display' }
+                ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -84,7 +87,7 @@ sub new {
         'filter-name:s'       => { name => 'filter_name' },
         'unknown-status:s'    => { name => 'unknown_status', default => '' },
         'warning-status:s'    => { name => 'warning_status', default => '' },
-        'critical-status:s'   => { name => 'critical_status', default => '%{state} ne "up"' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{state} ne "up"' }
     });
 
     return $self;
@@ -104,7 +107,10 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->execute_command(command => 'show interface all', ForceArray => ['entry']);
+    my $result = $options{custom}->execute_command(command => 'show high-availability state');
+    my $ha_state = defined($result->{group}->{'local-info'}->{state}) ? $result->{group}->{'local-info'}->{state} : 'disabled';
+
+    $result = $options{custom}->execute_command(command => 'show interface all', ForceArray => ['entry']);
 
     $self->{global} = { total => 0 };
     $self->{interface} = {};
@@ -118,7 +124,8 @@ sub manage_selection {
         $self->{interface}->{$_->{name}} = {
             display => $_->{name},
             type => $_->{type},
-            state => $_->{state}
+            state => $_->{state},
+            ha_state => $ha_state
         };
         $self->{global}->{total}++;
     }
@@ -141,17 +148,17 @@ Filter interface name (can be a regexp).
 =item B<--unknown-status>
 
 Set unknown threshold for status (Default: '').
-Can used special variables like: %{state}, %{type}, %{display}
+Can used special variables like: %{state}, %{type}, %{ha_state}, %{display}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{state}, %{type}, %{display}
+Can used special variables like: %{state}, %{type}, %{ha_state}, %{display}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{state} ne "active"').
-Can used special variables like: %{state}, %{type}, %{display}
+Can used special variables like: %{state}, %{type}, %{ha_state}, %{display}
 
 =item B<--warning-*> B<--critical-*>
 
