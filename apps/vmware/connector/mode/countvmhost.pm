@@ -29,8 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -45,7 +44,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'host', type => 1, cb_prefix_output => 'prefix_host_output', message_multiple => 'All ESX Hosts are ok' },
+        { name => 'host', type => 1, cb_prefix_output => 'prefix_host_output', message_multiple => 'All ESX Hosts are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -54,8 +53,8 @@ sub set_counters {
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
                     { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
-                ],
+                      min => 0, max => 'total_absolute' }
+                ]
             }
         },
         { label => 'total-off', nlabel => 'host.vm.poweredoff.current.count', set => {
@@ -63,8 +62,8 @@ sub set_counters {
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
                     { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
-                ],
+                      min => 0, max => 'total_absolute' }
+                ]
             }
         },
          { label => 'total-suspended', nlabel => 'host.vm.suspended.current.count', set => {
@@ -72,8 +71,8 @@ sub set_counters {
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
                     { label => 'suspended', value => 'suspended_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
-                ],
+                      min => 0, max => 'total_absolute' }
+                ]
             }
         },
     ];
@@ -84,7 +83,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'on', nlabel => 'host.vm.poweredon.current.count', set => {
@@ -92,8 +91,8 @@ sub set_counters {
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
                     { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
-                ],
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'off', nlabel => 'host.vm.poweredoff.current.count', set => {
@@ -101,8 +100,8 @@ sub set_counters {
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
                     { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
-                ],
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'suspended', nlabel => 'host.vm.suspended.current.count', set => {
@@ -110,10 +109,10 @@ sub set_counters {
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
                     { label => 'suspended', value => 'suspended_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
-                ],
+                      min => 0, max => 'total_absolute', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -153,8 +152,10 @@ sub manage_selection {
 
     $self->{global} = { poweredon => 0, poweredoff => 0, suspended => 0, total => 0 };
     $self->{host} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'countvmhost');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'countvmhost'
+    );
 
     foreach my $host_id (keys %{$response->{data}}) {
         my $host_name = $response->{data}->{$host_id}->{name};
@@ -170,7 +171,7 @@ sub manage_selection {
         $self->{global}->{poweredoff} += $response->{data}->{$host_id}->{poweredoff} if (defined($response->{data}->{$host_id}->{poweredoff}));
         $self->{global}->{suspended} += $response->{data}->{$host_id}->{suspended} if (defined($response->{data}->{$host_id}->{suspended}));
     }
-    
+
     $self->{global}->{total} = $self->{global}->{poweredon} + $self->{global}->{poweredoff} + $self->{global}->{suspended};
 }
 
