@@ -41,7 +41,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'healthy', nlabel => 'ec2.spot.instances.unhealthy.count', set => {
+        { label => 'healthy', nlabel => 'ec2.spot.instances.healthy.count', set => {
                 key_values => [ { name => 'healthy' } ],
                 output_template => 'Healthy instances : %s',
                 perfdatas => [
