@@ -1147,8 +1147,8 @@ sub manage_selection {
     foreach (@{$self->{array_interface_selected}}) {
         $self->add_result_status(instance => $_) if (defined($self->{option_results}->{add_status}));
         $self->add_result_traffic(instance => $_) if (defined($self->{option_results}->{add_traffic}));
-        $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_errors(instance => $_) if (defined($self->{option_results}->{add_errors}));
+        $self->add_result_cast(instance => $_) if ($self->{no_cast} == 0 && (defined($self->{option_results}->{add_cast}) || defined($self->{option_results}->{add_errors})));
         $self->add_result_speed(instance => $_) if (defined($self->{option_results}->{add_speed}));
         $self->add_result_volume(instance => $_) if (defined($self->{option_results}->{add_volume}));
         $self->$custom_add_result_method(instance => $_) if ($custom_add_result_method);
@@ -1280,7 +1280,19 @@ sub add_result_cast {
         $self->{int}->{$options{instance}}->{$_} = 0 if (!defined($self->{int}->{$options{instance}}->{$_}));
     }
     
+    # https://tools.ietf.org/html/rfc3635 : The IF-MIB octet counters
+    # count the number of octets sent to or received from the layer below
+    # this interface, whereas the packet counters count the number of
+    # packets sent to or received from the layer above.  Therefore,
+    # received MAC Control frames, ifInDiscards, and ifInUnknownProtos are
+    # counted by ifInOctets, but not ifInXcastPkts.  Transmitted MAC
+    # Control frames are counted by ifOutOctets, but not ifOutXcastPkts.
+    # ifOutDiscards and ifOutErrors are counted by ifOutXcastPkts, but not
+    # ifOutOctets.
     $self->{int}->{$options{instance}}->{total_in_packets} = $self->{int}->{$options{instance}}->{iucast} + $self->{int}->{$options{instance}}->{imcast} + $self->{int}->{$options{instance}}->{ibcast};
+    if (defined($self->{int}->{$options{instance}}->{indiscard})) {
+        $self->{int}->{$options{instance}}->{total_in_packets} += $self->{int}->{$options{instance}}->{indiscard};
+    }
     $self->{int}->{$options{instance}}->{total_out_packets} = $self->{int}->{$options{instance}}->{oucast} + $self->{int}->{$options{instance}}->{omcast} + $self->{int}->{$options{instance}}->{obcast};
 }
 
