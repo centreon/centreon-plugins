@@ -20,12 +20,56 @@
 
 package apps::protocols::http::mode::response;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 use Time::HiRes qw(gettimeofday tv_interval);
 use centreon::plugins::http;
+
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return $self->{result_values}->{http_code} . ' ' . $self->{result_values}->{message};
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 }
+    ];
+
+    $self->{maps_counters}->{global} = [
+         { label => 'status', threshold => 0, display_ok => 0, set => {
+                key_values => [
+                    { name => 'http_code' }, { name => 'message' }
+                ],
+                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
+            }
+        },
+        { label => 'time', nlabel => 'http.response.time.seconds', set => {
+                key_values => [ { name => 'time' } ],
+                output_template => 'Response time %.3fs',
+                perfdatas => [
+                    { label => 'time', value => 'time_absolute', template => '%.3f', min => 0, unit => 's' }
+                ]
+            }
+        },
+        { label => 'size', nlabel => 'http.response.size.count', display_ok => 0, set => {
+                key_values => [ { name => 'size' } ],
+                output_template => 'Content size : %s',
+                perfdatas => [
+                    { label => 'size', value => 'size_absolute', template => '%s', min => 0, unit => 'B' }
+                ]
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
@@ -33,102 +77,73 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "hostname:s"    => { name => 'hostname' },
-        "port:s"        => { name => 'port', },
-        "method:s"      => { name => 'method' },
-        "proto:s"       => { name => 'proto' },
-        "urlpath:s"     => { name => 'url_path' },
-        "credentials"   => { name => 'credentials' },
-        "basic"         => { name => 'basic' },
-        "ntlmv2"        => { name => 'ntlmv2' },
-        "username:s"    => { name => 'username' },
-        "password:s"    => { name => 'password' },
-        "timeout:s"     => { name => 'timeout' },
-        "no-follow"     => { name => 'no_follow', },
-        "cert-file:s"   => { name => 'cert_file' },
-        "key-file:s"    => { name => 'key_file' },
-        "cacert-file:s" => { name => 'cacert_file' },
-        "cert-pwd:s"    => { name => 'cert_pwd' },
-        "cert-pkcs12"   => { name => 'cert_pkcs12' },
-        "header:s@"            => { name => 'header' },
-        "get-param:s@"         => { name => 'get_param' },
-        "post-param:s@"        => { name => 'post_param' },
-        "cookies-file:s"       => { name => 'cookies_file' },
-        "unknown-status:s"     => { name => 'unknown_status', default => '' },
-        "warning-status:s"     => { name => 'warning_status' },
-        "critical-status:s"    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-        "warning:s"            => { name => 'warning' },
-        "critical:s"           => { name => 'critical' },
-        "warning-size:s"       => { name => 'warning_size' },
-        "critical-size:s"      => { name => 'critical_size' },
+        'hostname:s'    => { name => 'hostname' },
+        'port:s'        => { name => 'port', },
+        'method:s'      => { name => 'method' },
+        'proto:s'       => { name => 'proto' },
+        'urlpath:s'     => { name => 'url_path' },
+        'credentials'   => { name => 'credentials' },
+        'basic'         => { name => 'basic' },
+        'ntlmv2'        => { name => 'ntlmv2' },
+        'username:s'    => { name => 'username' },
+        'password:s'    => { name => 'password' },
+        'timeout:s'     => { name => 'timeout' },
+        'no-follow'     => { name => 'no_follow', },
+        'cert-file:s'   => { name => 'cert_file' },
+        'key-file:s'    => { name => 'key_file' },
+        'cacert-file:s' => { name => 'cacert_file' },
+        'cert-pwd:s'    => { name => 'cert_pwd' },
+        'cert-pkcs12'   => { name => 'cert_pkcs12' },
+        'header:s@'            => { name => 'header' },
+        'get-param:s@'         => { name => 'get_param' },
+        'post-param:s@'        => { name => 'post_param' },
+        'cookies-file:s'       => { name => 'cookies_file' },
+        'unknown-status:s'     => { name => 'unknown_status', default => '' },
+        'warning-status:s'     => { name => 'warning_status' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+        'warning:s'            => { name => 'warning' },
+        'critical:s'           => { name => 'critical' }
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-        $self->{output}->option_exit();
+    # Compat
+    if (defined($options{option_results}->{warning})) {
+        $options{option_results}->{'warning-time'} = $options{option_results}->{warning};
+        $options{option_results}->{'warning-http-response-time-seconds'} = $options{option_results}->{warning};
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'warning-size', value => $self->{option_results}->{warning_size})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong warning-size threshold '" . $self->{option_results}->{warning_size} . "'.");
-        $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical-size', value => $self->{option_results}->{critical_size})) == 0) {
-        $self->{output}->add_option_msg(short_msg => "Wrong critical-size threshold '" . $self->{option_results}->{critical_size} . "'.");
-        $self->{output}->option_exit();
-    }
+    if (defined($options{option_results}->{critical})) {
+        $options{option_results}->{'critical-time'} = $options{option_results}->{critical};
+        $options{option_results}->{'critical-http-response-time-seconds'} = $options{option_results}->{critical};
+    }    
+    $self->SUPER::check_options(%options);
 
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
     $self->{http}->set_options(%{$self->{option_results}});
 }
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{global} = {};
     my $timing0 = [gettimeofday];
-    my $webcontent = $self->{http}->request();
-    my $timeelapsed = tv_interval($timing0, [gettimeofday]);
+    my $webcontent = $self->{http}->request(
+        unknown_status => '', warning_status => '', critical_status => ''
+    );
+    $self->{global}->{time} = tv_interval($timing0, [gettimeofday]);
+    $self->{global}->{http_code} = $self->{http}->get_code();
+    $self->{global}->{message} = $self->{http}->get_message();
 
-    $self->{output}->output_add(long_msg => $webcontent);
-
-    my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed,
-                                                  threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Response time %.3fs", $timeelapsed));
-    $self->{output}->perfdata_add(label => "time", unit => 's',
-                                  value => sprintf('%.3f', $timeelapsed),
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-    # Size check
     {
         require bytes;
         
-        my $content_size = bytes::length($webcontent);
-        $exit = $self->{perfdata}->threshold_check(value => $content_size,
-                                                   threshold => [ { label => 'critical-size', exit_litteral => 'critical' }, { label => 'warning-size', exit_litteral => 'warning' } ]);
-        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Content size : %s", $content_size));
-        }
-        $self->{output}->perfdata_add(label => "size", unit => 'B',
-                                      value => $content_size,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-size'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-size'),
-                                      min => 0);
+        $self->{global}->{size} = bytes::length($webcontent);
     }
-                                  
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -241,11 +256,11 @@ Threshold warning for http response code
 
 Threshold critical for http response code (Default: '%{http_code} < 200 or %{http_code} >= 300')
 
-=item B<--warning>
+=item B<--warning-time>
 
 Threshold warning in seconds (Webpage response time)
 
-=item B<--critical>
+=item B<--critical-time>
 
 Threshold critical in seconds (Webpage response time)
 
