@@ -136,9 +136,11 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
-    if (defined($self->{cookie}) && defined($self->{xsrf})) {
+    if (defined($self->{cookie})) {
         $self->{http}->add_header(key => 'Cookie', value => '.AspNetCore.Cookies=' . $self->{cookie});
-        $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
+        if (defined($self->{xsrf})) {
+            $self->{http}->add_header(key => 'X-XSRF-TOKEN', value => $self->{xsrf});
+        }
     }
     $self->{http}->set_options(%{$self->{option_results}});
 }
@@ -171,12 +173,9 @@ sub authenticate {
             $self->{output}->add_option_msg(short_msg => "Error retrieving cookie");
             $self->{output}->option_exit();
         }
+        # 3CX 16.0.5.611 does not use XSRF-TOKEN anymore
         if (defined ($header) && $header =~ /(?:^| )XSRF-TOKEN=([^;]+);.*/) {
             $xsrf = $1;
-        } else {
-            $self->{output}->output_add(long_msg => $content, debug => 1);
-            $self->{output}->add_option_msg(short_msg => "Error retrieving xsrf-token");
-            $self->{output}->option_exit();
         }
 
         my $datas = { last_timestamp => time(), cookie => $cookie, xsrf => $xsrf, expires_on => time() + (3600 * 24) };
