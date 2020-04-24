@@ -123,6 +123,7 @@ sub new {
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },
         'space-reservation:s'     => { name => 'space_reservation' },
+        'force-counters32'        => { name => 'force_counters32' },
         'force-use-mib-percent'   => { name => 'force_use_mib_percent' }
     });
 
@@ -169,6 +170,20 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->get_selection(snmp => $options{snmp});
+
+    # Keep SNMP request as small as possible
+     if (!defined($self->{option_results}->{force_use_mib_percent})) {
+         delete($mapping->{dskPercent});
+     }
+     if (!defined($self->{option_results}->{force_counters32})) {
+         delete($mapping->{dskTotal32});
+         delete($mapping->{dskUsed32});
+     } else {
+         delete($mapping->{dskTotalLow});
+         delete($mapping->{dskTotalHigh});
+         delete($mapping->{dskUsedLow});
+         delete($mapping->{dskUsedHigh});
+     }
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping)) ],
@@ -374,6 +389,10 @@ Display cache disk path datas.
 
 Some filesystem has space reserved (like ext4 for root).
 The value is in percent of total (Default: none) (results like 'df' command).
+
+=item B<--force-counters32>
+
+Force to use 32 bits counters. Should be used when 64 bits high/low components are not available.
 
 =item B<--force-use-mib-percent>
 
