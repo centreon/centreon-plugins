@@ -33,7 +33,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'sshcli-command:s' => { name => 'sshcli_command', default => 'ssh' },
             'sshcli-path:s'    => { name => 'sshcli_path' },
-            'sslcli-option:s@' => { name => 'sshcli_option' }
+            'sshcli-option:s@' => { name => 'sshcli_option' }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'BACKEND SSHCLI OPTIONS', once => 1);
     }
