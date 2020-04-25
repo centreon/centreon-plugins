@@ -31,17 +31,18 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'asg-status'            => 'cloud::aws::ec2::mode::asgstatus',
-        'cpu'                   => 'cloud::aws::ec2::mode::cpu',
-        'discovery'             => 'cloud::aws::ec2::mode::discovery',
-        'diskio'                => 'cloud::aws::ec2::mode::diskio',
-        'instances-status'      => 'cloud::aws::ec2::mode::instancesstatus',
-        'instances-types'       => 'cloud::aws::ec2::mode::instancestypes',
-        'list-asg'              => 'cloud::aws::ec2::mode::listasg',
-        'list-instances'        => 'cloud::aws::ec2::mode::listinstances',
-        'network'               => 'cloud::aws::ec2::mode::network',
-        'status'                => 'cloud::aws::ec2::mode::status',
-        'spot-active-instances' => 'cloud::aws::ec2::mode::spotactiveinstances'
+        'asg-status'                => 'cloud::aws::ec2::mode::asgstatus',
+        'cpu'                       => 'cloud::aws::ec2::mode::cpu',
+        'discovery'                 => 'cloud::aws::ec2::mode::discovery',
+        'discovery-fleet-requests'  => 'cloud::aws::ec2::mode::discoveryspotfleetrequests',
+        'diskio'                    => 'cloud::aws::ec2::mode::diskio',
+        'instances-status'          => 'cloud::aws::ec2::mode::instancesstatus',
+        'instances-types'           => 'cloud::aws::ec2::mode::instancestypes',
+        'list-asg'                  => 'cloud::aws::ec2::mode::listasg',
+        'list-instances'            => 'cloud::aws::ec2::mode::listinstances',
+        'network'                   => 'cloud::aws::ec2::mode::network',
+        'status'                    => 'cloud::aws::ec2::mode::status',
+        'spot-active-instances'     => 'cloud::aws::ec2::mode::spotactiveinstances'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
