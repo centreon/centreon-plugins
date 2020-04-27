@@ -82,7 +82,7 @@ sub set_counters {
             }
         },
         { label => 'request-handling-mean', nlabel => 'core.request.handling.mean.milliseconds', display_ok => 0, set => {
-                key_values => [ { name => 'request_handling_time_mean', diff => 1 } ],
+                key_values => [ { name => 'request_handling_time_mean' } ],
                 output_template => 'mean request handling: %s ms',
                 perfdatas => [
                     { value => 'request_handling_time_mean_absolute', template => '%s', min => 0, unit => 'ms' }
@@ -112,7 +112,7 @@ sub manage_selection {
     # bm-core.callsCount,status=success,meterType=Counter count=125244086
     # bm-core.directory.cluster.events,meterType=Counter count=14300
     my $result = $options{custom}->execute_command(
-        command => 'curl --unix-socket /var/run/bm-metrics/bm-core.sock http://127.0.0.1/metrics',
+        command => 'curl --unix-socket /var/run/bm-metrics/metrics-bm-core.sock http://127.0.0.1/metrics',
         filter => 'bm-core\.heartbeat\.broadcast|bm-core\.handlingDuration|bm-core\.callsCount|bm-core\.directory\.cluster\.events'
     );
 

@@ -32,9 +32,14 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'core'  => 'apps::bluemind::local::mode::core',
-        'lmtpd' => 'apps::bluemind::local::mode::lmtpd',
-        'xmpp'  => 'apps::bluemind::local::mode::xmpp'
+        'core'      => 'apps::bluemind::local::mode::core',
+        'eas'       => 'apps::bluemind::local::mode::eas',
+        'hps'       => 'apps::bluemind::local::mode::hps',
+        'ips'       => 'apps::bluemind::local::mode::ips',
+        'lmtpd'     => 'apps::bluemind::local::mode::lmtpd',
+        'milter'    => 'apps::bluemind::local::mode::milter',
+        'webserver' => 'apps::bluemind::local::mode::webserver',
+        'xmpp'      => 'apps::bluemind::local::mode::xmpp'
     };
 
     $self->{custom_modes}{api} = 'apps::bluemind::local::custom::api';

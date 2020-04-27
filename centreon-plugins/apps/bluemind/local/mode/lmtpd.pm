@@ -73,7 +73,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'emails-size-total', nlabel => 'lmtpd.emails.size.total.count', display_ok => 0, set => {
+        { label => 'emails-size-total', nlabel => 'lmtpd.emails.size.total.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'email_size', diff => 1 } ],
                 output_template => 'total emails size: %s %s',
                 output_change_bytes => 1,
@@ -91,7 +91,7 @@ sub set_counters {
             }
         },
         { label => 'sessions-duration-mean', nlabel => 'lmtpd.sessions.duration.mean.milliseconds', set => {
-                key_values => [ { name => 'session_duration_mean', diff => 1 } ],
+                key_values => [ { name => 'session_duration_mean' } ],
                 output_template => 'mean sessions duration: %s ms',
                 perfdatas => [
                     { value => 'session_duration_mean_absolute', template => '%s', min => 0, unit => 'ms' }
@@ -107,7 +107,7 @@ sub set_counters {
             }
         },
         { label => 'traffic-transport-latency-mean', nlabel => 'lmtpd.traffic.transport.latency.mean.milliseconds', set => {
-                key_values => [ { name => 'traffic_latency_mean', diff => 1 } ],
+                key_values => [ { name => 'traffic_latency_mean' } ],
                 output_template => 'mean traffic transport latency: %s ms',
                 perfdatas => [
                     { value => 'traffic_latency_mean_absolute', template => '%s', min => 0, unit => 'ms' }
@@ -139,7 +139,7 @@ sub manage_selection {
     # bm-lmtpd.sessionDuration,meterType=Timer count=4941893,totalTime=1052591049892285,mean=212993492
     # bm-lmtpd.traffic.transportLatency,meterType=Timer count=5017208,totalTime=272844528075000000,mean=54381745400
     my $result = $options{custom}->execute_command(
-        command => 'curl --unix-socket /var/run/bm-metrics/bm-lmtpd.sock http://127.0.0.1/metrics',
+        command => 'curl --unix-socket /var/run/bm-metrics/metrics-bm-lmtpd.sock http://127.0.0.1/metrics',
         filter => 'activeConnections|connectionCount|deliveries|emailSize|sessionDuration|traffic\.transportLatency'
     );
 
@@ -150,11 +150,11 @@ sub manage_selection {
         $self->{bm_lmtpd}->{connections} = $result->{$_}->{count} if (/bm-lmtpd\.connectionCount/);
         $self->{bm_lmtpd}->{email_size} = $result->{$_}->{totalAmount} if (/bm-lmtpd\.emailSize/);
         if (/bm-lmtpd\.sessionDuration/) {
-            $self->{bm_lmtpd}->{session_duration_total} = $result->{$_}->{totalAmount} / 100000;
+            $self->{bm_lmtpd}->{session_duration_total} = $result->{$_}->{totalTime} / 100000;
             $self->{bm_lmtpd}->{session_duration_mean} = $result->{$_}->{mean} / 100000;
         }
         if (/bm-lmtpd\.traffic\.transportLatency/) {
-            $self->{bm_lmtpd}->{traffic_latency_total} = $result->{$_}->{totalAmount} / 100000;
+            $self->{bm_lmtpd}->{traffic_latency_total} = $result->{$_}->{totalTime} / 100000;
             $self->{bm_lmtpd}->{traffic_latency_mean} = $result->{$_}->{mean} / 100000;
         }
     }
