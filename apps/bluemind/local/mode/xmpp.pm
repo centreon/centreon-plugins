@@ -77,7 +77,7 @@ sub manage_selection {
     # bm-xmpp.packetsCount,type=all,meterType=Counter count=517791
     # bm-xmpp.packetsCount,type=chat,meterType=Counter count=12
     my $result = $options{custom}->execute_command(
-        command => 'curl --unix-socket /var/run/bm-metrics/bm-xmpp.sock http://127.0.0.1/metrics',
+        command => 'curl --unix-socket /var/run/bm-metrics/metrics-bm-xmpp.sock http://127.0.0.1/metrics',
         filter => 'packetsCount'
     );
 
@@ -96,7 +96,7 @@ __END__
 
 =head1 MODE
 
-Check instant Messaging Service.
+Check instant messaging service.
 
 =over 8
 
