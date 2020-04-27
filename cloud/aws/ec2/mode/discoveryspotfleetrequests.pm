@@ -98,7 +98,8 @@ __END__
 
 =head1 MODE
 
-EC2 Sport Fleet Requests discovery.
+EC2 Spot Fleet Requests discovery.
+
 
 =over 8
 
