@@ -41,7 +41,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{bm_eas} = [
-        { label => 'responses-size-total', nlabel => 'eas.responses.size.total.count', display_ok => 0, set => {
+        { label => 'responses-size-total', nlabel => 'eas.responses.size.total.bytes', display_ok => 0, set => {
                 key_values => [ { name => 'response_size', diff => 1 } ],
                 output_template => 'total responses size: %s %s',
                 output_change_bytes => 1,
