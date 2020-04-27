@@ -32,8 +32,7 @@ sub new {
     $self->{version} = '1.0';
     %{ $self->{modes} } = (
         'traffic'     => 'cloud::aws::vpn::mode::traffic',
-        'listvpn'     => 'cloud::aws::vpn::mode::listvpn',
-        'discovery'   => 'cloud::aws::vpn::mode::discovery'
+        'listvpn'     => 'cloud::aws::vpn::mode::listvpn'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';

@@ -187,7 +187,7 @@ sub set_counters {
                 closure_custom_perfdata             => ($metric =~ /State/) ? $self->can('custom_metric_perfdata_state') : $self->can('custom_metric_perfdata'),
                 closure_custom_threshold_check      => $self->can('custom_metric_threshold'),
             }
-        }
+        };
         push @{$self->{maps_counters}->{statistics}}, $entry;
     }
 }
