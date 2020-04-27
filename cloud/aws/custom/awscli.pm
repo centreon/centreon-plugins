@@ -420,8 +420,8 @@ sub ec2spot_list_fleet_requests {
     foreach my $fleet_request (@{$raw_results->{SpotFleetRequestConfigs}}) {
         push @{$resource_results}, {
             SpotFleetRequestState => $fleet_request->{SpotFleetRequestState},
-            SpotFleetRequestId => $fleet_request->{SpotFleetRequestId},
-            ActivityStatus => $fleet_request->{ActivityStatus},
+            SpotFleetRequestId    => $fleet_request->{SpotFleetRequestId},
+            ActivityStatus        => $fleet_request->{ActivityStatus}
         };
     }
 
