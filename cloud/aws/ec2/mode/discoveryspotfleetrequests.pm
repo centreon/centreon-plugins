@@ -55,9 +55,10 @@ sub run {
     my %asgs;
 
     my $spot_fleet_requests = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
+        region  => $self->{option_results}->{region},
         service => 'ec2',
         command => 'describe-spot-fleet-requests'
+
     );
 
     foreach my $fleet_request (@{$spot_fleet_requests->{SpotFleetRequestConfigs}}) {
