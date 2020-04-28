@@ -31,9 +31,10 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
+        'hardware'         => 'network::adva::fsp150::snmp::mode::hardware',
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'hardware'         => 'network::adva::fsp150::snmp::mode::hardware'
+        'systems'          => 'network::adva::fsp150::snmp::mode::systems'
     );
 
     return $self;
