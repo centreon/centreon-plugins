@@ -28,17 +28,24 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(sensors|port)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(sensors|port|unit)$';
 
     $self->{cb_hook2} = 'snmp_execute';
 
     $self->{thresholds} = {
+        unit => [
+            ['unknown', 'UNKNOWN'],
+            ['unused', 'OK'],
+            ['warning', 'WARNING'],
+            ['failed', 'CRITICAL'],
+            ['ok', 'OK']
+        ],
         sensors => [
             ['unknown', 'UNKNOWN'],
             ['other', 'UNKNOWN'],
             ['warning', 'WARNING'],
             ['failed', 'CRITICAL'],
-            ['ok', 'OK'],
+            ['ok', 'OK']
         ],
         port => [
             ['warning', 'WARNING'],
@@ -46,18 +53,20 @@ sub set_system {
             ['unused', 'OK'],
             ['initializing', 'OK'],
             ['ready', 'OK'],
-            ['.*', 'UNKNOWN'],
-        ],
+            ['.*', 'UNKNOWN']
+        ]
     };
 
     $self->{components_path} = 'snmp_standard::mode::components';
-    $self->{components_module} = ['sensors', 'port'];
+    $self->{components_module} = ['sensors', 'port', 'unit'];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, 
-        no_absent => 1, no_performance => 1, no_load_components => 1, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(
+        package => __PACKAGE__, %options, 
+        no_absent => 1, no_performance => 1, no_load_components => 1, force_new_perfdata => 1
+    );
     bless $self, $class;
 
     $options{options}->add_options(arguments => {});
@@ -84,7 +93,11 @@ http://www.emc.com/microsites/fibrealliance/index.htm
 =item B<--component>
 
 Which component to check (Default: '.*').
-Can be: 'sensors', 'port'.
+Can be: 'unit', 'sensors', 'port'.
+
+=item B<--add-name-instance>
+
+Add literal description for instance value (used in filter, and threshold options).
 
 =item B<--filter>
 
@@ -150,7 +163,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "checking sensors");
-    $self->{components}->{sensors} = {name => 'sensors', total => 0, skip => 0};
+    $self->{components}->{sensors} = { name => 'sensors', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'sensors'));
     
     foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_connUnitSensorEntry}})) {
@@ -162,9 +175,9 @@ sub check {
         
         $self->{components}->{sensors}->{total}++;
         $self->{output}->output_add(long_msg => sprintf(
-            "sensor '%s' status is %s [msg: %s] [type: %s] [chara: %s] [instance: %s]",
+            "sensor '%s' status is %s [msg: %s] [type: %s] [chara: %s]",
             $result->{connUnitSensorName}, $result->{connUnitSensorStatus},
-            $result->{connUnitSensorMessage}, $result->{connUnitSensorType}, $result->{connUnitSensorCharacteristic}, $instance)
+            $result->{connUnitSensorMessage}, $result->{connUnitSensorType}, $result->{connUnitSensorCharacteristic})
         );
         my $exit = $self->get_severity(section => 'sensors', name => $result->{connUnitSensorName}, value => $result->{connUnitSensorStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
@@ -208,7 +221,7 @@ sub check {
     my ($self) = @_;
 
     $self->{output}->output_add(long_msg => "checking ports");
-    $self->{components}->{port} = {name => 'ports', total => 0, skip => 0};
+    $self->{components}->{port} = { name => 'ports', total => 0, skip => 0 };
     return if ($self->check_filter(section => 'port'));
     
     foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{ $mapping_port->{connUnitPortName}->{oid} }})) {
@@ -222,8 +235,8 @@ sub check {
         $self->{components}->{port}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
-                "port '%s' status is %s [instance: %s]",
-                $name, $result->{connUnitPortStatus}, $instance
+                "port '%s' status is %s",
+                $name, $result->{connUnitPortStatus}
             )
         );
         my $exit = $self->get_severity(section => 'port', name => $name, value => $result->{connUnitPortStatus});
@@ -234,6 +247,77 @@ sub check {
                     "Port '%s' status is %s",
                     $name,
                     $result->{connUnitPortStatus}
+                )
+            );
+        }
+    }
+}
+
+package snmp_standard::mode::components::unit;
+
+use strict;
+use warnings;
+
+my $map_unit_status = {
+    1 => 'unknown', 2 => 'unused', 3 => 'ok', 4 => 'warning', 5 => 'failed'
+};
+my $map_unit_type = {
+    1 => 'unknown', 2 => 'other', 3 => 'hub', 4 => 'switch', 5 => 'gateway', 
+    6 => 'converter', 7 => 'hba', 8 => 'proxy-agent', 9 => 'storage-device', 
+    10 => 'host', 11 => 'storage-subsystem', 12 => 'module', 13 => 'swdriver', 
+    14 => 'storage-access-device', 15 => 'wdm', 16 => 'ups', 17 => 'nas'
+};
+
+my $mapping_unit = {
+    connUnitType   => { oid => '.1.3.6.1.3.94.1.6.1.3', map => $map_unit_type },
+    connUnitStatus => { oid => '.1.3.6.1.3.94.1.6.1.6', map => $map_unit_status },
+    connUnitName   => { oid => '.1.3.6.1.3.94.1.6.1.20' }
+};
+
+sub load {
+    my ($self) = @_;
+
+    push @{$self->{request}},
+        { oid => $mapping_unit->{connUnitType}->{oid} },
+        { oid => $mapping_unit->{connUnitStatus}->{oid} },
+        { oid => $mapping_unit->{connUnitName}->{oid} };
+}
+
+sub check {
+    my ($self) = @_;
+
+    $self->{output}->output_add(long_msg => "checking units");
+    $self->{components}->{unit} = { name => 'units', total => 0, skip => 0 };
+    return if ($self->check_filter(section => 'unit'));
+
+    my $results = {
+        %{$self->{results}->{ $mapping_unit->{connUnitType}->{oid} }},
+        %{$self->{results}->{ $mapping_unit->{connUnitStatus}->{oid} }},
+        %{$self->{results}->{ $mapping_unit->{connUnitName}->{oid} }},
+    };
+    foreach my $key ($self->{snmp}->oid_lex_sort(keys %$results)) {
+        next if ($key !~ /^$mapping_unit->{connUnitName}->{oid}\.(.*)$/);
+        my $instance = $1;
+        my $result = $self->{snmp}->map_instance(mapping => $mapping_unit, results => $results, instance => $instance);
+        my $name = $result->{connUnitType} . '.' . $result->{connUnitName};
+
+        next if ($self->check_filter(section => 'unit', instance => $instance, name => $name));
+
+        $self->{components}->{unit}->{total}++;
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "unit '%s' status is %s",
+                $name, $result->{connUnitStatus}
+            )
+        );
+        my $exit = $self->get_severity(section => 'unit', instance => $instance, name => $name, value => $result->{connUnitStatus});
+        if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf(
+                    "Unit '%s' status is %s",
+                    $name,
+                    $result->{connUnitStatus}
                 )
             );
         }
