@@ -33,6 +33,9 @@ my %map_disk_status = (
     4 => 'failed',
     5 => 'spare',     # since OS 5.4
     6 => 'available', # since OS 5.4
+    8 => 'raidReconstruction', # since OS 7.x
+    9 => 'copyReconstruction', # since OS 7.x 
+    10 => 'system',            # since OS 7.x
 );
 
 sub load {
