@@ -31,11 +31,9 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'alarms'           => 'network::adva::fsp150::snmp::mode::alarms',
-        'interfaces'       => 'network::adva::fsp3000::snmp::mode::interfaces',
-        'list-interfaces'  => 'network::adva::fsp3000::snmp::mode::listinterfaces',
-        'memory'           => 'snmp_standard::mode::memory',
-        'uptime'           => 'snmp_standard::mode::uptime'
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'hardware'         => 'network::adva::fsp150::snmp::mode::hardware'
     );
 
     return $self;
@@ -47,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Adva fsp3000 equipments in SNMP.
+Check Adva fsp150 equipments in SNMP.
 
 =cut
