@@ -46,7 +46,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { label => 'alerts', min => 0 },
+        { name => 'alarms', type => 2, message_multiple => '0 problem(s) detected', display_counter_problem => { nlabel => 'alerts.problems.current.count', min => 0 },
           group => [ { name => 'alarm', skipped_code => { -11 => 1 } } ] 
         }
     ];
@@ -70,7 +70,7 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
