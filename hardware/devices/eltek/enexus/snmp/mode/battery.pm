@@ -208,6 +208,7 @@ my $mapping = {
     batteryRemainingCapacityValue     => { oid => '.1.3.6.1.4.1.12148.10.10.9.5' }, # ah or %
     batteryRemainingCapacityMinorLowLevel => { oid => '.1.3.6.1.4.1.12148.10.10.9.6' },
     batteryRemainingCapacityMajorLowLevel => { oid => '.1.3.6.1.4.1.12148.10.10.9.7' },
+    loadCurrentValue                      => { oid => '.1.3.6.1.4.1.12148.10.9.2.5' }, # A or dA
 };
 
 sub threshold_eltek_configured {
@@ -246,9 +247,17 @@ sub manage_selection {
         charge_remaining_unit => $result->{powerSystemCapacityScale}
     };
     # we can calculate the time remaining if unit is ah (amperehour) and current battery is discharging (negative value)
-    if ($result->{powerSystemCapacityScale} eq 'ah' && $result->{batteryCurrentsValue} < 0) {
+    my $current; 
+    if ($result->{batteryCurrentsValue} < 0) {
+        $current = $result->{batteryCurrentsValue} * -1 
+    } elsif ($result->{loadCurrentValue} > 0) {
+        $current = $result->{loadCurrentValue};
+    }
+    
+
+    if ($result->{powerSystemCapacityScale} eq 'ah' && defined($current)) {
         $self->{battery}->{charge_remaining_time} =
-            int($result->{batteryRemainingCapacityValue} * 3600 / $result->{batteryCurrentsValue} * $scale_current * -1);
+            int($result->{batteryRemainingCapacityValue} * 3600 / $current * $scale_current);
     }
 
     $self->threshold_eltek_configured(
