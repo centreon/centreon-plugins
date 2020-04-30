@@ -31,7 +31,7 @@ my $thresholds = {
         ['main', 'OK'],
         ['stand-by', 'OK'],
         ['inactive-pcs', 'CRITICAL'],
-        ['active-pcs', 'CRITICAL']
+        ['active-pcs', 'WARNING']
     ]
 };
 my %map_role = (
