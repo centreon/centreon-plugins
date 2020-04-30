@@ -160,6 +160,7 @@ sub run {
                     $vm{uuid} = $vm->{'config.uuid'};
                     $vm{folder} = (defined($vm->parent) && $vm->parent->type eq 'Folder') ? $self->{paths}->{$vm->parent->value} : '';
                     $vm{annotation} = $vm->{'config.annotation'};
+                    $vm{annotation} =~ s/\n/ /g if (defined($vm{annotation}));
                     $vm{os} = $vm->{'config.guestId'};
                     $vm{hardware} = $vm->{'config.version'};
                     $vm{guest_name} = $vm->{'guest.hostName'};
