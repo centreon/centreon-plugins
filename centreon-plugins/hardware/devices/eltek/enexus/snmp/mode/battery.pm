@@ -69,7 +69,7 @@ sub custom_charge_remaining_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => 'battery.charge.remaining.' . ($self->{result_values}->{charge_remaining_unit_absolute} eq '%' ? '%' : 'amperehour'),
+        nlabel => 'battery.charge.remaining.' . ($self->{result_values}->{charge_remaining_unit_absolute} eq '%' ? 'percentage' : 'amperehour'),
         unit => $self->{result_values}->{charge_remaining_unit_absolute},
         value => $self->{result_values}->{charge_remaining_absolute},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
