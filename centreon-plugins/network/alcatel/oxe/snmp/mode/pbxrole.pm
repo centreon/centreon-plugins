@@ -30,7 +30,7 @@ my $thresholds = {
         ['indeterminate', 'UNKNOWN'],
         ['main', 'OK'],
         ['stand-by', 'OK'],
-        ['inactive-pcs', 'CRITICAL'],
+        ['inactive-pcs', 'OK'],
         ['active-pcs', 'WARNING']
     ]
 };
