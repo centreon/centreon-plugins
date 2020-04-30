@@ -153,7 +153,7 @@ sub run {
         my %host;
         $host{type} = $self->define_type(desc => $result->{$self->{oid_sysDescr}});
         $host{desc} = $result->{$self->{oid_sysDescr}};
-        $edge{desc} =~ s/\n/ /g if (defined($edge{desc}));
+        $host{desc} =~ s/\n/ /g if (defined($host{desc}));
         $host{ip} = $ip->addr;
         $host{hostname} = $result->{$self->{oid_sysName}};
         $host{snmp_version} = $last_version;
