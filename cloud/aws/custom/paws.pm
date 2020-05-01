@@ -336,6 +336,31 @@ sub ec2spot_get_active_instances {
     return $instance_results;
 }
 
+sub ec2spot_list_fleet_requests {
+    my ($self, %options) = @_;
+
+    my $resource_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $ec2spot = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $spot_fleet_requests = $ec2spot->DescribeSpotFleetRequests(DryRun => 0);
+
+        foreach (@{$spot_fleet_requests->{SpotFleetRequestConfigs}}) {
+            push @{$resource_results}, {
+                SpotFleetRequestState => $_->{SpotFleetRequestState},
+                SpotFleetRequestId    => $_->{SpotFleetRequestId},
+                ActivityStatus        => $_->{ActivityStatus}
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $resource_results;
+}
+
 sub ec2_list_resources {
     my ($self, %options) = @_;
 
