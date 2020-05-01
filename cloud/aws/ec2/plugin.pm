@@ -40,6 +40,7 @@ sub new {
         'instances-types'           => 'cloud::aws::ec2::mode::instancestypes',
         'list-asg'                  => 'cloud::aws::ec2::mode::listasg',
         'list-instances'            => 'cloud::aws::ec2::mode::listinstances',
+        'list-spot-fleet-requests'  => 'cloud::aws::ec2::mode::listspotfleetrequests',
         'network'                   => 'cloud::aws::ec2::mode::network',
         'status'                    => 'cloud::aws::ec2::mode::status',
         'spot-active-instances'     => 'cloud::aws::ec2::mode::spotactiveinstances'

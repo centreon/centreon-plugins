@@ -32,8 +32,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "prettify"      => { name => 'prettify' },
-        "filter-type:s" => { name => 'filter_type' },
+        "prettify"          => { name => 'prettify' },
+        "filter-state:s"    => { name => 'filter_state' },
     });
     
     return $self;
