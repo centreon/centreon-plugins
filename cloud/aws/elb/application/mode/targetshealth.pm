@@ -129,7 +129,7 @@ sub check_options {
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
 
-    if (defined($self->{option_results}->{target_group}) && self->{option_results}->{target_group} ne '') {
+    if (defined($self->{option_results}->{target_group}) && $self->{option_results}->{target_group} ne '') {
         push @{$self->{aws_dimensions}}, { Name => 'TargetGroup', Value => $self->{option_results}->{target_group} };
     }
 
