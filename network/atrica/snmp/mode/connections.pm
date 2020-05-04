@@ -189,7 +189,7 @@ sub set_counters_errors {
     my ($self, %options) = @_;
 
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'in-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.in.eir.discards.count', set => {
+        { label => 'in-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.in.eir.discard.count', set => {
                 key_values => [ { name => 'in_eir_discard', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_eir_discard' },
@@ -198,7 +198,7 @@ sub set_counters_errors {
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
             }
         },
-        { label => 'out-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.out.eir.discards.count', set => {
+        { label => 'out-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.out.eir.discard.count', set => {
                 key_values => [ { name => 'out_eir_discard', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
                 per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_eir_discard' },
