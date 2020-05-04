@@ -22,7 +22,7 @@ package centreon::common::radlan::snmp::mode::components::fan;
 
 use strict;
 use warnings;
-use centreon::common::cisco::smallbusiness::snmp::mode::components::resources qw(
+use centreon::common::radlan::snmp::mode::components::resources qw(
     $rl_envmon_state
     $oid_rlPhdUnitEnvParamMonitorAutoRecoveryEnable
     $oid_rlPhdUnitEnvParamEntry
