@@ -162,7 +162,7 @@ sub request_api {
     #403: Forbidden- You don't have permission to do that.
     #404: Not found- No such URL, or you don't have access to the API or organization at all. 
     #429: Too Many Requests- You submitted more than 5 calls in 1 second to an Organization, triggering rate limiting. This also applies for API calls made across multiple organizations that triggers rate limiting for one of the organizations.
-    do {
+    while (1) {
         my $response =  $self->{http}->request(
             url_path => '/api/v0' . $options{endpoint},
             critical_status => '',
@@ -186,8 +186,9 @@ sub request_api {
             $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
             $self->{output}->option_exit();
         }
+
         return ($content);
-    } while (1);
+    }
 }
 
 sub cache_meraki_entities {
