@@ -43,12 +43,13 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            'hostname:s'          => { name => 'hostname' },
-            'port:s'              => { name => 'port' },
-            'proto:s'             => { name => 'proto' },
-            'api-token:s'         => { name => 'api_token' },
-            'timeout:s'           => { name => 'timeout' },
-            'reload-cache-time:s' => { name => 'reload_cache_time' }
+            'hostname:s'               => { name => 'hostname' },
+            'port:s'                   => { name => 'port' },
+            'proto:s'                  => { name => 'proto' },
+            'api-token:s'              => { name => 'api_token' },
+            'timeout:s'                => { name => 'timeout' },
+            'reload-cache-time:s'      => { name => 'reload_cache_time' },
+            'ignore-permission-errors' => { name => 'ignore_permission_errors' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -93,6 +94,7 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{api_token} = (defined($self->{option_results}->{api_token})) ? $self->{option_results}->{api_token} : '';
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
+    $self->{ignore_permission_errors} = (defined($self->{option_results}->{ignore_permission_errors})) ? 1 : 0;
 
     if (!defined($self->{hostname}) || $self->{hostname} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
@@ -168,7 +170,10 @@ sub request_api {
             unknown_status => '(%{http_code} < 200 or %{http_code} >= 300) and %{http_code} != 429'
         );
 
-        if ($self->{http}->get_code() == 429) {
+        my $code = $self->{http}->get_code();
+        return [] if ($code == 403 && $self->{ignore_permission_errors} == 1);
+
+        if ($code == 429) {
             sleep(1);
             continue;
         }
@@ -199,9 +204,17 @@ sub cache_meraki_entities {
 
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{reload_cache_time}) * 60))) {
         $self->{cache_organizations} = {};
-        $self->{cache_organizations} = $self->get_organizations(disable_cache => 1);
-        $self->{cache_networks} = $self->get_networks(organizations => [keys %{$self->{cache_organizations}}], disable_cache => 1);
-        $self->{cache_devices} = $self->get_devices(organizations => [keys %{$self->{cache_organizations}}], disable_cache => 1);
+        $self->{cache_organizations} = $self->get_organizations(
+            disable_cache => 1
+        );
+        $self->{cache_networks} = $self->get_networks(
+            organizations => [keys %{$self->{cache_organizations}}],
+            disable_cache => 1
+        );
+        $self->{cache_devices} = $self->get_devices(
+            organizations => [keys %{$self->{cache_organizations}}],
+            disable_cache => 1
+        );
 
         $self->{cache}->write(data => {
             last_timestamp => time(),
@@ -232,7 +245,9 @@ sub get_networks {
 
     my $results = {};
     foreach my $id (keys %{$self->{cache_organizations}}) {
-        my $datas = $self->request_api(endpoint => '/organizations/' . $id . '/networks');
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $id . '/networks'
+        );
         $results->{$_->{id}} = $_ foreach (@$datas);
     }
 
@@ -247,7 +262,9 @@ sub get_devices {
 
     my $results = {};
     foreach my $id (keys %{$self->{cache_organizations}}) {
-        my $datas = $self->request_api(endpoint => '/organizations/' . $id . '/devices');
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $id . '/devices'
+        );
         $results->{$_->{serial}} = $_ foreach (@$datas);
     }
 
@@ -316,7 +333,9 @@ sub get_networks_clients {
     $timespan = 1 if ($timespan <= 0);
     my $results = {};
     foreach my $id (@$network_ids) {
-        my $datas = $self->request_api(endpoint => '/networks/' . $id . '/clients?timespan=' . $options{timespan});
+        my $datas = $self->request_api(
+            endpoint => '/networks/' . $id . '/clients?timespan=' . $options{timespan},
+        );
         $results->{$id} = $datas;
     }
 
@@ -330,7 +349,9 @@ sub get_organization_device_statuses {
     my $organization_ids = $self->filter_organizations(filter_name => $options{filter_name});
     my $results = {};
     foreach my $id (@$organization_ids) {
-        my $datas = $self->request_api(endpoint => '/organizations/' . $id . '/deviceStatuses');
+        my $datas = $self->request_api(
+            endpoint => '/organizations/' . $id . '/deviceStatuses'
+        );
         foreach (@$datas) {
             $results->{$_->{serial}} = $_;
             $results->{organizationId} = $id;
@@ -350,7 +371,9 @@ sub get_organization_api_requests_overview {
     
     my $results = {};
     foreach my $id (@$organization_ids) {
-        $results->{$id} = $self->request_api(endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $options{timespan});
+        $results->{$id} = $self->request_api(
+            endpoint => '/organizations/' . $id . '/apiRequests/overview?timespan=' . $options{timespan}
+        );
     }
 
     return $results;
@@ -370,7 +393,9 @@ sub get_network_device_connection_stats {
 
     my $results = {};
     foreach (keys %{$options{devices}}) {
-        my $data = $self->request_api(endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/connectionStats?timespan=' . $options{timespan});
+        my $data = $self->request_api(
+            endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/connectionStats?timespan=' . $options{timespan}
+        );
         $results->{$_} = $data;
     }
 
@@ -389,7 +414,9 @@ sub get_network_device_uplink {
 
     my $results = {};
     foreach (keys %{$options{devices}}) {
-        my $data = $self->request_api(endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/uplink');
+        my $data = $self->request_api(
+            endpoint => '/networks/' . $options{devices}->{$_} . '/devices/' . $_ . '/uplink'
+        );
         $results->{$_} = $data;
     }
 
@@ -410,7 +437,9 @@ sub get_device_clients {
 
     my $results = {};
     foreach (keys %{$options{devices}}) {
-        my $data = $self->request_api(endpoint => '/devices/' . $_ . '/clients?timespan=' . $options{timespan});
+        my $data = $self->request_api(
+            endpoint => '/devices/' . $_ . '/clients?timespan=' . $options{timespan}
+        );
         $results->{$_} = $data;
     }
 
@@ -456,6 +485,10 @@ Set HTTP timeout
 =item B<--reload-cache-time>
 
 Time in minutes before reloading cache file (default: 180).
+
+=item B<--ignore-permission-errors>
+
+Ignore permission errors (403 status code).
 
 =back
 
