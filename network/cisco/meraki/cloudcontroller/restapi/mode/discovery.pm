@@ -30,9 +30,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'prettify' => { name => 'prettify' },
+        'prettify' => { name => 'prettify' }
     });
 
     return $self;
@@ -50,8 +50,14 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $organizations = $options{custom}->get_organizations(disable_cache => 1);
-    my $networks = $options{custom}->get_networks(organizations => [keys %{$self->{organizations}}], disable_cache => 1);
-    my $devices = $options{custom}->get_devices(organizations => [keys %{$self->{organizations}}], disable_cache => 1);
+    my $networks = $options{custom}->get_networks(
+        organizations => [keys %{$self->{organizations}}],
+        disable_cache => 1
+    );
+    my $devices = $options{custom}->get_devices(
+        organizations => [keys %{$self->{organizations}}],
+        disable_cache => 1
+    );
     my $devices_statuses = $options{custom}->get_organization_device_statuses();
 
     $disco_stats->{end_time} = time();
@@ -108,6 +114,14 @@ __END__
 Resources discovery.
 
 =over 8
+
+=item B<--prettify>
+
+Prettify JSON output.
+
+=item B<--ignore-permission-errors>
+
+Continue the discovery and ignore permission errors (403 status code).
 
 =back
 
