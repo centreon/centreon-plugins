@@ -31,8 +31,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Updates status is '%s'", $self->{result_values}->{status});
-    return $msg;
+    return sprintf("Updates status is '%s'", $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
@@ -45,26 +44,34 @@ sub custom_status_calc {
 sub custom_last_perfdata {
     my ($self, %options) = @_;
     
-    $self->{output}->perfdata_add(label => 'last_server_update',
-                                  value => $self->{result_values}->{diff},
-                                  unit => 's',
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => 'last_server_update',
+        value => $self->{result_values}->{diff},
+        unit => 's',
+        min => 0
+    );
 }
 
 sub custom_last_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{diff},
-                                                  threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
-                                                                 { label => 'warning-' . $self->{label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{diff},
+        threshold => [
+            { label => 'critical-' . $self->{label}, exit_litteral => 'critical' },
+            { label => 'warning-' . $self->{label}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
 sub custom_last_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Last server update: %s [%s]", centreon::plugins::misc::change_seconds(value => $self->{result_values}->{diff}), $self->{result_values}->{date_time});
-    return $msg;
+    return sprintf(
+        'Last server update: %s [%s]',
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{diff}), $self->{result_values}->{date_time}
+    );
 }
 
 sub custom_last_calc {
@@ -80,7 +87,7 @@ sub custom_last_calc {
             hour       => $4,
             minute     => $5,
             second     => $6,
-            %{$self->{tz}}
+            %{$self->{instance_mode}->{tz}}
         );
         $self->{result_values}->{diff} = time() - $dt->epoch;
         $self->{result_values}->{date_time} = $dt->datetime();
@@ -93,7 +100,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, message_separator => ' - ' },
+        { name => 'global', type => 0, message_separator => ' - ' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -102,7 +109,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'last-server-update', set => {
@@ -110,17 +117,17 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_last_calc'),
                 closure_custom_output => $self->can('custom_last_output'),
                 closure_custom_threshold_check => $self->can('custom_last_threshold'),
-                closure_custom_perfdata => $self->can('custom_last_perfdata'),
+                closure_custom_perfdata => $self->can('custom_last_perfdata')
             }
         },
         { label => 'not-updated', set => {
                 key_values => [ { name => 'hostsNotUpdated' } ],
                 output_template => '%d host(s) not up to date',
                 perfdatas => [
-                    { label => 'not_updated', value => 'hostsNotUpdated_absolute', template => '%d', min => 0 },
-                ],
+                    { label => 'not_updated', value => 'hostsNotUpdated_absolute', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -129,12 +136,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "warning-status:s"      => { name => 'warning_status', default => '%{status} =~ /Warning/i' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /Critical/i' },
-                                    "timezone:s"            => { name => 'timezone', default => 'GMT' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '%{status} =~ /Warning/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /Critical/i' },
+        'timezone:s'        => { name => 'timezone', default => 'GMT' }
+    });
+
     return $self;
 }
 
@@ -146,12 +153,12 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-my %map_status = (
+my $map_status = {
     0 => 'OK',
     1 => 'Info',
     2 => 'Warning',
-    3 => 'Critical',
-);
+    3 => 'Critical'
+};
 
 my $oid_updatesStatus = '.1.3.6.1.4.1.23668.1093.1.2.1';
 my $oid_lastServerUpdateTime = '.1.3.6.1.4.1.23668.1093.1.2.3';
@@ -160,14 +167,16 @@ my $oid_hostsNotUpdated = '.1.3.6.1.4.1.23668.1093.1.2.4';
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_updatesStatus, $oid_lastServerUpdateTime,
-                                                         $oid_hostsNotUpdated ], 
-                                               nothing_quit => 1);
-                                               
-    $self->{global} = {};
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
+            $oid_updatesStatus, $oid_lastServerUpdateTime,
+            $oid_hostsNotUpdated
+        ], 
+        nothing_quit => 1
+    );
 
     $self->{global} = { 
-        updatesStatus => $map_status{$snmp_result->{$oid_updatesStatus}},
+        updatesStatus => $map_status->{$snmp_result->{$oid_updatesStatus}},
         lastServerUpdateTime => $snmp_result->{$oid_lastServerUpdateTime},
         hostsNotUpdated => $snmp_result->{$oid_hostsNotUpdated},
     };
