@@ -802,7 +802,8 @@ sub new {
         'show-cache'              => { name => 'show_cache' },
         'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
         'nagvis-perfdata'         => { name => 'nagvis_perfdata' },
-        'force-counters32'        => { name => 'force_counters32' }
+        'force-counters32'        => { name => 'force_counters32' },
+        'force-counters64'        => { name => 'force_counters64' }
     });
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { 'add-traffic' => { name => 'add_traffic' } });
@@ -1057,9 +1058,11 @@ sub load_traffic {
     my ($self, %options) = @_;
     
     $self->set_oids_traffic();
-    $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
-    if ($self->{get_speed} == 1) {
-        $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
+    if(!defined($self->{option_results}->{force_counters64})) {
+        $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
+        if ($self->{get_speed} == 1) {
+            $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
+        }
     }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(oids => [$self->{oid_in64}, $self->{oid_out64}], instances => $self->{array_interface_selected});
@@ -1085,14 +1088,16 @@ sub load_errors {
 sub load_cast {
     my ($self, %options) = @_;
 
-    $self->set_oids_cast();    
-    $self->{snmp}->load(
-        oids => [
-            $self->{oid_ifInUcastPkts}, $self->{oid_ifInBroadcastPkts}, $self->{oid_ifInMulticastPkts},
-            $self->{oid_ifOutUcastPkts}, $self->{oid_ifOutMulticastPkts}, $self->{oid_ifOutBroadcastPkts}
-        ],
-        instances => $self->{array_interface_selected}
-    );
+    $self->set_oids_cast();
+    if(!defined($self->{option_results}->{force_counters64})) {
+        $self->{snmp}->load(
+            oids => [
+                $self->{oid_ifInUcastPkts}, $self->{oid_ifInBroadcastPkts}, $self->{oid_ifInMulticastPkts},
+                $self->{oid_ifOutUcastPkts}, $self->{oid_ifOutMulticastPkts}, $self->{oid_ifOutBroadcastPkts}
+            ],
+            instances => $self->{array_interface_selected}
+        );
+    }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(
             oids => [
@@ -1107,8 +1112,12 @@ sub load_cast {
 sub load_speed {
     my ($self, %options) = @_;
     
+    return if (defined($self->{option_results}->{add_traffic}) && ($self->{get_speed} == 1));
+
     $self->set_oids_speed();
-    $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
+    if(!defined($self->{option_results}->{force_counters64})) {
+        $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
+    }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(oids => [$self->{oid_speed64}], instances => $self->{array_interface_selected});
     }
@@ -1117,8 +1126,12 @@ sub load_speed {
 sub load_volume {
     my ($self, %options) = @_;
     
+    return if defined($self->{option_results}->{add_traffic});
+
     $self->set_oids_traffic();
-    $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
+    if(!defined($self->{option_results}->{force_counters64})) {
+        $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
+    }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(oids => [$self->{oid_in64}, $self->{oid_out64}], instances => $self->{array_interface_selected});
     }
@@ -1211,9 +1224,11 @@ sub add_result_errors {
 sub add_result_traffic {
     my ($self, %options) = @_;
     
-    $self->{int}->{$options{instance}}->{mode_traffic} = 32;
-    $self->{int}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
+    if(!defined($self->{option_results}->{force_counters64})) {
+        $self->{int}->{$options{instance}}->{mode_traffic} = 32;
+        $self->{int}->{$options{instance}}->{in} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
+        $self->{int}->{$options{instance}}->{out} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
+    }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
             $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0) {
@@ -1256,13 +1271,15 @@ sub add_result_traffic {
 sub add_result_cast {
     my ($self, %options) = @_;
     
-    $self->{int}->{$options{instance}}->{mode_cast} = 32;
-    $self->{int}->{$options{instance}}->{iucast} = $self->{results}->{$self->{oid_ifInUcastPkts} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}} : 0;
-    $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifInMulticastPkts} . '.' . $options{instance}} : 0;
-    $self->{int}->{$options{instance}}->{oucast} = $self->{results}->{$self->{oid_ifOutUcastPkts} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}} : 0;
-    $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}} : 0;
+    if(!defined($self->{option_results}->{force_counters64})) {
+        $self->{int}->{$options{instance}}->{mode_cast} = 32;
+        $self->{int}->{$options{instance}}->{iucast} = $self->{results}->{$self->{oid_ifInUcastPkts} . '.' . $options{instance}};
+        $self->{int}->{$options{instance}}->{ibcast} = defined($self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifInBroadcastPkts} . '.' . $options{instance}} : 0;
+        $self->{int}->{$options{instance}}->{imcast} = defined($self->{results}->{$self->{oid_ifInMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifInMulticastPkts} . '.' . $options{instance}} : 0;
+        $self->{int}->{$options{instance}}->{oucast} = $self->{results}->{$self->{oid_ifOutUcastPkts} . '.' . $options{instance}};
+        $self->{int}->{$options{instance}}->{omcast} = defined($self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutMulticastPkts} . '.' . $options{instance}} : 0;
+        $self->{int}->{$options{instance}}->{obcast} = defined($self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}}) ? $self->{results}->{$self->{oid_ifOutBroadcastPkts} . '.' . $options{instance}} : 0;
+    }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         my $iucast = $self->{results}->{$self->{oid_ifHCInUcastPkts} . '.' . $options{instance}};
         if (defined($iucast) && $iucast =~ /[1-9]/) {
@@ -1316,9 +1333,11 @@ sub add_result_speed {
 sub add_result_volume {
     my ($self, %options) = @_;
     
-    $self->{int}->{$options{instance}}->{mode_traffic} = 32;
-    $self->{int}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
+    if(!defined($self->{option_results}->{force_counters64})) {
+        $self->{int}->{$options{instance}}->{mode_traffic} = 32;
+        $self->{int}->{$options{instance}}->{in_volume} = $self->{results}->{$self->{oid_in32} . '.' . $options{instance}};
+        $self->{int}->{$options{instance}}->{out_volume} = $self->{results}->{$self->{oid_out32} . '.' . $options{instance}};
+    }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         if (defined($self->{results}->{$self->{oid_in64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} ne '' &&
             $self->{results}->{$self->{oid_in64} . '.' . $options{instance}} != 0) {
@@ -1436,6 +1455,10 @@ Don't skip counters when no change.
 =item B<--force-counters32>
 
 Force to use 32 bits counters (even in snmp v2c and v3). Should be used when 64 bits counters are buggy.
+
+=item B<--force-counters64>
+
+Force to use 64 bits counters only. Can be used to improve performance.
 
 =item B<--reload-cache-time>
 
