@@ -35,6 +35,7 @@ sub new {
         'ha'          => 'network::paloalto::ssh::mode::ha',
         'interfaces'  => 'network::paloalto::ssh::mode::interfaces',
         'ipsec'       => 'network::paloalto::ssh::mode::ipsec',
+        'licenses'    => 'network::paloalto::ssh::mode::licenses',
         'system'      => 'network::paloalto::ssh::mode::system'
     );
 
