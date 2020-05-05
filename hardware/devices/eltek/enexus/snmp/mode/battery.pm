@@ -257,7 +257,7 @@ sub manage_selection {
 
     if ($result->{powerSystemCapacityScale} eq 'ah' && defined($current)) {
         $self->{battery}->{charge_remaining_time} =
-            int($result->{batteryRemainingCapacityValue} * 3600 / $current * $scale_current);
+            int(($result->{batteryRemainingCapacityValue} * 3600) / ($current * $scale_current));
     }
 
     $self->threshold_eltek_configured(
