@@ -25,12 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
-use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output { 
     my ($self, %options) = @_;
 
-    return sprintf('status: %s',
+    return sprintf(
+        'status: %s',
         $self->{result_values}->{status}
     );
 }
@@ -60,11 +60,11 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'energy-delivered', nlabel => 'load.energy.delivered.watt', display_ok => 0, set => {
-                key_values => [ { name => 'energy', diff => 1 } ],
-                output_template => 'accumulated energy delivered: %s W',
+        { label => 'power', nlabel => 'load.power.watt', display_ok => 0, set => {
+                key_values => [ { name => 'power' } ],
+                output_template => 'power: %s W',
                 perfdatas => [
-                    { value => 'energy_absolute', template => '%s', unit => 'W', min => 0 }
+                    { value => 'power_absolute', template => '%s', unit => 'W', min => 0 }
                 ]
             }
         }
@@ -96,7 +96,7 @@ sub prefix_phase_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -135,6 +135,7 @@ my $mapping = {
     loadCurrentMajorHighLevel        => { oid => '.1.3.6.1.4.1.12148.10.9.2.6' },
     loadCurrentMinorHighLevel        => { oid => '.1.3.6.1.4.1.12148.10.9.2.7' },
     loadEnergyLogAccumulated         => { oid => '.1.3.6.1.4.1.12148.10.9.8.1' }, # Watt
+    batteryVoltageValue              => { oid => '.1.3.6.1.4.1.12148.10.10.5.5' } # not sure we should use that value
 };
 
 sub threshold_eltek_configured {
@@ -165,7 +166,7 @@ sub manage_selection {
     $scale_current = 0.1 if ($result->{powerSystemCurrentDecimalSetting} eq 'deciAmpere');
     $self->{load} = {
         status => $result->{loadStatus},
-        energy => $result->{loadEnergyLogAccumulated},
+        power => $result->{loadCurrentValue} * $scale_current * ($result->{batteryVoltageValue} * 0.01),
         current => $result->{loadCurrentValue} * $scale_current
     };
 
@@ -182,9 +183,6 @@ sub manage_selection {
         /\.(\d+)$/;
         $self->{phase}->{$1} = { display => $1, voltage => $snmp_result->{$_} * 0.01 };
     }
-
-    $self->{cache_name} = 'eltek_enexus_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -215,7 +213,7 @@ Can used special variables like: %{status}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'current', 'energy-delivered'.
+Can be: 'current', 'power'.
 
 =back
 
