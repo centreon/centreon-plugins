@@ -138,7 +138,7 @@ sub execute_command {
         return $stdout;
     }
 
-    if ($stdout !~ /(<response status="(.*?)">.*<\/response>)/ms) {
+    if ($stdout !~ /(<response status=["'](.*?)["']>.*<\/response>)/ms) {
         $self->{output}->add_option_msg(short_msg => "Cannot find xml response");
         $self->{output}->option_exit();
     }
