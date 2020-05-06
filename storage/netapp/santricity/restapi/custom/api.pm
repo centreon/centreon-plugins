@@ -187,7 +187,7 @@ sub execute_storages_request {
 
     for (my $i = 0; $i < scalar(@{$storages->{storages}}); $i++) {
         next if (defined($options{filter_name}) && $options{filter_name} ne '' &&
-            $storages->{storages}->{$i}->{name} !~ /$options{filter_name}/);
+            $storages->{storages}->[$i]->{name} !~ /$options{filter_name}/);
 
         my $info = $self->request_api(name => 'info', endpoint => '/' . $storages->{storages}->[$i]->{wwn} . '/' . $options{endpoint});
         $storages->{storages}->[$i]->{offline} = 0;
