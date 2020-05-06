@@ -118,7 +118,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->execute_storages_request(
-        endpoint => '/storage-volumes',
+        endpoint => '/volumes',
         filter_name => $self->{option_results}->{filter_storage_name}
     );
 
@@ -131,9 +131,9 @@ sub manage_selection {
             volumes => {}
         };
 
-        next if (!defined($_->{'/storage-volumes'}));
+        next if (!defined($_->{'/volumes'}));
 
-        foreach my $entry (@{$_->{'/storage-volumes'}}) {
+        foreach my $entry (@{$_->{'/volumes'}}) {
 
             next if (defined($options{filter_volume_name}) && $options{filter_volume_name} ne '' &&
                 $entry->{name} !~ /$options{filter_volume_name}/);
