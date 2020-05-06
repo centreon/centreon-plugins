@@ -189,7 +189,7 @@ sub execute_storages_request {
         next if (defined($options{filter_name}) && $options{filter_name} ne '' &&
             $storages->{storages}->[$i]->{name} !~ /$options{filter_name}/);
 
-        my $info = $self->request_api(name => 'info', endpoint => '/' . $storages->{storages}->[$i]->{wwn} . $options{endpoint});
+        my $info = $self->request_api(name => 'info', endpoint => '/storage-systems/' . $storages->{storages}->[$i]->{wwn} . $options{endpoint});
         $storages->{storages}->[$i]->{offline} = 0;
         $storages->{storages}->[$i]->{offline} = 1 if (!defined($info));
         
