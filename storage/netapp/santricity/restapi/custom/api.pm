@@ -182,19 +182,6 @@ sub request_api {
 sub execute_storages_request {
     my ($self, %options) = @_;
 
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", '/home/qgarnier/clients/plugins/todo/santricity/test-storages.txt') {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-    eval {
-        $content = JSON::XS->new->utf8->decode($content);
-    };
-    return $content;
-
     my $storages = $self->request_api(name => 'storages', endpoint => '/storage-systems');
     return $storages if (!defined($options{endpoint}));
 
