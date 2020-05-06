@@ -441,8 +441,10 @@ sub run_group {
             $prefix_output = '' if (!defined($prefix_output));
             
             if ($multiple == 0 && (!defined($group->{display}) || $group->{display} != 0)) {
-                $self->{output}->output_add(severity => $self->{most_critical_instance},
-                                            short_msg => sprintf("${prefix_output}" . $format_output, $self->{lproblems}));
+                $self->{output}->output_add(
+                    severity => $self->{most_critical_instance},
+                    short_msg => sprintf("${prefix_output}" . $format_output, $self->{lproblems})
+                );
             }
         }
     }
@@ -450,8 +452,10 @@ sub run_group {
     if ($multiple == 1) {
         my $exit = $self->{output}->get_most_critical(status => [ @{$global_exit} ]);
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf($format_output, $total_problems));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf($format_output, $total_problems)
+            );
         }
     }
     
@@ -476,12 +480,12 @@ sub run_multiple_instances {
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
     my $indent_long_output = defined($options{indent_long_output}) ? $options{indent_long_output} : '';
     my $no_message_multiple = 1;
-    
+
     my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
         $multiple = 0;
     }
-    
+
     my $message_separator = defined($options{config}->{message_separator}) ? 
         $options{config}->{message_separator} : ', ';
     my $sort_method = 'cmp';
@@ -506,8 +510,10 @@ sub run_multiple_instances {
             $no_message_multiple = 0;
             $obj->set(instance => $instance);
         
-            my ($value_check) = $obj->execute(new_datas => $self->{new_datas},
-                                              values => $self->{$options{config}->{name}}->{$id});
+            my ($value_check) = $obj->execute(
+                new_datas => $self->{new_datas},
+                values => $self->{$options{config}->{name}}->{$id}
+            );
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -549,17 +555,19 @@ sub run_multiple_instances {
         }
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->run_multiple_prefix_output(severity => $exit,
-                short_msg => $prefix_output . $short_msg . $suffix_output);
+            $self->run_multiple_prefix_output(
+                severity => $exit,
+                short_msg => $prefix_output . $short_msg . $suffix_output
+            );
         }
-        
+
         if ($multiple == 0 && $multiple_parent == 0) {
             $self->run_multiple_prefix_output(severity => 'ok', short_msg => $prefix_output . $long_msg . $suffix_output);            
         }
     }
-    
+
     if ($no_message_multiple == 0 && $multiple == 1 && $multiple_parent == 0) {
-        $self->{output}->output_add(short_msg => $options{config}->{message_multiple});
+        $self->run_multiple_prefix_output(severity => 'ok', short_msg => $options{config}->{message_multiple});
     }
 }
 
@@ -572,7 +580,7 @@ sub run_multiple_prefix_output {
         $self->{prefix_multiple_output_done}->{lc($options{severity})} = 1;
         $separator{separator} = '';
     }
-    
+
     $self->{output}->output_add(severity => $options{severity}, short_msg => "$options{short_msg}", %separator);
 }
 
