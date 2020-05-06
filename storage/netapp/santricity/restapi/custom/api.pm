@@ -151,7 +151,7 @@ sub request_api {
     $self->settings();
     my $content = $self->{http}->request(
         method => defined($options{method}) ? $options{method} : 'GET', 
-        url_path => $self->{api_path} . '/' . $options{endpoint},
+        url_path => $self->{api_path} . $options{endpoint},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status},
