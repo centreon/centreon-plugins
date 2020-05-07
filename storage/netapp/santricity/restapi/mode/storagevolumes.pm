@@ -80,7 +80,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{volumes} = [
-        { label => 'status', threshold => 0, set => {
+        { label => 'volume-status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
@@ -99,7 +99,7 @@ sub new {
     $options{options}->add_options(arguments => { 
         'filter-storage-name:s'    => { name => 'filter_storage_name' },
         'filter-volume-name:s'     => { name => 'filter_volume_name' },
-        'unknown-volyme-status:s'  => { name => 'unknown_volume_status', default => '' },
+        'unknown-volume-status:s'  => { name => 'unknown_volume_status', default => '' },
         'warning-volume-status:s'  => { name => 'warning_volume_status', default => '%{status} =~ /degraded/i' },
         'critical-volume-status:s' => { name => 'critical_volume_status', default => '%{status} =~ /failed/i' }
     });
