@@ -31,10 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     %{ $self->{modes} } = (
-        'hardware'        => 'storage::netapp::santricity::restapi::mode::hardware',
-        'storage-pools'   => 'storage::netapp::santricity::restapi::mode::storagepools',
-        'storage-systems' => 'storage::netapp::santricity::restapi::mode::storagesystems',
-        'storage-volumes' => 'storage::netapp::santricity::restapi::mode::storagevolumes'
+        'hardware'            => 'storage::netapp::santricity::restapi::mode::hardware',
+        'storage-controllers' => 'storage::netapp::santricity::restapi::mode::storagecontrollers',
+        'storage-pools'       => 'storage::netapp::santricity::restapi::mode::storagepools',
+        'storage-systems'     => 'storage::netapp::santricity::restapi::mode::storagesystems',
+        'storage-volumes'     => 'storage::netapp::santricity::restapi::mode::storagevolumes'
     );
 
     $self->{custom_modes}{api} = 'storage::netapp::santricity::restapi::custom::api';

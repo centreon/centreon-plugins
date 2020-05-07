@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package storage::netapp::santricity::restapi::mode::storagevolumes;
+package storage::netapp::santricity::restapi::mode::storagecontrollers;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -48,10 +48,10 @@ sub prefix_ss_output {
     return "storage system '" . $options{instance_value}->{display} . "' ";
 }
 
-sub prefix_volume_output {
+sub prefix_controller_output {
     my ($self, %options) = @_;
 
-    return "volume '" . $options{instance_value}->{display} . "' ";
+    return "controller '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -60,13 +60,13 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'ss', type => 3, cb_prefix_output => 'prefix_ss_output', cb_long_output => 'ss_long_output', indent_long_output => '    ', message_multiple => 'All storage systems are ok',
             group => [
-                { name => 'volumes', display_long => 1, cb_prefix_output => 'prefix_volume_output',  message_multiple => 'volumes are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'controllers', display_long => 1, cb_prefix_output => 'prefix_controller_output',  message_multiple => 'controllers are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
     
-    $self->{maps_counters}->{volumes} = [
-        { label => 'volume-status', threshold => 0, set => {
+    $self->{maps_counters}->{controllers} = [
+        { label => 'controller-status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
@@ -74,10 +74,20 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
+        { label => 'cpu-utilization', nlabel => 'volume.cpu.utilization.percentage', set => {
+                key_values => [ { name => 'cpu_util', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => 'cpu usage: %.2f %%',
+                perfdatas => [
+                    { value => 'cpu_util_per_second', template => '%d',
+                      unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => 'read', nlabel => 'volume.io.read.usage.bytespersecond', set => {
                 key_values => [ { name => 'read_bytes', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
-                output_change_bytes => 1, output_template => 'read: %s %s/s',
+                output_template => 'read: %s %s/s',
+                per_second => 1, output_change_bytes => 1, 
                 perfdatas => [
                     { value => 'read_bytes_per_second', template => '%d',
                       unit => 'B/s', label_extra_instance => 1 }
@@ -123,11 +133,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-storage-name:s'    => { name => 'filter_storage_name' },
-        'filter-volume-name:s'     => { name => 'filter_volume_name' },
-        'unknown-volume-status:s'  => { name => 'unknown_volume_status', default => '' },
-        'warning-volume-status:s'  => { name => 'warning_volume_status', default => '%{status} =~ /degraded/i' },
-        'critical-volume-status:s' => { name => 'critical_volume_status', default => '%{status} =~ /failed/i' }
+        'filter-storage-name:s'        => { name => 'filter_storage_name' },
+        'filter-controller-name:s'     => { name => 'filter_controller_name' },
+        'unknown-controller-status:s'  => { name => 'unknown_controller_status', default => '%{status} =~ /unknown/i' },
+        'warning-controller-status:s'  => { name => 'warning_controller_status', default => '%{status} =~ /rpaParErr|degraded/i' },
+        'critical-controller-status:s' => { name => 'critical_controller_status', default => '%{status} =~ /failed/i' }
     });
     
     return $self;
@@ -137,7 +147,7 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_volume_status', 'critical_volume_status', 'unknown_volume_status']);
+    $self->change_macros(macros => ['warning_controller_status', 'critical_controller_status', 'unknown_controller_status']);
 }
 
 sub manage_selection {
@@ -145,48 +155,53 @@ sub manage_selection {
 
     my $results = $options{custom}->execute_storages_request(
         endpoints => [
-            { endpoint => '/volumes' },
-            { endpoint => '/volume-statistics', get_param => 'usecache=false' }
+            { endpoint => '/controllers' },
+            { endpoint => '/controller-statistics', get_param => 'usecache=false' }
         ],
         filter_name => $self->{option_results}->{filter_storage_name}
     );
 
+    my $mapping_controller = {};
     $self->{ss} = {};
     foreach (@{$results->{storages}}) {
         my $storage_name = $_->{name};
 
         $self->{ss}->{$storage_name} = {
             display => $storage_name,
-            volumes => {}
+            controllers => {}
         };
 
-        next if (!defined($_->{'/volumes'}));
+        next if (!defined($_->{'/controllers'}));
 
-        foreach my $entry (@{$_->{'/volumes'}}) {
+        foreach my $entry (@{$_->{'/controllers'}}) {
+            my $name = $entry->{physicalLocation}->{label} ne '' ? $entry->{physicalLocation}->{label} : 
+                $entry->{physicalLocation}->{locationPosition} . ':' . $entry->{physicalLocation}->{slot};
 
-            next if (defined($options{filter_volume_name}) && $options{filter_volume_name} ne '' &&
-                $entry->{name} !~ /$options{filter_volume_name}/);
+            next if (defined($options{filter_controller_name}) && $options{filter_controller_name} ne '' &&
+                $name !~ /$options{filter_controller_name}/);
 
-            $self->{ss}->{$storage_name}->{volumes}->{ $entry->{name} } = {
-                display => $entry->{name},
+            $mapping_controller->{ $entry->{id} } = $name;
+            $self->{ss}->{$storage_name}->{controllers}->{ $name } = {
+                display => $name,
                 status => $entry->{status}
             };
         }
 
-        foreach my $entry (@{$_->{'/volume-statistics'}}) {
-            next if (!defined($self->{ss}->{$storage_name}->{volumes}->{ $entry->{volumeName} }));
+        foreach my $entry (@{$_->{'/controller-statistics'}}) {
+            next if (!defined($mapping_controller->{ $entry->{controllerId} }));
 
-            $self->{ss}->{$storage_name}->{volumes}->{ $entry->{volumeName} }->{write_bytes} = $entry->{writeBytes};
-            $self->{ss}->{$storage_name}->{volumes}->{ $entry->{volumeName} }->{read_bytes} = $entry->{readBytes};
-            $self->{ss}->{$storage_name}->{volumes}->{ $entry->{volumeName} }->{read_iops} = $entry->{readOps};
-            $self->{ss}->{$storage_name}->{volumes}->{ $entry->{volumeName} }->{write_iops} = $entry->{writeOps};
+            $self->{ss}->{$storage_name}->{controllers}->{ $mapping_controller->{ $entry->{controllerId} } }->{write_bytes} = $entry->{writeBytesTotal};
+            $self->{ss}->{$storage_name}->{controllers}->{ $mapping_controller->{ $entry->{controllerId} } }->{read_bytes} = $entry->{readBytesTotal};
+            $self->{ss}->{$storage_name}->{controllers}->{ $mapping_controller->{ $entry->{controllerId} } }->{read_iops} = $entry->{readIopsTotal};
+            $self->{ss}->{$storage_name}->{controllers}->{ $mapping_controller->{ $entry->{controllerId} } }->{write_iops} = $entry->{writeIopsTotal};
+            $self->{ss}->{$storage_name}->{controllers}->{ $mapping_controller->{ $entry->{controllerId} } }->{cpu_util} = $entry->{cpuUtilizationStats}->[0]->{sumCpuUtilization};
         }
     }
 
     $self->{cache_name} = 'netapp_santricity' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_storage_name}) ? md5_hex($self->{option_results}->{filter_storage_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_volume_name}) ? md5_hex($self->{option_results}->{filter_volume_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_controller_name}) ? md5_hex($self->{option_results}->{filter_controller_name}) : md5_hex('all'));
 }
 
 1;
@@ -195,7 +210,7 @@ __END__
 
 =head1 MODE
 
-Check storage volumes.
+Check storage controllers.
 
 =over 8
 
@@ -208,21 +223,21 @@ Example: --filter-counters='volume-status'
 
 Filter storage name (can be a regexp).
 
-=item B<--filter-volume-name>
+=item B<--filter-controller-name>
 
-Filter volume name (can be a regexp).
+Filter controller name (can be a regexp).
 
-=item B<--unknown-volume-status>
+=item B<--unknown-controller-status>
 
-Set unknown threshold for status.
+Set unknown threshold for status (Default: '%{status} =~ /unknown/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--warning-volume-status>
+=item B<--warning-controller-status>
 
-Set warning threshold for status (Default: '%{status} =~ /degraded/i').
+Set warning threshold for status (Default: '%{status} =~ /rpaParErr|degraded/i').
 Can used special variables like: %{status}, %{display}
 
-=item B<--critical-volume-status>
+=item B<--critical-controller-status>
 
 Set critical threshold for status (Default: '%{status} =~ /failed/i').
 Can used special variables like: %{status}, %{display}
