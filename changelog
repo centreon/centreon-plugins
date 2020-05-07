@@ -1,3 +1,17 @@
+2020-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Ruckus SmartZone SNMP
+ * Plugin added: Ruckus ZoneDirector SNMP
+ * Plugin added: Ruckus ICX SNMP
+ * Plugin added: Dell Xseries SNMP
+ * Plugin added: Adva FSP150 SNMP
+ * Plugin added: Lenovo Iomega SNMP
+ * Plugin added: Netapp Santricity Rest API
+ * Plugin added: Bluemind
+ * Plugin added: Mulesoft Rest API
+ * Plugin added: Salesforce Rest API
+ * Break: [netapp/snmp] move directory
+ * Break: [netapp/restapi] move directory
+
 2020-04-10 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Dell OS10 SNMP
  * Plugin added: Sirportly notification
