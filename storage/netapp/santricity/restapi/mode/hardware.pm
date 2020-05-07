@@ -48,7 +48,7 @@ sub set_system {
             ['overtemp', ''],
             ['expired', 'WARNING'],
             ['maintenanceCharging', 'OK'],
-            ['replacementRequired', 'CRTICICAL']
+            ['replacementRequired', 'CRITICAL']
         ],
         board => [
             ['unknown', 'UNKNOWN'],
@@ -78,7 +78,7 @@ sub set_system {
             ['optimal', 'OK'],
             ['failed', 'CRITICAL'],
             ['removed', 'OK'],
-            ['rpaParErr', 'WAARNING'],
+            ['rpaParErr', 'WARNING'],
             ['serviceMode', 'OK'],
             ['suspended', 'OK'],
             ['degraded', 'WARNING']
