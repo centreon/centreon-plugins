@@ -217,7 +217,7 @@ Check storage controllers.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='volume-status'
+Example: --filter-counters='controller-status'
 
 =item B<--filter-storage-name>
 
@@ -245,7 +245,7 @@ Can used special variables like: %{status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'read' (B/s), 'write' (B/s), 'read-iops', 'write-iops'.
+Can be: 'cpu-utilization' (%), 'read' (B/s), 'write' (B/s), 'read-iops', 'write-iops'.
 
 =back
 
