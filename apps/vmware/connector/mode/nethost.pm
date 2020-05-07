@@ -408,17 +408,11 @@ Can used special variables like: %{link_status}, %{display}
 Set critical threshold for status (Default: '%{link_status} !~ /up/').
 Can used special variables like: %{link_status}, %{display}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'host-traffic-in', 'host-traffic-out', 'vswitch-traffic-in', 'vswitch-traffic-out',
-'link-traffic-in', 'link-traffic-out', 'link-dropped-in', 'link-dropped-out'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'host-traffic-in', 'host-traffic-out', 'vswitch-traffic-in', 'vswitch-traffic-out',
-'link-traffic-in', 'link-traffic-out', 'link-dropped-in', 'link-dropped-out'.
+Thresholds.
+Can be: 'host-traffic-in' (b/s), 'host-traffic-out' (b/s), 'vswitch-traffic-in' (b/s), 'vswitch-traffic-out' (b/s),
+'link-traffic-in' (%), 'link-traffic-out' (%), 'link-dropped-in', 'link-dropped-out'.
 
 =item B<--no-proxyswitch>
 
