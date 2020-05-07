@@ -182,18 +182,30 @@ sub request_api {
 sub execute_storages_request {
     my ($self, %options) = @_;
 
-    my $storages = $self->request_api(name => 'storages', endpoint => '/storage-systems');
-    return $storages if (!defined($options{endpoint}));
+    my $storages = $self->request_api(
+        name => 'storages',
+        endpoint => '/storage-systems'
+    );
+    return $storages if (!defined($options{endpoints}));
 
     for (my $i = 0; $i < scalar(@{$storages->{storages}}); $i++) {
         next if (defined($options{filter_name}) && $options{filter_name} ne '' &&
             $storages->{storages}->[$i]->{name} !~ /$options{filter_name}/);
 
-        my $info = $self->request_api(name => 'info', endpoint => '/storage-systems/' . $storages->{storages}->[$i]->{wwn} . $options{endpoint});
         $storages->{storages}->[$i]->{offline} = 0;
-        $storages->{storages}->[$i]->{offline} = 1 if (!defined($info));
-        
-        $storages->{storages}->[$i]->{ $options{endpoint} } = defined($info) ? $info->{info} : undef;
+
+        foreach (@{$options{endpoints}}) {
+            my $info = $self->request_api(
+                name => 'info',
+                endpoint => '/storage-systems/' . $storages->{storages}->[$i]->{wwn} . $_->{endpoint} . (defined($_->{get_param}) ? '?' . $_->{get_param} : '') 
+            );
+            if (!defined($info)) {
+                $storages->{storages}->[$i]->{offline} = 1;
+                last;
+            }
+
+            $storages->{storages}->[$i]->{ $_->{endpoint} } = defined($info) ? $info->{info} : undef;
+        }
     }
 
     return $storages;

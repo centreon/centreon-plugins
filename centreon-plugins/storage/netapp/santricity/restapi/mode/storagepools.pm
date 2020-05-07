@@ -104,7 +104,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{custom}->execute_storages_request(
-        endpoint => '/storage-pools',
+        endpoints => [ { endpoint => '/storage-pools' } ],
         filter_name => $self->{option_results}->{filter_storage_name}
     );
 

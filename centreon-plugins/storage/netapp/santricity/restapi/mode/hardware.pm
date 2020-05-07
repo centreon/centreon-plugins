@@ -147,7 +147,9 @@ sub new {
 sub execute_custom {
     my ($self, %options) = @_;
 
-    $self->{json_results} = $options{custom}->execute_storages_request(endpoint => '/hardware-inventory');
+    $self->{json_results} = $options{custom}->execute_storages_request(
+        endpoints => [ { endpoint => '/hardware-inventory' } ]
+    );
 }
 
 1;
