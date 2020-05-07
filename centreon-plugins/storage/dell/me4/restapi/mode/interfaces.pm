@@ -219,9 +219,9 @@ sub manage_selection {
 
         $self->{ports}->{ $_->{port} }->{interfaces}->{ $_->{phy} } = {
             display => $_->{phy},
-            disparity_errors => $_->{'disparity-errors'},
-            invalid_dwords => $_->{'invalid-dwords'},
-            lost_dwords => $_->{'lost-dwords'}
+            disparity_errors => int($_->{'disparity-errors'}),
+            invalid_dwords => int($_->{'invalid-dwords'}),
+            lost_dwords => int($_->{'lost-dwords'})
         };
     }
 
