@@ -31,40 +31,42 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'events', cb_prefix_output => 'prefix_module_events', type => 1, message_multiple => 'All event metrics are ok' },
-        { name => 'miners', cb_prefix_output => 'prefix_module_miners', type => 1, message_multiple => 'All miner metrics are ok' },
-        { name => 'balances', cb_prefix_output => 'prefix_module_balances', type => 1, message_multiple => 'All balance metrics are ok' },
+        { name => 'events', cb_prefix_output => 'prefix_output_events', type => 1, message_multiple => 'Events metrics are ok' },
+        { name => 'miners', cb_prefix_output => 'prefix_output_miners', type => 1, message_multiple => 'Miners metrics are ok' },
+        { name => 'balances', cb_prefix_output => 'prefix_output_balances', type => 1, message_multiple => 'Balances metrics are ok' }
     ];
 
     $self->{maps_counters}->{events} = [
-       { label => 'event_frequency', nlabel => 'parity.tracking.event.frequency', set => {
-                key_values => [ { name => 'event_frequency' } ],
-                output_template => "Event's frequency: %d (evt/min)",
-                perfdatas => [
-                    { label => 'event_frequency', value => 'event_frequency_absolute', template => '%d', min => 0 }
-                ],                
+       { label => 'event_frequency', nlabel => 'parity.tracking.event.persecond', set => {
+                key_values => [ { name => 'event_count', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => " %.2f (events/s)",
+                perfdatas => [ 
+                    { label => 'events', template => '%.2f', value => 'event_count_per_second',
+                        label_extra_instance => 1, instance_use => 'display_absolute' } 
+                ],
             }
         }
     ];
 
     $self->{maps_counters}->{miners} = [
-       { label => 'mining_frequency', nlabel => 'parity.tracking.mining.frequency', set => {
+       { label => 'mining_frequency', nlabel => 'parity.tracking.mined.block.persecond', set => {
                 key_values => [ { name => 'mining_frequency' } ],
-                output_template => "Mining frequency: %d (block/min)",
-                perfdatas => [
-                    { label => 'mining_frequency', value => 'mining_frequency_absolute', template => '%d', min => 0 }
-                ],                
+                output_template => " %.2f (blocks/s)",
+                perfdatas => [ instance_use => 'display_absolute', label_extra_instance => 1 ],
             }
         }
     ];
 
     $self->{maps_counters}->{balances} = [
-       { label => 'balance_fluctuation', nlabel => 'parity.tracking.balances.fluctuation', set => {
-                key_values => [ { name => 'balance_fluctuation' } ],
-                output_template => "Balance fluctuation: %d (diff/min)",
+       { label => 'balance_fluctuation', nlabel => 'parity.tracking.balances.variation.persecond', set => {
+                key_values => [ { name => 'balance', diff => 1 } ],
+                per_second => 1,
+                output_template => " variation: %.2f (diff/sec)",
                 perfdatas => [
-                    { label => 'balance_fluctuation', value => 'balance_fluctuation_absolute', template => '%d', min => 0 }
-                ],                
+                    { label => 'balances', template => '%.2f', value => 'balance_per_second',
+                        label_extra_instance => 1, instance_use => 'display_absolute' }
+                ],
             }
         }
     ];
@@ -74,24 +76,24 @@ sub set_counters {
 sub prefix_output_events {
     my ($self, %options) = @_;
 
-    return "Event stats '";
+    return "Event '" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_output_miners {
     my ($self, %options) = @_;
 
-    return "Miner stats '";
+    return "Miner '" . $options{instance_value}->{display} . "' ";;
 }
 
 sub prefix_output_balances {
     my ($self, %options) = @_;
 
-    return "Balance stats '";
+    return "Balance '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -109,48 +111,20 @@ sub manage_selection {
 
     my $results = $options{custom}->request_api(url_path => '/tracking');
 
-    # use Data::Dumper;
-    # print Dumper($results);
-
-    my $res_timestamp = 0;
-    my $calculated_frequency = 0;
-
     $self->{events} = {};
     $self->{miners} = {};
     $self->{balances} = {};
-    
-    my $datas = {};
 
     foreach my $event (@{$results->{events}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $event->{id} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $event->{id} . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $event->{label} . "': no matching filter name.", debug => 1);
             next;
         }
 
-        my $old_event_timestamp = $self->{statefile_cache}->get(name => 'last_event_timestamp'); #get the id last_event_timestamp
-        my $old_event_count = $self->{statefile_cache}->get(name => 'last_event_count'); #get the id last_event_count
+        $self->{events}->{lc($event->{label})} = { display => lc($event->{label}), 
+                                                   event_count => $event->{count} };
 
-        $datas->{$event->{id}}->{last_event_timestamp} = time();
-        $datas->{$event->{id}}->{last_event_count} = $event->{count};
-
-        if ($old_event_count && $old_event_timestamp) {
-            $calculated_frequency = ($event->{count} - $old_event_count) / (time() - $old_event_timestamp);
-
-            $self->{events}->{$event->{id}}->{display} = $event->{label};
-            $self->{events}->{$event->{id}}->{event_frequency} = $calculated_frequency;        
-
-            $res_timestamp = $event->{timestamp} == 0 ? '': localtime($event->{timestamp});
-
-            if ($event->{count} > 0) {
-                $self->{output}->output_add(severity  => 'OK', long_msg => 'Event ' . $event->{id} . ': Last Tx from "' . $event->{label} . '" (#' . $event->{count} .
-                                ') was at ' . $res_timestamp . ' (block #' . $event->{block} . ')' );
-            } else {
-                $self->{output}->output_add(severity  => 'OK', long_msg => 'Event ' . $event->{id} . ': No Tx from "' . $event->{label} . '"');
-            }
-        } else {
-            $self->{output}->output_add(severity  => 'OK', long_msg => 'Event ' . $event->{id} . ': Building perfdata for "' . $event->{label} . '"...');
-        }
     }
 
     foreach my $miner (@{$results->{miners}}) {
@@ -160,51 +134,17 @@ sub manage_selection {
             next;
         }
 
-        my $old_miner_timestamp = $self->{statefile_cache}->get(name => 'last_miner_timestamp'); #get the id last_miner_timestamp
-        my $old_miner_count = $self->{statefile_cache}->get(name => 'last_miner_count'); #get the id last_miner_count
-
-        $datas->{$miner->{id}}->{last_miner_timestamp} = time();
-        $datas->{$miner->{id}}->{last_miner_count} = $miner->{count};
-
-        if ($old_miner_timestamp && $old_miner_timestamp) {
-            $calculated_frequency = ($miner->{count} - $old_miner_count) / (time() - $old_miner_timestamp);
-
-            $self->{miners}->{$miner->{id}}->{display} = $miner->{label};
-            $self->{miners}->{$miner->{id}}->{mining_frequency} = $calculated_frequency;
-
-            $res_timestamp = $miner->{timestamp} == 0 ? '': localtime($miner->{timestamp});
-            if ($miner->{count} > 0) {
-                $self->{output}->output_add(severity  => 'OK', long_msg => 'Miner ' . $miner->{id} . ': Last block from label "' . $miner->{label} . '" (#' . $miner->{count} .
-                                ') was at ' . $res_timestamp . ' (block #' . $miner->{block} . ')' );
-            } else {
-                 $self->{output}->output_add(severity  => 'OK', long_msg => 'Miner ' . $miner->{id} . ': No validation from "' . $miner->{label} . '"');
-            }
-        } else {
-            $self->{output}->output_add(severity  => 'OK', long_msg => 'Miner ' . $miner->{id} . ': Building perfdata for "' . $miner->{label} . '"...');
-        }
     }
 
     foreach my $balance (@{$results->{balances}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $balance->{id} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $balance->{id} . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $balance->{label} . "': no matching filter name.", debug => 1);
             next;
         }
 
-        my $old_balance = $self->{statefile_cache}->get(name => 'last_balance'); #get the id last_balance
-
-        $datas->{$balance->{id}}->{last_balance} = $balance->{balance};
-
-        if ($old_balance) {
-            my $calculated_diff = ($balance->{balance} - $old_balance) / ($old_balance);
-
-            $self->{balances}->{$balance->{id}}->{display} = $balance->{label};
-            $self->{balances}->{$balance->{id}}->{balance} = $calculated_diff;
-
-            $self->{output}->output_add(severity  => 'OK', long_msg => 'Balance ' . $balance->{id} . ': Balance of "' . $balance->{label} . '" is ' . $balance->{balance} . ' ether' );
-        } else {
-            $self->{output}->output_add(severity  => 'OK', long_msg => 'Balance ' . $balance->{id} . ': Balance fluctuation of "' . $balance->{label} . '" is being calculated...');
-        }
+        $self->{balances}->{lc($balance->{label})} = { display => lc($balance->{label}),
+                                                        balance => $balance->{balance} };
     }
     
 
