@@ -19,7 +19,7 @@
 #
 # Authors : Thomas Gourdin thomas.gourdin@gmail.com
 
-package hardware::devices::timelinkmicro::tms6001::snmp::mode::frequency;
+package hardware::devices::timelinkmicro::tms6001::snmp::mode::alarms;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -34,11 +34,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'frequency-quality', nlabel => 'generation.frequency.quality.count', set => {
-                key_values => [ { name => 'qual_frequency' } ],
-                output_template => 'quality of frequency generation: %s',
+        { label => 'total', nlabel => 'alarms.total.count', set => {
+                key_values => [ { name => 'alarms_count' } ],
+                output_template => 'current number of alarms: %s',
                 perfdatas => [
-                    { value => 'qual_frequency_absolute', template => '%s' }
+                    { value => 'alarms_count_absolute', template => '%s', min => 0 }
                 ]
             }
         }
@@ -59,14 +59,13 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $oid_infoQualFreq = '.1.3.6.1.4.1.22641.100.3.6.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_infoQualFreq ], nothing_quit => 1);
+    my $oid_infoAlarmsCount = '.1.3.6.1.4.1.22641.100.3.3.0';
+    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_infoAlarmsCount ], nothing_quit => 1);
 
     $self->{global} = {
-        qual_frequency => $snmp_result->{$oid_infoQualFreq}
+        alarms_count => $snmp_result->{$oid_infoAlarmsCount}
     };
 }
-
 
 1;
 
@@ -74,14 +73,14 @@ __END__
 
 =head1 MODE
 
-Check quality of frequency generation
+Check alarms.
 
 =over 8
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'frequency-quality'.
+Can be: 'total'.
 
 =back
 
