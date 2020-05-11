@@ -109,7 +109,7 @@ sub manage_selection {
 
     $self->{network} = { peers => hex(@{$result}[1]->{result}) };
 
-    $self->{output}->output_add(long_msg => "Node status: [is_listening: " . $peer_count . ']', severity => 'OK');
+    $self->{output}->output_add(long_msg => "Node status: [is_listening: " . @{$result}[0]->{result} . ']', severity => 'OK');
 }
 
 1;

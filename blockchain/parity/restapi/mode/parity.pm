@@ -31,15 +31,59 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'mempool', cb_prefix_output => 'prefix_module_output', type => 0 }
+        { name => 'mempool', cb_prefix_output => 'prefix_module_output', type => 0 },
+        { name => 'peers', cb_prefix_output => 'prefix_module_output', type => 0 }
     ];  
 
     $self->{maps_counters}->{mempool} = [
-        { label => 'mempool', nlabel => 'parity.mempol.usage', set => {
-                key_values => [ { name => 'mempool' } ],
-                output_template => "Mempool: %d %% ",
+        { label => 'tx_pending', nlabel => 'parity.pending.transactions', set => {
+                key_values => [ { name => 'tx_pending' } ],
+                output_template => "Pending transactions: %d",
                 perfdatas => [
-                    { label => 'mempool', value => 'mempool_absolute', template => '%d', min => 0 }
+                    { label => 'tx_pending', value => 'tx_pending_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+        { label => 'mempool_size', nlabel => 'parity.mempol.size', set => {
+                key_values => [ { name => 'mempool_size' } ],
+                output_template => "Mempool size: %d",
+                perfdatas => [
+                    { label => 'mempool_size', value => 'mempool_size_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+        { label => 'mempool_usage', nlabel => 'parity.mempol.usage', set => {
+                key_values => [ { name => 'mempool_usage' } ],
+                output_template => "Mempool usage: %d %% ",
+                perfdatas => [
+                    { label => 'mempool_usage', value => 'mempool_usage_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+    ];
+
+    $self->{maps_counters}->{peers} = [
+        { label => 'peers_connected', nlabel => 'parity.peers.connected', set => {
+                key_values => [ { name => 'peers_connected' } ],
+                output_template => "Peers connected: %d",
+                perfdatas => [
+                    { label => 'peers_connected', value => 'peers_connected_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+        { label => 'peers_max', nlabel => 'parity.peers.max', set => {
+                key_values => [ { name => 'peers_max' } ],
+                output_template => "Peers max: %d",
+                perfdatas => [
+                    { label => 'peers_max', value => 'peers_max_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+        { label => 'peers_usage', nlabel => 'parity.peers.usage', set => {
+                key_values => [ { name => 'peers_usage' } ],
+                output_template => "Mempool usage: %d %% ",
+                perfdatas => [
+                    { label => 'peers_usage', value => 'peers_usage_absolute', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -85,7 +129,8 @@ sub manage_selection {
                             { method => 'parity_netPeers', params => [], id => "4", jsonrpc => "2.0" },
                             { method => 'parity_enode', params => [], id => "5", jsonrpc => "2.0" },
                             { method => 'parity_nodeName', params => [], id => "6", jsonrpc => "2.0" },
-                            { method => 'parity_transactionsLimit', params => [], id => "7", jsonrpc => "2.0" } ]; #TO CHECK parity_transactionsLimit could be done once, at the beginning of the process 
+                            { method => 'parity_transactionsLimit', params => [], id => "7", jsonrpc => "2.0" }, #TO CHECK parity_transactionsLimit could be done once, at the beginning of the process 
+                            { method => 'net_peerCount', params => [], id => "8", jsonrpc => "2.0" } ]; 
                             
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
 
@@ -124,7 +169,13 @@ sub manage_selection {
     $self->{output}->output_add(long_msg => "Node: [node_name: " . @{$result}[5]->{result} . "] [enode: " . @{$result}[4]->{result}  . "]", severity => 'OK');
     $self->{output}->output_add(long_msg => "Mempool: [pending_transactions: " . scalar(@{$$result[2]->{result}})  . "] [transactions_limit: " . @{$result}[6]->{result} . "]", severity => 'OK');
 
-    $self->{mempool} = { mempool => scalar(@{$$result[2]->{result}}) / @{$result}[6]->{result} * 100 }; #TO CHECK division entière 
+    $self->{mempool} = { mempool_usage => scalar(@{$$result[2]->{result}}) / @{$result}[6]->{result} * 100, #TO CHECK division entière 
+                         mempool_size => @{$result}[6]->{result},
+                         tx_pending => scalar(@{$$result[2]->{result}}) }; 
+
+    $self->{peers} = { peers_usage => @{$result}[3]->{result}->{connected} / @{$result}[3]->{result}->{max} * 100, #TO CHECK division entière 
+                       peers_max => @{$result}[3]->{result}->{max},
+                       peers_connected => @{$result}[3]->{result}->{connected} }; 
 }
 
 1;
