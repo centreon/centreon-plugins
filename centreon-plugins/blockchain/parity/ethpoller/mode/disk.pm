@@ -69,7 +69,7 @@ sub set_counters {
         },
         { label => 'disk_usage', nlabel => 'eth.poller.disk.usage', set => {
                 key_values => [ { name => 'disk_usage' } ],
-                output_template => "Disk usage: %d %",
+                output_template => "Disk usage: %d %%",
                 perfdatas => [
                     { label => 'disk_usage', value => 'disk_usage_absolute', template => '%d', min => 0 }
                 ],                
