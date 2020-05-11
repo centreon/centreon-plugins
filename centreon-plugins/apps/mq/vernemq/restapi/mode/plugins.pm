@@ -71,6 +71,7 @@ sub manage_selection {
             next;
         }
 
+        $self->{output}->output_add(long_msg => "plugin '" . $_->{Plugin} . "'");
         $self->{global}->{total}++;
     }
 }
