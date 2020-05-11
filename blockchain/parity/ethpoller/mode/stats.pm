@@ -110,12 +110,12 @@ sub manage_selection {
     $datas->{last_tx_count} = $result->{block}->{count};
 
     use Data::Dumper;
-    print Dumper($old_timestamp);
+    print Dumper($old_tx_timestamp);
 
     my $res_timestamp = 0;
 
     if ($old_block_count && $old_block_timestamp) {
-        $res_timestamp = $result->{block}->{timestamp}) == 0 ? '' : $result->{block}->{timestamp}));
+        $res_timestamp = $result->{block}->{timestamp} == 0 ? '' : $result->{block}->{timestamp};
         my $calculated_block_freq = ($result->{block}->{count} - $old_block_count) / (time() - $old_block_timestamp);
         $self->{block} = { block_freq => $calculated_block_freq };
         $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{count} . ') was at ' . $res_timestamp);
@@ -124,7 +124,7 @@ sub manage_selection {
     }
 
     if ($old_tx_count && $old_tx_timestamp) {
-        $res_timestamp = $result->{transaction}->{timestamp}) == 0 ? '' : $result->{transaction}->{timestamp}));
+        $res_timestamp = $result->{transaction}->{timestamp} == 0 ? '' : $result->{transaction}->{timestamp};
         my $calculated_tx_freq = ($result->{transaction}->{count} - $old_tx_count) / (time() - $old_tx_timestamp);
         $self->{transaction} = { transaction_freq => $calculated_tx_freq };
         $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was at ' . $res_timestamp);
