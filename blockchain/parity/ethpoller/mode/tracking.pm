@@ -132,7 +132,7 @@ sub manage_selection {
         my $old_event_count = $self->{statefile_cache}->get(name => 'last_event_count'); #get the id last_event_count
 
         $datas->{$event->{id}}->{last_event_timestamp} = time();
-        $datas->{$event->{id}}->{last_event_count} = $result->{block}->{count};
+        $datas->{$event->{id}}->{last_event_count} = $event->{count};
 
         if ($old_event_count && $old_event_timestamp) {
             $calculated_frequency = ($event->{count} - $old_event_count) / (time() - $old_event_timestamp);
@@ -164,7 +164,7 @@ sub manage_selection {
         my $old_miner_count = $self->{statefile_cache}->get(name => 'last_miner_count'); #get the id last_miner_count
 
         $datas->{$miner->{id}}->{last_miner_timestamp} = time();
-        $datas->{$miner->{id}}->{last_miner_count} = $result->{block}->{count};
+        $datas->{$miner->{id}}->{last_miner_count} = $miner->{count};
 
         if ($old_miner_timestamp && $old_miner_timestamp) {
             $calculated_frequency = ($miner->{count} - $old_miner_count) / (time() - $old_miner_timestamp);
@@ -196,7 +196,7 @@ sub manage_selection {
         $datas->{$balance->{id}}->{last_balance} = $balance->{balance};
 
         if ($old_balance) {
-            $calculated_diff = ($balance->{balance} - $old_balance) / ($old_balance);
+            my $calculated_diff = ($balance->{balance} - $old_balance) / ($old_balance);
 
             $self->{balances}->{$balance->{id}}->{display} = $balance->{label};
             $self->{balances}->{$balance->{id}}->{balance} = $calculated_diff;
