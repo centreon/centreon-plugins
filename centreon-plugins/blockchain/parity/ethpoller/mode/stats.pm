@@ -24,61 +24,61 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use bigint;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', cb_prefix_output => 'prefix_module_output', type => 0 },
+        { name => 'block', cb_prefix_output => 'prefix_output_block', type => 0 },
+        { name => 'transaction', cb_prefix_output => 'prefix_output_transaction', type => 0 }
     ];
 
-    $self->{maps_counters}->{global} = [
-       { label => 'stats_blockInterval', nlabel => 'parity.stats.block.interval', set => {
-                key_values => [ { name => 'stats_blockInterval' } ],
-                output_template => "Block interval: %d ",
+    $self->{maps_counters}->{block} = [
+       { label => 'block_freq', nlabel => 'parity.stats.block.frequency', set => {
+                key_values => [ { name => 'block_freq' } ],
+                output_template => "Block frequency: %d (block/min)",
                 perfdatas => [
-                    { label => 'stats_blockInterval', value => 'stats_blockInterval_absolute', template => '%d', min => 0 }
+                    { label => 'block_freq', value => 'block_freq_absolute', template => '%d', min => 0 }
                 ],                
             }
-        },
-        { label => 'stats_contracts', nlabel => 'eth.poller.stats.contracts.number', set => {
-                key_values => [ { name => 'stats_contracts' } ],
-                output_template => "Cumulative contracts: %d ",
-                perfdatas => [
-                    { label => 'stats_contracts', value => 'stats_contracts_absolute', template => '%d', min => 0 }
-                ],                
-            }
-        },
-        { label => 'stats_blocks', nlabel => 'eth.poller.stats.blocks.number', set => {
-                key_values => [ { name => 'stats_blocks' } ],
-                output_template => "Cumulative blocks: %d ",
-                perfdatas => [
-                    { label => 'stats_blocks', value => 'stats_blocks_absolute', template => '%d', min => 0 }
-                ],                
-            }
-        },
-        { label => 'stats_transactions', nlabel => 'eth.poller.stats.transactions.number', set => {
-                key_values => [ { name => 'stats_transactions' } ],
-                output_template => "Cumulative transactions: %d ",
-                perfdatas => [
-                    { label => 'stats_transactions', value => 'stats_transactions_absolute', template => '%d', min => 0 }
-                ],                
-            }
-        },
+        }
     ];
 
+    $self->{maps_counters}->{transaction} = [
+       { label => 'transaction_freq', nlabel => 'parity.stats.transaction.frequency', set => {
+                key_values => [ { name => 'transaction_freq' } ],
+                output_template => "Transaction frequency: %d (tx/min)",
+                perfdatas => [
+                    { label => 'transaction_freq', value => 'transaction_freq_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        }
+    ];
 }
 
-sub prefix_output {
+sub prefix_output_block {
     my ($self, %options) = @_;
 
-    return "Stats '";
+    return "Block stats '";
+}
+
+sub prefix_output_fork {
+    my ($self, %options) = @_;
+
+    return "Fork stats '";
+}
+
+sub prefix_output_transaction {
+    my ($self, %options) = @_;
+
+    return "Transaction stats '";
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, statefile => 1);
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
@@ -91,16 +91,52 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{cache_name} = "parity_ethpoller_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
+       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+
     my $result = $options{custom}->request_api(url_path => '/stats');
 
-    # use Data::Dumper;
-    # print Dumper($result);
+    my $old_block_timestamp = $self->{statefile_cache}->get(name => 'last_block_timestamp');
+    my $old_block_count = $self->{statefile_cache}->get(name => 'last_block_count');
 
-    $self->{global} = { stats_blockInterval => $result->{blockInterval},
-                        stats_contracts => $result->{cumulative}->{contracts},
-                        stats_blocks => $result->{cumulative}->{blocks},
-                        stats_transactions => $result->{cumulative}->{transactions}
-                         };
+    my $old_tx_timestamp = $self->{statefile_cache}->get(name => 'last_tx_timestamp');
+    my $old_tx_count = $self->{statefile_cache}->get(name => 'last_tx_count');
+
+    my $datas = {};
+    $datas->{last_block_timestamp} = time();
+    $datas->{last_block_count} = $result->{block}->{count};
+
+    $datas->{last_tx_timestamp} = time();
+    $datas->{last_tx_count} = $result->{block}->{count};
+
+    use Data::Dumper;
+    print Dumper($old_timestamp);
+
+    my $res_timestamp = 0;
+
+    if ($old_block_count && $old_block_timestamp) {
+        $res_timestamp = $result->{block}->{timestamp}) == 0 ? '' : $result->{block}->{timestamp}));
+        my $calculated_block_freq = ($result->{block}->{count} - $old_block_count) / (time() - $old_block_timestamp);
+        $self->{block} = { block_freq => $calculated_block_freq };
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{count} . ') was at ' . $res_timestamp);
+    } else {
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{block} . ') was at ' . $res_timestamp . '. Block frequency is being calculated...');
+    }
+
+    if ($old_tx_count && $old_tx_timestamp) {
+        $res_timestamp = $result->{transaction}->{timestamp}) == 0 ? '' : $result->{transaction}->{timestamp}));
+        my $calculated_tx_freq = ($result->{transaction}->{count} - $old_tx_count) / (time() - $old_tx_timestamp);
+        $self->{transaction} = { transaction_freq => $calculated_tx_freq };
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was at ' . $res_timestamp);
+    } else {
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was at ' . $res_timestamp . '. Transaction frequency is being calculated...');
+    }
+
+    if ($result->{fork}->{count} > 0) {
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last fork (#' . $result->{fork}->{count} . ') was at ' . $res_timestamp);   
+    } else {
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'No fork occurence');
+    }
 }
 
 1;
@@ -109,6 +145,6 @@ __END__
 
 =head1 MODE
 
-Check Parity eth-poller for accounts tracking
+Check Parity eth-poller for stats 
 
 =cut
