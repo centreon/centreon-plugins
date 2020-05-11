@@ -41,16 +41,44 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', cb_prefix_output => 'prefix_module_output', type => 0 },
+        { name => 'gas', cb_prefix_output => 'prefix_module_output', type => 0 },
         { name => 'block', cb_prefix_output => 'prefix_module_output', type => 0 },
+        { name => 'sync', cb_prefix_output => 'prefix_module_output', type => 0 },
     ];
 
-    $self->{maps_counters}->{global} = [
+    $self->{maps_counters}->{gas} = [
+        { label => 'sync_status', nlabel => 'parity.eth.sync.status', set => {
+                key_values => [ { name => 'sync_status' } ],
+                output_template => "The gas price is: %d %% ",
+                perfdatas => [
+                    { label => 'sync_status', value => 'sync_status_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{gas} = [
         { label => 'gas_price', nlabel => 'parity.eth.gas.price', set => {
                 key_values => [ { name => 'gas_price' } ],
                 output_template => "The gas price is: %d wei ",
                 perfdatas => [
                     { label => 'gas_price', value => 'gas_price_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+        { label => 'gas_used', nlabel => 'parity.eth.gas.used', set => {
+                key_values => [ { name => 'gas_used' } ],
+                output_template => "The gas used is: %d",
+                perfdatas => [
+                    { label => 'gas_used', value => 'gas_used_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+        { label => 'gas_limit', nlabel => 'parity.eth.gas.limit', set => {
+                key_values => [ { name => 'gas_limit' } ],
+                output_template => "The gas limit is: %d",
+                perfdatas => [
+                    { label => 'gas_limit', value => 'gas_limit_absolute', template => '%d', min => 0 }
                 ],                
             }
         }
@@ -62,6 +90,14 @@ sub set_counters {
                 output_template => "Most recent block size: %d ",
                 perfdatas => [
                     { label => 'block_size', value => 'block_size_absolute', template => '%d', min => 0 }
+                ],                
+            }
+        },
+        { label => 'block_usage', nlabel => 'parity.eth.block.usage', set => {
+                key_values => [ { name => 'block_usage' } ],
+                output_template => "Block usage: %d %%",
+                perfdatas => [
+                    { label => 'block_usage', value => 'block_usage_absolute', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -174,10 +210,16 @@ sub manage_selection {
     #     $cache->set('gas_price', $gas_price);
     # }
 
-    $self->{global} = { gas_price => $gas_price };
+    $self->{sync} = { sync_status => $res_sync };
 
+    $self->{gas} = { gas_price => $gas_price,
+                     gas_used => hex(@{$result}[5]->{result}->{gasLimit}),
+                     gas_limit => hex(@{$result}[5]->{result}->{gasUsed}) };
+
+    my $calculated_block_usage = hex(@{$result}[5]->{result}->{gasUsed}) / hex(@{$result}[5]->{result}->{gasLimit});
     $self->{block} =  { block_size => hex(@{$result}[5]->{result}->{size}), 
                         block_gas => hex(@{$result}[5]->{result}->{gasUsed}),
+                        block_usage => $calculated_block_usage,
                         # block_difficulty => hex(@{$result}[5]->{result}->{totalDifficulty}), 
                         block_uncles => scalar(@{$$result[5]->{result}->{uncles}}), 
                         block_transactions => scalar(@{$$result[5]->{result}->{transactions}})};
