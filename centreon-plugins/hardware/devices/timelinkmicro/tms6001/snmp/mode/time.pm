@@ -21,64 +21,50 @@
 
 package hardware::devices::timelinkmicro::tms6001::snmp::mode::time;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'time-quality', nlabel => 'generation.time.quality.count', set => {
+                key_values => [ { name => 'qual_time' } ],
+                output_template => 'quality of time generation: %s',
+                perfdatas => [
+                    { value => 'qual_time_absolute', template => '%s' }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-    
-}
+    my $oid_infoQualTime = '.1.3.6.1.4.1.22641.100.3.5.0';
+    my $snmp_result = $options{snmp}->get_leef(oids => [ $oid_infoQualTime ], nothing_quit => 1);
 
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    $self->{hostname} = $self->{snmp}->get_hostname();
-
-    my $oid_qualityfrequency = '.1.3.6.1.4.1.22641.100.3.5.0';
-
-    my $result = $self->{snmp}->get_leef(oids => [ $oid_qualityfrequency ], nothing_quit => 1);
-
-    my $value = $result->{$oid_qualityfrequency};
-    
-    my $exit = $self->{perfdata}->threshold_check(value => $value, 
-                               threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Quality of time generation is %s.", $value));    
-
-    $self->{output}->perfdata_add(label => 'value', unit => undef,
-                                  value => $value,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => undef, max => undef);
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{global} = {
+        qual_time => $snmp_result->{$oid_infoQualTime}
+    };
 }
 
 1;
@@ -87,17 +73,14 @@ __END__
 
 =head1 MODE
 
-Check quality of time generation
+Check quality of time generation.
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-
-=item B<--critical>
-
-Threshold critical.
+Thresholds.
+Can be: 'time-quality'.
 
 =back
 

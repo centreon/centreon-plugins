@@ -31,15 +31,14 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'frequency'	                            => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::frequency',
-        'time' 			                        => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::time',
-        'satellites'                            => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::satellites',
-        'antenna'                               => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::antenna',
-        'gnss'                                  => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::gnss',
-        'alarms'                                => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::alarm',
-        
-    );
+    $self->{modes} = {
+        'alarms'     => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::alarms',
+        'antenna'    => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::antenna',
+        'frequency'  => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::frequency',
+        'gnss'       => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::gnss',
+        'satellites' => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::satellites',
+        'time'       => 'hardware::devices::timelinkmicro::tms6001::snmp::mode::time'
+    };
 
     return $self;
 }
