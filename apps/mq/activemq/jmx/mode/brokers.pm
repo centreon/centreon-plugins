@@ -111,7 +111,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'queue-enqueued', nlabel => 'broker.queue.enqueued.count', display_ok => 0, set => {
+        { label => 'queue-messages-enqueued', nlabel => 'broker.queue.messages.enqueued.count', display_ok => 0, set => {
                 key_values => [ { name => 'EnqueueCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'messages enqueued: %s',
                 perfdatas => [
@@ -120,7 +120,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'queue-dequeued', nlabel => 'broker.queue.dequeue.count', display_ok => 0, set => {
+        { label => 'queue-messages-dequeued', nlabel => 'broker.queue.messages.dequeue.count', display_ok => 0, set => {
                 key_values => [ { name => 'DequeueCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'messages dequeued: %s',
                 perfdatas => [
@@ -129,7 +129,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'queue-expired', nlabel => 'broker.queue.expired.count', display_ok => 0, set => {
+        { label => 'queue-messages-expired', nlabel => 'broker.queue.messages.expired.count', display_ok => 0, set => {
                 key_values => [ { name => 'ExpiredCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'messages expired: %s',
                 perfdatas => [
@@ -138,12 +138,22 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'queue-inflighted', nlabel => 'broker.queue.inflighted.count', display_ok => 0, set => {
+        { label => 'queue-messages-inflighted', nlabel => 'broker.queue.messages.inflighted.count', display_ok => 0, set => {
                 key_values => [ { name => 'InFlightCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'messages in-flighted: %s',
                 perfdatas => [
                     { value => 'InFlightCount_absolute',
                       template => '%s', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'queue-messages-size-average', nlabel => 'broker.queue.messages.size.average.bytes', display_ok => 0, set => {
+                key_values => [ { name => 'AverageMessageSize' }, { name => 'display' } ],
+                output_template => 'average messages size: %s %s',
+                output_change_bytes => 1,
+                perfdatas => [
+                    { value => 'AverageMessageSize_absolute',
+                      template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -192,7 +202,7 @@ sub manage_selection {
                 { name => 'ProducerCount' }, { name => 'MemoryPercentUsage' },
                 { name => 'QueueSize' }, { name => 'EnqueueCount' },
                 { name => 'DequeueCount' }, { name => 'ExpiredCount' },
-                { name => 'InFlightCount' }
+                { name => 'InFlightCount' }, { name => 'AverageMessageSize' }
             ] 
         },
         {
@@ -277,7 +287,8 @@ Thresholds.
 Can be: 'store-usage' (%), 'temporary-usage' (%), 'memory-usage' (%),
 'queue-average-enqueue-time' (ms), 'queue-consumers-connected',
 'queue-producers-connected', 'queue-memory-usage' (%), 'queue-size',
-'queue-enqueued', 'queue-dequeued', 'queue-expired', 'queue-inflighted'.
+'queue-messages-enqueued', 'queue-messages-dequeued', 'queue-messages-expired',
+'queue-messages-inflighted'.
 
 =back
 
