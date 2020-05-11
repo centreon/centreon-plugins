@@ -143,22 +143,13 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    
-    my $content = do {
-        local $/ = undef;
-        if (!open my $fh, "<", '/tmp/plop.txt') {
-            $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-            $self->{output}->option_exit();
-        }
-        <$fh>;
-    };
-    #my $content = $self->{http}->request(
-    #    method => defined($options{method}) ? $options{method} : 'GET', 
-    #    url_path => '/api/v1' . $options{endpoint},
-    #    unknown_status => $self->{unknown_http_status},
-    #    warning_status => $self->{warning_http_status},
-    #    critical_status => $self->{critical_http_status}
-    #);
+    my $content = $self->{http}->request(
+        method => defined($options{method}) ? $options{method} : 'GET', 
+        url_path => '/api/v1' . $options{endpoint},
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
+    );
 
     if (!defined($content) || $content eq '') {
         $self->{output}->add_option_msg(short_msg => "API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
