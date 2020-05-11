@@ -33,6 +33,15 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cpu} = [
+        { label => 'total', nlabel => 'cpu.utilization.total.percentage', set => {
+                key_values => [ { name => 'total' }, { name => 'num' } ],
+                output_template => '%.2f %% (total)',
+                perfdatas => [
+                    { label => 'cpu_total', value => 'total_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        },
         { label => '1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => '1m' }, { name => 'num' } ],
                 output_template => '%.2f %% (1min)',
@@ -90,6 +99,7 @@ sub new {
 }
 
 my $mapping = {
+    s5ChasUtilTotalCPUUsage         => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.4' },
     s5ChasUtilCPUUsageLast1Minute   => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.5' },
     s5ChasUtilCPUUsageLast10Minutes => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.6' },
     s5ChasUtilCPUUsageLast1Hour     => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.7' }
@@ -139,6 +149,7 @@ sub manage_selection {
         
         $self->{cpu}->{$instance} = {
             num => $instance,
+            total => $result->{s5ChasUtilTotalCPUUsage},
             '1m' => $result->{s5ChasUtilCPUUsageLast1Minute},
             '10m' => $result->{s5ChasUtilCPUUsageLast10Minutes},
             '1h' => $result->{s5ChasUtilCPUUsageLast1Hour}
@@ -172,7 +183,7 @@ Example: --filter-counters='1m|10m'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: '1m', '5m', '10m', '1h'.
+Can be: 'total', '1m', '5m', '10m', '1h'.
 
 =back
 
