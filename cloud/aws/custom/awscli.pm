@@ -341,6 +341,35 @@ sub cloudwatchlogs_filter_log_events {
     return $raw_results->{events};
 }
 
+sub ebs_list_volumes_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "ec2 describe-volumes --no-dry-run --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options;
+}
+
+sub ebs_list_volumes {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->ebs_list_volumes_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $resource_results = [];
+    foreach my $volume_request (@{$raw_results->{Volumes}}) {
+        push @{$resource_results}, {
+            VolumeId       => $volume_request->{VolumeId},
+            VolumeType     => $volume_request->{VolumeType},
+            VolumeState    => $volume_request->{State}
+        };
+    }
+    
+    return $resource_results;
+}
+
 sub ec2_get_instances_status_set_cmd {
     my ($self, %options) = @_;
 

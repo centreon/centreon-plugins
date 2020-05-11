@@ -290,6 +290,31 @@ sub cloudwatchlogs_filter_log_events {
     return $log_groups_results;
 }
 
+sub ebs_list_volumes {
+    my ($self, %options) = @_;
+
+    my $volume_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $ebsvolume = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $ebsvolume_requests = $ebsvolume->DescribeVolumes(DryRun => 0);
+
+        foreach (@{$ebsvolume_requests->{volumeSet}}) {
+            push @{$volume_results}, {
+                VolumeId      => $_->{volumeId},
+                VolumeType    => $_->{volumeType},
+                VolumeState   => $_->{status}
+            };
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $volume_results;
+}
+
 sub ec2_get_instances_status {
     my ($self, %options) = @_;
 
@@ -300,8 +325,10 @@ sub ec2_get_instances_status {
         my $instances = $ec2->DescribeInstanceStatus(DryRun => 0, IncludeAllInstances => 1);
 
         foreach (@{$instances->{InstanceStatuses}}) {
-            $instance_results->{$_->{InstanceId}} = { state => $_->{InstanceState}->{Name},
-                                                      status => $_->{InstanceStatus}->{Status} };
+            $instance_results->{$_->{InstanceId}} = {
+                state => $_->{InstanceState}->{Name},
+                status => $_->{InstanceStatus}->{Status}
+            };
         }
     };
     if ($@) {
