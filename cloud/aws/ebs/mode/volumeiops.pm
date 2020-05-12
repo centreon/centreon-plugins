@@ -278,7 +278,7 @@ Example:
 perl centreon_plugins.pl --plugin=cloud::aws::ebs::plugin --custommode=awscli --mode=volume-iops --region='eu-west-1'
 --volumeid='vol-1234abcd' --warning-iops-queue-length='100' --critical-iops-queue-length='200' --warning --verbose
 
-See 'https://docs.aws.amazon.com/volume/latest/s2svolume/monitoring-cloudwatch-volume.html' for more information.
+See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.html' for more information.
 
 
 =over 8
