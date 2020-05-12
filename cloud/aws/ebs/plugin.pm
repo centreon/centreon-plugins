@@ -29,11 +29,13 @@ sub new {
     my $self = $class->SUPER::new( package => __PACKAGE__, %options );
     bless $self, $class;
 
-    $self->{version} = '0.1';
+    $self->{version} = '1.0';
     %{ $self->{modes} } = (
-        'volume-throughput'            => 'cloud::aws::ebs::mode::volumethroughput',
-        'volume-iops'                  => 'cloud::aws::ebs::mode::volumeiops',
-        'volume-time'                  => 'cloud::aws::ebs::mode::volumetime',
+        'discovery'       => 'cloud::aws::ebs::mode::discovery',
+        'list-volumes'    => 'cloud::aws::ebs::mode::listvolumes',
+        'volumeio'        => 'cloud::aws::ebs::mode::volumeio',
+        'volumeiops'      => 'cloud::aws::ebs::mode::volumeiops',
+        'volumetime'      => 'cloud::aws::ebs::mode::volumetime'
     );
 
     $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
