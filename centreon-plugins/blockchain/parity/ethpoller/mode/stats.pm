@@ -36,22 +36,26 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{block} = [
-       { label => 'block_freq', nlabel => 'parity.stats.block.frequency', set => {
-                key_values => [ { name => 'block_freq' } ],
-                output_template => "Block frequency: %d (block/min)",
+       { label => 'block_frequency', nlabel => 'parity.stats.block.persecond', set => {
+                key_values => [ { name => 'block_count', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
+                output_template => "Block frequency: %.2f (block/s)",
                 perfdatas => [
-                    { label => 'block_freq', value => 'block_freq_absolute', template => '%d', min => 0 }
+                    { label => 'block', value => 'block_count_per_second', template => ' %.2f',
+                      label_extra_instance => 1, instance_use => 'display_absolute' }
                 ],                
             }
         }
     ];
 
     $self->{maps_counters}->{transaction} = [
-       { label => 'transaction_freq', nlabel => 'parity.stats.transaction.frequency', set => {
-                key_values => [ { name => 'transaction_freq' } ],
-                output_template => "Transaction frequency: %d (tx/min)",
+       { label => 'transaction_frequency', nlabel => 'parity.stats.transaction.persecond', set => {
+                key_values => [ { name => 'transaction_count', diff => 1 } ],
+                per_second => 1,
+                output_template => "Transaction frequency: %.2f (tx/s)",
                 perfdatas => [
-                    { label => 'transaction_freq', value => 'transaction_freq_absolute', template => '%d', min => 0 }
+                    { label => 'transaction', value => 'transaction_count_per_second', template => '%.2f', 
+                      label_extra_instance => 1, instance_use => 'display_absolute' }
                 ],                
             }
         }
@@ -96,46 +100,25 @@ sub manage_selection {
 
     my $result = $options{custom}->request_api(url_path => '/stats');
 
-    my $old_block_timestamp = $self->{statefile_cache}->get(name => 'last_block_timestamp');
-    my $old_block_count = $self->{statefile_cache}->get(name => 'last_block_count');
+    $self->{block} = { block_count => $result->{block}->{count} };
 
-    my $old_tx_timestamp = $self->{statefile_cache}->get(name => 'last_tx_timestamp');
-    my $old_tx_count = $self->{statefile_cache}->get(name => 'last_tx_count');
+    $self->{transaction} = { transaction_count => $result->{transaction}->{count} };
 
-    my $datas = {};
-    $datas->{last_block_timestamp} = time();
-    $datas->{last_block_count} = $result->{block}->{count};
+    my $block_timestamp = $result->{block}->{timestamp} == 0 ? '' : localtime($result->{block}->{timestamp});    
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{count} . ') was at ' . $block_timestamp);
 
-    $datas->{last_tx_timestamp} = time();
-    $datas->{last_tx_count} = $result->{block}->{count};
-
-    use Data::Dumper;
-    print Dumper($old_tx_timestamp);
-
-    my $res_timestamp = 0;
-
-    if ($old_block_count && $old_block_timestamp) {
-        $res_timestamp = $result->{block}->{timestamp} == 0 ? '' : $result->{block}->{timestamp};
-        my $calculated_block_freq = ($result->{block}->{count} - $old_block_count) / (time() - $old_block_timestamp);
-        $self->{block} = { block_freq => $calculated_block_freq };
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{count} . ') was at ' . $res_timestamp);
+    if ($result->{transaction}->{count} > 0) {
+        my $tx_timestamp = $result->{transaction}->{timestamp} == 0 ? '' : localtime($result->{transaction}->{timestamp});
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was at ' . $tx_timestamp);
     } else {
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{block} . ') was at ' . $res_timestamp . '. Block frequency is being calculated...');
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'No transaction...');
     }
-
-    if ($old_tx_count && $old_tx_timestamp) {
-        $res_timestamp = $result->{transaction}->{timestamp} == 0 ? '' : $result->{transaction}->{timestamp};
-        my $calculated_tx_freq = ($result->{transaction}->{count} - $old_tx_count) / (time() - $old_tx_timestamp);
-        $self->{transaction} = { transaction_freq => $calculated_tx_freq };
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was at ' . $res_timestamp);
+  
+    if ($result->{transaction}->{count} > 0) {
+        my $fork_timestamp = $result->{fork}->{timestamp} == 0 ? '' : localtime($result->{fork}->{timestamp});
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last fork (#' . $result->{fork}->{count} . ') was at ' . $fork_timestamp);   
     } else {
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was at ' . $res_timestamp . '. Transaction frequency is being calculated...');
-    }
-
-    if ($result->{fork}->{count} > 0) {
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last fork (#' . $result->{fork}->{count} . ') was at ' . $res_timestamp);   
-    } else {
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'No fork occurence');
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'No fork occurence...');
     }
 }
 
