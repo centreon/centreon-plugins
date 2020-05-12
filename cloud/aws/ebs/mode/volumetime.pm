@@ -29,19 +29,19 @@ my %metrics_mapping = (
     'VolumeTotalReadTime' => {
         'output'    => 'Total Read Time',
         'label'     => 'total-read-time',
-        'nlabel'    => { 'absolute'    => 'ebs.volume.totalreadtime.second' },
+        'nlabel'    => { 'absolute'    => 'ebs.volume.totalread.time.second' },
         'unit'      => 's'
     },
     'VolumeTotalWriteTime' => {
-        'output'    => 'Write Time',
-        'label'     => 'write-time',
-        'nlabel'    => { 'absolute'      => 'ebs.volume.totalwritetime.second' },
+        'output'    => 'Total Write Time',
+        'label'     => 'total-write-time',
+        'nlabel'    => { 'absolute'      => 'ebs.volume.totalwrite.time.second' },
         'unit'      => 's'
     },
     'VolumeIdleTime' => {
         'output'          => 'Idle Time',
         'label'           => 'idle-time',
-        'nlabel'          => { 'absolute'      => 'ebs.volume.idletime.second' },
+        'nlabel'          => { 'absolute'      => 'ebs.volume.idle.time.second' },
         'unit'            => 's',
         'display_percent' => 1
     }
@@ -240,7 +240,7 @@ __END__
 Check Amazon Elastic Block Store volumes operations time.
 
 Example:
-perl centreon_plugins.pl --plugin=cloud::aws::ebs::plugin --custommode=awscli --mode=volume-time --region='eu-west-1'
+perl centreon_plugins.pl --plugin=cloud::aws::ebs::plugin --custommode=awscli --mode=volumetime --region='eu-west-1'
 --volumeid='vol-1234abcd' --warning-write-time='40' --critical-write-time='50' --warning --verbose
 
 See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.html' for more information.

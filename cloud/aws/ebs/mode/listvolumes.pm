@@ -52,8 +52,8 @@ sub run {
     $self->manage_selection(%options);
     foreach (@{$self->{volume}}) {
         $self->{output}->output_add(
-            long_msg => sprintf("[Id = %s][Type = %s][State = %s]",
-            $_->{VolumeId}, $_->{VolumeType}, $_->{VolumeState} ));
+            long_msg => sprintf("[Name = %s][Id = %s][Type = %s][State = %s]",
+            $_->{VolumeName}, $_->{VolumeId}, $_->{VolumeType}, $_->{VolumeState} ));
     }
 
     $self->{output}->output_add(
@@ -67,7 +67,7 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
 
-    $self->{output}->add_disco_format(elements => ['Id', 'Type', 'State']);
+    $self->{output}->add_disco_format(elements => ['Name', 'Id', 'Type', 'State']);
 }
 
 sub disco_show {
@@ -76,8 +76,9 @@ sub disco_show {
     $self->manage_selection(%options);
     foreach (@{$self->{volume}}) {
         $self->{output}->add_disco_entry(
-            VolumeId => $_->{VolumeId},
-            VolumeType => $_->{VolumeType},
+            VolumeName  => $_->{VolumeName},
+            VolumeId    => $_->{VolumeId},
+            VolumeType  => $_->{VolumeType},
             VolumeState => $_->{VolumeState},
         );
     };

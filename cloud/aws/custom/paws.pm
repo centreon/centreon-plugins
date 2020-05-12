@@ -25,6 +25,7 @@ use warnings;
 use Paws;
 use Paws::Net::LWPCaller;
 use DateTime;
+use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
@@ -298,12 +299,18 @@ sub ebs_list_volumes {
         my $lwp_caller = new Paws::Net::LWPCaller();
         my $ebsvolume = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
         my $ebsvolume_requests = $ebsvolume->DescribeVolumes(DryRun => 0);
-
-        foreach (@{$ebsvolume_requests->{volumeSet}}) {
+        foreach my $request (@{$ebsvolume_requests->{Volumes}}) {
+            my @name_tags;
+            foreach my $tag (@{$request->{Tags}}) {
+                if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
+                    push @name_tags, $tag->{Value};
+                }
+            };
             push @{$volume_results}, {
-                VolumeId      => $_->{volumeId},
-                VolumeType    => $_->{volumeType},
-                VolumeState   => $_->{status}
+                VolumeId       => $request->{VolumeId},
+                VolumeName     => join(",", @name_tags),
+                VolumeType     => $request->{VolumeType},
+                VolumeState    => $request->{State}
             };
         }
     };

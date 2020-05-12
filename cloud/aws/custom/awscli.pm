@@ -360,13 +360,20 @@ sub ebs_list_volumes {
 
     my $resource_results = [];
     foreach my $volume_request (@{$raw_results->{Volumes}}) {
+        my @name_tags;
+            foreach my $tag (@{$volume_request->{Tags}}) {
+                if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
+                    push @name_tags, $tag->{Value};
+                }
+            };
         push @{$resource_results}, {
             VolumeId       => $volume_request->{VolumeId},
+            VolumeName     => join(",", @name_tags),
             VolumeType     => $volume_request->{VolumeType},
             VolumeState    => $volume_request->{State}
         };
     }
-    
+
     return $resource_results;
 }
 

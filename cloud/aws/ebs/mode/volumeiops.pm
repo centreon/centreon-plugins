@@ -30,8 +30,8 @@ my %metrics_mapping = (
         'output'    => 'IOPS Read',
         'label'     => 'iops-read',
         'nlabel'    => {
-            'absolute'      => 'ebs.volume.iopsread.count',
-            'per_second'    => 'ebs.volume.iopsread.countpersecond'
+            'absolute'      => 'ebs.volume.iops.read.count',
+            'per_second'    => 'ebs.volume.iops.read.countpersecond'
         },
         'unit'      => ''
     },
@@ -39,8 +39,8 @@ my %metrics_mapping = (
         'output'    => 'IOPS Write',
         'label'     => 'iops-write',
         'nlabel'    => {
-            'absolute'      => 'ebs.volume.iopswrite.count',
-            'per_second'    => 'ebs.volume.iopswrite.countpersecond'
+            'absolute'      => 'ebs.volume.iops.write.count',
+            'per_second'    => 'ebs.volume.iops.write.countpersecond'
         },
         'unit'      => ''
     },
@@ -48,8 +48,8 @@ my %metrics_mapping = (
         'output'    => 'IOPS Throughput',
         'label'     => 'iops-throughput',
         'nlabel'    => {
-            'absolute'      => 'ebs.volume.iopsthroughput.percentage',
-            'per_second'    => 'ebs.volume.iopsthroughput.percentagepersecond'
+            'absolute'      => 'ebs.volume.iops.throughput.percentage',
+            'per_second'    => 'ebs.volume.iops.throughput.percentagepersecond'
         },
         'unit'      => '%'
     },
@@ -57,8 +57,8 @@ my %metrics_mapping = (
         'output'    => 'IOPS Consumed',
         'label'     => 'iops-consumed',
         'nlabel'    => {
-            'absolute'      => 'ebs.volume.iopsconsumed.count',
-            'per_second'    => 'ebs.volume.iopsconsumed.countpersecond'
+            'absolute'      => 'ebs.volume.iops.consumed.count',
+            'per_second'    => 'ebs.volume.iops.consumed.countpersecond'
         },
         'unit'      => ''
     },
@@ -66,8 +66,8 @@ my %metrics_mapping = (
         'output'    => 'IOPS Queue Length',
         'label'     => 'iops-queue-length',
         'nlabel'    => {
-            'absolute'      => 'ebs.volume.iopsqueuelength.count',
-            'per_second'    => 'ebs.volume.iopsqueuelength.countpersecond'
+            'absolute'      => 'ebs.volume.iops.queuelength.count',
+            'per_second'    => 'ebs.volume.iops.queuelength.countpersecond'
         },
         'unit'      => ''
     },
@@ -275,7 +275,7 @@ __END__
 Check Amazon Elastic Block Store volumes IOPS.
 
 Example:
-perl centreon_plugins.pl --plugin=cloud::aws::ebs::plugin --custommode=awscli --mode=volume-iops --region='eu-west-1'
+perl centreon_plugins.pl --plugin=cloud::aws::ebs::plugin --custommode=awscli --mode=volumeiops --region='eu-west-1'
 --volumeid='vol-1234abcd' --warning-iops-queue-length='100' --critical-iops-queue-length='200' --warning --verbose
 
 See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.html' for more information.
@@ -299,6 +299,10 @@ Warning thresholds ($metric$ can be: 'iops-read', 'iops-write', 'iops-throughput
 =item B<--critical-$metric$>
 
 Critical thresholds ($metric$ can be: 'iops-read', 'iops-write', 'iops-throughput', 'iops-consumed-rw', 'iops-queue-length').
+
+=item B<--per-sec>
+
+Change the data to be unit/sec.
 
 =back
 

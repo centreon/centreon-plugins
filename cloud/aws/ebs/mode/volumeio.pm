@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::ebs::mode::volumedata;
+package cloud::aws::ebs::mode::volumeio;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -27,20 +27,20 @@ use warnings;
 
 my %metrics_mapping = (
     'VolumeReadBytes' => {
-        'output'    => 'Data Read',
-        'label'     => 'data-read',
+        'output'    => 'Volume Read Bytes',
+        'label'     => 'volume-read-bytes',
         'nlabel'    => {
-            'absolute'      => 'ebs.volume.dataread.bytes',
-            'per_second'    => 'ebs.volume.dataread.bytespersecond'
+            'absolute'      => 'ebs.volume.bytes.read.bytes',
+            'per_second'    => 'ebs.volume.bytes.read.bytespersecond'
         },
         'unit'      => 'B'
     },
     'VolumeWriteBytes' => {
-        'output'    => 'Data Write',
-        'label'     => 'data-write',
+        'output'    => 'Volume Write Bytes',
+        'label'     => 'volume-write-bytes',
         'nlabel'    => {
-            'absolute'      => 'ebs.volume.datawrite.bytes',
-            'per_second'    => 'ebs.volume.datawrite.bytespersecond'
+            'absolute'      => 'ebs.volume.bytes.write.bytes',
+            'per_second'    => 'ebs.volume.bytes.write.bytespersecond'
         },
         'unit'      => 'B'
     }
@@ -244,11 +244,11 @@ __END__
 
 =head1 MODE
 
-Check Amazon Elastic Block Store volumes data usage.
+Check Amazon Elastic Block Store volumes IO usage.
 
 Example:
-perl centreon_plugins.pl --plugin=cloud::aws::ebs::plugin --custommode=awscli --mode=volume-data --region='eu-west-1'
---volumeid='vol-1234abcd' --warning-data-write='100000' --critical-data-write='200000' --warning --verbose
+perl centreon_plugins.pl --plugin=cloud::aws::ebs::plugin --custommode=awscli --mode=volumeio --region='eu-west-1'
+--volumeid='vol-1234abcd' --warning-write-bytes='100000' --critical-write-bytes='200000' --warning --verbose
 
 See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.html' for more information.
 
@@ -266,11 +266,15 @@ Can be: VolumeReadBytes, VolumeWriteBytes
 
 =item B<--warning-$metric$>
 
-Warning thresholds ($metric$ can be: 'data-read', 'data-write').
+Warning thresholds ($metric$ can be: 'volume-read-bytes', 'volume-write-bytes').
 
 =item B<--critical-$metric$>
 
-Critical thresholds ($metric$ can be: 'data-read', 'data-write').
+Critical thresholds ($metric$ can be: 'volume-read-bytes', 'volume-write-bytes').
+
+=item B<--per-sec>
+
+Change the data to be unit/sec.
 
 =back
 
