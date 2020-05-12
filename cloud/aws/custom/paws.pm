@@ -25,7 +25,6 @@ use warnings;
 use Paws;
 use Paws::Net::LWPCaller;
 use DateTime;
-use Data::Dumper;
 
 sub new {
     my ($class, %options) = @_;
