@@ -51,9 +51,11 @@ sub set_counters {
 
     $self->{maps_counters}->{miners} = [
        { label => 'mining_frequency', nlabel => 'parity.tracking.mined.block.persecond', set => {
-                key_values => [ { name => 'mining_frequency' } ],
+                key_values => [ { name => 'mining_count', diff => 1 }, { name => 'display' } ],
+                per_second => 1,
                 output_template => " %.2f (blocks/s)",
-                perfdatas => [ instance_use => 'display_absolute', label_extra_instance => 1 ],
+                perfdatas => [ { label => 'miners', template => '%.2f', value => 'mining_count_per_second',
+                        label_extra_instance => 1, instance_use => 'display_absolute' } ],
             }
         }
     ];
@@ -130,9 +132,12 @@ sub manage_selection {
     foreach my $miner (@{$results->{miners}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $miner->{id} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping '" . $miner->{id} . "': no matching filter name.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $miner->{label} . "': no matching filter name.", debug => 1);
             next;
         }
+
+        $self->{miners}->{lc($miner->{label})} = { display => lc($miner->{label}), 
+                                                   mining_count => $miner->{count} };
 
     }
 
