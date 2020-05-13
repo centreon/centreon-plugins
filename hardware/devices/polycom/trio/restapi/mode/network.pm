@@ -35,21 +35,19 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'packets-in', nlabel => 'network.packets.in.persecond', set => {
-                key_values => [ { name => 'packets_in', diff => 1 } ],
+                key_values => [ { name => 'packets_in', per_second => 1 } ],
                 output_template => 'packets in: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'packets_in_per_second', template => '%.2f', min => 0, unit => '/s' },
+                    { template => '%.2f', min => 0, unit => '/s' }
                 ],
             }
         },
         { label => 'packets-out', nlabel => 'network.packets.out.persecond', set => {
-                key_values => [ { name => 'packets_out', diff => 1 } ],
+                key_values => [ { name => 'packets_out', per_second => 1 } ],
                 output_template => 'packets out: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'packets_out_per_second', template => '%.2f', min => 0, unit => '/s' },
-                ],
+                    { template => '%.2f', min => 0, unit => '/s' }
+                ]
             }
         }
     ];

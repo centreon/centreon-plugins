@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'total_peers' } ],
                 output_template => 'Total Peers: %s',
                 perfdatas => [
-                    { label => 'total_peers', value => 'total_peers_absolute', template => '%s', min => 0 },
+                    { label => 'total_peers', value => 'total_peers', template => '%s', min => 0 },
                 ],
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'monitor_online_peers' } ],
                 output_template => 'Monitor Online Peers: %s',
                 perfdatas => [
-                    { label => 'monitor_online_peers', value => 'monitor_online_peers_absolute', template => '%s', min => 0 },
+                    { label => 'monitor_online_peers', value => 'monitor_online_peers', template => '%s', min => 0 },
                 ],
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'monitor_offline_peers' } ],
                 output_template => 'Monitor Offline Peers: %s',
                 perfdatas => [
-                    { label => 'monitor_offline_peers', value => 'monitor_offline_peers_absolute', template => '%s', min => 0 },
+                    { label => 'monitor_offline_peers', value => 'monitor_offline_peers', template => '%s', min => 0 },
                 ],
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'unmonitor_online_peers' } ],
                 output_template => 'Unmonitor Online Peers: %s',
                 perfdatas => [
-                    { label => 'unmonitor_online_peers', value => 'unmonitor_online_peers_absolute', template => '%s', min => 0 },
+                    { label => 'unmonitor_online_peers', value => 'unmonitor_online_peers', template => '%s', min => 0 },
                 ],
             }
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'unmonitor_offline_peers' } ],
                 output_template => 'Unmonitor Offline Peers: %s',
                 perfdatas => [
-                    { label => 'unmonitor_offline_peers', value => 'unmonitor_offline_peers_absolute', template => '%s', min => 0 },
+                    { label => 'unmonitor_offline_peers', value => 'unmonitor_offline_peers', template => '%s', min => 0 },
                 ],
             }
         },

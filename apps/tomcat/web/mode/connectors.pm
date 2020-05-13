@@ -38,10 +38,12 @@ sub custom_traffic_output {
         ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{speed}, network => 1);
     }
 
-    my $msg = sprintf("Traffic %s : %s/s (%s on %s)",
-                      ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
-                      defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
-                      defined($total_value) ? $total_value . $total_unit : '-');
+    my $msg = sprintf(
+        "Traffic %s : %s/s (%s on %s)",
+        ucfirst($self->{result_values}->{label}), $traffic_value . $traffic_unit,
+        defined($self->{result_values}->{traffic_prct}) ? sprintf("%.2f%%", $self->{result_values}->{traffic_prct}) : '-',
+        defined($total_value) ? $total_value . $total_unit : '-'
+    );
     return $msg;
 }
 
@@ -73,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'currentThreadCount' }, { name => 'maxThreads' }, { name => 'display' } ],
                 output_template => 'Threads Current : %s',
                 perfdatas => [
-                    { label => 'threads_current', value => 'currentThreadCount_absolute', template => '%.2f', min => 0, max => 'maxThreads_absolute',
+                    { label => 'threads_current', template => '%.2f', min => 0, max => 'maxThreads',
                       label_extra_instance => 1 },
                 ],
             }
@@ -82,14 +84,13 @@ sub set_counters {
                 key_values => [ { name => 'currentThreadsBusy' }, { name => 'maxThreads' }, { name => 'display' } ],
                 output_template => 'Threads Busy : %s',
                 perfdatas => [
-                    { label => 'threads_busy', value => 'currentThreadsBusy_absolute', template => '%.2f', min => 0, max => 'maxThreads_absolute',
+                    { label => 'threads_busy', template => '%.2f', min => 0, max => 'maxThreads',
                       label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'traffic-in', nlabel => 'connector.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 threshold_use => 'traffic',
@@ -101,7 +102,6 @@ sub set_counters {
         },
         { label => 'traffic-in-prct', display_ok => 0, nlabel => 'connector.traffic.in.percent', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in', type => 'prct' },
                 output_template => 'Traffic In Used : %.2f %%',
                 output_use => 'traffic_prct', threshold_use => 'traffic_prct',
@@ -113,7 +113,6 @@ sub set_counters {
         },
          { label => 'traffic-out', nlabel => 'connector.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 threshold_use => 'traffic',
@@ -125,7 +124,6 @@ sub set_counters {
         },
         { label => 'traffic-out-prct', display_ok => 0, nlabel => 'connector.traffic.out.percent', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out', type => 'prct' },
                 output_template => 'Traffic Out Used : %.2f %%',
                 output_use => 'traffic_prct', threshold_use => 'traffic_prct',
@@ -139,7 +137,7 @@ sub set_counters {
                 key_values => [ { name => 'requestInfo_processingTime', diff => 1 }, { name => 'display' } ],
                 output_template => 'Requests Total Processing Time : %s ms',
                 perfdatas => [
-                    { label => 'requests_processingtime_total', value => 'requestInfo_processingTime_absolute', template => '%s', min => 0,
+                    { label => 'requests_processingtime_total', template => '%s', min => 0,
                       unit => 'ms', label_extra_instance => 1 },
                 ],
             }
@@ -148,7 +146,7 @@ sub set_counters {
                 key_values => [ { name => 'requestInfo_errorCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'Requests Errors : %s',
                 perfdatas => [
-                    { label => 'requests_errors', value => 'requestInfo_errorCount_absolute', template => '%s', min => 0,
+                    { label => 'requests_errors', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }
@@ -157,7 +155,7 @@ sub set_counters {
                 key_values => [ { name => 'requestInfo_requestCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'Requests Total : %s',
                 perfdatas => [
-                    { label => 'requests_total', value => 'requestInfo_requestCount_absolute', template => '%s', min => 0,
+                    { label => 'requests_total', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }

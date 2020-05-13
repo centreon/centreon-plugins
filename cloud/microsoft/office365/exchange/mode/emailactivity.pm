@@ -113,7 +113,7 @@ sub set_counters {
                 key_values => [ { name => 'send_count' } ],
                 output_template => 'Send Count: %d',
                 perfdatas => [
-                    { label => 'total_send_count', value => 'send_count_absolute', template => '%d',
+                    { label => 'total_send_count', value => 'send_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'receive_count' } ],
                 output_template => 'Receive Count: %d',
                 perfdatas => [
-                    { label => 'total_receive_count', value => 'receive_count_absolute', template => '%d',
+                    { label => 'total_receive_count', value => 'receive_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -131,7 +131,7 @@ sub set_counters {
                 key_values => [ { name => 'read_count' } ],
                 output_template => 'Read Count: %d',
                 perfdatas => [
-                    { label => 'total_read_count', value => 'read_count_absolute', template => '%d',
+                    { label => 'total_read_count', value => 'read_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -142,8 +142,8 @@ sub set_counters {
                 key_values => [ { name => 'send_count' }, { name => 'name' } ],
                 output_template => 'Send Count: %d',
                 perfdatas => [
-                    { label => 'send_count', value => 'send_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'send_count', value => 'send_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -151,8 +151,8 @@ sub set_counters {
                 key_values => [ { name => 'receive_count' }, { name => 'name' } ],
                 output_template => 'Receive Count: %d',
                 perfdatas => [
-                    { label => 'receive_count', value => 'receive_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'receive_count', value => 'receive_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -160,8 +160,8 @@ sub set_counters {
                 key_values => [ { name => 'read_count' }, { name => 'name' } ],
                 output_template => 'Read Count: %d',
                 perfdatas => [
-                    { label => 'read_count', value => 'read_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'read_count', value => 'read_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

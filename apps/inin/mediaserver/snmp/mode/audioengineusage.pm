@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'i3MsAudioEngineAverageLoad' }, { name => 'display' } ],
                 output_template => 'Average Load : %s',
                 perfdatas => [
-                    { label => 'load_avg', value => 'i3MsAudioEngineAverageLoad_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load_avg', value => 'i3MsAudioEngineAverageLoad', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'i3MsAudioEngineElementCount' }, { name => 'display' } ],
                 output_template => 'Total active graph elements : %s',
                 perfdatas => [
-                    { label => 'elem_count', value => 'i3MsAudioEngineElementCount_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'elem_count', value => 'i3MsAudioEngineElementCount', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

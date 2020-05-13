@@ -297,50 +297,50 @@ sub set_counters_global {
         { label => 'total-port', filter => 'add_global', nlabel => 'total.interfaces.count', set => {
                 key_values => [ { name => 'total_port' } ],
                 output_template => 'Total port : %s', output_error_template => 'Total port : %s',
-                output_use => 'total_port_absolute',  threshold_use => 'total_port_absolute',
+                output_use => 'total_port',  threshold_use => 'total_port',
                 perfdatas => [
-                    { label => 'total_port', value => 'total_port_absolute', template => '%s',
-                      min => 0, max => 'total_port_absolute' }
+                    { label => 'total_port', value => 'total_port', template => '%s',
+                      min => 0, max => 'total_port' }
                 ]
             }
         },
         { label => 'global-admin-up', filter => 'add_global', nlabel => 'total.interfaces.admin.up.count', set => {
                 key_values => [ { name => 'global_admin_up' }, { name => 'total_port' } ],
                 output_template => 'AdminStatus Up : %s', output_error_template => 'AdminStatus Up : %s',
-                output_use => 'global_admin_up_absolute',  threshold_use => 'global_admin_up_absolute',
+                output_use => 'global_admin_up',  threshold_use => 'global_admin_up',
                 perfdatas => [
-                    { label => 'total_admin_up', value => 'global_admin_up_absolute', template => '%s',
-                      min => 0, max => 'total_port_absolute' }
+                    { label => 'total_admin_up', value => 'global_admin_up', template => '%s',
+                      min => 0, max => 'total_port' }
                 ]
             }
         },
         { label => 'total-admin-down', filter => 'add_global', nlabel => 'total.interfaces.admin.down.count', set => {
                 key_values => [ { name => 'global_admin_down' }, { name => 'total_port' } ],
                 output_template => 'AdminStatus Down : %s', output_error_template => 'AdminStatus Down : %s',
-                output_use => 'global_admin_down_absolute',  threshold_use => 'global_admin_down_absolute',
+                output_use => 'global_admin_down',  threshold_use => 'global_admin_down',
                 perfdatas => [
-                    { label => 'total_admin_down', value => 'global_admin_down_absolute', template => '%s',
-                      min => 0, max => 'total_port_absolute' }
+                    { label => 'total_admin_down', value => 'global_admin_down', template => '%s',
+                      min => 0, max => 'total_port' }
                 ]
             }
         },
         { label => 'total-oper-up', filter => 'add_global', nlabel => 'total.interfaces.operational.up.count', set => {
                 key_values => [ { name => 'global_oper_up' }, { name => 'total_port' } ],
                 output_template => 'OperStatus Up : %s', output_error_template => 'OperStatus Up : %s',
-                output_use => 'global_oper_up_absolute',  threshold_use => 'global_oper_up_absolute',
+                output_use => 'global_oper_up',  threshold_use => 'global_oper_up',
                 perfdatas => [
-                    { label => 'total_oper_up', value => 'global_oper_up_absolute', template => '%s',
-                      min => 0, max => 'total_port_absolute' }
+                    { label => 'total_oper_up', value => 'global_oper_up', template => '%s',
+                      min => 0, max => 'total_port' }
                 ]
             }
         },
         { label => 'total-oper-down', filter => 'add_global', nlabel => 'total.interfaces.operational.down.count', set => {
                 key_values => [ { name => 'global_oper_down' }, { name => 'total_port' } ],
                 output_template => 'OperStatus Down : %s', output_error_template => 'OperStatus Down : %s',
-                output_use => 'global_oper_down_absolute',  threshold_use => 'global_oper_down_absolute',
+                output_use => 'global_oper_down',  threshold_use => 'global_oper_down',
                 perfdatas => [
-                    { label => 'global_oper_down', value => 'global_oper_down_absolute', template => '%s',
-                      min => 0, max => 'total_port_absolute' }
+                    { label => 'global_oper_down', value => 'global_oper_down', template => '%s',
+                      min => 0, max => 'total_port' }
                 ]
             }
         }
@@ -370,7 +370,6 @@ sub set_counters_traffic {
     push @{$self->{maps_counters}->{int}}, 
         { label => 'in-traffic', filter => 'add_traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => $self->set_key_values_in_traffic(),
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -379,7 +378,6 @@ sub set_counters_traffic {
         },
         { label => 'out-traffic', filter => 'add_traffic', nlabel => 'interface.traffic.out.bitspersecond', set => {
                 key_values => $self->set_key_values_out_traffic(),
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -537,8 +535,8 @@ sub set_counters_volume {
                 output_template => 'Volume In : %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'volume_in', value => 'in_volume_absolute', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'volume_in', value => 'in_volume', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -547,8 +545,8 @@ sub set_counters_volume {
                 output_template => 'Volume Out : %.2f %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'volume_out', value => 'out_volume_absolute', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'volume_out', value => 'out_volume', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -960,9 +958,9 @@ sub reload_cache {
         $self->{option_results}->{oid_extra_display} ne $self->{option_results}->{oid_filter}) {
         push @{$snmp_get}, { oid => $self->{oids_label}->{$self->{option_results}->{oid_extra_display}}->{oid} };
     }    
-    
+
     my $result = $self->{snmp}->get_multiple_table(oids => $snmp_get);
-    
+
     my $func = $self->can($self->{oids_label}->{$self->{option_results}->{oid_filter}}->{cache});
     $func->($self, result => $result, datas => $datas, name => $self->{option_results}->{oid_filter}, store_index => 1);
 
@@ -1055,7 +1053,7 @@ sub load_status {
 
 sub load_traffic {
     my ($self, %options) = @_;
-    
+
     $self->set_oids_traffic();
     $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
     if ($self->{get_speed} == 1) {
@@ -1071,7 +1069,7 @@ sub load_traffic {
 
 sub load_errors {
     my ($self, %options) = @_;
-    
+
     $self->set_oids_errors();
     $self->{snmp}->load(
         oids => [

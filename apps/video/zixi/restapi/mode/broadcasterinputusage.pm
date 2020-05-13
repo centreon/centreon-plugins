@@ -61,25 +61,25 @@ sub set_counters {
             }
         },
          { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'source' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'source' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'source_absolute' },
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'source' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'source' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'source' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'source_absolute' },
-                ],
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'source' },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -88,13 +88,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-source:s"         => { name => 'filter_source' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        'filter-source:s'   => { name => 'filter_source' },
+        'warning-status:s'  => { name => 'warning_status' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /Connecting|Connected/i || %{error} !~ /none/i' },
+    });
+
     return $self;
 }
 

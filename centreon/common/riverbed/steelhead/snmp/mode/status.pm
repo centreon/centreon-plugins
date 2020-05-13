@@ -60,9 +60,9 @@ sub set_counters {
         },
         { label => 'uptime', set => {
                 key_values => [ { name => 'serviceUptime' }, { name => 'serviceUptime_human' } ],
-                output_template => 'Uptime: %s', output_use => 'serviceUptime_human_absolute',
+                output_template => 'Uptime: %s', output_use => 'serviceUptime_human',
                 perfdatas => [
-                    { label => 'uptime', value => 'serviceUptime_absolute', template => '%d',
+                    { label => 'uptime', value => 'serviceUptime', template => '%d',
                       min => 0, unit => 's' },
                 ],
             }

@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'WorkspaceRedistributingCount' } ],
                 output_template => 'Workspace redistributing count: %d',
                 perfdatas => [
-                    { label => 'redistributing_count', value => 'WorkspaceRedistributingCount_absolute',
+                    { label => 'redistributing_count', value => 'WorkspaceRedistributingCount',
                       template => '%d', min => 0 },
                 ],
             }

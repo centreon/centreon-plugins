@@ -50,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'calls_active' } ],
                 output_template => 'calls active : %s',
                 perfdatas => [
-                    { label => 'calls_active',  template => '%s', value => 'calls_active_absolute',
+                    { label => 'calls_active',  template => '%s', value => 'calls_active',
                       min => 0 },
                 ],
             }
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'extensions_registered' } ],
                 output_template => 'extensions registered : %s',
                 perfdatas => [
-                    { label => 'extensions_registered',  template => '%s', value => 'extensions_registered_absolute',
+                    { label => 'extensions_registered',  template => '%s', value => 'extensions_registered',
                       min => 0 },
                 ],
             }

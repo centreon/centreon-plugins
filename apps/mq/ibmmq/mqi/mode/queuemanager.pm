@@ -42,8 +42,8 @@ sub custom_connections_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        instances => $self->{result_values}->{display_absolute},
-        value => $self->{result_values}->{connection_count_absolute},
+        instances => $self->{result_values}->{display},
+        value => $self->{result_values}->{connection_count},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0

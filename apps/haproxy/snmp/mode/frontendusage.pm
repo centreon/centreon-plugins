@@ -46,7 +46,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'frontend', type => 1, cb_prefix_output => 'prefix_frontend_output', message_multiple => 'All frontends are ok' },
+        { name => 'frontend', type => 1, cb_prefix_output => 'prefix_frontend_output', message_multiple => 'All frontends are ok' }
     ];
     
     $self->{maps_counters}->{frontend} = [
@@ -55,47 +55,47 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'current-sessions', set => {
                 key_values => [ { name => 'alFrontendSessionCur' }, { name => 'display' } ],
                 output_template => 'Current sessions : %s',
                 perfdatas => [
-                    { label => 'current_sessions', value => 'alFrontendSessionCur_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'current_sessions', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'total-sessions', set => {
                 key_values => [ { name => 'alFrontendSessionTotal', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total sessions : %s',
                 perfdatas => [
-                    { label => 'total_connections', value => 'alFrontendSessionTotal_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'total_connections', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'alFrontendBytesIN', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'alFrontendBytesIN', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'alFrontendBytesIN_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_in', template => '%.2f', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'alFrontendBytesOUT', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'alFrontendBytesOUT', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'alFrontendBytesOUT_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_out', template => '%.2f', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -105,9 +105,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"           => { name => 'filter_name' },
-        "warning-status:s"        => { name => 'warning_status', default => '' },
-        "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /OPEN/i' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /OPEN/i' }
     });
     
     return $self;

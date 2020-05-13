@@ -38,7 +38,7 @@ sub set_counters {
                 output_template => 'Dsl available upload bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_up', value => 'rate_up_absolute', template => '%s',
+                    { label => 'rate_up', value => 'rate_up', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }
@@ -48,7 +48,7 @@ sub set_counters {
                 output_template => 'Dsl available download bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_down', value => 'rate_down_absolute', template => '%s',
+                    { label => 'rate_down', value => 'rate_down', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }
@@ -58,7 +58,7 @@ sub set_counters {
                 output_template => 'Dsl upload signal/noise ratio : %.2f dB',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'snr_up', value => 'snr_up_absolute', template => '%.2f',
+                    { label => 'snr_up', value => 'snr_up', template => '%.2f',
                       unit => 'dB' }
                 ]
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 output_template => 'Dsl download signal/noise ratio : %.2f dB',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'snr_down', value => 'snr_down_absolute', template => '%.2f',
+                    { label => 'snr_down', value => 'snr_down', template => '%.2f',
                       unit => 'dB' }
                 ]
             }

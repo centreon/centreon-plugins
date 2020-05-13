@@ -37,37 +37,34 @@ sub set_counters {
                 key_values => [ { name => 'DrilldownCandidatesQueue' } ],
                 output_template => 'Drilldown Canditates Queue: %d',
                 perfdatas => [
-                    { label => 'drilldown_candidates_queue', value => 'DrilldownCandidatesQueue_absolute', template => '%d',
+                    { label => 'drilldown_candidates_queue', template => '%d',
                       min => 0 },
                 ],
             }
         },
         { label => 'cutback-computation-rate', set => {
-                key_values => [ { name => 'Cutbackcomputation', diff => 1 } ],
+                key_values => [ { name => 'Cutbackcomputation', per_second => 1 } ],
                 output_template => 'Cutback Computation: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'cutback_computation_rate', value => 'Cutbackcomputation_per_second', template => '%.2f',
+                    { label => 'cutback_computation_rate', template => '%.2f',
                       min => 0 },
                 ],
             }
         },
         { label => 'minimal-computation-rate', set => {
-                key_values => [ { name => 'Minimalcomputation', diff => 1 } ],
+                key_values => [ { name => 'Minimalcomputation', per_second => 1 } ],
                 output_template => 'Minimal Computation: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'minimal_computation_rate', value => 'Minimalcomputation_per_second', template => '%.2f',
+                    { label => 'minimal_computation_rate', template => '%.2f',
                       min => 0 },
                 ],
             }
         },
         { label => 'recursive-computation-rate', set => {
-                key_values => [ { name => 'Recursivecomputation', diff => 1 } ],
+                key_values => [ { name => 'Recursivecomputation', per_second => 1 } ],
                 output_template => 'Recursive Computation: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'recursive_computation_rate', value => 'Recursivecomputation_per_second', template => '%.2f',
+                    { label => 'recursive_computation_rate', template => '%.2f',
                       min => 0 },
                 ],
             }
@@ -80,10 +77,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s"     => { name => 'filter_counters', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 

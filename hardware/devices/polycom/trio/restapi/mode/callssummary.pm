@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total: d',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%d', min => 0 },
+                    { value => 'total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'placed' } ],
                 output_template => 'placed: %d',
                 perfdatas => [
-                    { value => 'placed_absolute', template => '%d', min => 0 },
+                    { value => 'placed', template => '%d', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'missed' } ],
                 output_template => 'missed: %d',
                 perfdatas => [
-                    { value => 'missed_absolute', template => '%d', min => 0 },
+                    { value => 'missed', template => '%d', min => 0 },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'received' } ],
                 output_template => 'received: %d',
                 perfdatas => [
-                    { value => 'received_absolute', template => '%d', min => 0 },
+                    { value => 'received', template => '%d', min => 0 },
                 ],
             }
         },

@@ -68,8 +68,8 @@ sub set_counters {
                 key_values => [ { name => 'current', no_value => 0 }, { name => 'display' } ],
                 output_template => 'current : %s A',
                 perfdatas => [
-                    { label => 'current',  template => '%s', value => 'current_absolute',
-                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current',  template => '%s', value => 'current',
+                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

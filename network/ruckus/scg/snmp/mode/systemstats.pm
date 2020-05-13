@@ -38,8 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'ruckusSystemStatsNumAP' } ],
                 output_template => 'APs count: %s',
                 perfdatas => [
-                    { label => 'aps_count', value => 'ruckusSystemStatsNumAP_absolute', template => '%s',
-                      unit => 'aps', min => 0 },
+                    { label => 'aps_count', template => '%s', unit => 'aps', min => 0 },
                 ],
             }
         },
@@ -47,88 +46,73 @@ sub set_counters {
                 key_values => [ { name => 'ruckusSystemStatsNumSta' } ],
                 output_template => 'Users count: %s',
                 perfdatas => [
-                    { label => 'users_count', value => 'ruckusSystemStatsNumSta_absolute', template => '%s',
-                      unit => 'users', min => 0 },
+                    { label => 'users_count', template => '%s', unit => 'users', min => 0 },
                 ],
             }
         },
         { label => 'total-traffic-in', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalRxBytes', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalRxBytes', per_second => 1 } ],
                 output_template => 'Total Traffic In: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_traffic_in', value => 'ruckusSystemStatsWLANTotalRxBytes_absolute', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { label => 'total_traffic_in', template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'total-traffic-out', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxBytes', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxBytes', per_second => 1 } ],
                 output_template => 'Total Traffic Out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_traffic_out', value => 'ruckusSystemStatsWLANTotalTxBytes_absolute', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { label => 'total_traffic_out', template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'total-packets-in', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalRxPkts', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalRxPkts', per_second => 1 } ],
                 output_template => 'Total Packets In: %s packets/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'total_packets_in', value => 'ruckusSystemStatsWLANTotalRxPkts_absolute', template => '%s',
-                      min => 0, unit => 'packets/s' },
+                    { label => 'total_packets_in', template => '%s', min => 0, unit => 'packets/s' },
                 ],
             }
         },
         { label => 'total-mcast-packets-in', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalRxMulticast', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalRxMulticast', per_second => 1 } ],
                 output_template => 'Total Multicast Packets In: %s packets/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'total_mcast_packets_in', value => 'ruckusSystemStatsWLANTotalRxMulticast_absolute', template => '%s',
-                      min => 0, unit => 'packets/s' },
+                    { label => 'total_mcast_packets_in', template => '%s', min => 0, unit => 'packets/s' },
                 ],
             }
         },
         { label => 'total-packets-out', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxPkts', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxPkts', per_second => 1 } ],
                 output_template => 'Total Packets Out: %s packets/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'total_packets_out', value => 'ruckusSystemStatsWLANTotalTxPkts_absolute', template => '%s',
-                      min => 0, unit => 'packets/s' },
+                    { label => 'total_packets_out', template => '%s', min => 0, unit => 'packets/s' },
                 ],
             }
         },
         { label => 'total-mcast-packets-out', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxMulticast', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxMulticast', per_second => 1 } ],
                 output_template => 'Total Multicast Packets Out: %s packets/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'total_mcast_packets_out', value => 'ruckusSystemStatsWLANTotalTxMulticast_absolute', template => '%s',
-                      min => 0, unit => 'packets/s' },
+                    { label => 'total_mcast_packets_out', template => '%s', min => 0, unit => 'packets/s' },
                 ],
             }
         },
         { label => 'total-fail-packets-out', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxFail', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxFail', per_second => 1 } ],
                 output_template => 'Total Fail Packets Out: %s packets/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'total_fail_packets_out', value => 'ruckusSystemStatsWLANTotalTxFail_absolute', template => '%s',
-                      min => 0, unit => 'packets/s' },
+                    { label => 'total_fail_packets_out', template => '%s', min => 0, unit => 'packets/s' },
                 ],
             }
         },
         { label => 'total-retry-packets-out', set => {
-                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxRetry', diff => 1 } ],
+                key_values => [ { name => 'ruckusSystemStatsWLANTotalTxRetry', per_second => 1 } ],
                 output_template => 'Total Retry Packets Out: %s packets/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'total_retry_packets_out', value => 'ruckusSystemStatsWLANTotalTxRetry_absolute', template => '%s',
-                      min => 0, unit => 'packets/s' },
+                    { label => 'total_retry_packets_out', template => '%s', min => 0, unit => 'packets/s' },
                 ],
             }
         },
@@ -140,9 +124,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }

@@ -113,7 +113,7 @@ sub set_counters {
                 key_values => [ { name => 'viewed_edited_file_count' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
-                    { label => 'total_viewed_edited_file_count', value => 'viewed_edited_file_count_absolute', template => '%d',
+                    { label => 'total_viewed_edited_file_count', value => 'viewed_edited_file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'synced_file_count' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
-                    { label => 'total_synced_file_count', value => 'synced_file_count_absolute', template => '%d',
+                    { label => 'total_synced_file_count', value => 'synced_file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -131,7 +131,7 @@ sub set_counters {
                 key_values => [ { name => 'shared_int_file_count' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
-                    { label => 'total_shared_int_file_count', value => 'shared_int_file_count_absolute', template => '%d',
+                    { label => 'total_shared_int_file_count', value => 'shared_int_file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -140,7 +140,7 @@ sub set_counters {
                 key_values => [ { name => 'shared_ext_file_count' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
-                    { label => 'total_shared_ext_file_count', value => 'shared_ext_file_count_absolute', template => '%d',
+                    { label => 'total_shared_ext_file_count', value => 'shared_ext_file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -149,7 +149,7 @@ sub set_counters {
                 key_values => [ { name => 'visited_page_count' } ],
                 output_template => 'Visited Page Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_visited_page_count', value => 'visited_page_count_absolute', template => '%d',
+                    { label => 'total_visited_page_count', value => 'visited_page_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -160,8 +160,8 @@ sub set_counters {
                 key_values => [ { name => 'viewed_edited_file_count' }, { name => 'name' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
-                    { label => 'viewed_edited_file_count', value => 'viewed_edited_file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'viewed_edited_file_count', value => 'viewed_edited_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -169,8 +169,8 @@ sub set_counters {
                 key_values => [ { name => 'synced_file_count' }, { name => 'name' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
-                    { label => 'synced_file_count', value => 'synced_file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'synced_file_count', value => 'synced_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -178,8 +178,8 @@ sub set_counters {
                 key_values => [ { name => 'shared_int_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
-                    { label => 'shared_int_file_count', value => 'shared_int_file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'shared_int_file_count', value => 'shared_int_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -187,8 +187,8 @@ sub set_counters {
                 key_values => [ { name => 'shared_ext_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
-                    { label => 'shared_ext_file_count', value => 'shared_ext_file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'shared_ext_file_count', value => 'shared_ext_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -196,8 +196,8 @@ sub set_counters {
                 key_values => [ { name => 'visited_page_count' }, { name => 'name' } ],
                 output_template => 'Visited Page Count: %d',
                 perfdatas => [
-                    { label => 'visited_page_count', value => 'visited_page_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'visited_page_count', value => 'visited_page_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total ap : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', 
+                    { label => 'total', value => 'total', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'associated' } ],
                 output_template => 'Total ap associated : %s',
                 perfdatas => [
-                    { label => 'total_associated', value => 'associated_absolute', template => '%s', 
+                    { label => 'total_associated', value => 'associated', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'disassociating' } ],
                 output_template => 'Total ap disassociating : %s',
                 perfdatas => [
-                    { label => 'total_disassociating', value => 'disassociating_absolute', template => '%s', 
+                    { label => 'total_disassociating', value => 'disassociating', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'enable' } ],
                 output_template => 'Total ap enabled : %s',
                 perfdatas => [
-                    { label => 'total_enabled', value => 'enable_absolute', template => '%s', 
+                    { label => 'total_enabled', value => 'enable', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -96,7 +96,7 @@ sub set_counters {
                 key_values => [ { name => 'disable' } ],
                 output_template => 'Total ap disabled : %s',
                 perfdatas => [
-                    { label => 'total_disabled', value => 'disable_absolute', template => '%s', 
+                    { label => 'total_disabled', value => 'disable', template => '%s', 
                       min => 0 },
                 ],
             }

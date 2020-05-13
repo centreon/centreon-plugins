@@ -71,7 +71,7 @@ sub set_counters {
                 output_template => 'total snapshots [size = %s %s]',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_size', value => 'total_absolute', template => '%s', unit => 'B', 
+                    { label => 'total_size', value => 'total', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }

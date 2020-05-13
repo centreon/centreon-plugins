@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'cacheCpuUsage' } ],
                 output_template => 'Cpu usage : %s %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cacheCpuUsage_absolute', template => '%s',
+                    { label => 'cpu', value => 'cacheCpuUsage', template => '%s',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 output_template => 'Memory usage : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory', value => 'cacheMemUsage_absolute', template => '%s',
+                    { label => 'memory', value => 'cacheMemUsage', template => '%s',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'cacheCurrentFileDescrCnt' } ],
                 output_template => 'Number of file descriptors : %s',
                 perfdatas => [
-                    { label => 'fd', value => 'cacheCurrentFileDescrCnt_absolute', template => '%s',
+                    { label => 'fd', value => 'cacheCurrentFileDescrCnt', template => '%s',
                       min => 0 },
                 ],
             }
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'cacheNumObjCount' } ],
                 output_template => 'Number of object stored : %s',
                 perfdatas => [
-                    { label => 'objects', value => 'cacheNumObjCount_absolute', template => '%s',
+                    { label => 'objects', value => 'cacheNumObjCount', template => '%s',
                       min => 0 },
                 ],
             }

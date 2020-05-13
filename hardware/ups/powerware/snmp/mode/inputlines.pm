@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsInputFrequency', no_value => 0 } ],
                 output_template => 'frequence: %.2f Hz',
                 perfdatas => [
-                    { value => 'xupsInputFrequency_absolute', template => '%.2f', 
+                    { value => 'xupsInputFrequency', template => '%.2f', 
                       unit => 'Hz' },
                 ],
             }
@@ -50,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsInputCurrent', no_value => 0 } ],
                 output_template => 'current: %.2f A',
                 perfdatas => [
-                    { value => 'xupsInputCurrent_absolute', template => '%.2f', 
+                    { value => 'xupsInputCurrent', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsInputVoltage', no_value => 0 } ],
                 output_template => 'voltage: %.2f V',
                 perfdatas => [
-                    { value => 'xupsInputVoltage_absolute', template => '%.2f', 
+                    { value => 'xupsInputVoltage', template => '%.2f', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsInputWatts', no_value => 0 } ],
                 output_template => 'power: %.2f W',
                 perfdatas => [
-                    { value => 'xupsInputWatts_absolute', template => '%.2f', 
+                    { value => 'xupsInputWatts', template => '%.2f', 
                       unit => 'W', label_extra_instance => 1 },
                 ],
             }

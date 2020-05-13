@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'atsInputVoltage' }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { label => 'voltage', value => 'atsInputVoltage_absolute', template => '%s', 
-                      unit => 'V', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'voltage', value => 'atsInputVoltage', template => '%s', 
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'atsInputCurrent' }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { label => 'current', value => 'atsInputCurrent_absolute', template => '%s', 
-                      unit => 'A', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current', value => 'atsInputCurrent', template => '%s', 
+                      unit => 'A', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'atsInputPower' }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { label => 'power', value => 'atsInputPower_absolute', template => '%s', 
-                      unit => 'W', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'power', value => 'atsInputPower', template => '%s', 
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

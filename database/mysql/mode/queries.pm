@@ -35,12 +35,10 @@ sub set_counters {
    
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'queries.total.persecond', set => {
-                key_values => [ { name => 'Queries', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'Queries', per_second => 1 } ],
                 output_template => 'Total : %d',
                 perfdatas => [
-                    { label => 'total_requests', template => '%d', value => 'Queries_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'total_requests', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
@@ -49,13 +47,11 @@ sub set_counters {
     foreach ('update', 'delete', 'insert', 'truncate', 'select', 'commit', 'begin') {
         push @{$self->{maps_counters}->{global}}, {
             label => $_, nlabel => 'queries.' . $_ . '.persecond',  display_ok => 0, set => {
-                key_values => [ { name => 'Com_' . $_, diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'Com_' . $_, per_second => 1 } ],
                 output_template => $_ . ' : %d',
                 perfdatas => [
-                    { label => $_ . '_requests', template => '%d', value => 'Com_' . $_ . '_per_second',
-                      unit => '/s', min => 0 },
-                ],
+                    { label => $_ . '_requests', template => '%d', unit => '/s', min => 0 }
+                ]
             }
         };
         push @{$self->{maps_counters}->{global}}, {
@@ -63,9 +59,8 @@ sub set_counters {
                 key_values => [ { name => 'Com_' . $_, diff => 1 } ],
                 output_template => $_ . ' count : %d',
                 perfdatas => [
-                    { label => $_ . '_count', template => '%d', value => 'Com_' . $_ . '_absolute',
-                      min => 0 },
-                ],
+                    { label => $_ . '_count', template => '%d', min => 0 }
+                ]
             }
         };
     }

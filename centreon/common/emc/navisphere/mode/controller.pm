@@ -50,23 +50,19 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'read-iops', nlabel => 'controller.io.read.usage.iops', set => {
-                key_values => [ { name => 'read', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'read', per_second => 1 } ],
                 output_template => 'Read IOPs : %.2f',
                 perfdatas => [
-                    { value => 'read_per_second',  template => '%.2f',
-                      unit => 'iops', min => 0 },
-                ],
+                    { template => '%.2f', unit => 'iops', min => 0 }
+                ]
             }
         },
         { label => 'write-iops', nlabel => 'controller.io.write.usage.iops', set => {
-                key_values => [ { name => 'write', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'write', per_second => 1 } ],
                 output_template => 'Write IOPs : %.2f',
                 perfdatas => [
-                    { value => 'write_per_second', template => '%.2f',
-                      unit => 'iops', min => 0 },
-                ],
+                    { template => '%.2f', unit => 'iops', min => 0 }
+                ]
             }
         },
         { label => 'busy', nlabel => 'controller.busy.usage.percentage', set => {
@@ -75,11 +71,10 @@ sub set_counters {
                 output_template => 'Busy : %.2f %%',
                 output_use => 'busy_prct',  threshold_use => 'busy_prct',
                 perfdatas => [
-                    { value => 'busy_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
-                ],
+                    { value => 'busy_prct', template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
             }
-        },
+        }
     ];
 }
 

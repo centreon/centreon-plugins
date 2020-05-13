@@ -44,10 +44,10 @@ sub custom_summary_output {
     my ($self, %options) = @_;
 
     my $msg;
-    if ($self->{result_values}->{type_absolute} ne '') {
-        $msg = $self->{result_values}->{type_absolute} . " sensor " . $self->{result_values}->{name_absolute} . ": ". $self->{result_values}->{summary_absolute};
+    if ($self->{result_values}->{type} ne '') {
+        $msg = $self->{result_values}->{type} . " sensor " . $self->{result_values}->{name} . ": ". $self->{result_values}->{summary};
     } else {
-        $msg = $self->{result_values}->{name_absolute} . ": ". $self->{result_values}->{summary_absolute};
+        $msg = $self->{result_values}->{name} . ": ". $self->{result_values}->{summary};
     }
     return $msg;
 }
@@ -71,8 +71,8 @@ sub set_counters {
                 key_values => [ { name => 'total_problems' }, { name => 'total' } ],
                 output_template => '%s total health issue(s) found',
                 perfdatas => [
-                    { label => 'total_problems', value => 'total_problems_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_problems', value => 'total_problems', template => '%s',
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -100,8 +100,8 @@ sub set_counters {
                 key_values => [ { name => 'total_problems' }, { name => 'total' } ],
                 output_template => '%s total health issue(s) found',
                 perfdatas => [
-                    { label => 'problems', value => 'total_problems_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                    { label => 'problems', value => 'total_problems', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 },
                 ],
             }
         },
@@ -109,8 +109,8 @@ sub set_counters {
                 key_values => [ { name => 'yellow' }, { name => 'total' } ],
                 output_template => '%s yellow health issue(s) found',
                 perfdatas => [
-                    { label => 'problems_yellow', value => 'yellow_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                    { label => 'problems_yellow', value => 'yellow', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 },
                 ],
             }
         },
@@ -118,8 +118,8 @@ sub set_counters {
                 key_values => [ { name => 'red' }, { name => 'total' } ],
                 output_template => '%s red health issue(s) found',
                 perfdatas => [
-                    { label => 'problems_red', value => 'red_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                    { label => 'problems_red', value => 'red', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 },
                 ],
             }
         },

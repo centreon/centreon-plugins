@@ -39,8 +39,8 @@ sub custom_temperature_output {
     my ($self, %options) = @_;
 
     return sprintf('temperature: %s %s',
-        $self->{result_values}->{temperature_absolute},
-        $self->{result_values}->{temperature_unit_absolute}
+        $self->{result_values}->{temperature},
+        $self->{result_values}->{temperature_unit}
     );
 }
 
@@ -48,10 +48,10 @@ sub custom_temperature_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => 'drive.temperature.' . ($self->{result_values}->{temperature_unit_absolute} eq 'C' ? 'celsius' : 'fahrenheit'),
-        instances => $self->{result_values}->{display_absolute},
-        unit => $self->{result_values}->{temperature_unit_absolute},
-        value => $self->{result_values}->{temperature_absolute},
+        nlabel => 'drive.temperature.' . ($self->{result_values}->{temperature_unit} eq 'C' ? 'celsius' : 'fahrenheit'),
+        instances => $self->{result_values}->{display},
+        unit => $self->{result_values}->{temperature_unit},
+        value => $self->{result_values}->{temperature},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
     );

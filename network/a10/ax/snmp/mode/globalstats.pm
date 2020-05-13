@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'current_connections' } ],
                 output_template => 'Current Connections : %s',
                 perfdatas => [
-                    { label => 'current_connections', value => 'current_connections_absolute', template => '%s',
+                    { label => 'current_connections', value => 'current_connections', template => '%s',
                       min => 0 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'total_connections', diff => 1 } ],
                 output_template => 'Total Connections : %s',
                 perfdatas => [
-                    { label => 'total_connections', value => 'total_connections_absolute', template => '%s',
+                    { label => 'total_connections', value => 'total_connections', template => '%s',
                       min => 0 },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'total_ssl_connections', diff => 1 } ],
                 output_template => 'Total SSL Connections : %s',
                 perfdatas => [
-                    { label => 'total_ssl_connections', value => 'total_ssl_connections_absolute', template => '%s',
+                    { label => 'total_ssl_connections', value => 'total_ssl_connections', template => '%s',
                       min => 0 },
                 ],
             }

@@ -58,8 +58,8 @@ sub set_counters {
                 key_values => [ { name => 'ltmPoolStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'current server connections: %s',
                 perfdatas => [
-                    { label => 'current_server_connections', value => 'ltmPoolStatServerCurConns_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_server_connections', value => 'ltmPoolStatServerCurConns', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -67,8 +67,8 @@ sub set_counters {
                 key_values => [ { name => 'ltmPoolActiveMemberCnt' }, { name => 'display' } ],
                 output_template => 'current active members: %s',
                 perfdatas => [
-                    { label => 'current_active_members', value => 'ltmPoolActiveMemberCnt_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_active_members', value => 'ltmPoolActiveMemberCnt', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -76,8 +76,8 @@ sub set_counters {
                 key_values => [ { name => 'ltmPoolMemberCnt' }, { name => 'display' } ],
                 output_template => 'current total members: %s',
                 perfdatas => [
-                    { label => 'current_total_members', value => 'ltmPoolMemberCnt_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_total_members', value => 'ltmPoolMemberCnt', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

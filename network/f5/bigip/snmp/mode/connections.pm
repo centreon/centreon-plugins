@@ -47,8 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'client' } ],
                 output_template => 'Current client connections : %s',
                 perfdatas => [
-                    { label => 'Client', value => 'client_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'Client', template => '%s',  min => 0, unit => 'con' },
                 ],
             }
         },
@@ -56,8 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'client_ssl' } ],
                 output_template => 'Current client SSL connections : %s',
                 perfdatas => [
-                    { label => 'ClientSSL', value => 'client_ssl_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'ClientSSL', template => '%s',  min => 0, unit => 'con' },
                 ],
             }
         },
@@ -65,7 +63,6 @@ sub set_counters {
                 key_values => [ { name => 'client_ssl_tot_native', diff => 1 }, { name => 'client_ssl_tot_compat', diff => 1 } ],
                 output_template => 'TPS client SSL connections : %.2f', threshold_use => 'client_ssl_tps', output_use => 'client_ssl_tps',
                 closure_custom_calc => $self->can('custom_client_tps_calc'),
-                per_second => 1,
                 perfdatas => [
                     { label => 'ClientSSL_Tps', value => 'client_ssl_tps', template => '%.2f',
                       unit => 'tps', min => 0 },
@@ -76,8 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'server' } ],
                 output_template => 'Current server connections: %s',
                 perfdatas => [
-                    { label => 'Server', value => 'server_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'Server', template => '%s', min => 0, unit => 'con' },
                 ],
             }
         },
@@ -85,8 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'server_ssl' } ],
                 output_template => 'Current server SSL connections : %s',
                 perfdatas => [
-                    { label => 'ServerSSL', value => 'server_ssl_absolute', template => '%s', 
-                      min => 0, unit => 'con' },
+                    { label => 'ServerSSL', template => '%s',  min => 0, unit => 'con' },
                 ],
             }
         },

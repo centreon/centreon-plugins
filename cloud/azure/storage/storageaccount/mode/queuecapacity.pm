@@ -46,8 +46,8 @@ sub set_counters {
                                 output_template => $metric . ': %s %s',
                                 output_change_bytes => 1,
                                 perfdatas => [
-                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation . '_absolute', 
-                                      template => '%s', unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation , 
+                                      template => '%s', unit => 'B', label_extra_instance => 1, instance_use => 'display',
                                       min => 0 },
                                 ],
                             }

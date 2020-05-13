@@ -39,9 +39,9 @@ sub set_counters {
         { label => 'uptime', nlabel => 'java.uptime.milliseconds', set => {
                 key_values => [ { name => 'uptime' }, { name => 'uptime_date' } ],
                 output_template => 'java uptime: %s',
-                output_use => 'uptime_date_absolute',
+                output_use => 'uptime_date',
                 perfdatas => [
-                    { value => 'uptime_absolute', template => '%s',
+                    { value => 'uptime', template => '%s',
                       unit => 'ms' },
                 ],
             }

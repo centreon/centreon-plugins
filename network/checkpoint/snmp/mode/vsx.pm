@@ -65,8 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_1hour' }, { name => 'display' } ],
                 output_template => '%.2f%% (1hour)',
                 perfdatas => [
-                    { value => 'cpu_1hour_absolute', template => '%.2f', unit => '%', min => 0, max => 100,
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -74,8 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_1min' }, { name => 'display' } ],
                 output_template => '%.2f%% (1min)',
                 perfdatas => [
-                    { value => 'cpu_1min_absolute', template => '%.2f', unit => '%', min => 0, max => 100,
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -87,8 +85,7 @@ sub set_counters {
                 output_template => 'memory used: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'memory_used_absolute', template => '%s', min => 0,
-                      unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -99,8 +96,7 @@ sub set_counters {
                 key_values => [ { name => 'active_connections' }, { name => 'display' } ],
                 output_template => 'active connections: %d',
                 perfdatas => [
-                    { value => 'active_connections_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -108,32 +104,29 @@ sub set_counters {
 
     $self->{maps_counters}->{vsx_traffic} = [
         { label => 'traffic-accepted', nlabel => 'virtualsystem.traffic.accepted.bitspersecond', set => {
-                key_values => [ { name => 'traffic_accepted', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_accepted', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic accepted: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_accepted_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-dropped', nlabel => 'virtualsystem.traffic.dropped.bitspersecond', set => {
-                key_values => [ { name => 'traffic_dropped', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_dropped', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic dropped: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_dropped_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-rejected', nlabel => 'virtualsystem.traffic.rejected.bitspersecond', set => {
-                key_values => [ { name => 'traffic_rejected', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_rejected', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic rejected: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_rejected_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

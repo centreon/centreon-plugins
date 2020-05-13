@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Current Total Blocked Transactions : %s',
                 perfdatas => [
-                    { label => 'total_blocked_transactions', value => 'total_absolute', template => '%s', min => 0 },
+                    { label => 'total_blocked_transactions', value => 'total', template => '%s', min => 0 },
                 ],
             }
         },

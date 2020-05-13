@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsCurrentActiveSessionsInbound' }, { name => 'display' } ],
                 output_template => 'Current Inbound Sessions : %s',
                 perfdatas => [
-                    { label => 'current_inbound_sessions', value => 'apSigRealmStatsCurrentActiveSessionsInbound_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_inbound_sessions', value => 'apSigRealmStatsCurrentActiveSessionsInbound', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsCurrentSessionRateInbound' }, { name => 'display' } ],
                 output_template => 'Current Inbound Sessions Rate : %s/s',
                 perfdatas => [
-                    { label => 'current_inbound_sessions_rate', value => 'apSigRealmStatsCurrentSessionRateInbound_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_inbound_sessions_rate', value => 'apSigRealmStatsCurrentSessionRateInbound', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsTotalSessionsInbound', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Inbound Sessions : %s',
                 perfdatas => [
-                    { label => 'total_inbound_sessions', value => 'apSigRealmStatsTotalSessionsInbound_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_inbound_sessions', value => 'apSigRealmStatsTotalSessionsInbound', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsCurrentActiveSessionsOutbound' }, { name => 'display' } ],
                 output_template => 'Current Outbound Sessions : %s',
                 perfdatas => [
-                    { label => 'current_outbound_sessions', value => 'apSigRealmStatsCurrentActiveSessionsOutbound_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_outbound_sessions', value => 'apSigRealmStatsCurrentActiveSessionsOutbound', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -74,8 +74,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsCurrentSessionRateOutbound' }, { name => 'display' } ],
                 output_template => 'Current Outbound Sessions Rate : %s/s',
                 perfdatas => [
-                    { label => 'current_outbound_sessions_rate', value => 'apSigRealmStatsCurrentSessionRateOutbound_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_outbound_sessions_rate', value => 'apSigRealmStatsCurrentSessionRateOutbound', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsTotalSessionsOutbound', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Outbound Sessions : %s',
                 perfdatas => [
-                    { label => 'total_outbound_sessions', value => 'apSigRealmStatsTotalSessionsOutbound_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_outbound_sessions', value => 'apSigRealmStatsTotalSessionsOutbound', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },        
@@ -92,8 +92,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsAverageQoSRFactor' }, { name => 'display' } ],
                 output_template => 'Average QoS RFactor : %s',
                 perfdatas => [
-                    { label => 'avg_qos_rfactor', value => 'apSigRealmStatsAverageQoSRFactor_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_qos_rfactor', value => 'apSigRealmStatsAverageQoSRFactor', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -101,8 +101,8 @@ sub set_counters {
                 key_values => [ { name => 'apSigRealmStatsTotalMajorRFactorExceeded', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Rfactor Exceeded : %s',
                 perfdatas => [
-                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceeded_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_rfactor', value => 'apSigRealmStatsTotalMajorRFactorExceeded', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

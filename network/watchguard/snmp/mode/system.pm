@@ -38,28 +38,25 @@ sub set_counters {
                 key_values => [ { name => 'connections' } ],
                 output_template => 'Current connections : %s',
                 perfdatas => [
-                    { label => 'current_connections', value => 'connections_absolute', template => '%s',
-                      min => 0 },
+                    { label => 'current_connections', template => '%s', min => 0 },
                 ],
             }
         },
         { label => 'in-traffic', set => {
-                key_values => [ { name => 'in_traffic', diff => 1 } ],
+                key_values => [ { name => 'in_traffic', per_second => 1 } ],
                 output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'in_traffic_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { label => 'traffic_in', template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'out-traffic', set => {
-                key_values => [ { name => 'out_traffic', diff => 1 } ],
+                key_values => [ { name => 'out_traffic', per_second => 1 } ],
                 output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'out_traffic_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { label => 'traffic_out', template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
@@ -70,11 +67,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 

@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'mp_1s' } ],
                 output_template => '%.2f%% (1sec)',
                 perfdatas => [
-                    { label => 'mp_cpu_1s', value => 'mp_1s_absolute', template => '%.2f',
+                    { label => 'mp_cpu_1s', value => 'mp_1s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'mp_4s' } ],
                 output_template => '%.2f%% (4sec)',
                 perfdatas => [
-                    { label => 'mp_cpu_4s', value => 'mp_4s_absolute', template => '%.2f',
+                    { label => 'mp_cpu_4s', value => 'mp_4s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'mp_64s' } ],
                 output_template => '%.2f%% (64sec)',
                 perfdatas => [
-                    { label => 'mp_cpu_64s', value => 'mp_64s_absolute', template => '%.2f',
+                    { label => 'mp_cpu_64s', value => 'mp_64s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'sp_1s' } ],
                 output_template => 'SP GA Average CPU Usage: %.2f%% (1sec)',
                 perfdatas => [
-                    { label => 'avg_spga_cpu_1s', value => 'sp_1s_absolute', template => '%.2f',
+                    { label => 'avg_spga_cpu_1s', value => 'sp_1s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'sp_4s' } ],
                 output_template => '%.2f%% (4sec)',
                 perfdatas => [
-                    { label => 'avg_spga_cpu_4s', value => 'sp_4s_absolute', template => '%.2f',
+                    { label => 'avg_spga_cpu_4s', value => 'sp_4s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'sp_64s' } ],
                 output_template => '%.2f%% (64sec)',
                 perfdatas => [
-                    { label => 'avg_spga_cpu_64s', value => 'sp_64s_absolute', template => '%.2f',
+                    { label => 'avg_spga_cpu_64s', value => 'sp_64s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -99,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'sp_1s' }, { name => 'display' } ],
                 output_template => '%.2f%% (1sec)',
                 perfdatas => [
-                    { label => 'spga_cpu_1s', value => 'sp_1s_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'spga_cpu_1s', value => 'sp_1s', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'sp_4s' }, { name => 'display' } ],
                 output_template => '%.2f%% (4sec)',
                 perfdatas => [
-                    { label => 'spga_cpu_4s', value => 'sp_4s_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'spga_cpu_4s', value => 'sp_4s', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -117,8 +117,8 @@ sub set_counters {
                 key_values => [ { name => 'sp_64s' }, { name => 'display' } ],
                 output_template => '%.2f%% (64sec)',
                 perfdatas => [
-                    { label => 'spga_cpu_64s', value => 'sp_64s_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'spga_cpu_64s', value => 'sp_64s', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -123,7 +123,6 @@ sub set_counters {
         },
         { label => 'in', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'speed_in' }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -132,7 +131,6 @@ sub set_counters {
         },
         { label => 'out', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'speed_out' }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),

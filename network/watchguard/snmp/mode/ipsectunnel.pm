@@ -40,30 +40,28 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Tunnels: %s',
                 perfdatas => [
-                    { label => 'total_tunnels', value => 'total_absolute', template => '%s',
-                      min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{tunnel} = [
         { label => 'tunnel-traffic-in', nlabel => 'ipsec.tunnel.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'wgIpsecTunnelInKbytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'wgIpsecTunnelInKbytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'wgIpsecTunnelInKbytes_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'tunnel-traffic-out', nlabel => 'ipsec.tunnel.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'wgIpsecTunnelOutKbytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'wgIpsecTunnelOutKbytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'wgIpsecTunnelOutKbytes_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -82,7 +80,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s'     => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;

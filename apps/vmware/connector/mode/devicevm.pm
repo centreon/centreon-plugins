@@ -44,7 +44,7 @@ sub custom_status_calc {
 sub custom_device_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("%s %s device connected",  $self->{result_values}->{device_connected_absolute}, $self->{instance_mode}->{option_results}->{device});
+    my $msg = sprintf("%s %s device connected",  $self->{result_values}->{device_connected}, $self->{instance_mode}->{option_results}->{device});
     return $msg;
 }
 
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'device_connected' } ],
                 closure_custom_output => $self->can('custom_device_output'),
                 perfdatas => [
-                    { label => 'total_device_connected', value => 'device_connected_absolute', template => '%s',
+                    { label => 'total_device_connected', value => 'device_connected', template => '%s',
                       min => 0 },
                 ],
             }
@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'device_connected' }, { name => 'display' } ],
                 oclosure_custom_output => $self->can('custom_device_output'),
                 perfdatas => [
-                    { label => 'device_connected', value => 'device_connected_absolute', template => '%s',
+                    { label => 'device_connected', value => 'device_connected', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

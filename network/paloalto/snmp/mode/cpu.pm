@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'managementplane' } ],
                 output_template => 'management plane usage is: %.2f %%',
                 perfdatas => [
-                    { value => 'managementplane_absolute', template => '%.2f',
+                    { value => 'managementplane', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'dataplane' } ],
                 output_template => 'dataplane usage is: %.2f %%',
                 perfdatas => [
-                    { value => 'dataplane_absolute', template => '%.2f',
+                    { value => 'dataplane', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

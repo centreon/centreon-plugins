@@ -63,27 +63,27 @@ sub set_counters {
                 key_values => [ { name => 'cacheHttpErrors', diff => 1 } ],
                 output_template => 'errors : %s',
                 perfdatas => [
-                    { label => 'http_errors', value => 'cacheHttpErrors_absolute', template => '%s',
+                    { label => 'http_errors', template => '%s',
                       min => 0 },
                 ],
             }
         },
         { label => 'http-traffic-in', set => {
-                key_values => [ { name => 'cacheHttpInKb', diff => 1 } ],
+                key_values => [ { name => 'cacheHttpInKb', per_second => 1 } ],
                 output_template => 'traffic in : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_in', value => 'cacheHttpInKb_per_second', template => '%s',
+                    { label => 'http_traffic_in', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'http-traffic-out', set => {
-                key_values => [ { name => 'cacheHttpOutKb', diff => 1 } ],
+                key_values => [ { name => 'cacheHttpOutKb', per_second => 1 } ],
                 output_template => 'traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'http_traffic_out', value => 'cacheHttpOutKb_per_second', template => '%s',
+                    { label => 'http_traffic_out', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -92,21 +92,21 @@ sub set_counters {
 
     $self->{maps_counters}->{global_icp} = [
         { label => 'icp-traffic-in', set => {
-                key_values => [ { name => 'cacheIcpKbRecv', diff => 1 } ],
+                key_values => [ { name => 'cacheIcpKbRecv', per_second => 1 } ],
                 output_template => 'traffic in : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'icp_traffic_in', value => 'cacheIcpKbRecv_per_second', template => '%s',
+                    { label => 'icp_traffic_in', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'icp-traffic-out', set => {
-                key_values => [ { name => 'cacheIcpKbSent', diff => 1 } ],
+                key_values => [ { name => 'cacheIcpKbSent', per_second => 1 } ],
                 output_template => 'traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'icp_traffic_out', value => 'cacheIcpKbSent_per_second', template => '%s',
+                    { label => 'icp_traffic_out', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -115,21 +115,21 @@ sub set_counters {
         
     $self->{maps_counters}->{global} = [
         { label => 'server-traffic-in', set => {
-                key_values => [ { name => 'cacheServerInKb', diff => 1 } ],
+                key_values => [ { name => 'cacheServerInKb', per_second => 1 } ],
                 output_template => 'traffic in : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'server_traffic_in', value => 'cacheServerInKb_per_second', template => '%s',
+                    { label => 'server_traffic_in', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'server-traffic-out', set => {
-                key_values => [ { name => 'cacheServerOutKb', diff => 1 } ],
+                key_values => [ { name => 'cacheServerOutKb', per_second => 1 } ],
                 output_template => 'traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'server_traffic_out', value => 'cacheServerOutKb_per_second', template => '%s',
+                    { label => 'server_traffic_out', template => '%s',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -138,11 +138,10 @@ sub set_counters {
                 key_values => [ { name => 'cacheClients' } ],
                 output_template => 'current number of clients : %s',
                 perfdatas => [
-                    { label => 'clients', value => 'cacheClients_absolute', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'clients', template => '%s', min => 0 },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -171,7 +170,7 @@ sub new {
     
     $options{options}->add_options(arguments => { 
     });
-    
+
     return $self;
 }
 

@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Volumes Total : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', min => 0 },
+                    { label => 'total', value => 'total', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'online' } ],
                 output_template => 'Online : %s',
                 perfdatas => [
-                    { label => 'online', value => 'online_absolute', template => '%s', min => 0 },
+                    { label => 'online', value => 'online', template => '%s', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'offline' } ],
                 output_template => 'Offline : %s',
                 perfdatas => [
-                    { label => 'offline', value => 'offline_absolute', template => '%s', min => 0 },
+                    { label => 'offline', value => 'offline', template => '%s', min => 0 },
                 ],
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'empty' } ],
                 output_template => 'Empty : %s',
                 perfdatas => [
-                    { label => 'empty', value => 'empty_absolute', template => '%s', min => 0 },
+                    { label => 'empty', value => 'empty', template => '%s', min => 0 },
                 ],
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'pending' } ],
                 output_template => 'Pending : %s',
                 perfdatas => [
-                    { label => 'pending', value => 'pending_absolute', template => '%s', min => 0 },
+                    { label => 'pending', value => 'pending', template => '%s', min => 0 },
                 ],
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'filling' } ],
                 output_template => 'Filling : %s',
                 perfdatas => [
-                    { label => 'filling', value => 'filling_absolute', template => '%s', min => 0 },
+                    { label => 'filling', value => 'filling', template => '%s', min => 0 },
                 ],
             }
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'full' } ],
                 output_template => 'Full : %s',
                 perfdatas => [
-                    { label => 'full', value => 'full_absolute', template => '%s', min => 0 },
+                    { label => 'full', value => 'full', template => '%s', min => 0 },
                 ],
             }
         },
@@ -97,8 +97,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_utilized' }, { name => 'display' } ],
                 output_template => 'Usage : %s %%',
                 perfdatas => [
-                    { label => 'used', value => 'prct_utilized_absolute', template => '%s', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'used', value => 'prct_utilized', template => '%s', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

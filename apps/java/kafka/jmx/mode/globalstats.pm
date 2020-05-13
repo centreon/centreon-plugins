@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'leader_count' } ],
                 output_template => 'Leaders : %s',
                 perfdatas => [
-                    { label => 'leader_count', value => 'leader_count_absolute', template => '%s', min => 0 },
+                    { label => 'leader_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'active_controller_count' } ],
                 output_template => 'Active Controllers : %s',
                 perfdatas => [
-                    { label => 'active_controller_count', value => 'active_controller_count_absolute', template => '%s', min => 0 },
+                    { label => 'active_controller_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'partition_count' } ],
                 output_template => 'Partitions : %s',
                 perfdatas => [
-                    { label => 'partition_count', value => 'partition_count_absolute', template => '%s', min => 0 },
+                    { label => 'partition_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'offline_partitions_count' } ],
                 output_template => 'Offline partitions : %s',
                 perfdatas => [
-                    { label => 'offline_partitions_count', value => 'offline_partitions_count_absolute', template => '%s', 
+                    { label => 'offline_partitions_count', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'under_replicated_partitions' } ],
                 output_template => 'Under replicated partitions : %s',
                 perfdatas => [
-                    { label => 'under_replicated_partitions', value => 'under_replicated_partitions_absolute', template => '%s', 
+                    { label => 'under_replicated_partitions', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -80,26 +80,26 @@ sub set_counters {
                 key_values => [ { name => 'unclean_leader_elections', diff => 1 } ],
                 output_template => 'Number of unclean leader elections : %s',
                 perfdatas => [
-                    { label => 'unclean_leader_elections', value => 'unclean_leader_elections_absolute', template => '%s', min => 0 },
+                    { label => 'unclean_leader_elections', template => '%s', min => 0 },
                 ],
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
                 output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
+                    { label => 'traffic_in', template => '%.2f',
                       min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
                 output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
+                    { label => 'traffic_out', template => '%.2f',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -108,7 +108,7 @@ sub set_counters {
                 key_values => [ { name => 'total_fetch_requests', diff => 1 } ],
                 output_template => 'Number of total fetch requests : %s',
                 perfdatas => [
-                    { label => 'total_fetch_requests', value => 'total_fetch_requests_absolute', template => '%s', min => 0 },
+                    { label => 'total_fetch_requests', template => '%s', min => 0 },
                 ],
             }
         },
@@ -119,11 +119,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 

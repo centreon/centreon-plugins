@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'outletCurrent', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'outletCurrent_absolute', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'outletCurrent', template => '%.2f', 
+                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'outletVoltage', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'outletVoltage_absolute', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'outletVoltage', template => '%.2f', 
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'outletWatts', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { value => 'outletWatts_absolute', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1, instance_use => 'display_absolute'  },
+                    { value => 'outletWatts', template => '%.2f', 
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display'  },
                 ],
             }
         },

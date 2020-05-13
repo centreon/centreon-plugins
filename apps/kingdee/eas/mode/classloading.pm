@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'loadedclass' } ],
                 output_template => 'class loaded: %s',
                 perfdatas => [
-                    { value => 'loadedclass_absolute', template => '%s', min => 0 },
+                    { value => 'loadedclass', template => '%s', min => 0 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'unloadedclass', diff => 1 } ],
                 output_template => 'class unloaded: %s',
                 perfdatas => [
-                    { value => 'unloadedclass_absolute', template => '%s', min => 0 },
+                    { value => 'unloadedclass', template => '%s', min => 0 },
                 ],
             }
         },

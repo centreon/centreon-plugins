@@ -35,62 +35,50 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'match', set => {
-                key_values => [ { name => 'pfCounterMatch', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pfCounterMatch', per_second => 1 } ],
                 output_template => 'Packets Matched Filter Rule : %.2f/s',
                 perfdatas => [
-                    { label => 'match', value => 'pfCounterMatch_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'match', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'badoffset', set => {
-                key_values => [ { name => 'pfCounterBadOffset', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pfCounterBadOffset', per_second => 1 } ],
                 output_template => 'Bad Offset Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'bad_offset', value => 'pfCounterBadOffset_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'bad_offset', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'fragment', set => {
-                key_values => [ { name => 'pfCounterFragment', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pfCounterFragment', per_second => 1 } ],
                 output_template => 'Fragmented Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'fragment', value => 'pfCounterFragment_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'fragment', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'short', set => {
-                key_values => [ { name => 'pfCounterShort', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pfCounterShort', per_second => 1 } ],
                 output_template => 'Short Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'short', value => 'pfCounterShort_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'short', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'normalize', set => {
-                key_values => [ { name => 'pfCounterNormalize', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pfCounterNormalize', per_second => 1 } ],
                 output_template => 'Normalized Packets : %.2f/s',
                 perfdatas => [
-                    { label => 'normalize', value => 'pfCounterNormalize_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'normalize', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'memdrop', set => {
-                key_values => [ { name => 'pfCounterMemDrop', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pfCounterMemDrop', per_second => 1 } ],
                 output_template => 'Dropped Packets Due To Memory : %.2f/s',
                 perfdatas => [
-                    { label => 'memdrop', value => 'pfCounterMemDrop_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'memdrop', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
@@ -101,11 +89,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 

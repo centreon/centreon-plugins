@@ -36,8 +36,8 @@ sub custom_load_output {
     my ($self, %options) = @_;
 
     return sprintf("charge remaining: %s%% (%s minutes remaining)", 
-        $self->{result_values}->{charge_remain_absolute},
-        $self->{result_values}->{minute_remain_absolute}
+        $self->{result_values}->{charge_remain},
+        $self->{result_values}->{minute_remain}
     );
 }
 
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'charge_remain' }, { name => 'minute_remain' } ],
                 closure_custom_output => $self->can('custom_load_output'),
                 perfdatas => [
-                    { label => 'load', value => 'charge_remain_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                    { label => 'load', value => 'charge_remain', template => '%s', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'minute_remain' } ],
                 output_template => 'minutes remaining: %s',
                 perfdatas => [
-                    { label => 'charge_remaining', value => 'minute_remain_absolute', template => '%s', min => 0, unit => 'minutes' },
+                    { label => 'charge_remaining', value => 'minute_remain', template => '%s', min => 0, unit => 'minutes' },
                 ],
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'current', no_value => 0 } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { label => 'current', value => 'current_absolute', template => '%s', min => 0, unit => 'A' },
+                    { label => 'current', value => 'current', template => '%s', min => 0, unit => 'A' },
                 ],
             }
         },
@@ -85,7 +85,7 @@ sub set_counters {
                 key_values => [ { name => 'voltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'voltage_absolute', template => '%s', unit => 'V' },
+                    { label => 'voltage', value => 'voltage', template => '%s', unit => 'V' },
                 ],
             }
         },
@@ -93,7 +93,7 @@ sub set_counters {
                 key_values => [ { name => 'temperature', no_value => 0 } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { label => 'temp', value => 'temperature_absolute', template => '%s', unit => 'C' },
+                    { label => 'temp', value => 'temperature', template => '%s', unit => 'C' },
                 ],
             }
         },

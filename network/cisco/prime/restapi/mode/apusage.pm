@@ -48,14 +48,14 @@ sub custom_status_calc {
 
 sub custom_uptime_output {
     my ($self, %options) = @_;
-    my $msg = 'uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime_absolute});
+    my $msg = 'uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{uptime});
 
     return $msg;
 }
 
 sub custom_lwappuptime_output {
     my ($self, %options) = @_;
-    my $msg = 'lwapp uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{lwapp_uptime_absolute});
+    my $msg = 'lwapp uptime started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{lwapp_uptime});
 
     return $msg;
 }
@@ -81,8 +81,8 @@ sub set_counters {
                 key_values => [ { name => 'client_count' }, { name => 'name' } ],
                 output_template => 'Clients : %s',
                 perfdatas => [
-                    { label => 'ap_clients', value => 'client_count_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'ap_clients', value => 'client_count', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -90,8 +90,8 @@ sub set_counters {
                 key_values => [ { name => 'uptime' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_uptime_output'),
                 perfdatas => [
-                    { label => 'ap_uptime', value => 'uptime_absolute', template => '%s',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'ap_uptime', value => 'uptime', template => '%s',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -99,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'lwapp_uptime' }, { name => 'name' } ],
                 closure_custom_output => $self->can('custom_lwappuptime_output'),
                 perfdatas => [
-                    { label => 'ap_lwappuptime', value => 'lwapp_uptime_absolute', template => '%s',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'ap_lwappuptime', value => 'lwapp_uptime', template => '%s',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -111,8 +111,8 @@ sub set_counters {
                 key_values => [ { name => 'ap_count' }, { name => 'name' } ],
                 output_template => 'Number of access points : %s',
                 perfdatas => [
-                    { label => 'ctrl_ap_count', value => 'ap_count_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'ctrl_ap_count', value => 'ap_count', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

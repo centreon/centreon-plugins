@@ -38,7 +38,6 @@ sub set_counters {
                 key_values => [ { name => 'used_cpu_sys', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_sys' },
                 output_template => 'System: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
-                per_second => 1,
                 perfdatas => [
                     { label => 'sys', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
@@ -48,7 +47,6 @@ sub set_counters {
                 key_values => [ { name => 'used_cpu_user', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_user' },
                 output_template => 'User: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
-                per_second => 1,
                 perfdatas => [
                     { label => 'user', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
@@ -58,7 +56,6 @@ sub set_counters {
                 key_values => [ { name => 'used_cpu_sys_children', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_sys_children' },
                 output_template => 'System children: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
-                per_second => 1,
                 perfdatas => [
                     { label => 'sys_children', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
@@ -68,12 +65,11 @@ sub set_counters {
                 key_values => [ { name => 'used_cpu_user_children', diff => 1 } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'used_cpu_user_children' },
                 output_template => 'User children: %.2f %%', output_use => 'used_delta', threshold_use => 'used_delta',
-                per_second => 1,
                 perfdatas => [
                     { label => 'user_children', value => 'used_delta', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
-        },
+        }
     ];
 }
 
@@ -97,10 +93,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-
-    $options{options}->add_options(arguments => 
-                    {
-                    });
+    $options{options}->add_options(arguments =>  {
+    });
 
     return $self;
 }

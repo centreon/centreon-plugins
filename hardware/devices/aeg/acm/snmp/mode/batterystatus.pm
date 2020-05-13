@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'battVoltage' } ],
                 output_template => 'Voltage : %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'battVoltage_absolute', template => '%s', 
+                    { label => 'voltage', value => 'battVoltage', template => '%s', 
                       unit => 'V' },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'battCurrent' } ],
                 output_template => 'Current : %s A',
                 perfdatas => [
-                    { label => 'current', value => 'battCurrent_absolute', template => '%s', 
+                    { label => 'current', value => 'battCurrent', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'battCurrent1' } ],
                 output_template => 'Current 1 : %s A',
                 perfdatas => [
-                    { label => 'current1', value => 'battCurrent1_absolute', template => '%s', 
+                    { label => 'current1', value => 'battCurrent1', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'battCurrent2' } ],
                 output_template => 'Current 2 : %s A',
                 perfdatas => [
-                    { label => 'current2', value => 'battCurrent2_absolute', template => '%s', 
+                    { label => 'current2', value => 'battCurrent2', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -96,7 +96,7 @@ sub set_counters {
                 key_values => [ { name => 'battTemp' } ],
                 output_template => 'Temperature : %s C',
                 perfdatas => [
-                    { label => 'temperature', value => 'battTemp_absolute', template => '%s', 
+                    { label => 'temperature', value => 'battTemp', template => '%s', 
                       unit => 'C'},
                 ],
             }
@@ -105,7 +105,7 @@ sub set_counters {
                 key_values => [ { name => 'battTemp1' } ],
                 output_template => 'Temperature 1 : %s C',
                 perfdatas => [
-                    { label => 'temperature1', value => 'battTemp1_absolute', template => '%s', 
+                    { label => 'temperature1', value => 'battTemp1', template => '%s', 
                       unit => 'C'},
                 ],
             }
@@ -114,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'battTemp2' } ],
                 output_template => 'Temperature 2 : %s C',
                 perfdatas => [
-                    { label => 'temperature2', value => 'battTemp2_absolute', template => '%s', 
+                    { label => 'temperature2', value => 'battTemp2', template => '%s', 
                       unit => 'C'},
                 ],
             }
@@ -123,7 +123,7 @@ sub set_counters {
                 key_values => [ { name => 'battAmpHMeter' } ],
                 output_template => 'Amp Hour Meter : %s %%',
                 perfdatas => [
-                    { label => 'amphourmeter', value => 'battAmpHMeter_absolute', template => '%s', 
+                    { label => 'amphourmeter', value => 'battAmpHMeter', template => '%s', 
                       unit => '%'},
                 ],
             }

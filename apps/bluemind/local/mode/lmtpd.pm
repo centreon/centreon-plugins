@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'active_connections' } ],
                 output_template => 'active connections: %s',
                 perfdatas => [
-                    { value => 'active_connections_absolute', template => '%s', min => 0 }
+                    { value => 'active_connections', template => '%s', min => 0 }
                 ]
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'connections', diff => 1 } ],
                 output_template => 'total connections: %s',
                 perfdatas => [
-                    { value => 'connections_absolute', template => '%s', min => 0 }
+                    { value => 'connections', template => '%s', min => 0 }
                 ]
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'deliveries_ok', diff => 1 } ],
                 output_template => 'success deliveries: %s',
                 perfdatas => [
-                    { value => 'deliveries_ok_absolute', template => '%s', min => 0 }
+                    { value => 'deliveries_ok', template => '%s', min => 0 }
                 ]
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'deliveries_ko', diff => 1 } ],
                 output_template => 'failure deliveries: %s',
                 perfdatas => [
-                    { value => 'deliveries_ko_absolute', template => '%s', min => 0 }
+                    { value => 'deliveries_ko', template => '%s', min => 0 }
                 ]
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 output_template => 'total emails size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'email_size_absolute', template => '%s', min => 0, unit => 'B' }
+                    { value => 'email_size', template => '%s', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'session_duration_total', diff => 1 } ],
                 output_template => 'total sessions duration: %s ms',
                 perfdatas => [
-                    { value => 'session_duration_total_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'session_duration_total', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -94,7 +94,7 @@ sub set_counters {
                 key_values => [ { name => 'session_duration_mean' } ],
                 output_template => 'mean sessions duration: %s ms',
                 perfdatas => [
-                    { value => 'session_duration_mean_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'session_duration_mean', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -102,7 +102,7 @@ sub set_counters {
                 key_values => [ { name => 'traffic_latency_total', diff => 1 } ],
                 output_template => 'total traffic transport latency: %s ms',
                 perfdatas => [
-                    { value => 'traffic_latency_total_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'traffic_latency_total', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -110,7 +110,7 @@ sub set_counters {
                 key_values => [ { name => 'traffic_latency_mean' } ],
                 output_template => 'mean traffic transport latency: %s ms',
                 perfdatas => [
-                    { value => 'traffic_latency_mean_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'traffic_latency_mean', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         }

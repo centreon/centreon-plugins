@@ -60,8 +60,8 @@ sub set_counters {
                 output_template => 'Raid Overhead : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'volume_overhead', value => 'overhead_absolute', template => '%d',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'volume_overhead', value => 'overhead', template => '%d',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -70,8 +70,8 @@ sub set_counters {
                 output_template => 'Replay : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'volume_replay', value => 'replay_absolute', template => '%d',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'volume_replay', value => 'replay', template => '%d',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

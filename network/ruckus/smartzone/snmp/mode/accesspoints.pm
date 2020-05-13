@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'authorized_clients' }, { name => 'display' } ],
                 output_template => 'client devices authorized connections: %d',
                 perfdatas => [
-                    { value => 'authorized_clients_absolute', template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -91,22 +91,20 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'traffic-in', nlabel => 'accesspoint.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic in: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'accesspoint.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic in: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

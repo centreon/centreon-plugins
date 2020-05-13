@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'upsInputFrequency', no_value => 0 } ],
                 output_template => 'frequence: %.2f Hz',
                 perfdatas => [
-                    { value => 'upsInputFrequency_absolute', template => '%.2f', 
+                    { value => 'upsInputFrequency', template => '%.2f', 
                       unit => 'Hz' },
                 ],
             }
@@ -50,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'upsInputCurrent', no_value => 0 } ],
                 output_template => 'current: %.2f A',
                 perfdatas => [
-                    { value => 'upsInputCurrent_absolute', template => '%.2f', 
+                    { value => 'upsInputCurrent', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'upsInputVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'upsInputVoltage_absolute', template => '%s', 
+                    { value => 'upsInputVoltage', template => '%s', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'upsInputWatts', no_value => 0 } ],
                 output_template => 'power: %s W',
                 perfdatas => [
-                    { value => 'upsInputWatts_absolute', template => '%s', 
+                    { value => 'upsInputWatts', template => '%s', 
                       unit => 'W', label_extra_instance => 1 },
                 ],
             }

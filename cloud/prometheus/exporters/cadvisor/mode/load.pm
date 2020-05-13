@@ -39,8 +39,8 @@ sub set_counters {
                 output_template => 'Load: %.2f',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'load', value => 'load_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'load', value => 'load', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },

@@ -42,9 +42,8 @@ sub set_counters {
                     key_values => [ { name => 'operations_completed_' . $_, diff => 1 } ],
                     output_template => $_ . ' %s',
                     perfdatas => [
-                        { label => 'operations_' . $_, value => 'operations_completed_' . $_ . '_absolute', template => '%.2f',
-                           min => 0 },
-                    ],
+                        { label => 'operations_' . $_, template => '%.2f', min => 0 }
+                    ]
                 }
             };
     }
@@ -55,8 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'connections_current' } ],
                 output_template => 'Current connections %s',
                 perfdatas => [
-                    { label => 'connections_current', value => 'connections_current_absolute', template => '%s',
-                      min => 0 },
+                    { label => 'connections_current', template => '%s', min => 0 },
                 ],
             }
         },
@@ -64,8 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'connections_total', diff => 1 } ],
                 output_template => 'Total connections %s',
                 perfdatas => [
-                    { label => 'connections_total', value => 'connections_total_absolute', template => '%s',
-                      min => 0 },
+                    { label => 'connections_total', template => '%s', min => 0 },
                 ],
             }
         },
@@ -73,21 +70,19 @@ sub set_counters {
                 key_values => [ { name => 'threads_active_prct' } ],
                 output_template => 'Current active threads %.2f %%',
                 perfdatas => [
-                    { label => 'threads_active', value => 'threads_active_prct_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
+                    { label => 'threads_active', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => 'traffic',  nlabel => 'system.traffic.bytespersecond', set => {
-                key_values => [ { name => 'traffic', diff => 1 } ],
-                output_change_bytes => 1, per_second => 1,
+                key_values => [ { name => 'traffic', per_second => 1 } ],
                 output_template => 'traffic %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'traffic', value => 'traffic_per_second', template => '%s',
-                       min => 0, unit => 'B/s', cast_int => 1 },
-                ],
+                    { label => 'traffic', template => '%s', min => 0, unit => 'B/s', cast_int => 1 },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -109,11 +104,11 @@ sub new {
         'ldap-starttls-options:s@' => { name => 'ldap_starttls_options' },
         'ldap-bind-options:s@'     => { name => 'ldap_bind_options' },
         'tls'                      => { name => 'use_tls' },
-        'username:s'   => { name => 'username' },
-        'password:s'   => { name => 'password' },
-        'timeout:s'    => { name => 'timeout', default => '30' },
+        'username:s'               => { name => 'username' },
+        'password:s'               => { name => 'password' },
+        'timeout:s'                => { name => 'timeout', default => '30' },
     });
-    
+
     return $self;
 }
 

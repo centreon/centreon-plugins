@@ -28,19 +28,19 @@ use warnings;
 sub custom_node_output {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{node_total_absolute} ne '') {
+    if ($self->{result_values}->{node_total} ne '') {
         return sprintf(
             'concurrent users licenses usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
-            $self->{result_values}->{node_total_absolute},
-            $self->{result_values}->{node_used_absolute},
-            $self->{result_values}->{node_used_absolute} * 100 / $self->{result_values}->{node_total_absolute},
-            $self->{result_values}->{node_total_absolute} - $self->{result_values}->{node_used_absolute},
-            ($self->{result_values}->{node_total_absolute} - $self->{result_values}->{node_used_absolute}) * 100 / $self->{result_values}->{node_total_absolute}
+            $self->{result_values}->{node_total},
+            $self->{result_values}->{node_used},
+            $self->{result_values}->{node_used} * 100 / $self->{result_values}->{node_total},
+            $self->{result_values}->{node_total} - $self->{result_values}->{node_used},
+            ($self->{result_values}->{node_total} - $self->{result_values}->{node_used}) * 100 / $self->{result_values}->{node_total}
         );
     } else {
         return sprintf(
             'concurrent users licenses used: %s',
-            $self->{result_values}->{node_used_absolute}
+            $self->{result_values}->{node_used}
         );
     }
 }
@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'node_used' }, { name => 'node_total' }  ],
                 closure_custom_output => $self->can('custom_node_output'),
                 perfdatas => [
-                    { value => 'node_used_absolute', template => '%d', min => 0, max => 'node_total_absolute' },
+                    { value => 'node_used', template => '%d', min => 0, max => 'node_total' },
                 ],
             }
         },
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'node_free' }, { name => 'node_used' }, { name => 'node_total' }  ],
                 closure_custom_output => $self->can('custom_node_output'),
                 perfdatas => [
-                    { value => 'node_free_absolute', template => '%d', min => 0, max => 'node_total_absolute' },
+                    { value => 'node_free', template => '%d', min => 0, max => 'node_total' },
                 ],
             }
         },
@@ -73,7 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_node_used' } ],
                 output_template => 'concurrent users licenses used: %.2f %%',
                 perfdatas => [
-                    { value => 'prct_node_used_absolute', template => '%.2f', min => 0, max => 100,
+                    { value => 'prct_node_used', template => '%.2f', min => 0, max => 100,
                       unit => '%' },
                 ],
             }
@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => 'web' } ],
                 output_template => 'current concurrent signed-in web users connections: %s',
                 perfdatas => [
-                    { value => 'web_absolute', template => '%s', min => 0 },
+                    { value => 'web', template => '%s', min => 0 },
                 ],
             }
         },
@@ -90,7 +90,7 @@ sub set_counters {
                 key_values => [ { name => 'meeting' } ],
                 output_template => 'current concurrent meeting users connections: %s',
                 perfdatas => [
-                    { value => 'meeting_absolute', template => '%s', min => 0 },
+                    { value => 'meeting', template => '%s', min => 0 },
                 ],
             }
         },
@@ -98,7 +98,7 @@ sub set_counters {
                 key_values => [ { name => 'cluster' } ],
                 output_template => 'current concurrent cluster logged users connections: %s',
                 perfdatas => [
-                    { value => 'cluster_absolute', template => '%s', min => 0 },
+                    { value => 'cluster', template => '%s', min => 0 },
                 ],
             }
         }

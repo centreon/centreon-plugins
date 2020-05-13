@@ -147,7 +147,7 @@ sub set_counters {
                 key_values => [ { name => 'time_scenario' } ],
                 output_template => 'Total execution time : %.2f ms',
                 perfdatas => [
-                    { label => 'time_scenario', value => 'time_scenario_absolute', template => '%.2f',
+                    { label => 'time_scenario', value => 'time_scenario', template => '%.2f',
                       min => 0, unit => 'ms' },
                 ],
             }
@@ -168,8 +168,8 @@ sub set_counters {
                 key_values => [ { name => 'time_step' }, { name => 'display' } ],
                 output_template => 'Execution time : %.2f ms',
                 perfdatas => [
-                    { label => 'time_step', value => 'time_step_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'time_step', value => 'time_step', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

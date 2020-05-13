@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'disconnected' }, { name => 'total_contactors' } ],
                 output_template => 'current disconnected outputs: %d',
                 perfdatas => [
-                    { value => 'disconnected_absolute', template => '%d', min => 0, max => 'total_contactors_absolute' }
+                    { value => 'disconnected', template => '%d', min => 0, max => 'total_contactors' }
                 ]
             }
         },
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'notenergized' }, { name => 'total_relay' } ],
                 output_template => 'current not energized outputs: %d',
                 perfdatas => [
-                    { value => 'notenergized_absolute', template => '%d', min => 0, max => 'total_relay_absolute' }
+                    { value => 'notenergized', template => '%d', min => 0, max => 'total_relay' }
                 ]
             }
         }

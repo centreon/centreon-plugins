@@ -67,8 +67,8 @@ sub set_counters {
                 key_values => [ { name => 'mplsLspInfoTransitions' }, { name => 'mplsLspName' } ],
                 output_template => 'Transition count: %d',
                 perfdatas => [
-                    { label => 'transition_count', value => 'mplsLspInfoTransitions_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'mplsLspName_absolute' },
+                    { label => 'transition_count', value => 'mplsLspInfoTransitions', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'mplsLspName' },
                 ],
             }
         },
@@ -77,8 +77,8 @@ sub set_counters {
                     { name => 'mplsLspName' } ],
                 output_template => 'Last transition: %s',
                 perfdatas => [
-                    { label => 'last_transition', value => 'mplsLspInfoLastTransition_absolute', template => '%d',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'mplsLspName_absolute' },
+                    { label => 'last_transition', value => 'mplsLspInfoLastTransition', template => '%d',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'mplsLspName' },
                 ],
             }
         },

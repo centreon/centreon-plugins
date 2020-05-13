@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'ntqHAQuality' }, { name => 'display' } ],
                 output_template => 'health: %s%%',
                 perfdatas => [
-                    { label => 'health', value => 'ntqHAQuality_absolute', template => '%d', min => 0, max => 100,
-                       unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'health', value => 'ntqHAQuality', template => '%d', min => 0, max => 100,
+                       unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         }

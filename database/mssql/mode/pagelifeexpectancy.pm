@@ -37,7 +37,7 @@ sub set_counters {
             key_values => [ { name => 'page_life_expectancy'}],
             output_template => 'Page life expectancy : %d second(s)',
             perfdatas => [
-                { value => 'page_life_expectancy_absolute', template => '%d', unit => 's', min => 0 },
+                { value => 'page_life_expectancy', template => '%d', unit => 's', min => 0 },
             ]
         }}
     ];

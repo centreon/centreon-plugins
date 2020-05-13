@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'associated' } ],
                 output_template => 'Total Associated Nodes : %s',
                 perfdatas => [
-                    { label => 'associated', value => 'associated_absolute', template => '%s', min => 0 },
+                    { label => 'associated', value => 'associated', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'non_associated' } ],
                 output_template => 'Total Non Associated Nodes : %s',
                 perfdatas => [
-                    { label => 'non_associated', value => 'non_associated_absolute', template => '%s', min => 0 },
+                    { label => 'non_associated', value => 'non_associated', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'locked' } ],
                 output_template => 'Total Locked Nodes : %s',
                 perfdatas => [
-                    { label => 'locked', value => 'locked_absolute', template => '%s', min => 0 },
+                    { label => 'locked', value => 'locked', template => '%s', min => 0 },
                 ],
             }
         },

@@ -38,8 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'wgPolicyCurrActiveConns' }, { name => 'display' } ],
                 output_template => 'Current connections : %s',
                 perfdatas => [
-                    { label => 'current_connections', value => 'wgPolicyCurrActiveConns_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_connections', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,28 +46,25 @@ sub set_counters {
                 key_values => [ { name => 'wgPolicyActiveStreams', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total connections : %s',
                 perfdatas => [
-                    { label => 'total_connections', value => 'wgPolicyActiveStreams_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_connections', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'l3-traffic', set => {
-                key_values => [ { name => 'wgPolicyL3PackageBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'wgPolicyL3PackageBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'L3 Traffic : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_l3', value => 'wgPolicyL3PackageBytes_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_l3', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'l2-traffic', set => {
-                key_values => [ { name => 'wgPolicyL2PackageBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'wgPolicyL2PackageBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'L2 Traffic : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_l2', value => 'wgPolicyL2PackageBytes_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_l2', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -79,12 +75,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 

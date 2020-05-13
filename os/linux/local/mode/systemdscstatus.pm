@@ -64,8 +64,8 @@ sub set_counters {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
                 output_template => 'Total Running: %s',
                 perfdatas => [
-                    { label => 'total_running', value => 'running_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_running', value => 'running', template => '%s', 
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -73,8 +73,8 @@ sub set_counters {
                 key_values => [ { name => 'failed' }, { name => 'total' } ],
                 output_template => 'Total Failed: %s',
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_failed', value => 'failed', template => '%s', 
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -82,8 +82,8 @@ sub set_counters {
                 key_values => [ { name => 'dead' }, { name => 'total' } ],
                 output_template => 'Total Dead: %s',
                 perfdatas => [
-                    { label => 'total_dead', value => 'dead_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_dead', value => 'dead', template => '%s', 
+                      min => 0, max => 'total' },
                 ],
             }
         },
@@ -91,8 +91,8 @@ sub set_counters {
                 key_values => [ { name => 'exited' }, { name => 'total' } ],
                 output_template => 'Total Exited: %s',
                 perfdatas => [
-                    { label => 'total_exited', value => 'exited_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
+                    { label => 'total_exited', value => 'exited', template => '%s', 
+                      min => 0, max => 'total' },
                 ],
             }
         },

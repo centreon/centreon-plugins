@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total channels : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s',
+                    { label => 'total', value => 'total', template => '%s',
                       min => 0 },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'outofservice' } ],
                 output_template => 'OutOfService : %s',
                 perfdatas => [
-                    { label => 'total_outofservice', value => 'outofservice_absolute', template => '%s',
+                    { label => 'total_outofservice', value => 'outofservice', template => '%s',
                       min => 0 },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'idle' } ],
                 output_template => 'Idle : %s',
                 perfdatas => [
-                    { label => 'total_idle', value => 'idle_absolute', template => '%s',
+                    { label => 'total_idle', value => 'idle', template => '%s',
                       min => 0 },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'pending' } ],
                 output_template => 'Pending : %s',
                 perfdatas => [
-                    { label => 'total_pending', value => 'pending_absolute', template => '%s',
+                    { label => 'total_pending', value => 'pending', template => '%s',
                       min => 0 },
                 ],
             }
@@ -96,7 +96,7 @@ sub set_counters {
                 key_values => [ { name => 'waitingforroute' } ],
                 output_template => 'WaitingForRoute : %s',
                 perfdatas => [
-                    { label => 'total_waitingforroute', value => 'waitingforroute_absolute_absolute', template => '%s',
+                    { label => 'total_waitingforroute', value => 'waitingforroute', template => '%s',
                       min => 0 },
                 ],
             }
@@ -105,7 +105,7 @@ sub set_counters {
                 key_values => [ { name => 'actionlist' } ],
                 output_template => 'ActionList : %s',
                 perfdatas => [
-                    { label => 'total_actionlist', value => 'actionlist_absolute', template => '%s',
+                    { label => 'total_actionlist', value => 'actionlist', template => '%s',
                       min => 0 },
                 ],
             }
@@ -114,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'waitingfordigits' } ],
                 output_template => 'WaitingForDigits : %s',
                 perfdatas => [
-                    { label => 'total_waitingfordigits', value => 'waitingfordigits_absolute', template => '%s',
+                    { label => 'total_waitingfordigits', value => 'waitingfordigits', template => '%s',
                       min => 0 },
                 ],
             }
@@ -123,7 +123,7 @@ sub set_counters {
                 key_values => [ { name => 'remotesetup' } ],
                 output_template => 'RemoteSetup : %s',
                 perfdatas => [
-                    { label => 'total_remotesetup', value => 'remotesetup_absolute', template => '%s',
+                    { label => 'total_remotesetup', value => 'remotesetup', template => '%s',
                       min => 0 },
                 ],
             }
@@ -132,7 +132,7 @@ sub set_counters {
                 key_values => [ { name => 'peersetup' } ],
                 output_template => 'PeerSetup : %s',
                 perfdatas => [
-                    { label => 'total_peersetup', value => 'peersetup_absolute', template => '%s',
+                    { label => 'total_peersetup', value => 'peersetup', template => '%s',
                       min => 0 },
                 ],
             }
@@ -141,7 +141,7 @@ sub set_counters {
                 key_values => [ { name => 'alerting' } ],
                 output_template => 'Alerting : %s',
                 perfdatas => [
-                    { label => 'total_alerting', value => 'alerting_absolute', template => '%s',
+                    { label => 'total_alerting', value => 'alerting', template => '%s',
                       min => 0 },
                 ],
             }
@@ -150,7 +150,7 @@ sub set_counters {
                 key_values => [ { name => 'inbandinfo' } ],
                 output_template => 'InBandInfo : %s',
                 perfdatas => [
-                    { label => 'total_inbandinfo', value => 'inbandinfo_absolute', template => '%s',
+                    { label => 'total_inbandinfo', value => 'inbandinfo', template => '%s',
                       min => 0 },
                 ],
             }
@@ -159,7 +159,7 @@ sub set_counters {
                 key_values => [ { name => 'connected' } ],
                 output_template => 'Connected : %s',
                 perfdatas => [
-                    { label => 'total_connected', value => 'connected_absolute', template => '%s',
+                    { label => 'total_connected', value => 'connected', template => '%s',
                       min => 0 },
                 ],
             }
@@ -168,7 +168,7 @@ sub set_counters {
                 key_values => [ { name => 'tonegeneration' } ],
                 output_template => 'ToneGeneration : %s',
                 perfdatas => [
-                    { label => 'total_tonegeneration', value => 'tonegeneration_absolute', template => '%s',
+                    { label => 'total_tonegeneration', value => 'tonegeneration', template => '%s',
                       min => 0 },
                 ],
             }
@@ -177,7 +177,7 @@ sub set_counters {
                 key_values => [ { name => 'releasing' } ],
                 output_template => 'Releasing : %s',
                 perfdatas => [
-                    { label => 'total_releasing', value => 'releasing_absolute', template => '%s',
+                    { label => 'total_releasing', value => 'releasing', template => '%s',
                       min => 0 },
                 ],
             }
@@ -186,7 +186,7 @@ sub set_counters {
                 key_values => [ { name => 'aborting' } ],
                 output_template => 'Aborting : %s',
                 perfdatas => [
-                    { label => 'total_aborting', value => 'aborting_absolute', template => '%s',
+                    { label => 'total_aborting', value => 'aborting', template => '%s',
                       min => 0 },
                 ],
             }
@@ -195,7 +195,7 @@ sub set_counters {
                 key_values => [ { name => 'resetting' } ],
                 output_template => 'Resetting : %s',
                 perfdatas => [
-                    { label => 'total_resetting', value => 'resetting_absolute', template => '%s',
+                    { label => 'total_resetting', value => 'resetting', template => '%s',
                       min => 0 },
                 ],
             }
@@ -204,7 +204,7 @@ sub set_counters {
                 key_values => [ { name => 'up' } ],
                 output_template => 'Up : %s',
                 perfdatas => [
-                    { label => 'total_up', value => 'up_absolute', template => '%s',
+                    { label => 'total_up', value => 'up', template => '%s',
                       min => 0 },
                 ],
             }
@@ -213,7 +213,7 @@ sub set_counters {
                 key_values => [ { name => 'down' } ],
                 output_template => 'Down : %s',
                 perfdatas => [
-                    { label => 'total_down', value => 'down_absolute', template => '%s',
+                    { label => 'total_down', value => 'down', template => '%s',
                       min => 0 },
                 ],
             }
@@ -233,8 +233,8 @@ sub set_counters {
                 key_values => [ { name => 'seconds' }, { name => 'display' } ],
                 output_template => 'lifetime : %s seconds',
                 perfdatas => [
-                    { label => 'seconds', value => 'seconds_absolute', template => '%s',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'seconds', value => 'seconds', template => '%s',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

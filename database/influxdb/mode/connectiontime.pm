@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'connection_time' } ],
                 output_template => 'Connection established in %d ms',
                 perfdatas => [
-                    { value => 'connection_time_absolute', template => '%d', unit => 'ms', 
+                    { value => 'connection_time', template => '%d', unit => 'ms', 
                       min => 0 },
                 ],
             }

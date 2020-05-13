@@ -66,8 +66,8 @@ sub set_counters {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
                 output_template => 'Containers Running : %s',
                 perfdatas => [
-                    { label => 'containers_running', value => 'containers_running_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'containers_running', value => 'containers_running', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -75,8 +75,8 @@ sub set_counters {
                 key_values => [ { name => 'containers_stopped' }, { name => 'display' } ],
                 output_template => 'Containers Stopped : %s',
                 perfdatas => [
-                    { label => 'containers_stopped', value => 'containers_stopped_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'containers_stopped', value => 'containers_stopped', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -84,8 +84,8 @@ sub set_counters {
                 key_values => [ { name => 'containers_paused' }, { name => 'display' } ],
                 output_template => 'Containers Paused : %s',
                 perfdatas => [
-                    { label => 'containers_paused', value => 'containers_paused_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'containers_paused', value => 'containers_paused', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

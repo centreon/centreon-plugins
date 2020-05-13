@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'avCmListMeasCallRateTotalNumCallsCompLstHr' } ],
                 output_template => 'total calls last hour: %s',
                 perfdatas => [
-                    { value => 'avCmListMeasCallRateTotalNumCallsCompLstHr_absolute', template => '%s', min => 0 },
+                    { value => 'avCmListMeasCallRateTotalNumCallsCompLstHr', template => '%s', min => 0 },
                 ],
             }
         }

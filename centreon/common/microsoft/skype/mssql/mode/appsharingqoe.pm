@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'SpoiledTilePercentTotal' } ],
                 output_template => 'Average Spoiled Tiles: %.2f%%',
                 perfdatas => [
-                    { label => 'spoiled_tile_prct_total_avg', value => 'SpoiledTilePercentTotal_absolute',
+                    { label => 'spoiled_tile_prct_total_avg', value => 'SpoiledTilePercentTotal',
                       template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'RDPTileProcessingLatencyAverage' } ],
                 output_template => 'Average RDP Tiles Processing Latency: %.2f ms',
                 perfdatas => [
-                    { label => 'rdp_tile_processing_latency_avg', value => 'RDPTileProcessingLatencyAverage_absolute',
+                    { label => 'rdp_tile_processing_latency_avg', value => 'RDPTileProcessingLatencyAverage',
                       template => '%.2f', unit => 'ms', min => 0 },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'RelativeOneWayAverage' } ],
                 output_template => 'Average Amount of One-way Latency: %.2f ms',
                 perfdatas => [
-                    { label => 'relative_one_way_average', value => 'RelativeOneWayAverage_absolute',
+                    { label => 'relative_one_way_average', value => 'RelativeOneWayAverage',
                       template => '%.2f', unit => 'ms', min => 0 },
                 ],
             }
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'TotalStreams' } ],
                 output_template => 'Streams Count: %.2f/s',
                 perfdatas => [
-                    { label => 'stream_count', value => 'TotalStreams_absolute', template => '%.2f',
+                    { label => 'stream_count', value => 'TotalStreams', template => '%.2f',
                       unit => 'streams/s', min => 0 },
                 ],
             }

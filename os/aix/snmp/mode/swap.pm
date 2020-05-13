@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'nactive' }, { name => 'ntotal' } ],
                 output_template => 'Total page space active : %s',
                 perfdatas => [
-                    { label => 'total_active', value => 'nactive_absolute', template => '%s',
+                    { label => 'total_active', value => 'nactive', template => '%s',
                       min => 0, max => 'ntotal' },
                 ],
             }

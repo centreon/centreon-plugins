@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'failed' } ],
                 output_template => 'Failed disks: %d',
                 perfdatas => [
-                    { label => 'failed', value => 'failed_absolute', template => '%d',
+                    { label => 'failed', value => 'failed', template => '%d',
                       min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'pre_failed' } ],
                 output_template => 'Pre-failed disks: %d',
                 perfdatas => [
-                    { label => 'pre_failed', value => 'pre_failed_absolute', template => '%d',
+                    { label => 'pre_failed', value => 'pre_failed', template => '%d',
                       min => 0 },
                 ],
             }

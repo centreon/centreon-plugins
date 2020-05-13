@@ -44,7 +44,7 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_in_absolute', template => '%s',
+                    { value => 'traffic_in', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_out_absolute', template => '%s',
+                    { value => 'traffic_out', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'packets_in' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packets In: %.2f packets/s',
                 perfdatas => [
-                    { value => 'packets_in_absolute', template => '%.2f',
+                    { value => 'packets_in', template => '%.2f',
                       min => 0, unit => 'packets/s', label_extra_instance => 1 },
                 ],
             }
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'packets_out' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packets Out: %.2f packets/s',
                 perfdatas => [
-                    { value => 'packets_out_absolute', template => '%.2f',
+                    { value => 'packets_out', template => '%.2f',
                       min => 0, unit => 'packets/s', label_extra_instance => 1 },
                 ],
             }

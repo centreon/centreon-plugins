@@ -60,22 +60,22 @@ sub set_counters {
             }
         },
         { label => 'read', set => {
-                key_values => [ { name => 'eqlDiskStatusBytesRead', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'eqlDiskStatusBytesRead', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read_iops',  template => '%.2f', value => 'eqlDiskStatusBytesRead_per_second',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', template => '%.2f',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write', set => {
-                key_values => [ { name => 'eqlDiskStatusBytesWritten', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'eqlDiskStatusBytesWritten', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write', template => '%.2f', value => 'eqlDiskStatusBytesWritten_per_second',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write', template => '%.2f',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'eqlDiskStatusBusyTime', diff => 1 }, { name => 'display' } ],
                 output_template => 'time busy : %s sec',
                 perfdatas => [
-                    { label => 'busy_time', template => '%s', value => 'eqlDiskStatusBusyTime_absolute',
-                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'busy_time', template => '%s',
+                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -103,10 +103,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s"     => { name => 'filter_name' },
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} !~ /on-line|spare|off-line/i' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /on-line|spare|off-line/i' }
     });
 
     return $self;

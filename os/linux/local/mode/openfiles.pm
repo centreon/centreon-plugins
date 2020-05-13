@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'openfiles' } ],
                 output_template => 'current open files: %s',
                 perfdatas => [
-                    { value => 'openfiles_absolute', template => '%s', min => 0 },
+                    { value => 'openfiles', template => '%s', min => 0 },
                 ],
             }
         },

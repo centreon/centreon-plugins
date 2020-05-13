@@ -50,9 +50,9 @@ sub set_counters {
         { label => 'fragmentation', set => {
                 key_values => [ { name => 'fragmentation' } ],
                 output_template => 'Memory Fragmentation: %.2f %%', output_error_template => 'Memory Fragmentation: %s',
-                output_use => 'fragmentation_absolute', threshold_use => 'fragmentation_absolute',
+                output_use => 'fragmentation', threshold_use => 'fragmentation',
                 perfdatas => [
-                    { value => 'fragmentation_absolute', label => 'fragmentation', template => '%.2f',
+                    { value => 'fragmentation', label => 'fragmentation', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

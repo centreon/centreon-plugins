@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'offset' }, { name => 'display' } ],
                 output_template => 'last time peer sync : %s seconds ago',
                 perfdatas => [
-                    { label => 'offset', value => 'offset_absolute', template => '%s', 
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'offset', value => 'offset', template => '%s', 
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

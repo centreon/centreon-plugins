@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'inactive' } ],
                 output_template => 'inactive: %s',
                 perfdatas => [
-                    { value => 'inactive_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'inactive', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'active: %s',
                 perfdatas => [
-                    { value => 'active_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'active', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'current: %s',
                 perfdatas => [
-                    { value => 'current_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'current', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },

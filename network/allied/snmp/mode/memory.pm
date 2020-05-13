@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'used_prct' } ],
                 output_template => 'memory used: %.2f %%',
                 perfdatas => [
-                    { value => 'used_prct_absolute', template => '%.2f',
+                    { value => 'used_prct', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

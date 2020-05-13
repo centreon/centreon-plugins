@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'delay' }, { name => 'display' } ],
                 output_template => 'delay for last update is %d seconds',
                 perfdatas => [
-                    { label => 'delay', value => 'delay_absolute', template => '%s',
+                    { label => 'delay', value => 'delay', template => '%s',
                       unit => 's', label_extra_instance => 1 },
                 ],
             }

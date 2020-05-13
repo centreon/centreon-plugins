@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'time_taken' } ],
                 output_template => 'execution time : %s ms',
                 perfdatas => [
-                    { label => 'total_time', value => 'time_taken_absolute', template => '%s', min => 0, unit => 'ms' },
+                    { label => 'total_time', value => 'time_taken', template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'total_steps' } ],
                 output_template => 'total steps : %s',
                 perfdatas => [
-                    { label => 'total_steps', value => 'total_steps_absolute', template => '%s', min => 0 },
+                    { label => 'total_steps', value => 'total_steps', template => '%s', min => 0 },
                 ],
             }
         },
@@ -91,7 +91,7 @@ sub set_counters {
                 key_values => [ { name => 'failures' } ],
                 output_template => 'failures : %s',
                 perfdatas => [
-                    { label => 'failures', value => 'failures_absolute', template => '%s', min => 0 },
+                    { label => 'failures', value => 'failures', template => '%s', min => 0 },
                 ],
             }
         },
@@ -99,7 +99,7 @@ sub set_counters {
                 key_values => [ { name => 'errors' } ],
                 output_template => 'errors : %s',
                 perfdatas => [
-                    { label => 'errors', value => 'errors_absolute', template => '%s', min => 0 },
+                    { label => 'errors', value => 'errors', template => '%s', min => 0 },
                 ],
             }
         },
@@ -110,8 +110,8 @@ sub set_counters {
                 key_values => [ { name => 'time_taken' }, { name => 'step' } ],
                 output_template => 'execution time : %s ms',
                 perfdatas => [
-                    { label => 'step_time', value => 'time_taken_absolute', template => '%s',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'step_absolute' },
+                    { label => 'step_time', value => 'time_taken', template => '%s',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'step' },
                 ],
             }
         },

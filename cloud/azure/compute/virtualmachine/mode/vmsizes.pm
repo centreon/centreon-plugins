@@ -106,7 +106,7 @@ sub set_counters {
                             key_values => [ { name => $size }  ],
                             output_template => $size . ": %s",
                             perfdatas => [
-                            { label => $perf, value => $size . '_absolute', template => '%d', min => 0 },
+                            { label => $perf, value => $size , template => '%d', min => 0 },
                             ],
                         }
                     };

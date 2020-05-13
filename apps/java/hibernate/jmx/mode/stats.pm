@@ -39,8 +39,8 @@ sub set_counters {
                 key_values => [ { name => 'connect', diff => 1 }, { name => 'display' } ],
                 output_template => 'Connect Count : %s',
                 perfdatas => [
-                    { label => 'connect_count', value => 'connect_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'connect_count', value => 'connect', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -48,8 +48,8 @@ sub set_counters {
                 key_values => [ { name => 'close', diff => 1 }, { name => 'display' } ],
                 output_template => 'Close Count : %s',
                 perfdatas => [
-                    { label => 'close_count', value => 'close_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'close_count', value => 'close', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -57,8 +57,8 @@ sub set_counters {
                 key_values => [ { name => 'query', diff => 1 }, { name => 'display' } ],
                 output_template => 'Query Count : %s',
                 perfdatas => [
-                    { label => 'query_count', value => 'query_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'query_count', value => 'query', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -66,8 +66,8 @@ sub set_counters {
                 key_values => [ { name => 'insert', diff => 1 }, { name => 'display' } ],
                 output_template => 'Insert Count : %s',
                 perfdatas => [
-                    { label => 'insert_count', value => 'insert_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'insert_count', value => 'insert', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -75,8 +75,8 @@ sub set_counters {
                 key_values => [ { name => 'update', diff => 1 }, { name => 'display' } ],
                 output_template => 'Update Count : %s',
                 perfdatas => [
-                    { label => 'update_count', value => 'update_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'update_count', value => 'update', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

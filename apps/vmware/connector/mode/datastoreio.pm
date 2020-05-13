@@ -54,7 +54,7 @@ sub set_counters {
                 output_template => 'Total rate of reading data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_read_rate', value => 'read_absolute', template => '%s',
+                    { label => 'total_read_rate', value => 'read', template => '%s',
                       unit => 'B/s', min => 0 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 output_template => 'Total rate of writing data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_write_rate', value => 'write_absolute', template => '%s',
+                    { label => 'total_write_rate', value => 'write', template => '%s',
                       unit => 'B/s', min => 0 },
                 ],
             }
@@ -85,7 +85,7 @@ sub set_counters {
                 output_template => 'rate of reading data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read_rate', value => 'read_absolute', template => '%s',
+                    { label => 'read_rate', value => 'read', template => '%s',
                       unit => 'B/s', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -95,7 +95,7 @@ sub set_counters {
                 output_template => 'rate of writing data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write_rate', value => 'write_absolute', template => '%s',
+                    { label => 'write_rate', value => 'write', template => '%s',
                       unit => 'B/s', min => 0, label_extra_instance => 1 },
                 ],
             }

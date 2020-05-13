@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'nsrpVsdGroupCntStateChange', diff => 1 } ],
                 output_template => 'number of state transition events: %s',
                 perfdatas => [
-                    { value => 'nsrpVsdGroupCntStateChange_absolute', template => '%s',
+                    { value => 'nsrpVsdGroupCntStateChange', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

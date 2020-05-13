@@ -54,8 +54,8 @@ sub set_counters {
                 key_values => [ { name => 'queue_messages' }, { name => 'display' } ],
                 output_template => 'current queue messages : %s',
                 perfdatas => [
-                    { label => 'queue_msg', value => 'queue_messages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'queue_msg', value => 'queue_messages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -63,8 +63,8 @@ sub set_counters {
                 key_values => [ { name => 'queue_messages_ready' }, { name => 'display' } ],
                 output_template => 'current queue messages ready : %s',
                 perfdatas => [
-                    { label => 'queue_msg_ready', value => 'queue_messages_ready_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'queue_msg_ready', value => 'queue_messages_ready', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

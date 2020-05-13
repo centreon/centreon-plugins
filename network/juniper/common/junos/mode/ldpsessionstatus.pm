@@ -68,8 +68,8 @@ sub set_counters {
                     { name => 'label' } ],
                 output_template => 'Last change: %s',
                 perfdatas => [
-                    { label => 'last_change', value => 'jnxMplsLdpSesStateLastChange_absolute', template => '%d',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'label_absolute' },
+                    { label => 'last_change', value => 'jnxMplsLdpSesStateLastChange', template => '%d',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'label' },
                 ],
             }
         },

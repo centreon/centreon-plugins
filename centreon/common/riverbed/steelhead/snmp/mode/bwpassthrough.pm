@@ -35,22 +35,20 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'bwPassThroughIn', diff => 1 } ],
+                key_values => [ { name => 'bwPassThroughIn', per_second => 1 } ],
                 output_template => 'Traffic In (Wan2Lan): %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'bwPassThroughIn_per_second',
-                      template => '%s', min => 0, unit => 'B/s' },
+                    { label => 'traffic_in', template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'bwPassThroughOut', diff => 1 } ],
+                key_values => [ { name => 'bwPassThroughOut', per_second => 1 } ],
                 output_template => 'Traffic Out (Lan2Wan): %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'bwPassThroughOut_per_second',
-                      template => '%s', min => 0, unit => 'B/s' },
+                    { label => 'traffic_out', template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },

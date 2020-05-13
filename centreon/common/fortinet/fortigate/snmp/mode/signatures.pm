@@ -39,10 +39,10 @@ sub set_counters {
     $self->{maps_counters}->{av} = [
         { label => 'av', set => {
                 key_values => [ { name => 'human' }, { name => 'value' }  ],
-                threshold_use => 'value_absolute',
+                threshold_use => 'value',
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
-                    { label => 'av_update', value => 'value_absolute',
+                    { label => 'av_update', value => 'value',
                       template => '%d', min => 0, unit => 's' },
                 ],
             }
@@ -51,10 +51,10 @@ sub set_counters {
     $self->{maps_counters}->{avet} = [
         { label => 'avet', set => {
                 key_values => [ { name => 'human' }, { name => 'value' }  ],
-                threshold_use => 'value_absolute',
+                threshold_use => 'value',
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
-                    { label => 'avet_update', value => 'value_absolute',
+                    { label => 'avet_update', value => 'value',
                       template => '%d', min => 0, unit => 's' },
                 ],
             }
@@ -63,10 +63,10 @@ sub set_counters {
     $self->{maps_counters}->{ips} = [
         { label => 'ips', set => {
                 key_values => [ { name => 'human' }, { name => 'value' } ],
-                threshold_use => 'value_absolute',
+                threshold_use => 'value',
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
-                    { label => 'ips_update', value => 'value_absolute',
+                    { label => 'ips_update', value => 'value',
                       template => '%d', min => 0, unit => 's' },
                 ],
             }
@@ -75,10 +75,10 @@ sub set_counters {
     $self->{maps_counters}->{ipset} = [
         { label => 'ipset', set => {
                 key_values => [ { name => 'human' }, { name => 'value' } ],
-                threshold_use => 'value_absolute',
+                threshold_use => 'value',
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
-                    { label => 'ipset_update', value => 'value_absolute',
+                    { label => 'ipset_update', value => 'value',
                       template => '%d', min => 0, unit => 's' },
                 ],
             }

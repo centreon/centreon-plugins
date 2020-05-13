@@ -35,42 +35,34 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'reads', nlabel => 'pages.reads.persecond', set => {
-                key_values => [ { name => 'reads', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'reads', per_second => 1 } ],
                 output_template => 'Reads : %.2f',
                 perfdatas => [
-                    { label => 'reads', template => '%.2f', value => 'reads_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'reads', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'writes', nlabel => 'pages.writes.persecond', set => {
-                key_values => [ { name => 'writes', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'writes', per_second => 1 } ],
                 output_template => 'Writes : %.2f',
                 perfdatas => [
-                    { label => 'writes', template => '%.2f', value => 'writes_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'writes', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'fetches', nlabel => 'pages.fetches.persecond', set => {
-                key_values => [ { name => 'fetches', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'fetches', per_second => 1 } ],
                 output_template => 'Fetches : %.2f',
                 perfdatas => [
-                    { label => 'fetches', template => '%.2f', value => 'fetches_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'fetches', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'marks', nlabel => 'pages.marks.persecond', set => {
-                key_values => [ { name => 'marks', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'marks', per_second => 1 } ],
                 output_template => 'Marks : %.2f',
                 perfdatas => [
-                    { label => 'marks', template => '%.2f', value => 'marks_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'marks', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },

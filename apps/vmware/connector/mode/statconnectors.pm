@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'requests', diff => 1  } ],
                 output_template => 'Total %s requests',
                 perfdatas => [
-                    { label => 'requests', value => 'requests_absolute', template => '%s',
+                    { label => 'requests', value => 'requests', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'requests', diff => 1  } ],
                 output_template => '%s requests',
                 perfdatas => [
-                    { label => 'requests', value => 'requests_absolute', template => '%s',
+                    { label => 'requests', value => 'requests', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

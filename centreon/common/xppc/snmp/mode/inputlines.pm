@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartInputFrequency', no_value => 0 } ],
                 output_template => 'frequence: %.2f Hz',
                 perfdatas => [
-                    { value => 'upsSmartInputFrequency_absolute', template => '%.2f', 
+                    { value => 'upsSmartInputFrequency', template => '%.2f', 
                       unit => 'Hz' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartInputLineVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'upsSmartInputLineVoltage_absolute', template => '%s', 
+                    { value => 'upsSmartInputLineVoltage', template => '%s', 
                       unit => 'V' },
                 ],
             }

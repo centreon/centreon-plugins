@@ -135,8 +135,8 @@ sub set_counters {
                 key_values => [ { name => 'inodes_used' }, { name => 'display' } ],
                 output_template => 'Inodes Used : %s %%',
                 perfdatas => [
-                    { label => 'inodes', value => 'inodes_used_absolute', template => '%s', unit => '%',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'inodes', value => 'inodes_used', template => '%s', unit => '%',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -144,8 +144,8 @@ sub set_counters {
                 key_values => [ { name => 'dstAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'dstAverageLatency_absolute', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_latency', value => 'dstAverageLatency', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -153,8 +153,8 @@ sub set_counters {
                 key_values => [ { name => 'dstNumberIops' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'dstNumberIops_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'iops', value => 'dstNumberIops', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

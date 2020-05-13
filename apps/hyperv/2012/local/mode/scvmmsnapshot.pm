@@ -46,7 +46,7 @@ sub set_counters {
 sub custom_vm_output {
     my ($self, %options) = @_;
 
-    return 'checkpoint started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute});
+    return 'checkpoint started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot});
 }
 
 sub prefix_vm_output {

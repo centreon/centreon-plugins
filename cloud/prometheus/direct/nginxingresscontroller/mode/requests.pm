@@ -37,54 +37,45 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'requests', nlabel => 'requests.total.persecond', set => {
-                key_values => [ { name => 'requests', diff => 1 } ],
+                key_values => [ { name => 'requests', per_second => 1 } ],
                 output_template => 'Requests: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'requests', value => 'requests_per_second', template => '%.2f',
-                      min => 0, unit => 'requests/s' },
+                    { label => 'requests', template => '%.2f', min => 0, unit => 'requests/s' },
                 ],
             }
         },
     ];
+
     $self->{maps_counters}->{namespaces} = [
         { label => 'requests-2xx', nlabel => 'namespace.requests.2xx.persecond', set => {
-                key_values => [ { name => 'requests_2xx', diff => 1 } ],
+                key_values => [ { name => 'requests_2xx', per_second => 1 } ],
                 output_template => 'Requests 2xx: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'requests_2xx', value => 'requests_2xx_per_second', template => '%.2f', unit => 'requests/s', 
-                      min => 0, label_extra_instance => 1 },
+                    { label => 'requests_2xx', template => '%.2f', unit => 'requests/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'requests-3xx', nlabel => 'namespace.requests.2xx.persecond', set => {
-                key_values => [ { name => 'requests_3xx', diff => 1 } ],
+                key_values => [ { name => 'requests_3xx', per_second => 1 } ],
                 output_template => 'Requests 3xx: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'requests_3xx', value => 'requests_3xx_per_second', template => '%.2f', unit => 'requests/s', 
-                      min => 0, label_extra_instance => 1 },
+                    { label => 'requests_3xx', template => '%.2f', unit => 'requests/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'requests-4xx', nlabel => 'namespace.requests.4xx.persecond', set => {
-                key_values => [ { name => 'requests_4xx', diff => 1 } ],
+                key_values => [ { name => 'requests_4xx', per_second => 1 } ],
                 output_template => 'Requests 4xx: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'requests_4xx', value => 'requests_4xx_per_second', template => '%.2f', unit => 'requests/s', 
-                      min => 0, label_extra_instance => 1 },
+                    { label => 'requests_4xx', template => '%.2f', unit => 'requests/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'requests-5xx', nlabel => 'namespace.requests.5xx.persecond', set => {
-                key_values => [ { name => 'requests_5xx', diff => 1 } ],
+                key_values => [ { name => 'requests_5xx', per_second => 1 } ],
                 output_template => 'Requests 5xx: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'requests_5xx', value => 'requests_5xx_per_second', template => '%.2f', unit => 'requests/s', 
-                      min => 0, label_extra_instance => 1 },
+                    { label => 'requests_5xx', template => '%.2f', unit => 'requests/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -103,8 +94,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "extra-filter:s@"       => { name => 'extra_filter' },
-        "metric-overload:s@"    => { name => 'metric_overload' },
+        'extra-filter:s@'    => { name => 'extra_filter' },
+        'metric-overload:s@' => { name => 'metric_overload' },
     });
    
     return $self;

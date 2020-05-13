@@ -63,8 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'ram_utilization' } ],
                 output_template => 'memory usage: %.2f %%',
                 perfdatas => [
-                    { value => 'ram_utilization_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
+                    { template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
@@ -72,8 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'total_utilization' } ],
                 output_template => 'total cpu usage: %.2f %%',
                 perfdatas => [
-                    { value => 'total_utilization_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
+                    { template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
@@ -81,8 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_utilization' } ],
                 output_template => 'disk i/o usage: %.2f %%',
                 perfdatas => [
-                    { value => 'disk_utilization_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
+                    {  template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
@@ -90,8 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'log_used' } ],
                 output_template => 'logging disk usage: %.2f %%',
                 perfdatas => [
-                    { value => 'log_used_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
+                    { template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
@@ -99,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'resource_conservation' } ],
                 output_template => 'resource conservation mode: %s',
                 perfdatas => [
-                    { value => 'resource_conservation_absolute', template => '%s', min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
@@ -107,7 +103,7 @@ sub set_counters {
                 key_values => [ { name => 'conn_in' } ],
                 output_template => 'current inbound connections: %s',
                 perfdatas => [
-                    { value => 'conn_in_absolute', template => '%s', min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
@@ -115,7 +111,7 @@ sub set_counters {
                 key_values => [ { name => 'conn_out' } ],
                 output_template => 'current outbound connections: %s',
                 perfdatas => [
-                    { value => 'conn_out_absolute', template => '%s', min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
@@ -123,7 +119,7 @@ sub set_counters {
                 key_values => [ { name => 'active_recips' } ],
                 output_template => 'queue active recipients: %s',
                 perfdatas => [
-                    { value => 'active_recips_absolute', template => '%s', min => 0 },
+                    { value => 'active_recips', template => '%s', min => 0 },
                 ],
             }
         },
@@ -131,7 +127,7 @@ sub set_counters {
                 key_values => [ { name => 'msgs_in_quarantine' } ],
                 output_template => 'messages in quarantine: %s',
                 perfdatas => [
-                    { value => 'msgs_in_quarantine_absolute', template => '%s', min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
@@ -139,17 +135,15 @@ sub set_counters {
                 key_values => [ { name => 'msgs_in_work_queue' } ],
                 output_template => 'messages in work queue: %s',
                 perfdatas => [
-                    { value => 'msgs_in_work_queue_absolute', template => '%s', min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
         { label => 'messages-received', nlabel => 'system.queue.messages.received.persecond', set => {
-                key_values => [ { name => 'msgs_received_lifetime', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'msgs_received_lifetime', per_second => 1 } ],
                 output_template => 'messages received: %.2f/s',
                 perfdatas => [
-                    { value => 'msgs_received_lifetime_per_second', template => '%.2f',
-                      unit => '/s', min => 0 },
+                    { template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
@@ -157,8 +151,7 @@ sub set_counters {
                 key_values => [ { name => 'queuedisk' } ],
                 output_template => 'queue disk usage: %.2f %%',
                 perfdatas => [
-                    { value => 'queuedisk_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100 },
+                    { template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
@@ -184,7 +177,7 @@ sub new {
         'warning-system-status:s'   => { name => 'warning_system_status', default => '' },
         'critical-system-status:s'  => { name => 'critical_system_status', default => '%{system_status} !~ /online/i' },
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
     return $self;
 }

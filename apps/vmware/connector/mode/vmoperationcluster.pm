@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'numSVMotion', diff => 1  }, { name => 'display' } ],
                 output_template => 'SVMotion %s',
                 perfdatas => [
-                    { label => 'svmotion', value => 'numSVMotion_absolute', template => '%s',
+                    { label => 'svmotion', value => 'numSVMotion', template => '%s',
                       label_extra_instance => 1 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'numVMotion', diff => 1  }, { name => 'display' } ],
                 output_template => 'VMotion %s',
                 perfdatas => [
-                    { label => 'vmotion', value => 'numVMotion_absolute', template => '%s',
+                    { label => 'vmotion', value => 'numVMotion', template => '%s',
                       label_extra_instance => 1 },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'numClone', diff => 1  }, { name => 'display' } ],
                 output_template => 'Clone %s',
                 perfdatas => [
-                    { label => 'clone', value => 'numClone_absolute', template => '%s',
+                    { label => 'clone', value => 'numClone', template => '%s',
                       label_extra_instance => 1 },
                 ],
             }

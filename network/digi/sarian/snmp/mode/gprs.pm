@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'signal' } ],
                 output_template => 'Signal : %d dBm',
                 perfdatas => [
-                    { label => 'signal_strenght', value => 'signal_absolute', template => '%s',
+                    { label => 'signal_strenght', value => 'signal', template => '%s',
                       unit => 'dBm' },
                 ],
             }

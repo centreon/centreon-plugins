@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'maxthreads' } ],
                 output_template => 'threads max: %s',
                 perfdatas => [
-                    { value => 'maxthreads_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'maxthreads', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'minsparethreads' } ],
                 output_template => 'threads spare min: %s',
                 perfdatas => [
-                    { value => 'minsparethreads_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'minsparethreads', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'maxsparethreads' } ],
                 output_template => 'threads spare max: %s',
                 perfdatas => [
-                    { value => 'maxsparethreads_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'maxsparethreads', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'maxqueuesize' } ],
                 output_template => 'max queue size: %s',
                 perfdatas => [
-                    { value => 'maxqueuesize_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'maxqueuesize', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'idle_timeout' } ],
                 output_template => 'idle timeout: %s',
                 perfdatas => [
-                    { value => 'idle_timeout_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'idle_timeout', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'processedcount', diff => 1 } ],
                 output_template => 'threads processed: %s',
                 perfdatas => [
-                    { value => 'processedcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'processedcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'currentthreadcount' } ],
                 output_template => 'threads current: %s',
                 perfdatas => [
-                    { value => 'currentthreadcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'currentthreadcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'currentthreadcount' } ],
                 output_template => 'threads current: %s',
                 perfdatas => [
-                    { value => 'currentthreadcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'currentthreadcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -103,7 +103,7 @@ sub set_counters {
                 key_values => [ { name => 'availablethreadcount' } ],
                 output_template => 'threads available: %s',
                 perfdatas => [
-                    { value => 'availablethreadcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'availablethreadcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -111,7 +111,7 @@ sub set_counters {
                 key_values => [ { name => 'busythreadcount' } ],
                 output_template => 'threads busy: %s',
                 perfdatas => [
-                    { value => 'busythreadcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'busythreadcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -119,7 +119,7 @@ sub set_counters {
                 key_values => [ { name => 'maxavailablethreadcount' } ],
                 output_template => 'threads available max: %s',
                 perfdatas => [
-                    { value => 'maxavailablethreadcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'maxavailablethreadcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -127,7 +127,7 @@ sub set_counters {
                 key_values => [ { name => 'maxbusythreadcount' } ],
                 output_template => 'threads busy max: %s',
                 perfdatas => [
-                    { value => 'maxbusythreadcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'maxbusythreadcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -135,7 +135,7 @@ sub set_counters {
                 key_values => [ { name => 'maxprocessedtime' } ],
                 output_template => 'threads processed time max: %s ms',
                 perfdatas => [
-                    { value => 'maxprocessedtime_absolute', template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 },
+                    { value => 'maxprocessedtime', template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 },
                 ],
             }
         },
@@ -143,7 +143,7 @@ sub set_counters {
                 key_values => [ { name => 'createcount' } ],
                 output_template => 'threads created: %s',
                 perfdatas => [
-                    { value => 'createcount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'createcount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -151,7 +151,7 @@ sub set_counters {
                 key_values => [ { name => 'destroycount' } ],
                 output_template => 'threads destroyed: %s',
                 perfdatas => [
-                    { value => 'destroycount_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'destroycount', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },

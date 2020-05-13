@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [  { name => 'lag' }, { name => 'name' } ],
                 output_template => 'Replication Lag: %s s',
                 perfdatas => [
-                    { value => 'lag_absolute', template => '%d', unit => 's',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { value => 'lag', template => '%d', unit => 's',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

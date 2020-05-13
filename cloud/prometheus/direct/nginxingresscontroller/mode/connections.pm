@@ -38,8 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'reading' } ],
                 output_template => 'Reading: %d',
                 perfdatas => [
-                    { label => 'reading', value => 'reading_absolute', template => '%d',
-                      min => 0, unit => 'connections' },
+                    { label => 'reading',template => '%d', min => 0, unit => 'connections' },
                 ],
             }
         },
@@ -47,8 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'waiting' } ],
                 output_template => 'Waiting: %d',
                 perfdatas => [
-                    { label => 'waiting', value => 'waiting_absolute', template => '%d',
-                      min => 0, unit => 'connections' },
+                    { label => 'waiting', template => '%d', min => 0, unit => 'connections' },
                 ],
             }
         },
@@ -56,8 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'writing' } ],
                 output_template => 'Writing: %d',
                 perfdatas => [
-                    { label => 'writing', value => 'writing_absolute', template => '%d',
-                      min => 0, unit => 'connections' },
+                    { label => 'writing', template => '%d', min => 0, unit => 'connections' },
                 ],
             }
         },
@@ -65,28 +62,23 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active: %d',
                 perfdatas => [
-                    { label => 'active', value => 'active_absolute', template => '%d',
-                      min => 0, unit => 'connections' },
+                    { label => 'active', template => '%d', min => 0, unit => 'connections' },
                 ],
             }
         },
         { label => 'accepted', nlabel => 'connections.accepted.persecond', set => {
-                key_values => [ { name => 'accepted', diff => 1 } ],
+                key_values => [ { name => 'accepted', per_second => 1 } ],
                 output_template => 'Accepted: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'accepted', value => 'accepted_per_second', template => '%.2f',
-                      min => 0, unit => 'connections/s' },
+                    { label => 'accepted', template => '%.2f', min => 0, unit => 'connections/s' },
                 ],
             }
         },
         { label => 'handled', nlabel => 'connections.handled.persecond', set => {
-                key_values => [ { name => 'handled', diff => 1 } ],
+                key_values => [ { name => 'handled', per_second => 1 } ],
                 output_template => 'Handled: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'handled', value => 'handled_per_second', template => '%.2f',
-                      min => 0, unit => 'connections/s' },
+                    { label => 'handled', template => '%.2f', min => 0, unit => 'connections/s' },
                 ],
             }
         },
@@ -105,8 +97,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "extra-filter:s@"       => { name => 'extra_filter' },
-        "metric-overload:s@"    => { name => 'metric_overload' },
+        'extra-filter:s@'    => { name => 'extra_filter' },
+        'metric-overload:s@' => { name => 'metric_overload' },
     });
    
     return $self;

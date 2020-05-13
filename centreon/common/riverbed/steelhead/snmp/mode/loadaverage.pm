@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuUtil1' } ],
                 output_template => 'CPU Average: %.2f%%',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'cpuUtil1_absolute', template => '%.2f',
+                    { label => 'total_cpu_avg', value => 'cpuUtil1', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuLoad1' } ],
                 output_template => 'Load 1 min: %.2f',
                 perfdatas => [
-                    { label => 'load1', value => 'cpuLoad1_absolute', template => '%.2f',
+                    { label => 'load1', value => 'cpuLoad1', template => '%.2f',
                       min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuLoad5' } ],
                 output_template => 'Load 5 min: %.2f',
                 perfdatas => [
-                    { label => 'load5', value => 'cpuLoad5_absolute', template => '%.2f',
+                    { label => 'load5', value => 'cpuLoad5', template => '%.2f',
                       min => 0 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuLoad15' } ],
                 output_template => 'Load 15 min: %.2f',
                 perfdatas => [
-                    { label => 'load15', value => 'cpuLoad15_absolute', template => '%.2f',
+                    { label => 'load15', value => 'cpuLoad15', template => '%.2f',
                       min => 0 },
                 ],
             }

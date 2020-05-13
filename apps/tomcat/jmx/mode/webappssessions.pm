@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'sessionCounter', diff => 1 }, { name => 'display' } ],
                 output_template => 'Sessions Count : %s',
                 perfdatas => [
-                    { label => 'sessions_count', value => 'sessionCounter_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'sessions_count', value => 'sessionCounter', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

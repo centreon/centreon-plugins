@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'active_count' } ],
                 output_template => 'active: %s',
                 perfdatas => [
-                    { value => 'active_count_absolute', template => '%s', min => 0 },
+                    { value => 'active_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'timedout_count' } ],
                 output_template => 'timed out: %s',
                 perfdatas => [
-                    { value => 'timedout_count_absolute', template => '%s', min => 0 },
+                    { value => 'timedout_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'committed_count', diff => 1 } ],
                 output_template => 'committed: %s',
                 perfdatas => [
-                    { value => 'committed_count_absolute', template => '%s', min => 0 },
+                    { value => 'committed_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'rolledback_count', diff => 1 } ],
                 output_template => 'rolledback: %s',
                 perfdatas => [
-                    { value => 'rolledback_count_absolute', template => '%s', min => 0 },
+                    { value => 'rolledback_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'transaction_count', diff => 1 } ],
                 output_template => 'created: %s',
                 perfdatas => [
-                    { value => 'transaction_count_absolute', template => '%s', min => 0 },
+                    { value => 'transaction_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'total_transaction_time', diff => 1 } ],
                 output_template => 'total time: %s ms',
                 perfdatas => [
-                    { value => 'total_transaction_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                    { value => 'total_transaction_time', template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'max_transaction_time', diff => 1 } ],
                 output_template => 'max time: %s ms',
                 perfdatas => [
-                    { value => 'max_transaction_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                    { value => 'max_transaction_time', template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'default_timeout' } ],
                 output_template => 'default timeout: %s',
                 perfdatas => [
-                    { value => 'default_timeout_absolute', template => '%s', min => 0 },
+                    { value => 'default_timeout', template => '%s', min => 0 },
                 ],
             }
         },

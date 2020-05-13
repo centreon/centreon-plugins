@@ -40,55 +40,52 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
             }
         },
         { label => 'in', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' }, { name => 'speed_in' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_ib_output'),
                 closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
             }
         },
         { label => 'out', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' }, { name => 'speed_out' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_ib_output'),
                 closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{ibgw} = [
         { label => 'ibgw-status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
             }
         },
         { label => 'in', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' }, { name => 'speed_in' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_ib_output'),
                 closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
             }
         },
         { label => 'out', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' }, { name => 'speed_out' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_ib_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_ib_output'),
                 closure_custom_perfdata => $self->can('custom_ib_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_ib_threshold'),
+                closure_custom_threshold_check => $self->can('custom_ib_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -213,15 +210,15 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-ib-name:s"        => { name => 'filter_ib_name' },
-        "filter-ibgw-name:s"      => { name => 'filter_ibgw_name' },
-        "warning-ib-status:s"     => { name => 'warning_ib_status', default => '' },
-        "critical-ib-status:s"    => { name => 'critical_ib_status', default => '%{status} !~ /active/i' },
-        "warning-ibgw-status:s"   => { name => 'warning_ibgw_status', default => '' },
-        "critical-ibgw-status:s"  => { name => 'critical_ibgw_status', default => '%{status} !~ /up/i' },
-        "speed-in:s"              => { name => 'speed_in' },
-        "speed-out:s"             => { name => 'speed_out' },
-        "units-traffic:s"         => { name => 'units_traffic', default => '%' },
+        'filter-ib-name:s'       => { name => 'filter_ib_name' },
+        'filter-ibgw-name:s'     => { name => 'filter_ibgw_name' },
+        'warning-ib-status:s'    => { name => 'warning_ib_status', default => '' },
+        'critical-ib-status:s'   => { name => 'critical_ib_status', default => '%{status} !~ /active/i' },
+        'warning-ibgw-status:s'  => { name => 'warning_ibgw_status', default => '' },
+        'critical-ibgw-status:s' => { name => 'critical_ibgw_status', default => '%{status} !~ /up/i' },
+        'speed-in:s'             => { name => 'speed_in' },
+        'speed-out:s'            => { name => 'speed_out' },
+        'units-traffic:s'        => { name => 'units_traffic', default => '%' }
     });
     
     return $self;

@@ -40,25 +40,23 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Event Wait Count : %s events',
                 perfdatas => [
-                    { label => 'event_wait_count', value => 'count_absolute', template => '%s', min => 0 }
+                    { label => 'event_wait_count', template => '%s', min => 0 }
                 ],
             }
         },
     ];
     $self->{maps_counters}->{event} = [
         { label => 'total-waits-sec', set => {
-                key_values => [ { name => 'total_waits', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'total_waits', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Total Waits : %.2f/s',
                 perfdatas => [
-                    { label => 'total_waits', value => 'total_waits_per_second', template => '%.2f',
-                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_waits', template => '%.2f',
+                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'total-waits-time', set => {
                 key_values => [ { name => 'time_waited_micro', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 output_template => 'Total Waits Time : %.2f %%', output_use => 'prct_wait', threshold_use => 'prct_wait',
                 perfdatas => [
@@ -86,9 +84,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s"     => { name => 'filter_name' },
-        "wait-time-min:s"   => { name => 'wait_time_min', default => 1000 },
-        "show-details"      => { name => 'show_details' }
+        'filter-name:s'   => { name => 'filter_name' },
+        'wait-time-min:s' => { name => 'wait_time_min', default => 1000 },
+        'show-details'    => { name => 'show_details' }
     });
 
     return $self;

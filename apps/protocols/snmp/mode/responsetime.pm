@@ -38,21 +38,21 @@ sub set_counters {
                 key_values => [ { name => 'rta' } ],
                 output_template => 'rta %.3fms',
                 perfdatas => [
-                    { label => 'rta', value => 'rta_absolute', template => '%.3f', min => 0, unit => 'ms' },
+                    { label => 'rta', value => 'rta', template => '%.3f', min => 0, unit => 'ms' },
                 ],
             }
         },
         { label => 'rtmax', display_ok => 0, set => {
                 key_values => [ { name => 'rtmax' } ],
                 perfdatas => [
-                    { label => 'rtmax', value => 'rtmax_absolute', template => '%.3f', min => 0, unit => 'ms' },
+                    { label => 'rtmax', value => 'rtmax', template => '%.3f', min => 0, unit => 'ms' },
                 ],
             }
         },
         { label => 'rtmin', display_ok => 0, set => {
                 key_values => [ { name => 'rtmin' } ],
                 perfdatas => [
-                    { label => 'rtmin', value => 'rtmin_absolute', template => '%.3f', min => 0, unit => 'ms' },
+                    { label => 'rtmin', value => 'rtmin', template => '%.3f', min => 0, unit => 'ms' },
                 ],
             }
         },
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'pl' } ],
                 output_template => 'lost %s%%',
                 perfdatas => [
-                    { label => 'pl', value => 'pl_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                    { label => 'pl', value => 'pl', template => '%s', min => 0, max => 100, unit => '%' },
                 ],
             }
         },

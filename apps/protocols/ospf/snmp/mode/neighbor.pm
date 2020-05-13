@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total neighbors : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', 
+                    { label => 'total', value => 'total', template => '%s', 
                       min => 0 },
                 ],
             }

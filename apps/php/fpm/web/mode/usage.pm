@@ -40,7 +40,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_active_calc'),
                 closure_custom_output => $self->can('custom_active_output'),
                 threshold_use => 'active_prct',
-                closure_custom_perfdata =>  => $self->can('custom_active_perfdata'),
+                closure_custom_perfdata =>  => $self->can('custom_active_perfdata')
             }
         },
         { label => 'idle-processes', set => {
@@ -48,29 +48,27 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_idle_calc'),
                 closure_custom_output => $self->can('custom_idle_output'),
                 threshold_use => 'idle_prct',
-                closure_custom_perfdata =>  => $self->can('custom_idle_perfdata'),
+                closure_custom_perfdata =>  => $self->can('custom_idle_perfdata')
             }
         },
         { label => 'listen-queue', set => {
                 key_values => [ { name => 'listen_queue' }, { name => 'max_listen_queue' } ],
                 output_template => 'Listen queue : %s',
-                output_use => 'listen_queue_absolute', threshold_use => 'listen_queue_absolute',
+                output_use => 'listen_queue', threshold_use => 'listen_queue',
                 perfdatas => [
-                    { label => 'listen_queue', template => '%s', value => 'listen_queue_absolute',
-                      min => 0, max => 'max_listen_queue_absolute' },
-                ],
+                    { label => 'listen_queue', template => '%s',
+                      min => 0, max => 'max_listen_queue' }
+                ]
             }
         },
         { label => 'requests', set => {
-                key_values => [ { name => 'request', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'request', per_second => 1 } ],
                 output_template => 'Requests : %.2f/s',
                 perfdatas => [
-                    { label => 'requests', template => '%.2f', value => 'request_per_second',
-                      unit => '/s', min => 0 },
-                ],
+                    { label => 'requests', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -140,19 +138,19 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "port:s"            => { name => 'port', },
-        "proto:s"           => { name => 'proto' },
-        "urlpath:s"         => { name => 'url_path', default => "/fpm-status" },
-        "credentials"       => { name => 'credentials' },
-        "basic"             => { name => 'basic' },
-        "username:s"        => { name => 'username' },
-        "password:s"        => { name => 'password' },
-        "timeout:s"         => { name => 'timeout', default => 5 },
+        'hostname:s'  => { name => 'hostname' },
+        'port:s'      => { name => 'port', },
+        'proto:s'     => { name => 'proto' },
+        'urlpath:s'   => { name => 'url_path', default => "/fpm-status" },
+        'credentials' => { name => 'credentials' },
+        'basic'       => { name => 'basic' },
+        'username:s'  => { name => 'username' },
+        'password:s'  => { name => 'password' },
+        'timeout:s'   => { name => 'timeout', default => 5 },
     });
-    
+
     $self->{http} = centreon::plugins::http->new(%options);
-    
+
     return $self;
 }
 

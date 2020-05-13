@@ -113,7 +113,7 @@ sub set_counters {
                 key_values => [ { name => 'team_chat' } ],
                 output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'total_team_chat', value => 'team_chat_absolute', template => '%d',
+                    { label => 'total_team_chat', value => 'team_chat', template => '%d',
                       min => 0 },
                 ],
             }
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'private_chat' } ],
                 output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'total_private_chat', value => 'private_chat_absolute', template => '%d',
+                    { label => 'total_private_chat', value => 'private_chat', template => '%d',
                       min => 0 },
                 ],
             }
@@ -131,7 +131,7 @@ sub set_counters {
                 key_values => [ { name => 'call' } ],
                 output_template => 'Call Count: %d',
                 perfdatas => [
-                    { label => 'total_call', value => 'call_absolute', template => '%d',
+                    { label => 'total_call', value => 'call', template => '%d',
                       min => 0 },
                 ],
             }
@@ -140,7 +140,7 @@ sub set_counters {
                 key_values => [ { name => 'meeting' } ],
                 output_template => 'Meeting Count: %d',
                 perfdatas => [
-                    { label => 'total_meeting', value => 'meeting_absolute', template => '%d',
+                    { label => 'total_meeting', value => 'meeting', template => '%d',
                       min => 0 },
                 ],
             }
@@ -151,8 +151,8 @@ sub set_counters {
                 key_values => [ { name => 'team_chat' }, { name => 'name' } ],
                 output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'team_chat', value => 'team_chat_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'team_chat', value => 'team_chat', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -160,8 +160,8 @@ sub set_counters {
                 key_values => [ { name => 'private_chat' }, { name => 'name' } ],
                 output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
-                    { label => 'private_chat', value => 'private_chat_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'private_chat', value => 'private_chat', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -169,8 +169,8 @@ sub set_counters {
                 key_values => [ { name => 'call' }, { name => 'name' } ],
                 output_template => 'Call Count: %d',
                 perfdatas => [
-                    { label => 'call', value => 'call_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'call', value => 'call', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -178,8 +178,8 @@ sub set_counters {
                 key_values => [ { name => 'meeting' }, { name => 'name' } ],
                 output_template => 'Meeting Count: %d',
                 perfdatas => [
-                    { label => 'meeting', value => 'meeting_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'meeting', value => 'meeting', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

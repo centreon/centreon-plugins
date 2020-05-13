@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'stdev' } ],
                 output_template => 'Load Standard Deviation : %.2f',
                 perfdatas => [
-                    { label => 'stdev', value => 'stdev_absolute', template => '%.2f' },
+                    { label => 'stdev', value => 'stdev', template => '%.2f' },
                 ],
             }
         },
@@ -49,7 +49,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputPercentLoad' } ],
                 output_template => 'Load : %.2f %%',
                 perfdatas => [
-                    { value => 'upsOutputPercentLoad_absolute', template => '%.2f', 
+                    { value => 'upsOutputPercentLoad', template => '%.2f', 
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputCurrent' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'upsOutputCurrent_absolute', template => '%.2f', 
+                    { value => 'upsOutputCurrent', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputVoltage' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'upsOutputVoltage_absolute', template => '%.2f', 
+                    { value => 'upsOutputVoltage', template => '%.2f', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputPower' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { value => 'upsOutputPower_absolute', template => '%.2f', 
+                    { value => 'upsOutputPower', template => '%.2f', 
                       unit => 'W', label_extra_instance => 1 },
                 ],
             }

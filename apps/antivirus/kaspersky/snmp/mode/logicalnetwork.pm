@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsFound' } ],
                 output_template => '%d new host(s) found',
                 perfdatas => [
-                    { label => 'new_hosts', value => 'hostsFound_absolute', template => '%d', min => 0 },
+                    { label => 'new_hosts', value => 'hostsFound', template => '%d', min => 0 },
                 ],
             }
         },
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'groupsCount' } ],
                 output_template => '%d group(s) on the server',
                 perfdatas => [
-                    { label => 'groups', value => 'groupsCount_absolute', template => '%d', min => 0 },
+                    { label => 'groups', value => 'groupsCount', template => '%d', min => 0 },
                 ],
             }
         },
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsNotConnectedLongTime' } ],
                 output_template => '%d host(s) has not connected for a long time',
                 perfdatas => [
-                    { label => 'not_connected_long_time', value => 'hostsNotConnectedLongTime_absolute', template => '%d', min => 0 },
+                    { label => 'not_connected_long_time', value => 'hostsNotConnectedLongTime', template => '%d', min => 0 },
                 ],
             }
         },
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsControlLost' } ],
                 output_template => '%d host(s) are not controlled',
                 perfdatas => [
-                    { label => 'not_controlled', value => 'hostsControlLost_absolute', template => '%d', min => 0 },
+                    { label => 'not_controlled', value => 'hostsControlLost', template => '%d', min => 0 },
                 ],
             }
         },

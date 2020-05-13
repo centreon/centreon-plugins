@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsNotScannedLately' } ],
                 output_template => '%d hosts(s) has not been scanned lately',
                 perfdatas => [
-                    { label => 'not_scanned', value => 'hostsNotScannedLately_absolute', template => '%d', min => 0 },
+                    { label => 'not_scanned', value => 'hostsNotScannedLately', template => '%d', min => 0 },
                 ],
             }
         },

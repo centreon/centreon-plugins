@@ -38,21 +38,18 @@ sub set_counters {
                 key_values => [ { name => 'fwConnNumber', diff => 1 } ],
                 output_template => 'Connections : %s',
                 perfdatas => [
-                    { label => 'connections', value => 'fwConnNumber_absolute', template => '%s',
-                      unit => 'con', min => 0 },
+                    { label => 'connections', template => '%s', unit => 'con', min => 0 },
                 ],
             }
         },
         { label => 'rate-connections', nlabel => 'connections.total.persecond', set => {
-                key_values => [ { name => 'fwConnNumber', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'fwConnNumber', per_second => 1 } ],
                 output_template => 'Rate Connections : %.2f /s',
                 perfdatas => [
-                    { label => 'rate_connections', value => 'fwConnNumber_per_second', template => '%.2f',
-                      unit => 'con/s', min => 0 },
+                    { label => 'rate_connections', template => '%.2f', unit => 'con/s', min => 0 }
                 ],
             }
-        },
+        }
     ];
 }
 
@@ -60,7 +57,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
     });
 

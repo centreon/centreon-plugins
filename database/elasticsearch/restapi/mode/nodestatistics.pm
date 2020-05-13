@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'heap_used_percent' }, { name => 'display' } ],
                 output_template => 'JVM Heap: %d%%',
                 perfdatas => [
-                    { value => 'heap_used_percent_absolute', template => '%d',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'heap_used_percent', template => '%d',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -48,9 +48,9 @@ sub set_counters {
                 output_template => 'JVM Heap Bytes: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'heap_used_in_bytes_absolute', template => '%s',
-                      min => 0, max => 'heap_max_in_bytes_absolute', unit => 'B', label_extra_instance => 1,
-                      instance_use => 'display_absolute' },
+                    { value => 'heap_used_in_bytes', template => '%s',
+                      min => 0, max => 'heap_max_in_bytes', unit => 'B', label_extra_instance => 1,
+                      instance_use => 'display' },
                 ],
             }
         },
@@ -60,9 +60,9 @@ sub set_counters {
                 output_template => 'Free Disk Space: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'available_in_bytes_absolute', template => '%s',
-                      min => 0, max => 'total_in_bytes_absolute', unit => 'B',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'available_in_bytes', template => '%s',
+                      min => 0, max => 'total_in_bytes', unit => 'B',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -70,8 +70,8 @@ sub set_counters {
                 key_values => [ { name => 'docs_count' }, { name => 'display' } ],
                 output_template => 'Documents: %d',
                 perfdatas => [
-                    { value => 'docs_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'docs_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -80,8 +80,8 @@ sub set_counters {
                 output_template => 'Data: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'size_in_bytes_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'size_in_bytes', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

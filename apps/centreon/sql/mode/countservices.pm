@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'hosts' }, { name => 'display' } ],
                 output_template => 'Number of hosts : %s',
                 perfdatas => [
-                    { label => 'total_hosts', value => 'hosts_absolute', template => '%s', 
+                    { label => 'total_hosts', value => 'hosts', template => '%s', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'services' }, { name => 'display' } ],
                 output_template => 'Number of services : %s',
                 perfdatas => [
-                    { label => 'total_services', value => 'services_absolute', template => '%s', 
+                    { label => 'total_services', value => 'services', template => '%s', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }

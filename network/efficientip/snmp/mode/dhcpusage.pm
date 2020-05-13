@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'ack', diff => 1 } ],
                 output_template => 'Ack : %s',
                 perfdatas => [
-                    { label => 'ack', value => 'ack_absolute', template => '%s', min => 0 },
+                    { label => 'ack', value => 'ack', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'nack', diff => 1 } ],
                 output_template => 'Nack : %s',
                 perfdatas => [
-                    { label => 'nack', value => 'nack_absolute', template => '%s', min => 0 },
+                    { label => 'nack', value => 'nack', template => '%s', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'offer', diff => 1 } ],
                 output_template => 'Offer : %s',
                 perfdatas => [
-                    { label => 'offer', value => 'offer_absolute', template => '%s', min => 0 },
+                    { label => 'offer', value => 'offer', template => '%s', min => 0 },
                 ],
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'inform', diff => 1 } ],
                 output_template => 'Inform : %s',
                 perfdatas => [
-                    { label => 'inform', value => 'inform_absolute', template => '%s', min => 0 },
+                    { label => 'inform', value => 'inform', template => '%s', min => 0 },
                 ],
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'decline', diff => 1 } ],
                 output_template => 'Decline : %s',
                 perfdatas => [
-                    { label => 'decline', value => 'decline_absolute', template => '%s', min => 0 },
+                    { label => 'decline', value => 'decline', template => '%s', min => 0 },
                 ],
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'release', diff => 1 } ],
                 output_template => 'Release : %s',
                 perfdatas => [
-                    { label => 'release', value => 'release_absolute', template => '%s', min => 0 },
+                    { label => 'release', value => 'release', template => '%s', min => 0 },
                 ],
             }
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'request', diff => 1 } ],
                 output_template => 'Request : %s',
                 perfdatas => [
-                    { label => 'request', value => 'request_absolute', template => '%s', min => 0 },
+                    { label => 'request', value => 'request', template => '%s', min => 0 },
                 ],
             }
         },
@@ -94,7 +94,7 @@ sub set_counters {
                 key_values => [ { name => 'discover', diff => 1 } ],
                 output_template => 'Discover : %s',
                 perfdatas => [
-                    { label => 'discover', value => 'discover_absolute', template => '%s', min => 0 },
+                    { label => 'discover', value => 'discover', template => '%s', min => 0 },
                 ],
             }
         },

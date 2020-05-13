@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'active_units' } ],
                 output_template => 'Active units : %s',
                 perfdatas => [
-                    { label => 'active_units', value => 'active_units_absolute', template => '%s', 
+                    { label => 'active_units', value => 'active_units', template => '%s', 
                       min => 0, max => 2 },
                 ],
             }

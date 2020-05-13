@@ -38,11 +38,11 @@ sub custom_space_output {
 
     my $msg = sprintf(
         "space total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)",
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
-        $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute}
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
     );
     return $msg;
 }
@@ -67,8 +67,8 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_space_output'),
                 perfdatas => [
-                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'used', template => '%d', min => 0, max => 'total',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -76,8 +76,8 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_space_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'free', template => '%d', min => 0, max => 'total',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -85,8 +85,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'space used: %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

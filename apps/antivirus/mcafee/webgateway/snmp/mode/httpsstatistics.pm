@@ -36,58 +36,48 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'requests', set => {
-                key_values => [ { name => 'stHttpsRequests', diff => 1 } ],
+                key_values => [ { name => 'stHttpsRequests', per_second => 1 } ],
                 output_template => 'HTTPS Requests (per sec): %d',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'https_requests', value => 'stHttpsRequests_per_second', template => '%d',
-                      min => 0, unit => 'requests/s' },
+                    { label => 'https_requests', template => '%d', min => 0, unit => 'requests/s' },
                 ],
             }
         },
     ];
     $self->{maps_counters}->{traffics} = [
         { label => 'client-to-proxy', set => {
-                key_values => [ { name => 'stHttpsBytesFromClient', diff => 1 } ],
+                key_values => [ { name => 'stHttpsBytesFromClient', per_second => 1 } ],
                 output_template => 'from client to proxy: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'https_traffic_client_to_proxy', value => 'stHttpsBytesFromClient_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'https_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'server-to-proxy', set => {
-                key_values => [ { name => 'stHttpsBytesFromServer', diff => 1 } ],
+                key_values => [ { name => 'stHttpsBytesFromServer', per_second => 1 } ],
                 output_template => 'from server to proxy: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'https_traffic_server_to_proxy', value => 'stHttpsBytesFromServer_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'https_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'proxy-to-client', set => {
-                key_values => [ { name => 'stHttpsBytesToClient', diff => 1 } ],
+                key_values => [ { name => 'stHttpsBytesToClient', per_second => 1 } ],
                 output_template => 'from proxy to client: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'https_traffic_proxy_to_client', value => 'stHttpsBytesToClient_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'https_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'proxy-to-server', set => {
-                key_values => [ { name => 'stHttpsBytesToServer', diff => 1 } ],
+                key_values => [ { name => 'stHttpsBytesToServer', per_second => 1 } ],
                 output_template => 'from proxy to server: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'https_traffic_proxy_to_server', value => 'stHttpsBytesToServer_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'https_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
@@ -105,16 +95,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s" => { name => 'filter_counters', default => '' },
-                                });
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+    return $self;
 }
 
 my $oid_stHttpsRequests = '.1.3.6.1.4.1.1230.2.7.2.3.1.0';

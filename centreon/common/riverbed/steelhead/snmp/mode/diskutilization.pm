@@ -38,28 +38,23 @@ sub set_counters {
                 key_values => [ { name => 'dsAveDiskUtilization' } ],
                 output_template => 'Datastore Usage: %.2f%%',
                 perfdatas => [
-                    { label => 'used', value => 'dsAveDiskUtilization_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
+                    { label => 'used', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => 'hits', set => {
-                key_values => [ { name => 'dsHitsTotal', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'dsHitsTotal', per_second => 1 } ],
                 output_template => 'Hits: %s/s',
                 perfdatas => [
-                    { label => 'hits', value => 'dsHitsTotal_per_second', template => '%.2f',
-                      min => 0, unit => 'hits/s' },
+                    { label => 'hits', template => '%.2f', min => 0, unit => 'hits/s' },
                 ],
             }
         },
         { label => 'misses', set => {
-                key_values => [ { name => 'dsMissTotal', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'dsMissTotal', per_second => 1 } ],
                 output_template => 'Misses: %s/s',
                 perfdatas => [
-                    { label => 'misses', value => 'dsMissTotal_per_second', template => '%.2f',
-                      min => 0, unit => 'misses/s' },
+                    { label => 'misses', template => '%.2f', min => 0, unit => 'misses/s' },
                 ],
             }
         },
@@ -73,6 +68,7 @@ sub new {
 
     $options{options}->add_options(arguments =>{
     });
+
     return $self;
 }
 

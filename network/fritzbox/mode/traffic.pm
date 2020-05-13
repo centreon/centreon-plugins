@@ -131,28 +131,28 @@ sub run {
         # At least one second. two fast calls ;)
         $time_delta = 1;
     }
-    my $in_absolute_per_sec = ($new_datas->{in} - $old_in) / $time_delta;
-    my $out_absolute_per_sec = ($new_datas->{out} - $old_out) / $time_delta;
+    my $in_per_sec = ($new_datas->{in} - $old_in) / $time_delta;
+    my $out_per_sec = ($new_datas->{out} - $old_out) / $time_delta;
 
     my ($exit, $in_prct, $out_prct);
 
-    $in_prct = $in_absolute_per_sec * 100 / $NewLayer1DownstreamMaxBitRate;
-    $out_prct = $out_absolute_per_sec * 100 / $NewLayer1UpstreamMaxBitRate;
+    $in_prct = $in_per_sec * 100 / $NewLayer1DownstreamMaxBitRate;
+    $out_prct = $out_per_sec * 100 / $NewLayer1UpstreamMaxBitRate;
     if ($self->{option_results}->{units} eq '%') {
         my $exit1 = $self->{perfdata}->threshold_check(value => $in_prct, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
         my $exit2 = $self->{perfdata}->threshold_check(value => $out_prct, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
         $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
     } else {
-        my $exit1 = $self->{perfdata}->threshold_check(value => $in_absolute_per_sec, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
-        my $exit2 = $self->{perfdata}->threshold_check(value => $out_absolute_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
+        my $exit1 = $self->{perfdata}->threshold_check(value => $in_per_sec, threshold => [ { label => 'critical-in', 'exit_litteral' => 'critical' }, { label => 'warning-in', exit_litteral => 'warning' } ]);
+        my $exit2 = $self->{perfdata}->threshold_check(value => $out_per_sec, threshold => [ { label => 'critical-out', 'exit_litteral' => 'critical' }, { label => 'warning-out', exit_litteral => 'warning' } ]);
         $exit = $self->{output}->get_most_critical(status => [ $exit1, $exit2 ]);
     }
     $in_prct = sprintf("%.2f", $in_prct);
     $out_prct = sprintf("%.2f", $out_prct);
 
     ### Manage Output
-    my ($in_value, $in_unit) = $self->{perfdata}->change_bytes(value => $in_absolute_per_sec, network => 1);
-    my ($out_value, $out_unit) = $self->{perfdata}->change_bytes(value => $out_absolute_per_sec, network => 1);
+    my ($in_value, $in_unit) = $self->{perfdata}->change_bytes(value => $in_per_sec, network => 1);
+    my ($out_value, $out_unit) = $self->{perfdata}->change_bytes(value => $out_per_sec, network => 1);
     $self->{output}->output_add(short_msg => sprintf("Traffic In : %s/s (%s %%), Out : %s/s (%s %%)", 
                                     $in_value . $in_unit, $in_prct,
                                     $out_value . $out_unit, $out_prct));
@@ -165,13 +165,13 @@ sub run {
 
     $self->{output}->perfdata_add(label => 'traffic_in', 
                                   unit => 'b/s',
-                                  value => sprintf("%.2f", $in_absolute_per_sec),
+                                  value => sprintf("%.2f", $in_per_sec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-in', total => $NewLayer1DownstreamMaxBitRate),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-in', total => $NewLayer1DownstreamMaxBitRate),
                                   min => 0, max => $NewLayer1DownstreamMaxBitRate);
     $self->{output}->perfdata_add(label => 'traffic_out',
                                   unit => 'b/s',
-                                  value => sprintf("%.2f", $out_absolute_per_sec),
+                                  value => sprintf("%.2f", $out_per_sec),
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-out', total => $NewLayer1UpstreamMaxBitRate),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-out', total => $NewLayer1UpstreamMaxBitRate),
                                   min => 0, max => $NewLayer1UpstreamMaxBitRate);

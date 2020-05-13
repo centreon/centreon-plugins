@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
                 output_template => 'read : %s ms',
                 perfdatas => [
-                    { label => 'trl', value => 'read_latency_absolute', template => '%s', unit => 'ms', 
+                    { label => 'trl', value => 'read_latency', template => '%s', unit => 'ms', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'write : %s ms',
                 perfdatas => [
-                    { label => 'twl', value => 'write_latency_absolute', template => '%s', unit => 'ms', 
+                    { label => 'twl', value => 'write_latency', template => '%s', unit => 'ms', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }

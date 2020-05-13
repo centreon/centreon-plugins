@@ -55,16 +55,15 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'traffic', set => {
-                key_values => [ { name => 'traffic', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'traffic', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic', value => 'traffic_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -72,8 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'current_sessions' }, { name => 'display' } ],
                 output_template => 'Current Sessions : %s',
                 perfdatas => [
-                    { label => 'current_sessions', value => 'current_sessions_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_sessions', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -81,11 +79,10 @@ sub set_counters {
                 key_values => [ { name => 'total_sessions', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Sessions : %s',
                 perfdatas => [
-                    { label => 'total_sessions', value => 'total_sessions_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'total_sessions', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -99,14 +96,13 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' }
+    });
+
     return $self;
 }
 

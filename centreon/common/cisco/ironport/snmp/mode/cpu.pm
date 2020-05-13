@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'perCentCPUUtilization' } ],
                 output_template => 'cpu global usage is: %.2f%%',
                 perfdatas => [
-                    { value => 'perCentCPUUtilization_absolute', template => '%.2f', 
+                    { value => 'perCentCPUUtilization', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'cacheCpuUsage' } ],
                 output_template => 'cpu proxy usage is: %.2f%%',
                 perfdatas => [
-                    { value => 'cacheCpuUsage_absolute', template => '%.2f', 
+                    { value => 'cacheCpuUsage', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }

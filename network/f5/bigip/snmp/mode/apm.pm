@@ -43,7 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'apmAccessStatTotalSessions', diff => 1 } ],
                 output_template => 'created sessions: %s',
                 perfdatas => [
-                    { value => 'apmAccessStatTotalSessions_absolute', template => '%s', min => 0 },
+                    { value => 'apmAccessStatTotalSessions', template => '%s', min => 0 },
                 ],
             }
         },
@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'apmAccessStatCurrentActiveSessions' } ],
                 output_template => 'active sessions: %s',
                 perfdatas => [
-                    { value => 'apmAccessStatCurrentActiveSessions_absolute', template => '%s', min => 0 },
+                    { value => 'apmAccessStatCurrentActiveSessions', template => '%s', min => 0 },
                 ],
             }
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'apmAccessStatCurrentPendingSessions' } ],
                 output_template => 'pending sessions: %s',
                 perfdatas => [
-                    { value => 'apmAccessStatCurrentPendingSessions_absolute', template => '%s', min => 0 },
+                    { value => 'apmAccessStatCurrentPendingSessions', template => '%s', min => 0 },
                 ],
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'apmPaStatTotalSessions', diff => 1 } ],
                 output_template => 'created sessions: %s',
                 perfdatas => [
-                    { value => 'apmPaStatTotalSessions_absolute', template => '%s',
+                    { value => 'apmPaStatTotalSessions', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'apmPaStatCurrentActiveSessions' } ],
                 output_template => 'active sessions: %s',
                 perfdatas => [
-                    { value => 'apmPaStatCurrentActiveSessions_absolute', template => '%s',
+                    { value => 'apmPaStatCurrentActiveSessions', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -88,7 +88,7 @@ sub set_counters {
                 key_values => [ { name => 'apmPaStatCurrentPendingSessions' } ],
                 output_template => 'pending sessions: %s',
                 perfdatas => [
-                    { value => 'apmPaStatCurrentPendingSessions_absolute', template => '%s',
+                    { value => 'apmPaStatCurrentPendingSessions', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

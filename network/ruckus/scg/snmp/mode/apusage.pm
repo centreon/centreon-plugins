@@ -38,28 +38,28 @@ sub set_counters {
                 key_values => [ { name => 'ruckusSCGAPNumSta' }, { name => 'display' } ],
                 output_template => 'Users count: %s',
                 perfdatas => [
-                    { label => 'users_count', value => 'ruckusSCGAPNumSta_absolute', template => '%s',
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'users_count', template => '%s',
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'ruckusSCGAPRXBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'ruckusSCGAPRXBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ruckusSCGAPRXBytes_absolute', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%s',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'ruckusSCGAPTXBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'ruckusSCGAPTXBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'ruckusSCGAPTXBytes_absolute', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%s',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -77,10 +77,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"    => { name => 'filter_name' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
 
     return $self;
 }

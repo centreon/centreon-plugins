@@ -116,7 +116,7 @@ sub custom_usage_calc {
 sub custom_overhead_output {
     my ($self, %options) = @_;
 
-    my ($overhead_value, $overhead_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{overhead_absolute});
+    my ($overhead_value, $overhead_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{overhead});
     my $msg = sprintf("Memory Overhead: %s",
                       $overhead_value . " " . $overhead_unit);
     return $msg;
@@ -125,7 +125,7 @@ sub custom_overhead_output {
 sub custom_memstate_output {
     my ($self, %options) = @_;
 
-    my $msg = 'Memory state is ' . $self->{result_values}->{mem_state_str_absolute};
+    my $msg = 'Memory state is ' . $self->{result_values}->{mem_state_str};
     return $msg;
 }
 
@@ -157,7 +157,7 @@ sub set_counters {
                 key_values => [ { name => 'overhead' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_overhead_output'),
                 perfdatas => [
-                    { label => 'overhead', value => 'overhead_absolute', template => '%s', unit => 'B', 
+                    { label => 'overhead', value => 'overhead', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -166,7 +166,7 @@ sub set_counters {
                 key_values => [ { name => 'mem_state' }, { name => 'mem_state_str' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memstate_output'),
                 perfdatas => [
-                    { label => 'state', value => 'mem_state_absolute', template => '%s', 
+                    { label => 'state', value => 'mem_state', template => '%s', 
                       min => 0, max => 3, label_extra_instance => 1 },
                 ],
             }

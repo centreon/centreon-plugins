@@ -178,7 +178,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsRemoteInstallFailed' } ],
                 output_template => '%d failed remote installation(s)',
                 perfdatas => [
-                    { label => 'failed', value => 'hostsRemoteInstallFailed_absolute', template => '%d', min => 0 },
+                    { label => 'failed', value => 'hostsRemoteInstallFailed', template => '%d', min => 0 },
                 ],
             }
         },

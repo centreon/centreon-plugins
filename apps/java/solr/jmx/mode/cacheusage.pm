@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'cumulative_evictions', diff => 1 }, { name => 'display' } ],
                 output_template => 'Evictions Count : %s',
                 perfdatas => [
-                    { label => 'evictions_count', value => 'cumulative_evictions_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'evictions_count', value => 'cumulative_evictions', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'cumulative_lookups', diff => 1 }, { name => 'display' } ],
                 output_template => 'Lookups Count : %s',
                 perfdatas => [
-                    { label => 'lookups_count', value => 'cumulative_lookups_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'lookups_count', value => 'cumulative_lookups', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'cumulative_inserts', diff => 1 }, { name => 'display' } ],
                 output_template => 'Inserts Count : %s',
                 perfdatas => [
-                    { label => 'inserts_count', value => 'cumulative_inserts_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'inserts_count', value => 'cumulative_inserts', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'cumulative_hits', diff => 1 }, { name => 'display' } ],
                 output_template => 'Hits Count : %s',
                 perfdatas => [
-                    { label => 'hits_count', value => 'cumulative_hits_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'hits_count', value => 'cumulative_hits', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

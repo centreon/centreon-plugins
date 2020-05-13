@@ -82,8 +82,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorCpuUsagePercent' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %s %%',
                 perfdatas => [
-                    { label => 'cpu_usage', value => 'hypervisorCpuUsagePercent_absolute', template => '%s', unit => '%',
-                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_usage', value => 'hypervisorCpuUsagePercent', template => '%s', unit => '%',
+                      min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -99,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorAverageLatency' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'hypervisorAverageLatency_absolute', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_latency', value => 'hypervisorAverageLatency', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorReadIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'hypervisorReadIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', value => 'hypervisorReadIOPerSecond', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -117,8 +117,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorWriteIOPerSecond' }, { name => 'display' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'hypervisorWriteIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', value => 'hypervisorWriteIOPerSecond', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -126,8 +126,8 @@ sub set_counters {
                 key_values => [ { name => 'hypervisorVmCount' }, { name => 'display' } ],
                 output_template => 'VM Count : %s',
                 perfdatas => [
-                    { label => 'vm_count', value => 'hypervisorVmCount_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'vm_count', value => 'hypervisorVmCount', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

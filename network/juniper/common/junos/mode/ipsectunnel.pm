@@ -47,12 +47,12 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Tunnels: %s',
                 perfdatas => [
-                    { label => 'total_tunnels', value => 'total_absolute', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'total_tunnels', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{tunnel} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'ike_state' }, { name => 'display' } ],
@@ -64,7 +64,7 @@ sub set_counters {
         },
         { label => 'tunnel-traffic-in', nlabel => 'ipsec.tunnel.traffic.in.bitspersecond', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 threshold_use => 'traffic_per_second',
@@ -76,7 +76,7 @@ sub set_counters {
         },
         { label => 'tunnel-traffic-out', nlabel => 'ipsec.tunnel.traffic.out.bitspersecond', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 threshold_use => 'traffic_per_second',
@@ -85,7 +85,7 @@ sub set_counters {
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
-        },
+        }
     ];
 }
 

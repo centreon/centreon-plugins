@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'ups_load' } ],
                 output_template => 'ups load: %s%%',
                 perfdatas => [
-                    { value => 'ups_load_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                    { value => 'ups_load', template => '%s', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'charge_remain' } ],
                 output_template => 'battery charge remaining: %s%%',
                 perfdatas => [
-                    { value => 'charge_remain_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                    { value => 'charge_remain', template => '%s', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'lifetime_remain' } ],
                 output_template => 'battery estimated lifetime: %s seconds',
                 perfdatas => [
-                    { value => 'lifetime_remain_absolute', template => '%s', min => 0, unit => 's' },
+                    { value => 'lifetime_remain', template => '%s', min => 0, unit => 's' },
                 ],
             }
         },

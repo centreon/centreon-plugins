@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_load' } ],
                 output_template => 'CPU Load : %s',
                 perfdatas => [
-                    { label => 'cpu_load', value => 'cpu_load_absolute', template => '%s', min => 0 },
+                    { label => 'cpu_load', value => 'cpu_load', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'memory_used' } ],
                 output_template => 'Memory Used : %s %%',
                 perfdatas => [
-                    { label => 'memory_used', value => 'memory_used_absolute', template => '%s',
+                    { label => 'memory_used', value => 'memory_used', template => '%s',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_used' } ],
                 output_template => 'Disk Used : %s %%',
                 perfdatas => [
-                    { label => 'disk_used', value => 'disk_used_absolute', template => '%s',
+                    { label => 'disk_used', value => 'disk_used', template => '%s',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'num_active_con' } ],
                 output_template => 'Current Connected Rx : %s',
                 perfdatas => [
-                    { label => 'num_active_con', value => 'num_active_con_absolute', template => '%s', min => 0},
+                    { label => 'num_active_con', value => 'num_active_con', template => '%s', min => 0},
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'num_rx' } ],
                 output_template => 'Number Rx : %s',
                 perfdatas => [
-                    { label => 'num_rx', value => 'num_rx_absolute', template => '%s', min => 0 },
+                    { label => 'num_rx', value => 'num_rx', template => '%s', min => 0 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'num_tx' } ],
                 output_template => 'Numbre Tx : %s',
                 perfdatas => [
-                    { label => 'num_tx', value => 'num_tx_absolute', template => '%s', min => 0 },
+                    { label => 'num_tx', value => 'num_tx', template => '%s', min => 0 },
                 ],
             }
         },

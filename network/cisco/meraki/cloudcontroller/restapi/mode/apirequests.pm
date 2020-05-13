@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'requests_200' }, { name => 'display' } ],
                 output_template => 'code 200: %s',
                 perfdatas => [
-                    { value => 'requests_200_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'requests_200',
+                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'requests_404' }, { name => 'display' } ],
                 output_template => 'code 404: %s',
                 perfdatas => [
-                    { value => 'requests_404_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'requests_404',
+                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'requests_429' }, { name => 'display' } ],
                 output_template => 'code 429: %s',
                 perfdatas => [
-                    { value => 'requests_429_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'requests_429',
+                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
