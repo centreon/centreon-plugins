@@ -32,8 +32,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "resource-type:s"   => { name => 'resource_type' },
-        "prettify"          => { name => 'prettify' },
+        'resource-type:s' => { name => 'resource_type' },
+        'prettify'        => { name => 'prettify' }
     });
 
     return $self;

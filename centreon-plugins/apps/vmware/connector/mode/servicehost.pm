@@ -48,16 +48,6 @@ sub custom_service_output {
     return $msg;
 }
 
-sub custom_service_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{policy} = $options{new_datas}->{$self->{instance} . '_policy'};
-    $self->{result_values}->{running} = $options{new_datas}->{$self->{instance} . '_running'};
-    $self->{result_values}->{key} = $options{new_datas}->{$self->{instance} . '_key'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -84,7 +74,6 @@ sub set_counters {
     $self->{maps_counters}->{service} = [
         { label => 'service-status', threshold => 0, set => {
                 key_values => [ { name => 'display' }, { name => 'policy' }, { name => 'running' }, { name => 'key' } ],
-                closure_custom_calc => $self->can('custom_service_calc'),
                 closure_custom_output => $self->can('custom_service_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,

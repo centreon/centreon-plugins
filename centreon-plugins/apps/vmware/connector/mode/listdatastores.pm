@@ -30,12 +30,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "datastore-name:s"        => { name => 'datastore_name' },
-                                  "filter"                  => { name => 'filter' },
-                                  "scope-datacenter:s"      => { name => 'scope_datacenter' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'datastore-name:s'   => { name => 'datastore_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
+    });
+
     return $self;
 }
 

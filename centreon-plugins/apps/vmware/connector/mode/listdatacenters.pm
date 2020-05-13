@@ -30,11 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "datacenter:s"            => { name => 'datacenter' },
-                                  "filter"                  => { name => 'filter' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'datacenter:s' => { name => 'datacenter' },
+        'filter'       => { name => 'filter' }
+    });
+
     return $self;
 }
 
@@ -42,7 +42,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
 }
-
 
 sub run {
     my ($self, %options) = @_;
