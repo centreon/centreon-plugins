@@ -57,8 +57,8 @@ sub set_counters {
                 key_values => [ { name => 'ltmNodeAddrStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'current server connections : %s',
                 perfdatas => [
-                    { label => 'current_server_connections', value => 'ltmNodeAddrStatServerCurConns_absolute',  template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_server_connections', value => 'ltmNodeAddrStatServerCurConns',  template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

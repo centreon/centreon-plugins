@@ -39,8 +39,8 @@ sub set_counters {
                 key_values => [ { name => 'mtaReceivedMessages', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Received Messages : %s', output_error_template => "Total Received Messages : %s",
                 perfdatas => [
-                    { label => 'total_received_messages', value => 'mtaReceivedMessages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_received_messages', value => 'mtaReceivedMessages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -49,8 +49,8 @@ sub set_counters {
                 output_template => 'Total Received Volume : %s %s', output_error_template => "Total Received Volume : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_received_volume', value => 'mtaReceivedVolume_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_received_volume', value => 'mtaReceivedVolume', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -58,8 +58,8 @@ sub set_counters {
                 key_values => [ { name => 'mtaStoredMessages' }, { name => 'display' } ],
                 output_template => 'Total Stored Messages : %s', output_error_template => "Total Stored Messages : %s",
                 perfdatas => [
-                    { label => 'total_stored_messages', value => 'mtaStoredMessages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_stored_messages', value => 'mtaStoredMessages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -68,8 +68,8 @@ sub set_counters {
                 output_template => 'Total Stored Volume : %s %s', output_error_template => "Total Stored Volume : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_stored_volume', value => 'mtaStoredVolume_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_stored_volume', value => 'mtaStoredVolume', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -77,8 +77,8 @@ sub set_counters {
                 key_values => [ { name => 'mtaTransmittedMessages', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Transmitted Messages : %s', output_error_template => "Total Transmitted Messages : %s",
                 perfdatas => [
-                    { label => 'total_transmitted_messages', value => 'mtaTransmittedMessages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_transmitted_messages', value => 'mtaTransmittedMessages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -87,8 +87,8 @@ sub set_counters {
                 output_template => 'Total Transmitted Volume : %s %s', output_error_template => "Total Transmitted Volume : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_transmitted_volume', value => 'mtaTransmittedVolume_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_transmitted_volume', value => 'mtaTransmittedVolume', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -99,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'mtaGroupReceivedMessages', diff => 1 }, { name => 'display' } ],
                 output_template => 'Received Messages : %s', output_error_template => "Received Messages : %s",
                 perfdatas => [
-                    { label => 'received_messages', value => 'mtaGroupReceivedMessages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'received_messages', value => 'mtaGroupReceivedMessages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -109,8 +109,8 @@ sub set_counters {
                 output_template => 'Received Volume : %s %s', output_error_template => "Received Volume : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'received_volume', value => 'mtaGroupReceivedVolume_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'received_volume', value => 'mtaGroupReceivedVolume', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -118,8 +118,8 @@ sub set_counters {
                 key_values => [ { name => 'mtaGroupStoredMessages' }, { name => 'display' } ],
                 output_template => 'Stored Messages : %s', output_error_template => "Stored Messages : %s",
                 perfdatas => [
-                    { label => 'stored_messages', value => 'mtaGroupStoredMessages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'stored_messages', value => 'mtaGroupStoredMessages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -128,8 +128,8 @@ sub set_counters {
                 output_template => 'Stored Volume : %s %s', output_error_template => "Stored Volume : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'stored_volume', value => 'mtaGroupStoredVolume_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'stored_volume', value => 'mtaGroupStoredVolume', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -137,8 +137,8 @@ sub set_counters {
                 key_values => [ { name => 'mtaGroupTransmittedMessages', diff => 1 }, { name => 'display' } ],
                 output_template => 'Transmitted Messages : %s', output_error_template => "Transmitted Messages : %s",
                 perfdatas => [
-                    { label => 'transmitted_messages', value => 'mtaGroupTransmittedMessages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'transmitted_messages', value => 'mtaGroupTransmittedMessages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -147,8 +147,8 @@ sub set_counters {
                 output_template => 'Transmitted Volume : %s %s', output_error_template => "Transmitted Volume : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'transmitted_volume', value => 'mtaGroupTransmittedVolume_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'transmitted_volume', value => 'mtaGroupTransmittedVolume', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -156,8 +156,8 @@ sub set_counters {
                 key_values => [ { name => 'mtaGroupRejectedMessages', diff => 1 }, { name => 'display' } ],
                 output_template => 'Rejected Messages : %s', output_error_template => "Rejected Messages : %s",
                 perfdatas => [
-                    { label => 'rejected_messages', value => 'mtaGroupRejectedMessages_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'rejected_messages', value => 'mtaGroupRejectedMessages', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

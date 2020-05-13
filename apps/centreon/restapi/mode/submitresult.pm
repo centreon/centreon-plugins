@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => '202' } ],
                 output_template => '202: %d',
                 perfdatas => [
-                    { value => '202_absolute', template => '%d', min => 0 },
+                    { value => '202', template => '%d', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => '400' } ],
                 output_template => '400: %d',
                 perfdatas => [
-                    { value => '400_absolute', template => '%d', min => 0 },
+                    { value => '400', template => '%d', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => '404' } ],
                 output_template => '404: %d',
                 perfdatas => [
-                    { value => '404_absolute', template => '%d', min => 0 },
+                    { value => '404', template => '%d', min => 0 },
                 ],
             }
         },

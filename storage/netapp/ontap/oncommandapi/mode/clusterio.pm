@@ -44,8 +44,8 @@ sub set_counters {
                 output_template => 'Total throughput: %.2f %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_throughput', value => 'total_throughput_absolute', template => '%.2f',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'total_throughput', value => 'total_throughput', template => '%.2f',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -53,8 +53,8 @@ sub set_counters {
                 key_values => [ { name => 'total_ops' }, { name => 'name' } ],
                 output_template => 'Total IOPS: %.2f ops/s',
                 perfdatas => [
-                    { label => 'total_ops', value => 'total_ops_absolute', template => '%.2f',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'total_ops', value => 'total_ops', template => '%.2f',
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

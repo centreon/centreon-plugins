@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'voip' } ],
                 output_template => 'Memory VoIp Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'used_voip', value => 'voip_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'used_voip', value => 'voip', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'data' } ],
                 output_template => 'Memory Data Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'used_data', value => 'data_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'used_data', value => 'data', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },

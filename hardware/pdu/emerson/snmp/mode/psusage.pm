@@ -43,7 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'PwrTotal' } ],
                 output_template => 'Total input power : %s W', output_error_template => "total input power : %s",
                 perfdatas => [
-                    { label => 'power', value => 'PwrTotal_absolute', template => '%s',
+                    { label => 'power', value => 'PwrTotal', template => '%s',
                       unit => 'W', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'EnergyAccum', diff => 1 } ],
                 output_template => 'Total energy : %.3f kWh', output_error_template => "Total energy : %s",
                 perfdatas => [
-                    { label => 'energy', value => 'EnergyAccum_absolute', template => '%.3f',
+                    { label => 'energy', value => 'EnergyAccum', template => '%.3f',
                       unit => 'kWh', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'EcNeutral' } ],
                 output_template => 'Current neutral : %s Amp AC RMS', output_error_template => "Current neutral : %s",
                 perfdatas => [
-                    { label => 'current_neutral', value => 'EcNeutral_absolute', template => '%s',
+                    { label => 'current_neutral', value => 'EcNeutral', template => '%s',
                       unit => 'AmpAcRMS', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'load' } ],
                 output_template => 'Load : %.2f %%', output_error_template => "Load : %s",
                 perfdatas => [
-                    { label => 'line_load', value => 'load_absolute', template => '%.2f',
+                    { label => 'line_load', value => 'load', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'current' }],
                 output_template => 'Current : %.2f A', output_error_template => "Current : %s",
                 perfdatas => [
-                    { label => 'line_current', value => 'current_absolute', template => '%.2f',
+                    { label => 'line_current', value => 'current', template => '%.2f',
                       unit => 'A', min => 0, label_extra_instance => 1 },
                 ],
             }

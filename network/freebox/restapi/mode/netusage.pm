@@ -38,7 +38,7 @@ sub set_counters {
                 output_template => 'Upload available bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'bw_up', value => 'bw_up_absolute', template => '%s',
+                    { label => 'bw_up', value => 'bw_up', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }
@@ -48,7 +48,7 @@ sub set_counters {
                 output_template => 'Download available bandwidth : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'bw_down', value => 'bw_down_absolute', template => '%s',
+                    { label => 'bw_down', value => 'bw_down', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }
@@ -58,7 +58,7 @@ sub set_counters {
                 output_template => 'Upload rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_up', value => 'rate_up_absolute', template => '%s',
+                    { label => 'rate_up', value => 'rate_up', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 output_template => 'Download rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'rate_down', value => 'rate_down_absolute', template => '%s',
+                    { label => 'rate_down', value => 'rate_down', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 output_template => 'Vpn client upload rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'vpn_rate_up', value => 'vpn_rate_up_absolute', template => '%s',
+                    { label => 'vpn_rate_up', value => 'vpn_rate_up', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }
@@ -88,7 +88,7 @@ sub set_counters {
                 output_template => 'Vpn client download rate : %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'vpn_rate_down', value => 'vpn_rate_down_absolute', template => '%s',
+                    { label => 'vpn_rate_down', value => 'vpn_rate_down', template => '%s',
                       unit => 'b/s', min => 0 }
                 ]
             }

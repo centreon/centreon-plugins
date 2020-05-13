@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'time', diff => 1 }, { name => 'display' } ],
                 output_template => 'Collection Time : %s ms',
                 perfdatas => [
-                    { label => 'time', value => 'time_absolute', template => '%s',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'time', value => 'time', template => '%s',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Collection Count : %s',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'count', value => 'count', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

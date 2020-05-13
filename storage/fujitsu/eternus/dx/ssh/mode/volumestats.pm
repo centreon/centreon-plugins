@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
                 output_template => 'Read IOPS : %d',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', value => 'read_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'write_iops' }, { name => 'display' } ],
                 output_template => 'Write IOPS : %d',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', value => 'write_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'read_throughput' }, { name => 'display' } ],
                 output_template => 'Read Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'read_throughput', value => 'read_throughput_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_throughput', value => 'read_throughput', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'write_throughput' }, { name => 'display' } ],
                 output_template => 'Write Traffic : %s %s/s', output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_throughput', value => 'write_throughput_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_throughput', value => 'write_throughput', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -74,8 +74,8 @@ sub set_counters {
                 key_values => [ { name => 'read_response_time' }, { name => 'display' } ],
                 output_template => 'Read Response Time : %d ms',
                 perfdatas => [
-                    { label => 'read_response_time', value => 'read_response_time_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_response_time', value => 'read_response_time', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'write_response_time' }, { name => 'display' } ],
                 output_template => 'Write Response Time : %d ms',
                 perfdatas => [
-                    { label => 'write_response_time', value => 'write_response_time_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_response_time', value => 'write_response_time', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -92,8 +92,8 @@ sub set_counters {
                 key_values => [ { name => 'read_processing_time' }, { name => 'display' } ],
                 output_template => 'Read Processing Time : %d ms',
                 perfdatas => [
-                    { label => 'read_processing_time', value => 'read_processing_time_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_processing_time', value => 'read_processing_time', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -101,8 +101,8 @@ sub set_counters {
                 key_values => [ { name => 'write_processing_time' }, { name => 'display' } ],
                 output_template => 'Write Processing Time : %d ms',
                 perfdatas => [
-                    { label => 'write_processing_time', value => 'write_processing_time_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_processing_time', value => 'write_processing_time', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -110,8 +110,8 @@ sub set_counters {
                 key_values => [ { name => 'read_cache_hit_rate' }, { name => 'display' } ],
                 output_template => 'Read Cache Hit Rate : %d %%',
                 perfdatas => [
-                    { label => 'read_cache_hit_rate', value => 'read_cache_hit_rate_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_cache_hit_rate', value => 'read_cache_hit_rate', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -119,8 +119,8 @@ sub set_counters {
                 key_values => [ { name => 'write_cache_hit_rate' }, { name => 'display' } ],
                 output_template => 'Write Cache Hit Rate : %d %%',
                 perfdatas => [
-                    { label => 'write_cache_hit_rate', value => 'write_cache_hit_rate_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_cache_hit_rate', value => 'write_cache_hit_rate', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

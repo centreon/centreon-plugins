@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'usage' }, { name => 'display' }, ],
                 output_template => 'Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'usage_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', value => 'usage', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

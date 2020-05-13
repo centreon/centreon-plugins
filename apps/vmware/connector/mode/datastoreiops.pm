@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'read' } ],
                 output_template => '%s read iops',
                 perfdatas => [
-                    { label => 'riops', value => 'read_absolute', template => '%s', unit => 'iops', 
+                    { label => 'riops', value => 'read', template => '%s', unit => 'iops', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -79,8 +79,8 @@ sub set_counters {
                 key_values => [ { name => 'write' } ],
                 output_template => '%s write iops',
                 perfdatas => [
-                    { label => 'wiops', value => 'write_absolute', template => '%s', unit => 'iops', 
-                      min => 0, max => 'write_absolute', label_extra_instance => 1 },
+                    { label => 'wiops', value => 'write', template => '%s', unit => 'iops', 
+                      min => 0, max => 'write', label_extra_instance => 1 },
                 ],
             }
         },
@@ -91,7 +91,7 @@ sub set_counters {
                 key_values => [ { name => 'read' } ],
                 output_template => '%s read iops',
                 perfdatas => [
-                    { label => 'vm_riops', value => 'read_absolute', template => '%s', unit => 'iops', 
+                    { label => 'vm_riops', value => 'read', template => '%s', unit => 'iops', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -100,8 +100,8 @@ sub set_counters {
                 key_values => [ { name => 'write' } ],
                 output_template => '%s write iops',
                 perfdatas => [
-                    { label => 'vm_wiops', value => 'write_absolute', template => '%s', unit => 'iops', 
-                      min => 0, max => 'write_absolute', label_extra_instance => 1 },
+                    { label => 'vm_wiops', value => 'write', template => '%s', unit => 'iops', 
+                      min => 0, max => 'write', label_extra_instance => 1 },
                 ],
             }
         },

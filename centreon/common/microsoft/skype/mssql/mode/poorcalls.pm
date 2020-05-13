@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Poor Calls: %d',
                 perfdatas => [
-                    { label => 'poor_calls', value => 'count_absolute', template => '%d',
+                    { label => 'poor_calls', value => 'count', template => '%d',
                       unit => 'calls', min => 0 },
                 ],
             }

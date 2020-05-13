@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'num_rows' } ],
                 output_template => 'number of rows: %s',
                 perfdatas => [
-                    { value => 'num_rows_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'num_rows', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'actual_num_rows' } ],
                 output_template => 'number of actual rows: %s',
                 perfdatas => [
-                    { value => 'actual_num_rows_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'actual_num_rows', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         }

@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active sessions: %d',
                 perfdatas => [
-                    { label => 'active_sessions', value => 'active_absolute', template => '%d',
+                    { label => 'active_sessions', value => 'active', template => '%d',
                       min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'postured' } ],
                 output_template => 'Postured endpoints: %d',
                 perfdatas => [
-                    { label => 'postured_endpoints', value => 'postured_absolute', template => '%d',
+                    { label => 'postured_endpoints', value => 'postured', template => '%d',
                       min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'profiler' } ],
                 output_template => 'Profiler service sessions: %d',
                 perfdatas => [
-                    { label => 'profiler_service_sessions', value => 'profiler_absolute', template => '%d',
+                    { label => 'profiler_service_sessions', value => 'profiler', template => '%d',
                       min => 0 },
                 ],
             }

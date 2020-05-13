@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'storageArchiveBufferFillLevel', no_value => -1 } ],
                 output_template => 'sd card usage: %.2f %%',
                 perfdatas => [
-                    { value => 'storageArchiveBufferFillLevel_absolute', template => '%d', min => 0, max => 100,
+                    { value => 'storageArchiveBufferFillLevel', template => '%d', min => 0, max => 100,
                       unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'statusTemperatureCameraC', no_value => -1000 } ],
                 output_template => 'internal temperature: %s C',
                 perfdatas => [
-                    { value => 'statusTemperatureCameraC_absolute', template => '%s', unit => 'C' },
+                    { value => 'statusTemperatureCameraC', template => '%s', unit => 'C' },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'statusTemperatureOutsideC', no_value => -1000 } ],
                 output_template => 'external temperature: %s C',
                 perfdatas => [
-                    { value => 'statusTemperatureOutsideC_absolute', template => '%s', unit => 'C' },
+                    { value => 'statusTemperatureOutsideC', template => '%s', unit => 'C' },
                 ],
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'statusTemperatureGpsC', no_value => -1000 } ],
                 output_template => 'gps temperature: %s C',
                 perfdatas => [
-                    { value => 'statusTemperatureGpsC_absolute', template => '%s', unit => 'C' },
+                    { value => 'statusTemperatureGpsC', template => '%s', unit => 'C' },
                 ],
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'statusSensorIlluminationR', no_value => -1000 } ],
                 output_template => 'illumination right: %s lx',
                 perfdatas => [
-                    { value => 'statusSensorIlluminationR_absolute', template => '%s', unit => 'lx' },
+                    { value => 'statusSensorIlluminationR', template => '%s', unit => 'lx' },
                 ],
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'statusSensorIlluminationL', no_value => -1000 } ],
                 output_template => 'illumination left: %s lx',
                 perfdatas => [
-                    { value => 'statusSensorIlluminationL_absolute', template => '%s', unit => 'lx' },
+                    { value => 'statusSensorIlluminationL', template => '%s', unit => 'lx' },
                 ],
             }
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'videoMainCurrentFrameRate', no_value => -1000 } ],
                 output_template => 'video framerate: %s fps',
                 perfdatas => [
-                    { value => 'videoMainCurrentFrameRate_absolute', template => '%s', unit => 'fps' },
+                    { value => 'videoMainCurrentFrameRate', template => '%s', unit => 'fps' },
                 ],
             }
         }

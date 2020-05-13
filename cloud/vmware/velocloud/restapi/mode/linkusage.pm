@@ -45,7 +45,7 @@ sub set_counters {
                 output_template => 'Total Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_absolute', template => '%s',
+                    { value => 'traffic_in', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 output_template => 'Total Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_absolute', template => '%s',
+                    { value => 'traffic_out', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_in_absolute', template => '%s',
+                    { value => 'traffic_in', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_out_absolute', template => '%s',
+                    { value => 'traffic_out', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'latency_in' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Latency In: %.2f ms',
                 perfdatas => [
-                    { value => 'latency_in_absolute', template => '%.2f',
+                    { value => 'latency_in', template => '%.2f',
                       min => 0, unit => 'ms', label_extra_instance => 1 },
                 ],
             }
@@ -96,7 +96,7 @@ sub set_counters {
                 key_values => [ { name => 'latency_out' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Latency Out: %.2f ms',
                 perfdatas => [
-                    { value => 'latency_out_absolute', template => '%.2f',
+                    { value => 'latency_out', template => '%.2f',
                       min => 0, unit => 'ms', label_extra_instance => 1 },
                 ],
             }
@@ -105,7 +105,7 @@ sub set_counters {
                 key_values => [ { name => 'jitter_in' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Jitter In: %.2f ms',
                 perfdatas => [
-                    { value => 'jitter_in_absolute', template => '%.2f',
+                    { value => 'jitter_in', template => '%.2f',
                       min => 0, unit => 'ms', label_extra_instance => 1 },
                 ],
             }
@@ -114,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'jitter_out' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Jitter Out: %.2f ms',
                 perfdatas => [
-                    { value => 'jitter_out_absolute', template => '%.2f',
+                    { value => 'jitter_out', template => '%.2f',
                       min => 0, unit => 'ms', label_extra_instance => 1 },
                 ],
             }
@@ -123,7 +123,7 @@ sub set_counters {
                 key_values => [ { name => 'packet_loss_in' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packet Loss In: %.2f%%',
                 perfdatas => [
-                    { value => 'packet_loss_in_absolute', template => '%.2f',
+                    { value => 'packet_loss_in', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -132,7 +132,7 @@ sub set_counters {
                 key_values => [ { name => 'packet_loss_out' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Packet Loss Out: %.2f%%',
                 perfdatas => [
-                    { value => 'packet_loss_out_absolute', template => '%.2f',
+                    { value => 'packet_loss_out', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }

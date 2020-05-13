@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'mitelBWMCumCACAdmissions', diff => 1 }, { name => 'display' } ],
                 output_template => 'Admitted calls: %s',
                 perfdatas => [
-                    { label => 'admitted', value => 'mitelBWMCumCACAdmissions_absolute', template => '%s',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'admitted', value => 'mitelBWMCumCACAdmissions', template => '%s',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'mitelBWMCumCACRejections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Rejected calls: %s',
                 perfdatas => [
-                    { label => 'rejected', value => 'mitelBWMCumCACRejections_absolute', template => '%s',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'rejected', value => 'mitelBWMCumCACRejections', template => '%s',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'mitelBWMCumCACRejectionRatio' }, { name => 'display' } ],
                 output_template => 'Rejection ratio: %s%%',
                 perfdatas => [
-                    { label => 'rejection_ratio', value => 'mitelBWMCumCACRejectionRatio_absolute', template => '%s',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'rejection_ratio', value => 'mitelBWMCumCACRejectionRatio', template => '%s',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

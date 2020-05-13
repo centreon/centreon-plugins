@@ -30,11 +30,11 @@ sub custom_license_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf("Licenses Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-        $self->{result_values}->{total_absolute},
-        $self->{result_values}->{used_absolute},
-        $self->{result_values}->{prct_used_absolute},
-        $self->{result_values}->{free_absolute},
-        $self->{result_values}->{prct_free_absolute}
+        $self->{result_values}->{total},
+        $self->{result_values}->{used},
+        $self->{result_values}->{prct_used},
+        $self->{result_values}->{free},
+        $self->{result_values}->{prct_free}
     );
     return $msg;
 }
@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute' },
+                    { value => 'used', template => '%d', min => 0, max => 'total' },
                 ],
             }
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute' },
+                    { value => 'free', template => '%d', min => 0, max => 'total' },
                 ],
             }
         },
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Licenses Used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },

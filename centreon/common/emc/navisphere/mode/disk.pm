@@ -109,8 +109,8 @@ sub set_counters {
                 key_values => [ { name => 'hard_read_errors', diff => 1 }, { name => 'display' } ],
                 output_template => 'Hard Read Errors : %d',
                 perfdatas => [
-                    { label => 'hard_read_errors', value => 'hard_read_errors_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'hard_read_errors', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -118,28 +118,28 @@ sub set_counters {
                 key_values => [ { name => 'hard_write_errors', diff => 1 }, { name => 'display' } ],
                 output_template => 'Hard Write Errors : %d',
                 perfdatas => [
-                    { label => 'hard_write_errors', value => 'hard_write_errors_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'hard_write_errors', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'read-io', set => {
-                key_values => [ { name => 'read_io', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'read_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read I/O : %s %s/s',
-                per_second => 1, output_change_bytes => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read_io', value => 'read_io_absolute', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_io', template => '%s',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write-io', set => {
-                key_values => [ { name => 'write_io', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'write_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write I/O : %s %s/s',
-                per_second => 1, output_change_bytes => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write_io', value => 'write_io_absolute', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_io', template => '%s',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -168,8 +168,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-raidgroupid:s"      => { name => 'filter_raidgroupid', },
-        "filter-disk:s"             => { name => 'filter_disk', },
+        'filter-raidgroupid:s' => { name => 'filter_raidgroupid', },
+        'filter-disk:s'        => { name => 'filter_disk', },
     });
 
     return $self;

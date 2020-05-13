@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'init_pool_size' } ],
                 output_template => 'pool initial size: %s',
                 perfdatas => [
-                    { value => 'init_pool_size_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'init_pool_size', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'max_pool_size' } ],
                 output_template => 'pool max size: %s',
                 perfdatas => [
-                    { value => 'max_pool_size_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'max_pool_size', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'idle_timeout' } ],
                 output_template => 'idle timeout: %s',
                 perfdatas => [
-                    { value => 'idle_timeout_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'idle_timeout', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'active_conn_count' } ],
                 output_template => 'connections active: %s',
                 perfdatas => [
-                    { value => 'active_conn_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'active_conn_count', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'cur_conn_count' } ],
                 output_template => 'connections current: %s',
                 perfdatas => [
-                    { value => 'cur_conn_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'cur_conn_count', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'max_conn_count' } ],
                 output_template => 'connections max: %s',
                 perfdatas => [
-                    { value => 'max_conn_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'max_conn_count', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'create_count', diff => 1 } ],
                 output_template => 'connections created: %s',
                 perfdatas => [
-                    { value => 'create_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'create_count', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'close_count', diff => 1 } ],
                 output_template => 'connections closed: %s',
                 perfdatas => [
-                    { value => 'close_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'close_count', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },

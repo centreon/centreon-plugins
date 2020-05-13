@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'packets_all', diff => 1 } ],
                 output_template => 'all packets sent: %s',
                 perfdatas => [
-                    { value => 'packets_all_absolute', template => '%s', min => 0 }
+                    { value => 'packets_all', template => '%s', min => 0 }
                 ]
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'packets_chat', diff => 1 } ],
                 output_template => 'chat packets sent: %s',
                 perfdatas => [
-                    { value => 'packets_chat_absolute', template => '%s', min => 0 }
+                    { value => 'packets_chat', template => '%s', min => 0 }
                 ]
             }
         }

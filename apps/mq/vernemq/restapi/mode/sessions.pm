@@ -43,7 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'online' } ],
                 output_template => 'current online: %s',
                 perfdatas => [
-                    { value => 'online_absolute', template => '%s', min => 0 }
+                    { value => 'online', template => '%s', min => 0 }
                 ]
             }
         },
@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'current total: %s',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%s', min => 0 }
+                    { value => 'total', template => '%s', min => 0 }
                 ]
             }
         }

@@ -74,8 +74,8 @@ sub set_counters {
                 key_values => [ { name => 'failed_fan_count' }, { name => 'name' } ],
                 output_template => '%d failed fan(s)',
                 perfdatas => [
-                    { label => 'failed_fans', value => 'failed_fan_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'failed_fans', value => 'failed_fan_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'failed_power_supply_count' }, { name => 'name' } ],
                 output_template => '%d failed psu',
                 perfdatas => [
-                    { label => 'failed_psu', value => 'failed_power_supply_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'failed_psu', value => 'failed_power_supply_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

@@ -42,8 +42,8 @@ sub custom_traffic_in_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel}, unit => 'b/s',
-        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{channel_name_absolute}],
-        value => $self->{result_values}->{traffic_in_per_second},
+        instances => [$self->{result_values}->{qmgr_name}, $self->{result_values}->{channel_name}],
+        value => $self->{result_values}->{traffic_in},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -55,8 +55,8 @@ sub custom_traffic_out_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel}, unit => 'b/s',
-        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{channel_name_absolute}],
-        value => $self->{result_values}->{traffic_out_per_second},
+        instances => [$self->{result_values}->{qmgr_name}, $self->{result_values}->{channel_name}],
+        value => $self->{result_values}->{traffic_out},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -89,16 +89,16 @@ sub set_counters {
             }
         },
         { label => 'traffic-in', nlabel => 'channel.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'qmgr_name' }, { name => 'channel_name' } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'qmgr_name' }, { name => 'channel_name' } ],
                 output_template => 'traffic in: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 closure_custom_perfdata => $self->can('custom_traffic_in_perfdata')
             }
         },
         { label => 'traffic-out', nlabel => 'channel.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'qmgr_name' }, { name => 'channel_name' } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'qmgr_name' }, { name => 'channel_name' } ],
                 output_template => 'traffic out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 closure_custom_perfdata => $self->can('custom_traffic_out_perfdata')
             }
         }
@@ -115,8 +115,9 @@ sub new {
         'filter-type:s'     => { name => 'filter_type' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{channel_status} !~ /running|idle/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{channel_status} !~ /running|idle/i' }
     });
+
     return $self;
 }
 
@@ -174,7 +175,7 @@ sub manage_selection {
         }
     }
 
-    $self->{cache_name} = "ibmmq_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
+    $self->{cache_name} = 'ibmmq_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'JitterAvg' } ],
                 output_template => 'Average: %d ms',
                 perfdatas => [
-                    { label => 'jitter_avg', value => 'JitterAvg_absolute', template => '%d', 
+                    { label => 'jitter_avg', value => 'JitterAvg', template => '%d', 
                       unit => 'ms', min => 0 },
                 ],
             }
@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'JitterMin' } ],
                 output_template => 'Min: %d ms',
                 perfdatas => [
-                    { label => 'jitter_min', value => 'JitterMin_absolute', template => '%d',
+                    { label => 'jitter_min', value => 'JitterMin', template => '%d',
                       unit => 'ms', min => 0 },
                 ],
             }
@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'JitterMax' } ],
                 output_template => 'Max: %d ms',
                 perfdatas => [
-                    { label => 'jitter_max', value => 'JitterMax_absolute', template => '%d',
+                    { label => 'jitter_max', value => 'JitterMax', template => '%d',
                       unit => 'ms', min => 0 },
                 ],
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'PacketLossAvg' } ],
                 output_template => 'Average: %.2f%%',
                 perfdatas => [
-                    { label => 'pckt_loss_avg', value => 'PacketLossAvg_absolute', template => '%.2f',
+                    { label => 'pckt_loss_avg', value => 'PacketLossAvg', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'PacketLossMin' } ],
                 output_template => 'Min: %.2f%%',
                 perfdatas => [
-                    { label => 'pckt_loss_min', value => 'PacketLossMin_absolute', template => '%.2f',
+                    { label => 'pckt_loss_min', value => 'PacketLossMin', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'PacketLossMax' } ],
                 output_template => 'Max: %.2f%%',
                 perfdatas => [
-                    { label => 'pckt_loss_max', value => 'PacketLossMax_absolute', template => '%.2f',
+                    { label => 'pckt_loss_max', value => 'PacketLossMax', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'TotalStreams' } ],
                 output_template => 'Streams Count: %.2f/s',
                 perfdatas => [
-                    { label => 'stream_count', value => 'TotalStreams_absolute', template => '%.2f',
+                    { label => 'stream_count', value => 'TotalStreams', template => '%.2f',
                       unit => 'streams/s', min => 0 },
                 ],
             }

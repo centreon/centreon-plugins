@@ -36,8 +36,8 @@ sub set_counters {
                 key_values => [ { name => 'interference_power' }, { name => 'label_perfdata' } ],
                 output_template => 'Interference Power : %s',
                 perfdatas => [
-                    { label => 'interference_power', value => 'interference_power_absolute', template => '%s',
-                      label_extra_instance => 1, instance_use => 'label_perfdata_absolute'  },
+                    { label => 'interference_power', value => 'interference_power', template => '%s',
+                      label_extra_instance => 1, instance_use => 'label_perfdata'  },
                 ],
             }
         },
@@ -45,8 +45,8 @@ sub set_counters {
                 key_values => [ { name => 'interference_util' }, { name => 'label_perfdata' } ],
                 output_template => 'Interference Utilization : %s %%',
                 perfdatas => [
-                    { label => 'interference_util', value => 'interference_util_absolute', template => '%s', 
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'label_perfdata_absolute'  },
+                    { label => 'interference_util', value => 'interference_util', template => '%s', 
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'label_perfdata'  },
                 ],
             }
         },

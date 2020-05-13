@@ -31,7 +31,7 @@ sub custom_oldest_output {
 
     return sprintf(
         'oldest message: %s',
-         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{oldest_msg_age_absolute})
+         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{oldest_msg_age})
     );
 }
 
@@ -40,8 +40,8 @@ sub custom_connections_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{queue_name_absolute}],
-        value => $self->{result_values}->{open_input_count_absolute},
+        instances => [$self->{result_values}->{qmgr_name}, $self->{result_values}->{queue_name}],
+        value => $self->{result_values}->{open_input_count},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -53,8 +53,8 @@ sub custom_qdepth_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{queue_name_absolute}],
-        value => $self->{result_values}->{current_qdepth_absolute},
+        instances => [$self->{result_values}->{qmgr_name}, $self->{result_values}->{queue_name}],
+        value => $self->{result_values}->{current_qdepth},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0
@@ -66,8 +66,8 @@ sub custom_oldest_perfdata {
 
     $self->{output}->perfdata_add(
         nlabel => $self->{nlabel},
-        instances => [$self->{result_values}->{qmgr_name_absolute}, $self->{result_values}->{queue_name_absolute}],
-        value => $self->{result_values}->{oldest_msg_age_absolute},
+        instances => [$self->{result_values}->{qmgr_name}, $self->{result_values}->{queue_name}],
+        value => $self->{result_values}->{oldest_msg_age},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0

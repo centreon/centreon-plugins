@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'onServerDeadLocks', diff => 1 }, { name => 'display' } ],
                 output_template => 'Deadlocks %d',
                 perfdatas => [
-                    { label => 'lock_dead', value => 'onServerDeadLocks_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'lock_dead', value => 'onServerDeadLocks', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'onServerLockWaits', diff => 1 }, { name => 'display' } ],
                 output_template => 'Lock Waits %d',
                 perfdatas => [
-                    { label => 'lock_wait', value => 'onServerLockWaits_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'lock_wait', value => 'onServerLockWaits', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'onServerLockRequests', diff => 1 }, { name => 'display' } ],
                 output_template => 'Lock Requests %d',
                 perfdatas => [
-                    { label => 'lock_request', value => 'onServerLockRequests_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'lock_request', value => 'onServerLockRequests', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'onServerLockTimeouts', diff => 1 }, { name => 'display' } ],
                 output_template => 'Lock Timeouts %d',
                 perfdatas => [
-                    { label => 'lock_timeout', value => 'onServerLockTimeouts_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'lock_timeout', value => 'onServerLockTimeouts', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

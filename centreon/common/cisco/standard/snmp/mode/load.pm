@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'cpmCPULoadAvg1min' }, { name => 'display' } ],
                 output_template => '%.2f (1m)',
                 perfdatas => [
-                    { value => 'cpmCPULoadAvg1min_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'cpmCPULoadAvg1min', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'cpmCPULoadAvg5min' }, { name => 'display' } ],
                 output_template => '%.2f (5m)',
                 perfdatas => [
-                    { value => 'cpmCPULoadAvg5min_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'cpmCPULoadAvg5min', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'cpmCPULoadAvg15min' }, { name => 'display' } ],
                 output_template => '%.2f (15m)',
                 perfdatas => [
-                    { value => 'cpmCPULoadAvg15min_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'cpmCPULoadAvg15min', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

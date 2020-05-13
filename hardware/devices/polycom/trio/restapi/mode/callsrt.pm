@@ -29,7 +29,7 @@ use Digest::MD5 qw(md5_hex);
 sub custom_loss_calc {
     my ($self, %options) = @_;
 
-    $self->{result_values}->{display_absolute} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     my $diff_pkts = ($options{new_datas}->{$self->{instance} . '_packets'} - $options{old_datas}->{$self->{instance} . '_packets'});
     my $diff_loss = ($options{new_datas}->{$self->{instance} . '_loss'} - $options{old_datas}->{$self->{instance} . '_loss'});
 
@@ -63,22 +63,20 @@ sub set_counters {
 
     $self->{maps_counters}->{channels} = [
         { label => 'channel-traffic-in', nlabel => 'call.channel.traffic.in.bytes', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 1,
                 output_template => 'traffic in: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1  },
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1  },
                 ],
             }
         },
         { label => 'channel-traffic-out', nlabel => 'call.channel.traffic.out.bytes', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 1,
                 output_template => 'traffic out: %s %s/s',
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1  },
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1  },
                 ],
             }
         },
@@ -86,8 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'max_jitter' }, { name => 'display' } ],
                 output_template => 'max jitter: %s ms',
                 perfdatas => [
-                    { value => 'max_jitter_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1 },
+                    { template => '%d', unit => 'ms', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -97,8 +94,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_loss_output'),
                 threshold_use => 'packets_loss',
                 perfdatas => [
-                    { value => 'packets_loss', template => '%d',
-                      min => 0, label_extra_instance => 1  },
+                    { value => 'packets_loss', template => '%d', min => 0, label_extra_instance => 1 }
                 ],
             }
         },
@@ -108,11 +104,10 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_loss_output'),
                 threshold_use => 'packets_loss_prct',
                 perfdatas => [
-                    { value => 'packets_loss_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1  },
-                ],
+                    { value => 'packets_loss_prct', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 

@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_5s' }, { name => 'display' } ],
                 output_template => '%.2f %% (5s)',
                 perfdatas => [
-                    { value => 'cpu_5s_absolute',  template => '%.2f',
+                    { value => 'cpu_5s',  template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_1m' }, { name => 'display' } ],
                 output_template => '%.2f %% (1m)',
                 perfdatas => [
-                    { value => 'cpu_1m_absolute',  template => '%.2f',
+                    { value => 'cpu_1m',  template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_5m' }, { name => 'display' } ],
                 output_template => '%.2f %% (5m)',
                 perfdatas => [
-                    { value => 'cpu_5m_absolute',  template => '%.2f',
+                    { value => 'cpu_5m',  template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }

@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'instant_messaging' } ],
                 output_template => 'Instant Messaging: %d',
                 perfdatas => [
-                    { label => 'instant_messaging', value => 'instant_messaging_absolute', template => '%d',
+                    { label => 'instant_messaging', value => 'instant_messaging', template => '%d',
 		              unit => 'sessions', min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'audio' } ],
                 output_template => 'Audio: %d',
                 perfdatas => [
-                    { label => 'audio', value => 'audio_absolute', template => '%d',
+                    { label => 'audio', value => 'audio', template => '%d',
                       unit => 'sessions', min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'video' } ],
                 output_template => 'Video: %d',
                 perfdatas => [
-                    { label => 'video', value => 'video_absolute', template => '%d', 
+                    { label => 'video', value => 'video', template => '%d', 
                      unit => 'sessions', min => 0 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'file_transfer' } ],
                 output_template => 'File Transfer: %d',
                 perfdatas => [
-                    { label => 'file_transfer', value => 'file_transfer_absolute', template => '%d',
+                    { label => 'file_transfer', value => 'file_transfer', template => '%d',
                       unit => 'sessions', min => 0 },
                 ],
             }
@@ -73,7 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'remote_assistance' } ],
                 output_template => 'Remote Assistance: %d',
                 perfdatas => [
-                    { label => 'remote_assistance', value => 'remote_assistance_absolute', template => '%d',
+                    { label => 'remote_assistance', value => 'remote_assistance', template => '%d',
                       unit => 'sessions', min => 0 },
                 ],
             }
@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => 'app_sharing' } ],
                 output_template => 'App Sharing: %d',
                 perfdatas => [
-                    { label => 'app_sharing', value => 'app_sharing_absolute', template => '%d',
+                    { label => 'app_sharing', value => 'app_sharing', template => '%d',
                       unit => 'sessions', min => 0 },
                 ],
             }
@@ -91,7 +91,7 @@ sub set_counters {
                 key_values => [ { name => 'app_invite' } ],
                 output_template => 'App Invite: %d',
                 perfdatas => [
-                    { label => 'app_invite', value => 'app_invite_absolute', template => '%d', 
+                    { label => 'app_invite', value => 'app_invite', template => '%d', 
                      unit => 'sessions', min => 0 },
                 ],
             }

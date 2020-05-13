@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'voice' } ],
                 output_template => 'Voice QOE: %s',
                 perfdatas => [
-                    { value => 'voice_absolute', template => '%s',
+                    { value => 'voice', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1  },
                 ],
             }
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'video' } ],
                 output_template => 'Video QOE: %s',
                 perfdatas => [
-                    { value => 'video_absolute', template => '%s',
+                    { value => 'video', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1  },
                 ],
             }
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'transactional' } ],
                 output_template => 'Transactional QOE: %s',
                 perfdatas => [
-                    { value => 'transactional_absolute', template => '%s',
+                    { value => 'transactional', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1  },
                 ],
             }
@@ -74,7 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'voice' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Voice QOE: %s',
                 perfdatas => [
-                    { value => 'voice_absolute', template => '%s',
+                    { value => 'voice', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1 },
                 ],
             }
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'video' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Video QOE: %s',
                 perfdatas => [
-                    { value => 'video_absolute', template => '%s',
+                    { value => 'video', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1 },
                 ],
             }
@@ -92,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'transactional' }, { name => 'display' }, { name => 'id' } ],
                 output_template => 'Transactional QOE: %s',
                 perfdatas => [
-                    { value => 'transactional_absolute', template => '%s',
+                    { value => 'transactional', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1 },
                 ],
             }

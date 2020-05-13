@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'load' } ],
                 output_template => 'load: %s %%',
                 perfdatas => [
-                    { label => 'load', value => 'load_absolute', template => '%s', 
+                    { label => 'load', value => 'load', template => '%s', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { label => 'current', value => 'current_absolute', template => '%s', 
+                    { label => 'current', value => 'current', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'voltage' } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'voltage_absolute', template => '%s', 
+                    { label => 'voltage', value => 'voltage', template => '%s', 
                       unit => 'V' },
                 ],
             }
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'frequency' } ],
                 output_template => 'frequence: %s Hz',
                 perfdatas => [
-                    { label => 'frequence', value => 'frequency_absolute', template => '%s', 
+                    { label => 'frequence', value => 'frequency', template => '%s', 
                       unit => 'Hz' },
                 ],
             }

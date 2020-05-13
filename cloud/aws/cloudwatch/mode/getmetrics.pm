@@ -152,8 +152,8 @@ sub check_options {
                     key_values => [ { name => $metric_name . '_' . $statistic }, { name => 'display' } ],
                     output_template => $metric_name . ' ' . ucfirst($statistic) . ' : %s',
                     perfdatas => [
-                        { label => lc($metric_name) . '_' . $statistic, value => $metric_name . '_' . $statistic . '_absolute', template => '%s', 
-                          label_extra_instance => 1, instance_use => 'display_absolute' },
+                        { label => lc($metric_name) . '_' . $statistic, value => $metric_name . '_' . $statistic , template => '%s', 
+                          label_extra_instance => 1, instance_use => 'display' },
                     ],
                 }
             };

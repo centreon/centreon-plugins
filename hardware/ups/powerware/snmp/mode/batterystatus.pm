@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsBatCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
                 perfdatas => [
-                    { value => 'xupsBatCapacity_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                    { value => 'xupsBatCapacity', template => '%s', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsBatTimeRemaining' } ],
                 output_template => 'remaining time: %s minutes',
                 perfdatas => [
-                    { value => 'xupsBatTimeRemaining_absolute', template => '%s', min => 0, unit => 'm' },
+                    { value => 'xupsBatTimeRemaining', template => '%s', min => 0, unit => 'm' },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsBatCurrent', no_value => 0 } ],
                 output_template => 'current: %s A',
                 perfdatas => [
-                    { value => 'xupsBatCurrent_absolute', template => '%s', unit => 'A' },
+                    { value => 'xupsBatCurrent', template => '%s', unit => 'A' },
                 ],
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsBatVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'xupsBatVoltage_absolute', template => '%s', unit => 'V' },
+                    { value => 'xupsBatVoltage', template => '%s', unit => 'V' },
                 ],
             }
         },

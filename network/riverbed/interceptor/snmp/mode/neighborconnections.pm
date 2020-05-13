@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'neighborConnectionCount' }, { name => 'display' } ],
                 output_template => 'Optimized Connections Count: %d',
                 perfdatas => [
-                    { label => 'connections', value => 'neighborConnectionCount_absolute', template => '%d', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'connections', value => 'neighborConnectionCount', template => '%d', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

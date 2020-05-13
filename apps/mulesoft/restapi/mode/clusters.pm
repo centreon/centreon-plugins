@@ -50,19 +50,19 @@ sub set_counters {
         { label => 'total', nlabel => 'mulesoft.clusters.total.count', set => {
             key_values      => [ { name => 'total' }  ],
             output_template => "Total : %s",
-            perfdatas       => [ { value => 'total_absolute', template => '%d', min => 0 } ],
+            perfdatas       => [ { value => 'total', template => '%d', min => 0 } ],
             }
         },
         { label => 'running', nlabel => 'mulesoft.clusters.status.running.count', set => {
             key_values      => [ { name => 'running' }  ],
             output_template => "Running : %s",
-            perfdatas       => [ { value => 'running_absolute', template => '%d', min => 0 } ]
+            perfdatas       => [ { value => 'running', template => '%d', min => 0 } ]
             }
         },
         { label => 'disconnected', nlabel => 'mulesoft.clusters.status.disconnected.count', set => {
             key_values      => [ { name => 'disconnected' }  ],
             output_template => "Disconnected : %s",
-            perfdatas       => [ { value => 'disconnected_absolute', template => '%d', min => 0 } ]
+            perfdatas       => [ { value => 'disconnected', template => '%d', min => 0 } ]
             }
         }
    ];

@@ -49,8 +49,8 @@ sub set_counters {
                                 key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
                                 output_template => $metric . ': %d',
                                 perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                 ],
                             }
                         };

@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'size' } ],
                 output_template => 'Content size : %s',
                 perfdatas => [
-                    { label => 'size', value => 'size_absolute', template => '%s', min => 0, unit => 'B' },
+                    { label => 'size', value => 'size', template => '%s', min => 0, unit => 'B' },
                 ],
             }
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'time' } ],
                 output_template => 'Response time : %.3fs',
                 perfdatas => [
-                    { label => 'time', value => 'time_absolute', template => '%.3f', min => 0, unit => 's' },
+                    { label => 'time', value => 'time', template => '%.3f', min => 0, unit => 's' },
                 ],
             }
         },
@@ -94,7 +94,7 @@ sub set_counters {
                 key_values => [ { name => 'extracted' } ],
                 output_template => 'Extracted value : %s',
                 perfdatas => [
-                    { label => 'value', value => 'extracted_absolute', template => '%s' },
+                    { label => 'value', value => 'extracted', template => '%s' },
                 ],
             }
         },

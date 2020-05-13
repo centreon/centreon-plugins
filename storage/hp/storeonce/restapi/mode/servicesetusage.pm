@@ -138,8 +138,8 @@ sub set_counters {
                 key_values => [ { name => 'dedup' }, { name => 'display' } ],
                 output_template => 'Dedup Ratio : %.2f',
                 perfdatas => [
-                    { label => 'dedup_ratio', value => 'dedup_absolute', template => '%.2f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'dedup_ratio', value => 'dedup', template => '%.2f', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'NewCallsLastMinTotal' } ],
                 output_template => 'New Calls : %s (last min)',
                 perfdatas => [
-                    { label => 'calls_new', value => 'NewCallsLastMinTotal_absolute', template => '%d', min => 0 },
+                    { label => 'calls_new', value => 'NewCallsLastMinTotal', template => '%d', min => 0 },
                 ],
             }
         },
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'ActiveCallsSummaryVoiceTotalCalls' } ],
                 output_template => 'Current Voice Calls : %s',
                 perfdatas => [
-                    { label => 'calls_voice_active', value => 'ActiveCallsSummaryVoiceTotalCalls_absolute', template => '%d', min => 0 },
+                    { label => 'calls_voice_active', value => 'ActiveCallsSummaryVoiceTotalCalls', template => '%d', min => 0 },
                 ],
             }
         },
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'ActiveCallsSummaryVideoTotalCalls' } ],
                 output_template => 'Current Video Calls : %s',
                 perfdatas => [
-                    { label => 'calls_video_active', value => 'ActiveCallsSummaryVideoTotalCalls_absolute', template => '%d', min => 0 },
+                    { label => 'calls_video_active', value => 'ActiveCallsSummaryVideoTotalCalls', template => '%d', min => 0 },
                 ],
             }
         },
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'NumberActiveConferences' } ],
                 output_template => 'Current Conferences : %s',
                 perfdatas => [
-                    { label => 'conferences_active', value => 'NumberActiveConferences_absolute', template => '%d', min => 0 },
+                    { label => 'conferences_active', value => 'NumberActiveConferences', template => '%d', min => 0 },
                 ],
             }
         },

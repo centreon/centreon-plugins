@@ -122,7 +122,7 @@ sub set_counters {
                 output_template => ($metrics_mapping{$metric}->{change_bytes} != 0) ? $metrics_mapping{$metric}->{output} . ': %.2f %s' : $metrics_mapping{$metric}->{output} . ': %.2f',
                 change_bytes => $metrics_mapping{$metric}->{output_change_bytes},
                 perfdatas => [
-                    { value => $metric . '_absolute', template => '%.2f', label_extra_instance => 1, unit => $metrics_mapping{$metric}->{perf_unit} }
+                    { value => $metric , template => '%.2f', label_extra_instance => 1, unit => $metrics_mapping{$metric}->{perf_unit} }
                 ],
             }
         };

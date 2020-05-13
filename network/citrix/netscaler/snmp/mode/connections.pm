@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active Server TCP connections : %s',
                 perfdatas => [
-                    { label => 'active_server', value => 'active_absolute', template => '%s', 
+                    { label => 'active_server', value => 'active', template => '%s', 
                       unit => 'con', min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'server' } ],
                 output_template => 'Server TCP connections  : %s',
                 perfdatas => [
-                    { label => 'server', value => 'server_absolute', template => '%s', 
+                    { label => 'server', value => 'server', template => '%s', 
                       unit => 'con', min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'client' } ],
                 output_template => 'Client TCP connections : %s',
                 perfdatas => [
-                    { label => 'client', value => 'client_absolute', template => '%s', 
+                    { label => 'client', value => 'client', template => '%s', 
                       unit => 'con', min => 0 },
                 ],
             }

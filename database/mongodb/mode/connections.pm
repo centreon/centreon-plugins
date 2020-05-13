@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active: %d',
                 perfdatas => [
-                    { value => 'active_absolute', template => '%d', min => 0, unit => 'conn' },
+                    { template => '%d', min => 0, unit => 'conn' },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'Current: %d',
                 perfdatas => [
-                    { value => 'current_absolute', template => '%d', min => 0, unit => 'conn' },
+                    { template => '%d', min => 0, unit => 'conn' },
                 ],
             }
         },
@@ -54,16 +54,15 @@ sub set_counters {
                 key_values => [ { name => 'usage' } ],
                 output_template => 'Usage: %.2f %%',
                 perfdatas => [
-                    { value => 'usage_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
         { label => 'total-created', nlabel => 'connections.created.persecond', set => {
-                key_values => [ { name => 'totalCreated', diff => 1 } ],
+                key_values => [ { name => 'totalCreated', per_second => 1 } ],
                 output_template => 'Created: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'totalCreated_per_second', template => '%.2f', min => 0, unit => 'conn/s' },
+                    { template => '%.2f', min => 0, unit => 'conn/s' },
                 ],
             }
         },

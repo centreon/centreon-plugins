@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Users : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', 
+                    { label => 'total', value => 'total', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'total_idle' } ],
                 output_template => 'Total Idle Users : %s',
                 perfdatas => [
-                    { label => 'total_idle', value => 'total_idle_absolute', template => '%s', 
+                    { label => 'total_idle', value => 'total_idle', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'total_aaapending' } ],
                 output_template => 'Total AaaPending Users : %s',
                 perfdatas => [
-                    { label => 'total_aaapending', value => 'total_aaapending_absolute', template => '%s', 
+                    { label => 'total_aaapending', value => 'total_aaapending', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'total_authenticated' } ],
                 output_template => 'Total Authenticated Users : %s',
                 perfdatas => [
-                    { label => 'total_authenticated', value => 'total_authenticated_absolute', template => '%s', 
+                    { label => 'total_authenticated', value => 'total_authenticated', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -74,7 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'total_associated' } ],
                 output_template => 'Total Associated Users : %s',
                 perfdatas => [
-                    { label => 'total_associated', value => 'total_associated_absolute', template => '%s', 
+                    { label => 'total_associated', value => 'total_associated', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'total_powersave' } ],
                 output_template => 'Total Powersave Users : %s',
                 perfdatas => [
-                    { label => 'total_powersave', value => 'total_powersave_absolute', template => '%s', 
+                    { label => 'total_powersave', value => 'total_powersave', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -92,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'total_disassociated' } ],
                 output_template => 'Total Disassociated Users : %s',
                 perfdatas => [
-                    { label => 'total_disassociated', value => 'total_disassociated_absolute', template => '%s', 
+                    { label => 'total_disassociated', value => 'total_disassociated', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -101,7 +101,7 @@ sub set_counters {
                 key_values => [ { name => 'total_tobedeleted' } ],
                 output_template => 'Total ToBeDeleted Users : %s',
                 perfdatas => [
-                    { label => 'total_tobedeleted', value => 'total_tobedeleted_absolute', template => '%s', 
+                    { label => 'total_tobedeleted', value => 'total_tobedeleted', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -110,7 +110,7 @@ sub set_counters {
                 key_values => [ { name => 'total_probing' } ],
                 output_template => 'Total Probing Users : %s',
                 perfdatas => [
-                    { label => 'total_probing', value => 'total_probing_absolute', template => '%s', 
+                    { label => 'total_probing', value => 'total_probing', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -119,7 +119,7 @@ sub set_counters {
                 key_values => [ { name => 'total_blacklisted' } ],
                 output_template => 'Total Blacklisted Users : %s',
                 perfdatas => [
-                    { label => 'total_blacklisted', value => 'total_blacklisted_absolute', template => '%s', 
+                    { label => 'total_blacklisted', value => 'total_blacklisted', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -131,8 +131,8 @@ sub set_counters {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'users : %s',
                 perfdatas => [
-                    { label => 'ssid', value => 'total_absolute', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ssid', value => 'total', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -143,8 +143,8 @@ sub set_counters {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'users : %s',
                 perfdatas => [
-                    { label => 'ap', value => 'total_absolute', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ap', value => 'total', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

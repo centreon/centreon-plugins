@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartBatteryCapacity' } ],
                 output_template => 'remaining capacity: %s %%',
                 perfdatas => [
-                    { value => 'upsSmartBatteryCapacity_absolute', template => '%s', min => 0, max => 100, unit => '%' },
+                    { value => 'upsSmartBatteryCapacity', template => '%s', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartBatteryRunTimeRemaining' } ],
                 output_template => 'remaining time: %s minutes',
                 perfdatas => [
-                    { value => 'upsSmartBatteryRunTimeRemaining_absolute', template => '%s', min => 0, unit => 'm' },
+                    { value => 'upsSmartBatteryRunTimeRemaining', template => '%s', min => 0, unit => 'm' },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartBatteryVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'upsSmartBatteryVoltage_absolute', template => '%s', unit => 'V' },
+                    { value => 'upsSmartBatteryVoltage', template => '%s', unit => 'V' },
                 ],
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartBatteryTemperature', no_value => 0 } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { value => 'upsSmartBatteryTemperature_absolute', template => '%s', unit => 'C' },
+                    { value => 'upsSmartBatteryTemperature', template => '%s', unit => 'C' },
                 ],
             }
         },

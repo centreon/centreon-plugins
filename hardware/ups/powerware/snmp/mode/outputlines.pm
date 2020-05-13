@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsOutputLoad', no_value => -1 } ],
                 output_template => 'Load : %.2f %%',
                 perfdatas => [
-                    { value => 'xupsOutputLoad_absolute', template => '%.2f', 
+                    { value => 'xupsOutputLoad', template => '%.2f', 
                       min => 0, max => 100 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsOutputFrequency', no_value => 0 } ],
                 output_template => 'Frequence : %.2f Hz',
                 perfdatas => [
-                    { value => 'xupsOutputFrequency_absolute', template => '%.2f', 
+                    { value => 'xupsOutputFrequency', template => '%.2f', 
                       unit => 'Hz' },
                 ],
             }
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsOutputCurrent', no_value => 0 } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'xupsOutputCurrent_absolute', template => '%.2f', 
+                    { value => 'xupsOutputCurrent', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsOutputVoltage', no_value => 0 } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'xupsOutputVoltage_absolute', template => '%.2f', 
+                    { value => 'xupsOutputVoltage', template => '%.2f', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'xupsOutputWatts', no_value => 0 } ],
                 output_template => 'Power: %.2f W',
                 perfdatas => [
-                    { value => 'xupsOutputWatts_absolute', template => '%.2f', 
+                    { value => 'xupsOutputWatts', template => '%.2f', 
                       unit => 'W', label_extra_instance => 1 },
                 ],
             }

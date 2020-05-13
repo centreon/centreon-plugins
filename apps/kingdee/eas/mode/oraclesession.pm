@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'sessions active: %s',
                 perfdatas => [
-                    { value => 'active_absolute', template => '%s', min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                    { value => 'active', template => '%s', min => 0, max => 'total', label_extra_instance => 1 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'inactive' } ],
                 output_template => 'sessions inactive: %s',
                 perfdatas => [
-                    { value => 'inactive_absolute', template => '%s', min => 0, max => 'total_absolute', label_extra_instance => 1 },
+                    { value => 'inactive', template => '%s', min => 0, max => 'total', label_extra_instance => 1 },
                 ],
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => $_ } ],
                 output_template => 'wait class ' . $_ . ': %s',
                 perfdatas => [
-                    { value => $_ . '_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => $_ , template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         };

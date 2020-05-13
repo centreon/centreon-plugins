@@ -58,35 +58,33 @@ sub set_counters {
                 key_values => [ { name => 'signal' } ],
                 output_template => 'signal strength: %s Dbm',
                 perfdatas => [
-                    { value => 'signal_absolute', template => '%s', min => 0 , unit => 'Dbm' },
-                ],
+                    { template => '%s', min => 0 , unit => 'Dbm' },
+                ]
             }
         },
         { label => 'temperature', nlabel => 'system.temperature.celsius', display_ok => 0, set => {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'temperature: %s C',
                 perfdatas => [
-                    { value => 'temperature_absolute', template => '%s', min => 0 , unit => 'C' },
+                    { template => '%s', min => 0 , unit => 'C' },
                 ],
             }
         },
         { label => 'traffic-in', nlabel => 'system.traffic.in.bitspersecond', display_ok => 0, set => {
-                key_values => [ { name => 'traffic_in', diff => 1 } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
                 output_template => 'traffic in: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'traffic-out', nlabel => 'system.traffic.out.bitspersecond', display_ok => 0, set => {
-                key_values => [ { name => 'traffic_out', diff => 1 } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
                 output_template => 'traffic out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
@@ -94,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'rsrp' } ],
                 output_template => 'signal receive power: %s Dbm',
                 perfdatas => [
-                    { value => 'rsrp_absolute', template => '%s', min => 0 , unit => 'Dbm' },
+                    { template => '%s', min => 0 , unit => 'Dbm' },
                 ],
             }
         },
@@ -102,7 +100,7 @@ sub set_counters {
                 key_values => [ { name => 'rsrq' } ],
                 output_template => 'signal receive quality: %s Dbm',
                 perfdatas => [
-                    { value => 'rsrq_absolute', template => '%s', min => 0 , unit => 'Dbm' },
+                    { template => '%s', min => 0 , unit => 'Dbm' },
                 ],
             }
         },

@@ -75,23 +75,21 @@ sub set_counters {
             }
         },
         { label => 'reloads', nlabel => 'library.cache.reloads.persecond', set => {
-                key_values => [ { name => 'reloads', diff => 1 }, ],
-                per_second => 1,
+                key_values => [ { name => 'reloads', per_second => 1 }, ],
                 output_template => 'reloads %.2f/s',
                 perfdatas => [
-                    { label => 'reloads', value => 'reloads_per_second', template => '%.2f', min => 0, unit => '/s' },
+                    { label => 'reloads', template => '%.2f', min => 0, unit => '/s' },
                 ],
             }
         },
         { label => 'invalids', nlabel => 'library.cache.invalids.persecond', set => {
-                key_values => [ { name => 'invalids', diff => 1 }, ],
-                per_second => 1,
+                key_values => [ { name => 'invalids', per_second => 1 }, ],
                 output_template => 'invalids %.2f/s',
                 perfdatas => [
-                    { label => 'invalids', value => 'invalids_per_second', template => '%.2f', min => 0, unit => '/s' },
+                    { label => 'invalids', template => '%.2f', min => 0, unit => '/s' },
                 ],
             }
-        },
+        }
     ];
 }
 

@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'lgpPduRbEntryEnergyAccum', diff => 1 } ],
                 output_template => 'total input power : %s kWh',
                 perfdatas => [
-                    { template => '%s', value => 'lgpPduRbEntryEnergyAccum_absolute',
+                    { template => '%s', value => 'lgpPduRbEntryEnergyAccum',
                       unit => 'kWh', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'lgpPduRbEntryPwr' } ],
                 output_template => 'line-to-neutral real power : %s W',
                 perfdatas => [
-                    { template => '%s', value => 'lgpPduRbEntryPwr_absolute',
+                    { template => '%s', value => 'lgpPduRbEntryPwr',
                       unit => 'W', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -73,7 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'lgpPduRbEntryAp' } ],
                 output_template => 'line-to-neutral apparent power : %s VA',
                 perfdatas => [
-                    { template => '%s', value => 'lgpPduRbEntryAp_absolute',
+                    { template => '%s', value => 'lgpPduRbEntryAp',
                       unit => 'VA', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => 'lgpPduRbEntryEcHundredths' } ],
                 output_template => 'line-to-neutral current : %s Amp AC RMS',
                 perfdatas => [
-                    { value => 'lgpPduRbEntryEcHundredths_absolute', template => '%s',
+                    { value => 'lgpPduRbEntryEcHundredths', template => '%s',
                       unit => 'AmpAcRMS', min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -91,7 +91,7 @@ sub set_counters {
                 key_values => [ { name => 'lgpPduRbEntryEpLNTenths' } ],
                 output_template => 'line-to-neutral potential : %s VoltRMS',
                 perfdatas => [
-                    { value => 'lgpPduRbEntryEpLNTenths_absolute', template => '%s',
+                    { value => 'lgpPduRbEntryEpLNTenths', template => '%s',
                       unit => 'VoltRMS', min => 0, label_extra_instance => 1 },
                 ],
             }

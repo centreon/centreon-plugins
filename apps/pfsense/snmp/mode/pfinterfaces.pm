@@ -35,42 +35,42 @@ sub set_counters {
     
     $self->{maps_counters}->{pfint} = [
         { label => 'traffic-in-pass', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesInPass', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'pfInterfacesIf4BytesInPass', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In Pass : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in_pass', value => 'pfInterfacesIf4BytesInPass_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in_pass', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out-pass', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesOutPass', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'pfInterfacesIf4BytesOutPass', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out Pass : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out_pass', value => 'pfInterfacesIf4BytesOutPass_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out_pass', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in-block', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesInBlock', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'pfInterfacesIf4BytesInBlock', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In Block : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in_block', value => 'pfInterfacesIf4BytesInBlock_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in_block', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out-block', set => {
-                key_values => [ { name => 'pfInterfacesIf4BytesOutBlock', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'pfInterfacesIf4BytesOutBlock', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out Block : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out_block', value => 'pfInterfacesIf4BytesOutBlock_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out_block', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -87,12 +87,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 
@@ -126,7 +125,7 @@ sub manage_selection {
         
         $self->{pfint}->{$instance} = { display => $name };
     }
-    
+
     $options{snmp}->load(oids => [$mapping->{pfInterfacesIf4BytesInPass}->{oid}, $mapping->{pfInterfacesIf4BytesOutPass}->{oid},
         $mapping->{pfInterfacesIf4BytesInBlock}->{oid}, $mapping->{pfInterfacesIf4BytesOutBlock}->{oid},
         ], 

@@ -57,26 +57,24 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'traffic-in', nlabel => 'fc.port.traffic.in.wordspersecond', set => {
-                key_values => [ { name => 'fcStatsRxWords', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'fcStatsRxWords', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic in : %.2f words/s',
                 perfdatas => [
-                    { label => 'traffic_in',  template => '%.2f', value => 'fcStatsRxWords_per_second',
-                      unit => 'words/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f',
+                      unit => 'words/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out', nlabel => 'fc.port.traffic.out.wordspersecond', set => {
-                key_values => [ { name => 'fcStatsTxWords', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'fcStatsTxWords', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic out : %.2f words/s',
                 perfdatas => [
-                    { label => 'traffic_out',  template => '%.2f', value => 'fcStatsTxWords_per_second',
-                      unit => 'words/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f',
+                      unit => 'words/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -84,8 +82,7 @@ sub set_counters {
                 key_values => [ { name => 'fcStatsErrInvalidCRC', diff => 1 }, { name => 'display' } ],
                 output_template => 'number of invalid CRC : %s',
                 perfdatas => [
-                    { label => 'invalid_crc', value => 'fcStatsErrInvalidCRC_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'invalid_crc', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -93,11 +90,10 @@ sub set_counters {
                 key_values => [ { name => 'fcStatsErrSignalLoss', diff => 1 }, { name => 'display' } ],
                 output_template => 'number of signal loss : %s',
                 perfdatas => [
-                    { label => 'signal_loss', value => 'fcStatsErrSignalLoss_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'signal_loss', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -113,9 +109,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s"     => { name => 'filter_name' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{admin} =~ /enabled/ and %{status} !~ /online/' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{admin} =~ /enabled/ and %{status} !~ /online/' }
     });
 
     return $self;

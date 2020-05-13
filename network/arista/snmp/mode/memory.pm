@@ -30,11 +30,11 @@ sub custom_usage_output {
 
     return sprintf(
         'Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%) Free: %s %s (%.2f%%)',
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
-        $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute}
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
     );
 }
 
@@ -50,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                    { value => 'used', template => '%d', min => 0, max => 'total',
                       unit => 'B', cast_int => 1 }
                 ]
             }
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                    { value => 'free', template => '%d', min => 0, max => 'total',
                       unit => 'B', cast_int => 1 }
                 ]
             }
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Ram Used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                    { value => 'prct_used', template => '%.2f', min => 0, max => 100,
                       unit => '%' }
                 ]
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 output_template => 'Buffer: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'buffer_absolute', template => '%d',
+                    { value => 'buffer', template => '%d',
                       min => 0, unit => 'B' }
                 ]
             }
@@ -88,7 +88,7 @@ sub set_counters {
                 output_template => 'Cached: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'cached_absolute', template => '%d',
+                    { value => 'cached', template => '%d',
                       min => 0, unit => 'B' }
                 ]
             }

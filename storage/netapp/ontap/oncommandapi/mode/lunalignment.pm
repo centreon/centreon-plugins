@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'aligned' } ],
                 output_template => 'Luns aligned: %d',
                 perfdatas => [
-                    { label => 'aligned', value => 'aligned_absolute', template => '%d',
+                    { label => 'aligned', value => 'aligned', template => '%d',
                       min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'misaligned' } ],
                 output_template => 'Luns misaligned: %d',
                 perfdatas => [
-                    { label => 'misaligned', value => 'misaligned_absolute', template => '%d',
+                    { label => 'misaligned', value => 'misaligned', template => '%d',
                       min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'possibly_misaligned' } ],
                 output_template => 'Luns possibly misaligned: %d',
                 perfdatas => [
-                    { label => 'possibly_misaligned', value => 'possibly_misaligned_absolute', template => '%d',
+                    { label => 'possibly_misaligned', value => 'possibly_misaligned', template => '%d',
                       min => 0 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'indeterminate' } ],
                 output_template => 'Luns indeterminate: %d',
                 perfdatas => [
-                    { label => 'indeterminate', value => 'indeterminate_absolute', template => '%d',
+                    { label => 'indeterminate', value => 'indeterminate', template => '%d',
                       min => 0 },
                 ],
             }
@@ -73,7 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'partial_writes' } ],
                 output_template => 'Luns partial writes: %d',
                 perfdatas => [
-                    { label => 'partial_writes', value => 'partial_writes_absolute', template => '%d',
+                    { label => 'partial_writes', value => 'partial_writes', template => '%d',
                       min => 0 },
                 ],
             }
@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => 'not_mapped' } ],
                 output_template => 'Luns not mapped: %d',
                 perfdatas => [
-                    { label => 'not_mapped', value => 'not_mapped_absolute', template => '%d',
+                    { label => 'not_mapped', value => 'not_mapped', template => '%d',
                       min => 0 },
                 ],
             }

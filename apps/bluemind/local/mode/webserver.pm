@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_time_total', diff => 1 } ],
                 output_template => 'total requests time: %s ms',
                 perfdatas => [
-                    { value => 'requests_time_total_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'requests_time_total', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_time_mean' } ],
                 output_template => 'mean requests time: %s ms',
                 perfdatas => [
-                    { value => 'requests_time_mean_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'requests_time_mean', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'requests', diff => 1 } ],
                 output_template => 'total requests: %s',
                 perfdatas => [
-                    { value => 'requests_absolute', template => '%s', min => 0 }
+                    { value => 'requests', template => '%s', min => 0 }
                 ]
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_200', diff => 1 } ],
                 output_template => 'total 200 requests: %s',
                 perfdatas => [
-                    { value => 'requests_200_absolute', template => '%s', min => 0 }
+                    { value => 'requests_200', template => '%s', min => 0 }
                 ]
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_304', diff => 1 } ],
                 output_template => 'total 304 requests: %s',
                 perfdatas => [
-                    { value => 'requests_304_absolute', template => '%s', min => 0 }
+                    { value => 'requests_304', template => '%s', min => 0 }
                 ]
             }
         }

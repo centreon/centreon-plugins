@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'available' }  ],
                 output_template => "available : %s",
                 perfdatas => [
-                    { label => 'total_available', value => 'available_absolute', template => '%d', min => 0 },
+                    { label => 'total_available', value => 'available', template => '%d', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'failed' }  ],
                 output_template => "failed : %s",
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 },
+                    { label => 'total_failed', value => 'failed', template => '%d', min => 0 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'backing-up' }  ],
                 output_template => "backing-up : %s",
                 perfdatas => [
-                    { label => 'total_backing_up', value => 'backing-up_absolute', template => '%d', min => 0 },
+                    { label => 'total_backing_up', value => 'backing-up', template => '%d', min => 0 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'maintenance' }  ],
                 output_template => "maintenance : %s",
                 perfdatas => [
-                    { label => 'total_maintenance', value => 'maintenance_absolute', template => '%d', min => 0 },
+                    { label => 'total_maintenance', value => 'maintenance', template => '%d', min => 0 },
                 ],
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'stopped' }  ],
                 output_template => "stopped : %s",
                 perfdatas => [
-                    { label => 'total_stopped', value => 'stopped_absolute', template => '%d', min => 0 },
+                    { label => 'total_stopped', value => 'stopped', template => '%d', min => 0 },
                 ],
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'storage-full' }  ],
                 output_template => "storage-full : %s",
                 perfdatas => [
-                    { label => 'total_storage_full', value => 'storage-full_absolute', template => '%d', min => 0 },
+                    { label => 'total_storage_full', value => 'storage-full', template => '%d', min => 0 },
                 ],
             }
         },

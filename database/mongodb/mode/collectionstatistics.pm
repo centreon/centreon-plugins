@@ -44,7 +44,7 @@ sub set_counters {
                 output_template => 'Storage Size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'storageSize_absolute', template => '%s',
+                    { value => 'storageSize', template => '%s',
                       min => 0, unit => 'B', label_extra_instance => 1 },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 output_template => 'Index Size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'totalIndexSize_absolute', template => '%s',
+                    { value => 'totalIndexSize', template => '%s',
                       min => 0, unit => 'B', label_extra_instance => 1 },
                 ],
             }
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'display' } ],
                 output_template => 'Documents: %s',
                 perfdatas => [
-                    { value => 'count_absolute', template => '%s',
+                    { value => 'count', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'nindexes' }, { name => 'display' } ],
                 output_template => 'Indexes: %s',
                 perfdatas => [
-                    { value => 'nindexes_absolute', template => '%s',
+                    { value => 'nindexes', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

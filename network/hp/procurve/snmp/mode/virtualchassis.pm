@@ -73,13 +73,13 @@ sub custom_link_status_output {
 sub custom_memory_usage_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     my $msg = sprintf("memory usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)",
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_absolute}
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
     );
     return $msg;
 }
@@ -110,7 +110,7 @@ sub set_counters {
                 key_values => [ { name => 'members'} ],
                 output_template => 'total members: %s',
                 perfdatas => [
-                    { value => 'members_absolute', template => '%s', min => 0 },
+                    { value => 'members', template => '%s', min => 0 },
                 ],
             }
         },
@@ -129,7 +129,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu'}, { name => 'display'} ],
                 output_template => 'cpu usage: %.2f%%',
                 perfdatas => [
-                    { value => 'cpu_absolute', template => '%.2f', unit => '%', min => 0, max => 100, 
+                    { value => 'cpu', template => '%.2f', unit => '%', min => 0, max => 100, 
                       label_extra_instance => 1 },
                 ],
             }
@@ -138,7 +138,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_usage_output'),
                 perfdatas => [
-                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                    { value => 'used', template => '%d', min => 0, max => 'total',
                       unit => 'B', cast_int => 1, label_extra_instance => 1 },
                 ],
             }
@@ -147,7 +147,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_usage_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                    { value => 'free', template => '%d', min => 0, max => 'total',
                       unit => 'B', cast_int => 1, label_extra_instance => 1 },
                 ],
             }
@@ -156,7 +156,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'memory used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
+                    { value => 'prct_used', template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1 },
                 ],
             }

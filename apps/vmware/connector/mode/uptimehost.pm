@@ -45,7 +45,7 @@ sub custom_time_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf("Uptime: %s day(s)",
-                      int($self->{result_values}->{offset_absolute} / 60 / 60 / 24));
+                      int($self->{result_values}->{offset} / 60 / 60 / 24));
     return $msg;
 }
 
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'offset' }, { name => 'date' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_time_output'),
                 perfdatas => [
-                    { label => 'uptime', value => 'offset_absolute', template => '%.2f',
+                    { label => 'uptime', value => 'offset', template => '%.2f',
                       unit => 's', label_extra_instance => 1 },
                 ],
             }

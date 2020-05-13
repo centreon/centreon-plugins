@@ -42,22 +42,20 @@ sub set_counters_traffic {
     push @{$self->{maps_counters}->{int}}, 
         { label => 'traffic-in', filter => 'add_traffic', nlabel => 'interface.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in_15min', diff => 1 }, { name => 'traffic_in_1day', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'traffic-out', filter => 'add_traffic', nlabel => 'interface.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out_15min', diff => 1 }, { name => 'traffic_out_1day', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
-        },
+        }
     ;
 }
 
@@ -71,8 +69,8 @@ sub set_counters {
                 key_values => [ { name => 'laser_temp' }, { name => 'display' } ],
                 output_template => 'Laser Temperature : %.2f C', output_error_template => 'Laser Temperature : %.2f',
                 perfdatas => [
-                    { label => 'laser_temp', value => 'laser_temp_absolute', template => '%.2f',
-                      unit => 'C', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'laser_temp', template => '%.2f',
+                      unit => 'C', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -80,8 +78,8 @@ sub set_counters {
                 key_values => [ { name => 'input_power' }, { name => 'display' } ],
                 output_template => 'Input Power : %s dBm', output_error_template => 'Input Power : %s',
                 perfdatas => [
-                    { label => 'input_power', value => 'input_power_absolute', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'input_power', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -89,8 +87,8 @@ sub set_counters {
                 key_values => [ { name => 'output_power' }, { name => 'display' } ],
                 output_template => 'Output Power : %s dBm', output_error_template => 'Output Power : %s',
                 perfdatas => [
-                    { label => 'output_power', value => 'output_power_absolute', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'output_power', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

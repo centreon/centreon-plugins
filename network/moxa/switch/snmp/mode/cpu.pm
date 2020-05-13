@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuLoading5s' } ],
                 output_template => '5 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'cpuLoading5s_absolute', template => '%.2f',
+                    { label => 'cpu_5s', value => 'cpuLoading5s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuLoading30s' } ],
                 output_template => '30 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_30s', value => 'cpuLoading30s_absolute', template => '%.2f',
+                    { label => 'cpu_30s', value => 'cpuLoading30s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuLoading300s' } ],
                 output_template => '300 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_300s', value => 'cpuLoading300s_absolute', template => '%.2f',
+                    { label => 'cpu_300s', value => 'cpuLoading300s', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

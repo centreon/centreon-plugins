@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'internal_temperature' } ],
                 output_template => 'internal temperature: %.2f C',
                 perfdatas => [
-                    { label => 'internal_temperature', value => 'internal_temperature_absolute', template => '%.2f',
+                    { label => 'internal_temperature', value => 'internal_temperature', template => '%.2f',
                       min => 0, unit => 'C' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'internal_humidity' } ],
                 output_template => 'internal humidity: %.2f %%',
                 perfdatas => [
-                    { label => 'internal_humidity', value => 'internal_humidity_absolute', template => '%.2f', 
+                    { label => 'internal_humidity', value => 'internal_humidity', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'remote_temperature' } ],
                 output_template => 'remote temperature: %.2f C',
                 perfdatas => [
-                    { label => 'remote_temperature', value => 'remote_temperature_absolute', template => '%.2f',
+                    { label => 'remote_temperature', value => 'remote_temperature', template => '%.2f',
                       min => 0, unit => 'C' },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'remote_humidity' } ],
                 output_template => 'remote humidity: %.2f %%',
                 perfdatas => [
-                    { label => 'remote_humidity', value => 'remote_humidity_absolute', template => '%.2f', 
+                    { label => 'remote_humidity', value => 'remote_humidity', template => '%.2f', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }

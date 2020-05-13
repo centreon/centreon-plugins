@@ -46,7 +46,7 @@ sub set_counters {
                 output_template => 'total responses size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'response_size_absolute', template => '%s', min => 0, unit => 'B' }
+                    { value => 'response_size', template => '%s', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'execution_total', diff => 1 } ],
                 output_template => 'total execution: %s ms',
                 perfdatas => [
-                    { value => 'execution_total_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'execution_total', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'execution_mean' } ],
                 output_template => 'mean execution: %s ms',
                 perfdatas => [
-                    { value => 'execution_mean_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'execution_mean', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         }

@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total : %s iops',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s',
+                    { label => 'total', value => 'total', template => '%s',
                       min => 0, unit => 'iops' },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'total_read' } ],
                 output_template => 'Total read : %s iops',
                 perfdatas => [
-                    { label => 'total_read', value => 'total_read_absolute', template => '%s',
+                    { label => 'total_read', value => 'total_read', template => '%s',
                       min => 0, unit => 'iops' },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'total_write' } ],
                 output_template => 'Total write : %s iops',
                 perfdatas => [
-                    { label => 'total_write', value => 'total_write_absolute', template => '%s',
+                    { label => 'total_write', value => 'total_write', template => '%s',
                       min => 0, unit => 'iops' },
                 ],
             }
@@ -68,8 +68,8 @@ sub set_counters {
                 key_values => [ { name => 'global_iops' }, { name => 'display' }, ],
                 output_template => 'Global : %s iops',
                 perfdatas => [
-                    { label => 'global', value => 'global_iops_absolute', template => '%s',
-                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'global', value => 'global_iops', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -77,8 +77,8 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' }, { name => 'display' }, ],
                 output_template => 'Read : %s iops',
                 perfdatas => [
-                    { label => 'read', value => 'read_iops_absolute', template => '%s',
-                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read', value => 'read_iops', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -86,8 +86,8 @@ sub set_counters {
                 key_values => [ { name => 'write_iops' }, { name => 'display' }, ],
                 output_template => 'Write : %s iopss',
                 perfdatas => [
-                    { label => 'write', value => 'write_iops_absolute', template => '%s',
-                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write', value => 'write_iops', template => '%s',
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

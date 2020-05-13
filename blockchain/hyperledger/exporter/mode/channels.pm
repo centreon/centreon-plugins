@@ -50,7 +50,7 @@ sub set_counters {
                     key_values => [ { name => $_->[2] . '_count', diff => 1 } ],
                     output_template => '%s (total)',
                     perfdatas => [
-                        { value => $_->[2] . '_count_absolute', template => '%s', min => 0,
+                        { value => $_->[2] . '_count', template => '%s', min => 0,
                           label_extra_instance => 1 },
                     ],
                 }
@@ -66,7 +66,7 @@ sub set_counters {
                     key_values => [ { name => $_->[2] . '_bucket_' . $label, diff => 1 } ],
                     output_template => '%s (<= ' . $perf_label . ' sec)',
                     perfdatas => [
-                        { value => $_->[2] . '_bucket_' . $label . '_absolute', template => '%s', min => 0,
+                        { value => $_->[2] . '_bucket_' . $label , template => '%s', min => 0,
                           label_extra_instance => 1 },
                     ],
                 }
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'ledger_transaction_count', diff => 1 } ],
                 output_template => 'number of transactions processed: %s',
                 perfdatas => [
-                    { value => 'ledger_transaction_count_absolute', template => '%s', min => 0,
+                    { value => 'ledger_transaction_count', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }
@@ -88,7 +88,7 @@ sub set_counters {
                 key_values => [ { name => 'gossip_membership_total_peers_known' } ],
                 output_template => 'total known peers: %s',
                 perfdatas => [
-                    { value => 'gossip_membership_total_peers_known_absolute', template => '%s', min => 0,
+                    { value => 'gossip_membership_total_peers_known', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }
@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'gossip_state_height' } ],
                 output_template => 'current ledger height: %s',
                 perfdatas => [
-                    { value => 'gossip_state_height_absolute', template => '%s', min => 0,
+                    { value => 'gossip_state_height', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'ledger_blockchain_height' } ],
                 output_template => 'height of the chain in blocks: %s',
                 perfdatas => [
-                    { value => 'ledger_blockchain_height_absolute', template => '%s', min => 0,
+                    { value => 'ledger_blockchain_height', template => '%s', min => 0,
                       label_extra_instance => 1 },
                 ],
             }

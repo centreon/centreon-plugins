@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Number of pending updates : %d',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%d',
+                    { label => 'total', value => 'total', template => '%d',
                       min => 0 },
                 ],
             }

@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsAntivirusNotRunning' } ],
                 output_template => '%d host(s) without running antivirus',
                 perfdatas => [
-                    { label => 'no_antivirus', value => 'hostsAntivirusNotRunning_absolute', template => '%d', min => 0 },
+                    { label => 'no_antivirus', value => 'hostsAntivirusNotRunning', template => '%d', min => 0 },
                 ],
             }
         },
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsRealtimeNotRunning' } ],
                 output_template => '%d hosts(s) without running real time protection',
                 perfdatas => [
-                    { label => 'no_real_time', value => 'hostsRealtimeNotRunning_absolute', template => '%d', min => 0 },
+                    { label => 'no_real_time', value => 'hostsRealtimeNotRunning', template => '%d', min => 0 },
                 ],
             }
         },
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsRealtimeLevelChanged' } ],
                 output_template => '%d host(s) with not acceptable level of real time protection',
                 perfdatas => [
-                    { label => 'not_acceptable_level', value => 'hostsRealtimeLevelChanged_absolute', template => '%d', min => 0 },
+                    { label => 'not_acceptable_level', value => 'hostsRealtimeLevelChanged', template => '%d', min => 0 },
                 ],
             }
         },
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsNotCuredObject' } ],
                 output_template => '%d host(s) with not cured objects',
                 perfdatas => [
-                    { label => 'not_cured_objects', value => 'hostsNotCuredObject_absolute', template => '%d', min => 0 },
+                    { label => 'not_cured_objects', value => 'hostsNotCuredObject', template => '%d', min => 0 },
                 ],
             }
         },
@@ -92,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsTooManyThreats' } ],
                 output_template => '%d host(s) with too many threats',
                 perfdatas => [
-                    { label => 'too_many_threats', value => 'hostsTooManyThreats_absolute', template => '%d', min => 0 },
+                    { label => 'too_many_threats', value => 'hostsTooManyThreats', template => '%d', min => 0 },
                 ],
             }
         },

@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'upsInputFrequency' }, { name => 'display' } ],
                 output_template => 'Frequence : %.2f Hz',
                 perfdatas => [
-                    { label => 'frequence', value => 'upsInputFrequency_absolute', template => '%s', 
-                      unit => 'Hz', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'frequence', value => 'upsInputFrequency', template => '%s', 
+                      unit => 'Hz', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'upsInputVoltage' }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { label => 'voltage', value => 'upsInputVoltage_absolute', template => '%s', 
-                      unit => 'V', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'voltage', value => 'upsInputVoltage', template => '%s', 
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'upsInputCurrent' }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { label => 'current', value => 'upsInputCurrent_absolute', template => '%s', 
-                      unit => 'A', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current', value => 'upsInputCurrent', template => '%s', 
+                      unit => 'A', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -64,8 +64,8 @@ sub set_counters {
                 key_values => [ { name => 'upsInputTruePower' }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { label => 'power', value => 'upsInputTruePower_absolute', template => '%s', 
-                      unit => 'W', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'power', value => 'upsInputTruePower', template => '%s', 
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -50,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'rx_power' } ],
                 output_template => 'Received signal strength: %s Dbm',
                 perfdatas => [
-                    { label => 'rx_power', value => 'rx_power_absolute', template => '%s', min => 0 , unit => 'Dbm' },
+                    { label => 'rx_power', value => 'rx_power', template => '%s', min => 0 , unit => 'Dbm' },
                 ],
             }
         },
@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'tx_power' } ],
                 output_template => 'Current transmit power: %s Dbm',
                 perfdatas => [
-                    { label => 'tx_power', value => 'tx_power_absolute', template => '%s', min => 0 , unit => 'Dbm' },
+                    { label => 'tx_power', value => 'tx_power', template => '%s', min => 0 , unit => 'Dbm' },
                 ],
             }
         },

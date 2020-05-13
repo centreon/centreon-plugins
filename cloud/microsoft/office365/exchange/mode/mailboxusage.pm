@@ -177,7 +177,7 @@ sub set_counters {
                 output_template => 'Usage (active mailboxes): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_active', value => 'storage_used_active_absolute', template => '%d',
+                    { label => 'storage_used_active', value => 'storage_used_active', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -187,7 +187,7 @@ sub set_counters {
                 output_template => 'Usage (inactive mailboxes): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_inactive', value => 'storage_used_inactive_absolute', template => '%d',
+                    { label => 'storage_used_inactive', value => 'storage_used_inactive', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -207,7 +207,7 @@ sub set_counters {
                 key_values => [ { name => 'items' } ],
                 output_template => 'Items: %d',
                 perfdatas => [
-                    { label => 'items', value => 'items_absolute', template => '%d',
+                    { label => 'items', value => 'items', template => '%d',
                       min => 0 },
                 ],
             }

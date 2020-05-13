@@ -38,18 +38,17 @@ sub set_counters {
                 key_values => [ { name => 'fgAvVirusDetected', diff => 1 }, { name => 'display' } ],
                 output_template => 'virus detected: %s',
                 perfdatas => [
-                    { label => 'virus_detected', value => 'fgAvVirusDetected_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'virus_detected', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'virus-detected-psec', nlabel => 'domain.virus.detected.persecond', display_ok => 0, set => {
-                key_values => [ { name => 'fgAvVirusDetected', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'fgAvVirusDetected', per_second => 1 }, { name => 'display' } ],
                 output_template => 'virus detected: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'domain.virus.detected.persecond', value => 'fgAvVirusDetected_per_second', template => '%.2f',
-                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'domain.virus.detected.persecond', template => '%.2f',
+                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -57,18 +56,17 @@ sub set_counters {
                 key_values => [ { name => 'fgAvVirusBlocked', diff => 1 }, { name => 'display' } ],
                 output_template => 'virus blocked: %s',
                 perfdatas => [
-                    { label => 'virus_blocked', value => 'fgAvVirusBlocked_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'virus_blocked', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'virus-blocked-psec', nlabel => 'domain.virus.blocked.persecond', display_ok => 0, set => {
-                key_values => [ { name => 'fgAvVirusBlocked', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'fgAvVirusBlocked', per_second => 1 }, { name => 'display' } ],
                 output_template => 'virus blocked: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'domain.virus.blocked.persecond', value => 'fgAvVirusBlocked_per_second', template => '%.2f',
-                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'domain.virus.blocked.persecond', template => '%.2f',
+                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         }

@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'failed' } ],
                 output_template => 'Failed: %s',
                 perfdatas => [
-                    { label => 'failed', value => 'failed_absolute', template => '%s', min => 0 },
+                    { label => 'failed', value => 'failed', template => '%s', min => 0 },
                 ],
             }
         },

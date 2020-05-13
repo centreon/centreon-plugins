@@ -159,7 +159,7 @@ sub custom_access_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf("Access : %s", 
-        $self->{result_values}->{access_absolute} == 1 ? 'readWrite' : 'readOnly'
+        $self->{result_values}->{access} == 1 ? 'readWrite' : 'readOnly'
     );
 
     return $msg;
@@ -178,7 +178,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Partitions count : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 }
+                    { label => 'count', value => 'count', template => '%d', min => 0 }
                 ]
             }
         },
@@ -197,8 +197,8 @@ sub set_counters {
                 key_values => [ { name => 'access' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_access_output'),
                 perfdatas => [
-                    { label => 'access', value => 'access_absolute', template => '%d', min => 1, max => 2, 
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'access', value => 'access', template => '%d', min => 1, max => 2, 
+                      label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

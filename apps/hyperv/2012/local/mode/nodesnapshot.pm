@@ -52,13 +52,13 @@ sub set_counters {
 sub custom_snapshot_output {
     my ($self, %options) = @_;
 
-    return "[status = " . $self->{result_values}->{status_absolute} . "] checkpoint started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot_absolute}) . "' ago";
+    return "[status = " . $self->{result_values}->{status} . "] checkpoint started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot}) . "' ago";
 }
 
 sub custom_backing_output {
     my ($self, %options) = @_;
     
-    return "[status = " . $self->{result_values}->{status_absolute} . "] backing started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing_absolute}) . "' ago";
+    return "[status = " . $self->{result_values}->{status} . "] backing started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing}) . "' ago";
 }
 
 sub prefix_vm_output {

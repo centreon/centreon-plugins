@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'power' } ],
                 output_template => 'Input power : %s W',
                 perfdatas => [
-                    { label => 'power', value => 'power_absolute', template => '%s', 
+                    { label => 'power', value => 'power', template => '%s', 
                       unit => 'W', min => 0 },
                 ],
             }
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'Current : %s A',
                 perfdatas => [
-                    { label => 'current', value => 'current_absolute', template => '%s', 
+                    { label => 'current', value => 'current', template => '%s', 
                       unit => 'A', min => 0 },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'voltage' } ],
                 output_template => 'Voltage : %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'voltage_absolute', template => '%s', 
+                    { label => 'voltage', value => 'voltage', template => '%s', 
                       unit => 'V', min => 0 },
                 ],
             }

@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'p3' } ],
                 output_template => 'Active Power: %.2f W',
                 perfdatas => [
-                    { value => 'p3_absolute', template => '%.2f', unit => 'W', min => 0 },
+                    { value => 'p3', template => '%.2f', unit => 'W', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'q3' } ],
                 output_template => 'Reactive Power: %.2f VAR',
                 perfdatas => [
-                    { value => 'q3_absolute', template => '%.2f', unit => 'VAR', min => 0 },
+                    { value => 'q3', template => '%.2f', unit => 'VAR', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 's3' } ],
                 output_template => 'Apparent Power: %.2f VA',
                 perfdatas => [
-                    { value => 's3_absolute', template => '%.2f', unit => 'VA', min => 0 },
+                    { value => 's3', template => '%.2f', unit => 'VA', min => 0 },
                 ],
             }
         },
@@ -72,8 +72,8 @@ sub set_counters {
                 key_values => [ { name => 'uL' }, { name => 'display' } ],
                 output_template => 'Voltage: %.2f V',
                 perfdatas => [
-                    { value => 'uL_absolute', template => '%.2f', unit => 'V', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'uL', template => '%.2f', unit => 'V', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -81,8 +81,8 @@ sub set_counters {
                 key_values => [ { name => 'iL' }, { name => 'display' } ],
                 output_template => 'Current: %.2f A',
                 perfdatas => [
-                    { value => 'iL_absolute', template => '%.2f', unit => 'A', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'iL', template => '%.2f', unit => 'A', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -90,8 +90,8 @@ sub set_counters {
                 key_values => [ { name => 'pfL' }, { name => 'display' } ],
                 output_template => 'Power Factor: %.2f',
                 perfdatas => [
-                    { value => 'pfL_absolute', template => '%.2f', min => 0, max => 1,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'pfL', template => '%.2f', min => 0, max => 1,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -99,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'cosP' }, { name => 'display' } ],
                 output_template => 'Cos Phi: %.2f',
                 perfdatas => [
-                    { value => 'cosP_absolute', template => '%.2f', min => 0, max => 1,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'cosP', template => '%.2f', min => 0, max => 1,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'pL' }, { name => 'display' } ],
                 output_template => 'Active Power: %.2f W',
                 perfdatas => [
-                    { value => 'pL_absolute', template => '%.2f', unit => 'W', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'pL', template => '%.2f', unit => 'W', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -117,8 +117,8 @@ sub set_counters {
                 key_values => [ { name => 'qL' }, { name => 'display' } ],
                 output_template => 'Reactive Power: %.2f VAR',
                 perfdatas => [
-                    { value => 'qL_absolute', template => '%.2f', unit => 'VAR', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'qL', template => '%.2f', unit => 'VAR', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -126,8 +126,8 @@ sub set_counters {
                 key_values => [ { name => 'sL' }, { name => 'display' } ],
                 output_template => 'Apparent Power: %.2f VA',
                 perfdatas => [
-                    { value => 'sL_absolute', template => '%.2f', unit => 'VA', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'sL', template => '%.2f', unit => 'VA', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -135,8 +135,8 @@ sub set_counters {
                 key_values => [ { name => 'whL' }, { name => 'display' } ],
                 output_template => 'Active Energy: %.2f Wh',
                 perfdatas => [
-                    { value => 'whL_absolute', template => '%.2f', unit => 'Wh', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'whL', template => '%.2f', unit => 'Wh', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -144,8 +144,8 @@ sub set_counters {
                 key_values => [ { name => 'qhL' }, { name => 'display' } ],
                 output_template => 'Reactive Energy: %.2f VARh',
                 perfdatas => [
-                    { value => 'qhL_absolute', template => '%.2f', unit => 'VARh', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'qhL', template => '%.2f', unit => 'VARh', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -153,8 +153,8 @@ sub set_counters {
                 key_values => [ { name => 'shL' }, { name => 'display' } ],
                 output_template => 'Apparent Energy: %.2f VAh',
                 perfdatas => [
-                    { value => 'shL_absolute', template => '%.2f', unit => 'VAh', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'shL', template => '%.2f', unit => 'VAh', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -162,8 +162,8 @@ sub set_counters {
                 key_values => [ { name => 'thdUL' }, { name => 'display' } ],
                 output_template => 'Voltage THD: %.2f %%',
                 perfdatas => [
-                    { value => 'thdUL_absolute', template => '%.2f', unit => '%', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'thdUL', template => '%.2f', unit => '%', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -171,8 +171,8 @@ sub set_counters {
                 key_values => [ { name => 'thdIL' }, { name => 'display' } ],
                 output_template => 'Current THD: %.2f %%',
                 perfdatas => [
-                    { value => 'thdIL_absolute', template => '%.2f', unit => '%', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'thdIL', template => '%.2f', unit => '%', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

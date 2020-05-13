@@ -51,25 +51,23 @@ sub set_counters {
             }
         },
         { label => 'read', nlabel => 'node.io.read.usage.bytespersecond', set => {
-                key_values => [ { name => 'io_read_bytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'io_read_bytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read i/o : %s %s/s',
-                per_second => 1, output_change_bytes => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'io_read_bytes_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write', nlabel => 'node.io.write.usage.bytespersecond', set => {
-                key_values => [ { name => 'io_write_bytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'io_write_bytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write i/o : %s %s/s',
-                per_second => 1, output_change_bytes => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'io_write_bytes_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 

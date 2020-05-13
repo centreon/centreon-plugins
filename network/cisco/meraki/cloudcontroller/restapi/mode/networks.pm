@@ -38,8 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'assoc' }, { name => 'display' } ],
                 output_template => 'connections success: %s',
                 perfdatas => [
-                    { value => 'assoc_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -47,8 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'auth' }, { name => 'display' } ],
                 output_template => 'connections auth: %s',
                 perfdatas => [
-                    { value => 'auth_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -56,8 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'assoc' }, { name => 'display' } ],
                 output_template => 'connections assoc: %s',
                 perfdatas => [
-                    { value => 'assoc_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -65,8 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'dhcp' }, { name => 'display' } ],
                 output_template => 'connections dhcp: %s',
                 perfdatas => [
-                    { value => 'dhcp_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -74,28 +70,25 @@ sub set_counters {
                 key_values => [ { name => 'dns' }, { name => 'display' } ],
                 output_template => 'connections dns: %s',
                 perfdatas => [
-                    { value => 'dns_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-in', nlabel => 'network.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic in: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'network.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
                 output_template => 'traffic out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

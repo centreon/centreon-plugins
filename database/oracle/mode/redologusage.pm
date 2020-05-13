@@ -40,7 +40,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', cb_prefix_output => 'prefix_global_output', type => 0 },
+        { name => 'global', cb_prefix_output => 'prefix_global_output', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -50,19 +50,19 @@ sub set_counters {
                 output_template => 'retry ratio %.2f%%',
                 output_use => 'retry_ratio', threshold_use => 'retry_ratio',
                 perfdatas => [
-                    { label => 'retry_ratio', value => 'retry_ratio', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'retry_ratio', value => 'retry_ratio', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'traffic-io', nlabel => 'redolog.traffic.io.bytespersecond', set => {
-                key_values => [ { name => 'redo_size', diff => 1 } ],
-                output_change_bytes => 1, per_second => 1,
+                key_values => [ { name => 'redo_size', per_second => 1 } ],
+                output_change_bytes => 1,
                 output_template => 'traffic io %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_io', value => 'redo_size_per_second', template => '%s', min => 0, unit => 'B/s' },
-                ],
+                    { label => 'traffic_io', template => '%s', min => 0, unit => 'B/s' }
+                ]
             }
-        },
+        }
     ];
 }
 

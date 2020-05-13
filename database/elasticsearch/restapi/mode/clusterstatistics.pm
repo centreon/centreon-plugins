@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'nodes_total' } ],
                 output_template => 'Nodes: %d',
                 perfdatas => [
-                    { value => 'nodes_total_absolute', template => '%d',
+                    { value => 'nodes_total', template => '%d',
                       min => 0 },
                 ],
             }
@@ -70,8 +70,8 @@ sub set_counters {
                 key_values => [ { name => 'nodes_data' }, { name => 'nodes_total' } ],
                 output_template => 'Nodes Data: %d',
                 perfdatas => [
-                    { value => 'nodes_data_absolute', template => '%d',
-                      min => 0, max => 'nodes_total_absolute' },
+                    { value => 'nodes_data', template => '%d',
+                      min => 0, max => 'nodes_total' },
                 ],
             }
         },
@@ -79,8 +79,8 @@ sub set_counters {
                 key_values => [ { name => 'nodes_coordinating' }, { name => 'nodes_total' } ],
                 output_template => 'Nodes Coordinating: %d',
                 perfdatas => [
-                    { value => 'nodes_coordinating_absolute', template => '%d',
-                      min => 0, max => 'nodes_total_absolute' },
+                    { value => 'nodes_coordinating', template => '%d',
+                      min => 0, max => 'nodes_total' },
                 ],
             }
         },
@@ -88,8 +88,8 @@ sub set_counters {
                 key_values => [ { name => 'nodes_master' }, { name => 'nodes_total' } ],
                 output_template => 'Nodes Master: %d',
                 perfdatas => [
-                    { value => 'nodes_master_absolute', template => '%d',
-                      min => 0, max => 'nodes_total_absolute' },
+                    { value => 'nodes_master', template => '%d',
+                      min => 0, max => 'nodes_total' },
                 ],
             }
         },
@@ -97,8 +97,8 @@ sub set_counters {
                 key_values => [ { name => 'nodes_ingest' }, { name => 'nodes_total' } ],
                 output_template => 'Nodes Ingest: %d',
                 perfdatas => [
-                    { value => 'nodes_ingest_absolute', template => '%d',
-                      min => 0, max => 'nodes_total_absolute' },
+                    { value => 'nodes_ingest', template => '%d',
+                      min => 0, max => 'nodes_total' },
                 ],
             }
         },
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'indices_count' } ],
                 output_template => 'Indices: %d',
                 perfdatas => [
-                    { value => 'indices_count_absolute', template => '%d',
+                    { value => 'indices_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -115,7 +115,7 @@ sub set_counters {
                 key_values => [ { name => 'shards_total' } ],
                 output_template => 'Shards: %d',
                 perfdatas => [
-                    { value => 'shards_total_absolute', template => '%d',
+                    { value => 'shards_total', template => '%d',
                       min => 0 },
                 ],
             }
@@ -124,8 +124,8 @@ sub set_counters {
                 key_values => [ { name => 'shards_active' } ],
                 output_template => 'Shards Active: %d',
                 perfdatas => [
-                    { value => 'shards_active_absolute', template => '%d',
-                      min => 0, max => 'shards_total_absolute' },
+                    { value => 'shards_active', template => '%d',
+                      min => 0, max => 'shards_total' },
                 ],
             }
         },
@@ -133,7 +133,7 @@ sub set_counters {
                 key_values => [ { name => 'active_shards_percent' } ],
                 output_template => 'Shards Active: %.2f%%',
                 perfdatas => [
-                    { value => 'active_shards_percent_absolute', template => '%.2f',
+                    { value => 'active_shards_percent', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],                
             }
@@ -142,8 +142,8 @@ sub set_counters {
                 key_values => [ { name => 'shards_unassigned' }, { name => 'shards_total' } ],
                 output_template => 'Shards Unassigned: %d',
                 perfdatas => [
-                    { value => 'shards_unassigned_absolute', template => '%d',
-                      min => 0, max => 'shards_total_absolute' },
+                    { value => 'shards_unassigned', template => '%d',
+                      min => 0, max => 'shards_total' },
                 ],
             }
         },
@@ -151,8 +151,8 @@ sub set_counters {
                 key_values => [ { name => 'shards_relocating' }, { name => 'shards_total' } ],
                 output_template => 'Shards Relocating: %d',
                 perfdatas => [
-                    { value => 'shards_relocating_absolute', template => '%d',
-                      min => 0, max => 'shards_total_absolute' },
+                    { value => 'shards_relocating', template => '%d',
+                      min => 0, max => 'shards_total' },
                 ],
             }
         },
@@ -160,8 +160,8 @@ sub set_counters {
                 key_values => [ { name => 'shards_initializing' }, { name => 'shards_total' } ],
                 output_template => 'Shards Initializing: %d',
                 perfdatas => [
-                    { value => 'shards_initializing_absolute', template => '%d',
-                      min => 0, max => 'shards_total_absolute' },
+                    { value => 'shards_initializing', template => '%d',
+                      min => 0, max => 'shards_total' },
                 ],
             }
         },
@@ -169,7 +169,7 @@ sub set_counters {
                 key_values => [ { name => 'tasks_pending' } ],
                 output_template => 'Tasks Pending: %d',
                 perfdatas => [
-                    { value => 'tasks_pending_absolute', template => '%d',
+                    { value => 'tasks_pending', template => '%d',
                       min => 0 },
                 ],
             }
@@ -178,7 +178,7 @@ sub set_counters {
                 key_values => [ { name => 'docs_count' } ],
                 output_template => 'Documents: %d',
                 perfdatas => [
-                    { value => 'docs_count_absolute', template => '%d',
+                    { value => 'docs_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -188,7 +188,7 @@ sub set_counters {
                 output_template => 'Data: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'size_in_bytes_absolute', template => '%s',
+                    { value => 'size_in_bytes', template => '%s',
                       min => 0, unit => 'B' },
                 ],
             }

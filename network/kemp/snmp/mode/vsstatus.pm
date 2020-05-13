@@ -62,31 +62,28 @@ sub set_counters {
                 key_values => [ { name => 'vSActivConns' }, { name => 'display' } ],
                 output_template => 'Active connections : %s',
                 perfdatas => [
-                    { label => 'active', value => 'vSActivConns_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'active', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'in-traffic', set => {
-                key_values => [ { name => 'vSInBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'vSInBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'vSInBytes_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'out-traffic', set => {
-                key_values => [ { name => 'vSOutBytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'vSOutBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'vSOutBytes_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'traffic_out', template => '%.2f',  min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -95,13 +92,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{status} !~ /inService|disabled|redirect/i' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /inService|disabled|redirect/i' }
+    });
+
     return $self;
 }
 

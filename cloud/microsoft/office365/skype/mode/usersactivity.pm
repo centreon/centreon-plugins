@@ -113,7 +113,7 @@ sub set_counters {
                 key_values => [ { name => 'peer_to_peer_sessions' } ],
                 output_template => 'Peer-to-peer Sessions Count: %d',
                 perfdatas => [
-                    { label => 'total_peer_to_peer_sessions', value => 'peer_to_peer_sessions_absolute', template => '%d',
+                    { label => 'total_peer_to_peer_sessions', value => 'peer_to_peer_sessions', template => '%d',
                       min => 0 },
                 ],
             }
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'organized_conference' } ],
                 output_template => 'Organized Conference Count: %d',
                 perfdatas => [
-                    { label => 'total_organized_conference', value => 'organized_conference_absolute', template => '%d',
+                    { label => 'total_organized_conference', value => 'organized_conference', template => '%d',
                       min => 0 },
                 ],
             }
@@ -131,7 +131,7 @@ sub set_counters {
                 key_values => [ { name => 'participated_conference' } ],
                 output_template => 'Participated Conference Count: %d',
                 perfdatas => [
-                    { label => 'total_participated_conference', value => 'participated_conference_absolute', template => '%d',
+                    { label => 'total_participated_conference', value => 'participated_conference', template => '%d',
                       min => 0 },
                 ],
             }
@@ -142,8 +142,8 @@ sub set_counters {
                 key_values => [ { name => 'peer_to_peer_sessions' }, { name => 'name' } ],
                 output_template => 'Peer-to-peer Sessions Count: %d',
                 perfdatas => [
-                    { label => 'peer_to_peer_sessions', value => 'peer_to_peer_sessions_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'peer_to_peer_sessions', value => 'peer_to_peer_sessions', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -151,8 +151,8 @@ sub set_counters {
                 key_values => [ { name => 'organized_conference' }, { name => 'name' } ],
                 output_template => 'Organized Conference Count: %d',
                 perfdatas => [
-                    { label => 'organized_conference', value => 'organized_conference_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'organized_conference', value => 'organized_conference', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -160,8 +160,8 @@ sub set_counters {
                 key_values => [ { name => 'participated_conference' }, { name => 'name' } ],
                 output_template => 'Participated Conference Count: %d',
                 perfdatas => [
-                    { label => 'participated_conference', value => 'participated_conference_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'participated_conference', value => 'participated_conference', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

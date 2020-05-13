@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'active' }, { name => 'total' } ],
                 output_template => 'current active alarms: %d',
                 perfdatas => [
-                    { value => 'active_absolute', template => '%d', min => 0, max => 'total_absolute' }
+                    { value => 'active', template => '%d', min => 0, max => 'total' }
                 ]
             }
         }

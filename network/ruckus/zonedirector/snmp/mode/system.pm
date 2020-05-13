@@ -47,11 +47,11 @@ sub custom_usage_output {
 
     return sprintf(
         'ram total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
-        $self->{result_values}->{prct_used_absolute},
-        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
-        $self->{result_values}->{prct_free_absolute}
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
     );
 }
 
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_util' } ],
                 output_template => 'cpu usage: %.2f%%',
                 perfdatas => [
-                    { value => 'cpu_util_absolute', template => '%.2f', unit => '%', min => 0, max => 100 }
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
                 ]
             }
         }
@@ -98,8 +98,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
                 ]
             }
         },
@@ -107,8 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1 }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
                 ]
             }
         },
@@ -116,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'ram used: %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100 }
+                    { template => '%.2f', min => 0, max => 100 }
                 ]
             }
         }
@@ -127,7 +125,7 @@ sub set_counters {
                 key_values => [ { name => 'ap' } ],
                 output_template => 'access points connections: %d',
                 perfdatas => [
-                    { value => 'ap_absolute', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
@@ -135,7 +133,7 @@ sub set_counters {
                 key_values => [ { name => 'authorized_clients' } ],
                 output_template => 'client devices authorized connections: %d',
                 perfdatas => [
-                    { value => 'authorized_clients_absolute', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
@@ -143,7 +141,7 @@ sub set_counters {
                 key_values => [ { name => 'rogues' } ],
                 output_template => 'rogue devices connections: %d',
                 perfdatas => [
-                    { value => 'rogues_absolute', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
@@ -151,22 +149,20 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'traffic-in', nlabel => 'system.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
                 output_template => 'traffic in: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%s',
-                      min => 0, unit => 'b/s' }
+                    { template => '%s', min => 0, unit => 'b/s' }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'system.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
                 output_template => 'traffic in: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%s',
-                      min => 0, unit => 'b/s' }
+                    { template => '%s', min => 0, unit => 'b/s' }
                 ]
             }
         }

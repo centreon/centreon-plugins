@@ -58,72 +58,65 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of zones: %d',
                 perfdatas => [
-                    { label => 'zones_count', value => 'count_absolute', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'zones_count', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{searches} = [
         { label => 'searches-total', set => {
-                key_values => [ { name => 'Total', diff => 1 } ],
+                key_values => [ { name => 'Total', per_second => 1 } ],
                 output_template => 'Total: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'searches_total', value => 'Total_per_second', template => '%.2f',
-                      min => 0, unit => 'searches/s' },
+                    { label => 'searches_total', template => '%.2f', min => 0, unit => 'searches/s' },
                 ],
             }
         },
         { label => 'searches-dropped', set => {
-                key_values => [ { name => 'Dropped', diff => 1 } ],
+                key_values => [ { name => 'Dropped', per_second => 1 } ],
                 output_template => 'Dropped: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'searches_dropped', value => 'Dropped_per_second', template => '%.2f',
-                      min => 0, unit => 'searches/s' },
+                    { label => 'searches_dropped', template => '%.2f', min => 0, unit => 'searches/s' },
                 ],
             }
         },
         { label => 'searches-max-sub-search-exceeded', set => {
-                key_values => [ { name => 'MaxSubSearchExceeded', diff => 1 } ],
+                key_values => [ { name => 'MaxSubSearchExceeded', per_second => 1 } ],
                 output_template => 'Max Sub Search Exceeded: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'searches_max_sub_search_exceeded', value => 'MaxSubSearchExceeded_per_second', template => '%.2f',
+                    { label => 'searches_max_sub_search_exceeded', template => '%.2f',
                       min => 0, unit => 'searches/s' },
                 ],
             }
         },
         { label => 'searches-max-targets-exceeded', set => {
-                key_values => [ { name => 'MaxTargetsExceeded', diff => 1 } ],
+                key_values => [ { name => 'MaxTargetsExceeded', per_second => 1 } ],
                 output_template => 'Max Targets Exceeded: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'searches_max_targets_exceeded', value => 'MaxTargetsExceeded_per_second', template => '%.2f',
-                      min => 0, unit => 'searches/s' },
+                    { label => 'searches_max_targets_exceeded', template => '%.2f', min => 0, unit => 'searches/s' },
                 ],
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{zones} = [
         { label => 'status', set => {
                 key_values => [ { name => 'Status' }, { name => 'Type' }, { name => 'Name' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'calls-count', set => {
                 key_values => [ { name => 'Calls' }, { name => 'Name' } ],
                 output_template => 'Number of Calls: %d',
                 perfdatas => [
-                    { label => 'calls_count', value => 'Calls_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'Name_absolute' },
-                ],
+                    { label => 'calls_count', template => '%d', min => 0, label_extra_instance => 1, instance_use => 'Name' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -144,12 +137,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                    "warning-status:s"      => { name => 'warning_status' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} ne "Active"' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} ne "Active"' }
+    });
 
     return $self;
 }

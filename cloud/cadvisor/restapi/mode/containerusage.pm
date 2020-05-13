@@ -29,10 +29,10 @@ use DateTime;
 
 sub custom_memory_output {
     my ($self, %options) = @_;
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_total_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_used_absolute});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{memory_used});
     my $msg = sprintf("Memory Used: %s (%.2f%%) Total: %s" ,
-                      $total_used_value . " " . $total_used_unit, 100 * $self->{result_values}->{memory_used_absolute} / $self->{result_values}->{memory_total_absolute},
+                      $total_used_value . " " . $total_used_unit, 100 * $self->{result_values}->{memory_used} / $self->{result_values}->{memory_total},
                       $total_size_value . " " . $total_size_unit);
     return $msg;
 }
@@ -48,40 +48,40 @@ sub set_counters {
         { label => 'cpu-number', set => {
                 key_values => [ { name => 'cpu_number'}, { name => 'display' } ],
                 output_template => 'CPU: %d core(s)',
-                output_use => 'cpu_number_absolute',
+                output_use => 'cpu_number',
                 perfdatas => [
-                    { label => 'cpu_number', value => 'cpu_number_absolute', template => '%d',
-                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_number', value => 'cpu_number', template => '%d',
+                       min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'cpu-total', set => {
                 key_values => [ { name => 'cpu_total'}, { name => 'display' } ],
                 output_template => 'CPU Usage: %.2f %%',
-                output_use => 'cpu_total_absolute',
+                output_use => 'cpu_total',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'cpu_total_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_total', value => 'cpu_total', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'cpu-user', set => {
                 key_values => [ { name => 'cpu_user'}, { name => 'display' } ],
                 output_template => 'CPU User: %.2f %%',
-                output_use => 'cpu_user_absolute',
+                output_use => 'cpu_user',
                 perfdatas => [
-                    { label => 'cpu_user', value => 'cpu_user_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_user', value => 'cpu_user', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'cpu-system', set => {
                 key_values => [ { name => 'cpu_system' }, { name => 'display' } ],
                 output_template => 'CPU System: %.2f %%',
-                output_use => 'cpu_system_absolute',
+                output_use => 'cpu_system',
                 perfdatas => [
-                    { label => 'cpu_system', value => 'cpu_system_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_system', value => 'cpu_system', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -90,8 +90,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { label => 'memory_used', value => 'memory_used_absolute', template => '%s',
-                    min => 0, max => 'memory_total_absolute',unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'memory_used', value => 'memory_used', template => '%s',
+                    min => 0, max => 'memory_total',unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -100,8 +100,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'Memory Cache: %s %s',
                 perfdatas => [
-                    { label => 'memory_cache', value => 'memory_cache_absolute', template => '%s',
-                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'memory_cache', value => 'memory_cache', template => '%s',
+                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -110,8 +110,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'Memory RSS: %s %s',
                 perfdatas => [
-                    { label => 'memory_rss', value => 'memory_rss_absolute', template => '%s',
-                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'memory_rss', value => 'memory_rss', template => '%s',
+                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -120,8 +120,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'Swap: %s %s',
                 perfdatas => [
-                    { label => 'swap', value => 'swap_absolute', template => '%s',
-                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'swap', value => 'swap', template => '%s',
+                    min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

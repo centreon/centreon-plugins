@@ -40,8 +40,8 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_absolute', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', value => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -50,8 +50,8 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_absolute', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', value => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

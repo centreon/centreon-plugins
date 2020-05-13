@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'active_thread_count' } ],
                 output_template => 'threads active: %s',
                 perfdatas => [
-                    { value => 'active_thread_count_absolute', template => '%s', min => 0 },
+                    { value => 'active_thread_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'stub_count' } ],
                 output_template => 'stubs: %s',
                 perfdatas => [
-                    { value => 'stub_count_absolute', template => '%s', min => 0 },
+                    { value => 'stub_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'proxy_count' } ],
                 output_template => 'proxies: %s',
                 perfdatas => [
-                    { value => 'proxy_count_absolute', template => '%s', min => 0 },
+                    { value => 'proxy_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'client_session_count' } ],
                 output_template => 'sessions client: %s',
                 perfdatas => [
-                    { value => 'client_session_count_absolute', template => '%s', min => 0 },
+                    { value => 'client_session_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'server_session_count' } ],
                 output_template => 'sessions server: %s',
                 perfdatas => [
-                    { value => 'server_session_count_absolute', template => '%s', min => 0 },
+                    { value => 'server_session_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'client_invoke_count_per_minute' } ],
                 output_template => 'clients invoke: %s/m',
                 perfdatas => [
-                    { value => 'client_invoke_count_per_minute_absolute', template => '%s', min => 0, unit => '/m' },
+                    { value => 'client_invoke_count_per_minute', template => '%s', min => 0, unit => '/m' },
                 ],
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'processed_service_count_per_minute' } ],
                 output_template => 'processed service: %s/m',
                 perfdatas => [
-                    { value => 'processed_service_count_per_minute_absolute', template => '%s', min => 0, unit => '/m' },
+                    { value => 'processed_service_count_per_minute', template => '%s', min => 0, unit => '/m' },
                 ],
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'client_invoke_count', diff => 1 } ],
                 output_template => 'clients invoked: %s',
                 perfdatas => [
-                    { value => 'client_invoke_count_absolute', template => '%s', min => 0 },
+                    { value => 'client_invoke_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -103,7 +103,7 @@ sub set_counters {
                 key_values => [ { name => 'processed_service_count', diff => 1 } ],
                 output_template => 'processed service: %s',
                 perfdatas => [
-                    { value => 'processed_service_count_absolute', template => '%s', min => 0 },
+                    { value => 'processed_service_count', template => '%s', min => 0 },
                 ],
             }
         },

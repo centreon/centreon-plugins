@@ -41,8 +41,8 @@ sub custom_av_output {
 
     return sprintf(
         "antivirus version '%s', last update %s",
-        $self->{result_values}->{av_version_absolute},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{av_lastupdate_time_absolute})
+        $self->{result_values}->{av_version},
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{av_lastupdate_time})
     );
 }
 
@@ -51,8 +51,8 @@ sub custom_threat_output {
 
     return sprintf(
         "threat version '%s', last update %s",
-        $self->{result_values}->{threat_version_absolute},
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{threat_lastupdate_time_absolute})
+        $self->{result_values}->{threat_version},
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{threat_lastupdate_time})
     );
 }
 
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'av_lastupdate_time' }, { name => 'av_version' } ],
                 closure_custom_output => $self->can('custom_av_output'),
                 perfdatas => [
-                    { value => 'av_lastupdate_time_absolute', template => '%d', min => 0, unit => 's' }
+                    { value => 'av_lastupdate_time', template => '%d', min => 0, unit => 's' }
                 ],
             }
         },
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'threat_lastupdate_time' }, { name => 'threat_version' } ],
                 closure_custom_output => $self->can('custom_threat_output'),
                 perfdatas => [
-                    { value => 'threat_lastupdate_time_absolute', template => '%d', min => 0, unit => 's' }
+                    { value => 'threat_lastupdate_time', template => '%d', min => 0, unit => 's' }
                 ],
             }
         },
@@ -93,7 +93,7 @@ sub set_counters {
                 output_template => 'session traffic: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'throughput_absolute', template => '%s',
+                    { value => 'throughput', template => '%s',
                       unit => 'b/s', min => 0 },
                 ],
             }
@@ -102,7 +102,7 @@ sub set_counters {
                 key_values => [ { name => 'active_sessions' } ],
                 output_template => 'total active sessions: %s',
                 perfdatas => [
-                    { value => 'active_sessions_absolute', template => '%s', min => 0 },
+                    { value => 'active_sessions', template => '%s', min => 0 },
                 ],
             }
         },

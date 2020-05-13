@@ -36,8 +36,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'total' }, { name => 'used' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'connections', value => 'used_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute', threshold_total => 'total_absolute', cast_int => 1 },
+                    { label => 'connections', value => 'used', template => '%s', 
+                      min => 0, max => 'total', threshold_total => 'total', cast_int => 1 },
                 ],
             }
         },
@@ -48,9 +48,9 @@ sub custom_usage_output {
     my ($self, %options) = @_;
  
     my $msg = sprintf("%.2f%% of the connections cached are used (%d of max. %d)", 
-                      $self->{result_values}->{prct_used_absolute}, 
-                      $self->{result_values}->{used_absolute}, 
-                      $self->{result_values}->{total_absolute});
+                      $self->{result_values}->{prct_used}, 
+                      $self->{result_values}->{used}, 
+                      $self->{result_values}->{total});
     return $msg;
 }
 

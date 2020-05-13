@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'criticalEventsCount' } ],
                 output_template => '%d critical event(s)',
                 perfdatas => [
-                    { label => 'events', value => 'criticalEventsCount_absolute', template => '%d', min => 0 },
+                    { label => 'events', value => 'criticalEventsCount', template => '%d', min => 0 },
                 ],
             }
         },

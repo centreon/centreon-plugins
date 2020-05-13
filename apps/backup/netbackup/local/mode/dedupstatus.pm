@@ -46,9 +46,9 @@ sub custom_usage_threshold {
     my ($self, %options) = @_;
 
     if (!defined($self->{instance_mode}->{option_results}->{'critical-usage'}) || $self->{instance_mode}->{option_results}->{'critical-usage'} eq '') {
-        $self->{perfdata}->threshold_validate(label => 'critical-usage', value => $self->{result_values}->{watermark_absolute});
+        $self->{perfdata}->threshold_validate(label => 'critical-usage', value => $self->{result_values}->{watermark});
     }
-    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{usage_absolute}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
+    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{usage}, threshold => [ { label => 'critical-' . $self->{label}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{label}, exit_litteral => 'warning' } ]);
 }
 
 sub set_counters {
@@ -72,8 +72,8 @@ sub set_counters {
                 output_template => 'Use: %s %%',
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
                 perfdatas => [
-                    { label => 'used', value => 'usage_absolute', template => '%s', 
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'used', value => 'usage', template => '%s', 
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

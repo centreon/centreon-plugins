@@ -112,8 +112,8 @@ sub set_counters {
                 key_values => [ { name => 'citAvgLatencyUsecs' }, { name => 'display' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'citAvgLatencyUsecs_absolute', template => '%s', unit => 'µs',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_latency', value => 'citAvgLatencyUsecs', template => '%s', unit => 'µs',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -121,8 +121,8 @@ sub set_counters {
                 key_values => [ { name => 'citIOPerSecond' }, { name => 'display' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'citIOPerSecond_absolute', template => '%s', unit => 'iops',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'iops', value => 'citIOPerSecond', template => '%s', unit => 'iops',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

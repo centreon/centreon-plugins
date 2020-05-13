@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'qual_time' } ],
                 output_template => 'quality of time generation: %s',
                 perfdatas => [
-                    { value => 'qual_time_absolute', template => '%s' }
+                    { value => 'qual_time', template => '%s' }
                 ]
             }
         }

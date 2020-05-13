@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'iowait' } ],
                 output_template => 'Wait: %.2f %%',
                 perfdatas => [
-                    { label => 'wait', value => 'iowait_absolute', template => '%.2f',
+                    { label => 'wait', value => 'iowait', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'user' } ],
                 output_template => 'User: %.2f %%',
                 perfdatas => [
-                    { label => 'user', value => 'user_absolute', template => '%.2f',
+                    { label => 'user', value => 'user', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'softirq' } ],
                 output_template => 'Soft Irq: %.2f %%',
                 perfdatas => [
-                    { label => 'softirq', value => 'softirq_absolute', template => '%.2f',
+                    { label => 'softirq', value => 'softirq', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'irq' } ],
                 output_template => 'Interrupt: %.2f %%',
                 perfdatas => [
-                    { label => 'interrupt', value => 'irq_absolute', template => '%.2f',
+                    { label => 'interrupt', value => 'irq', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -80,7 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'idle' } ],
                 output_template => 'Idle: %.2f %%',
                 perfdatas => [
-                    { label => 'idle', value => 'idle_absolute', template => '%.2f',
+                    { label => 'idle', value => 'idle', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -89,7 +89,7 @@ sub set_counters {
                 key_values => [ { name => 'steal' } ],
                 output_template => 'Steal: %.2f %%',
                 perfdatas => [
-                    { label => 'steal', value => 'steal_absolute', template => '%.2f',
+                    { label => 'steal', value => 'steal', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -98,7 +98,7 @@ sub set_counters {
                 key_values => [ { name => 'system' } ],
                 output_template => 'System: %.2f %%',
                 perfdatas => [
-                    { label => 'system', value => 'system_absolute', template => '%.2f',
+                    { label => 'system', value => 'system', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -107,7 +107,7 @@ sub set_counters {
                 key_values => [ { name => 'nice' } ],
                 output_template => 'Nice: %.2f %%',
                 perfdatas => [
-                    { label => 'nice', value => 'nice_absolute', template => '%.2f',
+                    { label => 'nice', value => 'nice', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -118,7 +118,7 @@ sub set_counters {
                 key_values => [ { name => 'iowait' }, { name => 'display' } ],
                 output_template => 'Wait: %.2f %%',
                 perfdatas => [
-                    { label => 'wait', value => 'iowait_absolute', template => '%.2f',
+                    { label => 'wait', value => 'iowait', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -127,7 +127,7 @@ sub set_counters {
                 key_values => [ { name => 'user' }, { name => 'display' } ],
                 output_template => 'User: %.2f %%',
                 perfdatas => [
-                    { label => 'user', value => 'user_absolute', template => '%.2f',
+                    { label => 'user', value => 'user', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -136,7 +136,7 @@ sub set_counters {
                 key_values => [ { name => 'softirq' }, { name => 'display' } ],
                 output_template => 'Soft Irq: %.2f %%',
                 perfdatas => [
-                    { label => 'softirq', value => 'softirq_absolute', template => '%.2f',
+                    { label => 'softirq', value => 'softirq', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -145,7 +145,7 @@ sub set_counters {
                 key_values => [ { name => 'irq' }, { name => 'display' } ],
                 output_template => 'Interrupt: %.2f %%',
                 perfdatas => [
-                    { label => 'interrupt', value => 'irq_absolute', template => '%.2f',
+                    { label => 'interrupt', value => 'irq', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -154,7 +154,7 @@ sub set_counters {
                 key_values => [ { name => 'idle' }, { name => 'display' } ],
                 output_template => 'Idle: %.2f %%',
                 perfdatas => [
-                    { label => 'idle', value => 'idle_absolute', template => '%.2f',
+                    { label => 'idle', value => 'idle', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -163,7 +163,7 @@ sub set_counters {
                 key_values => [ { name => 'steal' }, { name => 'display' } ],
                 output_template => 'Steal: %.2f %%',
                 perfdatas => [
-                    { label => 'steal', value => 'steal_absolute', template => '%.2f',
+                    { label => 'steal', value => 'steal', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -172,7 +172,7 @@ sub set_counters {
                 key_values => [ { name => 'system' }, { name => 'display' } ],
                 output_template => 'System: %.2f %%',
                 perfdatas => [
-                    { label => 'system', value => 'system_absolute', template => '%.2f',
+                    { label => 'system', value => 'system', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -181,7 +181,7 @@ sub set_counters {
                 key_values => [ { name => 'nice' }, { name => 'display' } ],
                 output_template => 'Nice: %.2f %%',
                 perfdatas => [
-                    { label => 'nice', value => 'nice_absolute', template => '%.2f',
+                    { label => 'nice', value => 'nice', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }

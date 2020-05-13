@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'humidity' }, { name => 'display' } ],
                 output_template => 'Humidity: %.2f%%',
                 perfdatas => [
-                    { label => 'humidity', value => 'humidity_absolute', template => '%.2f',
-                      unit => '%', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'humidity', value => 'humidity', template => '%.2f',
+                      unit => '%', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'temperature' }, { name => 'dewpoint' },  { name => 'display' } ],
                 output_template => 'Temperature: %.2f C',
                 perfdatas => [
-                    { label => 'temperature', value => 'temperature_absolute', template => '%.2f',
-                      unit => 'C', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'temperature', value => 'temperature', template => '%.2f',
+                      unit => 'C', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'dewpoint' }, { name => 'display' } ],
                 output_template => 'Dew Point : %.2f C',
                 perfdatas => [
-                    { label => 'dew_point', value => 'dewpoint_absolute', template => '%.2f',
-                      unit => 'C', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'dew_point', value => 'dewpoint', template => '%.2f',
+                      unit => 'C', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'delta' }, { name => 'display' } ],
                 output_template => 'Delta (Temp - Dew) : %.2f C',
                 perfdatas => [
-                    { label => 'delta', value => 'delta_absolute', template => '%.2f',
-                      unit => 'C', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'delta', value => 'delta', template => '%.2f',
+                      unit => 'C', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

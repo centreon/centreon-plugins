@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'auth_success', diff => 1 } ],
                 output_template => 'success authentication: %s',
                 perfdatas => [
-                    { value => 'auth_success_absolute', template => '%s', min => 0 }
+                    { value => 'auth_success', template => '%s', min => 0 }
                 ]
             }
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'auth_failure', diff => 1 } ],
                 output_template => 'failure authentication: %s',
                 perfdatas => [
-                    { value => 'auth_failure_absolute', template => '%s', min => 0 }
+                    { value => 'auth_failure', template => '%s', min => 0 }
                 ]
             }
         },
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_protected', diff => 1 } ],
                 output_template => 'protected requests: %s',
                 perfdatas => [
-                    { value => 'requests_protected_absolute', template => '%s', min => 0 }
+                    { value => 'requests_protected', template => '%s', min => 0 }
                 ]
             }
         },
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_maintenance', diff => 1 } ],
                 output_template => 'maintenance requests: %s',
                 perfdatas => [
-                    { value => 'requests_maintenance_absolute', template => '%s', min => 0 }
+                    { value => 'requests_maintenance', template => '%s', min => 0 }
                 ]
             }
         }
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_time_total', diff => 1 }, { name => 'display' } ],
                 output_template => 'total requests time: %s ms',
                 perfdatas => [
-                    { value => 'requests_time_total_absolute', template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
+                    { value => 'requests_time_total', template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
                 ]
             }
         },
@@ -94,7 +94,7 @@ sub set_counters {
                 key_values => [ { name => 'requests_time_mean' }, { name => 'display' } ],
                 output_template => 'mean requests time: %s ms',
                 perfdatas => [
-                    { value => 'requests_time_mean_absolute', template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
+                    { value => 'requests_time_mean', template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
                 ]
             }
         },
@@ -103,7 +103,7 @@ sub set_counters {
                 output_template => 'total requests size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'requests_size_absolute', template => '%s', min => 0, unit => 'B' }
+                    { value => 'requests_size', template => '%s', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -111,7 +111,7 @@ sub set_counters {
                 key_values => [ { name => 'requests', diff => 1 } ],
                 output_template => 'total requests: %s',
                 perfdatas => [
-                    { value => 'requests_absolute', template => '%s', min => 0 }
+                    { value => 'requests', template => '%s', min => 0 }
                 ]
             }
         }

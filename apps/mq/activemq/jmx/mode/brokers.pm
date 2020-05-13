@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'StorePercentUsage' }, { name => 'display' } ],
                 output_template => 'store usage: %.2f %%',
                 perfdatas => [
-                    { value => 'StorePercentUsage_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                    { value => 'StorePercentUsage', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
         },
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'TempPercentUsage' }, { name => 'display' } ],
                 output_template => 'temporary usage: %.2f %%',
                 perfdatas => [
-                    { value => 'TempPercentUsage_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                    { value => 'TempPercentUsage', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
         },
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'MemoryPercentUsage' }, { name => 'display' } ],
                 output_template => 'memory usage: %.2f %%',
                 perfdatas => [
-                    { value => 'MemoryPercentUsage_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
+                    { value => 'MemoryPercentUsage', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
         }
@@ -72,7 +72,7 @@ sub set_counters {
                     key_values => [ { name => 'AverageEnqueueTime' }, { name => 'display' } ],
                     output_template => 'average time messages remained enqueued: %.3f ms',
                     perfdatas => [
-                        { value => 'AverageEnqueueTime_absolute',
+                        { value => 'AverageEnqueueTime',
                           template => '%.3f', unit => 'ms', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -81,7 +81,7 @@ sub set_counters {
                     key_values => [ { name => 'ConsumerCount' }, { name => 'display' } ],
                     output_template => 'consumers connected: %s',
                     perfdatas => [
-                        { value => 'ConsumerCount_absolute',
+                        { value => 'ConsumerCount',
                           template => '%s', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -90,7 +90,7 @@ sub set_counters {
                     key_values => [ { name => 'ProducerCount' }, { name => 'display' } ],
                     output_template => 'producers connected: %s',
                     perfdatas => [
-                        { value => 'ProducerCount_absolute',
+                        { value => 'ProducerCount',
                           template => '%s', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -99,7 +99,7 @@ sub set_counters {
                     key_values => [ { name => 'MemoryPercentUsage' }, { name => 'display' } ],
                     output_template => 'memory usage: %.2f %%',
                     perfdatas => [
-                        { value => 'MemoryPercentUsage_absolute',
+                        { value => 'MemoryPercentUsage',
                           template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                     ]
                 }
@@ -108,7 +108,7 @@ sub set_counters {
                     key_values => [ { name => 'QueueSize' }, { name => 'display' } ],
                     output_template => 'queue size: %s',
                     perfdatas => [
-                        { value => 'QueueSize_absolute',
+                        { value => 'QueueSize',
                           template => '%s', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -117,7 +117,7 @@ sub set_counters {
                     key_values => [ { name => 'EnqueueCount', diff => 1 }, { name => 'display' } ],
                     output_template => 'messages enqueued: %s',
                     perfdatas => [
-                        { value => 'EnqueueCount_absolute',
+                        { value => 'EnqueueCount',
                           template => '%s', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -126,7 +126,7 @@ sub set_counters {
                     key_values => [ { name => 'DequeueCount', diff => 1 }, { name => 'display' } ],
                     output_template => 'messages dequeued: %s',
                     perfdatas => [
-                        { value => 'DequeueCount_absolute',
+                        { value => 'DequeueCount',
                           template => '%s', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -135,7 +135,7 @@ sub set_counters {
                     key_values => [ { name => 'ExpiredCount', diff => 1 }, { name => 'display' } ],
                     output_template => 'messages expired: %s',
                     perfdatas => [
-                        { value => 'ExpiredCount_absolute',
+                        { value => 'ExpiredCount',
                           template => '%s', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -144,7 +144,7 @@ sub set_counters {
                     key_values => [ { name => 'InFlightCount', diff => 1 }, { name => 'display' } ],
                     output_template => 'messages in-flighted: %s',
                     perfdatas => [
-                        { value => 'InFlightCount_absolute',
+                        { value => 'InFlightCount',
                           template => '%s', min => 0, label_extra_instance => 1 }
                     ]
                 }
@@ -154,7 +154,7 @@ sub set_counters {
                     output_template => 'average messages size: %s %s',
                     output_change_bytes => 1,
                     perfdatas => [
-                        { value => 'AverageMessageSize_absolute',
+                        { value => 'AverageMessageSize',
                           template => '%s', unit => 'B', min => 0, label_extra_instance => 1 }
                     ]
                 }

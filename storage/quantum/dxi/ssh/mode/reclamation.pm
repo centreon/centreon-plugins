@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'stage_status_progress' } ],
                 output_template => 'Stage Status progress: %.2f %%',
                 perfdatas => [
-                    { label => 'stage_status_progress', value => 'stage_status_progress_absolute', template => '%.2f',
+                    { label => 'stage_status_progress', value => 'stage_status_progress', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'total_progress' } ],
                 output_template => 'Total progress: %.2f %%',
                 perfdatas => [
-                    { label => 'total_progress', value => 'total_progress_absolute', template => '%.2f',
+                    { label => 'total_progress', value => 'total_progress', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

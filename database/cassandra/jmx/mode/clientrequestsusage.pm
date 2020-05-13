@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'TotalLatency_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Latency : %s us',
                 perfdatas => [
-                    { label => 'total_latency', value => 'TotalLatency_Count_absolute', template => '%s', 
-                      min => 0, unit => 'us', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_latency', value => 'TotalLatency_Count', template => '%s', 
+                      min => 0, unit => 'us', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'Timeouts_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Timeouts : %s',
                 perfdatas => [
-                    { label => 'timeouts', value => 'Timeouts_Count_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'timeouts', value => 'Timeouts_Count', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'Unavailables_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Unavailables : %s',
                 perfdatas => [
-                    { label => 'unavailbles', value => 'Unavailables_Count_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'unavailbles', value => 'Unavailables_Count', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'Failures_Count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Failures : %s',
                 perfdatas => [
-                    { label => 'failures', value => 'Failures_Count_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'failures', value => 'Failures_Count', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

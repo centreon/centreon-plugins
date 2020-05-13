@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total access points connected : %d',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%d', min => 0 },
+                    { label => 'total', value => 'total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -49,8 +49,8 @@ sub set_counters {
                 key_values => [ { name => 'apTotalTime' }, { name => 'bssid' }, ],
                 output_template => 'Current total connection time : %.3f s',
                 perfdatas => [
-                    { label => 'total_time', value => 'apTotalTime_absolute', template => '%.3f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'bssid_absolute' },
+                    { label => 'total_time', value => 'apTotalTime', template => '%.3f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'bssid' },
                 ],
             }
         },
@@ -58,8 +58,8 @@ sub set_counters {
                 key_values => [ { name => 'apInactiveTime' }, { name => 'bssid' }, ],
                 output_template => 'Current inactive time : %.3f s',
                 perfdatas => [
-                    { label => 'inactive_time', value => 'apInactiveTime_absolute', template => '%.3f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'bssid_absolute' },
+                    { label => 'inactive_time', value => 'apInactiveTime', template => '%.3f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'bssid' },
                 ],
             }
         },
@@ -67,8 +67,8 @@ sub set_counters {
                 key_values => [ { name => 'apChannelNoise' }, { name => 'bssid' }, ],
                 output_template => 'Channel noise : %d',
                 perfdatas => [
-                    { label => 'channel_noise', value => 'apChannelNoise_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'bssid_absolute' },
+                    { label => 'channel_noise', value => 'apChannelNoise', template => '%d',
+                      label_extra_instance => 1, instance_use => 'bssid' },
                 ],
             }
         },
@@ -76,8 +76,8 @@ sub set_counters {
                 key_values => [ { name => 'apSignalToNoiseRatio' }, { name => 'bssid' }, ],
                 output_template => 'Signal to noise ratio : %d',
                 perfdatas => [
-                    { label => 'snr', value => 'apSignalToNoiseRatio_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'bssid_absolute' },
+                    { label => 'snr', value => 'apSignalToNoiseRatio', template => '%d',
+                      label_extra_instance => 1, instance_use => 'bssid' },
                 ],
             }
         },

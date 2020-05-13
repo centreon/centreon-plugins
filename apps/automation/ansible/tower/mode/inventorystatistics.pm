@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total: %d',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%d', min => 0 },
+                    { value => 'total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'failed' }, { name => 'total' } ],
                 output_template => 'Failed: %d',
                 perfdatas => [
-                    { value => 'failed_absolute', template => '%d', min => 0,
-                      max => 'total_absolute' },
+                    { value => 'failed', template => '%d', min => 0,
+                      max => 'total' },
                 ],
             }
         },
@@ -58,8 +58,8 @@ sub set_counters {
                 key_values => [ { name => 'total_hosts' }, { name => 'display' } ],
                 output_template => 'Hosts total: %d',
                 perfdatas => [
-                    { value => 'total_hosts_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'total_hosts', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -68,9 +68,9 @@ sub set_counters {
                                 { name => 'display' } ],
                 output_template => 'Hosts failed: %d',
                 perfdatas => [
-                    { value => 'hosts_with_active_failures_absolute', template => '%d',
-                      min => 0, max => 'total_hosts_absolute', label_extra_instance => 1,
-                      instance_use => 'display_absolute' },
+                    { value => 'hosts_with_active_failures', template => '%d',
+                      min => 0, max => 'total_hosts', label_extra_instance => 1,
+                      instance_use => 'display' },
                 ],
             }
         },
@@ -78,8 +78,8 @@ sub set_counters {
                 key_values => [ { name => 'total_inventory_sources' }, { name => 'display' } ],
                 output_template => 'Sources total: %d',
                 perfdatas => [
-                    { value => 'total_inventory_sources_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'total_inventory_sources', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -88,9 +88,9 @@ sub set_counters {
                                 { name => 'display' } ],
                 output_template => 'Sources failed: %d',
                 perfdatas => [
-                    { value => 'inventory_sources_with_failures_absolute', template => '%d',
-                      min => 0, max => 'total_inventory_sources_absolute', label_extra_instance => 1,
-                      instance_use => 'display_absolute' },
+                    { value => 'inventory_sources_with_failures', template => '%d',
+                      min => 0, max => 'total_inventory_sources', label_extra_instance => 1,
+                      instance_use => 'display' },
                 ],
             }
         },
@@ -98,8 +98,8 @@ sub set_counters {
                 key_values => [ { name => 'total_groups' }, { name => 'display' } ],
                 output_template => 'Groups total: %d',
                 perfdatas => [
-                    { value => 'total_groups_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'total_groups', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -108,9 +108,9 @@ sub set_counters {
                                 { name => 'display' } ],
                 output_template => 'Groups failed: %d',
                 perfdatas => [
-                    { value => 'groups_with_active_failures_absolute', template => '%d',
-                      min => 0, max => 'total_groups_absolute', label_extra_instance => 1,
-                      instance_use => 'display_absolute' },
+                    { value => 'groups_with_active_failures', template => '%d',
+                      min => 0, max => 'total_groups', label_extra_instance => 1,
+                      instance_use => 'display' },
                 ],
             }
         },

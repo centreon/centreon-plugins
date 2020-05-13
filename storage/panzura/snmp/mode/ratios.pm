@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'dedup' }, ],
                 output_template => 'Deduplication ratio : %.2f',
                 perfdatas => [
-                    { value => 'dedup_absolute', template => '%.2f', min => 0 },
+                    { value => 'dedup', template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'comp' }, ],
                 output_template => 'Compression ratio : %.2f',
                 perfdatas => [
-                    { value => 'comp_absolute', template => '%.2f', min => 0 },
+                    { value => 'comp', template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'save' }, ],
                 output_template => 'Save ratio : %.2f',
                 perfdatas => [
-                    { value => 'save_absolute', template => '%.2f', min => 0 },
+                    { value => 'save', template => '%.2f', min => 0 },
                 ],
             }
         },

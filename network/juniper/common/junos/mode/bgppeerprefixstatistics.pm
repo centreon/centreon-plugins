@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'jnxBgpM2PrefixInPrefixes' }, { name => 'jnxBgpM2PrefixCountersAfiSafi' } ],
                 output_template => 'Prefixes In: %d',
                 perfdatas => [
-                    { value => 'jnxBgpM2PrefixInPrefixes_absolute', template => '%d',
+                    { value => 'jnxBgpM2PrefixInPrefixes', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'jnxBgpM2PrefixInPrefixesAccepted' }, { name => 'jnxBgpM2PrefixCountersAfiSafi' } ],
                 output_template => 'Prefixes In Accepted: %d',
                 perfdatas => [
-                    { value => 'jnxBgpM2PrefixInPrefixesAccepted_absolute', template => '%d',
+                    { value => 'jnxBgpM2PrefixInPrefixesAccepted', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'jnxBgpM2PrefixInPrefixesRejected' }, { name => 'jnxBgpM2PrefixCountersAfiSafi' } ],
                 output_template => 'Prefixes In Rejected: %d',
                 perfdatas => [
-                    { value => 'jnxBgpM2PrefixInPrefixesRejected_absolute', template => '%d',
+                    { value => 'jnxBgpM2PrefixInPrefixesRejected', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'jnxBgpM2PrefixInPrefixesActive' }, { name => 'jnxBgpM2PrefixCountersAfiSafi' } ],
                 output_template => 'Prefixes In Active: %d',
                 perfdatas => [
-                    { value => 'jnxBgpM2PrefixInPrefixesActive_absolute', template => '%d',
+                    { value => 'jnxBgpM2PrefixInPrefixesActive', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }
@@ -80,7 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'jnxBgpM2PrefixOutPrefixes' }, { name => 'jnxBgpM2PrefixCountersAfiSafi' } ],
                 output_template => 'Prefixes Out: %d',
                 perfdatas => [
-                    { value => 'jnxBgpM2PrefixOutPrefixes_absolute', template => '%d',
+                    { value => 'jnxBgpM2PrefixOutPrefixes', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }

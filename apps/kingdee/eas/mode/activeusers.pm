@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total users active: %s',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%s', min => 0 },
+                    { value => 'total', template => '%s', min => 0 },
                 ],
             }
         }
@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'users_' . $_ } ],
                 output_template => '%s (' . $_ . ')',
                 perfdatas => [
-                    { value => 'users_' . $_  . '_absolute', template => '%s', min => 0 },
+                    { value => 'users_' . $_  , template => '%s', min => 0 },
                 ],
             }
         };

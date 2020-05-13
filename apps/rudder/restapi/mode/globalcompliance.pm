@@ -66,7 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'compliance' } ],
                 output_template => 'Global Compliance: %.2f%%',
                 perfdatas => [
-                    { label => 'global_compliance', value => 'compliance_absolute', template => '%.2f',
+                    { label => 'global_compliance', value => 'compliance', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

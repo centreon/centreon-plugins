@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'ksqltemp_count' } ],
                 output_template => 'ksqltemp table: %s',
                 perfdatas => [
-                    { value => 'ksqltemp_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'ksqltemp_count', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         }

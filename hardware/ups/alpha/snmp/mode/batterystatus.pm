@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryCapacity' } ],
                 output_template => 'Remaining capacity : %s %%',
                 perfdatas => [
-                    { label => 'load', value => 'upsBatteryCapacity_absolute', template => '%s', 
+                    { label => 'load', value => 'upsBatteryCapacity', template => '%s', 
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryChargingCurrent' } ],
                 output_template => 'Current : %s A',
                 perfdatas => [
-                    { label => 'current', value => 'upsBatteryChargingCurrent_absolute', template => '%s', 
+                    { label => 'current', value => 'upsBatteryChargingCurrent', template => '%s', 
                       min => 0, unit => 'A' },
                 ],
             }
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryVoltage' } ],
                 output_template => 'Voltage : %s V',
                 perfdatas => [
-                    { label => 'voltage', value => 'upsBatteryVoltage_absolute', template => '%s', 
+                    { label => 'voltage', value => 'upsBatteryVoltage', template => '%s', 
                       unit => 'V' },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'upsBatteryTemperature' } ],
                 output_template => 'Temperature : %s C',
                 perfdatas => [
-                    { label => 'temperature', value => 'upsBatteryTemperature_absolute', template => '%s', 
+                    { label => 'temperature', value => 'upsBatteryTemperature', template => '%s', 
                       unit => 'C'},
                 ],
             }

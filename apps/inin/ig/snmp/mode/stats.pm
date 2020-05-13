@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'SipActiveCallsCount' } ],
                 output_template => 'SIP Current Active Calls : %s',
                 perfdatas => [
-                    { label => 'sip_active_calls', value => 'SipActiveCallsCount_absolute', template => '%d',
+                    { label => 'sip_active_calls', value => 'SipActiveCallsCount', template => '%d',
                       min => 0 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'TdmActiveCallsCount' } ],
                 output_template => 'TDM Current Active Calls : %s',
                 perfdatas => [
-                    { label => 'tdm_active_calls', value => 'TdmActiveCallsCount_absolute', template => '%d',
+                    { label => 'tdm_active_calls', value => 'TdmActiveCallsCount', template => '%d',
                       min => 0 },
                 ],
             }
@@ -58,8 +58,8 @@ sub set_counters {
                 key_values => [ { name => 'i3IgChannelGroupActiveCallsCount' }, { name => 'display' } ],
                 output_template => 'Current Active Calls : %s',
                 perfdatas => [
-                    { label => 'channel_group_active_calls', value => 'i3IgChannelGroupActiveCallsCount_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'channel_group_active_calls', value => 'i3IgChannelGroupActiveCallsCount', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

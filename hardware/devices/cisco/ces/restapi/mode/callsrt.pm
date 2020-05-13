@@ -118,7 +118,7 @@ sub set_counters {
     $self->{maps_counters}->{channels} = [
         { label => 'channels-traffic', nlabel => 'call.channels.traffic.bytes', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'),
                 output_template => 'traffic: %s %s/s',
                 output_change_bytes => 1,

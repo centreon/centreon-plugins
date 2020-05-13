@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => $_ } ],
                 output_template => $_ . ': %s',
                 perfdatas => [
-                    { value => $_ . '_absolute', template => '%s', min => 0 },
+                    { value => $_ , template => '%s', min => 0 },
                 ],
             }
         };

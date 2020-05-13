@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'OpenContextCount' } ],
                 output_template => 'Open Views: %d',
                 perfdatas => [
-                    { label => 'open_views', value => 'OpenContextCount_absolute', template => '%d',
+                    { label => 'open_views', value => 'OpenContextCount', template => '%d',
                       min => 0, unit => 'views' },
                 ],
             }

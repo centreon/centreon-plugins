@@ -37,13 +37,13 @@ sub custom_status_output {
 sub custom_usage_output {
     my ($self, %options) = @_;
     
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space_absolute});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_space});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_space});
     my $msg = sprintf('space usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space_absolute},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space_absolute}
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_space},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_space}
     );
     return $msg;
 }
@@ -51,15 +51,15 @@ sub custom_usage_output {
 sub custom_subscribed_output {
     my ($self, %options) = @_;
     
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_sub_absolute});
-    $self->{result_values}->{free_sub_absolute} = 0 if ($self->{result_values}->{free_sub_absolute} < 0);
-    $self->{result_values}->{prct_free_sub_absolute} = 0 if ($self->{result_values}->{prct_free_sub_absolute} < 0);
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_sub_absolute});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_space});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_sub});
+    $self->{result_values}->{free_sub} = 0 if ($self->{result_values}->{free_sub} < 0);
+    $self->{result_values}->{prct_free_sub} = 0 if ($self->{result_values}->{prct_free_sub} < 0);
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_sub});
     my $msg = sprintf('subscribed usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
            $total_size_value . " " . $total_size_unit,
-           $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_sub_absolute},
-           $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_sub_absolute}
+           $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_sub},
+           $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_sub}
     );
     return $msg;
 }
@@ -84,8 +84,8 @@ sub set_counters {
                 key_values => [ { name => 'used_space' }, { name => 'free_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'used_space_absolute', template => '%d', min => 0, max => 'total_space_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'used_space', template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -93,8 +93,8 @@ sub set_counters {
                 key_values => [ { name => 'free_space' }, { name => 'used_space' }, { name => 'prct_used_space' }, { name => 'prct_free_space' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { value => 'free_space_absolute', template => '%d', min => 0, max => 'total_space_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'free_space', template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -102,8 +102,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_used_space' }, { name => 'display' } ],
                 output_template => 'used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_space_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'prct_used_space', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -111,8 +111,8 @@ sub set_counters {
                 key_values => [ { name => 'used_sub' }, { name => 'free_sub' }, { name => 'prct_used_sub' }, { name => 'prct_free_sub' }, { name => 'total_space' }, { name => 'display' },  ],
                 closure_custom_output => $self->can('custom_subscribed_output'),
                 perfdatas => [
-                    { value => 'used_sub_absolute', template => '%d', min => 0, max => 'total_space_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'used_sub', template => '%d', min => 0, max => 'total_space',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -120,8 +120,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_used_sub' }, { name => 'display' } ],
                 output_template => 'subcribed used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_sub_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'prct_used_sub', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

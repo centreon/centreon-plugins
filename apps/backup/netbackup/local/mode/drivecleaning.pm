@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'num_cleaning' }, { name => 'total' } ],
                 output_template => '%d drives needs a reset mount time',
                 perfdatas => [
-                    { label => 'cleaning', value => 'num_cleaning_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
+                    { label => 'cleaning', value => 'num_cleaning', template => '%s', 
+                      min => 0, max => 'total' },
                 ],
             }
         },

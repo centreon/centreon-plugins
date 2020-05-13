@@ -39,7 +39,7 @@ sub set_counters {
                 output_template => 'Total Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_traffic', value => 'total_traffic_absolute', template => '%d',
+                    { label => 'total_traffic', value => 'total_traffic', template => '%d',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -49,7 +49,7 @@ sub set_counters {
                 output_template => 'Total Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_server_traffic', value => 'total_server_traffic_absolute', template => '%d',
+                    { label => 'total_server_traffic', value => 'total_server_traffic', template => '%d',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -59,7 +59,7 @@ sub set_counters {
                 output_template => 'Total Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'total_client_traffic', value => 'total_client_traffic_absolute', template => '%d',
+                    { label => 'total_client_traffic', value => 'total_client_traffic', template => '%d',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -72,8 +72,8 @@ sub set_counters {
                 output_template => 'Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic', value => 'traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'traffic', value => 'traffic', template => '%d',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -82,8 +82,8 @@ sub set_counters {
                 output_template => 'Server Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'server_traffic', value => 'server_traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'server_traffic', value => 'server_traffic', template => '%d',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -92,8 +92,8 @@ sub set_counters {
                 output_template => 'Client Traffic: %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'client_traffic', value => 'client_traffic_absolute', template => '%d',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'client_traffic', value => 'client_traffic', template => '%d',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },

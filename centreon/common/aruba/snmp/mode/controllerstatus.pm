@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'Total controllers: %d',
                 perfdatas => [
-                    { value => 'current_absolute', template => '%d', min => 0 },
+                    { value => 'current', template => '%d', min => 0 },
                 ],
             }
         },

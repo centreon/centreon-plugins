@@ -43,7 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'active_connections' } ],
                 output_template => 'active connections: %s',
                 perfdatas => [
-                    { value => 'active_connections_absolute', template => '%s', min => 0 }
+                    { value => 'active_connections', template => '%s', min => 0 }
                 ]
             }
         }

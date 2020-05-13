@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_now' } ],
                 output_template => '%.2f %% (current)',
                 perfdatas => [
-                    { label => 'cpu_current', value => 'usage_now_absolute', template => '%.2f',
+                    { label => 'cpu_current', value => 'usage_now', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_5s' } ],
                 output_template => '%.2f %% (5sec)',
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'usage_5s_absolute', template => '%.2f',
+                    { label => 'cpu_5s', value => 'usage_5s', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_10s' } ],
                 output_template => '%.2f %% (10sec)',
                 perfdatas => [
-                    { label => 'cpu_10s', value => 'usage_10s_absolute', template => '%.2f',
+                    { label => 'cpu_10s', value => 'usage_10s', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'usage_20s' } ],
                 output_template => '%.2f %% (5sec)',
                 perfdatas => [
-                    { label => 'cpu_20s', value => 'usage_20s_absolute', template => '%.2f',
+                    { label => 'cpu_20s', value => 'usage_20s', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

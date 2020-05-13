@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total agents: %d',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%d', min => 0 },
+                    { value => 'total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'recovery_points' }, { name => 'display' } ],
                 output_template => 'recovery points: %s',
                 perfdatas => [
-                    { value => 'recovery_points_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'recovery_points', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
