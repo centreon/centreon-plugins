@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'elapsed' } ],
                 output_template => 'Response time : %.3f second(s)',
                 perfdatas => [
-                    { label => 'time', value => 'elapsed_absolute', template => '%.3f',
+                    { label => 'time', value => 'elapsed', template => '%.3f',
                       min => 0, unit => 's' },
                 ],
             }

@@ -56,32 +56,31 @@ sub set_counters {
                 key_values => [ { name => 'requestCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'Request Count : %s',
                 perfdatas => [
-                    { label => 'request_count', value => 'requestCount_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'request_count', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'bytesReceived', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'bytesReceived', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'bytesReceived_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'bytesSent', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'bytesSent', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'bytesSent_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
-        },
-
+        }
     ];
 }
 
@@ -165,8 +164,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
-        "units:s"       => { name => 'units', default => '%' },
+        'filter-name:s' => { name => 'filter_name' },
+        'units:s'       => { name => 'units', default => '%' },
     });
 
     return $self;

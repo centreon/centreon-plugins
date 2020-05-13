@@ -40,7 +40,7 @@ sub set_counters {
                 key_values => [ { name => 'blocked_processes' } ],
                 output_template => 'Number of blocked processes : %s',
                 perfdatas => [
-                    { label => 'blocked_processes', value => 'blocked_processes_absolute', template => '%s',
+                    { label => 'blocked_processes', value => 'blocked_processes', template => '%s',
                       unit => '', min => 0 },
                 ],
             }

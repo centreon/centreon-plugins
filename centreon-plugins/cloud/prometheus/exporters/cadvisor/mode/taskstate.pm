@@ -39,8 +39,8 @@ sub set_counters {
                 output_template => 'Sleeping: %d',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'tasks_sleeping', value => 'sleeping_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'tasks_sleeping', value => 'sleeping', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -49,8 +49,8 @@ sub set_counters {
                 output_template => 'Running: %d',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'tasks_running', value => 'running_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'tasks_running', value => 'running', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -59,8 +59,8 @@ sub set_counters {
                 output_template => 'Stopped: %d',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'tasks_stopped', value => 'stopped_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'tasks_stopped', value => 'stopped', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -69,8 +69,8 @@ sub set_counters {
                 output_template => 'Uninterruptible: %d',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'tasks_uninterruptible', value => 'uninterruptible_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'tasks_uninterruptible', value => 'uninterruptible', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -79,8 +79,8 @@ sub set_counters {
                 output_template => 'Iowaiting: %d',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'tasks_iowaiting', value => 'iowaiting_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'tasks_iowaiting', value => 'iowaiting', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },

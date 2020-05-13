@@ -30,12 +30,12 @@ sub custom_drop_in_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{ggsnApnName} = $options{new_datas}->{$self->{instance} . '_ggsnApnName'};
-    $self->{result_values}->{ggsnApnUplinkDrops_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnUplinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnApnUplinkDrops'};
-    $self->{result_values}->{ggsnApnUplinkPackets_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnUplinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnApnUplinkPackets'};
-    if ($self->{result_values}->{ggsnApnUplinkPackets_absolute} == 0) {
+    $self->{result_values}->{ggsnApnUplinkDrops} = $options{new_datas}->{$self->{instance} . '_ggsnApnUplinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnApnUplinkDrops'};
+    $self->{result_values}->{ggsnApnUplinkPackets} = $options{new_datas}->{$self->{instance} . '_ggsnApnUplinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnApnUplinkPackets'};
+    if ($self->{result_values}->{ggsnApnUplinkPackets} == 0) {
         $self->{result_values}->{drop_prct} = 0;
     } else {
-        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnUplinkDrops_absolute} * 100 / $self->{result_values}->{ggsnApnUplinkPackets_absolute};
+        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnUplinkDrops} * 100 / $self->{result_values}->{ggsnApnUplinkPackets};
     }
     return 0;
 }
@@ -44,12 +44,12 @@ sub custom_drop_out_calc {
     my ($self, %options) = @_;
     
     $self->{result_values}->{ggsnApnName} = $options{new_datas}->{$self->{instance} . '_ggsnApnName'};
-    $self->{result_values}->{ggsnApnDownlinkDrops_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'};
-    $self->{result_values}->{ggsnApnDownlinkPackets_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'};
-    if ($self->{result_values}->{ggsnApnDownlinkPackets_absolute} == 0) {
+    $self->{result_values}->{ggsnApnDownlinkDrops} = $options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkDrops'};
+    $self->{result_values}->{ggsnApnDownlinkPackets} = $options{new_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnApnDownlinkPackets'};
+    if ($self->{result_values}->{ggsnApnDownlinkPackets} == 0) {
         $self->{result_values}->{drop_prct} = 0;
     } else {
-        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnDownlinkDrops_absolute} * 100 / $self->{result_values}->{ggsnApnDownlinkPackets_absolute};
+        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnApnDownlinkDrops} * 100 / $self->{result_values}->{ggsnApnDownlinkPackets};
     }
     return 0;
 }
@@ -63,22 +63,22 @@ sub set_counters {
     
     $self->{maps_counters}->{apn} = [
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'ggsnApnUplinkBytes', diff => 1 }, { name => 'ggsnApnName' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'ggsnApnUplinkBytes', per_second => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Traffic In : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ggsnApnUplinkBytes_per_second', template => '%s',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'traffic_in', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'ggsnApnDownlinkBytes', diff => 1 }, { name => 'ggsnApnName' } ],
-                per_second => 1,  output_change_bytes => 2,
+                key_values => [ { name => 'ggsnApnDownlinkBytes', per_second => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Traffic Out : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'ggsnApnDownlinkBytes_per_second', template => '%s',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'traffic_out', template => '%s',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -87,8 +87,8 @@ sub set_counters {
                 output_template => 'Drop In Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
                 closure_custom_calc => $self->can('custom_drop_in_calc'),
                 perfdatas => [
-                    { label => 'drop_in', value => 'ggsnApnUplinkDrops_absolute', template => '%s',
-                      min => 0, max => 'ggsnApnUplinkPackets_absolute', label_extra_instance => 1, instance_use => 'ggsnApnName' },
+                    { label => 'drop_in', value => 'ggsnApnUplinkDrops', template => '%s',
+                      min => 0, max => 'ggsnApnUplinkPackets', label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -97,8 +97,8 @@ sub set_counters {
                 output_template => 'Drop Out Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
                 closure_custom_calc => $self->can('custom_drop_out_calc'),
                 perfdatas => [
-                    { label => 'drop_out', value => 'ggsnApnDownlinkDrops_absolute', template => '%s',
-                      min => 0, max => 'ggsnApnDownlinkPackets_absolute', label_extra_instance => 1, instance_use => 'ggsnApnName' },
+                    { label => 'drop_out', value => 'ggsnApnDownlinkDrops', template => '%s',
+                      min => 0, max => 'ggsnApnDownlinkPackets', label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnActivePdpContextCount' }, { name => 'ggsnApnName' } ],
                 output_template => 'Active Pdp : %s',
                 perfdatas => [
-                    { label => 'active_pdp', value => 'ggsnApnActivePdpContextCount_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'active_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -114,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnAttemptedActivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Attempted Activation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_activation_pdp', value => 'ggsnApnAttemptedActivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'attempted_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnAttemptedDynActivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Attempted Dyn Activation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_dyn_activation_pdp', value => 'ggsnApnAttemptedDynActivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'attempted_dyn_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -130,7 +130,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnAttemptedDeactivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Attempted Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_deactivation_pdp', value => 'ggsnApnAttemptedDeactivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'attempted_deactivation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -138,7 +138,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnAttemptedSelfDeactivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Attempted Self Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_self_deactivation_pdp', value => 'ggsnApnAttemptedSelfDeactivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'attempted_self_deactivation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -146,7 +146,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnCompletedActivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Completed Activation Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_activation_pdp', value => 'ggsnApnCompletedActivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'completed_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -154,7 +154,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnCompletedDynActivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Completed Dyn Activation Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_dyn_activation_pdp', value => 'ggsnApnCompletedDynActivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'completed_dyn_activation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -162,7 +162,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnCompletedDeactivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Completed Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_deactivation_pdp', value => 'ggsnApnCompletedDeactivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'completed_deactivation_pdp', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -170,7 +170,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnApnCompletedSelfDeactivation', diff => 1 }, { name => 'ggsnApnName' } ],
                 output_template => 'Completed Self Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_self_deactivation_pdp', value => 'ggsnApnCompletedSelfDeactivation_absolute', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName_absolute' },
+                    { label => 'completed_self_deactivation_pdp',  template => '%s', min => 0, label_extra_instance => 1, instance_use => 'ggsnApnName' },
                 ],
             }
         },
@@ -183,7 +183,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"     => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;

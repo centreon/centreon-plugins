@@ -39,7 +39,6 @@ sub set_counters {
     $self->{maps_counters}->{interface_classmap} = [
          { label => 'int-cmap-traffic', set => {
                 key_values => [ { name => 'traffic_usage', diff => 1 }, { name => 'total' }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'),
                 closure_custom_output => $self->can('custom_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -47,34 +46,34 @@ sub set_counters {
             }
         },
         { label => 'int-cmap-drop', set => {
-                key_values => [ { name => 'drop_usage', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'drop_usage', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Drop : %s %s/s',
                 perfdatas => [
-                    { label => 'icmap_drop', value => 'drop_usage_per_second', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'icmap_drop', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
     ];
     $self->{maps_counters}->{classmap} = [
          { label => 'cmap-traffic', set => {
-                key_values => [ { name => 'traffic_usage', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'traffic_usage', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic : %s %s/s',
                 perfdatas => [
-                    { label => 'cmap_traffic', value => 'traffic_usage_per_second', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'cmap_traffic', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'cmap-drop', set => {
-                key_values => [ { name => 'drop_usage', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'drop_usage', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Drop : %s %s/s',
                 perfdatas => [
-                    { label => 'cmap_drop', value => 'drop_usage_per_second', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'cmap_drop', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -82,22 +81,20 @@ sub set_counters {
 
     $self->{maps_counters}->{total} = [
          { label => 'total-traffic', set => {
-                key_values => [ { name => 'traffic_usage', diff => 1 } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'traffic_usage', per_second => 1 } ],
+                output_change_bytes => 2,
                 output_template => 'Total Traffic : %s %s/s',
                 perfdatas => [
-                    { label => 'total_traffic', value => 'traffic_usage_per_second', template => '%d',
-                      unit => 'b/s', min => 0 }
+                    { label => 'total_traffic', template => '%d', unit => 'b/s', min => 0 }
                 ]
             }
         },
         { label => 'total-drop', set => {
-                key_values => [ { name => 'drop_usage', diff => 1 } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'drop_usage', per_second => 1 } ],
+                output_change_bytes => 2,
                 output_template => 'Total Drop : %s %s/s',
                 perfdatas => [
-                    { label => 'total_drop', value => 'drop_usage_per_second', template => '%d',
-                      unit => 'b/s', min => 0 }
+                    { label => 'total_drop', template => '%d', unit => 'b/s', min => 0 }
                 ]
             }
         }

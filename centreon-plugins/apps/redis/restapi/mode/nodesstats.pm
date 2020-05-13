@@ -134,8 +134,8 @@ sub set_counters {
                 key_values => [ { name => 'shard_count' }, { name => 'display' } ],
                 output_template => 'Shard count: %d',
                 perfdatas => [
-                    { label => 'shard_count', value => 'shard_count_absolute', template => '%d', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'shard_count', value => 'shard_count', template => '%d', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },
@@ -143,8 +143,8 @@ sub set_counters {
                 key_values => [ { name => 'uptime' }, { name => 'uptime_sec' }, { name => 'display' } ],
                 output_template => 'Uptime: %s',
                 perfdatas => [
-                    { label => 'uptime', value => 'uptime_sec_absolute', template => '%d', 
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'uptime', value => 'uptime_sec', template => '%d', 
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },
@@ -152,8 +152,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_system' }, { name => 'display' } ],
                 output_template => 'Cpu system: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_system', value => 'cpu_system_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_system', value => 'cpu_system', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -161,8 +161,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_user' }, { name => 'display' } ],
                 output_template => 'Cpu user: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_user', value => 'cpu_user_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_user', value => 'cpu_user', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -210,8 +210,8 @@ sub set_counters {
                 key_values => [ { name => 'bigstore_iops' }, { name => 'display' } ],
                 output_template => 'Flash IOPS: %s ops/s',
                 perfdatas => [
-                    { label => 'flash_iops', value => 'bigstore_iops_absolute', template => '%s',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'flash_iops', value => 'bigstore_iops', template => '%s',
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -220,8 +220,8 @@ sub set_counters {
                 output_template => 'Flash throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'flash_throughput', value => 'bigstore_throughput_absolute', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'flash_throughput', value => 'bigstore_throughput', template => '%s',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -229,8 +229,8 @@ sub set_counters {
                 key_values => [ { name => 'conns' }, { name => 'display' } ],
                 output_template => 'Connections: %s',
                 perfdatas => [
-                    { label => 'connections', value => 'conns_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'connections', value => 'conns', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -238,7 +238,7 @@ sub set_counters {
                 key_values => [ { name => 'total_req' } ],
                 output_template => 'Requests rate: %s ops/s',
                 perfdatas => [
-                    { label => 'requests', value => 'total_req_absolute', template => '%s',
+                    { label => 'requests', value => 'total_req', template => '%s',
                       min => 0, unit => 'ops/s' },
                 ],
             }
@@ -248,8 +248,8 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ingress_absolute', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', value => 'ingress', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },
@@ -258,8 +258,8 @@ sub set_counters {
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'egress_absolute', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', value => 'egress', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },

@@ -36,8 +36,8 @@ sub set_counters {
                 key_values => [ { name => 'usage_5s' }, { name => 'display' } ],
                 output_template => '%s %% (5sec)', output_error_template => "%s (5sec)",
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'usage_5s_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_5s', value => 'usage_5s', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -45,8 +45,8 @@ sub set_counters {
                 key_values => [ { name => 'usage_1m' }, { name => 'display' } ],
                 output_template => '%s %% (1m)', output_error_template => "%s (1min)",
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'usage_1m_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_1m', value => 'usage_1m', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -54,8 +54,8 @@ sub set_counters {
                 key_values => [ { name => 'usage_5m' }, { name => 'display' } ],
                 output_template => '%s %% (5min)', output_error_template => "%s (5min)",
                 perfdatas => [
-                    { label => 'cpu_5m', value => 'usage_5m_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_5m', value => 'usage_5m', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

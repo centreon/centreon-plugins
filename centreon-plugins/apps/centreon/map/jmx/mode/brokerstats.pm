@@ -58,29 +58,27 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'received-packets-rate', set => {
-                key_values => [ { name => 'ReceivedPackets', diff => 1 } ],
+                key_values => [ { name => 'ReceivedPackets', per_second => 1 } ],
                 output_template => 'Received Packets: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'received_packets_rate', value => 'ReceivedPackets_per_second', template => '%.2f',
-                      min => 0, unit => 'packets/s' },
-                ],
+                    { label => 'received_packets_rate', template => '%.2f',
+                      min => 0, unit => 'packets/s' }
+                ]
             }
         },
         { label => 'processed-packets-rate', set => {
-                key_values => [ { name => 'ProcessedPackets', diff => 1 } ],
+                key_values => [ { name => 'ProcessedPackets', per_second => 1 } ],
                 output_template => 'Processed Packets: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'processed_packets_rate', value => 'ProcessedPackets_per_second', template => '%.2f',
+                    { label => 'processed_packets_rate', template => '%.2f',
                       min => 0, unit => 'packets/s' },
-                ],
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -89,12 +87,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s"     => { name => 'filter_counters', default => '' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{processed_packets} < %{received_packets}' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{processed_packets} < %{received_packets}' }
+    });
+
     return $self;
 }
 

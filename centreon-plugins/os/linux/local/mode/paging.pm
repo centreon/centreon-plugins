@@ -36,56 +36,56 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'pgpgin', nlabel => 'system.pgpin.usage.bytespersecond', set => {
-                key_values => [ { name => 'pgpgin', diff => 1 } ],
-                output_template => 'pgpgin : %s %s/s', per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'pgpgin', per_second => 1 } ],
+                output_template => 'pgpgin : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'pgpgin_per_second', label => 'pgpgin', template => '%d',
-                      unit => 'B/s', min => 0 },
+                    { label => 'pgpgin', template => '%d', unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'pgpgout', nlabel => 'system.pgpgout.usage.bytespersecond', set => {
-                key_values => [ { name => 'pgpgout', diff => 1 } ],
-                output_template => 'pgpgout : %s %s/s', per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'pgpgout', per_second => 1 } ],
+                output_template => 'pgpgout : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'pgpgout_per_second', label => 'pgpgout', template => '%d',
-                      unit => 'B/s', min => 0 },
+                    { label => 'pgpgout', template => '%d', unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'pswpin', nlabel => 'system.pswpin.usage.bytespersecond', set => {
-                key_values => [ { name => 'pswpin', diff => 1 } ],
-                output_template => 'pswpin : %s %s/s', per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'pswpin', per_second => 1 } ],
+                output_template => 'pswpin : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'pswpin_per_second', label => 'pswpin', template => '%d',
-                      unit => 'B/s', min => 0 },
+                    { label => 'pswpin', template => '%d', unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'pswpout', nlabel => 'system.pswpout.usage.bytespersecond', set => {
-                key_values => [ { name => 'pswpout', diff => 1 } ],
-                output_template => 'pswpout : %s %s/s', per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'pswpout', per_second => 1 } ],
+                output_template => 'pswpout : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'pswpout_per_second', label => 'pswpout', template => '%d',
-                      unit => 'B/s', min => 0 },
+                    { label => 'pswpout', template => '%d', unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'pgfault', nlabel => 'system.pgfault.usage.bytespersecond', set => {
-                key_values => [ { name => 'pgfault', diff => 1 } ],
-                output_template => 'pgfault : %s %s/s', per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'pgfault', per_second => 1 } ],
+                output_template => 'pgfault : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'pgfault_per_second', label => 'pgfault', template => '%d',
-                      unit => 'B/s', min => 0 },
+                    { label => 'pgfault', template => '%d', unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'pgmajfault', nlabel => 'system.pgmajfault.usage.bytespersecond', set => {
-                key_values => [ { name => 'pgmajfault', diff => 1 } ],
-                output_template => 'pgmajfault : %s %s/s', per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'pgmajfault', per_second => 1 } ],
+                output_template => 'pgmajfault : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'pgmajfault_per_second', label => 'pgmajfault', template => '%d',
-                      unit => 'B/s', min => 0 },
+                    { label => 'pgmajfault', template => '%d', unit => 'B/s', min => 0 },
                 ],
             }
         },
@@ -98,16 +98,16 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command', default => 'cat' },
-        "command-path:s"    => { name => 'command_path' },
-        "command-options:s" => { name => 'command_options', default => '/proc/vmstat 2>&1' },
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'cat' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '/proc/vmstat 2>&1' },
     });
 
     return $self;

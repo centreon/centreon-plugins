@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'voip' } ],
                 output_template => 'CPU VoIp Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_voip', value => 'voip_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'cpu_voip', value => 'voip', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'data' } ],
                 output_template => 'CPU Data Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_data', value => 'data_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'cpu_data', value => 'data', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },

@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'average' }, { name => 'count' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average_absolute', template => '%.2f',
+                    { label => 'total_cpu_avg', value => 'average', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -50,8 +50,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', value => 'cpu', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

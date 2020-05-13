@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'problems_open' } ],
                 output_template => 'number of open problems : %s',
                 perfdatas => [
-                    { value => 'problems_open_absolute', template => '%s', value => 'problems_open_absolute', min => 0 },
+                    { value => 'problems_open', template => '%s', value => 'problems_open', min => 0 },
                 ],
             }
         },

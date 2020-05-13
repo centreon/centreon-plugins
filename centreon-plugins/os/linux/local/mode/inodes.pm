@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'display' } ],
                 output_template => 'Used: %s %%',
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'used', value => 'used', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

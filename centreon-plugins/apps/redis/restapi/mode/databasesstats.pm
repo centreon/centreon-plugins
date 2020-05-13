@@ -236,8 +236,8 @@ sub set_counters {
                 key_values => [ { name => 'mem_frag_ratio' }, { name => 'display' } ],
                 output_template => 'Memory fragmentation ratio: %s',
                 perfdatas => [
-                    { label => 'mem_frag_ratio', value => 'mem_frag_ratio_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'mem_frag_ratio', value => 'mem_frag_ratio', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -245,8 +245,8 @@ sub set_counters {
                 key_values => [ { name => 'conns' }, { name => 'display' } ],
                 output_template => 'Connections: %s',
                 perfdatas => [
-                    { label => 'connections', value => 'conns_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'connections', value => 'conns', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -273,8 +273,8 @@ sub set_counters {
                 key_values => [ { name => 'avg_latency' }, { name => 'display' } ],
                 output_template => 'Average latency: %.2f ms',
                 perfdatas => [
-                    { label => 'latency', value => 'avg_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'latency', value => 'avg_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -297,8 +297,8 @@ sub set_counters {
                 key_values => [ { name => 'avg_other_latency' }, { name => 'display' } ],
                 output_template => 'Other latency: %.2f ms',
                 perfdatas => [
-                    { label => 'other_latency', value => 'avg_other_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'other_latency', value => 'avg_other_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -306,8 +306,8 @@ sub set_counters {
                 key_values => [ { name => 'no_of_keys' }, { name => 'display' } ],
                 output_template => 'Total keys: %s',
                 perfdatas => [
-                    { label => 'keys', value => 'no_of_keys_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'keys', value => 'no_of_keys', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -315,8 +315,8 @@ sub set_counters {
                 key_values => [ { name => 'evicted_objects' }, { name => 'display' } ],
                 output_template => 'Evicted objects rate: %s evictions/sec',
                 perfdatas => [
-                    { label => 'evicted_objects', value => 'evicted_objects_absolute', template => '%s',
-                      min => 0, unit => 'evictions/sec', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'evicted_objects', value => 'evicted_objects', template => '%s',
+                      min => 0, unit => 'evictions/sec', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -324,8 +324,8 @@ sub set_counters {
                 key_values => [ { name => 'expired_objects' }, { name => 'display' } ],
                 output_template => 'Expired objects rate: %s expirations/sec',
                 perfdatas => [
-                    { label => 'expired_objects', value => 'expired_objects_absolute', template => '%s',
-                      min => 0, unit => 'expirations/sec', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'expired_objects', value => 'expired_objects', template => '%s',
+                      min => 0, unit => 'expirations/sec', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -352,8 +352,8 @@ sub set_counters {
                 key_values => [ { name => 'avg_read_latency' }, { name => 'display' } ],
                 output_template => 'Read latency: %.2f ms',
                 perfdatas => [
-                    { label => 'read_latency', value => 'avg_read_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_latency', value => 'avg_read_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -380,8 +380,8 @@ sub set_counters {
                 key_values => [ { name => 'avg_write_latency' }, { name => 'display' } ],
                 output_template => 'Write latency: %.2f ms',
                 perfdatas => [
-                    { label => 'write_latency', value => 'avg_write_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_latency', value => 'avg_write_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -390,8 +390,8 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ingress_absolute', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', value => 'ingress', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },
@@ -400,8 +400,8 @@ sub set_counters {
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'egress_absolute', template => '%d', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', value => 'egress', template => '%d', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             },
         },

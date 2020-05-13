@@ -229,25 +229,25 @@ sub set_counters {
                 output_template => "status is '%s'", output_error_template => 'Status : %s',
                 output_use => 'sysTrunkStatus',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_output')
             }
         },
         { label => 'traffic-in', set => {
                 key_values => [ { name => 'sysTrunkStatBytesIn', diff => 1 }, { name => 'sysTrunkOperBw', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_traffic_calc'), per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'sysTrunkStatBytesIn', speed => 'sysTrunkOperBw', label => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'traffic-out', set => {
                 key_values => [ { name => 'sysTrunkStatBytesOut', diff => 1 }, { name => 'sysTrunkOperBw', diff => 1 }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_traffic_calc'), per_second => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'),
                 closure_custom_calc_extra_options => { label_ref => 'sysTrunkStatBytesOut', speed => 'sysTrunkOperBw', label => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'packets-error-in', set => {
@@ -256,7 +256,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { errors => 'sysTrunkStatErrorsIn', packets => 'sysTrunkStatPktsIn', label => 'in' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In Error : %s',
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
         { label => 'packets-error-out', set => {
@@ -265,7 +265,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { errors => 'sysTrunkStatErrorsOut', packets => 'sysTrunkStatPktsOut', label => 'out' },
                 closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets Out Error : %s',
                 closure_custom_perfdata => $self->can('custom_errors_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_errors_threshold'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
         },
         { label => 'packets-drop-in', set => {
@@ -274,7 +274,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { drops => 'sysTrunkStatDropsIn', packets => 'sysTrunkStatPktsIn', label => 'in' },
                 closure_custom_output => $self->can('custom_drops_output'), output_error_template => 'Packets In Drop : %s',
                 closure_custom_perfdata => $self->can('custom_drops_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_drops_threshold'),
+                closure_custom_threshold_check => $self->can('custom_drops_threshold')
             }
         },
         { label => 'packets-drop-out', set => {
@@ -283,9 +283,9 @@ sub set_counters {
                 closure_custom_calc_extra_options => { drops => 'sysTrunkStatDropsOut', packets => 'sysTrunkStatPktsOut', label => 'out' },
                 closure_custom_output => $self->can('custom_drops_output'), output_error_template => 'Packets Out Drop : %s',
                 closure_custom_perfdata => $self->can('custom_drops_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_drops_threshold'),
+                closure_custom_threshold_check => $self->can('custom_drops_threshold')
             }
-        },
+        }
     ];
 }
 

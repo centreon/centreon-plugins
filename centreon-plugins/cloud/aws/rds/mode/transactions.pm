@@ -49,8 +49,8 @@ sub set_counters {
                                 key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
                                 output_template => $metric . ': %d ops',
                                 perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%d', unit => 'ops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                                      template => '%d', unit => 'ops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                 ],
                             }
                         };
@@ -61,8 +61,8 @@ sub set_counters {
                                 key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
                                 output_template => $metric . ': %.2f ms',
                                 perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                                      template => '%.2f', unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                 ],
                             }
                         };

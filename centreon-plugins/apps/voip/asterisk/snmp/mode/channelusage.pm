@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'channels_active' } ],
                 output_template => 'Channels Active: %s',
                 perfdatas => [
-                    { label => 'channels_active', value => 'channels_active_absolute', template => '%s', min => 0 },
+                    { label => 'channels_active', value => 'channels_active', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'calls_active' } ],
                 output_template => 'Calls Active: %s',
                 perfdatas => [
-                    { label => 'calls_active', value => 'calls_active_absolute', template => '%s', min => 0 },
+                    { label => 'calls_active', value => 'calls_active', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'calls_count', diff => 1 } ],
                 output_template => 'Calls Count: %s',
                 perfdatas => [
-                    { label => 'calls_count', value => 'calls_count_absolute', template => '%s', min => 0 },
+                    { label => 'calls_count', value => 'calls_count', template => '%s', min => 0 },
                 ],
             }
         },

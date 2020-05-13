@@ -35,46 +35,38 @@ sub set_counters {
 
     $self->{maps_counters}->{traffics} = [
         { label => 'client-to-proxy', set => {
-                key_values => [ { name => 'stFtpBytesFromClient', diff => 1 } ],
+                key_values => [ { name => 'stFtpBytesFromClient', per_second => 1 } ],
                 output_template => 'from client to proxy: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'ftp_traffic_client_to_proxy', value => 'stFtpBytesFromClient_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'ftp_traffic_client_to_proxy', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'server-to-proxy', set => {
-                key_values => [ { name => 'stFtpBytesFromServer', diff => 1 } ],
+                key_values => [ { name => 'stFtpBytesFromServer', per_second => 1 } ],
                 output_template => 'from server to proxy: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'ftp_traffic_server_to_proxy', value => 'stFtpBytesFromServer_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'ftp_traffic_server_to_proxy', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'proxy-to-client', set => {
-                key_values => [ { name => 'stFtpBytesToClient', diff => 1 } ],
+                key_values => [ { name => 'stFtpBytesToClient', per_second => 1 } ],
                 output_template => 'from proxy to client: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'ftp_traffic_proxy_to_client', value => 'stFtpBytesToClient_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'ftp_traffic_proxy_to_client', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'proxy-to-server', set => {
-                key_values => [ { name => 'stFtpBytesToServer', diff => 1 } ],
+                key_values => [ { name => 'stFtpBytesToServer', per_second => 1 } ],
                 output_template => 'from proxy to server: %s %s/s',
                 output_change_bytes => 2,
-                per_second => 1,
                 perfdatas => [
-                    { label => 'ftp_traffic_proxy_to_server', value => 'stFtpBytesToServer_per_second', template => '%d',
-                      min => 0, unit => 'b/s' },
+                    { label => 'ftp_traffic_proxy_to_server', template => '%d', min => 0, unit => 'b/s' },
                 ],
             }
         },
@@ -92,16 +84,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s" => { name => 'filter_counters', default => '' },
-                                });
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+    return $self;
 }
 
 my $oid_stFtpBytesFromClient = '.1.3.6.1.4.1.1230.2.7.2.4.2.0';

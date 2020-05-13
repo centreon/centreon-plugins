@@ -57,8 +57,8 @@ sub set_counters {
                 key_values => [ { name => 'dfPerCentInodeCapacity' }, { name => 'display' } ],
                 output_template => 'Inodes Used : %s %%', output_error_template => "Inodes : %s",
                 perfdatas => [
-                    { label => 'inodes', value => 'dfPerCentInodeCapacity_absolute', template => '%d',
-                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'inodes', value => 'dfPerCentInodeCapacity', template => '%d',
+                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -66,8 +66,8 @@ sub set_counters {
                 key_values => [ { name => 'dfCompressSavedPercent' }, { name => 'display' } ],
                 output_template => 'Compress Saved : %s %%', output_error_template => "Compress Saved : %s",
                 perfdatas => [
-                    { label => 'compresssaved', value => 'dfCompressSavedPercent_absolute', template => '%d',
-                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'compresssaved', value => 'dfCompressSavedPercent', template => '%d',
+                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -75,8 +75,8 @@ sub set_counters {
                 key_values => [ { name => 'dfDedupeSavedPercent' }, { name => 'display' } ],
                 output_template => 'Dedupe Saved : %s %%', output_error_template => "Dedupe Saved : %s",
                 perfdatas => [
-                    { label => 'dedupsaved', value => 'dfDedupeSavedPercent_absolute', template => '%d',
-                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'dedupsaved', value => 'dfDedupeSavedPercent', template => '%d',
+                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

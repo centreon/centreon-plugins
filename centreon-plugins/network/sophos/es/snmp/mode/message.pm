@@ -39,49 +39,45 @@ sub set_counters {
                 key_values => [ { name => 'queue' } ],
                 output_template => 'Current Queue : %s',
                 perfdatas => [
-                    { label => 'queue', value => 'queue_absolute', template => '%s', min => 0 },
-                ],
+                    { label => 'queue', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'total-msg-in', set => {
-                key_values => [ { name => 'total_in', diff => 1 } ],
-                output_template => 'Total Message In : %.2f/s', per_second => 1,
+                key_values => [ { name => 'total_in', per_second => 1 } ],
+                output_template => 'Total Message In : %.2f/s',
                 perfdatas => [
-                    { label => 'total_msg_in', value => 'total_in_per_second', template => '%.2f', 
-                      unit => '/s', min => 0 },
-                ],
+                    { label => 'total_msg_in', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         },
         { label => 'total-msg-out', set => {
-                key_values => [ { name => 'total_out', diff => 1 } ],
-                output_template => 'Total Message Out : %.2f/s', per_second => 1,
+                key_values => [ { name => 'total_out', per_second => 1 } ],
+                output_template => 'Total Message Out : %.2f/s',
                 perfdatas => [
-                    { label => 'total_msg_out', value => 'total_out_per_second', template => '%.2f', 
-                      unit => '/s', min => 0 },
-                ],
+                    { label => 'total_msg_out', template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{sea_msg} = [
         { label => 'msg-in', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                output_template => 'In : %.2f/s', per_second => 1,
+                key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
+                output_template => 'In : %.2f/s',
                 perfdatas => [
-                    { label => 'msg_in', value => 'in_per_second', template => '%.2f', 
-                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'msg_in', template => '%.2f', unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'msg-out', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                output_template => 'Out : %.2f/s', per_second => 1,
+                key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
+                output_template => 'Out : %.2f/s',
                 perfdatas => [
-                    { label => 'msg_out', value => 'out_per_second', template => '%.2f', 
-                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'msg_out', template => '%.2f', unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 

@@ -111,8 +111,8 @@ sub set_counters {
                 key_values => [ { name => 'xenCpuUsage' }, { name => 'display' } ],
                 output_template => 'CPU Usage : %.2f %%', output_error_template => "CPU Usage : %s",
                 perfdatas => [
-                    { label => 'cpu_usage', value => 'xenCpuUsage_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_usage', value => 'xenCpuUsage', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

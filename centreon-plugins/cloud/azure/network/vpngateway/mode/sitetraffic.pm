@@ -114,8 +114,8 @@ sub set_counters {
                                     { name => $metric_perf . '_' . $aggregation . '_name' }, { name => 'stat' } ],
                                 output_template => 'P2S Connection Count: %d',
                                 perfdatas => [
-                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation . '_absolute', 
-                                      template => '%d', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation , 
+                                      template => '%d', label_extra_instance => 1, instance_use => 'display',
                                       min => 0 },
                                 ],
                             }

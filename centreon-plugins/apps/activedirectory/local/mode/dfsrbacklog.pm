@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'backlog' } ],
                 output_template => 'Backlog File Count : %s',
                 perfdatas => [
-                    { label => 'backlog', value => 'backlog_absolute', template => '%s', min => 0 },
+                    { label => 'backlog', value => 'backlog', template => '%s', min => 0 },
                 ],
             }
         },

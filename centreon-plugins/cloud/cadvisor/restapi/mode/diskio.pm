@@ -39,8 +39,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'Disk IO Read: %s %s/s',
                 perfdatas => [
-                    { label => 'diskio_read', value => 'diskio_read_absolute', template => '%.2f',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'diskio_read', value => 'diskio_read', template => '%.2f',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -49,8 +49,8 @@ sub set_counters {
                 output_change_bytes => 1,
                 output_template => 'Disk IO Write: %s %s/s',
                 perfdatas => [
-                    { label => 'diskio_write', value => 'diskio_write_absolute', template => '%.2f',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'diskio_write', value => 'diskio_write', template => '%.2f',
+                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

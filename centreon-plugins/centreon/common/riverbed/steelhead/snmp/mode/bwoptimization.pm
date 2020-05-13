@@ -35,42 +35,38 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'wan2lan-lan', set => {
-                key_values => [ { name => 'bwHCAggInLan', diff => 1 } ],
+                key_values => [ { name => 'bwHCAggInLan', per_second => 1 } ],
                 output_template => 'Wan2Lan on Lan: %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'wan2lan_lan', value => 'bwHCAggInLan_per_second',
-                    template => '%s', min => 0, unit => 'B/s' },
+                    { label => 'wan2lan_lan', template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
         { label => 'wan2lan-wan', set => {
-                key_values => [ { name => 'bwHCAggInWan', diff => 1 } ],
+                key_values => [ { name => 'bwHCAggInWan', per_second => 1 } ],
                 output_template => 'Wan2Lan on Wan: %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'wan2lan_wan', value => 'bwHCAggInWan_per_second',
-                    template => '%s', min => 0, unit => 'B/s' },
+                    { label => 'wan2lan_wan', template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
         { label => 'lan2wan-lan', set => {
-                key_values => [ { name => 'bwHCAggOutLan', diff => 1 } ],
+                key_values => [ { name => 'bwHCAggOutLan', per_second => 1 } ],
                 output_template => 'Lan2Wan on Lan: %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'lan2wan_lan', value => 'bwHCAggOutLan_per_second',
-                    template => '%s', min => 0, unit => 'B/s' },
+                    { label => 'lan2wan_lan', template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
         { label => 'lan2wan-wan', set => {
-                key_values => [ { name => 'bwHCAggOutWan', diff => 1 } ],
+                key_values => [ { name => 'bwHCAggOutWan', per_second => 1 } ],
                 output_template => 'Lan2Wan on Wan: %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'lan2wan_wan', value => 'bwHCAggOutWan_per_second',
-                    template => '%s', min => 0, unit => 'B/s' },
+                    { label => 'lan2wan_wan', template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },

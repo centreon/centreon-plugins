@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'succeeded' }  ],
                 output_template => "succeeded : %s",
                 perfdatas => [
-                    { label => 'total_succeeded', value => 'succeeded_absolute', template => '%d', min => 0 },
+                    { label => 'total_succeeded', value => 'succeeded', template => '%d', min => 0 },
                 ],
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'failed' }  ],
                 output_template => "failed : %s",
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 },
+                    { label => 'total_failed', value => 'failed', template => '%d', min => 0 },
                 ],
             }
         },

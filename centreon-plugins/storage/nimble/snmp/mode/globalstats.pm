@@ -35,44 +35,36 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'read', nlabel => 'system.io.read.usage.bytespersecond', set => {
-                key_values => [ { name => 'read', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'read', per_second => 1 } ],
                 output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read', value => 'read_per_second', template => '%d',
-                      unit => 'B/s' },
+                    { label => 'read', template => '%d', unit => 'B/s' },
                 ],
             }
         },
         { label => 'write', nlabel => 'system.io.write.usage.bytespersecond', set => {
-                key_values => [ { name => 'write', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'write', per_second => 1 } ],
                 output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write', value => 'write_per_second', template => '%d',
-                      unit => 'B/s', min => 0 },
+                    { label => 'write', template => '%d', unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'read-iops', nlabel => 'system.io.read.usage.iops', set => {
-                key_values => [ { name => 'read_iops', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'read_iops', per_second => 1 } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_per_second',  template => '%.2f',
-                      unit => 'iops', min => 0 },
+                    { label => 'read_iops', template => '%.2f', unit => 'iops', min => 0 },
                 ],
             }
         },
         { label => 'write-iops', nlabel => 'system.io.write.usage.iops', set => {
-                key_values => [ { name => 'write_iops', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'write_iops', per_second => 1 } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_per_second', template => '%.2f',
-                      unit => 'iops', min => 0 },
+                    { label => 'write_iops', template => '%.2f', unit => 'iops', min => 0 },
                 ],
             }
         },
@@ -80,8 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'read_time', diff => 1 } ],
                 output_template => 'Read Time : %.3f s', output_error_template => "Read Time : %s",
                 perfdatas => [
-                    { label => 'read_time', value => 'read_time_absolute',  template => '%.3f',
-                      unit => 's', min => 0 },
+                    { label => 'read_time', template => '%.3f', unit => 's', min => 0 },
                 ],
             }
         },
@@ -89,8 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'write_time', diff => 1 } ],
                 output_template => 'Write Time : %.3f s', output_error_template => "Write Time : %s",
                 perfdatas => [
-                    { label => 'write_time', value => 'write_time_absolute', template => '%.3f',
-                      unit => 's', min => 0 },
+                    { label => 'write_time', template => '%.3f', unit => 's', min => 0 },
                 ],
             }
         },

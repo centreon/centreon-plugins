@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Users : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', 
+                    { label => 'total', value => 'total', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'total_none' } ],
                 output_template => 'Total Auth None : %s',
                 perfdatas => [
-                    { label => 'total_none', value => 'total_none_absolute', template => '%s', 
+                    { label => 'total_none', value => 'total_none', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'total_other' } ],
                 output_template => 'Total Auth Other : %s',
                 perfdatas => [
-                    { label => 'total_other', value => 'total_other_absolute', template => '%s', 
+                    { label => 'total_other', value => 'total_other', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'total_web' } ],
                 output_template => 'Total Auth Web : %s',
                 perfdatas => [
-                    { label => 'total_web', value => 'total_web_absolute', template => '%s', 
+                    { label => 'total_web', value => 'total_web', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -74,7 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'total_dot1x' } ],
                 output_template => 'Total Auth Dot1x : %s',
                 perfdatas => [
-                    { label => 'total_dot1x', value => 'total_dot1x_absolute', template => '%s', 
+                    { label => 'total_dot1x', value => 'total_dot1x', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'total_vpn' } ],
                 output_template => 'Total Auth Vpn : %s',
                 perfdatas => [
-                    { label => 'total_vpn', value => 'total_vpn_absolute', template => '%s', 
+                    { label => 'total_vpn', value => 'total_vpn', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -92,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'total_mac' } ],
                 output_template => 'Total Auth Mac : %s',
                 perfdatas => [
-                    { label => 'total_mac', value => 'total_mac_absolute', template => '%s', 
+                    { label => 'total_mac', value => 'total_mac', template => '%s', 
                       unit => 'users', min => 0 },
                 ],
             }
@@ -101,7 +101,7 @@ sub set_counters {
                 key_values => [ { name => 'avg_connection_time' } ],
                 output_template => 'Users average connection time : %.3f seconds',
                 perfdatas => [
-                    { label => 'avg_connection_time', value => 'avg_connection_time_absolute', template => '%.3f', 
+                    { label => 'avg_connection_time', value => 'avg_connection_time', template => '%.3f', 
                       unit => 's', min => 0 },
                 ],
             }
@@ -113,8 +113,8 @@ sub set_counters {
                 key_values => [ { name => 'users' }, { name => 'essid' } ],
                 output_template => 'users : %s',
                 perfdatas => [
-                    { label => 'essid', value => 'users_absolute', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'essid_absolute' },
+                    { label => 'essid', value => 'users', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'essid' },
                 ],
             }
         },
@@ -125,8 +125,8 @@ sub set_counters {
                 key_values => [ { name => 'users' }, { name => 'ap_id' } ],
                 output_template => 'users : %s',
                 perfdatas => [
-                    { label => 'ap', value => 'users_absolute', template => '%s', 
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'ap_id_absolute' },
+                    { label => 'ap', value => 'users', template => '%s', 
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'ap_id' },
                 ],
             }
         },

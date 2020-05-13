@@ -69,8 +69,8 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total-traffic', nlabel => 'datafiles.traffic.io.usage.iops', set => {
                 key_values => [],
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'),
-                per_second => 1, manual_keys => 1,
                 threshold_use => 'traffic', output_use => 'traffic',
                 output_template => 'Total Traffic IOPs %.2f',
                 perfdatas => [
@@ -86,7 +86,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'online-status', threshold => 0, set => {
@@ -94,7 +94,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_online_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
     ];
@@ -133,14 +133,14 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-tablespace:s"       => { name => 'filter_tablespace' },
-        "filter-data-file:s"        => { name => 'filter_data_file' },
-        "warning-status:s"          => { name => 'warning_status', default => '' },
-        "critical-status:s"         => { name => 'critical_status', default => '%{status} =~ /offline|invalid/i' },
-        "warning-online-status:s"   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
-        "critical-online-status:s"  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' },
+        'filter-tablespace:s'       => { name => 'filter_tablespace' },
+        'filter-data-file:s'        => { name => 'filter_data_file' },
+        'warning-status:s'          => { name => 'warning_status', default => '' },
+        'critical-status:s'         => { name => 'critical_status', default => '%{status} =~ /offline|invalid/i' },
+        'warning-online-status:s'   => { name => 'warning_online_status', default => '%{online_status} =~ /sysoff/i' },
+        'critical-online-status:s'  => { name => 'critical_online_status', default => '%{online_status} =~ /offline|recover/i' }
     });
-    
+
     return $self;
 }
 

@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'perm_used' } ],
                 output_template => 'Permanent Storage Used: %.2f%%',
                 perfdatas => [
-                    { label => 'storage_permanent_used', value => 'perm_used_absolute', template => '%.2f',
+                    { label => 'storage_permanent_used', value => 'perm_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'temp_used' } ],
                 output_template => 'Temporary Storage Used: %.2f%%',
                 perfdatas => [
-                    { label => 'storage_temporary_used', value => 'temp_used_absolute', template => '%.2f',
+                    { label => 'storage_temporary_used', value => 'temp_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

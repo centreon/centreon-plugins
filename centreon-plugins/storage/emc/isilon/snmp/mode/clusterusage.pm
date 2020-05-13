@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'health' } ],
                 output_template => 'Node health: %.2f%%',
                 perfdatas => [
-                    { label => 'health', value => 'health_absolute', template => '%.2f',
+                    { label => 'health', value => 'health', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

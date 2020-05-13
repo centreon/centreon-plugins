@@ -39,18 +39,18 @@ sub set_counters {
                 key_values => [ { name => 'rr' } ],
                 output_template => 'Request Rate (global): %.2f',
                 perfdatas => [
-                    { value => 'rr_absolute', label => 'request_rate',template => '%.2f',
+                    { label => 'request_rate', template => '%.2f',
                       unit => 'r/s', min => 0 },
                 ],
             }
         },
         { label => 'request-rate-now', set => {
                 key_values => [ { name => 'hits', diff => 1 }, { name => 'misses', diff => 1 } ],
-                closure_custom_calc => $self->can('custom_rr_calc'), per_second => 1,
+                closure_custom_calc => $self->can('custom_rr_calc'),
                 output_template => 'Request Rate : %.2f', output_error_template => 'Request Rate : %s',
                 output_use => 'rr_now', threshold_use => 'rr_now',
                 perfdatas => [
-                    { value => 'rr_now', label => 'request_rate_now', template => '%.2f',
+                    { label => 'request_rate_now', value => 'rr_now', template => '%.2f',
                       unit => 'r/s', min => 0 },
                 ],
             }
@@ -59,18 +59,18 @@ sub set_counters {
                 key_values => [ { name => 'hr' } ],
                 output_template => 'Hit Rate (global): %.2f',
                 perfdatas => [
-                    { value => 'hr_absolute', label => 'hit_rate',template => '%.2f',
+                    { label => 'hit_rate',template => '%.2f',
                       unit => 'r/s', min => 0 },
                 ],
             }
         },
         { label => 'hit-rate-now', set => {
                 key_values => [ { name => 'hits', diff => 1 } ],
-                closure_custom_calc => $self->can('custom_hr_calc'), per_second => 1,
+                closure_custom_calc => $self->can('custom_hr_calc'),
                 output_template => 'Hit Rate : %.2f', output_error_template => 'Hit Rate : %s',
                 output_use => 'hr_now', threshold_use => 'hr_now',
                 perfdatas => [
-                    { value => 'hr_now', label => 'hit_rate_now', template => '%.2f',
+                    { label => 'hit_rate_now', value => 'hr_now', template => '%.2f',
                       unit => 'r/s', min => 0 },
                 ],
             }
@@ -79,18 +79,18 @@ sub set_counters {
                 key_values => [ { name => 'mr' } ],
                 output_template => 'Miss Rate (global): %.2f',
                 perfdatas => [
-                    { value => 'mr_absolute', label => 'miss_rate',template => '%.2f',
+                    { label => 'miss_rate',template => '%.2f',
                       unit => 'r/s', min => 0 },
                 ],
             }
         },
         { label => 'miss-rate-now', set => {
                 key_values => [ { name => 'misses', diff => 1 } ],
-                closure_custom_calc => $self->can('custom_mr_calc'), per_second => 1,
+                closure_custom_calc => $self->can('custom_mr_calc'),
                 output_template => 'Miss Rate : %.2f', output_error_template => 'Miss Rate : %s',
                 output_use => 'mr_now', threshold_use => 'mr_now',
                 perfdatas => [
-                    { value => 'mr_now', label => 'miss_rate_now', template => '%.2f',
+                    { label => 'miss_rate_now', value => 'mr_now', template => '%.2f',
                       unit => 'r/s', min => 0 },
                 ],
             }
@@ -101,7 +101,7 @@ sub set_counters {
                 output_template => 'Hit Ratio (global) : %.2f %%', output_error_template => 'Hit Ratio (global): %s',
                 output_use => 'hit_ratio', threshold_use => 'hit_ratio',
                 perfdatas => [
-                    { value => 'hit_ratio', label => 'hit_ratio', template => '%.2f',
+                    { label => 'hit_ratio', value => 'hit_ratio', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -112,7 +112,7 @@ sub set_counters {
                 output_template => 'Hit Ratio : %.2f %%', output_error_template => 'Hit Ratio : %s',
                 output_use => 'hit_ratio_now', threshold_use => 'hit_ratio_now',
                 perfdatas => [
-                    { value => 'hit_ratio_now', label => 'hit_ratio_now', template => '%.2f',
+                    { label => 'hit_ratio_now', value => 'hit_ratio_now', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

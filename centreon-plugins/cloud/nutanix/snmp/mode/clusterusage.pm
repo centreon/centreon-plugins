@@ -135,7 +135,7 @@ sub set_counters {
                 key_values => [ { name => 'clusterLatency' } ],
                 output_template => 'Average Latency : %s µs',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'clusterLatency_absolute', template => '%s', unit => 'µs',
+                    { label => 'avg_latency', value => 'clusterLatency', template => '%s', unit => 'µs',
                       min => 0 },
                 ],
             }
@@ -144,7 +144,7 @@ sub set_counters {
                 key_values => [ { name => 'clusterIops' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'clusterIops_absolute', template => '%s', unit => 'iops',
+                    { label => 'iops', value => 'clusterIops', template => '%s', unit => 'iops',
                       min => 0 },
                 ],
             }

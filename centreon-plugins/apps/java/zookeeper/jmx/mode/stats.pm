@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'AvgRequestLatency' } ],
                 output_template => 'Avg Request Latency : %s ms',
                 perfdatas => [
-                    { label => 'avg_request_latency', value => 'AvgRequestLatency_absolute', template => '%s', 
+                    { label => 'avg_request_latency', value => 'AvgRequestLatency', template => '%s', 
                       min => 0, unit => 'ms' },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'MaxRequestLatency' } ],
                 output_template => 'Max Request Latency : %s ms',
                 perfdatas => [
-                    { label => 'max_request_latency', value => 'MaxRequestLatency_absolute', template => '%s', 
+                    { label => 'max_request_latency', value => 'MaxRequestLatency', template => '%s', 
                       min => 0, unit => 'ms' },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'OutstandingRequests' } ],
                 output_template => 'Outstanding Requests : %s',
                 perfdatas => [
-                    { label => 'outstanding_requests', value => 'OutstandingRequests_absolute', template => '%s', 
+                    { label => 'outstanding_requests', value => 'OutstandingRequests', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'PacketsReceived', diff => 1 } ],
                 output_template => 'Packets Received : %s',
                 perfdatas => [
-                    { label => 'packets_received', value => 'PacketsReceived_absolute', template => '%s', 
+                    { label => 'packets_received', value => 'PacketsReceived', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -74,7 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'PacketsSent', diff => 1 } ],
                 output_template => 'Packets Sent : %s',
                 perfdatas => [
-                    { label => 'packets_sent', value => 'PacketsSent_absolute', template => '%s', 
+                    { label => 'packets_sent', value => 'PacketsSent', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'NumAliveConnections' } ],
                 output_template => 'Num Alive Connections : %s',
                 perfdatas => [
-                    { label => 'num_connections', value => 'NumAliveConnections_absolute', template => '%s', 
+                    { label => 'num_connections', value => 'NumAliveConnections', template => '%s', 
                       min => 0 },
                 ],
             }

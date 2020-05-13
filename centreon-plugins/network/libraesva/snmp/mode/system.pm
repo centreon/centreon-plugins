@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'mailSent', diff => 1 } ],
                 output_template => 'mails sent: %s',
                 perfdatas => [
-                    { value => 'mailSent_absolute', template => '%s', min => 0 },
+                    { value => 'mailSent', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'mailReceived', diff => 1 } ],
                 output_template => 'mails received: %s',
                 perfdatas => [
-                    { value => 'mailReceived_absolute', template => '%s', min => 0 },
+                    { value => 'mailReceived', template => '%s', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'mailRejected', diff => 1 } ],
                 output_template => 'mails rejected: %s',
                 perfdatas => [
-                    { value => 'mailRejected_absolute', template => '%s', min => 0 },
+                    { value => 'mailRejected', template => '%s', min => 0 },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'mailBounced', diff => 1 } ],
                 output_template => 'mails bounced: %s',
                 perfdatas => [
-                    { value => 'mailBounced_absolute', template => '%s', min => 0 },
+                    { value => 'mailBounced', template => '%s', min => 0 },
                 ],
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'spamMessages', diff => 1 } ],
                 output_template => 'spam messages: %s',
                 perfdatas => [
-                    { value => 'spamMessages_absolute', template => '%s', min => 0 },
+                    { value => 'spamMessages', template => '%s', min => 0 },
                 ],
             }
         },
@@ -85,7 +85,7 @@ sub set_counters {
                 key_values => [ { name => 'virusMessages', diff => 1 } ],
                 output_template => 'virus messages: %s',
                 perfdatas => [
-                    { value => 'virusMessages_absolute', template => '%s', min => 0 },
+                    { value => 'virusMessages', template => '%s', min => 0 },
                 ],
             }
         },
@@ -93,7 +93,7 @@ sub set_counters {
                 key_values => [ { name => 'incomingMailQueue' } ],
                 output_template => 'mails queue in: %s',
                 perfdatas => [
-                    { value => 'incomingMailQueue_absolute', template => '%s', min => 0 },
+                    { value => 'incomingMailQueue', template => '%s', min => 0 },
                 ],
             }
         },
@@ -101,7 +101,7 @@ sub set_counters {
                 key_values => [ { name => 'outgoingMailQueue' } ],
                 output_template => 'mails queue out: %s',
                 perfdatas => [
-                    { value => 'outgoingMailQueue_absolute', template => '%s', min => 0 },
+                    { value => 'outgoingMailQueue', template => '%s', min => 0 },
                 ],
             }
         },

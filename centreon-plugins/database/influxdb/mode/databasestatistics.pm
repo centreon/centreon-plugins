@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'numMeasurements' }, { name => 'display' } ],
                 output_template => 'Measurements: %s',
                 perfdatas => [
-                    { value => 'numMeasurements_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'numMeasurements', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'numSeries' }, { name => 'display' } ],
                 output_template => 'Series: %s',
                 perfdatas => [
-                    { value => 'numSeries_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'numSeries', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

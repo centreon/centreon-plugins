@@ -36,8 +36,8 @@ sub set_counters {
                 key_values => [ { name => 'noise_power' }, { name => 'label_perfdata' } ],
                 output_template => 'Noise Power : %s dBm',
                 perfdatas => [
-                    { label => 'noise_power', value => 'noise_power_absolute', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'label_perfdata_absolute'  },
+                    { label => 'noise_power', value => 'noise_power', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'label_perfdata'  },
                 ],
             }
         },

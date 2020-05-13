@@ -42,9 +42,9 @@ sub custom_license_output {
         
     return sprintf(
         'number of virtual domains used: %s/%s (%.2f%%)',
-        $self->{result_values}->{used_absolute},
-        $self->{result_values}->{total_absolute},
-        $self->{result_values}->{prct_used_absolute}
+        $self->{result_values}->{used},
+        $self->{result_values}->{total},
+        $self->{result_values}->{prct_used}
     );
 }
 
@@ -114,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute' }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         },
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute' }
+                    { template => '%d', min => 0, max => 'total' }
                 ]
             }
         },
@@ -130,7 +130,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'free' }, { name => 'used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         }
@@ -141,8 +141,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'cpu usage: %.2f%%',
                 perfdatas => [
-                    { value => 'cpu_absolute', template => '%.2f', unit => '%', min => 0, max => 100,
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%.2f', unit => '%', min => 0, max => 100,
+                      label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -153,8 +153,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'memory used : %.2f %%',
                 perfdatas => [
-                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
         }
@@ -165,8 +165,7 @@ sub set_counters {
                 key_values => [ { name => 'active_policies' }, { name => 'display' } ],
                 output_template => 'active policies: %d',
                 perfdatas => [
-                    { value => 'active_policies_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ]
             }
         }
@@ -177,8 +176,7 @@ sub set_counters {
                 key_values => [ { name => 'active_sessions' }, { name => 'display' } ],
                 output_template => 'active sessions: %d',
                 perfdatas => [
-                    { value => 'active_sessions_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ]
             }
         },
@@ -186,8 +184,7 @@ sub set_counters {
                 key_values => [ { name => 'session_rate' }, { name => 'display' } ],
                 output_template => 'session setup rate: %d/s',
                 perfdatas => [
-                    { value => 'session_rate_absolute', template => '%d',
-                      min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -207,7 +204,7 @@ sub set_counters {
     $self->{maps_counters}->{vdom_traffic} = [
         { label => 'traffic-in', nlabel => 'virtualdomain.traffic.in.bitspersecond', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 output_template => 'traffic in: %s%s/s',
                 output_use => 'traffic_per_second', threshold_use => 'traffic_per_second',
@@ -220,7 +217,7 @@ sub set_counters {
         },
         { label => 'traffic-out', nlabel => 'virtualdomain.traffic.out.bitspersecond', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 output_template => 'traffic out: %s%s/s',
                 output_use => 'traffic_per_second', threshold_use => 'traffic_per_second',

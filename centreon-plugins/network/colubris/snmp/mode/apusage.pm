@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'total_ap' } ],
                 output_template => 'total AP: %s',
                 perfdatas => [
-                    { label => 'total_ap', value => 'total_ap_absolute', template => '%s', min => 0 },
+                    { label => 'total_ap', value => 'total_ap', template => '%s', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'total_users' } ],
                 output_template => 'total users: %s',
                 perfdatas => [
-                    { label => 'total_users', value => 'total_users_absolute', template => '%s', min => 0 },
+                    { label => 'total_users', value => 'total_users', template => '%s', min => 0 },
                 ],
             }
         },
@@ -82,8 +82,8 @@ sub set_counters {
                 key_values => [ { name => 'users' }, { name => 'display' } ],
                 output_template => 'current users: %s',
                 perfdatas => [
-                    { label => 'ap_users', value => 'users_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ap_users', value => 'users', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

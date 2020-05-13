@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
                 output_template => 'average usage is: %.2f%%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_usage_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', value => 'cpu_usage', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_load1' }, { name => 'display' } ],
                 output_template => 'load 1min: %s',
                 perfdatas => [
-                    { label => 'load1', value => 'cpu_load1_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load1', value => 'cpu_load1', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_load5' }, { name => 'display' } ],
                 output_template => 'load 5min: %s',
                 perfdatas => [
-                    { label => 'load5', value => 'cpu_load5_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load5', value => 'cpu_load5', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -64,8 +64,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_load15' }, { name => 'display' } ],
                 output_template => 'load 15min: %s',
                 perfdatas => [
-                    { label => 'load15', value => 'cpu_load15_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'load15', value => 'cpu_load15', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

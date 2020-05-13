@@ -38,8 +38,8 @@ sub set_counters {
                 output_template => 'size : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'size', value => 'size_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'size', value => 'size', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

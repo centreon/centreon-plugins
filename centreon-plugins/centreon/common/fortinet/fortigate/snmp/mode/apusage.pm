@@ -59,22 +59,22 @@ sub set_counters {
             }
         },
         { label => 'in-traffic', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'traffic in : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'out-traffic', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'traffic out : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -82,8 +82,8 @@ sub set_counters {
                 key_values => [ { name => 'clients' }, { name => 'display' } ],
                 output_template => 'current client connections : %s',
                 perfdatas => [
-                    { label => 'clients', value => 'clients_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'clients', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -91,8 +91,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'cpu usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -100,8 +100,8 @@ sub set_counters {
                 key_values => [ { name => 'memory' }, { name => 'display' } ],
                 output_template => 'memory usage : %.2f %%',
                 perfdatas => [
-                    { label => 'memory', value => 'memory_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'memory', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

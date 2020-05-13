@@ -38,7 +38,7 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Read Bandwith : %s %s/s',
                 perfdatas => [
-                    { label => 'read_bandwidth', value => 'pureArrayReadBandwidth_absolute', template => '%.2f',
+                    { label => 'read_bandwidth', value => 'pureArrayReadBandwidth', template => '%.2f',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -48,7 +48,7 @@ sub set_counters {
                 output_change_bytes => 2,
                 output_template => 'Write Bandwith : %s %s/s',
                 perfdatas => [
-                    { label => 'write_bandwidth', value => 'pureArrayWriteBandwidth_absolute', template => '%.2f',
+                    { label => 'write_bandwidth', value => 'pureArrayWriteBandwidth', template => '%.2f',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'pureArrayReadIOPS' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'pureArrayReadIOPS_absolute', template => '%s',
+                    { label => 'read_iops', value => 'pureArrayReadIOPS', template => '%s',
                       unit => 'iops', min => 0 },
                 ],
             }
@@ -66,7 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'pureArrayWriteIOPS' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'pureArrayWriteIOPS_absolute', template => '%s',
+                    { label => 'write_iops', value => 'pureArrayWriteIOPS', template => '%s',
                       unit => 'iops', min => 0 },
                 ],
             }
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'pureArrayReadLatency' } ],
                 output_template => 'Read Latency : %s us/op',
                 perfdatas => [
-                    { label => 'read_latency', value => 'pureArrayReadLatency_absolute', template => '%s',
+                    { label => 'read_latency', value => 'pureArrayReadLatency', template => '%s',
                       unit => 'us/op', min => 0 },
                 ],
             }
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'pureArrayWriteLatency' } ],
                 output_template => 'Write Latency : %s us/op',
                 perfdatas => [
-                    { label => 'write_latency', value => 'pureArrayWriteLatency_absolute', template => '%s',
+                    { label => 'write_latency', value => 'pureArrayWriteLatency', template => '%s',
                       unit => 'us/op', min => 0 },
                 ],
             }

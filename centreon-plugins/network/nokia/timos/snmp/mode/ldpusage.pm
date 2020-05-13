@@ -63,8 +63,8 @@ sub set_counters {
                 key_values => [ { name => 'ipv4_active_sessions' }, { name => 'display' } ],
                 output_template => 'IPv4 Active Sessions : %s',
                 perfdatas => [
-                    { label => 'ipv4_active_sessions', value => 'ipv4_active_sessions_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ipv4_active_sessions', value => 'ipv4_active_sessions', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -72,8 +72,8 @@ sub set_counters {
                 key_values => [ { name => 'ipv4_active_link_adj' }, { name => 'display' } ],
                 output_template => 'IPv4 Active Link Adjacencies : %s',
                 perfdatas => [
-                    { label => 'ipv4_active_link_adj', value => 'ipv4_active_link_adj_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ipv4_active_link_adj', value => 'ipv4_active_link_adj', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -81,8 +81,8 @@ sub set_counters {
                 key_values => [ { name => 'ipv4_active_target_adj' }, { name => 'display' } ],
                 output_template => 'IPv4 Active Target Adjacencies : %s',
                 perfdatas => [
-                    { label => 'ipv4_active_target_adj', value => 'ipv4_active_target_adj_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ipv4_active_target_adj', value => 'ipv4_active_target_adj', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -90,8 +90,8 @@ sub set_counters {
                 key_values => [ { name => 'ipv4_oper_down_events', diff => 1 }, { name => 'display' } ],
                 output_template => 'IPv4 Oper Down Events : %s',
                 perfdatas => [
-                    { label => 'ipv4_oper_down_events', value => 'ipv4_oper_down_events_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ipv4_oper_down_events', value => 'ipv4_oper_down_events', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

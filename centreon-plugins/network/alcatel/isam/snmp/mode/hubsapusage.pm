@@ -42,25 +42,23 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
             }
         },
         { label => 'in-traffic', nlabel => 'sap.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_sap_output'),
                 closure_custom_perfdata => $self->can('custom_sap_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_qsap_threshold'),
+                closure_custom_threshold_check => $self->can('custom_qsap_threshold')
             }
         },
         { label => 'out-traffic', nlabel => 'sap.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_sap_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_sap_output'),
                 closure_custom_perfdata => $self->can('custom_sap_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_sap_threshold'),
+                closure_custom_threshold_check => $self->can('custom_sap_threshold')
             }
         },
     ];
@@ -68,20 +66,20 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total-in-traffic', nlabel => 'sap.traffic.in.bitspersecond', set => {
                 key_values => [],
-                manual_keys => 1, per_second => 1, output_change_bytes => 2,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_total_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_total_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_total_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_total_traffic_threshold')
             }
         },
         { label => 'total-out-traffic', nlabel => 'sap.traffic.out.bitspersecond', set => {
                 key_values => [],
-                manual_keys => 1, per_second => 1, output_change_bytes => 2,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_total_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_total_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_total_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_total_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_total_traffic_threshold')
             }
         },
     ];
@@ -283,16 +281,16 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "reload-cache-time:s" => { name => 'reload_cache_time', default => 300 },
-        "display-name:s"      => { name => 'display_name', default => '%{SvcDescription}.%{IfName}.%{SapEncapName}' },
-        "filter-name:s"       => { name => 'filter_name' },
-        "speed-in:s"          => { name => 'speed_in' },
-        "speed-out:s"         => { name => 'speed_out' },
-        "speed-total-in:s"    => { name => 'speed_total_in' },
-        "speed-total-out:s"   => { name => 'speed_total_out' },
-        "units-traffic:s"     => { name => 'units_traffic', default => '%' },
-        "warning-status:s"    => { name => 'warning_status', default => '' },
-        "critical-status:s"   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
+        'reload-cache-time:s' => { name => 'reload_cache_time', default => 300 },
+        'display-name:s'      => { name => 'display_name', default => '%{SvcDescription}.%{IfName}.%{SapEncapName}' },
+        'filter-name:s'       => { name => 'filter_name' },
+        'speed-in:s'          => { name => 'speed_in' },
+        'speed-out:s'         => { name => 'speed_out' },
+        'speed-total-in:s'    => { name => 'speed_total_in' },
+        'speed-total-out:s'   => { name => 'speed_total_out' },
+        'units-traffic:s'     => { name => 'units_traffic', default => '%' },
+        'warning-status:s'    => { name => 'warning_status', default => '' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{admin} =~ /up/i and %{status} !~ /up/i' },
     });
     
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);

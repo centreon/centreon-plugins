@@ -47,20 +47,20 @@ sub custom_metric_output {
     my ($self, %options) = @_;
 
     my $msg;
-    if (defined($mapping_units->{ $self->{result_values}->{unit_absolute} }->{scale})) {
+    if (defined($mapping_units->{ $self->{result_values}->{unit} }->{scale})) {
         $msg = sprintf(
             'value: %s %s%s',
             $self->{perfdata}->change_bytes(
-                value => $self->{result_values}->{value_absolute},
-                network => $mapping_units->{ $self->{result_values}->{unit_absolute} }->{network}
+                value => $self->{result_values}->{value},
+                network => $mapping_units->{ $self->{result_values}->{unit} }->{network}
             ),
-            $mapping_units->{ $self->{result_values}->{unit_absolute} }->{extra_unit}
+            $mapping_units->{ $self->{result_values}->{unit} }->{extra_unit}
         );
     } else {
         $msg = sprintf(
             'value: %s %s',
-            $self->{result_values}->{value_absolute},
-            $self->{result_values}->{unit_absolute}
+            $self->{result_values}->{value},
+            $self->{result_values}->{unit}
         );
     }
     return $msg;
@@ -70,10 +70,10 @@ sub custom_metric_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        unit => $self->{result_values}->{unit_absolute},
-        nlabel => 'scenario.metric.usage.' . $mapping_units->{ $self->{result_values}->{unit_absolute} }->{label},
+        unit => $self->{result_values}->{unit},
+        nlabel => 'scenario.metric.usage.' . $mapping_units->{ $self->{result_values}->{unit} }->{label},
         instances => $self->{instance},
-        value => $self->{result_values}->{value_absolute},
+        value => $self->{result_values}->{value},
     );
 }
 

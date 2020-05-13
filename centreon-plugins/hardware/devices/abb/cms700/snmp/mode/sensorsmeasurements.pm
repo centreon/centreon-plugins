@@ -50,8 +50,8 @@ sub set_counters {
                 key_values => [ { name => 'TRMSsens' }, { name => 'display' } ],
                 output_template => 'Mixte Current: %.2f A',
                 perfdatas => [
-                    { value => 'TRMSsens_absolute', template => '%.2f', unit => 'A', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'TRMSsens', template => '%.2f', unit => 'A', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -59,8 +59,8 @@ sub set_counters {
                 key_values => [ { name => 'ACsens' }, { name => 'display' } ],
                 output_template => 'Alternative Current: %.2f A',
                 perfdatas => [
-                    { value => 'ACsens_absolute', template => '%.2f', unit => 'A', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'ACsens', template => '%.2f', unit => 'A', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -68,8 +68,8 @@ sub set_counters {
                 key_values => [ { name => 'DCsens' }, { name => 'display' } ],
                 output_template => 'Direct Current: %.2f A',
                 perfdatas => [
-                    { value => 'DCsens_absolute', template => '%.2f', unit => 'A', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'DCsens', template => '%.2f', unit => 'A', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -77,8 +77,8 @@ sub set_counters {
                 key_values => [ { name => 'Psens' }, { name => 'display' } ],
                 output_template => 'Active Power: %.2f W',
                 perfdatas => [
-                    { value => 'Psens_absolute', template => '%.2f', unit => 'W', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'Psens', template => '%.2f', unit => 'W', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -86,8 +86,8 @@ sub set_counters {
                 key_values => [ { name => 'Whsens' }, { name => 'display' } ],
                 output_template => 'Active Energy: %.2f Wh',
                 perfdatas => [
-                    { value => 'Whsens_absolute', template => '%.2f', unit => 'Wh', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'Whsens', template => '%.2f', unit => 'Wh', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -95,8 +95,8 @@ sub set_counters {
                 key_values => [ { name => 'PowerFactorsens' }, { name => 'display' } ],
                 output_template => 'Power Factor: %.2f',
                 perfdatas => [
-                    { value => 'PowerFactorsens_absolute', template => '%.2f', min => 0, max => 1,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'PowerFactorsens', template => '%.2f', min => 0, max => 1,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

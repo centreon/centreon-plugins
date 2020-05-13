@@ -31,12 +31,12 @@ sub custom_vsys_active_perfdata {
     $self->{output}->perfdata_add(
         label => $self->{label},
         nlabel => $self->{nlabel},
-        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display_absolute} : undef,
-        value => $self->{result_values}->{sessions_active_absolute},
+        instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+        value => $self->{result_values}->{sessions_active},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0,
-        max => $self->{result_values}->{sessions_max_absolute} != 0 ? $self->{result_values}->{sessions_max_absolute} : undef
+        max => $self->{result_values}->{sessions_max} != 0 ? $self->{result_values}->{sessions_max} : undef
     );
 }
 
@@ -46,11 +46,11 @@ sub custom_active_perfdata {
     $self->{output}->perfdata_add(
         label => $self->{label},
         nlabel => $self->{nlabel},
-        value => $self->{result_values}->{sessions_active_absolute},
+        value => $self->{result_values}->{sessions_active},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0,
-        max => $self->{result_values}->{sessions_max_absolute} != 0 ? $self->{result_values}->{sessions_max_absolute} : undef
+        max => $self->{result_values}->{sessions_max} != 0 ? $self->{result_values}->{sessions_max} : undef
     );
 }
 
@@ -58,8 +58,8 @@ sub custom_active_output {
     my ($self, %options) = @_;
 
     return sprintf('active: %s (%s)',
-        $self->{result_values}->{sessions_active_absolute},
-        $self->{result_values}->{sessions_max_absolute} != 0 ? $self->{result_values}->{sessions_max_absolute} : '-'
+        $self->{result_values}->{sessions_active},
+        $self->{result_values}->{sessions_max} != 0 ? $self->{result_values}->{sessions_max} : '-'
     );
 }
 
@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions_active_prct' } ],
                 output_template => 'active: %.2f %%',
                 perfdatas => [
-                    { label => 'active_prct', value => 'sessions_active_prct_absolute', template => '%.2f', unit => '%',
+                    { label => 'active_prct', value => 'sessions_active_prct', template => '%.2f', unit => '%',
                       min => 0, max => 100 }
                 ]
             }
@@ -90,7 +90,7 @@ sub set_counters {
                 key_values => [ { name => 'panSessionActiveTcp' } ],
                 output_template => 'active TCP: %s',
                 perfdatas => [
-                    { label => 'active_tcp', value => 'panSessionActiveTcp_absolute', template => '%s', min => 0 }
+                    { label => 'active_tcp', value => 'panSessionActiveTcp', template => '%s', min => 0 }
                 ]
             }
         },
@@ -98,7 +98,7 @@ sub set_counters {
                 key_values => [ { name => 'panSessionActiveUdp' } ],
                 output_template => 'active UDP: %s',
                 perfdatas => [
-                    { label => 'active_udp', value => 'panSessionActiveUdp_absolute', template => '%s', min => 0 }
+                    { label => 'active_udp', value => 'panSessionActiveUdp', template => '%s', min => 0 }
                 ]
             }
         },
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'panSessionActiveICMP' } ],
                 output_template => 'active ICMP: %s',
                 perfdatas => [
-                    { label => 'active_icmp', value => 'panSessionActiveICMP_absolute', template => '%s', min => 0 }
+                    { label => 'active_icmp', value => 'panSessionActiveICMP', template => '%s', min => 0 }
                 ]
             }
         }
@@ -123,7 +123,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions_active_prct' } ],
                 output_template => 'active: %.2f %%',
                 perfdatas => [
-                    { label => 'active_prct', value => 'sessions_active_prct_absolute', template => '%.2f', unit => '%',
+                    { label => 'active_prct', value => 'sessions_active_prct', template => '%.2f', unit => '%',
                       min => 0, max => 100 }
                 ]
             }
@@ -132,7 +132,7 @@ sub set_counters {
                 key_values => [ { name => 'panVsysActiveTcpCps' }, { name => 'display' } ],
                 output_template => 'active TCP: %s',
                 perfdatas => [
-                    { label => 'active_tcp', value => 'panVsysActiveTcpCps_absolute', template => '%s',
+                    { label => 'active_tcp', value => 'panVsysActiveTcpCps', template => '%s',
                       label_extra_instance => 1, min => 0 }
                 ]
             }
@@ -141,7 +141,7 @@ sub set_counters {
                 key_values => [ { name => 'panVsysActiveUdpCps' }, { name => 'display' } ],
                 output_template => 'active UDP: %s',
                 perfdatas => [
-                    { label => 'active_udp', value => 'panVsysActiveUdpCps_absolute', template => '%s',
+                    { label => 'active_udp', value => 'panVsysActiveUdpCps', template => '%s',
                       label_extra_instance => 1, min => 0 }
                 ]
             }
@@ -150,7 +150,7 @@ sub set_counters {
                 key_values => [ { name => 'panVsysActiveOtherIpCps' }, { name => 'display' } ],
                 output_template => 'other: %s',
                 perfdatas => [
-                    { label => 'active_other', value => 'panVsysActiveOtherIpCps_absolute', template => '%s',
+                    { label => 'active_other', value => 'panVsysActiveOtherIpCps', template => '%s',
                       label_extra_instance => 1, min => 0 }
                 ]
             }

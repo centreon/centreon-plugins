@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'user_experience' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'End-User Experience: %.3f s',
                 perfdatas => [
-                    { label => 'time', value => 'user_experience_absolute', template => '%.3f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'time', value => 'user_experience', template => '%.3f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },

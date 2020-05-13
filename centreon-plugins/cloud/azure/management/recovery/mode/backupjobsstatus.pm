@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'completed' }  ],
                 output_template => "completed : %s",
                 perfdatas => [
-                    { label => 'total_completed', value => 'completed_absolute', template => '%d', min => 0 },
+                    { label => 'total_completed', value => 'completed', template => '%d', min => 0 },
                 ],
             }
         },
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'failed' }  ],
                 output_template => "failed : %s",
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed_absolute', template => '%d', min => 0 },
+                    { label => 'total_failed', value => 'failed', template => '%d', min => 0 },
                 ],
             }
         },
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'inprogress' }  ],
                 output_template => "in progress : %s",
                 perfdatas => [
-                    { label => 'total_inprogress', value => 'inprogress_absolute', template => '%d', min => 0 },
+                    { label => 'total_inprogress', value => 'inprogress', template => '%d', min => 0 },
                 ],
             }
         },

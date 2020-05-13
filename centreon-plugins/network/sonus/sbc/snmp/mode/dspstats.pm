@@ -60,8 +60,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'CPU Usage: %s',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_absolute', template => '%d',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu', value => 'cpu', template => '%d',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -69,8 +69,8 @@ sub set_counters {
                 key_values => [ { name => 'channels' }, { name => 'display' } ],
                 output_template => 'Active Channels: %s',
                 perfdatas => [
-                    { label => 'channels', value => 'channels_absolute', template => '%d',
-                      min => 0, unit => 'channels', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'channels', value => 'channels', template => '%d',
+                      min => 0, unit => 'channels', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'waiting' } ],
                 output_template => 'Waiting: %d',
                 perfdatas => [
-                    { label => 'waiting', value => 'waiting_absolute', template => '%d',
+                    { label => 'waiting', value => 'waiting', template => '%d',
                       min => 0 },
                 ],
             }
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'progressing' } ],
                 output_template => 'Progressing: %d',
                 perfdatas => [
-                    { label => 'progressing', value => 'progressing_absolute', template => '%d',
+                    { label => 'progressing', value => 'progressing', template => '%d',
                       min => 0 },
                 ],
             }
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'added' } ],
                 output_template => 'Added: %d',
                 perfdatas => [
-                    { label => 'added', value => 'added_absolute', template => '%d',
+                    { label => 'added', value => 'added', template => '%d',
                       min => 0 },
                 ],
             }
@@ -104,7 +104,7 @@ sub set_counters {
                 key_values => [ { name => 'ready' } ],
                 output_template => 'Ready: %d',
                 perfdatas => [
-                    { label => 'ready', value => 'ready_absolute', template => '%d',
+                    { label => 'ready', value => 'ready', template => '%d',
                       min => 0 },
                 ],
             }
@@ -113,7 +113,7 @@ sub set_counters {
                 key_values => [ { name => 'sdmMismatch' } ],
                 output_template => 'SDM Mismatch: %d',
                 perfdatas => [
-                    { label => 'sdm_mismatch', value => 'sdmMismatch_absolute', template => '%d',
+                    { label => 'sdm_mismatch', value => 'sdmMismatch', template => '%d',
                       min => 0 },
                 ],
             }
@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'verMismatch' } ],
                 output_template => 'Version Mismatch: %d',
                 perfdatas => [
-                    { label => 'version_mismatch', value => 'verMismatch_absolute', template => '%d',
+                    { label => 'version_mismatch', value => 'verMismatch', template => '%d',
                       min => 0 },
                 ],
             }
@@ -131,7 +131,7 @@ sub set_counters {
                 key_values => [ { name => 'featureMismatch' } ],
                 output_template => 'Feature Mismatch: %d',
                 perfdatas => [
-                    { label => 'feature_mismatch', value => 'featureMismatch_absolute', template => '%d',
+                    { label => 'feature_mismatch', value => 'featureMismatch', template => '%d',
                       min => 0 },
                 ],
             }
@@ -140,7 +140,7 @@ sub set_counters {
                 key_values => [ { name => 'newMasterInit' } ],
                 output_template => 'New Master Init: %d',
                 perfdatas => [
-                    { label => 'new_master_init', value => 'newMasterInit_absolute', template => '%d',
+                    { label => 'new_master_init', value => 'newMasterInit', template => '%d',
                       min => 0 },
                 ],
             }
@@ -149,7 +149,7 @@ sub set_counters {
                 key_values => [ { name => 'provisioned' } ],
                 output_template => 'Provisioned: %d',
                 perfdatas => [
-                    { label => 'provisioned', value => 'provisioned_absolute', template => '%d',
+                    { label => 'provisioned', value => 'provisioned', template => '%d',
                       min => 0 },
                 ],
             }
@@ -158,7 +158,7 @@ sub set_counters {
                 key_values => [ { name => 'invalid' } ],
                 output_template => 'Invalid: %d',
                 perfdatas => [
-                    { label => 'invalid', value => 'invalid_absolute', template => '%d',
+                    { label => 'invalid', value => 'invalid', template => '%d',
                       min => 0 },
                 ],
             }
@@ -167,7 +167,7 @@ sub set_counters {
                 key_values => [ { name => 'removed' } ],
                 output_template => 'Removed: %d',
                 perfdatas => [
-                    { label => 'removed', value => 'removed_absolute', template => '%d',
+                    { label => 'removed', value => 'removed', template => '%d',
                       min => 0 },
                 ],
             }

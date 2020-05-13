@@ -37,42 +37,40 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'total' }, { name => 'used' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'sessions', value => 'used_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute', threshold_total => 'total_absolute', cast_int => 1 },
+                    { label => 'sessions', value => 'used', template => '%s', 
+                      min => 0, max => 'total', threshold_total => 'total', cast_int => 1 },
                 ],
             }
         },
         { label => 'failed', set => {
-                key_values => [ { name => 'failed', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'failed', per_second => 1 } ],
                 output_template => 'Failed sessions : %.2f/s', output_error_template => "Failed sessions : %s",
                 perfdatas => [
-                    { label => 'sessions_failed', value => 'failed_per_second', template => '%.2f', unit => '/s',
-                      min => 0 },
+                    { label => 'sessions_failed', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
-        },
+        }
     ];
 }
 
 sub custom_usage_output {
     my ($self, %options) = @_;
  
-    my $msg = sprintf("%.2f%% of the sessions limit reached (%d of max. %d)", 
-                      $self->{result_values}->{prct_used_absolute}, 
-                      $self->{result_values}->{used_absolute}, 
-                      $self->{result_values}->{total_absolute});
-    return $msg;
+    return sprintf(
+        "%.2f%% of the sessions limit reached (%d of max. %d)", 
+        $self->{result_values}->{prct_used}, 
+        $self->{result_values}->{used}, 
+        $self->{result_values}->{total}
+    );
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -85,12 +83,13 @@ sub manage_selection {
     my $oid_nsResSessFailed = '.1.3.6.1.4.1.3224.16.3.4.0';
     
     my $result = $options{snmp}->get_leef(oids => [$oid_nsResSessAllocate, $oid_nsResSessMaxium, $oid_nsResSessFailed], nothing_quit => 1);
-    $self->{global} = { total => $result->{$oid_nsResSessMaxium}, 
-                        used => $result->{$oid_nsResSessAllocate}, 
-                        failed => $result->{$oid_nsResSessFailed},
-                        prct_used => $result->{$oid_nsResSessAllocate} * 100 / $result->{$oid_nsResSessMaxium},
-                      };
-                      
+    $self->{global} = {
+        total => $result->{$oid_nsResSessMaxium}, 
+        used => $result->{$oid_nsResSessAllocate}, 
+        failed => $result->{$oid_nsResSessFailed},
+        prct_used => $result->{$oid_nsResSessAllocate} * 100 / $result->{$oid_nsResSessMaxium},
+    };
+
     $self->{cache_name} = "juniper_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }

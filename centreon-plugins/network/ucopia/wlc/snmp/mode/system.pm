@@ -48,8 +48,8 @@ sub custom_users_output {
     my ($self, %options) = @_;
 
     my $msg = sprintf("%d connected users (Available licence: %s)", 
-        $self->{result_values}->{connected_users_absolute},
-        $self->{result_values}->{max_users_absolute} ne '' ? $self->{result_values}->{max_users_absolute} : '-'
+        $self->{result_values}->{connected_users},
+        $self->{result_values}->{max_users} ne '' ? $self->{result_values}->{max_users} : '-'
     );
     return $msg;
 }
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'connected_users' }, { name => 'max_users' } ],
                 closure_custom_output => $self->can('custom_users_output'),
                 perfdatas => [
-                    { value => 'connected_users_absolute', template => '%s', min => 0, max => 'max_users_absolute' },
+                    { value => 'connected_users', template => '%s', min => 0, max => 'max_users' },
                 ],
             }
         },
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'connected_users_prct' } ],
                 output_template => 'users connected: %.2f %%',
                 perfdatas => [
-                    { value => 'connected_users_prct_absolute', template => '%.2f', unit => '%', min => 0, max => 100 },
+                    { value => 'connected_users_prct', template => '%.2f', unit => '%', min => 0, max => 100 },
                 ],
             }
         },
@@ -91,7 +91,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_temperature', no_value => 0 } ],
                 output_template => 'disk temperature: %s C',
                 perfdatas => [
-                    { value => 'disk_temperature_absolute', template => '%s', unit => 'C' },
+                    { value => 'disk_temperature', template => '%s', unit => 'C' },
                 ],
             }
         },
@@ -99,7 +99,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_temperature', no_value => 0 } ],
                 output_template => 'cpu temperature: %s C',
                 perfdatas => [
-                    { value => 'cpu_temperature_absolute', template => '%s', unit => 'C' },
+                    { value => 'cpu_temperature', template => '%s', unit => 'C' },
                 ],
             }
         },

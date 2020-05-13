@@ -72,8 +72,8 @@ sub set_counters {
                 key_values => [ { name => 'speed_events' }, { name => 'display' } ],
                 output_template => 'Speed Events: %s/s',
                 perfdatas => [
-                    { label => 'speed_events', value => 'speed_events_absolute', template => '%s', 
-                      unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'speed_events', value => 'speed_events', template => '%s', 
+                      unit => 'events/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -81,8 +81,8 @@ sub set_counters {
                 key_values => [ { name => 'queued_events' }, { name => 'display' } ],
                 output_template => 'Queued Events: %s',
                 perfdatas => [
-                    { label => 'queued_events', value => 'queued_events_absolute', template => '%s', 
-                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'queued_events', value => 'queued_events', template => '%s', 
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -90,8 +90,8 @@ sub set_counters {
                 key_values => [ { name => 'unacknowledged_events' }, { name => 'display' } ],
                 output_template => 'Unacknowledged Events: %s',
                 perfdatas => [
-                    { label => 'unacknowledged_events', value => 'unacknowledged_events_absolute', template => '%s', 
-                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'unacknowledged_events', value => 'unacknowledged_events', template => '%s', 
+                      unit => 'events', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

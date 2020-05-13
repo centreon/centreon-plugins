@@ -50,8 +50,8 @@ sub set_counters {
                                 output_template => $metric . ': %.2f %s/s',
                                 output_change_bytes => 1,
                                 perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic . '_absolute', 
-                                      template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                                      template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                 ],
                             }
                         };

@@ -43,8 +43,6 @@ sub new {
     $self->{output_template} = $self->{label} . ' : %s';
     $self->{output_use} = undef;
     $self->{output_change_bytes} = 0;
-    $self->{output_absolute_unit} = '';
-    $self->{output_per_second_unit} = '';
     
     $self->{output_error_template} = $self->{label} . ' : %s';
     
@@ -89,14 +87,12 @@ sub calc {
 
     # manage only one value ;)
     foreach my $value (@{$self->{key_values}}) {
-        if (defined($value->{diff}) && $value->{diff} == 1) { 
-            if (defined($self->{per_second}) && $self->{per_second} == 1) {
-                $self->{result_values}->{$value->{name} . '_per_second'} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
-            }
-            $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
+        if (defined($value->{per_second}) && $value->{per_second} == 1) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
+        } elsif (defined($value->{diff}) && $value->{diff} == 1)  {
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
         } else {
-            # absolute one. nothing to do. Can be used for values.
-            $self->{result_values}->{$value->{name} . '_absolute'} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
+            $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
         }
     }
 
@@ -113,25 +109,24 @@ sub threshold_check {
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{thlabel};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{thlabel};
     
-    my $first = defined($self->{key_values}->[0]) ? $self->{key_values}->[0]->{name} : '';
-    my $value;
-
-    if (!defined($self->{threshold_use})) {
-        $value = $self->{result_values}->{$first . '_absolute'};
-        if (defined($self->{per_second}) && $self->{per_second} == 1) {
-            $value = $self->{result_values}->{$first . '_per_second'};
-        }
+    my $value = '';
+    if (defined($self->{threshold_use})) {
+        $value = $self->{result_values}->{ $self->{threshold_use} };
     } else {
-        $value = $self->{result_values}->{$self->{threshold_use}};
+        $value = defined($self->{key_values}->[0]) ? $self->{key_values}->[0]->{name} : '';
     }
 
-    return $self->{perfdata}->threshold_check(value => $value, threshold => [ { label => $crit, 'exit_litteral' => 'critical' },
-                                                                              { label => $warn, 'exit_litteral' => 'warning' }]);
+    return $self->{perfdata}->threshold_check(
+        value => $value, threshold => [
+            { label => $crit, exit_litteral => 'critical' },
+            { label => $warn, exit_litteral => 'warning' }
+        ]
+    );
 }
 
 sub output_error {
     my ($self, %options) = @_;
-    
+
     return sprintf($self->{output_error_template}, $self->{error_msg});
 }
 
@@ -141,24 +136,23 @@ sub output {
     if (defined($self->{closure_custom_output})) {
         return $self->{closure_custom_output}->($self);
     }
-    my $first = defined($self->{key_values}->[0]) ? $self->{key_values}->[0]->{name} : undef;
-    my ($value, $unit) = (defined($first) ? $self->{result_values}->{$first . '_absolute'} : '', $self->{output_absolute_unit});
-    
-    if (!defined($self->{output_use})) {
-        if ($self->{per_second} == 1) {
-            $value = $self->{result_values}->{$first . '_per_second'};
-            $unit = $self->{output_per_second_unit};
-        }
+
+    my ($value, $unit, $name) = ('', '');
+    if (defined($self->{output_use})) {
+        $name = $self->{output_use};
     } else {
-        $value = $self->{result_values}->{$self->{output_use}};
+        $name = defined($self->{key_values}->[0]) ? $self->{key_values}->[0]->{name} : undef;
     }
 
-    if ($self->{output_change_bytes} == 1) {
-        ($value, $unit) = $self->{perfdata}->change_bytes(value => $value);
-    } elsif ($self->{output_change_bytes} == 2) {
-        ($value, $unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
+    if (defined($name)) {
+        $value = $self->{result_values}->{$name};
+        if ($self->{output_change_bytes} == 1) {
+            ($value, $unit) = $self->{perfdata}->change_bytes(value => $value);
+        } elsif ($self->{output_change_bytes} == 2) {
+            ($value, $unit) = $self->{perfdata}->change_bytes(value => $value, network => 1);
+        }
     }
-    
+
     return sprintf($self->{output_template}, $value, $unit);
 }
 
@@ -213,15 +207,17 @@ sub perfdata {
             }
         }
 
+        my $value = defined($perf->{value}) ? $perf->{value} : $self->{key_values}->[0]->{name};
         $self->{output}->perfdata_add(
             label => $label,
             instances => $instances,
             nlabel => $self->{nlabel},
             unit => $perf->{unit},
-            value => $cast_int == 1 ? int($self->{result_values}->{$perf->{value}}) : sprintf($template, $self->{result_values}->{$perf->{value}}),
+            value => $cast_int == 1 ? int($self->{result_values}->{$value}) : sprintf($template, $self->{result_values}->{$value}),
             warning => $self->{perfdata}->get_perfdata_for_output(label => $warn, total => $th_total, cast_int => $cast_int),
             critical => $self->{perfdata}->get_perfdata_for_output(label => $crit, total => $th_total, cast_int => $cast_int),
-            min => $min, max => $max
+            min => $min,
+            max => $max
         );
     }
 }
@@ -233,7 +229,6 @@ sub execute {
     $self->{result_values} = {},
     $self->{error_msg} = undef;
     my $quit = 0;
-    my $per_second = 0;
     
     $options{new_datas} = {} if (!defined($options{new_datas}));
     foreach my $value (@{$self->{key_values}}) {
@@ -243,7 +238,8 @@ sub execute {
             last;
         }
     
-        if (defined($value->{diff}) && $value->{diff} == 1) {            
+        if ((defined($value->{diff}) && $value->{diff} == 1) ||
+            (defined($value->{per_second}) && $value->{per_second} == 1)) {            
             $options{new_datas}->{$self->{instance} . '_' . $value->{name}} = $options{values}->{$value->{name}};
             $old_datas->{$self->{instance} . '_' . $value->{name}} = $self->{statefile}->get(name => $self->{instance} . '_' . $value->{name});
             if (!defined($old_datas->{$self->{instance} . '_' . $value->{name}})) {
@@ -272,27 +268,21 @@ sub execute {
     }
 
     if ($quit == 2) {
-        $self->{error_msg} = "skipped (no value(s))";
+        $self->{error_msg} = 'skipped (no value(s))';
         return -10;
     }
-    
+
+    if (defined($self->{statefile})) {
+        $self->{last_timestamp} = $self->{statefile}->get(name => 'last_timestamp');
+    }
+
     if ($quit == 1) {
-        $self->{error_msg} = "Buffer creation";
+        $self->{error_msg} = 'Buffer creation';
         return -1;
     }
-    
-    if (defined($self->{per_second}) && $self->{per_second} == 1) {
-        if (!defined($self->{last_timestamp})) {
-            $self->{last_timestamp} = $self->{statefile}->get(name => 'last_timestamp');
-        }
-        if (!defined($self->{last_timestamp})) {
-            $self->{error_msg} = "Buffer creation";
-            return -1;
-        }
-    }
-   
+
     my $delta_time;
-    if (defined($self->{per_second}) && $self->{per_second} == 1) {
+    if (defined($self->{statefile}) && defined($self->{last_timestamp})) {
         $delta_time = $options{new_datas}->{last_timestamp} - $self->{last_timestamp};
         if ($delta_time <= 0) {
             $delta_time = 1;
@@ -300,7 +290,13 @@ sub execute {
     }
 
     if (defined($self->{closure_custom_calc})) {
-        return $self->{closure_custom_calc}->($self, old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time, extra_options => $self->{closure_custom_calc_extra_options});
+        return $self->{closure_custom_calc}->(
+            $self,
+            old_datas => $old_datas,
+            new_datas => $options{new_datas},
+            delta_time => $delta_time,
+            extra_options => $self->{closure_custom_calc_extra_options}
+        );
     }
     return $self->calc(old_datas => $old_datas, new_datas => $options{new_datas}, delta_time => $delta_time);
 }

@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'pending' }  ],
                 output_template => "Pending : %s",
                 perfdatas => [
-                    { value => 'pending_absolute', template => '%d', min => 0 },
+                    { value => 'pending', template => '%d', min => 0 },
                 ],
             }
         },
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'running' }  ],
                 output_template => "Running : %s",
                 perfdatas => [
-                    { value => 'running_absolute', template => '%d', min => 0 },
+                    { value => 'running', template => '%d', min => 0 },
                 ],
             }
         },
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'shutting-down' }  ],
                 output_template => "Shutting Down : %s",
                 perfdatas => [
-                    { value => 'shutting-down_absolute', template => '%d', min => 0 },
+                    { value => 'shutting-down', template => '%d', min => 0 },
                 ],
             }
         },
@@ -80,7 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'terminated' }  ],
                 output_template => "Terminated : %s",
                 perfdatas => [
-                    { value => 'terminated_absolute', template => '%d', min => 0 },
+                    { value => 'terminated', template => '%d', min => 0 },
                 ],
             }
         },
@@ -88,7 +88,7 @@ sub set_counters {
                 key_values => [ { name => 'stopping' }  ],
                 output_template => "Stopping : %s",
                 perfdatas => [
-                    { value => 'stopping_absolute', template => '%d', min => 0 },
+                    { value => 'stopping', template => '%d', min => 0 },
                 ],
             }
         },
@@ -96,7 +96,7 @@ sub set_counters {
                 key_values => [ { name => 'stopped' }  ],
                 output_template => "Stopped : %s",
                 perfdatas => [
-                    { value => 'stopped_absolute', template => '%d', min => 0 },
+                    { value => 'stopped', template => '%d', min => 0 },
                 ],
             }
         },

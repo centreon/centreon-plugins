@@ -119,21 +119,21 @@ sub set_counters {
         },
         { label => 'snapshot', set => {
                 key_values => [ { name => 'eqlMemberSnapStorage' }, { name => 'display' } ],
-                output_change_bytes => 1,
                 output_template => 'Snapshot usage : %s %s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'snapshost', value => 'eqlMemberSnapStorage_absolute', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'snapshost', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'replication', set => {
                 key_values => [ { name => 'eqlMemberReplStorage' }, { name => 'display' } ],
-                output_change_bytes => 1,
                 output_template => 'Replication usage : %s %s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'replication', value => 'eqlMemberReplStorage_absolute', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'replication', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -141,8 +141,8 @@ sub set_counters {
                 key_values => [ { name => 'eqlMemberNumberOfConnections' }, { name => 'display' } ],
                 output_template => 'iSCSI connections : %s',
                 perfdatas => [
-                    { label => 'connections', value => 'eqlMemberNumberOfConnections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -150,8 +150,8 @@ sub set_counters {
                 key_values => [ { name => 'eqlMemberNumberOfExtConnections' }, { name => 'display' } ],
                 output_template => 'External iSCSI connections : %s',
                 perfdatas => [
-                    { label => 'ext_connections', value => 'eqlMemberNumberOfExtConnections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ext_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -159,8 +159,8 @@ sub set_counters {
                 key_values => [ { name => 'eqlMemberReadAvgLatency' }, { name => 'display' } ],
                 output_template => 'Global read average latency : %s ms',
                 perfdatas => [
-                    { label => 'global_read_avg_latency', value => 'eqlMemberReadAvgLatency_absolute', template => '%s',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'global_read_avg_latency', template => '%s',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -168,8 +168,8 @@ sub set_counters {
                 key_values => [ { name => 'eqlMemberWriteAvgLatency' }, { name => 'display' } ],
                 output_template => 'Global write average latency : %s ms',
                 perfdatas => [
-                    { label => 'global_write_avg_latency', value => 'eqlMemberWriteAvgLatency_absolute', template => '%s',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'global_write_avg_latency', template => '%s',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -179,7 +179,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_read_avg_latency_calc'),
                 perfdatas => [
                     { label => 'read_avg_latency', value => 'read_avg_latency', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -189,47 +189,45 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_write_avg_latency_calc'),
                 perfdatas => [
                     { label => 'write_avg_latency', value => 'write_avg_latency', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'read-iops', set => {
-                key_values => [ { name => 'eqlMemberReadOpCount', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'eqlMemberReadOpCount', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f',
                 perfdatas => [
-                    { label => 'read_iops',  template => '%.2f', value => 'eqlMemberReadOpCount_per_second',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops',  template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write-iops', set => {
-                key_values => [ { name => 'eqlMemberWriteOpCount', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'eqlMemberWriteOpCount', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f',
                 perfdatas => [
-                    { label => 'write_iops', template => '%.2f', value => 'eqlMemberWriteOpCount_per_second',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in', display_ok => 0, set => {
-                key_values => [ { name => 'eqlMemberRxData', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'eqlMemberRxData', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_in', value => 'eqlMemberRxData_per_second', template => '%s',
-                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
-         { label => 'traffic-out', display_ok => 0, set => {
-                key_values => [ { name => 'eqlMemberTxData', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-out', display_ok => 0, set => {
+                key_values => [ { name => 'eqlMemberTxData', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'eqlMemberTxData_per_second', template => '%s',
-                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%s',
+                      unit => 'b/s', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -248,7 +246,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;

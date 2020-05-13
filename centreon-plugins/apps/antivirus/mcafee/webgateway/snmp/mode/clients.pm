@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'stClientCount' } ],
                 output_template => 'Connected clients: %d',
                 perfdatas => [
-                    { label => 'connected_clients', value => 'stClientCount_absolute', template => '%d',
+                    { label => 'connected_clients', value => 'stClientCount', template => '%d',
                       min => 0, unit => 'clients' },
                 ],
             }
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'stConnectedSockets' } ],
                 output_template => 'Open network sockets: %d',
                 perfdatas => [
-                    { label => 'open_sockets', value => 'stConnectedSockets_absolute', template => '%d',
+                    { label => 'open_sockets', value => 'stConnectedSockets', template => '%d',
                       min => 0, unit => 'sockets' },
                 ],
             }

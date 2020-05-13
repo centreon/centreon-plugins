@@ -43,8 +43,8 @@ sub set_counters {
                 key_values => [ { name => 'max_node_utilization' }, { name => 'name' } ],
                 output_template => 'Node utilization: %.2f %%',
                 perfdatas => [
-                    { label => 'max_node_utilization', value => 'max_node_utilization_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'max_node_utilization', value => 'max_node_utilization', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -52,8 +52,8 @@ sub set_counters {
                 key_values => [ { name => 'max_aggregate_utilization' }, { name => 'name' } ],
                 output_template => 'Aggregate utilization: %.2f %%',
                 perfdatas => [
-                    { label => 'max_aggregate_utilization', value => 'max_aggregate_utilization_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'max_aggregate_utilization', value => 'max_aggregate_utilization', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

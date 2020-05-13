@@ -44,25 +44,25 @@ sub set_counters {
         { label => 'total', nlabel => 'mulesoft.applications.total.count', set => {
                 key_values      => [ { name => 'total' }  ],
                 output_template => "Total : %s",
-                perfdatas       => [ { value => 'total_absolute', template => '%d', min => 0 } ]
+                perfdatas       => [ { value => 'total', template => '%d', min => 0 } ]
             }
         },
         { label => 'started', nlabel => 'mulesoft.applications.status.started.count', set => {
                 key_values      => [ { name => 'started' }  ],
                 output_template => "Started : %s",
-                perfdatas       => [ { value => 'started_absolute', template => '%d', min => 0 } ]
+                perfdatas       => [ { value => 'started', template => '%d', min => 0 } ]
             }
         },
         { label => 'stopped', nlabel => 'mulesoft.applications.status.stopped.count', set => {
                 key_values      => [ { name => 'stopped' }  ],
                 output_template => "Stopped : %s",
-                perfdatas       => [ { value => 'stopped_absolute', template => '%d', min => 0 } ]
+                perfdatas       => [ { value => 'stopped', template => '%d', min => 0 } ]
             }
         },
         { label => 'failed', nlabel => 'mulesoft.applications.status.failed.count', set => {
                 key_values      => [ { name => 'failed' }  ],
                 output_template => "Failed : %s",
-                perfdatas       => [ { value => 'failed_absolute', template => '%d', min => 0 } ]
+                perfdatas       => [ { value => 'failed', template => '%d', min => 0 } ]
             }
         }
    ];

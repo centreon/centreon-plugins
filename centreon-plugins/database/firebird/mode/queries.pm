@@ -35,82 +35,66 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'queries.total.persecond', set => {
-                key_values => [ { name => 'total', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'total', per_second => 1 } ],
                 output_template => 'Total : %d',
                 perfdatas => [
-                    { label => 'total', template => '%d', value => 'total_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'total', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'seq-reads', nlabel => 'queries.sequentialreads.persecond', set => {
-                key_values => [ { name => 'seq_reads', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'seq_reads', per_second => 1 } ],
                 output_template => 'Seq Reads : %d',
                 perfdatas => [
-                    { label => 'seq_reads', template => '%d', value => 'seq_reads_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'seq_reads', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'inserts', nlabel => 'queries.insert.persecond', set => {
-                key_values => [ { name => 'inserts', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'inserts', per_second => 1 } ],
                 output_template => 'Inserts : %d',
                 perfdatas => [
-                    { label => 'inserts', template => '%d', value => 'inserts_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'inserts', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'updates', nlabel => 'queries.updates.persecond', set => {
-                key_values => [ { name => 'updates', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'updates', per_second => 1 } ],
                 output_template => 'Updates : %d',
                 perfdatas => [
-                    { label => 'updates', template => '%d', value => 'updates_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'updates', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'deletes', nlabel => 'queries.deletes.persecond', set => {
-               key_values => [ { name => 'deletes', diff => 1 } ],
-                per_second => 1,
+               key_values => [ { name => 'deletes', per_second => 1 } ],
                 output_template => 'Deletes : %d',
                 perfdatas => [
-                    { label => 'deletes', template => '%d', value => 'deletes_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'deletes', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'backouts', nlabel => 'queries.backout.persecond', set => {
-                key_values => [ { name => 'backouts', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'backouts', per_second => 1 } ],
                 output_template => 'Backouts : %d',
                 perfdatas => [
-                    { label => 'backouts', template => '%d', value => 'backouts_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'backouts', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'purges', nlabel => 'queries.purges.persecond', set => {
-                key_values => [ { name => 'purges', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'purges', per_second => 1 } ],
                 output_template => 'Purges : %d',
                 perfdatas => [
-                    { label => 'purges', template => '%d', value => 'purges_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'purges', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'expunges', nlabel => 'queries.expunges.persecond', set => {
-                key_values => [ { name => 'expunges', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'expunges', per_second => 1 } ],
                 output_template => 'Expunges : %d',
                 perfdatas => [
-                    { label => 'expunges', template => '%d', value => 'expunges_per_second',
-                      unit => '/s', min => 0 },
+                    { label => 'expunges', template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },

@@ -62,8 +62,8 @@ sub set_counters {
                 key_values => [ { name => 'axVirtualServerStatCurConns' }, { name => 'display' } ],
                 output_template => 'Current Connections : %s',
                 perfdatas => [
-                    { label => 'current_connections', value => 'axVirtualServerStatCurConns_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -71,28 +71,28 @@ sub set_counters {
                 key_values => [ { name => 'axVirtualServerStatTotConns', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Connections : %s',
                 perfdatas => [
-                    { label => 'total_connections', value => 'axVirtualServerStatTotConns_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in', nlabel => 'virtualserver.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'axVirtualServerStatBytesIn', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'axVirtualServerStatBytesIn', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'axVirtualServerStatBytesIn_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out', nlabel => 'virtualserver.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'axVirtualServerStatBytesOut', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'axVirtualServerStatBytesOut', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'axVirtualServerStatBytesOut_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -110,13 +110,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{status} =~ /down/i' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} =~ /down/i' }
+    });
+
     return $self;
 }
 

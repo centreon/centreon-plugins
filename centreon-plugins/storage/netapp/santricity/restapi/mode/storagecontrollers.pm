@@ -75,52 +75,44 @@ sub set_counters {
             }
         },
         { label => 'cpu-utilization', nlabel => 'volume.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu_util', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'cpu_util', per_second => 1 }, { name => 'display' } ],
                 output_template => 'cpu usage: %.2f %%',
                 perfdatas => [
-                    { value => 'cpu_util_per_second', template => '%d',
-                      unit => '%', label_extra_instance => 1 }
+                    { template => '%d', unit => '%', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'read', nlabel => 'volume.io.read.usage.bytespersecond', set => {
-                key_values => [ { name => 'read_bytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'read_bytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read: %s %s/s',
-                per_second => 1, output_change_bytes => 1, 
+                output_change_bytes => 1, 
                 perfdatas => [
-                    { value => 'read_bytes_per_second', template => '%d',
-                      unit => 'B/s', label_extra_instance => 1 }
+                    { template => '%d', unit => 'B/s', label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'write', nlabel => 'volume.io.write.usage.bytespersecond', set => {
-                key_values => [ { name => 'write_bytes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'write_bytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write: %s %s/s',
-                per_second => 1, output_change_bytes => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'write_bytes_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 }
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'read-iops', nlabel => 'system.io.read.usage.iops', set => {
-                key_values => [ { name => 'read_iops', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'read_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read: %.2f iops',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'read_iops_per_second',  template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'write-iops', nlabel => 'system.io.write.usage.iops', set => {
-                key_values => [ { name => 'write_iops', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'write_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write: %.2f iops',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'write_iops_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
             }
         }

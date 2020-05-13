@@ -43,7 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Count: %d',
                 perfdatas => [
-                    { label => 'map.synchronization.centreon.count', value => 'count_absolute', template => '%d',
+                    { label => 'map.synchronization.centreon.count', value => 'count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'average' } ],
                 output_template => 'Average Duration: %.2f ms',
                 perfdatas => [
-                    { label => 'map.synchronization.centreon.duration.average.milliseconds', value => 'average_absolute',
+                    { label => 'map.synchronization.centreon.duration.average.milliseconds', value => 'average',
                       template => '%.2f', min => 0, unit => 'ms' },
                 ],
             }
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'max' } ],
                 output_template => 'Max Duration: %.2f ms',
                 perfdatas => [
-                    { label => 'map.synchronization.centreon.duration.max.milliseconds', value => 'max_absolute',
+                    { label => 'map.synchronization.centreon.duration.max.milliseconds', value => 'max',
                       template => '%.2f', min => 0, unit => 'ms' },
                 ],
             }
@@ -75,8 +75,8 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'name' } ],
                 output_template => 'Count: %d',
                 perfdatas => [
-                    { label => 'map.synchronization.acl.count', value => 'count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'map.synchronization.acl.count', value => 'count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -85,8 +85,8 @@ sub set_counters {
                 key_values => [ { name => 'average' }, { name => 'name' } ],
                 output_template => 'Average Duration: %.2f ms',
                 perfdatas => [
-                    { label => 'map.synchronization.acl.duration.average.milliseconds', value => 'average_absolute',
-                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'map.synchronization.acl.duration.average.milliseconds', value => 'average',
+                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -95,8 +95,8 @@ sub set_counters {
                 key_values => [ { name => 'max' }, { name => 'name' } ],
                 output_template => 'Max Duration: %.2f ms',
                 perfdatas => [
-                    { label => 'map.synchronization.acl.duration.max.milliseconds', value => 'max_absolute',
-                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'map.synchronization.acl.duration.max.milliseconds', value => 'max',
+                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -107,8 +107,8 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'name' } ],
                 output_template => 'Count: %d',
                 perfdatas => [
-                    { label => 'map.synchronization.resource.count', value => 'count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'map.synchronization.resource.count', value => 'count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -117,8 +117,8 @@ sub set_counters {
                 key_values => [ { name => 'average' }, { name => 'name' } ],
                 output_template => 'Average Duration: %.2f ms',
                 perfdatas => [
-                    { label => 'map.synchronization.resource.duration.average.milliseconds', value => 'average_absolute',
-                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'map.synchronization.resource.duration.average.milliseconds', value => 'average',
+                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -127,8 +127,8 @@ sub set_counters {
                 key_values => [ { name => 'max' }, { name => 'name' } ],
                 output_template => 'Max Duration: %.2f ms',
                 perfdatas => [
-                    { label => 'map.synchronization.resource.duration.max.milliseconds', value => 'max_absolute',
-                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'map.synchronization.resource.duration.max.milliseconds', value => 'max',
+                      template => '%.2f', min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

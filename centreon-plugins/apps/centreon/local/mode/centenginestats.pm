@@ -31,9 +31,9 @@ sub custom_hosts_execution_time_output {
 
     return sprintf(
         'hosts active execution time (avg/min/max): %.3f/%.3f/%.3f sec',
-        $self->{result_values}->{avg_absolute},
-        $self->{result_values}->{min_absolute},
-        $self->{result_values}->{max_absolute}
+        $self->{result_values}->{avg},
+        $self->{result_values}->{min},
+        $self->{result_values}->{max}
     );
 }
 
@@ -42,9 +42,9 @@ sub custom_services_execution_time_output {
 
     return sprintf(
         'services active execution time (avg/min/max): %.3f/%.3f/%.3f sec',
-        $self->{result_values}->{avg_absolute},
-        $self->{result_values}->{min_absolute},
-        $self->{result_values}->{max_absolute}
+        $self->{result_values}->{avg},
+        $self->{result_values}->{min},
+        $self->{result_values}->{max}
     );
 }
 
@@ -53,10 +53,10 @@ sub custom_hosts_checked_output {
 
     return sprintf(
         'hosts active checked last 1/5/15/60 min: %d/%d/%d/%d',
-        $self->{result_values}->{last1min_absolute},
-        $self->{result_values}->{last5min_absolute},
-        $self->{result_values}->{last15min_absolute},
-        $self->{result_values}->{last60min_absolute},
+        $self->{result_values}->{last1min},
+        $self->{result_values}->{last5min},
+        $self->{result_values}->{last15min},
+        $self->{result_values}->{last60min},
     );
 }
 
@@ -65,10 +65,10 @@ sub custom_services_checked_output {
 
     return sprintf(
         'services active checked last 1/5/15/60 min: %d/%d/%d/%d',
-        $self->{result_values}->{last1min_absolute},
-        $self->{result_values}->{last5min_absolute},
-        $self->{result_values}->{last15min_absolute},
-        $self->{result_values}->{last60min_absolute},
+        $self->{result_values}->{last1min},
+        $self->{result_values}->{last5min},
+        $self->{result_values}->{last15min},
+        $self->{result_values}->{last60min},
     );
 }
 
@@ -77,9 +77,9 @@ sub custom_hosts_latency_output {
 
     return sprintf(
         'hosts active latency (avg/min/max): %.3f/%.3f/%.3f sec',
-        $self->{result_values}->{avg_absolute},
-        $self->{result_values}->{min_absolute},
-        $self->{result_values}->{max_absolute}
+        $self->{result_values}->{avg},
+        $self->{result_values}->{min},
+        $self->{result_values}->{max}
     );
 }
 
@@ -88,9 +88,9 @@ sub custom_services_latency_output {
 
     return sprintf(
         'services active latency (avg/min/max): %.3f/%.3f/%.3f sec',
-        $self->{result_values}->{avg_absolute},
-        $self->{result_values}->{min_absolute},
-        $self->{result_values}->{max_absolute}
+        $self->{result_values}->{avg},
+        $self->{result_values}->{min},
+        $self->{result_values}->{max}
     );
 }
 
@@ -99,9 +99,9 @@ sub custom_hosts_status_output {
 
     return sprintf(
         'hosts status up/down/unreach: %d/%d/%d',
-        $self->{result_values}->{up_absolute},
-        $self->{result_values}->{down_absolute},
-        $self->{result_values}->{unreach_absolute}
+        $self->{result_values}->{up},
+        $self->{result_values}->{down},
+        $self->{result_values}->{unreach}
     );
 }
 
@@ -110,10 +110,10 @@ sub custom_services_status_output {
 
     return sprintf(
         'services status ok/warn/unk/crit: %d/%d/%d/%d',
-        $self->{result_values}->{ok_absolute},
-        $self->{result_values}->{warn_absolute},
-        $self->{result_values}->{unk_absolute},
-        $self->{result_values}->{crit_absolute}
+        $self->{result_values}->{ok},
+        $self->{result_values}->{warn},
+        $self->{result_values}->{unk},
+        $self->{result_values}->{crit}
     );
 }
 
@@ -122,8 +122,8 @@ sub custom_commands_buffer_output {
 
     return sprintf(
         'commands buffer current/max: %d/%d',
-        $self->{result_values}->{current_absolute},
-        $self->{result_values}->{max_absolute}
+        $self->{result_values}->{current},
+        $self->{result_values}->{max}
     );
 }
 
@@ -159,10 +159,10 @@ sub set_counters {
                         key_values => [
                             { name => 'avg' }, { name => 'max' }, { name => 'min' }
                         ],
-                        threshold_use => $_->[0] . '_absolute',
+                        threshold_use => $_->[0] ,
                         closure_custom_output => $self->can('custom_' . $type . '_execution_time_output'),
                         perfdatas => [
-                            { value => $_->[0] . '_absolute', template => '%.3f', min => 0, unit => 's' },
+                            { value => $_->[0] , template => '%.3f', min => 0, unit => 's' },
                         ],
                     }
                 }
@@ -180,10 +180,10 @@ sub set_counters {
                         key_values => [
                             { name => 'last1min' }, { name => 'last5min' }, { name => 'last15min' }, { name => 'last60min' }
                         ],
-                        threshold_use => $_->[0] . '_absolute',
+                        threshold_use => $_->[0] ,
                         closure_custom_output => $self->can('custom_' . $type . '_checked_output'),
                         perfdatas => [
-                            { value => $_->[0] . '_absolute', template => '%d', min => 0 },
+                            { value => $_->[0] , template => '%d', min => 0 },
                         ],
                     }
                 }
@@ -201,10 +201,10 @@ sub set_counters {
                         key_values => [
                             { name => 'avg' }, { name => 'max' }, { name => 'min' }
                         ],
-                        threshold_use => $_->[0] . '_absolute',
+                        threshold_use => $_->[0] ,
                         closure_custom_output => $self->can('custom_' . $type . '_latency_output'),
                         perfdatas => [
-                            { value => $_->[0] . '_absolute', template => '%.3f', min => 0, unit => 's' },
+                            { value => $_->[0] , template => '%.3f', min => 0, unit => 's' },
                         ],
                     }
                 }
@@ -223,10 +223,10 @@ sub set_counters {
                     key_values => [
                         { name => 'up' }, { name => 'down' }, { name => 'unreach' }
                     ],
-                    threshold_use => $_->[0] . '_absolute',
+                    threshold_use => $_->[0] ,
                     closure_custom_output => $self->can('custom_hosts_status_output'),
                     perfdatas => [
-                        { value => $_->[0] . '_absolute', template => '%s', min => 0, max => 'total_absolute' },
+                        { value => $_->[0] , template => '%s', min => 0, max => 'total' },
                     ],
                 }
             }
@@ -244,10 +244,10 @@ sub set_counters {
                     key_values => [
                         { name => 'ok' }, { name => 'warn' }, { name => 'unk' }, { name => 'crit' }, { name => 'total' }
                     ],
-                    threshold_use => $_->[0] . '_absolute',
+                    threshold_use => $_->[0] ,
                     closure_custom_output => $self->can('custom_services_status_output'),
                     perfdatas => [
-                        { value => $_->[0] . '_absolute', template => '%s', min => 0, max => 'total_absolute' },
+                        { value => $_->[0] , template => '%s', min => 0, max => 'total' },
                     ],
                 }
             }
@@ -265,10 +265,10 @@ sub set_counters {
                     key_values => [
                         { name => 'current' }, { name => 'max' }, { name => 'total' }
                     ],
-                    threshold_use => $_->[0] . '_absolute',
+                    threshold_use => $_->[0] ,
                     closure_custom_output => $self->can('custom_commands_buffer_output'),
                     perfdatas => [
-                        { value => $_->[0] . '_absolute', template => '%s', min => 0, max => 'total_absolute' },
+                        { value => $_->[0] , template => '%s', min => 0, max => 'total' },
                     ],
                 }
             }

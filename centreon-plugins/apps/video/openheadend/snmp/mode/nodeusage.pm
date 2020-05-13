@@ -62,8 +62,8 @@ sub set_counters {
                 output_template => 'bitRate : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'bitrate', value => 'nodeBitrate_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'bitrate', value => 'nodeBitrate', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

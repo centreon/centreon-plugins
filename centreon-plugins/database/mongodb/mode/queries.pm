@@ -35,11 +35,10 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'queries.total.persecond', set => {
-                key_values => [ { name => 'total', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'total', per_second => 1 } ],
                 output_template => 'Total : %d',
                 perfdatas => [
-                    { value => 'total_per_second', template => '%d', unit => '/s', min => 0 },
+                    { template => '%d', unit => '/s', min => 0 },
                 ],
             }
         },
@@ -48,12 +47,11 @@ sub set_counters {
     foreach ('insert', 'query', 'update', 'delete', 'getmore', 'command') {
         push @{$self->{maps_counters}->{global}}, {
             label => $_, nlabel => 'queries.' . $_ . '.persecond',  display_ok => 0, set => {
-                key_values => [ { name => $_, diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => $_, per_second => 1 } ],
                 output_template => $_ . ' : %.2f',
                 perfdatas => [
-                    { value => $_ . '_per_second',template => '%.2f', unit => '/s', min => 0 },
-                ],
+                    { template => '%.2f', unit => '/s', min => 0 }
+                ]
             }
         };
         push @{$self->{maps_counters}->{global}}, {
@@ -61,8 +59,8 @@ sub set_counters {
                 key_values => [ { name => $_, diff => 1 } ],
                 output_template => $_ . ' count : %d',
                 perfdatas => [
-                    { value => $_ . '_absolute', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         };
     }

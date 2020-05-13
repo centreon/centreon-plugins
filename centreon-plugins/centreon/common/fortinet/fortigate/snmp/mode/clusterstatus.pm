@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'total_nodes' } ],
                 output_template => 'Total nodes: %d',
                 perfdatas => [
-                    { label => 'total_nodes', value => 'total_nodes_absolute', template => '%d',
+                    { label => 'total_nodes', value => 'total_nodes', template => '%d',
                       min => 0 },
                 ],
             }
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'synchronized' } ],
                 output_template => 'Synchronized: %d',
                 perfdatas => [
-                    { label => 'synchronized_nodes', value => 'synchronized_absolute', template => '%d',
+                    { label => 'synchronized_nodes', value => 'synchronized', template => '%d',
                       min => 0 },
                 ],
             }
@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'not_synchronized' } ],
                 output_template => 'Not Synchronized: %d',
                 perfdatas => [
-                    { label => 'not_synchronized_nodes', value => 'not_synchronized_absolute', template => '%d',
+                    { label => 'not_synchronized_nodes', value => 'not_synchronized', template => '%d',
                       min => 0 },
                 ],
             }
@@ -90,7 +90,7 @@ sub set_counters {
                 key_values => [ { name => 'total_checksums' } ],
                 output_template => 'Total Checksums: %d',
                 perfdatas => [
-                    { label => 'total_checksums', value => 'total_checksums_absolute', template => '%d', min => 0 },
+                    { label => 'total_checksums', value => 'total_checksums', template => '%d', min => 0 },
                 ],
             }
         },

@@ -59,42 +59,36 @@ sub set_counters {
             }
         },
         { label => 'read-iops', nlabel => 'port.io.read.usage.iops', set => {
-                key_values => [ { name => 'number_of_reads', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'number_of_reads', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read iops: %.2f',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'number_of_reads_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'write-iops', nlabel => 'port.io.write.usage.iops', set => {
-                key_values => [ { name => 'number_of_writes', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'number_of_writes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write iops: %.2f',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'number_of_writes_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1 }
+                    { template => '%.2f', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'read-traffic', nlabel => 'port.traffic.read.usage.bitspersecond', set => {
-                key_values => [ { name => 'data_read_numeric', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'data_read_numeric', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read traffic: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'data_read_numeric_per_second', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1 }
+                    { template => '%d', unit => 'b/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'write-traffic', nlabel => 'port.traffic.write.usage.bitspersecond', set => {
-                key_values => [ { name => 'data_write_numeric' }, { name => 'display' } ],
+                key_values => [ { name => 'data_write_numeric', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write traffic: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'data_write_numeric_per_second', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1 }
+                    { template => '%d', unit => 'b/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
@@ -105,8 +99,7 @@ sub set_counters {
                 key_values => [ { name => 'disparity_errors' }, { name => 'display' } ],
                 output_template => 'disparity errors: %s',
                 perfdatas => [
-                    { value => 'disparity_errors_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1 }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
@@ -114,17 +107,15 @@ sub set_counters {
                 key_values => [ { name => 'lost_dwords' }, { name => 'display' } ],
                 output_template => 'lost dwords: %s',
                 perfdatas => [
-                    { value => 'lost_dwords_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1 }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
         { label => 'interface-invalid-dwords', nlabel => 'port.interface.invalid.dwords.count', set => {
-                key_values => [ { name => 'lost_dwords' }, { name => 'display' } ],
+                key_values => [ { name => 'invalid_dwords' }, { name => 'display' } ],
                 output_template => 'invalid dwords: %s',
                 perfdatas => [
-                    { value => 'invalid_dwords_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1 }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         }

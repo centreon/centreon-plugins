@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Number of current processes: %s',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%s', min => 0 },
+                    { value => 'total', template => '%s', min => 0 },
                 ],
             }
         },

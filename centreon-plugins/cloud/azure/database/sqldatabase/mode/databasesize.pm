@@ -48,8 +48,8 @@ sub set_counters {
                                 key_values => [ { name => $metric_perf . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => 'Database size percentage: %.2f %%',
                                 perfdatas => [
-                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation . '_absolute', 
-                                      template => '%.2f', unit => '%', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_perf . '_' . $aggregation, value => $metric_perf . '_' . $aggregation , 
+                                      template => '%.2f', unit => '%', label_extra_instance => 1, instance_use => 'display',
                                       min => 0, max => 100 },
                                 ],
                             }

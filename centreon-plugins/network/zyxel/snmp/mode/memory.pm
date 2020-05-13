@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'ram_used' } ],
                 output_template => 'Memory Used: %.2f%%',
                 perfdatas => [
-                    { label => 'memory_used', value => 'ram_used_absolute', template => '%.2f',
+                    { label => 'memory_used', value => 'ram_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'flash_used' } ],
                 output_template => 'Flash Used: %.2f%%',
                 perfdatas => [
-                    { label => 'flash_used', value => 'flash_used_absolute', template => '%.2f',
+                    { label => 'flash_used', value => 'flash_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

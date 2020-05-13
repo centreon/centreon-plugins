@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => $metric }, { name => 'display' } ],
                 output_template => $metrics_mapping{$metric}->{output} . ': %.2f',
                 perfdatas => [
-                    { value => $metric . '_absolute', template => '%.2f', label_extra_instance => 1 }
+                    { value => $metric , template => '%.2f', label_extra_instance => 1 }
                 ],
             }
         };

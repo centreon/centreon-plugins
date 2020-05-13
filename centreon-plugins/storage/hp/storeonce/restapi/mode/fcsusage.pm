@@ -63,8 +63,8 @@ sub set_counters {
                 output_template => 'Used : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%s',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'used', value => 'used', template => '%s',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -72,8 +72,8 @@ sub set_counters {
                 key_values => [ { name => 'dedup' }, { name => 'display' } ],
                 output_template => 'Dedup Ratio : %.2f',
                 perfdatas => [
-                    { label => 'dedup_ratio', value => 'dedup_absolute', template => '%.2f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'dedup_ratio', value => 'dedup', template => '%.2f', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -81,8 +81,8 @@ sub set_counters {
                 key_values => [ { name => 'num_items' }, { name => 'display' } ],
                 output_template => 'Num Items : %s',
                 perfdatas => [
-                    { label => 'items', value => 'num_items_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'items', value => 'num_items', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

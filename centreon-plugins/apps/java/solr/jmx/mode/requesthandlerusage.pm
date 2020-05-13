@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => '15minRateRequestsPerSecond' }, { name => 'display' } ],
                 output_template => '15min Rate Requests : %.7f/s',
                 perfdatas => [
-                    { label => '15min_rate_requests', value => '15minRateRequestsPerSecond_absolute', template => '%.7f', 
-                      min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => '15min_rate_requests', value => '15minRateRequestsPerSecond', template => '%.7f', 
+                      min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'avgRequestsPerSecond' }, { name => 'display' } ],
                 output_template => 'Average Requests : %.7f/s',
                 perfdatas => [
-                    { label => 'avg_requests', value => 'avgRequestsPerSecond_absolute', template => '%.7f',
-                      min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_requests', value => 'avgRequestsPerSecond', template => '%.7f',
+                      min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'avgTimePerRequest' }, { name => 'display' } ],
                 output_template => 'Average Time Per Request : %.3f ms',
                 perfdatas => [
-                    { label => 'avg_time', value => 'avgTimePerRequest_absolute', template => '%.3f', 
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_time', value => 'avgTimePerRequest', template => '%.3f', 
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'requests', diff => 1 }, { name => 'display' } ],
                 output_template => 'Requests Count : %s',
                 perfdatas => [
-                    { label => 'requests_count', value => 'requests_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'requests_count', value => 'requests', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

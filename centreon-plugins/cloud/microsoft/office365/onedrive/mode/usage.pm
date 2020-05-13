@@ -178,7 +178,7 @@ sub set_counters {
                 output_template => 'Usage (active sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_active', value => 'storage_used_active_absolute', template => '%d',
+                    { label => 'storage_used_active', value => 'storage_used_active', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -188,7 +188,7 @@ sub set_counters {
                 output_template => 'Usage (inactive sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_inactive', value => 'storage_used_inactive_absolute', template => '%d',
+                    { label => 'storage_used_inactive', value => 'storage_used_inactive', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -197,7 +197,7 @@ sub set_counters {
                 key_values => [ { name => 'file_count' } ],
                 output_template => 'File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_file_count', value => 'file_count_absolute', template => '%d',
+                    { label => 'total_file_count', value => 'file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -206,7 +206,7 @@ sub set_counters {
                 key_values => [ { name => 'active_file_count' } ],
                 output_template => 'Active File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_active_file_count', value => 'active_file_count_absolute', template => '%d',
+                    { label => 'total_active_file_count', value => 'active_file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -225,8 +225,8 @@ sub set_counters {
                 key_values => [ { name => 'file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'File Count: %d',
                 perfdatas => [
-                    { label => 'file_count', value => 'file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'url_absolute' },
+                    { label => 'file_count', value => 'file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'url' },
                 ],
             }
         },
@@ -234,8 +234,8 @@ sub set_counters {
                 key_values => [ { name => 'active_file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'Active File Count: %d',
                 perfdatas => [
-                    { label => 'active_file_count', value => 'active_file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'url_absolute' },
+                    { label => 'active_file_count', value => 'active_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'url' },
                 ],
             }
         },

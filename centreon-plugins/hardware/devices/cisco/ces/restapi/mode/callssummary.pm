@@ -32,9 +32,9 @@ sub custom_loss_output {
 
     return sprintf(
         "packets loss: %.2f%% (%s on %s)",
-        $self->{result_values}->{loss_prct_absolute},
-        $self->{result_values}->{loss_absolute},
-        $self->{result_values}->{pkts_absolute}
+        $self->{result_values}->{loss_prct},
+        $self->{result_values}->{loss},
+        $self->{result_values}->{pkts}
     );
 }
 
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'new_calls' } ],
                 output_template => 'total calls finished: %d',
                 perfdatas => [
-                    { value => 'new_calls_absolute', template => '%d', min => 0 },
+                    { value => 'new_calls', template => '%d', min => 0 },
                 ],
             }
         }
@@ -73,7 +73,7 @@ sub set_counters {
                         key_values => [ { name => 'loss' }, { name => 'pkts' }, { name => 'loss_prct' } ],
                         closure_custom_output => $self->can('custom_loss_output'),
                         perfdatas => [
-                            { value => 'loss_absolute', template => '%d', min => 0  },
+                            { value => 'loss', template => '%d', min => 0  },
                         ],
                     }
                 },
@@ -81,7 +81,7 @@ sub set_counters {
                         key_values => [ { name => 'loss_prct' }, { name => 'loss' }, { name => 'pkts' } ],
                         closure_custom_output => $self->can('custom_loss_output'),
                         perfdatas => [
-                            { value => 'loss_prct_absolute', template => '%d', unit => '%', min => 0, max => 100 },
+                            { value => 'loss_prct', template => '%d', unit => '%', min => 0, max => 100 },
                         ],
                     }
                 },
@@ -89,7 +89,7 @@ sub set_counters {
                         key_values => [ { name => 'maxjitter' } ],
                         output_template => 'max jitter: %s ms',
                         perfdatas => [
-                            { value => 'maxjitter_absolute', template => '%d', unit => 'ms', min => 0  },
+                            { value => 'maxjitter', template => '%d', unit => 'ms', min => 0  },
                         ],
                     }
                 },

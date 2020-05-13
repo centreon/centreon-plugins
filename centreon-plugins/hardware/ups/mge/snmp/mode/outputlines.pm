@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'stdev' } ],
                 output_template => 'Load Standard Deviation : %.2f',
                 perfdatas => [
-                    { label => 'stdev', value => 'stdev_absolute', template => '%.2f' },
+                    { label => 'stdev', value => 'stdev', template => '%.2f' },
                 ],
             }
         },
@@ -49,7 +49,7 @@ sub set_counters {
                 key_values => [ { name => 'mgoutputLoadPerPhase', no_value => 0 } ],
                 output_template => 'Load : %.2f %%',
                 perfdatas => [
-                    { value => 'mgoutputLoadPerPhase_absolute', template => '%.2f', 
+                    { value => 'mgoutputLoadPerPhase', template => '%.2f', 
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 },
                 ],
             }
@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'mgoutputCurrent', no_value => 0 } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'mgoutputCurrent_absolute', template => '%.2f', 
+                    { value => 'mgoutputCurrent', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'mgoutputVoltage', no_value => 0 } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'mgoutputVoltage_absolute', template => '%.2f', 
+                    { value => 'mgoutputVoltage', template => '%.2f', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'mgoutputFrequency', no_value => -1 } ],
                 output_template => 'Frequence : %.2f Hz',
                 perfdatas => [
-                    { value => 'mgoutputFrequency_absolute', template => '%.2f', 
+                    { value => 'mgoutputFrequency', template => '%.2f', 
                       unit => 'Hz', label_extra_instance => 1 },
                 ],
             }

@@ -35,27 +35,23 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'read', nlabel => 'storage.io.read.usage.bytespersecond', set => {
-                key_values => [ { name => 'read', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'read', per_second => 1 } ],
                 output_template => 'Read I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'read_per_second', template => '%d',
-                      unit => 'B/s', min => 0 },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'write', nlabel => 'storage.io.write.usage.bytespersecond', set => {
-                key_values => [ { name => 'write', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'write', per_second => 1 } ],
                 output_template => 'Write I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'write_per_second', template => '%d',
-                      unit => 'B/s', min => 0 },
-                ],
+                    { template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 

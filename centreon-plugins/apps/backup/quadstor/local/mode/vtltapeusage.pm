@@ -122,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of tapes : %s',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%s', 
+                    { label => 'count', value => 'count', template => '%s', 
                       unit => 'tapes', min => 0 },
                 ],
             }

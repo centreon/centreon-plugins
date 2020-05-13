@@ -169,7 +169,7 @@ sub set_counters {
                 key_values => [ { name => 'mem_fragmentation_ratio' } ],
                 output_template => 'Fragmentation ratio: %s',
                 perfdatas => [
-                    { label => 'fragmentation_ratio', value => 'mem_fragmentation_ratio_absolute', template => '%s', min => 0 },
+                    { label => 'fragmentation_ratio', value => 'mem_fragmentation_ratio', template => '%s', min => 0 },
                 ],
             },
         },
@@ -177,7 +177,7 @@ sub set_counters {
                 key_values => [ { name => 'active_defrag_running' } ],
                 output_template => 'Defragmentation running: %s',
                 perfdatas => [
-                    { label => 'defrag_running', value => 'active_defrag_running_absolute', template => '%s', min => 0 },
+                    { label => 'defrag_running', value => 'active_defrag_running', template => '%s', min => 0 },
                 ],
             },
         },
@@ -185,7 +185,7 @@ sub set_counters {
                 key_values => [ { name => 'lazyfree_pending_objects' } ],
                 output_template => 'Lazyfree pending objects: %s',
                 perfdatas => [
-                    { label => 'lazyfree_pending_objects', value => 'lazyfree_pending_objects_absolute', template => '%s', min => 0 },
+                    { label => 'lazyfree_pending_objects', value => 'lazyfree_pending_objects', template => '%s', min => 0 },
                 ],
             },
         },

@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'open' } ],
                 output_template => 'Number of open tickets : %d',
                 perfdatas => [
-                    { label => 'open_tickets', value => 'open_absolute', template => '%d',
+                    { label => 'open_tickets', value => 'open', template => '%d',
                       min => 0 },
                 ],
             }

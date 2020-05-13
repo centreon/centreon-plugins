@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'NumberActiveConferences' } ],
                 output_template => 'Current Conferences : %s',
                 perfdatas => [
-                    { label => 'conferences_active', value => 'NumberActiveConferences_absolute', template => '%d', min => 0 },
+                    { label => 'conferences_active', value => 'NumberActiveConferences', template => '%d', min => 0 },
                 ],
             }
         },

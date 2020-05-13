@@ -40,18 +40,15 @@ sub set_counters {
                 key_values => [ { name => 'calls', diff => 1 }, { name => 'display' } ],
                 output_template => 'Calls: %d',
                 perfdatas => [
-                    { value => 'calls_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'calls-persecond', nlabel => 'fetch.calls.persecond', set => {
-                key_values => [ { name => 'calls', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'calls', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Calls (per second): %.2f',
                 perfdatas => [
-                    { value => 'calls_per_second', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -60,18 +57,16 @@ sub set_counters {
                 output_template => 'Bytes Values: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'bytes_values_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'bytes-values-persecond', nlabel => 'fetch.bytes.values.bytespersecond', set => {
-                key_values => [ { name => 'bytes_values', diff => 1 }, { name => 'display' } ],
-                output_change_bytes => 1, per_second => 1,
+                key_values => [ { name => 'bytes_values', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 1,
                 output_template => 'Bytes Values (per second): %s%s/s',
                 perfdatas => [
-                    { value => 'bytes_values_per_second', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -80,18 +75,16 @@ sub set_counters {
                 output_template => 'Bytes Keys: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'bytes_keys_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%s', min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'bytes-keys-persecond', nlabel => 'fetch.bytes.keys.bytespersecond', set => {
-                key_values => [ { name => 'bytes_keys', diff => 1 }, { name => 'display' } ],
-                output_change_bytes => 1, per_second => 1,
+                key_values => [ { name => 'bytes_keys', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 1,
                 output_template => 'Bytes Keys (per second): %s%s/s',
                 perfdatas => [
-                    { value => 'bytes_keys_per_second', template => '%s',
-                      min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%s', min => 0, unit => 'B/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -99,18 +92,15 @@ sub set_counters {
                 key_values => [ { name => 'datapoints', diff => 1 }, { name => 'display' } ],
                 output_template => 'Datapoints: %d',
                 perfdatas => [
-                    { value => 'datapoints_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'datapoints-persecond', nlabel => 'fetch.datapoints.persecond', set => {
-                key_values => [ { name => 'datapoints', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'datapoints', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Datapoints (per second): %.2f',
                 perfdatas => [
-                    { value => 'datapoints_per_second', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -129,9 +119,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
-   
+
     return $self;
 }
 

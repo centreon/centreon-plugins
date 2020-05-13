@@ -147,7 +147,7 @@ sub set_counters {
                 key_values => [ { name => 'total_reduction_ratio' } ],
                 output_template => 'Total Reduction Ratio: %.2f',
                 perfdatas => [
-                    { label => 'total_reduction_ratio', value => 'total_reduction_ratio_absolute', template => '%.2f',
+                    { label => 'total_reduction_ratio', value => 'total_reduction_ratio', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -156,7 +156,7 @@ sub set_counters {
                 key_values => [ { name => 'deduplication_ratio' } ],
                 output_template => 'Deduplication Ratio: %.2f',
                 perfdatas => [
-                    { label => 'deduplication_ratio', value => 'deduplication_ratio_absolute', template => '%.2f',
+                    { label => 'deduplication_ratio', value => 'deduplication_ratio', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }
@@ -165,7 +165,7 @@ sub set_counters {
                 key_values => [ { name => 'compression_ratio' } ],
                 output_template => 'Compression Ratio: %.2f',
                 perfdatas => [
-                    { label => 'compression_ratio', value => 'compression_ratio_absolute', template => '%.2f',
+                    { label => 'compression_ratio', value => 'compression_ratio', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

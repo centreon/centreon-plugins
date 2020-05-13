@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'iops_avg' }, { name => 'display' } ],
                 output_template => 'Average IOPs : %s',
                 perfdatas => [
-                    { label => 'iops', value => 'iops_avg_absolute', template => '%s', 
-                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'iops', value => 'iops_avg', template => '%s', 
+                      min => 0, unit => 'iops', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 output_template => 'Average Throughput : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'throughput', value => 'throughput_avg_absolute', template => '%s', 
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'throughput', value => 'throughput_avg', template => '%s', 
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'latency_inner' }, { name => 'display' } ],
                 output_template => 'Latency Inner : %.6fms',
                 perfdatas => [
-                    { label => 'latency_inner', value => 'latency_inner_absolute', template => '%.6f', 
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'latency_inner', value => 'latency_inner', template => '%.6f', 
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'latency_outer' }, { name => 'display' } ],
                 output_template => 'Latency Outer : %.6fms',
                 perfdatas => [
-                    { label => 'latency_outer', value => 'latency_outer_absolute', template => '%.6f', 
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'latency_outer', value => 'latency_outer', template => '%.6f', 
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

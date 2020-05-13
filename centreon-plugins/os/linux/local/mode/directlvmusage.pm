@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'data' }, { name => 'display' } ],
                 output_template => 'Data Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'data_used', value => 'data_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'data_used', value => 'data', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'meta' }, { name => 'display' } ],
                 output_template => 'Meta Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'meta_used', value => 'meta_absolute', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'meta_used', value => 'meta', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

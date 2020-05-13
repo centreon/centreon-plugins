@@ -63,8 +63,8 @@ sub set_counters {
                 key_values => [ { name => 'current' }, { name => 'display' } ],
                 output_template => 'current : %s A',
                 perfdatas => [
-                    { label => 'current_bank',  template => '%s', value => 'current_absolute',
-                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_bank',  template => '%s', value => 'current',
+                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'current' }, { name => 'display' } ],
                 output_template => 'current : %s A',
                 perfdatas => [
-                    { label => 'current_phase',  template => '%s', value => 'current_absolute',
-                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_phase',  template => '%s', value => 'current',
+                      unit => 'A', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -92,8 +92,8 @@ sub set_counters {
                 key_values => [ { name => 'power' }, { name => 'display' } ],
                 output_template => 'power : %s W',
                 perfdatas => [
-                    { label => 'power_phase',  template => '%s', value => 'power_absolute',
-                      unit => 'W', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'power_phase',  template => '%s', value => 'power',
+                      unit => 'W', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -104,8 +104,8 @@ sub set_counters {
                 key_values => [ { name => 'power' }, { name => 'display' } ],
                 output_template => 'power : %s W',
                 perfdatas => [
-                    { label => 'power_phase',  template => '%s', value => 'power_absolute',
-                      unit => 'W', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'power_phase',  template => '%s', value => 'power',
+                      unit => 'W', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

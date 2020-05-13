@@ -45,8 +45,8 @@ sub set_counters {
                                 key_values => [ { name => $metric_label . '_' . $aggregation }, { name => 'display' }, { name => 'stat' } ],
                                 output_template => $metric . ': %s',
                                 perfdatas => [
-                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation . '_absolute', 
-                                      template => '%s', label_extra_instance => 1, instance_use => 'display_absolute',
+                                    { label => $metric_label . '_' . $aggregation, value => $metric_label . '_' . $aggregation , 
+                                      template => '%s', label_extra_instance => 1, instance_use => 'display',
                                       min => 0 },
                                 ],
                             }

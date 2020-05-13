@@ -65,24 +65,20 @@ sub set_counters {
     
     $self->{maps_counters}->{volume} = [
         { label => 'read', nlabel => 'volume.io.read.usage.bytespersecond', set => {
-                key_values => [ { name => 'data-read-numeric', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'data-read-numeric', per_second => 1 } ],
                 output_template => 'Read I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'data-read-numeric_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'write', nlabel => 'volume.io.write.usage.bytespersecond', set => {
-                key_values => [ { name => 'data-written-numeric', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'data-written-numeric', per_second => 1 } ],
                 output_template => 'Write I/O : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'data-written-numeric_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 },
                 ],
             }
         },
@@ -112,11 +108,10 @@ sub set_counters {
                 key_values => [ { name => 'iops' } ],
                 output_template => 'IOPs : %s',
                 perfdatas => [
-                    { value => 'iops_absolute', 
-                      unit => 'iops', min => 0, label_extra_instance => 1 },
-                ],
+                    { unit => 'iops', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -126,8 +121,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'name:s'    => { name => 'name' },
-        'regexp'    => { name => 'use_regexp' },
+        'name:s' => { name => 'name' },
+        'regexp' => { name => 'use_regexp' },
     });
 
     return $self;

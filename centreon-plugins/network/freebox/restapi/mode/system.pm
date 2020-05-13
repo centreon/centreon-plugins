@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'temp_cpum' } ],
                 output_template => 'Temperature cpum : %s C',
                 perfdatas => [
-                    { label => 'temp_cpum', value => 'temp_cpum_absolute', template => '%s', 
+                    { label => 'temp_cpum', value => 'temp_cpum', template => '%s', 
                       unit => 'C' }
                 ]
             }
@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'temp_cpub' } ],
                 output_template => 'Temperature cpub : %s C',
                 perfdatas => [
-                    { label => 'temp_cpub', value => 'temp_cpub_absolute', template => '%s', 
+                    { label => 'temp_cpub', value => 'temp_cpub', template => '%s', 
                       unit => 'C' }
                 ]
             }
@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'temp_sw' } ],
                 output_template => 'Temperature switch : %s C',
                 perfdatas => [
-                    { label => 'temp_sw', value => 'temp_sw_absolute', template => '%s', 
+                    { label => 'temp_sw', value => 'temp_sw', template => '%s', 
                       unit => 'C' }
                 ]
             }
@@ -66,7 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'fan_rpm' } ],
                 output_template => 'fan speed : %s rpm',
                 perfdatas => [
-                    { label => 'fan_rpm', value => 'fan_rpm_absolute', template => '%s', 
+                    { label => 'fan_rpm', value => 'fan_rpm', template => '%s', 
                       min => 0, unit => 'rpm' }
                 ]
             }

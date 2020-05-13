@@ -111,8 +111,8 @@ sub set_counters {
                 key_values => [ { name => 'data_reduction' }, { name => 'display' } ],
                 output_template => 'Data Reduction : %.3f',
                 perfdatas => [
-                    { label => 'data_reduction', value => 'data_reduction_absolute', template => '%.3f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'data_reduction', value => 'data_reduction', template => '%.3f', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -120,8 +120,8 @@ sub set_counters {
                 key_values => [ { name => 'total_reduction' }, { name => 'display' } ],
                 output_template => 'Total Reduction : %.3f',
                 perfdatas => [
-                    { label => 'total_reduction', value => 'total_reduction_absolute', template => '%.3f', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_reduction', value => 'total_reduction', template => '%.3f', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -130,8 +130,8 @@ sub set_counters {
                 output_template => 'Snapshots : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'snapshots', value => 'snapshots_absolute', template => '%s', 
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'snapshots', value => 'snapshots', template => '%s', 
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

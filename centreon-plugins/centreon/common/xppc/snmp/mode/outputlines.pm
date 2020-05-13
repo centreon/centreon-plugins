@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartOutputLoad', no_value => -1 } ],
                 output_template => 'load: %.2f %%',
                 perfdatas => [
-                    { value => 'upsSmartOutputLoad_absolute', template => '%.2f', min => 0, max => 100 },
+                    { value => 'upsSmartOutputLoad', template => '%.2f', min => 0, max => 100 },
                 ],
             }
         },
@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartOutputFrequency', no_value => 0 } ],
                 output_template => 'frequence: %.2f Hz',
                 perfdatas => [
-                    { value => 'upsSmartOutputFrequency_absolute', template => '%.2f', unit => 'Hz' },
+                    { value => 'upsSmartOutputFrequency', template => '%.2f', unit => 'Hz' },
                 ],
             }
         },
@@ -68,7 +68,7 @@ sub set_counters {
                 key_values => [ { name => 'upsSmartOutputVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'upsSmartOutputVoltage_absolute', template => '%s', 
+                    { value => 'upsSmartOutputVoltage', template => '%s', 
                       unit => 'V' },
                 ],
             }

@@ -125,42 +125,40 @@ sub set_counters {
             }
         },
         { label => 'read', set => {
-                key_values => [ { name => 'clusVolumeStatsKbytesRead', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'clusVolumeStatsKbytesRead', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read', value => 'clusVolumeStatsKbytesRead_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write', set => {
-                key_values => [ { name => 'clusVolumeStatsKbytesWrite', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'clusVolumeStatsKbytesWrite', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write', value => 'clusVolumeStatsKbytesWrite_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'read-iops', set => {
-                key_values => [ { name => 'clusVolumeStatsIOsRead', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'clusVolumeStatsIOsRead', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'read_iops', value => 'clusVolumeStatsIOsRead_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write-iops', set => {
-                key_values => [ { name => 'clusVolumeStatsIOsWrite', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'clusVolumeStatsIOsWrite', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
-                    { label => 'write_iops', value => 'clusVolumeStatsIOsWrite_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -168,8 +166,8 @@ sub set_counters {
                 key_values => [ { name => 'clusVolumeStatsIoLatencyRead', diff => 1 }, { name => 'display' } ],
                 output_template => 'Read Latency : %.2f ms', output_error_template => "Read Latency : %s",
                 perfdatas => [
-                    { label => 'read_latency', value => 'clusVolumeStatsIoLatencyRead_absolute', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_latency', template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -177,8 +175,8 @@ sub set_counters {
                 key_values => [ { name => 'clusVolumeStatsIoLatencyWrite', diff => 1 }, { name => 'display' } ],
                 output_template => 'Write Latency : %.2f ms', output_error_template => "Write Latency : %s",
                 perfdatas => [
-                    { label => 'write_latency', value => 'clusVolumeStatsIoLatencyWrite_absolute', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_latency', template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -187,9 +185,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -199,11 +197,11 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"           => { name => 'filter_name' },
-        "warning-replication-status:s"    => { name => 'warning_replication_status', default => '' },
-        "critical-replication-status:s"   => { name => 'critical_replication_status', default => '%{status} !~ /normal/i' },
-        "units:s"             => { name => 'units', default => '%' },
-        "free"                => { name => 'free' },
+        'filter-name:s'                 => { name => 'filter_name' },
+        'warning-replication-status:s'  => { name => 'warning_replication_status', default => '' },
+        'critical-replication-status:s' => { name => 'critical_replication_status', default => '%{status} !~ /normal/i' },
+        'units:s'                       => { name => 'units', default => '%' },
+        'free'                          => { name => 'free' }
     });
 
     return $self;

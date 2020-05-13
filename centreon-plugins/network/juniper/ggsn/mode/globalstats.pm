@@ -29,12 +29,12 @@ use Digest::MD5 qw(md5_hex);
 sub custom_drop_in_calc {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{ggsnUplinkDrops_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnUplinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnUplinkDrops'};
-    $self->{result_values}->{ggsnUplinkPackets_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnUplinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnUplinkPackets'};
-    if ($self->{result_values}->{ggsnUplinkPackets_absolute} == 0) {
+    $self->{result_values}->{ggsnUplinkDrops} = $options{new_datas}->{$self->{instance} . '_ggsnUplinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnUplinkDrops'};
+    $self->{result_values}->{ggsnUplinkPackets} = $options{new_datas}->{$self->{instance} . '_ggsnUplinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnUplinkPackets'};
+    if ($self->{result_values}->{ggsnUplinkPackets} == 0) {
         $self->{result_values}->{drop_prct} = 0;
     } else {
-        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnUplinkDrops_absolute} * 100 / $self->{result_values}->{ggsnUplinkPackets_absolute};
+        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnUplinkDrops} * 100 / $self->{result_values}->{ggsnUplinkPackets};
     }
     return 0;
 }
@@ -42,12 +42,12 @@ sub custom_drop_in_calc {
 sub custom_drop_out_calc {
     my ($self, %options) = @_;
     
-    $self->{result_values}->{ggsnDownlinkDrops_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnDownlinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnDownlinkDrops'};
-    $self->{result_values}->{ggsnDownlinkPackets_absolute} = $options{new_datas}->{$self->{instance} . '_ggsnDownlinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnDownlinkPackets'};
-    if ($self->{result_values}->{ggsnDownlinkPackets_absolute} == 0) {
+    $self->{result_values}->{ggsnDownlinkDrops} = $options{new_datas}->{$self->{instance} . '_ggsnDownlinkDrops'} - $options{old_datas}->{$self->{instance} . '_ggsnDownlinkDrops'};
+    $self->{result_values}->{ggsnDownlinkPackets} = $options{new_datas}->{$self->{instance} . '_ggsnDownlinkPackets'} - $options{old_datas}->{$self->{instance} . '_ggsnDownlinkPackets'};
+    if ($self->{result_values}->{ggsnDownlinkPackets} == 0) {
         $self->{result_values}->{drop_prct} = 0;
     } else {
-        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnDownlinkDrops_absolute} * 100 / $self->{result_values}->{ggsnDownlinkPackets_absolute};
+        $self->{result_values}->{drop_prct} = $self->{result_values}->{ggsnDownlinkDrops} * 100 / $self->{result_values}->{ggsnDownlinkPackets};
     }
     return 0;
 }
@@ -61,22 +61,20 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'ggsnUplinkBytes', diff => 1 } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'ggsnUplinkBytes', per_second => 1 } ],
                 output_template => 'Traffic In : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ggsnUplinkBytes_per_second', template => '%s',
-                      unit => 'b/s', min => 0, cast_int => 1 },
+                    { label => 'traffic_in', template => '%s', unit => 'b/s', min => 0, cast_int => 1 },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'ggsnDownlinkBytes', diff => 1 } ],
-                per_second => 1,  output_change_bytes => 2,
+                key_values => [ { name => 'ggsnDownlinkBytes', per_second => 1 } ],
                 output_template => 'Traffic Out : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'ggsnDownlinkBytes_per_second', template => '%s',
-                      unit => 'b/s', min => 0, cast_int => 1 },
+                    { label => 'traffic_out', template => '%s', unit => 'b/s', min => 0, cast_int => 1 },
                 ],
             }
         },
@@ -85,8 +83,8 @@ sub set_counters {
                 output_template => 'Drop In Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
                 closure_custom_calc => \&custom_drop_in_calc,
                 perfdatas => [
-                    { label => 'drop_in', value => 'ggsnUplinkDrops_absolute', template => '%s',
-                      min => 0, max => 'ggsnUplinkPackets_absolute' },
+                    { label => 'drop_in', value => 'ggsnUplinkDrops', template => '%s',
+                      min => 0, max => 'ggsnUplinkPackets' },
                 ],
             }
         },
@@ -95,8 +93,8 @@ sub set_counters {
                 output_template => 'Drop Out Packets : %.2f %%', threshold_use => 'drop_prct', output_use => 'drop_prct',
                 closure_custom_calc => \&custom_drop_out_calc,
                 perfdatas => [
-                    { label => 'drop_out', value => 'ggsnDownlinkDrops_absolute', template => '%s',
-                      min => 0, max => 'ggsnDownlinkPackets_absolute' },
+                    { label => 'drop_out', value => 'ggsnDownlinkDrops', template => '%s',
+                      min => 0, max => 'ggsnDownlinkPackets' },
                 ],
             }
         },
@@ -104,7 +102,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnNbrOfActivePdpContexts' } ],
                 output_template => 'Active Pdp : %s',
                 perfdatas => [
-                    { label => 'active_pdp', value => 'ggsnNbrOfActivePdpContexts_absolute', template => '%s', min => 0 },
+                    { label => 'active_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -112,7 +110,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnAttemptedActivation', diff => 1 } ],
                 output_template => 'Attempted Activation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_activation_pdp', value => 'ggsnAttemptedActivation_absolute', template => '%s', min => 0 },
+                    { label => 'attempted_activation_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -120,7 +118,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnAttemptedDeactivation', diff => 1 } ],
                 output_template => 'Attempted Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_deactivation_pdp', value => 'ggsnAttemptedDeactivation_absolute', template => '%s', min => 0 },
+                    { label => 'attempted_deactivation_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -128,7 +126,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnAttemptedDeactivation', diff => 1 } ],
                 output_template => 'Attempted Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_deactivation_pdp', value => 'ggsnAttemptedDeactivation_absolute', template => '%s', min => 0 },
+                    { label => 'attempted_deactivation_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -136,7 +134,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnAttemptedSelfDeactivation', diff => 1 } ],
                 output_template => 'Attempted Self Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_self_deactivation_pdp', value => 'ggsnAttemptedSelfDeactivation_absolute', template => '%s', min => 0 },
+                    { label => 'attempted_self_deactivation_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -144,7 +142,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnAttemptedUpdate', diff => 1 } ],
                 output_template => 'Attempted Update Pdp : %s',
                 perfdatas => [
-                    { label => 'attempted_update_pdp', value => 'ggsnAttemptedUpdate_absolute', template => '%s', min => 0 },
+                    { label => 'attempted_update_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -152,7 +150,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnCompletedActivation', diff => 1 } ],
                 output_template => 'Completed Activation Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_activation_pdp', value => 'ggsnCompletedActivation_absolute', template => '%s', min => 0 },
+                    { label => 'completed_activation_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -160,7 +158,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnCompletedDeactivation', diff => 1 } ],
                 output_template => 'Completed Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_deactivation_pdp', value => 'ggsnCompletedDeactivation_absolute', template => '%s', min => 0 },
+                    { label => 'completed_deactivation_pdp', template => '%s', min => 0 },
                 ],
             }
         },
@@ -168,7 +166,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnCompletedSelfDeactivation', diff => 1 } ],
                 output_template => 'Completed Self Deactivation Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_self_deactivation_pdp', value => 'ggsnCompletedSelfDeactivation_absolute', template => '%s', min => 0 },
+                    { label => 'completed_self_deactivation_pdp', emplate => '%s', min => 0 },
                 ],
             }
         },
@@ -176,7 +174,7 @@ sub set_counters {
                 key_values => [ { name => 'ggsnCompletedUpdate', diff => 1 } ],
                 output_template => 'Completed Update Pdp : %s',
                 perfdatas => [
-                    { label => 'completed_update_pdp', value => 'ggsnCompletedUpdate_absolute', template => '%s', min => 0 },
+                    { label => 'completed_update_pdp', template => '%s', min => 0 },
                 ],
             }
         },

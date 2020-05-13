@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'percent_space_usage' }, { name => 'display' } ],
                 output_template => 'used : %.2f %%',
                 perfdatas => [
-                    { value => 'percent_space_usage_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'percent_space_usage', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'percent_space_reclaimable' }, { name => 'display' } ],
                 output_template => 'reclaimable : %.2f %%',
                 perfdatas => [
-                    { value => 'percent_space_reclaimable_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'percent_space_reclaimable', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

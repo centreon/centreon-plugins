@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'groupCurrent', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Current : %.2f A',
                 perfdatas => [
-                    { value => 'groupCurrent_absolute', template => '%.2f', 
-                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'groupCurrent', template => '%.2f', 
+                      min => 0, unit => 'A', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'groupVoltage', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'groupVoltage_absolute', template => '%.2f', 
-                      unit => 'V', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'groupVoltage', template => '%.2f', 
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'groupWatts', no_value => 0 }, { name => 'display' } ],
                 output_template => 'Power : %.2f W',
                 perfdatas => [
-                    { value => 'groupWatts_absolute', template => '%.2f', 
-                      unit => 'W', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'groupWatts', template => '%.2f', 
+                      unit => 'W', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total jobs : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', min => 0 },
+                    { label => 'total', value => 'total', template => '%s', min => 0 },
                 ],
             }
         },

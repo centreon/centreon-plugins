@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'commit', diff => 1 } ],
                 output_template => 'Commit : %s',
                 perfdatas => [
-                    { label => 'commit', value => 'commit_absolute', template => '%s', min => 0 },
+                    { label => 'commit', value => 'commit', template => '%s', min => 0 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'rollback', diff => 1 } ],
                 output_template => 'Rollback : %s',
                 perfdatas => [
-                    { label => 'rollback', value => 'rollback_absolute', template => '%s', min => 0 },
+                    { label => 'rollback', value => 'rollback', template => '%s', min => 0 },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'insert', diff => 1 } ],
                 output_template => 'Insert : %s',
                 perfdatas => [
-                    { label => 'insert', value => 'insert_absolute', template => '%s', min => 0 },
+                    { label => 'insert', value => 'insert', template => '%s', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'update', diff => 1 } ],
                 output_template => 'Update : %s',
                 perfdatas => [
-                    { label => 'update', value => 'update_absolute', template => '%s', min => 0 },
+                    { label => 'update', value => 'update', template => '%s', min => 0 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'delete', diff => 1 } ],
                 output_template => 'Delete : %s',
                 perfdatas => [
-                    { label => 'delete', value => 'delete_absolute', template => '%s', min => 0 },
+                    { label => 'delete', value => 'delete', template => '%s', min => 0 },
                 ],
             }
         },
@@ -82,8 +82,8 @@ sub set_counters {
                 key_values => [ { name => 'commit', diff => 1 }, { name => 'name' }, ],
                 output_template => 'Commit : %s',
                 perfdatas => [
-                    { label => 'commit', value => 'commit_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'commit', value => 'commit', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -91,8 +91,8 @@ sub set_counters {
                 key_values => [ { name => 'rollback', diff => 1 }, { name => 'name' }, ],
                 output_template => 'Rollback : %s',
                 perfdatas => [
-                    { label => 'rollback', value => 'rollback_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'rollback', value => 'rollback', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -100,8 +100,8 @@ sub set_counters {
                 key_values => [ { name => 'insert', diff => 1 }, { name => 'name' }, ],
                 output_template => 'Insert : %s',
                 perfdatas => [
-                    { label => 'insert', value => 'insert_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'insert', value => 'insert', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -109,8 +109,8 @@ sub set_counters {
                 key_values => [ { name => 'update', diff => 1 }, { name => 'name' }, ],
                 output_template => 'Update : %s',
                 perfdatas => [
-                    { label => 'update', value => 'update_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'update', value => 'update', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -118,8 +118,8 @@ sub set_counters {
                 key_values => [ { name => 'delete', diff => 1 }, { name => 'name' }, ],
                 output_template => 'Delete : %s',
                 perfdatas => [
-                    { label => 'delete', value => 'delete_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'delete', value => 'delete', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

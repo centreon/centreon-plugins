@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'minor_gc_count', diff => 1 } ],
                 output_template => 'minor count: %s',
                 perfdatas => [
-                    { value => 'minor_gc_count_absolute', template => '%s', min => 0 },
+                    { value => 'minor_gc_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'minor_gc_time', diff => 1 } ],
                 output_template => 'minor time: %s ms',
                 perfdatas => [
-                    { value => 'minor_gc_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                    { value => 'minor_gc_time', template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'full_gc_count', diff => 1 } ],
                 output_template => 'full count: %s',
                 perfdatas => [
-                    { value => 'full_gc_count_absolute', template => '%s', min => 0 },
+                    { value => 'full_gc_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'full_gc_time', diff => 1 } ],
                 output_template => 'full time: %s ms',
                 perfdatas => [
-                    { value => 'full_gc_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                    { value => 'full_gc_time', template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },

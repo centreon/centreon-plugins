@@ -40,16 +40,16 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Tunnels : %s',
                 perfdatas => [
-                    { label => 'total_tunnels', value => 'total_absolute', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'total_tunnels', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{tunnel} = [
         { label => 'traffic-in', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'In' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -58,7 +58,7 @@ sub set_counters {
         },
         { label => 'traffic-out', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'Out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -67,7 +67,7 @@ sub set_counters {
         },
         { label => 'drop-in', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_drop_calc'), closure_custom_calc_extra_options => { label_ref => 'In' },
                 closure_custom_output => $self->can('custom_drop_output'),
                 closure_custom_perfdata => $self->can('custom_drop_perfdata'),
@@ -76,7 +76,7 @@ sub set_counters {
         },
         { label => 'drop-out', set => {
                 key_values => [],
-                per_second => 1, manual_keys => 1,
+                manual_keys => 1,
                 closure_custom_calc => $self->can('custom_drop_calc'), closure_custom_calc_extra_options => { label_ref => 'Out' },
                 closure_custom_output => $self->can('custom_drop_output'),
                 closure_custom_perfdata => $self->can('custom_drop_perfdata'),
@@ -87,11 +87,10 @@ sub set_counters {
                 key_values => [ { name => 'sa' }, { name => 'display' } ],
                 output_template => 'Total SA : %s',
                 perfdatas => [
-                    { label => 'total_sa', value => 'sa_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { label => 'total_sa', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -184,9 +183,10 @@ sub custom_drop_threshold {
 sub custom_drop_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf("Drop %s : %s pkts/s",
-                      $self->{result_values}->{label}, $self->{result_values}->{pkts_per_seconds});
-    return $msg;
+    return sprintf(
+        "Drop %s : %s pkts/s",
+        $self->{result_values}->{label}, $self->{result_values}->{pkts_per_seconds}
+    );
 }
 
 sub custom_drop_calc {
@@ -223,8 +223,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
-        "filter-sa:s"   => { name => 'filter_sa' },
+        'filter-name:s' => { name => 'filter_name' },
+        'filter-sa:s'   => { name => 'filter_sa' },
     });
 
     return $self;

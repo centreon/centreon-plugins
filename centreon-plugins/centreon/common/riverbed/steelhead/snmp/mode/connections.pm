@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'totalConnections' } ],
                 output_template => 'total %s',
                 perfdatas => [
-                    { label => 'total', value => 'totalConnections_absolute', template => '%s', min => 0 },
+                    { label => 'total', value => 'totalConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'establishedConnections' } ],
                 output_template => 'established %s',
                 perfdatas => [
-                    { label => 'established', value => 'establishedConnections_absolute', template => '%s', min => 0 },
+                    { label => 'established', value => 'establishedConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'activeConnections' } ],
                 output_template => 'active %s',
                 perfdatas => [
-                    { label => 'active', value => 'activeConnections_absolute', template => '%s', min => 0 },
+                    { label => 'active', value => 'activeConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'optimizedConnections' } ],
                 output_template => 'optimized %s',
                 perfdatas => [
-                    { label => 'optimized', value => 'optimizedConnections_absolute', template => '%s', min => 0 },
+                    { label => 'optimized', value => 'optimizedConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'passthroughConnections' } ],
                 output_template => 'passthrough %s',
                 perfdatas => [
-                    { label => 'passthrough', value => 'passthroughConnections_absolute', template => '%s', min => 0 },
+                    { label => 'passthrough', value => 'passthroughConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'halfOpenedConnections' } ],
                 output_template => 'half opened %s',
                 perfdatas => [
-                    { label => 'half_opened', value => 'halfOpenedConnections_absolute', template => '%s', min => 0 },
+                    { label => 'half_opened', value => 'halfOpenedConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -85,7 +85,7 @@ sub set_counters {
                 key_values => [ { name => 'halfClosedConnections' } ],
                 output_template => 'half closed %s',
                 perfdatas => [
-                    { label => 'half_closed', value => 'halfClosedConnections_absolute', template => '%s', min => 0 },
+                    { label => 'half_closed', value => 'halfClosedConnections', template => '%s', min => 0 },
                 ],
             }
         },

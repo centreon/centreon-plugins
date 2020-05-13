@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total entries %s',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%s', min => 0 },
+                    { value => 'total', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'duplicate_macaddress' } ],
                 output_template => 'duplicate mac address %s',
                 perfdatas => [
-                    { value => 'duplicate_macaddress_absolute', template => '%s', min => 0 },
+                    { value => 'duplicate_macaddress', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'duplicate_ipaddress' } ],
                 output_template => 'duplicate ip address %s',
                 perfdatas => [
-                    { value => 'duplicate_ipaddress_absolute', template => '%s', min => 0 },
+                    { value => 'duplicate_ipaddress', template => '%s', min => 0 },
                 ],
             }
         },

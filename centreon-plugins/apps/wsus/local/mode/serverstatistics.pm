@@ -40,7 +40,7 @@ sub set_counters {
                 key_values => [ { name => 'ComputerTargetCount' } ],
                 output_template => 'Computers: %d',
                 perfdatas => [
-                    { label => 'computers', value => 'ComputerTargetCount_absolute',
+                    { label => 'computers', value => 'ComputerTargetCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -49,7 +49,7 @@ sub set_counters {
                 key_values => [ { name => 'CustomComputerTargetGroupCount' } ],
                 output_template => 'Computer Groups: %d',
                 perfdatas => [
-                    { label => 'computer_groups', value => 'CustomComputerTargetGroupCount_absolute',
+                    { label => 'computer_groups', value => 'CustomComputerTargetGroupCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'UpdateCount' } ],
                 output_template => 'Updates: %d',
                 perfdatas => [
-                    { label => 'updates', value => 'UpdateCount_absolute',
+                    { label => 'updates', value => 'UpdateCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'ApprovedUpdateCount' } ],
                 output_template => 'Approved Updates: %d',
                 perfdatas => [
-                    { label => 'approved_updates', value => 'ApprovedUpdateCount_absolute',
+                    { label => 'approved_updates', value => 'ApprovedUpdateCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'DeclinedUpdateCount' } ],
                 output_template => 'Declined Updates: %d',
                 perfdatas => [
-                    { label => 'declined_updates', value => 'DeclinedUpdateCount_absolute',
+                    { label => 'declined_updates', value => 'DeclinedUpdateCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -85,7 +85,7 @@ sub set_counters {
                 key_values => [ { name => 'NotApprovedUpdateCount' } ],
                 output_template => 'Not Approved Updates: %d',
                 perfdatas => [
-                    { label => 'not_approved_updates', value => 'NotApprovedUpdateCount_absolute',
+                    { label => 'not_approved_updates', value => 'NotApprovedUpdateCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -94,7 +94,7 @@ sub set_counters {
                 key_values => [ { name => 'UpdatesWithStaleUpdateApprovalsCount' } ],
                 output_template => 'Stale Updates: %d',
                 perfdatas => [
-                    { label => 'stale_updates', value => 'UpdatesWithStaleUpdateApprovalsCount_absolute',
+                    { label => 'stale_updates', value => 'UpdatesWithStaleUpdateApprovalsCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -103,7 +103,7 @@ sub set_counters {
                 key_values => [ { name => 'ExpiredUpdateCount' } ],
                 output_template => 'Expired Updates: %d',
                 perfdatas => [
-                    { label => 'expired_updates', value => 'ExpiredUpdateCount_absolute',
+                    { label => 'expired_updates', value => 'ExpiredUpdateCount',
                       template => '%d', min => 0 },
                 ],
             }

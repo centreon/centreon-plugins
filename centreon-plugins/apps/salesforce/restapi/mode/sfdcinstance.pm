@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'incident' } ],
                 output_template => '%s incidents currently',
                 perfdatas => [
-                    { label => 'incident', value => 'incident_absolute', template => '%s',
+                    { label => 'incident', value => 'incident', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

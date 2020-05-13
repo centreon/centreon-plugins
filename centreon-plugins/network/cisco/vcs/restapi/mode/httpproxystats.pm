@@ -63,106 +63,88 @@ sub set_counters {
     ];
     $self->{maps_counters}->{connections} = [
         { label => 'client-connections', set => {
-                key_values => [ { name => 'TotalClientConnection', diff => 1 } ],
+                key_values => [ { name => 'TotalClientConnection', per_second => 1 } ],
                 output_template => 'Client: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'client_connections', value => 'TotalClientConnection_per_second', template => '%.2f',
-                      min => 0, unit => 'connections/s' },
+                    { label => 'client_connections', template => '%.2f', min => 0, unit => 'connections/s' },
                 ],
             }
         },
         { label => 'server-connections', set => {
-                key_values => [ { name => 'TotalServerConnection', diff => 1 } ],
+                key_values => [ { name => 'TotalServerConnection', per_second => 1 } ],
                 output_template => 'Server: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'server_connections', value => 'TotalServerConnection_per_second', template => '%.2f',
-                      min => 0, unit => 'connections/s' },
+                    { label => 'server_connections', template => '%.2f', min => 0, unit => 'connections/s' },
                 ],
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{requests} = [
         { label => 'completed-requests', set => {
-                key_values => [ { name => 'CompletedRequests', diff => 1 } ],
+                key_values => [ { name => 'CompletedRequests', per_second => 1 } ],
                 output_template => 'Completed: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'completed_requests', value => 'CompletedRequests_per_second', template => '%.2f',
-                      min => 0, unit => 'requests/s' },
+                    { label => 'completed_requests', template => '%.2f', min => 0, unit => 'requests/s' },
                 ],
             }
         },
         { label => 'get-requests', set => {
-                key_values => [ { name => 'GetRequests', diff => 1 } ],
+                key_values => [ { name => 'GetRequests', per_second => 1 } ],
                 output_template => 'Get: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'get_requests', value => 'GetRequests_per_second', template => '%.2f',
-                      min => 0, unit => 'requests/s' },
+                    { label => 'get_requests', template => '%.2f', min => 0, unit => 'requests/s' },
                 ],
             }
         },
         { label => 'post-requests', set => {
-                key_values => [ { name => 'PostRequests', diff => 1 } ],
+                key_values => [ { name => 'PostRequests', per_second => 1 } ],
                 output_template => 'Post: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'post_requests', value => 'PostRequests_per_second', template => '%.2f',
-                      min => 0, unit => 'requests/s' },
+                    { label => 'post_requests', template => '%.2f', min => 0, unit => 'requests/s' },
                 ],
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{responses} = [
         { label => 'responses-1xx', set => {
-                key_values => [ { name => 'Response1XXCount', diff => 1 } ],
+                key_values => [ { name => 'Response1XXCount', per_second => 1 } ],
                 output_template => '1XX: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'responses_1xx', value => 'Response1XXCount_per_second', template => '%.2f',
-                      min => 0, unit => 'responses/s' },
+                    { label => 'responses_1xx', template => '%.2f', min => 0, unit => 'responses/s' },
                 ],
             }
         },
         { label => 'responses-2xx', set => {
-                key_values => [ { name => 'Response2XXCount', diff => 1 } ],
+                key_values => [ { name => 'Response2XXCount', per_second => 1 } ],
                 output_template => '2XX: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'responses_2xx', value => 'Response2XXCount_per_second', template => '%.2f',
-                      min => 0, unit => 'responses/s' },
+                    { label => 'responses_2xx', template => '%.2f', min => 0, unit => 'responses/s' },
                 ],
             }
         },
         { label => 'responses-3xx', set => {
-                key_values => [ { name => 'Response3XXCount', diff => 1 } ],
+                key_values => [ { name => 'Response3XXCount', per_second => 1 } ],
                 output_template => '3XX: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'responses_3xx', value => 'Response3XXCount_per_second', template => '%.2f',
-                      min => 0, unit => 'responses/s' },
+                    { label => 'responses_3xx', template => '%.2f', min => 0, unit => 'responses/s' },
                 ],
             }
         },
         { label => 'responses-4xx', set => {
-                key_values => [ { name => 'Response4XXCount', diff => 1 } ],
+                key_values => [ { name => 'Response4XXCount', per_second => 1 } ],
                 output_template => '4XX: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'responses_4xx', value => 'Response4XXCount_per_second', template => '%.2f',
-                      min => 0, unit => 'responses/s' },
+                    { label => 'responses_4xx', template => '%.2f', min => 0, unit => 'responses/s' },
                 ],
             }
         },
         { label => 'responses-5xx', set => {
-                key_values => [ { name => 'Response5XXCount', diff => 1 } ],
+                key_values => [ { name => 'Response5XXCount', per_second => 1 } ],
                 output_template => '5XX: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'responses_5xx', value => 'Response5XXCount_per_second', template => '%.2f',
-                      min => 0, unit => 'responses/s' },
+                    { label => 'responses_5xx', template => '%.2f', min => 0, unit => 'responses/s' },
                 ],
             }
         },
@@ -192,12 +174,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s"     => { name => 'filter_counters' },
-                                    "warning-status:s"      => { name => 'warning_status' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{status} ne "Active"' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} ne "Active"' }
+    });
 
     return $self;
 }

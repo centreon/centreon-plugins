@@ -60,7 +60,7 @@ sub set_counters {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'temperature : %s C',
                 perfdatas => [
-                    { label => 'temperature', value => 'temperature_absolute', template => '%s',
+                    { label => 'temperature', value => 'temperature', template => '%s',
                       unit => 'C' },
                 ],
             }
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'humidity' } ],
                 output_template => 'humidity : %s %%',
                 perfdatas => [
-                    { label => 'humidity', value => 'humidity_absolute', template => '%s',
+                    { label => 'humidity', value => 'humidity', template => '%s',
                       unit => '%', min => 9, max => 100 },
                 ],
             }

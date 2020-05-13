@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'spare' } ],
                 output_template => 'Spare disks: %d',
                 perfdatas => [
-                    { label => 'spare', value => 'spare_absolute', template => '%d',
+                    { label => 'spare', value => 'spare', template => '%d',
                       min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'zeroed' } ],
                 output_template => 'Zeroed disks: %d',
                 perfdatas => [
-                    { label => 'zeroed', value => 'zeroed_absolute', template => '%d',
+                    { label => 'zeroed', value => 'zeroed', template => '%d',
                       min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'not_zeroed' } ],
                 output_template => 'Not zeroed disks: %d',
                 perfdatas => [
-                    { label => 'not_zeroed', value => 'not_zeroed_absolute', template => '%d',
+                    { label => 'not_zeroed', value => 'not_zeroed', template => '%d',
                       min => 0 },
                 ],
             }

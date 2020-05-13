@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'iopsRead' } ],
                 output_template => 'read IOPS: %s',
                 perfdatas => [
-                    { value => 'iopsRead_absolute', template => '%s', unit => 'iops', min => 0 },
+                    { value => 'iopsRead', template => '%s', unit => 'iops', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'iopsWrite' } ],
                 output_template => 'write IOPS: %s',
                 perfdatas => [
-                    { value => 'iopsWrite_absolute', template => '%s', unit => 'iops', min => 0 },
+                    { value => 'iopsWrite', template => '%s', unit => 'iops', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'congestion' } ],
                 output_template => 'congestions: %s',
                 perfdatas => [
-                    { value => 'congestion_absolute', template => '%s', min => 0 },
+                    { value => 'congestion', template => '%s', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'oio' } ],
                 output_template => 'outstanding IO: %s',
                 perfdatas => [
-                    { value => 'oio_absolute', template => '%s', min => 0 },
+                    { value => 'oio', template => '%s', min => 0 },
                 ],
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 output_template => 'read throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'throughputRead_absolute', template => '%s', unit => 'B/s', min => 0 },
+                    { value => 'throughputRead', template => '%s', unit => 'B/s', min => 0 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 output_template => 'write throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'throughputWrite_absolute', template => '%s', unit => 'B/s', min => 0 },
+                    { value => 'throughputWrite', template => '%s', unit => 'B/s', min => 0 },
                 ],
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'latencyAvgRead' } ],
                 output_template => 'read latency: %s ms',
                 perfdatas => [
-                    { value => 'latencyAvgRead_absolute', template => '%s', unit => 'ms', min => 0 },
+                    { value => 'latencyAvgRead', template => '%s', unit => 'ms', min => 0 },
                 ],
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'latencyAvgWrite' } ],
                 output_template => 'write latency: %s ms',
                 perfdatas => [
-                    { value => 'latencyAvgWrite_absolute', template => '%s', unit => 'ms', min => 0 },
+                    { value => 'latencyAvgWrite', template => '%s', unit => 'ms', min => 0 },
                 ],
             }
         },

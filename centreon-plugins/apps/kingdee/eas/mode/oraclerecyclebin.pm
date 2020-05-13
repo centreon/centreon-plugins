@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'recyclebin_count' } ],
                 output_template => 'recyclebin table: %s',
                 perfdatas => [
-                    { value => 'recyclebin_count_absolute', template => '%s', min => 0, label_extra_instance => 1 },
+                    { value => 'recyclebin_count', template => '%s', min => 0, label_extra_instance => 1 },
                 ],
             }
         }

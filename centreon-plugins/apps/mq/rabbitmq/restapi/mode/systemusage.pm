@@ -38,49 +38,42 @@ sub set_counters {
                 key_values => [ { name => 'queue_messages' } ],
                 output_template => 'current queue messages : %s',
                 perfdatas => [
-                    { label => 'queue_msg', value => 'queue_messages_absolute', template => '%d',
-                      min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'queue-msg-ready', nlabel => 'system.queue.messages.ready.count', set => {
                 key_values => [ { name => 'queue_messages_ready' } ],
                 output_template => 'current queue messages ready : %s',
                 perfdatas => [
-                    { label => 'queue_msg_ready', value => 'queue_messages_ready_absolute', template => '%d',
-                      min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'db-event-queue', nlabel => 'system.db.event.queue.count', set => {
                 key_values => [ { name => 'db_event_queue' } ],
                 output_template => 'db event queue : %s',
                 perfdatas => [
-                    { label => 'db_event_queue', value => 'db_event_queue_absolute', template => '%d',
-                      min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'disk-read-iops', nlabel => 'system.disk.read.usage.iops', set => {
-                key_values => [ { name => 'disk_reads', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'disk_reads', per_second => 1 } ],
                 output_template => 'disk reads iops : %s',
                 perfdatas => [
-                    { label => 'disk_reads', value => 'disk_reads_per_second', template => '%d',
-                      unit => 'iops', min => 0, },
-                ],
+                    { template => '%d', unit => 'iops', min => 0 }
+                ]
             }
         },
         { label => 'disk-write-iops', nlabel => 'system.disk.write.usage.iops', set => {
-                key_values => [ { name => 'disk_writes', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'disk_writes', per_second => 1 } ],
                 output_template => 'disk writes iops : %s',
                 perfdatas => [
-                    { label => 'disk_writes', value => 'disk_writes_per_second', template => '%d',
-                      unit => 'iops', min => 0, },
-                ],
+                    { template => '%d', unit => 'iops', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -91,6 +84,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
     });
+
     return $self;
 }
 

@@ -60,8 +60,8 @@ sub set_counters {
                 key_values => [ { name => 'docs_count' }, { name => 'display' } ],
                 output_template => 'Documents: %d',
                 perfdatas => [
-                    { value => 'docs_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'docs_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -70,8 +70,8 @@ sub set_counters {
                 output_template => 'Data Primaries: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'size_in_bytes_primaries_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'size_in_bytes_primaries', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -80,8 +80,8 @@ sub set_counters {
                 output_template => 'Data Total: %s%s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'size_in_bytes_total_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'size_in_bytes_total', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -89,8 +89,8 @@ sub set_counters {
                 key_values => [ { name => 'shards_active' }, { name => 'display' } ],
                 output_template => 'Shards Active: %d',
                 perfdatas => [
-                    { value => 'shards_active_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'shards_active', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -98,8 +98,8 @@ sub set_counters {
                 key_values => [ { name => 'shards_unassigned' }, { name => 'display' } ],
                 output_template => 'Shards Unassigned: %d',
                 perfdatas => [
-                    { value => 'shards_unassigned_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'shards_unassigned', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

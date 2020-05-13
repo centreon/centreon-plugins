@@ -41,8 +41,7 @@ sub set_counters {
                 key_values => [ { name => 'time', diff => 1 } ],
                 output_template => 'Time Spent: %d us',
                 perfdatas => [
-                    { value => 'time_absolute', template => '%d',
-                      min => 0, unit => 'us' },
+                    { template => '%d', min => 0, unit => 'us' },
                 ],
             }
         },
@@ -50,18 +49,15 @@ sub set_counters {
                 key_values => [ { name => 'requests', diff => 1 } ],
                 output_template => 'Requests: %d',
                 perfdatas => [
-                    { value => 'requests_absolute', template => '%d',
-                      min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'requests-persecond', nlabel => 'requests.persecond', set => {
-                key_values => [ { name => 'requests', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'requests', per_second => 1 } ],
                 output_template => 'Requests (per second): %.2f',
                 perfdatas => [
-                    { value => 'requests_per_second', template => '%.2f',
-                      min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -69,18 +65,15 @@ sub set_counters {
                 key_values => [ { name => 'ops', diff => 1 } ],
                 output_template => 'Ops: %d',
                 perfdatas => [
-                    { value => 'ops_absolute', template => '%d',
-                      min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'ops-persecond', nlabel => 'ops.persecond', set => {
-                key_values => [ { name => 'ops', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'ops', per_second => 1 } ],
                 output_template => 'Ops (per second): %.2f',
                 perfdatas => [
-                    { value => 'ops_per_second', template => '%.2f',
-                      min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -88,18 +81,15 @@ sub set_counters {
                 key_values => [ { name => 'errors', diff => 1 } ],
                 output_template => 'Errors: %d',
                 perfdatas => [
-                    { value => 'errors_absolute', template => '%d',
-                      min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'errors-persecond', nlabel => 'errors.persecond', set => {
-                key_values => [ { name => 'errors', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'errors', per_second => 1 } ],
                 output_template => 'Errors (per second): %.2f',
                 perfdatas => [
-                    { value => 'errors_per_second', template => '%.2f',
-                      min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -107,29 +97,26 @@ sub set_counters {
                 key_values => [ { name => 'bootstrap_loads', diff => 1 } ],
                 output_template => 'Bootstrap Loads: %d',
                 perfdatas => [
-                    { value => 'bootstrap_loads_absolute', template => '%d',
-                      min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'bootstrap-loads-persecond', nlabel => 'bootstrap.loads.persecond', set => {
-                key_values => [ { name => 'bootstrap_loads', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'bootstrap_loads', per_second => 1 } ],
                 output_template => 'Bootstrap Loads (per second): %.2f',
                 perfdatas => [
-                    { value => 'bootstrap_loads_per_second', template => '%.2f',
-                      min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
     ];
+
     $self->{maps_counters}->{functions} = [
         { label => 'time', nlabel => 'function.time.microseconds', set => {
                 key_values => [ { name => 'time', diff => 1 }, { name => 'display' } ],
                 output_template => 'Time Spent: %d us',
                 perfdatas => [
-                    { value => 'time_absolute', template => '%d',
-                      min => 0, unit => 'us', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%d', min => 0, unit => 'us', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -137,21 +124,18 @@ sub set_counters {
                 key_values => [ { name => 'count', diff => 1 }, { name => 'display' } ],
                 output_template => 'Uses: %d',
                 perfdatas => [
-                    { value => 'count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'uses-persecond', nlabel => 'function.uses.persecond', set => {
-                key_values => [ { name => 'count', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'count', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Uses (per second): %.2f',
                 perfdatas => [
-                    { value => 'count_per_second', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
-        },
+        }
     ];
 }
 
@@ -167,7 +151,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "filter-name:s" => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
    
     return $self;

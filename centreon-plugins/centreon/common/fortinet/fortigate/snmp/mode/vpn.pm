@@ -58,8 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'users' } ],
                 output_template => 'Logged users: %s',
                 perfdatas => [
-                    { label => 'users', value => 'users_absolute', template => '%d',
-                      min => 0, unit => 'users', label_extra_instance => 1 },
+                    { label => 'users', template => '%d', min => 0, unit => 'users', label_extra_instance => 1 },
                 ],
             }
         },
@@ -67,8 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions' }],
                 output_template => 'Active web sessions: %s',
                 perfdatas => [
-                    { label => 'sessions', value => 'sessions_absolute', template => '%d',
-                      min => 0, unit => 'sessions', label_extra_instance => 1 },
+                    { label => 'sessions', template => '%d', min => 0, unit => 'sessions', label_extra_instance => 1 },
                 ],
             }
         },
@@ -76,8 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'tunnels' } ],
                 output_template => 'Active Tunnels: %s',
                 perfdatas => [
-                    { label => 'active_tunnels', value => 'tunnels_absolute', template => '%d',
-                      min => 0, unit => 'tunnels', label_extra_instance => 1 },
+                    { label => 'active_tunnels', template => '%d', min => 0, unit => 'tunnels', label_extra_instance => 1 },
                 ],
             }
         },
@@ -93,22 +90,20 @@ sub set_counters {
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 1,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1 },
+                    { label => 'traffic_in', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 1,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1 },
+                    { label => 'traffic_out', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 },
                 ],
             }
         }

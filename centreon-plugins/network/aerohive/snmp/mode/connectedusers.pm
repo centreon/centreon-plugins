@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Users : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s',
+                    { label => 'total', value => 'total', template => '%s',
                       unit => 'users', min => 0 },
                 ],
             }
@@ -48,8 +48,8 @@ sub set_counters {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'users : %s',
                 perfdatas => [
-                    { label => 'ssid', value => 'total_absolute', template => '%s',
-                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'ssid', value => 'total', template => '%s',
+                      unit => 'users', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -109,22 +109,20 @@ sub set_counters {
             }
         },
         { label => 'read-iops', set => {
-                key_values => [ { name => 'diskTotalBlocksRead', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'diskTotalBlocksRead', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'read_iops', value => 'diskTotalBlocksRead_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write-iops', set => {
-                key_values => [ { name => 'diskTotalBlocksWritten', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'diskTotalBlocksWritten', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
-                    { label => 'write_iops', value => 'diskTotalBlocksWritten_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -137,9 +135,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-name:s"       => { name => 'filter_name' },
-        "units:s"             => { name => 'units', default => '%' },
-        "free"                => { name => 'free' },
+        'filter-name:s' => { name => 'filter_name' },
+        'units:s'       => { name => 'units', default => '%' },
+        'free'          => { name => 'free' },
     });
     
     return $self;

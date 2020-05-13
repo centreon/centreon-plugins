@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'connected' } ],
                 output_template => 'peripherals connected: %d',
                 perfdatas => [
-                    { value => 'connected_absolute', template => '%d', min => 0 },
+                    { value => 'connected', template => '%d', min => 0 },
                 ],
             }
         }

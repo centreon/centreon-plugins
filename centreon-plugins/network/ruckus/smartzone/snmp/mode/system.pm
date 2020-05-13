@@ -50,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'ap' } ],
                 output_template => 'access points connections: %d',
                 perfdatas => [
-                    { value => 'ap_absolute', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         },
@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'authorized_clients' } ],
                 output_template => 'client devices authorized connections: %d',
                 perfdatas => [
-                    { value => 'authorized_clients_absolute', template => '%d', min => 0 }
+                    { template => '%d', min => 0 }
                 ]
             }
         }
@@ -66,22 +66,20 @@ sub set_counters {
 
     $self->{maps_counters}->{traffic} = [
         { label => 'traffic-in', nlabel => 'system.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 } ],
                 output_template => 'traffic in: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%s',
-                      min => 0, unit => 'b/s' }
+                    { template => '%s', min => 0, unit => 'b/s' }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'system.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 } ],
                 output_template => 'traffic in: %s%s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%s',
-                      min => 0, unit => 'b/s' }
+                    { template => '%s', min => 0, unit => 'b/s' }
                 ]
             }
         }

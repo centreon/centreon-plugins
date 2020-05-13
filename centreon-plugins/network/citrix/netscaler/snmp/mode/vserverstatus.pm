@@ -46,28 +46,28 @@ sub set_counters {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
                 output_template => 'Health: %.2f %%', output_error_template => 'Health: %s',
                 perfdatas => [
-                    { value => 'health_absolute', label => 'health', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'health', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'in-traffic', set => {
-                key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'out-traffic', set => {
-                key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -75,8 +75,8 @@ sub set_counters {
                 key_values => [ { name => 'clients', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Client Connections : %s',
                 perfdatas => [
-                    { label => 'clients', value => 'clients_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'clients', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -84,8 +84,8 @@ sub set_counters {
                 key_values => [ { name => 'servers', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Server Connections : %s',
                 perfdatas => [
-                    { label => 'servers', value => 'servers_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'servers', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -156,9 +156,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s'           => { name => 'filter_name' },
-        'filter-type:s'           => { name => 'filter_type' },
-        'threshold-overload:s@'   => { name => 'threshold_overload' },
+        'filter-name:s'         => { name => 'filter_name' },
+        'filter-type:s'         => { name => 'filter_type' },
+        'threshold-overload:s@' => { name => 'threshold_overload' },
     });
 
     return $self;

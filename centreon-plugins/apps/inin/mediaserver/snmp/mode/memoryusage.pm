@@ -38,7 +38,7 @@ sub set_counters {
                 output_template => 'Memory Used : %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%s',
+                    { label => 'used', value => 'used', template => '%s',
                       unit => 'B', min => 0 },
                 ],
             }

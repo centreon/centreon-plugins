@@ -66,7 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'callLegsActive' } ],
                 output_template => 'Active: %d',
                 perfdatas => [
-                    { label => 'active_legs', value => 'callLegsActive_absolute', template => '%d',
+                    { label => 'active_legs', value => 'callLegsActive', template => '%d',
                       min => 0, unit => 'legs' },
                 ],
             }
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'callLegsCompleted' } ],
                 output_template => 'Completed: %d',
                 perfdatas => [
-                    { label => 'completed_legs', value => 'callLegsCompleted_absolute', template => '%d',
+                    { label => 'completed_legs', value => 'callLegsCompleted', template => '%d',
                       min => 0, unit => 'legs' },
                 ],
             }
@@ -87,7 +87,7 @@ sub set_counters {
                 output_template => 'outgoing audio streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'audio_outgoing_rate', value => 'audioBitRateOutgoing_absolute', template => '%d',
+                    { label => 'audio_outgoing_rate', value => 'audioBitRateOutgoing', template => '%d',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -97,7 +97,7 @@ sub set_counters {
                 output_template => 'incoming audio streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'audio_incoming_rate', value => 'audioBitRateIncoming_absolute', template => '%d',
+                    { label => 'audio_incoming_rate', value => 'audioBitRateIncoming', template => '%d',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -107,7 +107,7 @@ sub set_counters {
                 output_template => 'outgoing video streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'video_outgoing_rate', value => 'videoBitRateOutgoing_absolute', template => '%d',
+                    { label => 'video_outgoing_rate', value => 'videoBitRateOutgoing', template => '%d',
                       min => 0, unit => 'b/s' },
                 ],
             }
@@ -117,7 +117,7 @@ sub set_counters {
                 output_template => 'incoming video streams: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'video_incoming_rate', value => 'videoBitRateIncoming_absolute', template => '%d',
+                    { label => 'video_incoming_rate', value => 'videoBitRateIncoming', template => '%d',
                       min => 0, unit => 'b/s' },
                 ],
             }

@@ -120,21 +120,21 @@ sub custom_usage_calc {
 sub custom_overhead_output {
     my ($self, %options) = @_;
 
-    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{overhead_absolute});
+    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{overhead});
     return sprintf('Memory overhead: %s %s', $value, $unit);
 }
 
 sub custom_ballooning_output {
     my ($self, %options) = @_;
 
-    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{vmmemctl_absolute});
+    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{vmmemctl});
     return sprintf('Memory ballooning: %s %s', $value, $unit);
 }
 
 sub custom_shared_output {
     my ($self, %options) = @_;
 
-    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{shared_absolute});
+    my ($value, $unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{shared});
     return sprintf('Memory shared: %s %s', $value, $unit);
 }
 
@@ -190,7 +190,7 @@ sub set_counters {
                 key_values => [ { name => 'overhead' } ],
                 closure_custom_output => $self->can('custom_overhead_output'),
                 perfdatas => [
-                    { label => 'overhead', value => 'overhead_absolute', template => '%s', unit => 'B', 
+                    { label => 'overhead', value => 'overhead', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 }
                 ]
             }
@@ -201,7 +201,7 @@ sub set_counters {
                 key_values => [ { name => 'vmmemctl' } ],
                 closure_custom_output => $self->can('custom_ballooning_output'),
                 perfdatas => [
-                    { label => 'ballooning', value => 'vmmemctl_absolute', template => '%s', unit => 'B', 
+                    { label => 'ballooning', value => 'vmmemctl', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 }
                 ]
             }
@@ -212,7 +212,7 @@ sub set_counters {
                 key_values => [ { name => 'shared' } ],
                 closure_custom_output => $self->can('custom_shared_output'),
                 perfdatas => [
-                    { label => 'shared', value => 'shared_absolute', template => '%s', unit => 'B', 
+                    { label => 'shared', value => 'shared', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 }
                 ]
             }

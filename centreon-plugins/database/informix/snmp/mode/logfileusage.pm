@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'Log Files Used: %.2f%%',
                 perfdatas => [
-                    { label => 'used', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'used', value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

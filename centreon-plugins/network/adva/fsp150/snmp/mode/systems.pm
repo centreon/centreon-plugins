@@ -52,11 +52,11 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => '%',
                         instances => [
-                            $self->{result_values}->{ne_name_absolute},
-                            $self->{result_values}->{shelf_name_absolute},
-                            $self->{result_values}->{slot_name_absolute}
+                            $self->{result_values}->{ne_name},
+                            $self->{result_values}->{shelf_name},
+                            $self->{result_values}->{slot_name}
                         ],
-                        value => sprintf('%.2f', $self->{result_values}->{cpu_average_absolute}),
+                        value => sprintf('%.2f', $self->{result_values}->{cpu_average}),
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0, max => 100
@@ -78,11 +78,11 @@ sub set_counters {
                         nlabel => $self->{nlabel},
                         unit => 'B',
                         instances => [
-                            $self->{result_values}->{ne_name_absolute},
-                            $self->{result_values}->{shelf_name_absolute},
-                            $self->{result_values}->{slot_name_absolute}
+                            $self->{result_values}->{ne_name},
+                            $self->{result_values}->{shelf_name},
+                            $self->{result_values}->{slot_name}
                         ],
-                        value => $self->{result_values}->{memory_used_absolute},
+                        value => $self->{result_values}->{memory_used},
                         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
                         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
                         min => 0

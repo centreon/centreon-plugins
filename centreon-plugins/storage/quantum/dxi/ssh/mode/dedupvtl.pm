@@ -92,8 +92,8 @@ sub set_counters {
                 output_template => 'Original data size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'original_data_size', value => 'original_size_absolute', template => '%d',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'original_data_size', value => 'original_size', template => '%d',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -102,8 +102,8 @@ sub set_counters {
                 output_template => 'Sent data size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'sent_data_size', value => 'sent_size_absolute', template => '%d',
-                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'sent_data_size', value => 'sent_size', template => '%d',
+                      unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

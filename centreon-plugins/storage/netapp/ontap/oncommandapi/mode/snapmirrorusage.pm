@@ -43,8 +43,8 @@ sub set_counters {
                 key_values => [ { name => 'last_transfer_duration' }, { name => 'source_location' } ],
                 output_template => 'Last transfer duration: %.2f s',
                 perfdatas => [
-                    { label => 'last_transfer_duration', value => 'last_transfer_duration_absolute', template => '%.2f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'source_location_absolute' },
+                    { label => 'last_transfer_duration', value => 'last_transfer_duration', template => '%.2f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'source_location' },
                 ],
             }
         },
@@ -53,8 +53,8 @@ sub set_counters {
                 output_template => 'Last transfer size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'last_transfer_size', value => 'last_transfer_size_absolute', template => '%d',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'source_location_absolute' },
+                    { label => 'last_transfer_size', value => 'last_transfer_size', template => '%d',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'source_location' },
                 ],
             }
         },
@@ -62,8 +62,8 @@ sub set_counters {
                 key_values => [ { name => 'lag_time' }, { name => 'source_location' } ],
                 output_template => 'Lag time: %.2f s',
                 perfdatas => [
-                    { label => 'lag_time', value => 'lag_time_absolute', template => '%.2f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'source_location_absolute' },
+                    { label => 'lag_time', value => 'lag_time', template => '%.2f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'source_location' },
                 ],
             }
         },

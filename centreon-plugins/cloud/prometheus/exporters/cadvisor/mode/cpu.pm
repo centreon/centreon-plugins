@@ -38,9 +38,9 @@ sub set_counters {
                 key_values => [ { name => 'usage' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Usage: %.2f %%',
                 perfdatas => [
-                    { label => 'usage', value => 'usage_absolute', template => '%.2f',
+                    { label => 'usage', value => 'usage', template => '%.2f',
                       min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'perf_absolute' },
+                      label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
@@ -48,9 +48,9 @@ sub set_counters {
                 key_values => [ { name => 'throttled' }, { name => 'container' }, { name => 'pod' }, { name => 'perf' } ],
                 output_template => 'Throttled: %.2f %%',
                 perfdatas => [
-                    { label => 'throttled', value => 'throttled_absolute', template => '%.2f',
+                    { label => 'throttled', value => 'throttled', template => '%.2f',
                       min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'perf_absolute' },
+                      label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },
