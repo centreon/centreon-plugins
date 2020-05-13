@@ -34,16 +34,6 @@ sub custom_status_output {
     return $msg;
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-     
-    $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
-    $self->{result_values}->{housekeeping_health} = $options{new_datas}->{$self->{instance} . '_housekeeping_health'};
-    $self->{result_values}->{replication_health} = $options{new_datas}->{$self->{instance} . '_replication_health'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
     
@@ -120,7 +110,6 @@ sub set_counters {
     $self->{maps_counters}->{scs} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'health' }, { name => 'replication_health' }, { name => 'housekeeping_health' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,

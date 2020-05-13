@@ -34,28 +34,11 @@ sub custom_nas_status_output {
     return $msg;
 }
 
-sub custom_nas_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
-    $self->{result_values}->{replication_health} = $options{new_datas}->{$self->{instance} . '_replication_health'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
 sub custom_share_status_output {
     my ($self, %options) = @_;
     
     my $msg = sprintf('status : %s', $self->{result_values}->{health});
     return $msg;
-}
-
-sub custom_share_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
 }
 
 sub set_counters {
@@ -69,7 +52,6 @@ sub set_counters {
     $self->{maps_counters}->{nas} = [
         { label => 'nas-status', threshold => 0, set => {
                 key_values => [ { name => 'replication_health' }, { name => 'health' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_nas_status_calc'),
                 closure_custom_output => $self->can('custom_nas_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
@@ -80,7 +62,6 @@ sub set_counters {
     $self->{maps_counters}->{share} = [
         { label => 'share-status', threshold => 0, set => {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_share_status_calc'),
                 closure_custom_output => $self->can('custom_share_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
