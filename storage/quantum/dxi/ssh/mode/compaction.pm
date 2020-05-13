@@ -32,13 +32,6 @@ sub custom_status_output {
     return 'Compaction status: ' . $self->{result_values}->{compaction_status};
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{compaction_status} = $options{new_datas}->{$self->{instance} . '_compaction_status'};
-    return 0;
-}
-
 sub custom_volume_perfdata {
     my ($self, %options) = @_;
 
@@ -86,7 +79,6 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'compaction_status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
