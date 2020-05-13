@@ -183,7 +183,7 @@ sub get {
         }
         
         $first_result += $max_results;
-        last if ($max_results > $content->{queryResponse}->{'@count'});
+        last if ($first_result > $content->{queryResponse}->{'@count'});
     }
     return $result;
 }
