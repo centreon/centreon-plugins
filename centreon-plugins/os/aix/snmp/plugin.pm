@@ -40,6 +40,7 @@ sub new {
         'storage'          => 'snmp_standard::mode::storage',
         'swap'             => 'os::aix::snmp::mode::swap',
         'time'             => 'snmp_standard::mode::ntp',
+        'uptime'           => 'snmp_standard::mode::uptime',
     );
 
     return $self;
