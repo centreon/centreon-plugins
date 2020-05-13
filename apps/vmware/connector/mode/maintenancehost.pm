@@ -47,13 +47,6 @@ sub custom_maintenance_output {
     return $msg;
 }
 
-sub custom_maintenance_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{maintenance} = $options{new_datas}->{$self->{instance} . '_maintenance'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -72,7 +65,6 @@ sub set_counters {
         },
         { label => 'maintenance-status', threshold => 0, set => {
                 key_values => [ { name => 'maintenance' } ],
-                closure_custom_calc => $self->can('custom_maintenance_calc'),
                 closure_custom_output => $self->can('custom_maintenance_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,

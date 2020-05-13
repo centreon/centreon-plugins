@@ -40,17 +40,6 @@ sub custom_status_output {
     return $msg;
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{load} = $options{new_datas}->{$self->{instance} . '_load'};
-    $self->{result_values}->{active} = $options{new_datas}->{$self->{instance} . '_active'};
-    $self->{result_values}->{sub} = $options{new_datas}->{$self->{instance} . '_sub'};
-    $self->{result_values}->{boot} = $options{new_datas}->{$self->{instance} . '_boot'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
     
@@ -100,7 +89,6 @@ sub set_counters {
     $self->{maps_counters}->{sc} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'load' }, { name => 'active' },  { name => 'sub' }, { name => 'boot' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,

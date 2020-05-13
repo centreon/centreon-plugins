@@ -30,11 +30,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "cluster:s"   => { name => 'cluster' },
-                                  "filter"      => { name => 'filter' },
-                                });
+    $options{options}->add_options(arguments => { 
+        'cluster:s' => { name => 'cluster' },
+        'filter'    => { name => 'filter' },
+    });
+
     return $self;
 }
 

@@ -32,14 +32,6 @@ sub custom_status_output {
     return "status is '" . $self->{result_values}->{status} . "'";
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    return 0;
-}
-
 sub prefix_output {
     my ($self, %options) = @_;
 
@@ -56,7 +48,6 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'status', set => {
                 key_values => [ { name => 'status' }, { name => 'name' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,

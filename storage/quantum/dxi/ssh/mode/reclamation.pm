@@ -32,13 +32,6 @@ sub custom_status_output {
     return 'Reclamation status: ' . $self->{result_values}->{reclamation_status};
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{reclamation_status} = $options{new_datas}->{$self->{instance} . '_reclamation_status'};
-    return 0;
-}
-
 sub custom_volume_perfdata {
     my ($self, %options) = @_;
 
@@ -87,7 +80,6 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'reclamation_status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold,
