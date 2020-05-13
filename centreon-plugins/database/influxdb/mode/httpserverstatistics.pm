@@ -35,38 +35,34 @@ sub set_counters {
    
     $self->{maps_counters}->{global} = [
         { label => 'requests-query-count', nlabel => 'requests.query.count.persecond', set => {
-                key_values => [ { name => 'queryReq', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'queryReq', per_second => 1 } ],
                 output_template => 'Query Requests: %.2f/s',
                 perfdatas => [
-                    { value => 'queryReq_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'requests-write-count', nlabel => 'requests.write.count.persecond', set => {
-                key_values => [ { name => 'writeReq', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'writeReq', per_second => 1 } ],
                 output_template => 'Write Requests: %.2f/s',
                 perfdatas => [
-                    { value => 'writeReq_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'requests-ping-count', nlabel => 'requests.ping.count.persecond', set => {
-                key_values => [ { name => 'pingReq', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pingReq', per_second => 1 } ],
                 output_template => 'Ping Requests: %.2f/s',
                 perfdatas => [
-                    { value => 'pingReq_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'requests-status-count', nlabel => 'requests.status.count.persecond', set => {
-                key_values => [ { name => 'statusReq', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'statusReq', per_second => 1 } ],
                 output_template => 'Status Requests: %.2f/s',
                 perfdatas => [
-                    { value => 'statusReq_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
@@ -74,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'reqActive' } ],
                 output_template => 'Active Requests: %d',
                 perfdatas => [
-                    { value => 'reqActive_absolute', template => '%d', min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
@@ -82,48 +78,44 @@ sub set_counters {
                 key_values => [ { name => 'writeReqActive' } ],
                 output_template => 'Active Write Requests: %d',
                 perfdatas => [
-                    { value => 'writeReqActive_absolute', template => '%d', min => 0 },
+                    { template => '%d', min => 0 },
                 ],
             }
         },
         { label => 'requests-response-data', nlabel => 'requests.response.data.bytes', set => {
-                key_values => [ { name => 'queryRespBytes', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'queryRespBytes', per_second => 1 } ],
                 output_change_bytes => 1,
                 output_template => 'Response Data: %s%s/s',
                 perfdatas => [
-                    { value => 'queryRespBytes_per_second', template => '%s', min => 0, unit => 'B/s' },
+                    { template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
         { label => 'requests-write-data', nlabel => 'requests.write.data.bytes', set => {
-                key_values => [ { name => 'writeReqBytes', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'writeReqBytes', per_second => 1 } ],
                 output_change_bytes => 1,
                 output_template => 'Write Data: %s%s/s',
                 perfdatas => [
-                    { value => 'writeReqBytes_per_second', template => '%s', min => 0, unit => 'B/s' },
+                    { template => '%s', min => 0, unit => 'B/s' },
                 ],
             }
         },
         { label => 'errors-server', nlabel => 'errors.server.persecond', set => {
-                key_values => [ { name => 'serverError', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'serverError', per_second => 1 } ],
                 output_template => 'Server Errors: %.2f/s',
                 perfdatas => [
-                    { value => 'serverError_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'errors-client', nlabel => 'errors.client.persecond', set => {
-                key_values => [ { name => 'clientError', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'clientError', per_second => 1 } ],
                 output_template => 'Client Errors: %.2f/s',
                 perfdatas => [
-                    { value => 'clientError_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
-        },
+        }
     ];
 }
 

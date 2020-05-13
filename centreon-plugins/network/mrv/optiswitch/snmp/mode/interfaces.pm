@@ -55,20 +55,20 @@ sub set_counters_global {
         { label => 'total-link-up', filter => 'add_global', nlabel => 'total.interfaces.link.up.count', set => {
                 key_values => [ { name => 'global_link_up' }, { name => 'total_port' } ],
                 output_template => 'LinkStatus Up : %s', output_error_template => 'LinkStatus Up : %s',
-                output_use => 'global_link_up_absolute',  threshold_use => 'global_link_up_absolute',
+                output_use => 'global_link_up',  threshold_use => 'global_link_up',
                 perfdatas => [
-                    { label => 'total_link_up', value => 'global_link_up_absolute', template => '%s',
-                      min => 0, max => 'total_port_absolute' },
+                    { label => 'total_link_up', value => 'global_link_up', template => '%s',
+                      min => 0, max => 'total_port' },
                 ],
             }
         },
         { label => 'total-link-down', filter => 'add_global', nlabel => 'total.interfaces.link.down.count', set => {
                 key_values => [ { name => 'global_link_down' }, { name => 'total_port' } ],
                 output_template => 'LinkStatus Down : %s', output_error_template => 'LinkStatus Down : %s',
-                output_use => 'global_link_down_absolute',  threshold_use => 'global_link_down_absolute',
+                output_use => 'global_link_down',  threshold_use => 'global_link_down',
                 perfdatas => [
-                    { label => 'total_link_down', value => 'global_link_down_absolute', template => '%s',
-                      min => 0, max => 'total_port_absolute' },
+                    { label => 'total_link_down', value => 'global_link_down', template => '%s',
+                      min => 0, max => 'total_port' },
                ],
             }
         },

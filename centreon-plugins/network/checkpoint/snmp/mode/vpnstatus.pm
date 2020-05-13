@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'current total number of tunnels: %d',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%d', min => 0 }
+                    { value => 'total', template => '%d', min => 0 }
                 ]
             }
         }

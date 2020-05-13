@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'device' } ],
                 output_template => 'Temp Device : %d °C',
                 perfdatas => [
-                    { label => 'tempDevice', value => 'device_absolute', template => '%d',
+                    { label => 'tempDevice', value => 'device', template => '%d',
                       unit => 'C' },
                 ],
             }
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'processor' } ],
                 output_template => 'Temp Processor : %d °C',
                 perfdatas => [
-                    { label => 'tempProcessor', value => 'processor_absolute', template => '%d',
+                    { label => 'tempProcessor', value => 'processor', template => '%d',
                       unit => 'C' },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'modem' } ],
                 output_template => 'Temp Modem : %d °C',
                 perfdatas => [
-                    { label => 'tempModem', value => 'modem_absolute', template => '%d',
+                    { label => 'tempModem', value => 'modem', template => '%d',
                       unit => 'C' },
                 ],
             }

@@ -93,17 +93,17 @@ sub run {
             $time_delta = 1;
         }
 
-        my $rejected_absolute = $new_datas->{rejected_packets} - $old_datas->{old_rejected_packets};
-        my $rejected_absolute_per_sec = $rejected_absolute / $time_delta;
+        my $rejected = $new_datas->{rejected_packets} - $old_datas->{old_rejected_packets};
+        my $rejected_per_sec = $rejected / $time_delta;
 
-        my $exit = $self->{perfdata}->threshold_check(value => $rejected_absolute_per_sec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $rejected_per_sec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Packets Rejected : %.2f /s [%i packets]", 
-                                                $rejected_absolute_per_sec, $rejected_absolute));
+                                                $rejected_per_sec, $rejected));
 
         $self->{output}->perfdata_add(label => 'rejected_packets_per_sec',
-                                    value => sprintf("%.2f", $rejected_absolute_per_sec),
+                                    value => sprintf("%.2f", $rejected_per_sec),
                                     warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                     critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                     min => 0);

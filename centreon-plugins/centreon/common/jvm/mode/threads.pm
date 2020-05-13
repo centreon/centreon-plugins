@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'ThreadCount' } ],
                 output_template => 'Active : %s',
                 perfdatas => [
-                    { label => 'active', value => 'ThreadCount_absolute', template => '%s', min => 0 },
+                    { label => 'active', value => 'ThreadCount', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'TotalStartedThreadCount', diff => 1 } ],
                 output_template => 'Started : %s',
                 perfdatas => [
-                    { label => 'started', value => 'TotalStartedThreadCount_absolute', template => '%s', min => 0 },
+                    { label => 'started', value => 'TotalStartedThreadCount', template => '%s', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'DaemonThreadCount' } ],
                 output_template => 'Daemon : %s',
                 perfdatas => [
-                    { label => 'daemon', value => 'DaemonThreadCount_absolute', template => '%s', min => 0 },
+                    { label => 'daemon', value => 'DaemonThreadCount', template => '%s', min => 0 },
                 ],
             }
         },

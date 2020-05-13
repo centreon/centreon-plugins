@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'wsScsCurrentAcceleratedConnections' }, { name => 'display' } ],
                 output_template => 'Current Accelerated Connections : %s',
                 perfdatas => [
-                    { label => 'current_accelerated_connections', value => 'wsScsCurrentAcceleratedConnections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_accelerated_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'wsScsTotalAcceleratedConnections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Accelerated Connections : %s',
                 perfdatas => [
-                    { label => 'total_accelerated_connections', value => 'wsScsTotalAcceleratedConnections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_accelerated_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,48 +56,48 @@ sub set_counters {
                 key_values => [ { name => 'wsScsTotalNonAcceleratedConnections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Non Accelerated Connections : %s',
                 perfdatas => [
-                    { label => 'total_nonaccelerated_connections', value => 'wsScsTotalNonAcceleratedConnections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_nonaccelerated_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'wsScsPreCompressReceivedOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'wsScsPreCompressReceivedOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'wsScsPreCompressReceivedOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in-compressed', set => {
-                key_values => [ { name => 'wsScsCompressReceivedOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'wsScsCompressReceivedOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In Compressed : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in_compressed', value => 'wsScsCompressReceivedOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in_compressed', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'wsScsPreCompressSentOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'wsScsPreCompressSentOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'wsScsPreCompressSentOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out-compressed', set => {
-                key_values => [ { name => 'wsScsCompressSentOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'wsScsCompressSentOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out Compressed : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out_compressed', value => 'wsScsCompressSentOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out_compressed', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -115,11 +115,10 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 

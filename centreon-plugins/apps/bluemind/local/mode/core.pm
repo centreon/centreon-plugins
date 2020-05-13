@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'calls_success', diff => 1 } ],
                 output_template => 'success calls received: %s',
                 perfdatas => [
-                    { value => 'calls_success_absolute', template => '%s', min => 0 }
+                    { value => 'calls_success', template => '%s', min => 0 }
                 ]
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'calls_failure', diff => 1 } ],
                 output_template => 'failure calls received: %s',
                 perfdatas => [
-                    { value => 'calls_failure_absolute', template => '%s', min => 0 }
+                    { value => 'calls_failure', template => '%s', min => 0 }
                 ]
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'heartbeat_broadcast', diff => 1 } ],
                 output_template => 'broadcast heartbeat running: %s',
                 perfdatas => [
-                    { value => 'heartbeat_broadcast_absolute', template => '%s', min => 0 }
+                    { value => 'heartbeat_broadcast', template => '%s', min => 0 }
                 ]
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'cluster_events', diff => 1 } ],
                 output_template => 'directory cluster events: %s',
                 perfdatas => [
-                    { value => 'cluster_events_absolute', template => '%s', min => 0 }
+                    { value => 'cluster_events', template => '%s', min => 0 }
                 ]
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'request_handling_time_total', diff => 1 } ],
                 output_template => 'total request handling: %s ms',
                 perfdatas => [
-                    { value => 'request_handling_time_total_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'request_handling_time_total', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -85,7 +85,7 @@ sub set_counters {
                 key_values => [ { name => 'request_handling_time_mean' } ],
                 output_template => 'mean request handling: %s ms',
                 perfdatas => [
-                    { value => 'request_handling_time_mean_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'request_handling_time_mean', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         }

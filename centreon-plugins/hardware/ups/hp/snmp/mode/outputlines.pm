@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputLoad', no_value => -1 } ],
                 output_template => 'load: %.2f %%',
                 perfdatas => [
-                    { value => 'upsOutputLoad_absolute', template => '%.2f', min => 0, max => 100 },
+                    { value => 'upsOutputLoad', template => '%.2f', min => 0, max => 100 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputFrequency', no_value => 0 } ],
                 output_template => 'frequence: %.2f Hz',
                 perfdatas => [
-                    { value => 'upsOutputFrequency_absolute', template => '%.2f', unit => 'Hz' },
+                    { value => 'upsOutputFrequency', template => '%.2f', unit => 'Hz' },
                 ],
             }
         },
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputCurrent', no_value => 0 } ],
                 output_template => 'current: %.2f A',
                 perfdatas => [
-                    { value => 'upsOutputCurrent_absolute', template => '%.2f', 
+                    { value => 'upsOutputCurrent', template => '%.2f', 
                       min => 0, unit => 'A', label_extra_instance => 1 },
                 ],
             }
@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputVoltage', no_value => 0 } ],
                 output_template => 'voltage: %s V',
                 perfdatas => [
-                    { value => 'upsOutputVoltage_absolute', template => '%s', 
+                    { value => 'upsOutputVoltage', template => '%s', 
                       unit => 'V', label_extra_instance => 1 },
                 ],
             }
@@ -90,7 +90,7 @@ sub set_counters {
                 key_values => [ { name => 'upsOutputWatts', no_value => 0 } ],
                 output_template => 'power: %s W',
                 perfdatas => [
-                    { value => 'upsOutputWatts_absolute', template => '%s', 
+                    { value => 'upsOutputWatts', template => '%s', 
                       unit => 'W', label_extra_instance => 1 },
                 ],
             }

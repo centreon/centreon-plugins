@@ -30,13 +30,13 @@ sub custom_temperature_perfdata {
 
     my ($extra_label, $unit) = ('', 'C');
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display_absolute};
+        $extra_label .= '_' . $self->{result_values}->{display};
     }
     $self->{output}->perfdata_add(
         label => $self->{label} . $extra_label, unit => $unit,
-        value => $self->{result_values}->{$self->{label} . '_absolute'},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}),
+        value => $self->{result_values}->{$self->{label} },
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display}),
     );
 }
 
@@ -45,13 +45,13 @@ sub custom_humidity_perfdata {
 
     my ($extra_label, $unit) = ('', '%');
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
-        $extra_label .= '_' . $self->{result_values}->{display_absolute};
+        $extra_label .= '_' . $self->{result_values}->{display};
     }
     $self->{output}->perfdata_add(
         label => $self->{label} . $extra_label, unit => $unit,
-        value => $self->{result_values}->{$self->{label} . '_absolute'},
-        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}),
+        value => $self->{result_values}->{$self->{label} },
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display}),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display}),
         min => 0, max => 100,
     );
 }
@@ -63,17 +63,17 @@ sub custom_sensor_threshold {
     if (defined($self->{instance_mode}->{option_results}->{'warning-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}} ne '') {
         $warn_limit = $self->{instance_mode}->{option_results}->{'warning-' . $self->{label}};
     }
-    $self->{perfdata}->threshold_validate(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}, value => $warn_limit);
+    $self->{perfdata}->threshold_validate(label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display}, value => $warn_limit);
 
-    my $crit_limit = $self->{result_values}->{limit_lo_absolute} . ':' . $self->{result_values}->{limit_hi_absolute};
+    my $crit_limit = $self->{result_values}->{limit_lo} . ':' . $self->{result_values}->{limit_hi};
     if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}} ne '') {
         $crit_limit = $self->{instance_mode}->{option_results}->{'critical-' . $self->{label}};
     }
-    $self->{perfdata}->threshold_validate(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}, value => $crit_limit);
+    $self->{perfdata}->threshold_validate(label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display}, value => $crit_limit);
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{$self->{label} . '_absolute'},
-        threshold => [ { label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}, exit_litteral => 'critical' },
-                       { label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display_absolute}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{$self->{label} },
+        threshold => [ { label => 'critical-' . $self->{label} . '_' . $self->{result_values}->{display}, exit_litteral => 'critical' },
+                       { label => 'warning-' . $self->{label} . '_' . $self->{result_values}->{display}, exit_litteral => 'warning' } ]);
     return $exit;
 }
 

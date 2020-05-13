@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'CPU Usage %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'prct_used_absolute', template => '%.2f',
+                    { label => 'cpu', value => 'prct_used', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

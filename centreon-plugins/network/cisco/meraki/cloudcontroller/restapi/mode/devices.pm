@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'online'}, { name => 'total'} ],
                 output_template => 'online: %s',
                 perfdatas => [
-                    { value => 'online_absolute', template => '%s', min => 0, max => 'total_absolute' }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'offline'}, { name => 'total'} ],
                 output_template => 'offline: %s',
                 perfdatas => [
-                    { value => 'offline_absolute', template => '%s', min => 0, max => 'total_absolute' }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'alerting'}, { name => 'total'} ],
                 output_template => 'alerting: %s',
                 perfdatas => [
-                    { value => 'alerting_absolute', template => '%s', min => 0, max => 'total_absolute' }
+                    { template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -97,8 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'assoc' }, { name => 'display' } ],
                 output_template => 'success: %s',
                 perfdatas => [
-                    { value => 'assoc_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -106,8 +105,7 @@ sub set_counters {
                 key_values => [ { name => 'auth' }, { name => 'display' } ],
                 output_template => 'auth: %s',
                 perfdatas => [
-                    { value => 'auth_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -115,8 +113,7 @@ sub set_counters {
                 key_values => [ { name => 'assoc' }, { name => 'display' } ],
                 output_template => 'assoc: %s',
                 perfdatas => [
-                    { value => 'assoc_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -124,8 +121,7 @@ sub set_counters {
                 key_values => [ { name => 'dhcp' }, { name => 'display' } ],
                 output_template => 'dhcp: %s',
                 perfdatas => [
-                    { value => 'dhcp_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -133,8 +129,7 @@ sub set_counters {
                 key_values => [ { name => 'dns' }, { name => 'display' } ],
                 output_template => 'dns: %s',
                 perfdatas => [
-                    { value => 'dns_absolute',
-                      template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -142,22 +137,20 @@ sub set_counters {
 
     $self->{maps_counters}->{device_traffic} = [
         { label => 'traffic-in', nlabel => 'device.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
                 output_template => 'in: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_in_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-out', nlabel => 'device.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
                 output_template => 'out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'traffic_out_per_second', template => '%s',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

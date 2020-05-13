@@ -74,8 +74,8 @@ sub set_counters {
                 output_template => 'live data size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'sizes_active_absolute', template => '%d', min => 0,
-                      unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'sizes_active', template => '%d', min => 0,
+                      unit => 'B', label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
         },
@@ -84,8 +84,8 @@ sub set_counters {
                 output_template => 'file size: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'sizes_file_absolute', template => '%d', min => 0,
-                      unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'sizes_file', template => '%d', min => 0,
+                      unit => 'B', label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
         },
@@ -93,8 +93,8 @@ sub set_counters {
                 key_values => [ { name => 'doc_count' }, { name => 'display' } ],
                 output_template => 'number of documents: %s',
                 perfdatas => [
-                    { value => 'doc_count_absolute', template => '%d', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'doc_count', template => '%d', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
         },
@@ -102,8 +102,8 @@ sub set_counters {
                 key_values => [ { name => 'doc_del_count' }, { name => 'display' } ],
                 output_template => 'number of deleted documents: %s',
                 perfdatas => [
-                    { value => 'doc_del_count_absolute', template => '%d', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'doc_del_count', template => '%d', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' }
                 ],
             }
         },

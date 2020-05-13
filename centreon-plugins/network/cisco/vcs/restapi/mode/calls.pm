@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'Traversal' } ],
                 output_template => 'Traversal: %d',
                 perfdatas => [
-                    { label => 'traversal', value => 'Traversal_absolute', template => '%d',
+                    { label => 'traversal', value => 'Traversal', template => '%d',
                       min => 0, unit => 'calls' },
                 ],
             }
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'NonTraversal' } ],
                 output_template => 'Non Traversal: %d',
                 perfdatas => [
-                    { label => 'non_traversal', value => 'NonTraversal_absolute', template => '%d',
+                    { label => 'non_traversal', value => 'NonTraversal', template => '%d',
                       min => 0, unit => 'calls' },
                 ],
             }
@@ -74,7 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'CollaborationEdge' } ],
                 output_template => 'Collaboration Edge: %d',
                 perfdatas => [
-                    { label => 'collaboration_edge', value => 'CollaborationEdge_absolute', template => '%d',
+                    { label => 'collaboration_edge', value => 'CollaborationEdge', template => '%d',
                       min => 0, unit => 'calls' },
                 ],
             }
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'Cloud' } ],
                 output_template => 'Cloud: %d',
                 perfdatas => [
-                    { label => 'cloud', value => 'Cloud_absolute', template => '%d',
+                    { label => 'cloud', value => 'Cloud', template => '%d',
                       min => 0, unit => 'calls' },
                 ],
             }
@@ -92,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'MicrosoftContent' } ],
                 output_template => 'Microsoft Content: %d',
                 perfdatas => [
-                    { label => 'microsoft_content', value => 'MicrosoftContent_absolute', template => '%d',
+                    { label => 'microsoft_content', value => 'MicrosoftContent', template => '%d',
                       min => 0, unit => 'calls' },
                 ],
             }
@@ -101,7 +101,7 @@ sub set_counters {
                 key_values => [ { name => 'MicrosoftIMP' } ],
                 output_template => 'Microsoft IMP: %d',
                 perfdatas => [
-                    { label => 'microsoft_imp', value => 'MicrosoftIMP_absolute', template => '%d',
+                    { label => 'microsoft_imp', value => 'MicrosoftIMP', template => '%d',
                       min => 0, unit => 'calls' },
                 ],
             }

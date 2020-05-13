@@ -66,7 +66,7 @@ sub set_counters {
                 key_values => [ { name => 'running' }  ],
                 output_template => "running : %s",
                 perfdatas => [
-                    { label => 'total_running', value => 'running_absolute', template => '%d', min => 0 },
+                    { label => 'total_running', value => 'running', template => '%d', min => 0 },
                 ],
             }
         },
@@ -74,7 +74,7 @@ sub set_counters {
                 key_values => [ { name => 'stopped' }  ],
                 output_template => "stopped : %s",
                 perfdatas => [
-                    { label => 'total_stopped', value => 'stopped_absolute', template => '%d', min => 0 },
+                    { label => 'total_stopped', value => 'stopped', template => '%d', min => 0 },
                 ],
             }
         },

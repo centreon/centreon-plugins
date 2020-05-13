@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'timer', diff => 1 }, ],
                 output_template => 'CP timer : %s',
                 perfdatas => [
-                    { value => 'timer_absolute', template => '%d', min => 0 },
+                    { value => 'timer', template => '%d', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'snapshot', diff => 1 }, ],
                 output_template => 'CP snapshot : %s',
                 perfdatas => [
-                    { value => 'snapshot_absolute', template => '%d', min => 0 },
+                    { value => 'snapshot', template => '%d', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'lowerwater', diff => 1 }, ],
                 output_template => 'CP low water mark : %s',
                 perfdatas => [
-                    { value => 'lowerwater_absolute', template => '%d', min => 0 },
+                    { value => 'lowerwater', template => '%d', min => 0 },
                 ],
             }
         },
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'highwater', diff => 1 }, ],
                 output_template => 'CP high water mark : %s',
                 perfdatas => [
-                    { value => 'highwater_absolute', template => '%d', min => 0 },
+                    { value => 'highwater', template => '%d', min => 0 },
                 ],
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'logfull', diff => 1 }, ],
                 output_template => 'CP nv-log full : %s',
                 perfdatas => [
-                    { value => 'logfull_absolute', template => '%d', min => 0 },
+                    { value => 'logfull', template => '%d', min => 0 },
                 ],
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'back', diff => 1 }, ],
                 output_template => 'CP back-to-back : %s',
                 perfdatas => [
-                    { value => 'back_absolute', template => '%d', min => 0 },
+                    { value => 'back', template => '%d', min => 0 },
                 ],
             }
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'flush', diff => 1 }, ],
                 output_template => 'CP flush unlogged write data : %s',
                 perfdatas => [
-                    { value => 'flush_absolute', template => '%d', min => 0 },
+                    { value => 'flush', template => '%d', min => 0 },
                 ],
             }
         },
@@ -94,7 +94,7 @@ sub set_counters {
                 key_values => [ { name => 'sync', diff => 1 }, ],
                 output_template => 'CP sync requests : %s',
                 perfdatas => [
-                    { value => 'sync_absolute', template => '%d', min => 0 },
+                    { value => 'sync', template => '%d', min => 0 },
                 ],
             }
         },
@@ -102,7 +102,7 @@ sub set_counters {
                 key_values => [ { name => 'lowvbuf', diff => 1 }, ],
                 output_template => 'CP low virtual buffers : %s',
                 perfdatas => [
-                    { value => 'lowvbuf_absolute', template => '%d', min => 0 },
+                    { value => 'lowvbuf', template => '%d', min => 0 },
                 ],
             }
         },
@@ -110,7 +110,7 @@ sub set_counters {
                 key_values => [ { name => 'deferred', diff => 1 }, ],
                 output_template => 'CP deferred : %s',
                 perfdatas => [
-                    { value => 'deferred_absolute', template => '%d', min => 0 },
+                    { value => 'deferred', template => '%d', min => 0 },
                 ],
             }
         },
@@ -118,7 +118,7 @@ sub set_counters {
                 key_values => [ { name => 'lowdatavecs', diff => 1 }, ],
                 output_template => 'CP low datavecs : %s',
                 perfdatas => [
-                    { value => 'lowdatavecs_absolute', template => '%d', min => 0 },
+                    { value => 'lowdatavecs', template => '%d', min => 0 },
                 ],
             }
         },

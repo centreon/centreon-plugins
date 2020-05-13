@@ -52,8 +52,8 @@ sub set_counters {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
-                    { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' }
+                    { label => 'poweredon', value => 'poweredon', template => '%s',
+                      min => 0, max => 'total' }
                 ]
             }
         },
@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
-                    { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' }
+                    { label => 'poweredoff', value => 'poweredoff', template => '%s',
+                      min => 0, max => 'total' }
                 ]
             }
         },
@@ -70,8 +70,8 @@ sub set_counters {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
-                    { label => 'suspended', value => 'suspended_absolute', template => '%s',
-                      min => 0, max => 'total_absolute' }
+                    { label => 'suspended', value => 'suspended', template => '%s',
+                      min => 0, max => 'total' }
                 ]
             }
         },
@@ -90,8 +90,8 @@ sub set_counters {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
-                    { label => 'poweredon', value => 'poweredon_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 }
+                    { label => 'poweredon', value => 'poweredon', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
                 ]
             }
         },
@@ -99,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
-                    { label => 'poweredoff', value => 'poweredoff_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 }
+                    { label => 'poweredoff', value => 'poweredoff', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
                 ]
             }
         },
@@ -108,8 +108,8 @@ sub set_counters {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
-                    { label => 'suspended', value => 'suspended_absolute', template => '%s',
-                      min => 0, max => 'total_absolute', label_extra_instance => 1 }
+                    { label => 'suspended', value => 'suspended', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
                 ]
             }
         }

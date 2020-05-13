@@ -148,7 +148,6 @@ sub set_counters_traffic {
     push @{$self->{maps_counters}->{int}}, 
         { label => 'in-cir', filter => 'add_traffic', nlabel => 'interface.traffic.in.cir.bitspersecond', set => {
                 key_values => [ { name => 'in_cir', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_cir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In CIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -157,7 +156,6 @@ sub set_counters_traffic {
         },
         { label => 'in-eir', filter => 'add_traffic', nlabel => 'interface.traffic.in.eir.bitspersecond', set => {
                 key_values => [ { name => 'in_eir', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_eir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In EIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -166,7 +164,6 @@ sub set_counters_traffic {
         },
         { label => 'out-cir', filter => 'add_traffic', nlabel => 'interface.traffic.out.cir.bitspersecond', set => {
                 key_values => [ { name => 'out_cir', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_cir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out CIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -175,13 +172,12 @@ sub set_counters_traffic {
         },
         { label => 'out-eir', filter => 'add_traffic', nlabel => 'interface.traffic.out.eir.bitspersecond', set => {
                 key_values => [ { name => 'out_eir', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_eir' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out EIR : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
             }
-        },
+        }
     ;
 }
 
@@ -191,7 +187,6 @@ sub set_counters_errors {
     push @{$self->{maps_counters}->{int}}, 
         { label => 'in-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.in.eir.discard.count', set => {
                 key_values => [ { name => 'in_eir_discard', diff => 1 }, { name => 'speed_in'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in_eir_discard' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In EIR Discard : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
@@ -200,13 +195,12 @@ sub set_counters_errors {
         },
         { label => 'out-eir-discard', filter => 'add_errors', nlabel => 'interface.packets.out.eir.discard.count', set => {
                 key_values => [ { name => 'out_eir_discard', diff => 1 }, { name => 'speed_out'}, { name => 'display' } ],
-                per_second => 1,
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out_eir_discard' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out EIR Discard : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
                 closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
             }
-        },
+        }
     ;
 }
 

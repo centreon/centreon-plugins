@@ -36,8 +36,8 @@ sub set_counters {
                 key_values => [ { name => 'total' }, { name => 'display' } ],
                 output_template => 'Connected Users : %s',
                 perfdatas => [
-                    { label => 'users', value => 'total_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'users', value => 'total', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

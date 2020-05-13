@@ -52,7 +52,7 @@ sub set_counters {
     #           key_values => [ { name => 'client' } ],
     #           output_template => 'Current client connections : %s',
     #           perfdatas => [
-    #               { label => 'Client', value => 'client_absolute', template => '%s', 
+    #               { label => 'Client', value => 'client', template => '%s', 
     #                 min => 0, unit => 'con' },
     #           ],
     #       }
@@ -332,8 +332,10 @@ sub run_instances {
             $no_message_multiple = 0;
             $obj->set(instance => $id);
         
-            my ($value_check) = $obj->execute(new_datas => $self->{new_datas},
-                                              values => $self->{$options{config}->{name}}->{$id});
+            my ($value_check) = $obj->execute(
+                new_datas => $self->{new_datas},
+                values => $self->{$options{config}->{name}}->{$id}
+            );
             next if (defined($options{config}->{skipped_code}) && defined($options{config}->{skipped_code}->{$value_check}));
             if ($value_check != 0) {
                 $long_msg .= $long_msg_append . $obj->output_error();
@@ -382,8 +384,10 @@ sub run_instances {
         }
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => $prefix_output . $short_msg . $suffix_output);
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => $prefix_output . $short_msg . $suffix_output
+            );
         }
         
         if ($self->{multiple} == 0)  {
@@ -648,7 +652,7 @@ sub run {
         $self->{statefile_value}->read(statefile => $self->{cache_name}) if (defined($self->{cache_name}));
         $self->{new_datas}->{last_timestamp} = time();
     }
-    
+
     foreach my $entry (@{$self->{maps_counters_type}}) {
         if ($entry->{type} == 0) {
             $self->run_global(config => $entry);

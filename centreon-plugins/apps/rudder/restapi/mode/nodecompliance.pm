@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'compliance' }, { name => 'display' } ],
                 output_template => 'Compliance: %.2f%%',
                 perfdatas => [
-                    { label => 'node_compliance', value => 'compliance_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'node_compliance', value => 'compliance', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

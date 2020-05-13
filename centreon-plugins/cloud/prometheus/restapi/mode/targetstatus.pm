@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active: %s',
                 perfdatas => [
-                    { label => 'active_targets', value => 'active_absolute', template => '%s',
+                    { label => 'active_targets', value => 'active', template => '%s',
                       min => 0 },
                 ],
             }
@@ -80,7 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'dropped' } ],
                 output_template => 'Dropped: %s',
                 perfdatas => [
-                    { label => 'dropped_targets', value => 'dropped_absolute', template => '%s',
+                    { label => 'dropped_targets', value => 'dropped', template => '%s',
                       min => 0 },
                 ],
             }
@@ -89,7 +89,7 @@ sub set_counters {
                 key_values => [ { name => 'up' } ],
                 output_template => 'Up: %s',
                 perfdatas => [
-                    { label => 'up_targets', value => 'up_absolute', template => '%s',
+                    { label => 'up_targets', value => 'up', template => '%s',
                       min => 0 },
                 ],
             }
@@ -98,7 +98,7 @@ sub set_counters {
                 key_values => [ { name => 'down' } ],
                 output_template => 'Down: %s',
                 perfdatas => [
-                    { label => 'down_targets', value => 'down_absolute', template => '%s',
+                    { label => 'down_targets', value => 'down', template => '%s',
                       min => 0 },
                 ],
             }
@@ -107,7 +107,7 @@ sub set_counters {
                 key_values => [ { name => 'unknown' } ],
                 output_template => 'Unknown: %s',
                 perfdatas => [
-                    { label => 'unknown_targets', value => 'unknown_absolute', template => '%s',
+                    { label => 'unknown_targets', value => 'unknown', template => '%s',
                       min => 0 },
                 ],
             }

@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'naeTotalTotalConnections', diff => 1 } ],
                 output_template => 'Total Connections : %s',
                 perfdatas => [
-                    { label => 'total', value => 'naeTotalTotalConnections_absolute', template => '%s', min => 0 },
+                    { label => 'total', value => 'naeTotalTotalConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'naeTotalSSLConnections', diff => 1 } ],
                 output_template => 'Total SSL Connections : %s',
                 perfdatas => [
-                    { label => 'total_ssl', value => 'naeTotalSSLConnections_absolute', template => '%s', min => 0 },
+                    { label => 'total_ssl', value => 'naeTotalSSLConnections', template => '%s', min => 0 },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'naeTotalNonSSLConnections', diff => 1 } ],
                 output_template => 'Total non-SSL Connections : %s',
                 perfdatas => [
-                    { label => 'total_non_ssl', value => 'naeTotalNonSSLConnections_absolute', template => '%s', min => 0 },
+                    { label => 'total_non_ssl', value => 'naeTotalNonSSLConnections', template => '%s', min => 0 },
                 ],
             }
         },

@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'read_sectors', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'read' },
                 output_template => 'read I/O : %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 output_use => 'usage_persecond', threshold_use => 'usage_persecond',
                 perfdatas => [
                     { label => 'readio', value => 'usage_persecond', template => '%d',
@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'write_sectors', diff => 1 }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'write' },
                 output_template => 'write I/O : %s %s/s',
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 output_use => 'usage_persecond', threshold_use => 'usage_persecond',
                 perfdatas => [
                     { label => 'writeio', value => 'usage_persecond', template => '%d',
@@ -93,8 +93,8 @@ sub set_counters {
                 key_values => [ { name => 'read_ms', diff => 1 }, { name => 'display' } ],
                 output_template => 'read time : %.2f ms',
                 perfdatas => [
-                    { label => 'readtime', value => 'read_ms_absolute',  template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'readtime', template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -102,8 +102,8 @@ sub set_counters {
                 key_values => [ { name => 'write_ms', diff => 1 }, { name => 'display' } ],
                 output_template => 'write time : %.2f ms',
                 perfdatas => [
-                    { label => 'writetime', value => 'write_ms_absolute',  template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'writetime', template => '%.2f',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -118,7 +118,6 @@ sub set_counters {
                     { name => 'display' }
                 ],
                 closure_custom_calc => $self->can('custom_utils_calc'),
-                per_second => 1,
                 output_template => '%%utils: %.2f %%',
                 output_use => 'utils', threshold_use => 'utils',
                 perfdatas => [
@@ -199,7 +198,7 @@ sub manage_selection {
     }
 
     $self->{device} = {};
-    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*$/msg) {
+    while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*/msg) {
         my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($1, $2, $4, $3, $5, $6);
 
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
@@ -228,7 +227,7 @@ sub manage_selection {
             cpu_iowait => $cpu_iowait,
         };
     }
-    
+
     if (scalar(keys %{$self->{device}}) <= 0) {
         if (defined($self->{option_results}->{name})) {
             $self->{output}->add_option_msg(short_msg => "No device found for name '" . $self->{option_results}->{name} . "'.");

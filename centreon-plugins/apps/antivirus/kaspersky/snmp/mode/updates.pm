@@ -124,7 +124,7 @@ sub set_counters {
                 key_values => [ { name => 'hostsNotUpdated' } ],
                 output_template => '%d host(s) not up to date',
                 perfdatas => [
-                    { label => 'not_updated', value => 'hostsNotUpdated_absolute', template => '%d', min => 0 }
+                    { label => 'not_updated', value => 'hostsNotUpdated', template => '%d', min => 0 }
                 ]
             }
         }

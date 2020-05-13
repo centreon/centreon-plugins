@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'calls' } ],
                 output_template => 'Active calls: %d',
                 perfdatas => [
-                    { label => 'active_calls', value => 'calls_absolute', template => '%d',
+                    { label => 'active_calls', value => 'calls', template => '%d',
                       min => 0, unit => 'calls' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'numParticipantsLocal' } ],
                 output_template => 'Local participants: %d',
                 perfdatas => [
-                    { label => 'local_participants', value => 'numParticipantsLocal_absolute', template => '%d',
+                    { label => 'local_participants', value => 'numParticipantsLocal', template => '%d',
                       min => 0, unit => 'participants' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'numParticipantsRemote' } ],
                 output_template => 'Remote participants: %d',
                 perfdatas => [
-                    { label => 'remote_participants', value => 'numParticipantsRemote_absolute', template => '%d',
+                    { label => 'remote_participants', value => 'numParticipantsRemote', template => '%d',
                       min => 0, unit => 'participants' },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'numCallLegs' } ],
                 output_template => 'Call legs: %d',
                 perfdatas => [
-                    { label => 'call_legs', value => 'numCallLegs_absolute', template => '%d',
+                    { label => 'call_legs', value => 'numCallLegs', template => '%d',
                       min => 0, unit => 'legs' },
                 ],
             }

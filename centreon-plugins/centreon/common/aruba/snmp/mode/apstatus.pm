@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'connected' } ],
                 output_template => 'Total connected AP: %d',
                 perfdatas => [
-                    { value => 'connected_absolute', template => '%d', min => 0 },
+                    { value => 'connected', template => '%d', min => 0 },
                 ],
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'wlanAPUpTime' }, { name => 'wlanAPName' } ],
                 output_template => 'Uptime: %ss',
                 perfdatas => [
-                    { value => 'wlanAPUpTime_absolute', template => '%s',
-                      unit => 's', label_extra_instance => 1, instance_use => 'wlanAPName_absolute' },
+                    { value => 'wlanAPUpTime', template => '%s',
+                      unit => 's', label_extra_instance => 1, instance_use => 'wlanAPName' },
                 ],
             }
         },
@@ -92,8 +92,8 @@ sub set_counters {
                 key_values => [ { name => 'wlanAPNumBootstraps' }, { name => 'wlanAPName' } ],
                 output_template => 'Controller Bootstrap Count: %d',
                 perfdatas => [
-                    { value => 'wlanAPNumBootstraps_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'wlanAPName_absolute' },
+                    { value => 'wlanAPNumBootstraps', template => '%d',
+                      label_extra_instance => 1, instance_use => 'wlanAPName' },
                 ],
             }
         },
@@ -101,8 +101,8 @@ sub set_counters {
                 key_values => [ { name => 'wlanAPNumReboots' }, { name => 'wlanAPName' } ],
                 output_template => 'Reboot Count: %d',
                 perfdatas => [
-                    { value => 'wlanAPNumReboots_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'wlanAPName_absolute' },
+                    { value => 'wlanAPNumReboots', template => '%d',
+                      label_extra_instance => 1, instance_use => 'wlanAPName' },
                 ],
             }
         },

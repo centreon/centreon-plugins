@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsIntrusionsDetected', diff => 1 }, { name => 'display' } ],
                 output_template => 'Intrusions detected : %s',
                 perfdatas => [
-                    { label => 'intrusions_detected', value => 'fgIpsIntrusionsDetected_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'intrusions_detected', value => 'fgIpsIntrusionsDetected', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsIntrusionsBlocked', diff => 1 }, { name => 'display' } ],
                 output_template => 'Intrusions blocked : %s',
                 perfdatas => [
-                    { label => 'intrusions_blocked', value => 'fgIpsIntrusionsBlocked_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'intrusions_blocked', value => 'fgIpsIntrusionsBlocked', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsCritSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Critical severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'crit_sev_detections', value => 'fgIpsCritSevDetections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'crit_sev_detections', value => 'fgIpsCritSevDetections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsHighSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'High severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'high_sev_detections', value => 'fgIpsHighSevDetections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'high_sev_detections', value => 'fgIpsHighSevDetections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -74,8 +74,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsMedSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Medium severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'med_sev_detections', value => 'fgIpsMedSevDetections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'med_sev_detections', value => 'fgIpsMedSevDetections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsLowSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Low severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'low_sev_detections', value => 'fgIpsLowSevDetections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'low_sev_detections', value => 'fgIpsLowSevDetections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -92,8 +92,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsInfoSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Informational severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'info_sev_detections', value => 'fgIpsInfoSevDetections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'info_sev_detections', value => 'fgIpsInfoSevDetections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -101,8 +101,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsSignatureDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Signature intrusions detected : %s',
                 perfdatas => [
-                    { label => 'signature_detection', value => 'fgIpsSignatureDetections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'signature_detection', value => 'fgIpsSignatureDetections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -110,8 +110,8 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsAnomalyDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Anomaly intrusions detected : %s',
                 perfdatas => [
-                    { label => 'anomaly_detections', value => 'fgIpsAnomalyDetections_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'anomaly_detections', value => 'fgIpsAnomalyDetections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

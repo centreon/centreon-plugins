@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'left' }, { name => 'display' } ],
                 output_template => 'SMS left : %s',
                 perfdatas => [
-                    { label => 'left', value => 'left_absolute', template => '%s', unit => 'sms',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'left', value => 'left', template => '%s', unit => 'sms',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

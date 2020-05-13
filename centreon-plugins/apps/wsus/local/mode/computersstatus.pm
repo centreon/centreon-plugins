@@ -40,7 +40,7 @@ sub set_counters {
                 key_values => [ { name => 'ComputersUpToDateCount' } ],
                 output_template => 'Up-to-date: %d',
                 perfdatas => [
-                    { label => 'computers_up_to_date', value => 'ComputersUpToDateCount_absolute',
+                    { label => 'computers_up_to_date', value => 'ComputersUpToDateCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -49,7 +49,7 @@ sub set_counters {
                 key_values => [ { name => 'ComputerTargetsNeedingUpdatesCount' } ],
                 output_template => 'Needing Updates: %d',
                 perfdatas => [
-                    { label => 'computers_needing_updates', value => 'ComputerTargetsNeedingUpdatesCount_absolute',
+                    { label => 'computers_needing_updates', value => 'ComputerTargetsNeedingUpdatesCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'ComputerTargetsWithUpdateErrorsCount' } ],
                 output_template => 'With Update Errors: %d',
                 perfdatas => [
-                    { label => 'computers_with_update_errors', value => 'ComputerTargetsWithUpdateErrorsCount_absolute',
+                    { label => 'computers_with_update_errors', value => 'ComputerTargetsWithUpdateErrorsCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'ComputersNotContactedSinceCount' } ],
                 output_template => 'Not Contacted: %d',
                 perfdatas => [
-                    { label => 'computers_not_contacted', value => 'ComputersNotContactedSinceCount_absolute',
+                    { label => 'computers_not_contacted', value => 'ComputersNotContactedSinceCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'UnassignedComputersCount' } ],
                 output_template => 'Unassigned: %s',
                 perfdatas => [
-                    { label => 'computers_unassigned', value => 'UnassignedComputersCount_absolute',
+                    { label => 'computers_unassigned', value => 'UnassignedComputersCount',
                       template => '%d', min => 0 },
                 ],
             }

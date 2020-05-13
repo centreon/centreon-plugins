@@ -40,7 +40,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total_absolute', template => '%s', 
+                    { label => 'total', value => 'total', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -49,7 +49,7 @@ sub set_counters {
                 key_values => [ { name => 'online' } ],
                 output_template => 'online : %s',
                 perfdatas => [
-                    { label => 'online', value => 'online_absolute', template => '%s', 
+                    { label => 'online', value => 'online', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -58,7 +58,7 @@ sub set_counters {
                 key_values => [ { name => 'offline' } ],
                 output_template => 'offline : %s',
                 perfdatas => [
-                    { label => 'offline', value => 'offline_absolute', template => '%s', 
+                    { label => 'offline', value => 'offline', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'unknown' } ],
                 output_template => 'unknown : %s',
                 perfdatas => [
-                    { label => 'state_unknown', value => 'unknown_absolute', template => '%s', 
+                    { label => 'state_unknown', value => 'unknown', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'signoff' } ],
                 output_template => 'signed off : %s',
                 perfdatas => [
-                    { label => 'state_signoff', value => 'signoff_absolute', template => '%s', 
+                    { label => 'state_signoff', value => 'signoff', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -88,7 +88,7 @@ sub set_counters {
                 key_values => [ { name => 'signon' } ],
                 output_template => 'signed on : %s',
                 perfdatas => [
-                    { label => 'state_signon', value => 'signon_absolute', template => '%s', 
+                    { label => 'state_signon', value => 'signon', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'closed' } ],
                 output_template => 'closed : %s',
                 perfdatas => [
-                    { label => 'state_closed', value => 'closed_absolute', template => '%s', 
+                    { label => 'state_closed', value => 'closed', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'paused' } ],
                 output_template => 'paused : %s',
                 perfdatas => [
-                    { label => 'state_paused', value => 'paused_absolute', template => '%s', 
+                    { label => 'state_paused', value => 'paused', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -118,7 +118,7 @@ sub set_counters {
                 key_values => [ { name => 'unknown' } ],
                 output_template => 'unknown : %s',
                 perfdatas => [
-                    { label => 'merchandise_rep_unknown', value => 'unknown_absolute', template => '%s', 
+                    { label => 'merchandise_rep_unknown', value => 'unknown', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -127,7 +127,7 @@ sub set_counters {
                 key_values => [ { name => 'ok' } ],
                 output_template => 'ok : %s',
                 perfdatas => [
-                    { label => 'merchandise_rep_ok', value => 'ok_absolute', template => '%s', 
+                    { label => 'merchandise_rep_ok', value => 'ok', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -136,7 +136,7 @@ sub set_counters {
                 key_values => [ { name => 'suspended' } ],
                 output_template => 'suspended : %s',
                 perfdatas => [
-                    { label => 'merchandise_rep_suspended', value => 'suspended_absolute', template => '%s', 
+                    { label => 'merchandise_rep_suspended', value => 'suspended', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -145,7 +145,7 @@ sub set_counters {
                 key_values => [ { name => 'error' } ],
                 output_template => 'error : %s',
                 perfdatas => [
-                    { label => 'merchandise_rep_error', value => 'error_absolute', template => '%s', 
+                    { label => 'merchandise_rep_error', value => 'error', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -157,7 +157,7 @@ sub set_counters {
                 key_values => [ { name => 'unknown' } ],
                 output_template => 'unknown : %s',
                 perfdatas => [
-                    { label => 'transaction_rep_unknown', value => 'unknown_absolute', template => '%s', 
+                    { label => 'transaction_rep_unknown', value => 'unknown', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -166,7 +166,7 @@ sub set_counters {
                 key_values => [ { name => 'ok' } ],
                 output_template => 'ok : %s',
                 perfdatas => [
-                    { label => 'transaction_rep_ok', value => 'ok_absolute', template => '%s', 
+                    { label => 'transaction_rep_ok', value => 'ok', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -175,7 +175,7 @@ sub set_counters {
                 key_values => [ { name => 'suspended' } ],
                 output_template => 'suspended : %s',
                 perfdatas => [
-                    { label => 'transaction_rep_suspended', value => 'suspended_absolute', template => '%s', 
+                    { label => 'transaction_rep_suspended', value => 'suspended', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -184,7 +184,7 @@ sub set_counters {
                 key_values => [ { name => 'error' } ],
                 output_template => 'error : %s',
                 perfdatas => [
-                    { label => 'transaction_rep_error', value => 'error_absolute', template => '%s', 
+                    { label => 'transaction_rep_error', value => 'error', template => '%s', 
                       min => 0 },
                 ],
             }

@@ -64,28 +64,25 @@ sub set_counters {
                 key_values => [ { name => 'cacheClientErrors', diff => 1 } ],
                 output_template => 'client errors: %s',
                 perfdatas => [
-                    { value => 'cacheClientErrors_absolute', template => '%s',
-                      min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
         { label => 'client-http-traffic-in', display_ok => 0, nlabel => 'client.http.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'cacheClientInKb', diff => 1 } ],
+                key_values => [ { name => 'cacheClientInKb', per_second => 1 } ],
                 output_template => 'client traffic in: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'cacheClientInKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'client-http-traffic-out', display_ok => 0, nlabel => 'client.http.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'cacheClientOutKb', diff => 1 } ],
+                key_values => [ { name => 'cacheClientOutKb', per_second => 1 } ],
                 output_template => 'client traffic out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'cacheClientOutKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
@@ -93,18 +90,15 @@ sub set_counters {
                 key_values => [ { name => 'cacheClientTotalConns' } ],
                 output_template => 'total number of clients: %s',
                 perfdatas => [
-                    { value => 'cacheClientTotalConns_absolute', template => '%s',
-                      min => 0 },
+                    { template => '%s', min => 0 },
                 ],
             }
         },
         { label => 'client-http-requests', display_ok => 0, nlabel => 'client.http.requests.persecond', set => {
-                key_values => [ { name => 'cacheClientRequests', diff => 1 } ],
+                key_values => [ { name => 'cacheClientRequests', per_second => 1 } ],
                 output_template => 'client requests: %.2f/s',
-                per_second => 1,
                 perfdatas => [
-                    { value => 'cacheClientRequests_per_second', template => '%.2f',
-                      min => 0, unit => '/s' },
+                    { template => '%.2f', min => 0, unit => '/s' },
                 ],
             }
         },
@@ -128,28 +122,25 @@ sub set_counters {
                 key_values => [ { name => 'cacheMeanRespTime' } ],
                 output_template => 'http mean response time: %s ms',
                 perfdatas => [
-                    { value => 'cacheMeanRespTime_absolute', template => '%s',
-                      min => 0, unit => 'ms' },
+                    { template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },
         { label => 'server-traffic-in', display_ok => 0, nlabel => 'server.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'cacheServerInKb', diff => 1 } ],
+                key_values => [ { name => 'cacheServerInKb', per_second => 1 } ],
                 output_template => 'server traffic in: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'cacheServerInKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },
         { label => 'server-traffic-out', display_ok => 0, nlabel => 'server.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'cacheServerOutKb', diff => 1 } ],
+                key_values => [ { name => 'cacheServerOutKb', per_second => 1 } ],
                 output_template => 'server traffic out: %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { value => 'cacheServerOutKb_per_second', template => '%s',
-                      min => 0, unit => 'b/s' },
+                    { template => '%s', min => 0, unit => 'b/s' },
                 ],
             }
         },

@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'running' } ],
                 output_template => 'current clusters running: %s',
                 perfdatas => [
-                    { value => 'running_absolute', template => '%s', min => 0 }
+                    { value => 'running', template => '%s', min => 0 }
                 ]
             }
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'notrunning' } ],
                 output_template => 'current clusters not running: %s',
                 perfdatas => [
-                    { value => 'notrunning_absolute', template => '%s', min => 0 }
+                    { value => 'notrunning', template => '%s', min => 0 }
                 ]
             }
         }

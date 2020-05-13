@@ -39,8 +39,8 @@ sub custom_temperature_output {
     my ($self, %options) = @_;
 
     return sprintf('temperature: %s %s',
-        $self->{result_values}->{temperature_absolute},
-        $self->{result_values}->{temperature_unit_absolute}
+        $self->{result_values}->{temperature},
+        $self->{result_values}->{temperature_unit}
     );
 }
 
@@ -48,9 +48,9 @@ sub custom_temperature_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => 'battery.temperature.' . ($self->{result_values}->{temperature_unit_absolute} eq 'C' ? 'celsius' : 'fahrenheit'),
-        unit => $self->{result_values}->{temperature_unit_absolute},
-        value => $self->{result_values}->{temperature_absolute},
+        nlabel => 'battery.temperature.' . ($self->{result_values}->{temperature_unit} eq 'C' ? 'celsius' : 'fahrenheit'),
+        unit => $self->{result_values}->{temperature_unit},
+        value => $self->{result_values}->{temperature},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
     );
@@ -60,8 +60,8 @@ sub custom_charge_remaining_output {
     my ($self, %options) = @_;
 
     return sprintf('remaining capacity: %s %s',
-        $self->{result_values}->{charge_remaining_absolute},
-        $self->{result_values}->{charge_remaining_unit_absolute}
+        $self->{result_values}->{charge_remaining},
+        $self->{result_values}->{charge_remaining_unit}
     );
 }
 
@@ -69,13 +69,13 @@ sub custom_charge_remaining_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => 'battery.charge.remaining.' . ($self->{result_values}->{charge_remaining_unit_absolute} eq '%' ? 'percentage' : 'amperehour'),
-        unit => $self->{result_values}->{charge_remaining_unit_absolute},
-        value => $self->{result_values}->{charge_remaining_absolute},
+        nlabel => 'battery.charge.remaining.' . ($self->{result_values}->{charge_remaining_unit} eq '%' ? 'percentage' : 'amperehour'),
+        unit => $self->{result_values}->{charge_remaining_unit},
+        value => $self->{result_values}->{charge_remaining},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
         min => 0,
-        max => $self->{result_values}->{charge_remaining_unit_absolute} eq '%' ? 100 : undef
+        max => $self->{result_values}->{charge_remaining_unit} eq '%' ? 100 : undef
     );
 }
 
@@ -84,7 +84,7 @@ sub custom_charge_time_output {
 
     return sprintf(
         'remaining time: %s',
-        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{charge_remaining_time_absolute})
+        centreon::plugins::misc::change_seconds(value => $self->{result_values}->{charge_remaining_time})
     );
 }
 
@@ -120,7 +120,7 @@ sub set_counters {
                 key_values => [ { name => 'charge_remaining_time' } ],
                 closure_custom_output => $self->can('custom_charge_time_output'),
                 perfdatas => [
-                    { value => 'charge_remaining_time_absolute', template => '%s', min => 0, unit => 's' },
+                    { value => 'charge_remaining_time', template => '%s', min => 0, unit => 's' },
                 ],
             }
         },
@@ -128,7 +128,7 @@ sub set_counters {
                 key_values => [ { name => 'voltage' } ],
                 output_template => 'voltage: %.2f V',
                 perfdatas => [
-                    { value => 'voltage_absolute', template => '%.2f', unit => 'V' }
+                    { value => 'voltage', template => '%.2f', unit => 'V' }
                 ]
             }
         },
@@ -136,7 +136,7 @@ sub set_counters {
                 key_values => [ { name => 'current' } ],
                 output_template => 'current: %.2f A',
                 perfdatas => [
-                    { value => 'current_absolute', template => '%.2f', min => 0, unit => 'A' }
+                    { value => 'current', template => '%.2f', min => 0, unit => 'A' }
                 ]
             }
         }

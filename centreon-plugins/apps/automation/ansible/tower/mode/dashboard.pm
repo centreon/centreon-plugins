@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'hosts_total' } ],
                 output_template => 'Hosts Total: %d',
                 perfdatas => [
-                    { value => 'hosts_total_absolute', template => '%d', min => 0 },
+                    { value => 'hosts_total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -45,8 +45,8 @@ sub set_counters {
                 key_values => [ { name => 'hosts_failed' },{ name => 'hosts_total' } ],
                 output_template => 'Hosts Failed: %d',
                 perfdatas => [
-                    { value => 'hosts_failed_absolute', template => '%d', min => 0,
-                      max => 'hosts_total_absolute' },
+                    { value => 'hosts_failed', template => '%d', min => 0,
+                      max => 'hosts_total' },
                 ],
             }
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'inventories_total' } ],
                 output_template => 'Inventories Total: %d',
                 perfdatas => [
-                    { value => 'inventories_total_absolute', template => '%d', min => 0 },
+                    { value => 'inventories_total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -62,8 +62,8 @@ sub set_counters {
                 key_values => [ { name => 'inventories_sync_failed' }, { name => 'inventories_total' } ],
                 output_template => 'Inventories Sync Failed: %d',
                 perfdatas => [
-                    { value => 'inventories_sync_failed_absolute', template => '%d', min => 0,
-                      max => 'inventories_total_absolute' },
+                    { value => 'inventories_sync_failed', template => '%d', min => 0,
+                      max => 'inventories_total' },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'projects_total' } ],
                 output_template => 'Projects Total: %d',
                 perfdatas => [
-                    { value => 'projects_total_absolute', template => '%d', min => 0 },
+                    { value => 'projects_total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -79,8 +79,8 @@ sub set_counters {
                 key_values => [ { name => 'projects_sync_failed' }, { name => 'projects_total' } ],
                 output_template => 'Projects Sync Failed: %d',
                 perfdatas => [
-                    { value => 'projects_sync_failed_absolute', template => '%d', min => 0,
-                      max => 'projects_total_absolute' },
+                    { value => 'projects_sync_failed', template => '%d', min => 0,
+                      max => 'projects_total' },
                 ],
             }
         },

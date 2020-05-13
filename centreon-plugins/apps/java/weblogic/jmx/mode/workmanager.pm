@@ -60,8 +60,8 @@ sub set_counters {
                 key_values => [ { name => 'completed', diff => 1 }, { name => 'display' } ],
                 output_template => 'Requests completed : %s',
                 perfdatas => [
-                    { label => 'request_completed', value => 'completed_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'request_completed', value => 'completed', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -69,8 +69,8 @@ sub set_counters {
                 key_values => [ { name => 'pending' }, { name => 'display' } ],
                 output_template => 'Requests pending : %s',
                 perfdatas => [
-                    { label => 'request_pending', value => 'pending_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'request_pending', value => 'pending', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -78,8 +78,8 @@ sub set_counters {
                 key_values => [ { name => 'stuck' }, { name => 'display' } ],
                 output_template => 'Threads stuck : %s',
                 perfdatas => [
-                    { label => 'thread_stuck', value => 'stuck_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'thread_stuck', value => 'stuck', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

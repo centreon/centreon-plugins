@@ -58,7 +58,7 @@ sub set_counters {
                 ],
                 output_template => 'Completion Time : %s',
                 perfdatas => [
-                    { label => 'completion_time', value => 'rttMonLatestRttOperCompletionTime_absolute', template => '%s',
+                    { label => 'completion_time', value => 'rttMonLatestRttOperCompletionTime', template => '%s',
                       min => 0, label_extra_instance => 1 },
                 ],
             }

@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'average_1m' } ],
                 output_template => '%.2f %% (1m)',
                 perfdatas => [
-                    { value => 'average_1m_absolute', template => '%.2f',
+                    { value => 'average_1m', template => '%.2f',
                       min => 0, max => 100, unit => '%' }
                 ]
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'average_5m' } ],
                 output_template => '%.2f %% (5m)',
                 perfdatas => [
-                    { value => 'average_5m_absolute', template => '%.2f',
+                    { value => 'average_5m', template => '%.2f',
                       min => 0, max => 100, unit => '%' }
                 ]
             }

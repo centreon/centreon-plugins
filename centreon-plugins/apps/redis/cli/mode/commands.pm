@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'total_commands_processed', diff => 1 } ],
                 output_template => 'Processed: %s',
                 perfdatas => [
-                    { label => 'processed_commands', value => 'total_commands_processed_absolute', template => '%s', min => 0 },
+                    { label => 'processed_commands', value => 'total_commands_processed', template => '%s', min => 0 },
                 ],
             },
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'instantaneous_ops_per_sec' } ],
                 output_template => 'Processed per sec: %s',
                 perfdatas => [
-                    { label => 'ops_per_sec', value => 'instantaneous_ops_per_sec_absolute', template => '%s', min => 0, unit => 'ops/s' },
+                    { label => 'ops_per_sec', value => 'instantaneous_ops_per_sec', template => '%s', min => 0, unit => 'ops/s' },
                 ],
             },
         },

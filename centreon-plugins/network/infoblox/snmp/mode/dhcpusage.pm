@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => $map[$i]->[0], diff => 1 } ],
                 output_template => $map[$i]->[1],
                 perfdatas => [
-                    { label => $perf_label, value => $map[$i]->[0] . '_absolute', template => '%s', min => 0 },
+                    { label => $perf_label, value => $map[$i]->[0] , template => '%s', min => 0 },
                 ],
             }
         };
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'ibDHCPSubnetPercentUsed' }, { name => 'display' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'subnet_used', value => 'iibDHCPSubnetPercentUsed_absolute', template => '%.2f', 
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'subnet_used', value => 'iibDHCPSubnetPercentUsed', template => '%.2f', 
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

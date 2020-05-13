@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'live_users' } ],
                 output_template => 'live users = %s',
                 perfdatas => [
-                    { label => 'live_users', value => 'live_users_absolute', template => '%s', min => 0 },
+                    { label => 'live_users', value => 'live_users', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'http_hits', diff => 1 } ],
                 output_template => 'http hits = %s',
                 perfdatas => [
-                    { label => 'http_hits', value => 'http_hits_absolute', template => '%s', min => 0 },
+                    { label => 'http_hits', value => 'http_hits', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'ftp_hits', diff => 1 } ],
                 output_template => 'ftp hits = %s',
                 perfdatas => [
-                    { label => 'ftp_hits', value => 'ftp_hits_absolute', template => '%s', min => 0 },
+                    { label => 'ftp_hits', value => 'ftp_hits', template => '%s', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'pop3_hits', diff => 1 } ],
                 output_template => 'pop3 hits = %s',
                 perfdatas => [
-                    { label => 'pop3_hits', value => 'pop3_hits_absolute', template => '%s', min => 0 },
+                    { label => 'pop3_hits', value => 'pop3_hits', template => '%s', min => 0 },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'imap_hits', diff => 1 } ],
                 output_template => 'imap hits = %s',
                 perfdatas => [
-                    { label => 'imap_hits', value => 'imap_hits_absolute', template => '%s', min => 0 },
+                    { label => 'imap_hits', value => 'imap_hits', template => '%s', min => 0 },
                 ],
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'smtp_hits', diff => 1 } ],
                 output_template => 'smtp hits = %s',
                 perfdatas => [
-                    { label => 'smtp_hits', value => 'smtp_hits_absolute', template => '%s', min => 0 },
+                    { label => 'smtp_hits', value => 'smtp_hits', template => '%s', min => 0 },
                 ],
             }
         },

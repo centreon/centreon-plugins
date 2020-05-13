@@ -136,8 +136,8 @@ sub set_counters {
                 key_values => [ { name => 'i3MsCmdSrvResourceCount' }, { name => 'display' } ],
                 output_template => 'Resource Count : %s',
                 perfdatas => [
-                    { label => 'resource_count', value => 'i3MsCmdSrvResourceCount_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'resource_count', value => 'i3MsCmdSrvResourceCount', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -47,15 +47,14 @@ sub set_counters {
         $label =~ s/_/-/g;
         $output =~ s/_/ /g;
         my $entry = { label => $label . '-rate', set => {
-                            key_values => [ { name => $counter, diff => 1 } ],
-                            output_template => ucfirst($output) . ': %.2f/s',
-                            per_second => 1,
-                            perfdatas => [
-                                { label => $label_perf . '_rate', value => $counter . '_per_second', template => '%.2f',
-                                min => 0, unit => '/s' },
-                            ],
-                        }
-                    };
+                key_values => [ { name => $counter, per_second => 1 } ],
+                output_template => ucfirst($output) . ': %.2f/s',
+                perfdatas => [
+                    { label => $label_perf . '_rate', template => '%.2f',
+                    min => 0, unit => '/s' }
+                ]
+            }
+        };
         push @{$self->{maps_counters}->{global}}, $entry;
     }
 }
@@ -65,10 +64,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-counters:s"     => { name => 'filter_counters', default => '' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 

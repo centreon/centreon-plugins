@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'msgs_in_work_queue' } ],
                 output_template => 'messages in work queue: %s',
                 perfdatas => [
-                    { value => 'msgs_in_work_queue_absolute', template => '%s', min => 0 },
+                    { value => 'msgs_in_work_queue', template => '%s', min => 0 },
                 ],
             }
         },
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'outstandingDNSRequests' } ],
                 output_template => 'dns requests with no reply: %s',
                 perfdatas => [
-                    { value => 'outstandingDNSRequests_absolute', template => '%s', min => 0 },
+                    { value => 'outstandingDNSRequests', template => '%s', min => 0 },
                 ],
             }
         },
@@ -72,7 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'pendingDNSRequests' } ],
                 output_template => 'dns requests pending: %s',
                 perfdatas => [
-                    { value => 'pendingDNSRequests_absolute', template => '%s', min => 0 },
+                    { value => 'pendingDNSRequests', template => '%s', min => 0 },
                 ],
             }
         },
@@ -80,7 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'openFilesOrSockets' } ],
                 output_template => 'fd opened: %s',
                 perfdatas => [
-                    { value => 'openFilesOrSockets_absolute', template => '%s', min => 0 },
+                    { value => 'openFilesOrSockets', template => '%s', min => 0 },
                 ],
             }
         },
@@ -88,7 +88,7 @@ sub set_counters {
                 key_values => [ { name => 'mailTransferThreads' } ],
                 output_template => 'threads mail: %s',
                 perfdatas => [
-                    { value => 'mailTransferThreads_absolute', template => '%s', min => 0 },
+                    { value => 'mailTransferThreads', template => '%s', min => 0 },
                 ],
             }
         },
@@ -99,8 +99,8 @@ sub set_counters {
                 key_values => [ { name => 'updateFailures', diff => 1 }, { name => 'updateServiceName' } ],
                 output_template => 'update failures: %s',
                 perfdatas => [
-                    { value => 'updateFailures_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'updateServiceName_absolute' },
+                    { value => 'updateFailures', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'updateServiceName' },
                 ],
             }
         },
@@ -110,10 +110,10 @@ sub set_counters {
         { label => 'time-expiration', nlabel => 'key.time.expiration.seconds', set => {
                 key_values => [ { name => 'seconds' }, { name => 'msg' }, { name => 'display' } ],
                 output_template => '%s remaining before expiration',
-                output_use => 'msg_absolute',
+                output_use => 'msg',
                 perfdatas => [
-                    { value => 'seconds_absolute', template => '%s',
-                      unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'seconds', template => '%s',
+                      unit => 's', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

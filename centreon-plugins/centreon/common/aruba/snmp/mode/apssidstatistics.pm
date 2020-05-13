@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Stations Associated: %d',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%d', min => 0 },
+                    { value => 'total', template => '%d', min => 0 },
                 ],
             }
         },
@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'wlanAPEssidNumAssociatedStations' }, { name => 'wlanAPESSID' } ],
                 output_template => 'Associated Stations: %d',
                 perfdatas => [
-                    { value => 'wlanAPEssidNumAssociatedStations_absolute', template => '%d',
+                    { value => 'wlanAPEssidNumAssociatedStations', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }
@@ -70,7 +70,7 @@ sub set_counters {
                     { name => 'wlanAPESSID' } ],
                 output_template => 'Associated Stations: %d',
                 perfdatas => [
-                    { value => 'wlanAPBssidNumAssociatedStations_absolute', template => '%d',
+                    { value => 'wlanAPBssidNumAssociatedStations', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }
@@ -80,7 +80,7 @@ sub set_counters {
                     { name => 'wlanAPESSID' } ],
                 output_template => 'Channel Noise: %d',
                 perfdatas => [
-                    { value => 'apChannelNoise_absolute', template => '%d',
+                    { value => 'apChannelNoise', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }
@@ -90,7 +90,7 @@ sub set_counters {
                     { name => 'wlanAPESSID' } ],
                 output_template => 'Signal To Noise Ratio: %d',
                 perfdatas => [
-                    { value => 'apSignalToNoiseRatio_absolute', template => '%d',
+                    { value => 'apSignalToNoiseRatio', template => '%d',
                       label_extra_instance => 1 },
                 ],
             }

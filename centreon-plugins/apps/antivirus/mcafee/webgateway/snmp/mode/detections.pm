@@ -37,28 +37,25 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'malware-detected', set => {
-                key_values => [ { name => 'stMalwareDetected', diff => 1 } ],
+                key_values => [ { name => 'stMalwareDetected', per_second => 1 } ],
                 output_template => 'Malware detected (per sec): %d',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'malware_detected', value => 'stMalwareDetected_per_second', template => '%d',
-                      min => 0, unit => 'detections/s' },
-                ],
+                    { label => 'malware_detected', template => '%d', min => 0, unit => 'detections/s' }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{categories} = [
         { label => 'category', set => {
-                key_values => [ { name => 'stCategoryCount', diff => 1 }, { name => 'stCategoryName' } ],
+                key_values => [ { name => 'stCategoryCount', per_second => 1 }, { name => 'stCategoryName' } ],
                 output_template => 'detections (per sec): %d',
-                per_second => 1,
                 perfdatas => [
-                    { label => 'category', value => 'stCategoryCount_per_second', template => '%d',
+                    { label => 'category', template => '%d',
                       min => 0, unit => 'detections/s', label_extra_instance => 1,
-                      instance_use => 'stCategoryName_absolute' },
-                ],
+                      instance_use => 'stCategoryName' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -73,17 +70,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-name:s"     => { name => 'filter_name' },
-                                    "filter-counters:s" => { name => 'filter_counters', default => '' },
-                                });
-    return $self;
-}
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
+    return $self;
 }
 
 my $oid_stMalwareDetected = '.1.3.6.1.4.1.1230.2.7.2.1.2.0';

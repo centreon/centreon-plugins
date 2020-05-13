@@ -96,7 +96,7 @@ sub set_counters {
                 key_values => [ { name => 'status_progress' } ],
                 output_template => 'Status progress: %.2f %%',
                 perfdatas => [
-                    { label => 'status_progress', value => 'status_progress_absolute', template => '%.2f',
+                    { label => 'status_progress', value => 'status_progress', template => '%.2f',
                       unit => '%', min => 0, max => 100 },
                 ],
             }

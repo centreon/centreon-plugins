@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'total_ipsec' } ],
                 output_template => 'total ipsec tunnels: %s',
                 perfdatas => [
-                    { value => 'total_ipsec_absolute', template => '%s', min => 0 }
+                    { value => 'total_ipsec', template => '%s', min => 0 }
                 ]
             }
         }

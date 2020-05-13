@@ -57,19 +57,19 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_status_threshold'),
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
             }
         },
-         { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'name' } ],
-                per_second => 1, output_change_bytes => 2,
+        { label => 'traffic-in', set => {
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'name' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name_absolute' },
-                ],
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'name' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -78,13 +78,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status' },
-                                  "critical-status:s"       => { name => 'critical_status' },
-                                });
-   
+    $options{options}->add_options(arguments => {
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status' },
+        'critical-status:s' => { name => 'critical_status' }
+    });
+
     return $self;
 }
 

@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'trpzSysCpuAverageLoad' } ],
                 output_template => 'average : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_average', value => 'trpzSysCpuAverageLoad_absolute', template => '%.2f',
+                    { label => 'cpu_average', value => 'trpzSysCpuAverageLoad', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'trpzSysCpuLastMinuteLoad' } ],
                 output_template => '1 minute : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'trpzSysCpuLastMinuteLoad_absolute', template => '%.2f',
+                    { label => 'cpu_1m', value => 'trpzSysCpuLastMinuteLoad', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'trpzSysCpuLast5MinutesLoad' } ],
                 output_template => '5 minutes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5m', value => 'trpzSysCpuLast5MinutesLoad_absolute', template => '%.2f',
+                    { label => 'cpu_5m', value => 'trpzSysCpuLast5MinutesLoad', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => ' trpzSysCpuLastHourLoad' } ],
                 output_template => '1 hour : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1h', value => ' trpzSysCpuLastHourLoad_absolute', template => '%.2f',
+                    { label => 'cpu_1h', value => ' trpzSysCpuLastHourLoad', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

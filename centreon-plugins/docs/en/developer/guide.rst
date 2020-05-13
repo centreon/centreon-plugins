@@ -108,11 +108,11 @@ Several modes can be declared in the **new** constructor:
 
 .. code-block:: perl
 
-  %{$self->{modes}} = (
-                        'mode1'    => '<plugin_path>::mode::mode1',
-                        'mode2'    => '<plugin_path>::mode::mode2',
-                        ...
-                        );
+  $self->{modes} = {
+      'mode1'    => '<plugin_path>::mode::mode1',
+      'mode2'    => '<plugin_path>::mode::mode2',
+      ...
+  };
 
 Then, declare the module:
 
@@ -194,12 +194,11 @@ Several options can be declared in the **new** constructor:
 
 .. code-block:: perl
 
-  $options{options}->add_options(arguments =>
-                                {
-                                  "option1:s" => { name => 'option1' },
-                                  "option2:s" => { name => 'option2', default => 'value1' },
-                                  "option3"   => { name => 'option3' },
-                                });
+  $options{options}->add_options(arguments => {
+      "option1:s" => { name => 'option1' },
+      "option2:s" => { name => 'option2', default => 'value1' },
+      "option3"   => { name => 'option3' },
+  });
 
 Here is the description of arguments used in this example:
 
@@ -1939,8 +1938,7 @@ We want to develop the following SNMP plugin:
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'Current sessions : %s',
                 perfdatas => [
-                    { label => 'sessions', value => 'sessions_absolute', template => '%s', 
-                      min => 0 },
+                    { label => 'sessions', template => '%s', min => 0 },
                 ],
             }
         },
@@ -1948,8 +1946,7 @@ We want to develop the following SNMP plugin:
                 key_values => [ { name => 'sessions_ssl' } ],
                 output_template => 'Current ssl sessions : %s',
                 perfdatas => [
-                    { label => 'sessions_ssl', value => 'sessions_ssl_absolute', template => '%s', 
-                      min => 0 },
+                    { label => 'sessions_ssl', template => '%s', min => 0 },
                 ],
             }
         },
@@ -1962,11 +1959,14 @@ We want to develop the following SNMP plugin:
     # OIDs are fake. Only for the example.
     my ($oid_sessions, $oid_sessions_ssl) = ('.1.2.3.4.0', '.1.2.3.5.0');
     
-    my $result = $options{snmp}->get_leef(oids => [ $oid_sessions, $oid_sessions_ssl ],
-                                          nothing_quit => 1);
-    $self->{global} = { sessions => $result->{$oid_sessions},
-                        sessions_ssl => $result->{$oid_sessions_ssl}
-                      };
+    my $result = $options{snmp}->get_leef(
+      oids => [ $oid_sessions, $oid_sessions_ssl ],
+      nothing_quit => 1
+    );
+    $self->{global} = {
+      sessions => $result->{$oid_sessions},
+      sessions_ssl => $result->{$oid_sessions_ssl}
+    };
   }
 
 
@@ -1996,15 +1996,15 @@ As you can see, we create two arrays of hash tables in **set_counters** method. 
 
       * *name*: attribute name. Need to match with attributes in **manage_selection** method!
       * *diff*: if we set the value to 1, we'll have the difference between two checks (need a statefile!).
+      * *per_second*: if we set the value to 1, the *diff* values will be calculated per seconds (need a statefile!). No need to add diff attribute.
     
     * *output_template*: string to display. '%s' will be replaced by the first value of *keys_values*.
     * *output_use*: which value to be used in *output_template* (If not set, we use the first value of *keys_values*).
-    * *per_second*: if we set the value to 1, the *diff* values will be calculated per seconds.
     * *output_change_bytes*: if we set the value to 1 or 2, we can use a second '%s' in *output_template* to display the unit. 1 = divide by 1024 (Bytes), 2 = divide by 1000 (bits).
     * *perfdata*: array of hashes. To configure perfdatas
     
       * *label*: name displayed.
-      * *value*: value to used. It's the name from *keys_values* with a **suffix**: '_absolute' or '_per_second' (depends of other options).
+      * *value*: value to used. It's the name from *keys_values*.
       * *template*: value format (could be for example: '%.3f').
       * *unit*: unit displayed.
       * *min*, *max*: min and max displayed. You can use a value from *keys_values*.
@@ -2037,8 +2037,7 @@ We want to add the current number of sessions by virtual servers.
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'current sessions : %s',
                 perfdatas => [
-                    { label => 'total_sessions', value => 'sessions_absolute', template => '%s', 
-                      min => 0 },
+                    { label => 'total_sessions', template => '%s', min => 0 },
                 ],
             }
         },
@@ -2046,8 +2045,7 @@ We want to add the current number of sessions by virtual servers.
                 key_values => [ { name => 'sessions_ssl' } ],
                 output_template => 'current ssl sessions : %s',
                 perfdatas => [
-                    { label => 'total_sessions_ssl', value => 'sessions_ssl_absolute', template => '%s', 
-                      min => 0 },
+                    { label => 'total_sessions_ssl', template => '%s', min => 0 },
                 ],
             }
         },
@@ -2058,8 +2056,8 @@ We want to add the current number of sessions by virtual servers.
                 key_values => [ { name => 'sessions' }, { name => 'display' } ],
                 output_template => 'current sessions : %s',
                 perfdatas => [
-                    { label => 'sessions', value => 'sessions_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'sessions', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -2067,8 +2065,8 @@ We want to add the current number of sessions by virtual servers.
                 key_values => [ { name => 'sessions_ssl' }, { name => 'display' } ],
                 output_template => 'current ssl sessions : %s',
                 perfdatas => [
-                    { label => 'sessions_ssl', value => 'sessions_ssl_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'sessions_ssl', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -2151,9 +2149,9 @@ The model can also be used to check strings (not only counters). So we want to c
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_output')
             }
-        },
+        }
     ];
   }
   
@@ -2219,7 +2217,7 @@ The model can also be used to check strings (not only counters). So we want to c
 
 The following example show 4 new attributes:
 
-* *closure_custom_calc*: should be used to have a simple name (without '_absolute' or '_per_second'). Or to do some more complex calculation.
+* *closure_custom_calc*: should be used to do more complex calculation.
 * *closure_custom_output*: should be used to have a more complex output (An example: want to display the total, free and used value at the same time).
 * *closure_custom_perfdata*: should be used to manage yourself the perfdata.
 * *closure_custom_threshold_check*: should be used to manage yourself the threshold check.

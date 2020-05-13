@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'invalid_objects' } ],
                 output_template => 'objects : %s',
                 perfdatas => [
-                    { label => 'invalid_objects', value => 'invalid_objects_absolute', template => '%d', min => 0 },
+                    { label => 'invalid_objects', value => 'invalid_objects', template => '%d', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'invalid_indexes' } ],
                 output_template => 'indexes : %s',
                 perfdatas => [
-                    { label => 'invalid_indexes', value => 'invalid_indexes_absolute', template => '%d', min => 0 },
+                    { label => 'invalid_indexes', value => 'invalid_indexes', template => '%d', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'invalid_ind_partitions' } ],
                 output_template => 'index partitions : %s',
                 perfdatas => [
-                    { label => 'invalid_ind_partitions', value => 'invalid_ind_partitions_absolute', template => '%d', min => 0 },
+                    { label => 'invalid_ind_partitions', value => 'invalid_ind_partitions', template => '%d', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'invalid_ind_subpartitions' } ],
                 output_template => 'index subpartitions : %s',
                 perfdatas => [
-                    { label => 'invalid_ind_subpartitions', value => 'invalid_ind_subpartitions_absolute', template => '%d', min => 0 },
+                    { label => 'invalid_ind_subpartitions', value => 'invalid_ind_subpartitions', template => '%d', min => 0 },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'invalid_registry_components' } ],
                 output_template => 'registry components : %s',
                 perfdatas => [
-                    { label => 'invalid_registry_components', value => 'invalid_registry_components_absolute', template => '%d', min => 0 },
+                    { label => 'invalid_registry_components', value => 'invalid_registry_components', template => '%d', min => 0 },
                 ],
             }
         },

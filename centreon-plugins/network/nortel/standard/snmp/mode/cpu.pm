@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'total' }, { name => 'num' } ],
                 output_template => '%.2f %% (total)',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'total_absolute', template => '%.2f',
+                    { label => 'cpu_total', value => 'total', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => '1m' }, { name => 'num' } ],
                 output_template => '%.2f %% (1min)',
                 perfdatas => [
-                    { label => 'cpu_1min', value => '1m_absolute', template => '%.2f',
+                    { label => 'cpu_1min', value => '1m', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => '5m' }, { name => 'num' } ],
                 output_template => '%.2f %% (5min)',
                 perfdatas => [
-                    { label => 'cpu_5min', value => '5m_absolute', template => '%.2f',
+                    { label => 'cpu_5min', value => '5m', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => '10m' }, { name => 'num' } ],
                 output_template => '%.2f %% (10min)',
                 perfdatas => [
-                    { label => 'cpu_10min', value => '10m_absolute', template => '%.2f',
+                    { label => 'cpu_10min', value => '10m', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
@@ -73,7 +73,7 @@ sub set_counters {
                 key_values => [ { name => '1h' }, { name => 'num' } ],
                 output_template => '%.2f %% (1h)',
                 perfdatas => [
-                    { label => 'cpu_1h', value => '1h_absolute', template => '%.2f',
+                    { label => 'cpu_1h', value => '1h', template => '%.2f',
                       min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }

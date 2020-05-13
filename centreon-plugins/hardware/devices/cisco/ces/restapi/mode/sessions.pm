@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'total current sessions: %d',
                 perfdatas => [
-                    { value => 'sessions_absolute', template => '%d', min => 0 },
+                    { value => 'sessions', template => '%d', min => 0 },
                 ],
             }
         }

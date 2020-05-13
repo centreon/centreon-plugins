@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'heartbeat_latency' } ],
                 output_template => 'heartbeat latency: %s us',
                 perfdatas => [
-                    { value => 'heartbeat_latency_absolute', template => '%s', min => 0, unit => 'us' }
+                    { value => 'heartbeat_latency', template => '%s', min => 0, unit => 'us' }
                 ]
             }
         }

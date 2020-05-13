@@ -39,8 +39,8 @@ sub set_counters {
                 key_values => [ { name => 'in', diff => 1 }, { name => 'display' } ],
                 output_template => 'Incoming calls : %s',
                 perfdatas => [
-                    { label => 'in_calls', value => 'in_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'in_calls', value => 'in', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -48,8 +48,8 @@ sub set_counters {
                 key_values => [ { name => 'out', diff => 1 }, { name => 'display' } ],
                 output_template => 'Outgoing calls : %s',
                 perfdatas => [
-                    { label => 'out_calls', value => 'out_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'out_calls', value => 'out', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -59,8 +59,8 @@ sub set_counters {
                 key_values => [ { name => 'active' }, { name => 'total' } ],
                 output_template => 'Current calls : %s',
                 perfdatas => [
-                    { label => 'current_calls', value => 'active_absolute', template => '%s', 
-                      min => 0, max => 'total_absolute' },
+                    { label => 'current_calls', value => 'active', template => '%s', 
+                      min => 0, max => 'total' },
                 ],
             }
         },

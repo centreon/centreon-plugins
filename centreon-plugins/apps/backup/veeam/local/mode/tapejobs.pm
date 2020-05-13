@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total jobs: %s',
                 perfdatas => [
-                    { value => 'total_absolute', template => '%s', min => 0 },
+                    { value => 'total', template => '%s', min => 0 },
                 ],
             }
         },

@@ -93,8 +93,8 @@ sub set_counters {
                 key_values => [ { name => 'total_tunnel' }, { name => 'display' } ],
                 output_template => 'Total : %s',
                 perfdatas => [
-                    { label => 'vrtr_total_tunnel', value => 'total_tunnel_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'vrtr_total_tunnel', value => 'total_tunnel', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -102,8 +102,8 @@ sub set_counters {
                 key_values => [ { name => 'active_sessions' }, { name => 'display' } ],
                 output_template => 'Active Sessions : %s',
                 perfdatas => [
-                    { label => 'vrtr_tunnel_active_sessions', value => 'active_sessions_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'vrtr_tunnel_active_sessions', value => 'active_sessions', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -115,7 +115,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_total_sessions_calc'),
                 perfdatas => [
                     { label => 'vrtr_tunnel_total_sessions', value => 'total_sessions', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -126,8 +126,8 @@ sub set_counters {
                 key_values => [ { name => 'total_tunnel' }, { name => 'display' } ],
                 output_template => 'Total : %s',
                 perfdatas => [
-                    { label => 'peer_total_tunnel', value => 'total_tunnel_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'peer_total_tunnel', value => 'total_tunnel', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -135,8 +135,8 @@ sub set_counters {
                 key_values => [ { name => 'active_sessions' }, { name => 'display' } ],
                 output_template => 'Active Sessions : %s',
                 perfdatas => [
-                    { label => 'peer_tunnel_active_sessions', value => 'active_sessions_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'peer_tunnel_active_sessions', value => 'active_sessions', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -148,7 +148,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_total_sessions_calc'),
                 perfdatas => [
                     { label => 'peer_tunnel_total_sessions', value => 'total_sessions', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

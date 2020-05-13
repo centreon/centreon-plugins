@@ -35,22 +35,18 @@ sub set_counters {
 
     $self->{maps_counters}->{segment} = [    
         { label => 'extends', set => {
-                key_values => [ { name => 'extends', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'extends', per_second => 1 } ],
                 output_template => 'Extends : %.2f/s',
                 perfdatas => [
-                    { label => 'extends', value => 'extends_per_second', template => '%.2f',
-                      unit => '/s', min => 0 },
+                    { label => 'extends', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },
         { label => 'wraps', set => {
-                key_values => [ { name => 'wraps', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'wraps', per_second => 1 } ],
                 output_template => 'Wraps : %.2f/s',
                 perfdatas => [
-                    { label => 'wraps', value => 'wraps_per_second', template => '%.2f',
-                      unit => '/s', min => 0 },
+                    { label => 'wraps', template => '%.2f', unit => '/s', min => 0 },
                 ],
             }
         },

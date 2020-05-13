@@ -40,8 +40,8 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' }, { name => 'display' } ],
                 output_template => 'Read IOPs : %s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', value => 'read_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -50,8 +50,8 @@ sub set_counters {
                 output_template => 'Read usage : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'read_usage', value => 'read_bps_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_usage', value => 'read_bps', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -59,8 +59,8 @@ sub set_counters {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
                 output_template => 'Read latency : %s ms',
                 perfdatas => [
-                    { label => 'read_latency', value => 'read_latency_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_latency', value => 'read_latency', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -68,8 +68,8 @@ sub set_counters {
                 key_values => [ { name => 'write_iops' }, { name => 'display' } ],
                 output_template => 'Write IOPs : %s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_absolute', template => '%d',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', value => 'write_iops', template => '%d',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -78,8 +78,8 @@ sub set_counters {
                 output_template => 'Write Usage : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'write_usage', value => 'write_bps_absolute', template => '%d',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_usage', value => 'write_bps', template => '%d',
+                      unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -87,8 +87,8 @@ sub set_counters {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'Write Latency : %s ms',
                 perfdatas => [
-                    { label => 'write_latency', value => 'write_latency_absolute', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_latency', value => 'write_latency', template => '%d',
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

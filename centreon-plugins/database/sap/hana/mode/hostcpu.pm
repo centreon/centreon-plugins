@@ -39,7 +39,7 @@ sub set_counters {
                 output_template => 'User %.2f %%', output_use => 'user_prct', threshold_use => 'user_prct',
                 perfdatas => [
                     { label => 'user', value => 'user_prct', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -49,7 +49,7 @@ sub set_counters {
                 output_template => 'System %.2f %%', output_use => 'sys_prct', threshold_use => 'sys_prct',
                 perfdatas => [
                     { label => 'sys', value => 'sys_prct', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 output_template => 'Wait %.2f %%', output_use => 'wait_prct', threshold_use => 'wait_prct',
                 perfdatas => [
                     { label => 'wait', value => 'wait_prct', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 output_template => 'Idle %.2f %%', output_use => 'idle_prct', threshold_use => 'idle_prct',
                 perfdatas => [
                     { label => 'idle', value => 'idle_prct', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

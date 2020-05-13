@@ -30,14 +30,14 @@ use Digest::MD5 qw(md5_hex);
 sub custom_usage_output {
     my ($self, %options) = @_;
 
-    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
-    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
-    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
+    my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
+    my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
+    my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
         'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
-        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_absolute}
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
     );
 }
 
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Partitions count : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 }
+                    { label => 'count', value => 'count', template => '%d', min => 0 }
                 ]
             }
         }
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'used', value => 'used', template => '%d', min => 0, max => 'total',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -74,8 +74,8 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'free', value => 'free', template => '%d', min => 0, max => 'total',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -83,8 +83,8 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -92,8 +92,8 @@ sub set_counters {
                 key_values => [ { name => 'inodes' }, { name => 'display' } ],
                 output_template => 'Inodes Used: %s %%',
                 perfdatas => [
-                    { label => 'inodes', value => 'inodes_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'inodes', value => 'inodes', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

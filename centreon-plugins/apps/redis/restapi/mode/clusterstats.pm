@@ -104,7 +104,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_system' } ],
                 output_template => 'Cpu system: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_system', value => 'cpu_system_absolute', template => '%.2f',
+                    { label => 'cpu_system', value => 'cpu_system', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -113,7 +113,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_user' } ],
                 output_template => 'Cpu user: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_user', value => 'cpu_user_absolute', template => '%.2f',
+                    { label => 'cpu_user', value => 'cpu_user', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -162,7 +162,7 @@ sub set_counters {
                 key_values => [ { name => 'bigstore_iops' } ],
                 output_template => 'Flash IOPS: %s ops/s',
                 perfdatas => [
-                    { label => 'flash_iops', value => 'bigstore_iops_absolute', template => '%s',
+                    { label => 'flash_iops', value => 'bigstore_iops', template => '%s',
                       min => 0, unit => 'ops/s' },
                 ],
             }
@@ -172,7 +172,7 @@ sub set_counters {
                 output_template => 'Flash throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'flash_throughput', value => 'bigstore_throughput_absolute', template => '%s',
+                    { label => 'flash_throughput', value => 'bigstore_throughput', template => '%s',
                       min => 0, unit => 'B/s' },
                 ],
             }
@@ -181,7 +181,7 @@ sub set_counters {
                 key_values => [ { name => 'conns' } ],
                 output_template => 'Connections: %s',
                 perfdatas => [
-                    { label => 'connections', value => 'conns_absolute', template => '%s',
+                    { label => 'connections', value => 'conns', template => '%s',
                       min => 0 },
                 ],
             }
@@ -190,7 +190,7 @@ sub set_counters {
                 key_values => [ { name => 'total_req' } ],
                 output_template => 'Requests rate: %s ops/s',
                 perfdatas => [
-                    { label => 'requests', value => 'total_req_absolute', template => '%s',
+                    { label => 'requests', value => 'total_req', template => '%s',
                       min => 0, unit => 'ops/s' },
                 ],
             }
@@ -200,7 +200,7 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'ingress_absolute', template => '%d', min => 0, unit => 'b/s' },
+                    { label => 'traffic_in', value => 'ingress', template => '%d', min => 0, unit => 'b/s' },
                 ],
             },
         },
@@ -209,7 +209,7 @@ sub set_counters {
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'egress_absolute', template => '%d', min => 0, unit => 'b/s' },
+                    { label => 'traffic_out', value => 'egress', template => '%d', min => 0, unit => 'b/s' },
                 ],
             },
         },

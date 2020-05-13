@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'load1' } ],
                 output_template => '%s',
                 perfdatas => [
-                    { label => 'load1', value => 'load1_absolute', template => '%s', min => 0 },
+                    { label => 'load1', value => 'load1', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'load5' } ],
                 output_template => '%s',
                 perfdatas => [
-                    { label => 'load5', value => 'load5_absolute', template => '%s', min => 0 },
+                    { label => 'load5', value => 'load5', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'load15' } ],
                 output_template => '%s',
                 perfdatas => [
-                    { label => 'load15', value => 'load15_absolute', template => '%s', min => 0 },
+                    { label => 'load15', value => 'load15', template => '%s', min => 0 },
                 ],
             }
         },

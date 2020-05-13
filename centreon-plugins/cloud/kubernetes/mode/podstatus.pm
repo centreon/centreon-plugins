@@ -155,8 +155,8 @@ sub set_counters {
                 key_values => [ { name => 'restarts_total' }, { name => 'display' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
-                    { label => 'restarts_count', value => 'restarts_total_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'restarts_count', value => 'restarts_total', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -174,8 +174,8 @@ sub set_counters {
                 key_values => [ { name => 'restarts' }, { name => 'perf' } ],
                 output_template => 'Restarts: %d',
                 perfdatas => [
-                    { label => 'restarts_count', value => 'restarts_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'perf_absolute' },
+                    { label => 'restarts_count', value => 'restarts', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'perf' },
                 ],
             }
         },

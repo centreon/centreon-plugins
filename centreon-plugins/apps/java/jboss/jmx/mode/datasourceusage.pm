@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'ActiveCount' }, { name => 'display' } ],
                 output_template => 'Current Active Connections : %s',
                 perfdatas => [
-                    { label => 'active_con', value => 'ActiveCount_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'active_con', value => 'ActiveCount', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'AvailableCount' }, { name => 'display' } ],
                 output_template => 'Current Available Connections : %s',
                 perfdatas => [
-                    { label => 'available_con', value => 'AvailableCount_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'available_con', value => 'AvailableCount', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'InUseCount' }, { name => 'display' } ],
                 output_template => 'Current In Use Connections : %s',
                 perfdatas => [
-                    { label => 'in_use_con', value => 'InUseCount_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'in_use_con', value => 'InUseCount', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'CreatedCount', diff => 1 }, { name => 'display' } ],
                 output_template => 'Created Connections : %s',
                 perfdatas => [
-                    { label => 'created_con', value => 'CreatedCount_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'created_con', value => 'CreatedCount', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

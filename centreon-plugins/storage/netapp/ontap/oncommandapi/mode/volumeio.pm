@@ -43,8 +43,8 @@ sub set_counters {
                 key_values => [ { name => 'read_ops' }, { name => 'name' } ],
                 output_template => 'Read IOPS: %.2f ops/s',
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_ops_absolute', template => '%.2f',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'read_iops', value => 'read_ops', template => '%.2f',
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -52,8 +52,8 @@ sub set_counters {
                 key_values => [ { name => 'write_ops' }, { name => 'name' } ],
                 output_template => 'Write IOPS: %.2f ops/s',
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_ops_absolute', template => '%.2f',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'write_iops', value => 'write_ops', template => '%.2f',
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'other_ops' }, { name => 'name' } ],
                 output_template => 'Other IOPS: %.2f ops/s',
                 perfdatas => [
-                    { label => 'other_iops', value => 'other_ops_absolute', template => '%.2f',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'other_iops', value => 'other_ops', template => '%.2f',
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -70,8 +70,8 @@ sub set_counters {
                 key_values => [ { name => 'avg_latency' }, { name => 'name' } ],
                 output_template => 'Average latency: %.2f ms',
                 perfdatas => [
-                    { label => 'avg_latency', value => 'avg_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'avg_latency', value => 'avg_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -79,8 +79,8 @@ sub set_counters {
                 key_values => [ { name => 'read_latency' }, { name => 'name' } ],
                 output_template => 'Read latency: %.2f ms',
                 perfdatas => [
-                    { label => 'read_latency', value => 'read_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'read_latency', value => 'read_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -88,8 +88,8 @@ sub set_counters {
                 key_values => [ { name => 'write_latency' }, { name => 'name' } ],
                 output_template => 'Write latency: %.2f ms',
                 perfdatas => [
-                    { label => 'write_latency', value => 'write_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'write_latency', value => 'write_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
@@ -97,8 +97,8 @@ sub set_counters {
                 key_values => [ { name => 'other_latency' }, { name => 'name' } ],
                 output_template => 'Other latency: %.2f ms',
                 perfdatas => [
-                    { label => 'other_latency', value => 'other_latency_absolute', template => '%.2f',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name_absolute' },
+                    { label => 'other_latency', value => 'other_latency', template => '%.2f',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },

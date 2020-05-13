@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'estimated_charges' }, { name => 'display' } ],
                 output_template => 'Estimated Charges: %.2f USD',
                 perfdatas => [
-                    { value => 'estimated_charges_absolute', template => '%.2f', unit => 'USD',
+                    { value => 'estimated_charges', template => '%.2f', unit => 'USD',
                       label_extra_instance => 1 },
                 ],
             }

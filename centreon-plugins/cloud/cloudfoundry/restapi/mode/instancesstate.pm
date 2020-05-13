@@ -137,7 +137,7 @@ sub set_counters {
                 key_values => [ { name => 'running' } ],
                 output_template => 'Running : %d',
                 perfdatas => [
-                    { label => 'running', value => 'running_absolute', template => '%d',
+                    { label => 'running', value => 'running', template => '%d',
                       min => 0 },
                 ],
             }
@@ -146,7 +146,7 @@ sub set_counters {
                 key_values => [ { name => 'stopped' } ],
                 output_template => 'Stopped : %d',
                 perfdatas => [
-                    { label => 'stopped', value => 'stopped_absolute', template => '%d',
+                    { label => 'stopped', value => 'stopped', template => '%d',
                       min => 0 },
                 ],
             }
@@ -155,7 +155,7 @@ sub set_counters {
                 key_values => [ { name => 'crashed' } ],
                 output_template => 'Crashed : %d',
                 perfdatas => [
-                    { label => 'crashed', value => 'crashed_absolute', template => '%d',
+                    { label => 'crashed', value => 'crashed', template => '%d',
                       min => 0 },
                 ],
             }

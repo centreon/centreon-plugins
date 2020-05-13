@@ -64,8 +64,8 @@ sub set_counters {
                 key_values => [ { name => 'acPMTrunkUtilizationAverage' }, { name => 'display' } ],
                 output_template => 'Average calls : %s',
                 perfdatas => [
-                    { label => 'avg_calls', value => 'acPMTrunkUtilizationAverage_absolute', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'avg_calls', value => 'acPMTrunkUtilizationAverage', template => '%d',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -73,8 +73,8 @@ sub set_counters {
                 key_values => [ { name => 'acPMTrunkUtilizationMax' }, { name => 'display' } ],
                 output_template => 'Max calls : %s',
                 perfdatas => [
-                    { label => 'max_calls', value => 'acPMTrunkUtilizationMax_absolute', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'max_calls', value => 'acPMTrunkUtilizationMax', template => '%d',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -82,8 +82,8 @@ sub set_counters {
                 key_values => [ { name => 'acPMTrunkUtilizationTotal', diff => 1 }, { name => 'display' } ],
                 output_template => 'Count calls : %s',
                 perfdatas => [
-                    { label => 'count_calls', value => 'acPMTrunkUtilizationTotal_absolute', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'count_calls', value => 'acPMTrunkUtilizationTotal', template => '%d',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

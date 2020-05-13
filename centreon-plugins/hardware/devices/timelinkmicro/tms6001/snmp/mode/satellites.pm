@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'sat_count' } ],
                 output_template => 'current number of satellites seen: %s',
                 perfdatas => [
-                    { value => 'sat_count_absolute', template => '%s', min => 0 }
+                    { value => 'sat_count', template => '%s', min => 0 }
                 ]
             }
         }

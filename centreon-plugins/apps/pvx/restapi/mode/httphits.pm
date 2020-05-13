@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'ratio' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Ratio: %.2f',
                 perfdatas => [
-                    { label => 'ratio', value => 'ratio_absolute', template => '%.2f',
-                      min => 0, label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'ratio', value => 'ratio', template => '%.2f',
+                      min => 0, label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'error_hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits Error: %.3f hits/s',
                 perfdatas => [
-                    { label => 'hits_error', value => 'error_hits_absolute', template => '%.3f',
-                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'hits_error', value => 'error_hits', template => '%.3f',
+                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits: %.3f hits/s',
                 perfdatas => [
-                    { label => 'hits', value => 'hits_absolute', template => '%.3f',
-                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key_absolute' },
+                    { label => 'hits', value => 'hits', template => '%.3f',
+                      min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
         },

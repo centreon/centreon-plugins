@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'collection_count', diff => 1 } ],
                 output_template => 'gc collection count: %s',
                 perfdatas => [
-                    { value => 'collection_count_absolute', template => '%s', min => 0 },
+                    { value => 'collection_count', template => '%s', min => 0 },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'collection_time', diff => 1 } ],
                 output_template => 'gc collection time: %s ms',
                 perfdatas => [
-                    { value => 'collection_time_absolute', template => '%s', min => 0, unit => 'ms' },
+                    { value => 'collection_time', template => '%s', min => 0, unit => 'ms' },
                 ],
             }
         },

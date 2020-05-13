@@ -101,18 +101,18 @@ sub custom_status_calc {
 sub custom_offset_perfdata {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{state_absolute} ne '*') {
+    if ($self->{result_values}->{state} ne '*') {
         $self->{output}->perfdata_add(
             label => 'offset', unit => 'ms',
-            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display_absolute} : undef,
-            value => $self->{result_values}->{offset_absolute},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => $self->{result_values}->{offset},
             min => 0
         );
     } else {
         $self->{output}->perfdata_add(
             label => 'offset', unit => 'ms',
-            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display_absolute} : undef,
-            value => $self->{result_values}->{offset_absolute},
+            instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
+            value => $self->{result_values}->{offset},
             warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
             critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel}),
             min => 0
@@ -123,10 +123,10 @@ sub custom_offset_perfdata {
 sub custom_offset_threshold {
     my ($self, %options) = @_;
 
-    if ($self->{result_values}->{state_absolute} ne '*') {
+    if ($self->{result_values}->{state} ne '*') {
         return 'ok';
     }
-    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{offset_absolute}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
+    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{offset}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-'. $self->{thlabel}, exit_litteral => 'warning' } ]);
 }
 
 sub set_counters {
@@ -142,7 +142,7 @@ sub set_counters {
                 key_values => [ { name => 'peers' } ],
                 output_template => 'Number of ntp peers : %d',
                 perfdatas => [
-                    { label => 'peers', value => 'peers_absolute', template => '%d',
+                    { label => 'peers', value => 'peers', template => '%d',
                       min => 0 },
                 ],
             }
@@ -164,8 +164,8 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_offset_threshold'),
                 closure_custom_perfdata => $self->can('custom_offset_perfdata'),
                 perfdatas => [
-                    { label => 'offset', value => 'offset_absolute', template => '%s',
-                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'offset', value => 'offset', template => '%s',
+                      min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -173,8 +173,8 @@ sub set_counters {
                 key_values => [ { name => 'stratum' }, { name => 'display' } ],
                 output_template => 'Stratum : %s',
                 perfdatas => [
-                    { label => 'stratum', value => 'stratum_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'stratum', value => 'stratum', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'sysExtProcessorLoad' }, { name => 'sysExtProcessorDescr' } ],
                 output_template => 'Utilization %.2f%%',
                 perfdatas => [
-                    { label => 'utilization', value => 'sysExtProcessorLoad_absolute', template => '%.2f',  min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'sysExtProcessorDescr_absolute' },
+                    { label => 'utilization', value => 'sysExtProcessorLoad', template => '%.2f',  min => 0, max => 100,
+                      unit => '%', label_extra_instance => 1, instance_use => 'sysExtProcessorDescr' },
                 ],
             }
         },

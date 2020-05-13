@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'qual_frequency' } ],
                 output_template => 'quality of frequency generation: %s',
                 perfdatas => [
-                    { value => 'qual_frequency_absolute', template => '%s' }
+                    { value => 'qual_frequency', template => '%s' }
                 ]
             }
         }

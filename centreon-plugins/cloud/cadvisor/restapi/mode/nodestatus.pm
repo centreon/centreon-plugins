@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
                 output_template => 'Containers Running : %s',
                 perfdatas => [
-                    { label => 'containers_running', value => 'containers_running_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'containers_running', value => 'containers_running', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'num_cores' }, { name => 'display' } ],
                 output_template => 'CPU cores: %s',
                 perfdatas => [
-                    { label => 'num_cores', value => 'num_cores_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'num_cores', value => 'num_cores', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -65,8 +65,8 @@ sub set_counters {
                 key_values => [ { name => 'memory_capacity' }, { name => 'display' } ],
                 output_template => 'Mem capacity %s %s',
                 perfdatas => [
-                    { label => 'memory_capacity', value => 'memory_capacity_absolute', unit => 'B', output_change_bytes => 1, template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'memory_capacity', value => 'memory_capacity', unit => 'B', output_change_bytes => 1, template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -74,8 +74,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_frequency' }, { name => 'display' } ],
                 output_template => 'CPU frequency %s %s',
                 perfdatas => [
-                    { label => 'cpu_frequency', value => 'cpu_frequency_absolute', unit => 'Hz', output_change_bytes => 1, template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'cpu_frequency', value => 'cpu_frequency', unit => 'Hz', output_change_bytes => 1, template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

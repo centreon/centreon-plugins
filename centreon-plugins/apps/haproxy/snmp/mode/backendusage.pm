@@ -62,8 +62,8 @@ sub set_counters {
                 key_values => [ { name => 'alBackendQueueCur' }, { name => 'display' } ],
                 output_template => 'Current queue : %s',
                 perfdatas => [
-                    { label => 'current_queue', value => 'alBackendQueueCur_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_queue', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -71,8 +71,8 @@ sub set_counters {
                 key_values => [ { name => 'alBackendSessionCur' }, { name => 'display' } ],
                 output_template => 'Current sessions : %s',
                 perfdatas => [
-                    { label => 'current_sessions', value => 'alBackendSessionCur_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current_sessions', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -80,28 +80,28 @@ sub set_counters {
                 key_values => [ { name => 'alBackendSessionTotal', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total sessions : %s',
                 perfdatas => [
-                    { label => 'total_connections', value => 'alBackendSessionTotal_absolute', template => '%s', 
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_connections', template => '%s', 
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'alBackendBytesIN', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'alBackendBytesIN', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'alBackendBytesIN_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in', template => '%.2f', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'alBackendBytesOUT', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'alBackendBytesOUT', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out : %s %s/s',
-                per_second => 1, output_change_bytes => 2,
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'alBackendBytesOUT_per_second', template => '%.2f', 
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out', template => '%.2f', 
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -114,9 +114,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'           => { name => 'filter_name' },
-        'warning-status:s'        => { name => 'warning_status', default => '' },
-        'critical-status:s'       => { name => 'critical_status', default => '%{status} !~ /UP/i' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /UP/i' }
     });
     
     return $self;

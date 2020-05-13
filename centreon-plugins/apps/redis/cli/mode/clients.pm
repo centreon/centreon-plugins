@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'connected_clients' } ],
                 output_template => 'Connected clients: %s',
                 perfdatas => [
-                    { label => 'connected_clients', value => 'connected_clients_absolute', template => '%s', min => 0 },
+                    { label => 'connected_clients', value => 'connected_clients', template => '%s', min => 0 },
                 ],
             },
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'blocked_clients' } ],
                 output_template => 'Blocked clients: %s',
                 perfdatas => [
-                    { label => 'blocked_clients', value => 'blocked_clients_absolute', template => '%s', min => 0 },
+                    { label => 'blocked_clients', value => 'blocked_clients', template => '%s', min => 0 },
                 ],
             },
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'client_longest_output_list' } ],
                 output_template => 'Client longest output list: %s',
                 perfdatas => [
-                    { label => 'client_longest_output_list', value => 'client_longest_output_list_absolute', template => '%s', min => 0 },
+                    { label => 'client_longest_output_list', value => 'client_longest_output_list', template => '%s', min => 0 },
                 ],
             },
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'client_biggest_input_buf' } ],
                 output_template => 'Client biggest input buffer: %s',
                 perfdatas => [
-                    { label => 'client_biggest_input_buf', value => 'client_biggest_input_buf_absolute', template => '%s', min => 0 },
+                    { label => 'client_biggest_input_buf', value => 'client_biggest_input_buf', template => '%s', min => 0 },
                 ],
             },
         }

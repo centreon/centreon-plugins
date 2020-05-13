@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'connections', diff => 1 } ],
                 output_template => 'total connections: %s',
                 perfdatas => [
-                    { value => 'connections_absolute', template => '%s', min => 0 }
+                    { value => 'connections', template => '%s', min => 0 }
                 ]
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'traffic_class_inbound', diff => 1 } ],
                 output_template => 'traffic class inbound: %s',
                 perfdatas => [
-                    { value => 'traffic_class_inbound_absolute', template => '%s', min => 0 }
+                    { value => 'traffic_class_inbound', template => '%s', min => 0 }
                 ]
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'traffic_class_outbound', diff => 1 } ],
                 output_template => 'traffic class outbound: %s',
                 perfdatas => [
-                    { value => 'traffic_class_outbound_absolute', template => '%s', min => 0 }
+                    { value => 'traffic_class_outbound', template => '%s', min => 0 }
                 ]
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 output_template => 'traffic size inbound: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'traffic_size_inbound_absolute', template => '%s', min => 0, unit => 'B' }
+                    { value => 'traffic_size_inbound', template => '%s', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 output_template => 'traffic size outbound: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'traffic_size_outbound_absolute', template => '%s', min => 0, unit => 'B' }
+                    { value => 'traffic_size_outbound', template => '%s', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -87,7 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'session_duration_total', diff => 1 } ],
                 output_template => 'total sessions duration: %s ms',
                 perfdatas => [
-                    { value => 'session_duration_total_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'session_duration_total', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         },
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'session_duration_mean' } ],
                 output_template => 'mean sessions duration: %s ms',
                 perfdatas => [
-                    { value => 'session_duration_mean_absolute', template => '%s', min => 0, unit => 'ms' }
+                    { value => 'session_duration_mean', template => '%s', min => 0, unit => 'ms' }
                 ]
             }
         }

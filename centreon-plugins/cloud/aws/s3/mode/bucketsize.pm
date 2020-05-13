@@ -46,8 +46,8 @@ sub set_counters {
                                     output_template => $metric . ': %d %s',
                                     output_change_bytes => 1,
                                     perfdatas => [
-                                        { label => lc($metric) . '_' . lc($storage_type) . '_' . lc($statistic), value => $metric . '_' . $storage_type . '_' . $statistic . '_absolute', 
-                                        template => '%d', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                                        { label => lc($metric) . '_' . lc($storage_type) . '_' . lc($statistic), value => $metric . '_' . $storage_type . '_' . $statistic , 
+                                        template => '%d', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' },
                                     ],
                                 }
                             };

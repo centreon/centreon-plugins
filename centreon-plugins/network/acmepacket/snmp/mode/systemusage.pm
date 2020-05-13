@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'health_score' } ],
                 output_template => 'Health Score : %.2f %%',
                 perfdatas => [
-                    { label => 'health_score', value => 'health_score_absolute', template => '%.2f',
+                    { label => 'health_score', value => 'health_score', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_load' } ],
                 output_template => 'Cpu Load : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_load', value => 'cpu_load_absolute', template => '%.2f',
+                    { label => 'cpu_load', value => 'cpu_load', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'memory_used' } ],
                 output_template => 'Memory Used : %.2f %%',
                 perfdatas => [
-                    { label => 'memory_used', value => 'memory_used_absolute', template => '%.2f',
+                    { label => 'memory_used', value => 'memory_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'license_used' } ],
                 output_template => 'License Used : %.2f %%',
                 perfdatas => [
-                    { label => 'license_used', value => 'license_used_absolute', template => '%.2f',
+                    { label => 'license_used', value => 'license_used', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -88,7 +88,7 @@ sub set_counters {
                 key_values => [ { name => 'current_sessions' } ],
                 output_template => 'Current Sessions : %s',
                 perfdatas => [
-                    { label => 'current_sessions', value => 'current_sessions_absolute', template => '%s',
+                    { label => 'current_sessions', value => 'current_sessions', template => '%s',
                       min => 0 },
                 ],
             }
@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'current_calls' } ],
                 output_template => 'Current Calls : %s/s',
                 perfdatas => [
-                    { label => 'current_calls', value => 'current_calls_absolute', template => '%s',
+                    { label => 'current_calls', value => 'current_calls', template => '%s',
                       unit => '/s', min => 0 },
                 ],
             }

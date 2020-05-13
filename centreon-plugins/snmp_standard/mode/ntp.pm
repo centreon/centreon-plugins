@@ -32,8 +32,8 @@ sub custom_usage_output {
 
     return sprintf(
         'Time offset %d second(s): %s',
-        $self->{result_values}->{offset_absolute},
-        $self->{result_values}->{date_absolute}
+        $self->{result_values}->{offset},
+        $self->{result_values}->{date}
     );
 }
 
@@ -49,7 +49,7 @@ sub set_counters {
                 key_values => [ { name => 'offset' }, { name => 'date' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'offset', value => 'offset_absolute', template => '%d', unit => 's' },
+                    { label => 'offset', value => 'offset', template => '%d', unit => 's' },
                 ],
             }
         },

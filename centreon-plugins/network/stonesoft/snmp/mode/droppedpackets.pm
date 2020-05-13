@@ -93,17 +93,17 @@ sub run {
             $time_delta = 1;
         }
 
-        my $dropped_absolute = $new_datas->{dropped_packets} - $old_datas->{old_dropped_packets};
-        my $dropped_absolute_per_sec = $dropped_absolute / $time_delta;
+        my $dropped = $new_datas->{dropped_packets} - $old_datas->{old_dropped_packets};
+        my $dropped_per_sec = $dropped / $time_delta;
 
-        my $exit = $self->{perfdata}->threshold_check(value => $dropped_absolute_per_sec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit = $self->{perfdata}->threshold_check(value => $dropped_per_sec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
 
         $self->{output}->output_add(severity => $exit,
                                     short_msg => sprintf("Packets Dropped : %.2f /s [%i packets]", 
-                                                $dropped_absolute_per_sec, $dropped_absolute));
+                                                $dropped_per_sec, $dropped));
 
         $self->{output}->perfdata_add(label => 'dropped_packets_per_sec',
-                                    value => sprintf("%.2f", $dropped_absolute_per_sec),
+                                    value => sprintf("%.2f", $dropped_per_sec),
                                     warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                     critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
                                     min => 0);

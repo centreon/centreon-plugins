@@ -35,47 +35,42 @@ sub set_counters {
    
     $self->{maps_counters}->{global} = [
         { label => 'points-written', nlabel => 'points.written.persecond', set => {
-                key_values => [ { name => 'pointReq', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'pointReq', per_second => 1 } ],
                 output_template => 'Points Written: %.2f/s',
                 perfdatas => [
-                    { value => 'pointReq_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'writes-ok', nlabel => 'writes.ok.persecond', set => {
-                key_values => [ { name => 'writeOk', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'writeOk', per_second => 1 } ],
                 output_template => 'Writes Ok: %.2f/s',
                 perfdatas => [
-                    { value => 'writeOk_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'writes-error', nlabel => 'writes.error.persecond', set => {
-                key_values => [ { name => 'writeError', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'writeError', per_second => 1 } ],
                 output_template => 'Writes Error: %.2f/s',
                 perfdatas => [
-                    { value => 'writeError_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'writes-drop', nlabel => 'writes.drop.persecond', set => {
-                key_values => [ { name => 'writeDrop', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'writeDrop', per_second => 1 } ],
                 output_template => 'Writes Drop: %.2f/s',
                 perfdatas => [
-                    { value => 'writeDrop_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },
         { label => 'writes-timeout', nlabel => 'writes.timeout.persecond', set => {
-                key_values => [ { name => 'writeTimeout', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'writeTimeout', per_second => 1 } ],
                 output_template => 'Writes Timeout: %.2f/s',
                 perfdatas => [
-                    { value => 'writeTimeout_per_second', template => '%.2f', min => 0 },
+                    { template => '%.2f', min => 0 },
                 ],
             }
         },

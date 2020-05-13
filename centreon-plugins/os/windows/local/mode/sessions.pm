@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions_created', diff => 1 } ],
                 output_template => 'created : %s',
                 perfdatas => [
-                    { label => 'sessions_created', value => 'sessions_created_absolute', template => '%s', min => 0 },
+                    { label => 'sessions_created', value => 'sessions_created', template => '%s', min => 0 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions_disconnected', diff => 1 } ],
                 output_template => 'disconnected : %s',
                 perfdatas => [
-                    { label => 'sessions_disconnected', value => 'sessions_disconnected_absolute', template => '%s', min => 0 },
+                    { label => 'sessions_disconnected', value => 'sessions_disconnected', template => '%s', min => 0 },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions_reconnected', diff => 1 } ],
                 output_template => 'reconnected : %s',
                 perfdatas => [
-                    { label => 'sessions_reconnected', value => 'sessions_reconnected_absolute', template => '%s', min => 0 },
+                    { label => 'sessions_reconnected', value => 'sessions_reconnected', template => '%s', min => 0 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions_active' } ],
                 output_template => 'current active : %s',
                 perfdatas => [
-                    { label => 'sessions_active', value => 'sessions_active_absolute', template => '%s', min => 0 },
+                    { label => 'sessions_active', value => 'sessions_active', template => '%s', min => 0 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'sessions_disconnected_current' } ],
                 output_template => 'current disconnected : %s',
                 perfdatas => [
-                    { label => 'sessions_disconnected_current', value => 'sessions_disconnected_current_absolute', 
+                    { label => 'sessions_disconnected_current', value => 'sessions_disconnected_current', 
                       template => '%s', min => 0 },
                 ],
             }

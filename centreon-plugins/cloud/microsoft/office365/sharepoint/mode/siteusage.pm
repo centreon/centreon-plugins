@@ -178,7 +178,7 @@ sub set_counters {
                 output_template => 'Usage (active sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_active', value => 'storage_used_active_absolute', template => '%d',
+                    { label => 'storage_used_active', value => 'storage_used_active', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -188,7 +188,7 @@ sub set_counters {
                 output_template => 'Usage (inactive sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_inactive', value => 'storage_used_inactive_absolute', template => '%d',
+                    { label => 'storage_used_inactive', value => 'storage_used_inactive', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -197,7 +197,7 @@ sub set_counters {
                 key_values => [ { name => 'file_count' } ],
                 output_template => 'File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_file_count', value => 'file_count_absolute', template => '%d',
+                    { label => 'total_file_count', value => 'file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -206,7 +206,7 @@ sub set_counters {
                 key_values => [ { name => 'active_file_count' } ],
                 output_template => 'Active File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_active_file_count', value => 'active_file_count_absolute', template => '%d',
+                    { label => 'total_active_file_count', value => 'active_file_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -215,7 +215,7 @@ sub set_counters {
                 key_values => [ { name => 'visited_page_count' } ],
                 output_template => 'Visited Page Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_visited_page_count', value => 'visited_page_count_absolute', template => '%d',
+                    { label => 'total_visited_page_count', value => 'visited_page_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -224,7 +224,7 @@ sub set_counters {
                 key_values => [ { name => 'page_view_count' } ],
                 output_template => 'Page View Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_page_view_count', value => 'page_view_count_absolute', template => '%d',
+                    { label => 'total_page_view_count', value => 'page_view_count', template => '%d',
                       min => 0 },
                 ],
             }
@@ -243,8 +243,8 @@ sub set_counters {
                 key_values => [ { name => 'file_count' }, { name => 'url' }, { name => 'id' } ],
                 output_template => 'File Count: %d',
                 perfdatas => [
-                    { label => 'file_count', value => 'file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'id_absolute' },
+                    { label => 'file_count', value => 'file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'id' },
                 ],
             }
         },
@@ -252,8 +252,8 @@ sub set_counters {
                 key_values => [ { name => 'active_file_count' }, { name => 'url' }, { name => 'id' } ],
                 output_template => 'Active File Count: %d',
                 perfdatas => [
-                    { label => 'active_file_count', value => 'active_file_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'id_absolute' },
+                    { label => 'active_file_count', value => 'active_file_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'id' },
                 ],
             }
         },
@@ -261,8 +261,8 @@ sub set_counters {
                 key_values => [ { name => 'visited_page_count' }, { name => 'url' }, { name => 'id' } ],
                 output_template => 'Visited Page Count: %d',
                 perfdatas => [
-                    { label => 'visited_page_count', value => 'visited_page_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'id_absolute' },
+                    { label => 'visited_page_count', value => 'visited_page_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'id' },
                 ],
             }
         },
@@ -270,8 +270,8 @@ sub set_counters {
                 key_values => [ { name => 'page_view_count' }, { name => 'url' }, { name => 'id' } ],
                 output_template => 'Page View Count: %d',
                 perfdatas => [
-                    { label => 'page_view_count', value => 'page_view_count_absolute', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'id_absolute' },
+                    { label => 'page_view_count', value => 'page_view_count', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'id' },
                 ],
             }
         },

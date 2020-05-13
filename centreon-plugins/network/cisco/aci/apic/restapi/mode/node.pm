@@ -38,8 +38,8 @@ sub set_counters {
                 key_values => [ { name => 'current' }, { name => 'dn' } ],
                 output_template => 'current: %s %%', output_error_template => "current: %s %%",
                 perfdatas => [
-                    { label => 'health_current', value => 'current_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn_absolute' },
+                    { label => 'health_current', value => 'current', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' },
                 ],
             }
         },
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'min' }, { name => 'dn' } ],
                 output_template => 'min: %s %%', output_error_template => "min: %s %%",
                 perfdatas => [
-                    { label => 'health_min', value => 'min_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn_absolute' },
+                    { label => 'health_min', value => 'min', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' },
                 ],
             }
         },
@@ -56,8 +56,8 @@ sub set_counters {
                 key_values => [ { name => 'avg' }, { name => 'dn' } ],
                 output_template => 'average: %s %%', output_error_template => "average %s %%",
                 perfdatas => [
-                    { label => 'health_avg', value => 'avg_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn_absolute' },
+                    { label => 'health_avg', value => 'avg', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'dn' },
                 ],
             }
         },

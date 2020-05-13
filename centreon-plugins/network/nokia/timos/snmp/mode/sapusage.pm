@@ -56,46 +56,42 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'traffic-in-below-cir', set => {
-                key_values => [ { name => 'sapBaseStatsIngressQchipForwardedInProfOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'sapBaseStatsIngressQchipForwardedInProfOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In Below CIR : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in_below_cir', value => 'sapBaseStatsIngressQchipForwardedInProfOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in_below_cir', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-in-above-cir', set => {
-                key_values => [ { name => 'sapBaseStatsIngressQchipForwardedOutProfOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'sapBaseStatsIngressQchipForwardedOutProfOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In Above CIR : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in_above_cir', value => 'sapBaseStatsIngressQchipForwardedOutProfOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_in_above_cir', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out-below-cir', set => {
-                key_values => [ { name => 'sapBaseStatsEgressQchipForwardedInProfOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'sapBaseStatsEgressQchipForwardedInProfOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out Below CIR : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out_below_cir', value => 'sapBaseStatsEgressQchipForwardedInProfOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out_below_cir', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'traffic-out-above-cir', set => {
-                key_values => [ { name => 'sapBaseStatsEgressQchipForwardedOutProfOctets', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'sapBaseStatsEgressQchipForwardedOutProfOctets', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out Above CIR : %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out_above_cir', value => 'sapBaseStatsEgressQchipForwardedOutProfOctets_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'traffic_out_above_cir', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -113,12 +109,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "filter-name:s"       => { name => 'filter_name' },
-                                  "warning-status:s"    => { name => 'warning_status', default => '' },
-                                  "critical-status:s"   => { name => 'critical_status', default => '%{admin_state} eq "up" and %{oper_state} !~ /up/' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{admin_state} eq "up" and %{oper_state} !~ /up/' }
+    });
     
     return $self;
 }

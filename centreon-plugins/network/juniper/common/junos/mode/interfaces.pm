@@ -57,8 +57,8 @@ sub set_counters {
                 key_values => [ { name => 'input_power' }, { name => 'display' } ],
                 output_template => 'Input Power : %s dBm',
                 perfdatas => [
-                    { value => 'input_power_absolute', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'input_power', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -66,8 +66,8 @@ sub set_counters {
                 key_values => [ { name => 'bias_current' }, { name => 'display' } ],
                 output_template => 'Bias Current : %s mA',
                 perfdatas => [
-                    { value => 'bias_current_absolute', template => '%s',
-                      unit => 'mA', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'bias_current', template => '%s',
+                      unit => 'mA', label_extra_instance => 1, instance_use => 'display' },
                 ]
             }
         },
@@ -75,8 +75,8 @@ sub set_counters {
                 key_values => [ { name => 'output_power' }, { name => 'display' } ],
                 output_template => 'Output Power : %s dBm',
                 perfdatas => [
-                    { value => 'output_power_absolute', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'output_power', template => '%s',
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -84,8 +84,8 @@ sub set_counters {
                 key_values => [ { name => 'module_temperature' }, { name => 'display' } ],
                 output_template => 'Module Temperature : %.2f C',
                 perfdatas => [
-                    { value => 'module_temperature_absolute', template => '%.2f',
-                      unit => 'C', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { value => 'module_temperature', template => '%.2f',
+                      unit => 'C', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }

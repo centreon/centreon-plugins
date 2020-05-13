@@ -165,8 +165,8 @@ sub set_counters {
                 output_template => 'Memory used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'memory', value => 'used_memory_absolute', template => '%s',
-                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'memory', value => 'used_memory', template => '%s',
+                      min => 0, unit => 'B', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -174,8 +174,8 @@ sub set_counters {
                 key_values => [ { name => 'mem_frag_ratio' }, { name => 'display' } ],
                 output_template => 'Memory fragmentation ratio: %s',
                 perfdatas => [
-                    { label => 'mem_frag_ratio', value => 'mem_frag_ratio_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'mem_frag_ratio', value => 'mem_frag_ratio', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -183,8 +183,8 @@ sub set_counters {
                 key_values => [ { name => 'connected_clients' }, { name => 'display' } ],
                 output_template => 'Connected clients: %s',
                 perfdatas => [
-                    { label => 'connected_clients', value => 'connected_clients_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'connected_clients', value => 'connected_clients', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -192,8 +192,8 @@ sub set_counters {
                 key_values => [ { name => 'blocked_clients' }, { name => 'display' } ],
                 output_template => 'Blocked clients: %s',
                 perfdatas => [
-                    { label => 'blocked_clients', value => 'blocked_clients_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'blocked_clients', value => 'blocked_clients', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -201,8 +201,8 @@ sub set_counters {
                 key_values => [ { name => 'total_req'}, { name => 'display' }],
                 output_template => 'Requests rate: %s ops/s',
                 perfdatas => [
-                    { label => 'requests', value => 'total_req_absolute', template => '%s',
-                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'requests', value => 'total_req', template => '%s',
+                      min => 0, unit => 'ops/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -210,8 +210,8 @@ sub set_counters {
                 key_values => [ { name => 'no_of_keys' }, { name => 'display' } ],
                 output_template => 'Total keys: %s',
                 perfdatas => [
-                    { label => 'keys', value => 'no_of_keys_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'keys', value => 'no_of_keys', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -219,8 +219,8 @@ sub set_counters {
                 key_values => [ { name => 'no_of_expires' }, { name => 'display' } ],
                 output_template => 'Volatile keys: %s',
                 perfdatas => [
-                    { label => 'volatile_keys', value => 'no_of_expires_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'volatile_keys', value => 'no_of_expires', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -228,8 +228,8 @@ sub set_counters {
                 key_values => [ { name => 'evicted_objects' }, { name => 'display' } ],
                 output_template => 'Evicted objects rate: %s evictions/sec',
                 perfdatas => [
-                    { label => 'evicted_objects', value => 'evicted_objects_absolute', template => '%s',
-                      min => 0, unit => 'evictions/sec', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'evicted_objects', value => 'evicted_objects', template => '%s',
+                      min => 0, unit => 'evictions/sec', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -237,8 +237,8 @@ sub set_counters {
                 key_values => [ { name => 'expired_objects' }, { name => 'display' } ],
                 output_template => 'Expired objects rate: %s expirations/sec',
                 perfdatas => [
-                    { label => 'expired_objects', value => 'expired_objects_absolute', template => '%s',
-                      min => 0, unit => 'expirations/sec', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'expired_objects', value => 'expired_objects', template => '%s',
+                      min => 0, unit => 'expirations/sec', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -274,8 +274,8 @@ sub set_counters {
                 key_values => [ { name => 'rdb_changes_since_last_save' }, { name => 'display' } ],
                 output_template => 'Rdb changes since last save: %s',
                 perfdatas => [
-                    { label => 'rdb_changes_since_last_save', value => 'rdb_changes_since_last_save_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'rdb_changes_since_last_save', value => 'rdb_changes_since_last_save', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -283,8 +283,8 @@ sub set_counters {
                 key_values => [ { name => 'last_save_time' }, { name => 'last_save_time_sec' }, { name => 'display' } ],
                 output_template => 'Last same time: %s',
                 perfdatas => [
-                    { label => 'last_save_time', value => 'last_save_time_sec_absolute', template => '%s',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'last_save_time', value => 'last_save_time_sec', template => '%s',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

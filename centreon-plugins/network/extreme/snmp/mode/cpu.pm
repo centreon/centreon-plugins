@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total CPU Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'total_absolute', template => '%.2f', min => 0, max => 100, unit => '%' },
+                    { label => 'cpu_total', value => 'total', template => '%.2f', min => 0, max => 100, unit => '%' },
                 ],
             }
         },
@@ -48,8 +48,8 @@ sub set_counters {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization5secs' }, { name => 'num' }, ],
                 output_template => '5 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5secs', value => 'extremeCpuMonitorSystemUtilization5secs_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'cpu_5secs', value => 'extremeCpuMonitorSystemUtilization5secs', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
                 ],
             }
         },
@@ -57,8 +57,8 @@ sub set_counters {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization10secs' }, { name => 'num' }, ],
                 output_template => '10 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_10secs', value => 'extremeCpuMonitorSystemUtilization10secs_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'cpu_10secs', value => 'extremeCpuMonitorSystemUtilization10secs', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
                 ],
             }
         },
@@ -66,8 +66,8 @@ sub set_counters {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization30secs' }, { name => 'num' }, ],
                 output_template => '30 seconds : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_30secs', value => 'extremeCpuMonitorSystemUtilization30secs_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'cpu_30secs', value => 'extremeCpuMonitorSystemUtilization30secs', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
                 ],
             }
         },
@@ -75,8 +75,8 @@ sub set_counters {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization1min' }, { name => 'num' }, ],
                 output_template => '1 minute : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1min', value => 'extremeCpuMonitorSystemUtilization1min_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'cpu_1min', value => 'extremeCpuMonitorSystemUtilization1min', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
                 ],
             }
         },
@@ -84,8 +84,8 @@ sub set_counters {
                 key_values => [ { name => 'extremeCpuMonitorSystemUtilization5mins' }, { name => 'num' }, ],
                 output_template => '5 minutes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5min', value => 'extremeCpuMonitorSystemUtilization5mins_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
+                    { label => 'cpu_5min', value => 'extremeCpuMonitorSystemUtilization5mins', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num' },
                 ],
             }
         },

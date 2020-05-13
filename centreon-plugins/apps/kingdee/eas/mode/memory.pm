@@ -42,7 +42,7 @@ sub set_counters {
                     key_values => [ { name => $def->[0] } ],
                     output_template => $def->[0] . ': %s',
                     perfdatas => [
-                        { value => $def->[0] . '_absolute', template => '%s', min => 0 },
+                        { value => $def->[0] , template => '%s', min => 0 },
                     ],
                 }
             };

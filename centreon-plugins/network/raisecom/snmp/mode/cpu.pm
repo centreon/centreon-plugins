@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'fiveSec' } ],
                 output_template => '%.2f%% (5sec)',
                 perfdatas => [
-                    { label => 'cpu_5s', value => 'fiveSec_absolute', template => '%.2f',
+                    { label => 'cpu_5s', value => 'fiveSec', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'oneMin' } ],
                 output_template => '%.2f%% (1min)',
                 perfdatas => [
-                    { label => 'cpu_1m', value => 'oneMin_absolute', template => '%.2f',
+                    { label => 'cpu_1m', value => 'oneMin', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'tenMin' } ],
                 output_template => '%.2f%% (10min)',
                 perfdatas => [
-                    { label => 'cpu_10m', value => 'tenMin_absolute', template => '%.2f',
+                    { label => 'cpu_10m', value => 'tenMin', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'twoHour' } ],
                 output_template => '%.2f%% (2h)',
                 perfdatas => [
-                    { label => 'cpu_2h', value => 'twoHour_absolute', template => '%.2f',
+                    { label => 'cpu_2h', value => 'twoHour', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'voltage' }, { name => 'display' } ],
                 output_template => 'Voltage : %.2f V',
                 perfdatas => [
-                    { value => 'voltage_absolute', template => '%s', 
-                      unit => 'V', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'voltage', template => '%s', 
+                      unit => 'V', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'frequency', no_value => -1 } ],
                 output_template => 'Frequence : %.2f Hz',
                 perfdatas => [
-                    { value => 'frequency_absolute', template => '%.2f',
+                    { value => 'frequency', template => '%.2f',
                       unit => 'Hz', label_extra_instance => 1 },
                 ],
             }

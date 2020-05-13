@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'windows' } ],
                 output_template => 'Windows: %d',
                 perfdatas => [
-                    { label => 'windows', value => 'windows_absolute', template => '%d',
+                    { label => 'windows', value => 'windows', template => '%d',
                       min => 0 },
                 ],
             }
@@ -115,7 +115,7 @@ sub set_counters {
                 key_values => [ { name => 'mac' } ],
                 output_template => 'Mac: %d',
                 perfdatas => [
-                    { label => 'mac', value => 'mac_absolute', template => '%d',
+                    { label => 'mac', value => 'mac', template => '%d',
                       min => 0 },
                 ],
             }
@@ -124,7 +124,7 @@ sub set_counters {
                 key_values => [ { name => 'web' } ],
                 output_template => 'Web: %d',
                 perfdatas => [
-                    { label => 'web', value => 'web_absolute', template => '%d',
+                    { label => 'web', value => 'web', template => '%d',
                       min => 0 },
                 ],
             }
@@ -133,7 +133,7 @@ sub set_counters {
                 key_values => [ { name => 'ios' } ],
                 output_template => 'iOS: %d',
                 perfdatas => [
-                    { label => 'ios', value => 'ios_absolute', template => '%d',
+                    { label => 'ios', value => 'ios', template => '%d',
                       min => 0 },
                 ],
             }
@@ -142,7 +142,7 @@ sub set_counters {
                 key_values => [ { name => 'android_phone' } ],
                 output_template => 'Android Phone: %d',
                 perfdatas => [
-                    { label => 'android_phone', value => 'android_phone_absolute', template => '%d',
+                    { label => 'android_phone', value => 'android_phone', template => '%d',
                       min => 0 },
                 ],
             }
@@ -151,7 +151,7 @@ sub set_counters {
                 key_values => [ { name => 'windows_phone' } ],
                 output_template => 'Windows Phone: %d',
                 perfdatas => [
-                    { label => 'windows_phone', value => 'windows_phone_absolute', template => '%d',
+                    { label => 'windows_phone', value => 'windows_phone', template => '%d',
                       min => 0 },
                 ],
             }

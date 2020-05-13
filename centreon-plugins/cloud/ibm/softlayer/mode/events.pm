@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active : %d',
                 perfdatas => [
-                    { label => 'active_events', value => 'active_absolute', template => '%d',
+                    { label => 'active_events', value => 'active', template => '%d',
                       min => 0 },
                 ],
             }
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'completed' } ],
                 output_template => 'Completed : %d',
                 perfdatas => [
-                    { label => 'completed_events', value => 'completed_absolute', template => '%d',
+                    { label => 'completed_events', value => 'completed', template => '%d',
                       min => 0 },
                 ],
             }
@@ -95,7 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'published' } ],
                 output_template => 'Published : %d',
                 perfdatas => [
-                    { label => 'published_events', value => 'published_absolute', template => '%d',
+                    { label => 'published_events', value => 'published', template => '%d',
                       min => 0 },
                 ],
             }

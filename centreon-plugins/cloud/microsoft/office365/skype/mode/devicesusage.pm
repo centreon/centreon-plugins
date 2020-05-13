@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'windows' } ],
                 output_template => 'Windows: %d',
                 perfdatas => [
-                    { label => 'windows', value => 'windows_absolute', template => '%d',
+                    { label => 'windows', value => 'windows', template => '%d',
                       min => 0 },
                 ],
             }
@@ -115,7 +115,7 @@ sub set_counters {
                 key_values => [ { name => 'ipad' } ],
                 output_template => 'iPad: %d',
                 perfdatas => [
-                    { label => 'ipad', value => 'ipad_absolute', template => '%d',
+                    { label => 'ipad', value => 'ipad', template => '%d',
                       min => 0 },
                 ],
             }
@@ -124,7 +124,7 @@ sub set_counters {
                 key_values => [ { name => 'iphone' } ],
                 output_template => 'iPhone: %d',
                 perfdatas => [
-                    { label => 'iphone', value => 'iphone_absolute', template => '%d',
+                    { label => 'iphone', value => 'iphone', template => '%d',
                       min => 0 },
                 ],
             }
@@ -133,7 +133,7 @@ sub set_counters {
                 key_values => [ { name => 'android_phone' } ],
                 output_template => 'Android Phone: %d',
                 perfdatas => [
-                    { label => 'android_phone', value => 'android_phone_absolute', template => '%d',
+                    { label => 'android_phone', value => 'android_phone', template => '%d',
                       min => 0 },
                 ],
             }
@@ -142,7 +142,7 @@ sub set_counters {
                 key_values => [ { name => 'windows_phone' } ],
                 output_template => 'Windows Phone: %d',
                 perfdatas => [
-                    { label => 'windows_phone', value => 'windows_phone_absolute', template => '%d',
+                    { label => 'windows_phone', value => 'windows_phone', template => '%d',
                       min => 0 },
                 ],
             }

@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'online' } ],
                 output_template => 'online : %s',
                 perfdatas => [
-                    { label => 'online', value => 'online_absolute', template => '%s', min => 0 },
+                    { label => 'online', value => 'online', template => '%s', min => 0 },
                 ],
             }
         },
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'offline' } ],
                 output_template => 'offline : %s',
                 perfdatas => [
-                    { label => 'offline', value => 'offline_absolute', template => '%s', min => 0 },
+                    { label => 'offline', value => 'offline', template => '%s', min => 0 },
                 ],
             }
         },
@@ -53,7 +53,7 @@ sub set_counters {
                 key_values => [ { name => 'unavailable' } ],
                 output_template => 'unavailable : %s',
                 perfdatas => [
-                    { label => 'unavailable', value => 'unavailable_absolute', template => '%s', min => 0 },
+                    { label => 'unavailable', value => 'unavailable', template => '%s', min => 0 },
                 ],
             }
         },
@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'empty' } ],
                 output_template => 'empty : %s',
                 perfdatas => [
-                    { label => 'empty', value => 'empty_absolute', template => '%s', min => 0 },
+                    { label => 'empty', value => 'empty', template => '%s', min => 0 },
                 ],
             }
         },
@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'loaded' } ],
                 output_template => 'loaded : %s',
                 perfdatas => [
-                    { label => 'loaded', value => 'loaded_absolute', template => '%s', min => 0 },
+                    { label => 'loaded', value => 'loaded', template => '%s', min => 0 },
                 ],
             }
         },
@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'unloaded' } ],
                 output_template => 'unloaded : %s',
                 perfdatas => [
-                    { label => 'unloaded', value => 'unloaded_absolute', template => '%s', min => 0 },
+                    { label => 'unloaded', value => 'unloaded', template => '%s', min => 0 },
                 ],
             }
         },
@@ -85,7 +85,7 @@ sub set_counters {
                 key_values => [ { name => 'reserved' } ],
                 output_template => 'reserved : %s',
                 perfdatas => [
-                    { label => 'reserved', value => 'reserved_absolute', template => '%s', min => 0 },
+                    { label => 'reserved', value => 'reserved', template => '%s', min => 0 },
                 ],
             }
         },
@@ -93,7 +93,7 @@ sub set_counters {
                 key_values => [ { name => 'unknown' } ],
                 output_template => 'unknown : %s',
                 perfdatas => [
-                    { label => 'unknown', value => 'unknown_absolute', template => '%s', min => 0 },
+                    { label => 'unknown', value => 'unknown', template => '%s', min => 0 },
                 ],
             }
         },

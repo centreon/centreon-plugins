@@ -118,7 +118,7 @@ sub set_counters {
                 key_values => [ { name => 'WorkspaceCount' } ],
                 output_template => 'Workspace count: %d',
                 perfdatas => [
-                    { label => 'workspace_count', value => 'WorkspaceCount_absolute',
+                    { label => 'workspace_count', value => 'WorkspaceCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -127,7 +127,7 @@ sub set_counters {
                 key_values => [ { name => 'FolderCount' } ],
                 output_template => 'Folder count: %d',
                 perfdatas => [
-                    { label => 'folder_count', value => 'FolderCount_absolute',
+                    { label => 'folder_count', value => 'FolderCount',
                       template => '%d', min => 0 },
                 ],
             }
@@ -136,7 +136,7 @@ sub set_counters {
                 key_values => [ { name => 'FileCount' } ],
                 output_template => 'File count: %d',
                 perfdatas => [
-                    { label => 'file_count', value => 'FileCount_absolute',
+                    { label => 'file_count', value => 'FileCount',
                       template => '%d', min => 0 },
                 ],
             }

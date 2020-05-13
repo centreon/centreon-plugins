@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'online' } ],
                 output_template => 'Luns online: %d',
                 perfdatas => [
-                    { label => 'online', value => 'online_absolute', template => '%d',
+                    { label => 'online', value => 'online', template => '%d',
                       min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'not_online' } ],
                 output_template => 'Luns not online: %d',
                 perfdatas => [
-                    { label => 'not_online', value => 'not_online_absolute', template => '%d',
+                    { label => 'not_online', value => 'not_online', template => '%d',
                       min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'mapped' } ],
                 output_template => 'Luns mapped: %d',
                 perfdatas => [
-                    { label => 'mapped', value => 'mapped_absolute', template => '%d',
+                    { label => 'mapped', value => 'mapped', template => '%d',
                       min => 0 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'not_mapped' } ],
                 output_template => 'Luns not mapped: %d',
                 perfdatas => [
-                    { label => 'not_mapped', value => 'not_mapped_absolute', template => '%d',
+                    { label => 'not_mapped', value => 'not_mapped', template => '%d',
                       min => 0 },
                 ],
             }

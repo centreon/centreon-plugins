@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'value' }, { name => 'display' } ],
                 output_template => 'temperature %.1f C',
                 perfdatas => [
-                    { value => 'value_absolute', template => '%.1f', 
+                    { value => 'value', template => '%.1f', 
                       unit => 'C', label_extra_instance => 1 },
                 ],
             }
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'value' }, { name => 'display' } ],
                 output_template => 'humidity %.2f %%',
                 perfdatas => [
-                    { value => 'value_absolute', template => '%.2f', 
+                    { value => 'value', template => '%.2f', 
                       unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }

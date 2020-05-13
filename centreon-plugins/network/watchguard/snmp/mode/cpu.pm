@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => '1min' } ],
                 output_template => '1 minute : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1min', value => '1min_absolute', template => '%.2f',
+                    { label => 'cpu_1min', value => '1min', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => '5min' } ],
                 output_template => '5 minutes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5min', value => '5min_absolute', template => '%.2f',
+                    { label => 'cpu_5min', value => '5min', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => '15min' } ],
                 output_template => '15 minutes : %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_15min', value => '15min_absolute', template => '%.2f',
+                    { label => 'cpu_15min', value => '15min', template => '%.2f',
                       min => 0, max => 100, unit => '%' },
                 ],
             }

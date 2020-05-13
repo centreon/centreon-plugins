@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'mtxrWlRtabStrength' }, { name => 'display' } ],
                 output_template => 'signal strength Rx: %s dBm',
                 perfdatas => [
-                    { label => 'signal_rx', value => 'mtxrWlRtabStrength_absolute', template => '%s', unit => 'dBm',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'signal_rx', value => 'mtxrWlRtabStrength', template => '%s', unit => 'dBm',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'mtxrWlRtabTxStrength' }, { name => 'display' } ],
                 output_template => 'signal strength Tx: %s dBm',
                 perfdatas => [
-                    { label => 'signal_tx', value => 'mtxrWlRtabTxStrength_absolute', template => '%s', unit => 'dBm',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'signal_tx', value => 'mtxrWlRtabTxStrength', template => '%s', unit => 'dBm',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'mtxrWlRtabSignalToNoise', no_value => 0 }, { name => 'display' } ],
                 output_template => 'signal to noise: %s dB',
                 perfdatas => [
-                    { label => 'signal_noise', value => 'mtxrWlRtabSignalToNoise_absolute', template => '%s', unit => 'dB',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'signal_noise', value => 'mtxrWlRtabSignalToNoise', template => '%s', unit => 'dB',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         }

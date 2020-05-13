@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'SessionCount' } ],
                 output_template => 'Active Sessions: %d',
                 perfdatas => [
-                    { label => 'active_sessions', value => 'SessionCount_absolute', template => '%d',
+                    { label => 'active_sessions', value => 'SessionCount', template => '%d',
                       min => 0, unit => 'sessions' },
                 ],
             }
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'AverageEventQueueSize' } ],
                 output_template => 'Average Event Queue Size: %d',
                 perfdatas => [
-                    { label => 'queue_size', value => 'AverageEventQueueSize_absolute', template => '%d',
+                    { label => 'queue_size', value => 'AverageEventQueueSize', template => '%d',
                       min => 0 },
                 ],
             }

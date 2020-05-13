@@ -44,7 +44,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Number of channels : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%d',
+                    { label => 'count', value => 'count', template => '%d',
                       min => 0 },
                 ],
             }

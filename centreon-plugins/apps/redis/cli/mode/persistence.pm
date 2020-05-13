@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'rdb_changes_since_last_save' } ],
                 output_template => 'Number of changes since the last dump: %s',
                 perfdatas => [
-                    { label => 'changes', value => 'rdb_changes_since_last_save_absolute', template => '%s', min => 0 },
+                    { label => 'changes', value => 'rdb_changes_since_last_save', template => '%s', min => 0 },
                 ],
             },
         },
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'rdb_last_save_time' }, { name => 'rdb_last_save_time_sec' } ],
                 output_template => 'Time since last successful save: %s',
                 perfdatas => [
-                    { label => 'last_save', value => 'rdb_last_save_time_sec_absolute', template => '%s', min => 0, unit => 's' },
+                    { label => 'last_save', value => 'rdb_last_save_time_sec', template => '%s', min => 0, unit => 's' },
                 ],
             },
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 output_template => 'Size of last save: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'save_size', value => 'rdb_last_cow_size_absolute', template => '%s', min => 0, unit => 'B' },
+                    { label => 'save_size', value => 'rdb_last_cow_size', template => '%s', min => 0, unit => 'B' },
                 ],
             },
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'rdb_last_bgsave_time' } ],
                 output_template => 'Duration of last save: %s s',
                 perfdatas => [
-                    { label => 'last_save_duration', value => 'rdb_last_bgsave_time_absolute', template => '%s', min => 0, unit => 's' },
+                    { label => 'last_save_duration', value => 'rdb_last_bgsave_time', template => '%s', min => 0, unit => 's' },
                 ],
             },
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'rdb_current_bgsave_time' } ],
                 output_template => 'Duration of current save: %s s',
                 perfdatas => [
-                    { label => 'current_save_duration', value => 'rdb_current_bgsave_time_absolute', template => '%s', min => 0, unit => 's' },
+                    { label => 'current_save_duration', value => 'rdb_current_bgsave_time', template => '%s', min => 0, unit => 's' },
                 ],
             },
         },

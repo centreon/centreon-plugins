@@ -136,7 +136,7 @@ sub set_counters {
                     key_values => [ { name => $type }  ],
                     output_template => $type . ": %s",
                     perfdatas => [
-                        { value => $type . '_absolute', template => '%d', min => 0 },
+                        { value => $type , template => '%d', min => 0 },
                     ],
                 }
             };

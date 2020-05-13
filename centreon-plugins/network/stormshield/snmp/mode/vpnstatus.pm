@@ -51,18 +51,17 @@ sub set_counters {
                 key_values => [ { name => 'ntqVPNState' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 output_template => 'status: %s', output_error_template => 'Status : %s',
-                output_use => 'ntqVPNState',
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => $self->can('custom_threshold_output'),
             }
         },
         { label => 'traffic', nlabel => 'vpn.traffic.bitspersecond', set => {
-                key_values => [ { name => 'ntqVPNBytes', diff => 1 }, { name => 'num' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'ntqVPNBytes', per_second => 1 }, { name => 'num' } ],
                 output_template => 'traffic: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
-                     { label => 'traffic', value => 'ntqVPNBytes_per_second', template => '%s',
-                      unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'num_absolute' },
+                     { label => 'traffic', template => '%s',
+                       unit => 'b/s', min => 0, label_extra_instance => 1, cast_int => 1, instance_use => 'num' },
                 ],
             }
         },
@@ -90,10 +89,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "filter-id:s"  => { name => 'filter_id' },
-        "filter-src-ip:s"  => { name => 'filter_src_ip' },
-        "filter-dst-ip:s"  => { name => 'filter_dst_ip' },
-        "threshold-overload:s@"   => { name => 'threshold_overload' },
+        'filter-id:s'           => { name => 'filter_id' },
+        'filter-src-ip:s'       => { name => 'filter_src_ip' },
+        'filter-dst-ip:s'       => { name => 'filter_dst_ip' },
+        'threshold-overload:s@' => { name => 'threshold_overload' },
     });
 
     return $self;

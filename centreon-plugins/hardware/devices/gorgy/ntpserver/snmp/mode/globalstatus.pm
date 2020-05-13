@@ -77,7 +77,7 @@ sub set_counters {
                 key_values => [ { name => 'ntp_requests', diff => 1 } ],
                 output_template => 'Number of ntp requests : %s',
                 perfdatas => [
-                    { label => 'ntp_requests', value => 'ntp_requests_absolute', template => '%s', 
+                    { label => 'ntp_requests', value => 'ntp_requests', template => '%s', 
                       min => 0 },
                 ],
             }

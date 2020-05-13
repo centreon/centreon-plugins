@@ -47,7 +47,7 @@ sub set_counters {
                 output_template => 'Used Space: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'used_absolute', template => '%s', unit => 'B', 
+                    { value => 'used', template => '%s', unit => 'B', 
                       min => 0 },
                 ],
             }
@@ -57,7 +57,7 @@ sub set_counters {
                 output_template => 'Free Space: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'free_absolute', template => '%s', unit => 'B', 
+                    { value => 'free', template => '%s', unit => 'B', 
                       min => 0 },
                 ],
             }
@@ -70,7 +70,7 @@ sub set_counters {
                 output_template => 'Used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'used_absolute', template => '%s', unit => 'B', 
+                    { value => 'used', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -80,7 +80,7 @@ sub set_counters {
                 output_template => 'Free: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'free_absolute', template => '%s', unit => 'B', 
+                    { value => 'free', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -93,7 +93,7 @@ sub set_counters {
                 output_template => 'Used: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'used_absolute', template => '%s', unit => 'B', 
+                    { value => 'used', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -103,7 +103,7 @@ sub set_counters {
                 output_template => 'Free: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'free_absolute', template => '%s', unit => 'B', 
+                    { value => 'free', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 },
                 ],
             }
@@ -112,7 +112,7 @@ sub set_counters {
                 key_values => [ { name => 'frag' }, { name => 'display' } ],
                 output_template => 'Fragmentation: %.2f %%',
                 perfdatas => [
-                    { value => 'frag_absolute', template => '%.2f', unit => '%', 
+                    { value => 'frag', template => '%.2f', unit => '%', 
                       min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }

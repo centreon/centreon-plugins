@@ -35,23 +35,21 @@ sub set_counters {
     
     $self->{maps_counters}->{global} = [
         { label => 'cifs', nlabel => 'storage.cifs.calls.persecond', set => {
-                key_values => [ { name => 'cifs', diff => 1 }, ],
-                per_second => 1,
+                key_values => [ { name => 'cifs', per_second => 1 } ],
                 output_template => 'CIFS : %s calls/s',
                 perfdatas => [
-                    { value => 'cifs_per_second', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'nfs', nlabel => 'storage.nfs.calls.persecond', set => {
-                key_values => [ { name => 'nfs', diff => 1 }, ],
-                per_second => 1,
+                key_values => [ { name => 'nfs', per_second => 1 } ],
                 output_template => 'NFS : %s calls/s',
                 perfdatas => [
-                    { value => 'nfs_per_second', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 

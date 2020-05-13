@@ -1,4 +1,6 @@
 2020-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: ActiveMQ JMX
+ * Plugin added: VerneMQ Rest API
  * Plugin added: Ruckus SmartZone SNMP
  * Plugin added: Ruckus ZoneDirector SNMP
  * Plugin added: Ruckus ICX SNMP
@@ -6,6 +8,7 @@
  * Plugin added: Adva FSP150 SNMP
  * Plugin added: Lenovo Iomega SNMP
  * Plugin added: Netapp Santricity Rest API
+ * Plugin added: Timelinkmicro tms6001 SNMP
  * Plugin added: Bluemind
  * Plugin added: Mulesoft Rest API
  * Plugin added: Salesforce Rest API

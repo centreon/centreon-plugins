@@ -63,18 +63,18 @@ sub set_counters {
                 key_values => [ { name => 'svLag' }, { name => 'display' } ],
                 output_template => 'lag : %s seconds',
                 perfdatas => [
-                    { label => 'lag', value => 'svLag_absolute', template => '%s', min => 0, unit => 's',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'lag', template => '%s', min => 0, unit => 's',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'transfer-traffic', set => {
-                key_values => [ { name => 'svTotalTransMBs', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 1,
+                key_values => [ { name => 'svTotalTransMBs', per_second => 1 }, { name => 'display' } ],
                 output_template => 'transfer traffic : %s %s/s',
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'transfer_traffic', template => '%.2f', value => 'svTotalTransMBs_per_second',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'transfer_traffic', template => '%.2f',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -82,8 +82,8 @@ sub set_counters {
                 key_values => [ { name => 'svTotalSuccesses' }, { name => 'display' } ],
                 output_template => 'transfer succeed : %s',
                 perfdatas => [
-                    { label => 'transfer_succeed', value => 'svTotalSuccesses_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'transfer_succeed', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -91,8 +91,8 @@ sub set_counters {
                 key_values => [ { name => 'svTotalFailures' }, { name => 'display' } ],
                 output_template => 'transfer failed : %s',
                 perfdatas => [
-                    { label => 'transfer_failed', value => 'svTotalFailures_absolute', template => '%s', min => 0,
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'transfer_failed', template => '%s', min => 0,
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

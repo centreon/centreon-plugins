@@ -38,58 +38,53 @@ sub set_counters {
                 key_values => [ { name => 'current' }, { name => 'display' } ],
                 output_template => 'Current calls : %s',
                 perfdatas => [
-                    { label => 'current', value => 'current_absolute', template => '%d',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'current', template => '%d',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'total-per-sec', set => {
-                key_values => [ { name => 'total', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'total', per_second => 1 }, { name => 'display' } ],
                 output_template => 'total calls: %.2f/s',
                 perfdatas => [
-                    { label => 'total', value => 'total_per_second', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total', template => '%.2f',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'connected-per-sec', set => {
-                key_values => [ { name => 'connected', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'connected', per_second => 1 }, { name => 'display' } ],
                 output_template => 'connected calls: %.2f/s',
                 perfdatas => [
-                    { label => 'connected', value => 'connected_per_second', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'connected', template => '%.2f',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'refused-per-sec', set => {
-                key_values => [ { name => 'refused', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'refused', per_second => 1 }, { name => 'display' } ],
                 output_template => 'refused calls: %.2f/s',
                 perfdatas => [
-                    { label => 'refused', value => 'refused_per_second', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'refused', template => '%.2f',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'errored-per-sec', set => {
-                key_values => [ { name => 'errored', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'errored', per_second => 1 }, { name => 'display' } ],
                 output_template => 'errored calls: %.2f/s',
                 perfdatas => [
-                    { label => 'errored', value => 'errored_per_second', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'errored', template => '%.2f',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'blocked-per-sec', set => {
-                key_values => [ { name => 'blocked', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'blocked', per_second => 1 }, { name => 'display' } ],
                 output_template => 'blocked calls: %.2f/s',
                 perfdatas => [
-                    { label => 'blocked', value => 'blocked_per_second', template => '%.2f',
-                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'blocked', template => '%.2f',
+                      min => 0, unit => 'calls', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -107,9 +102,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 

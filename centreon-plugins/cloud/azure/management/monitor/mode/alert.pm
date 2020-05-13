@@ -30,8 +30,8 @@ sub custom_output {
     
     return sprintf(
         "alert severity: '%s', Count: '%d'",
-        $self->{result_values}->{severity_absolute},
-        $self->{result_values}->{count_absolute}
+        $self->{result_values}->{severity},
+        $self->{result_values}->{count}
     );
 }
 
@@ -39,8 +39,8 @@ sub custom_perfdata {
     my ($self, %options) = @_;
 
     $self->{output}->perfdata_add(
-        nlabel => 'alerts.' . lc($self->{result_values}->{severity_absolute}) . '.count',
-        value => $self->{result_values}->{count_absolute},
+        nlabel => 'alerts.' . lc($self->{result_values}->{severity}) . '.count',
+        value => $self->{result_values}->{count},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel}),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel})
     );
@@ -57,7 +57,7 @@ sub set_counters {
         { label => 'count', set => {
                 key_values => [ { name => 'severity' }, { name => 'count' } ],
                 closure_custom_output => $self->can('custom_output'),
-                threshold_use => 'count_absolute',
+                threshold_use => 'count',
                 closure_custom_perfdata => $self->can('custom_perfdata'),
             }
         },

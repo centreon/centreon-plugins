@@ -36,41 +36,39 @@ sub set_counters {
     ];
     $self->{maps_counters}->{global} = [
         { label => 'total-read', set => {
-                key_values => [ { name => 'total_read', diff => 1 } ],
+                key_values => [ { name => 'total_read', per_second => 1 } ],
                 output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_read', value => 'total_read_per_second', template => '%d',
+                    { label => 'total_read', template => '%d',
                       unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'total-write', set => {
-                key_values => [ { name => 'total_write', diff => 1 } ],
+                key_values => [ { name => 'total_write', per_second => 1 } ],
                 output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_write', value => 'total_write_per_second', template => '%d',
+                    { label => 'total_write', template => '%d',
                       unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'total-read-iops', set => {
-                key_values => [ { name => 'total_read_iops', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'total_read_iops', per_second => 1 } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'total_read_iops', value => 'total_read_iops_per_second', template => '%.2f',
+                    { label => 'total_read_iops', template => '%.2f',
                       unit => 'iops', min => 0 },
                 ],
             }
         },
         { label => 'total-write-iops', set => {
-                key_values => [ { name => 'total_write_iops', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'total_write_iops', per_second => 1 } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
-                    { label => 'total_write_iops', value => 'total_write_iops_per_second', template => '%.2f',
+                    { label => 'total_write_iops', template => '%.2f',
                       unit => 'iops', min => 0 },
                 ],
             }
@@ -79,22 +77,20 @@ sub set_counters {
     
     $self->{maps_counters}->{sum} = [
         { label => 'sum-read-write', set => {
-                key_values => [ { name => 'sum_read_write', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'sum_read_write', per_second => 1 } ],
                 output_template => 'R+W I/O : %s %s/s', output_error_template => "R+W I/O : %s",
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'sum_read_write', value => 'sum_read_write_per_second', template => '%d',
+                    { label => 'sum_read_write', template => '%d',
                       unit => 'B/s', min => 0 },
                 ],
             }
         },
         { label => 'sum-read-write-iops', set => {
-                key_values => [ { name => 'sum_read_write_iops', diff => 1 } ],
-                per_second => 1,
+                key_values => [ { name => 'sum_read_write_iops', per_second => 1 } ],
                 output_template => 'R+W IOPs : %.2f', output_error_template => "R+W IOPs : %s",
                 perfdatas => [
-                    { label => 'sum_read_write_iops', value => 'sum_read_write_iops_per_second', template => '%.2f',
+                    { label => 'sum_read_write_iops', template => '%.2f',
                       unit => 'iops', min => 0 },
                 ],
             }
@@ -103,42 +99,40 @@ sub set_counters {
     
     $self->{maps_counters}->{disk} = [
         { label => 'read', set => {
-                key_values => [ { name => 'read', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'read', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read I/O : %s %s/s', output_error_template => "Read I/O : %s",
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read', value => 'read_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write', set => {
-                key_values => [ { name => 'write', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'write', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write I/O : %s %s/s', output_error_template => "Write I/O : %s",
-                output_change_bytes => 1, per_second => 1,
+                output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write', value => 'write_per_second', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write', template => '%d',
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'read-iops', set => {
-                key_values => [ { name => 'read_iops', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'read_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_iops_per_second',  template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'read_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'write-iops', set => {
-                key_values => [ { name => 'write_iops', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'write_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_iops_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'write_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -154,7 +148,7 @@ sub new {
         'name'              => { name => 'use_name' },
         'device:s'          => { name => 'device' },
         'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' },                                  
+        'regexp-isensitive' => { name => 'use_regexpi' }                               
     });
 
     return $self;

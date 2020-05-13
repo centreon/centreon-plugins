@@ -38,7 +38,7 @@ sub set_counters {
                 key_values => [ { name => 'systemTemperature' } ],
                 output_template => 'Temperature: %.2f C',
                 perfdatas => [
-                    { label => 'temperature', value => 'systemTemperature_absolute', template => '%.2f',
+                    { label => 'temperature', value => 'systemTemperature', template => '%.2f',
                       min => 0, unit => 'C' },
                 ],
             }

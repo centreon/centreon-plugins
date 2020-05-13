@@ -96,8 +96,8 @@ sub set_counters {
                 key_values => [ { name => 'fcReadIOPS' }, { name => 'fcObject' } ],
                 output_template => 'Read IOPS: %s iops',
                 perfdatas => [
-                    { label => 'read_iops', value => 'fcReadIOPS_absolute', template => '%s', label_extra_instance => 1,
-                      instance_use => 'fcObject_absolute', min => 0, unit => 'iops' },
+                    { label => 'read_iops', value => 'fcReadIOPS', template => '%s', label_extra_instance => 1,
+                      instance_use => 'fcObject', min => 0, unit => 'iops' },
                 ],
             }
         },
@@ -105,8 +105,8 @@ sub set_counters {
                 key_values => [ { name => 'fcWriteIOPS' }, { name => 'fcObject' } ],
                 output_template => 'Write IOPS: %s iops',
                 perfdatas => [
-                    { label => 'write_iops', value => 'fcWriteIOPS_absolute', template => '%s', label_extra_instance => 1, 
-                      instance_use => 'fcObject_absolute', min => 0, unit => 'iops' },
+                    { label => 'write_iops', value => 'fcWriteIOPS', template => '%s', label_extra_instance => 1, 
+                      instance_use => 'fcObject', min => 0, unit => 'iops' },
                 ],
             }
         },
@@ -114,8 +114,8 @@ sub set_counters {
                 key_values => [ { name => 'fcReadQueueDepth' }, { name => 'fcObject' } ],
                 output_template => 'Read queue depth: %s',
                 perfdatas => [
-                    { label => 'read_queue_depth', value => 'fcReadQueueDepth_absolute', template => '%s', label_extra_instance => 1,
-                      instance_use => 'fcObject_absolute', min => 0, unit => 'iops' },
+                    { label => 'read_queue_depth', value => 'fcReadQueueDepth', template => '%s', label_extra_instance => 1,
+                      instance_use => 'fcObject', min => 0, unit => 'iops' },
                 ],
             }
         },
@@ -123,8 +123,8 @@ sub set_counters {
                 key_values => [ { name => 'fcWriteQueueDepth' }, { name => 'fcObject' } ],
                 output_template => 'Write queue depth: %s',
                 perfdatas => [
-                    { label => 'write_queue_depth', value => 'fcWriteQueueDepth_absolute', template => '%s', label_extra_instance => 1,
-                      instance_use => 'fcObject_absolute', min => 0, unit => 'iops' },
+                    { label => 'write_queue_depth', value => 'fcWriteQueueDepth', template => '%s', label_extra_instance => 1,
+                      instance_use => 'fcObject', min => 0, unit => 'iops' },
                 ],
             }
         },

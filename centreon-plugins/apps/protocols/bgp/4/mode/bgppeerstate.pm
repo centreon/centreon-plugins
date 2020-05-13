@@ -71,8 +71,8 @@ sub set_counters {
                 key_values => [ { name => 'seconds' }, { name => 'display' } ],
                 output_template => 'Last update : %ss',
                 perfdatas => [
-                    { label => 'seconds', value => 'seconds_absolute', template => '%s',
-                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'seconds', value => 'seconds', template => '%s',
+                      unit => 's', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

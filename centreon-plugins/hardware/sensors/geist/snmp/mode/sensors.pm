@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'climateTempC', no_value => 0, } ],
                 output_template => 'temperature %s C',
                 perfdatas => [
-                    { value => 'climateTempC_absolute', template => '%s', unit => 'C', label_extra_instance => 1 },
+                    { value => 'climateTempC', template => '%s', unit => 'C', label_extra_instance => 1 },
                 ],
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'climateHumidity', no_value => 0 } ],
                 output_template => 'humidity %.2f %%',
                 perfdatas => [
-                    { value => 'climateHumidity_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                    { value => 'climateHumidity', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'climateLight', no_value => 0 } ],
                 output_template => 'ambient light %.2f %%',
                 perfdatas => [
-                    { value => 'climateLight_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                    { value => 'climateLight', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'climateAirflow', no_value => 0 } ],
                 output_template => 'airflow %.2f %%',
                 perfdatas => [
-                    { value => 'climateAirflow_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                    { value => 'climateAirflow', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'climateSound', no_value => 0 } ],
                 output_template => 'sound %.2f %%',
                 perfdatas => [
-                    { value => 'climateSound_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                    { value => 'climateSound', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'climateDewPointC', no_value => 0 } ],
                 output_template => 'dew point %s C',
                 perfdatas => [
-                    { value => 'climateDewPointC_absolute', template => '%s', unit => 'C', label_extra_instance => 1 },
+                    { value => 'climateDewPointC', template => '%s', unit => 'C', label_extra_instance => 1 },
                 ],
             }
         },
@@ -90,7 +90,7 @@ sub set_counters {
                 key_values => [ { name => 'internalTemp', no_value => 0, } ],
                 output_template => 'temperature %s C',
                 perfdatas => [
-                    { value => 'internalTemp_absolute', template => '%s', unit => 'C', label_extra_instance => 1 },
+                    { value => 'internalTemp', template => '%s', unit => 'C', label_extra_instance => 1 },
                 ],
             }
         },
@@ -98,7 +98,7 @@ sub set_counters {
                 key_values => [ { name => 'internalHumidity', no_value => 0 } ],
                 output_template => 'humidity %.2f %%',
                 perfdatas => [
-                    { value => 'internalHumidity_absolute', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
+                    { value => 'internalHumidity', template => '%.2f', unit => '%', min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
         },
@@ -106,7 +106,7 @@ sub set_counters {
                 key_values => [ { name => 'internalDewPoint', no_value => 0 } ],
                 output_template => 'dew point %s C',
                 perfdatas => [
-                    { value => 'internalDewPoint_absolute', template => '%s', unit => 'C', label_extra_instance => 1 },
+                    { value => 'internalDewPoint', template => '%s', unit => 'C', label_extra_instance => 1 },
                 ],
             }
         },

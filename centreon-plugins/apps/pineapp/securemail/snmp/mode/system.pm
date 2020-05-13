@@ -57,7 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'cpuload' . $_ . 'minavg' } ],
                 output_template => '%s (' . $_ . 'm)',
                 perfdatas => [
-                    { value => 'cpuload' . $_ . 'minavg_absolute', template => '%s', min => 0 },
+                    { value => 'cpuload' . $_ . 'minavg', template => '%s', min => 0 },
                 ],
             }
         };
@@ -76,7 +76,7 @@ sub set_counters {
                 key_values => [ { name => 'mailsysteminboundqueue' } ],
                 output_template => 'messages inbound queue: %s',
                 perfdatas => [
-                    { value => 'mailsysteminboundqueue_absolute', template => '%s', min => 0 },
+                    { value => 'mailsysteminboundqueue', template => '%s', min => 0 },
                 ],
             }
         },
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'mailsystemoutboundqueue' } ],
                 output_template => 'messages outbound queue: %s',
                 perfdatas => [
-                    { value => 'mailsystemoutboundqueue_absolute', template => '%s', min => 0 },
+                    { value => 'mailsystemoutboundqueue', template => '%s', min => 0 },
                 ],
             }
         },
@@ -92,7 +92,7 @@ sub set_counters {
                 key_values => [ { name => 'mailQueueHigh' } ],
                 output_template => 'messages high priority: %s',
                 perfdatas => [
-                    { value => 'mailQueueHigh_absolute', template => '%s', min => 0 },
+                    { value => 'mailQueueHigh', template => '%s', min => 0 },
                 ],
             }
         },
@@ -100,7 +100,7 @@ sub set_counters {
                 key_values => [ { name => 'mailQueueNormal' } ],
                 output_template => 'messages normal priority: %s',
                 perfdatas => [
-                    { value => 'mailQueueNormal_absolute', template => '%s', min => 0 },
+                    { value => 'mailQueueNormal', template => '%s', min => 0 },
                 ],
             }
         },
@@ -108,7 +108,7 @@ sub set_counters {
                 key_values => [ { name => 'mailQueueLow' } ],
                 output_template => 'messages low priority: %s',
                 perfdatas => [
-                    { value => 'mailQueueLow_absolute', template => '%s', min => 0 },
+                    { value => 'mailQueueLow', template => '%s', min => 0 },
                 ],
             }
         },
@@ -116,7 +116,7 @@ sub set_counters {
                 key_values => [ { name => 'mailQueueTotal' } ],
                 output_template => 'messages queue total: %s',
                 perfdatas => [
-                    { value => 'mailQueueTotal_absolute', template => '%s', min => 0 },
+                    { value => 'mailQueueTotal', template => '%s', min => 0 },
                 ],
             }
         },

@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'lag' }, { name => 'display' } ],
                 output_template => 'lag: %s seconds',
                 perfdatas => [
-                    { label => 'lag', value => 'lag_absolute', template => '%s', min => 0, unit => 's',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'lag', value => 'lag', template => '%s', min => 0, unit => 's',
+                      label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

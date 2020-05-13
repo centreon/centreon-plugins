@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'connected_slaves' } ],
                 output_template => 'Number of connected slaves: %s',
                 perfdatas => [
-                    { label => 'connected_slaves', value => 'connected_slaves_absolute', template => '%s', min => 0 },
+                    { label => 'connected_slaves', value => 'connected_slaves', template => '%s', min => 0 },
                 ],
             },
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'master_repl_offset' } ],
                 output_template => 'Master replication offset: %s s',
                 perfdatas => [
-                    { label => 'master_repl_offset', value => 'master_repl_offset_absolute', template => '%s', min => 0, unit => 's' },
+                    { label => 'master_repl_offset', value => 'master_repl_offset', template => '%s', min => 0, unit => 's' },
                 ],
             },
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'master_last_io_seconds_ago' } ],
                 output_template => 'Last interaction with master: %s s',
                 perfdatas => [
-                    { label => 'master_last_io', value => 'master_last_io_seconds_ago_absolute', template => '%s', min => 0, unit => 's' },
+                    { label => 'master_last_io', value => 'master_last_io_seconds_ago', template => '%s', min => 0, unit => 's' },
                 ],
             },
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'slave_repl_offset' } ],
                 output_template => 'Slave replication offset: %s s',
                 perfdatas => [
-                    { label => 'slave_repl_offset', value => 'slave_repl_offset_absolute', template => '%s', min => 0, unit => 's' },
+                    { label => 'slave_repl_offset', value => 'slave_repl_offset', template => '%s', min => 0, unit => 's' },
                 ],
             },
         },
@@ -86,7 +86,7 @@ sub set_counters {
                 key_values => [ { name => 'slave_priority' } ],
                 output_template => 'Slave replication offset: %s s',
                 perfdatas => [
-                    { label => 'slave_priority', value => 'slave_priority_absolute', template => '%s' },
+                    { label => 'slave_priority', value => 'slave_priority', template => '%s' },
                 ],
             },
         },
@@ -94,7 +94,7 @@ sub set_counters {
                 key_values => [ { name => 'slave_read_only' } ],
                 output_template => 'Slave replication offset: %s s',
                 perfdatas => [
-                    { label => 'slave_read_only', value => 'slave_read_only_absolute', template => '%s' },
+                    { label => 'slave_read_only', value => 'slave_read_only', template => '%s' },
                 ],
             },
         },

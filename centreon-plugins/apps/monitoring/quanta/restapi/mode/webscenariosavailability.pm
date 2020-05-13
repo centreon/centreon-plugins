@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'response_time' }, { name => 'display' } ],
                 output_template => 'Total Response Time: %.3fs',
                 perfdatas => [
-                    { value => 'response_time_absolute', template => '%.3f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'response_time', template => '%.3f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -46,8 +46,8 @@ sub set_counters {
                 key_values => [ { name => 'availability' }, { name => 'display' } ],
                 output_template => 'Availability: %.2f%%',
                 perfdatas => [
-                    { value => 'availability_absolute', template => '%s',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'availability', template => '%s',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -55,8 +55,8 @@ sub set_counters {
                 key_values => [ { name => 'avg_step_response_time' }, { name => 'display' } ],
                 output_template => 'Step Average Response Time: %.3fs',
                 perfdatas => [
-                    { value => 'avg_step_response_time_absolute', template => '%.3f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { value => 'avg_step_response_time', template => '%.3f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_average' } ],
                 output_template => '%s %%',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'cpu_average_absolute', template => '%s', unit => '%', 
+                    { label => 'cpu_total', value => 'cpu_average', template => '%s', unit => '%', 
                       min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }
@@ -78,8 +78,8 @@ sub set_counters {
                 key_values => [ { name => 'cpu_average_mhz' }, { name => 'cpu_average_mhz_max' } ],
                 output_template => '%s MHz',
                 perfdatas => [
-                    { label => 'cpu_total_MHz', value => 'cpu_average_mhz_absolute', template => '%s', unit => 'MHz', 
-                      min => 0, max => 'cpu_average_mhz_max_absolute', label_extra_instance => 1 },
+                    { label => 'cpu_total_MHz', value => 'cpu_average_mhz', template => '%s', unit => 'MHz', 
+                      min => 0, max => 'cpu_average_mhz_max', label_extra_instance => 1 },
                 ],
             }
         },
@@ -90,7 +90,7 @@ sub set_counters {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
                 output_template => 'usage : %s',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_usage_absolute', template => '%s', unit => '%', 
+                    { label => 'cpu', value => 'cpu_usage', template => '%s', unit => '%', 
                       min => 0, max => 100, label_extra_instance => 1 },
                 ],
             }

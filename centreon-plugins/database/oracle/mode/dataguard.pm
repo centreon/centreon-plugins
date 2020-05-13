@@ -81,7 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'lag_minutes' } ],
                 output_template => 'dataguard standby lag %d minutes: %s',
                 perfdatas => [
-                    { value => 'lag_minutes_absolute', template => '%s', min => 0, unit => 'm' },
+                    { value => 'lag_minutes', template => '%s', min => 0, unit => 'm' },
                 ],
             }
         },

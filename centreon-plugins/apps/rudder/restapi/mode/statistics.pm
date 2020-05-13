@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'nodes' } ],
                 output_template => 'Nodes: %d',
                 perfdatas => [
-                    { label => 'nodes', value => 'nodes_absolute', template => '%d',
+                    { label => 'nodes', value => 'nodes', template => '%d',
                       min => 0 },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'pending_nodes' } ],
                 output_template => 'Pending Nodes: %d',
                 perfdatas => [
-                    { label => 'pending_nodes', value => 'pending_nodes_absolute', template => '%d',
+                    { label => 'pending_nodes', value => 'pending_nodes', template => '%d',
                       min => 0 },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'rules' } ],
                 output_template => 'Rules: %d',
                 perfdatas => [
-                    { label => 'rules', value => 'rules_absolute', template => '%d',
+                    { label => 'rules', value => 'rules', template => '%d',
                       min => 0 },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'directives' } ],
                 output_template => 'Directives: %d',
                 perfdatas => [
-                    { label => 'directives', value => 'directives_absolute', template => '%d',
+                    { label => 'directives', value => 'directives', template => '%d',
                       min => 0 },
                 ],
             }
@@ -73,7 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'groups' } ],
                 output_template => 'Groups: %d',
                 perfdatas => [
-                    { label => 'groups', value => 'groups_absolute', template => '%d',
+                    { label => 'groups', value => 'groups', template => '%d',
                       min => 0 },
                 ],
             }
@@ -82,7 +82,7 @@ sub set_counters {
                 key_values => [ { name => 'techniques' } ],
                 output_template => 'Techniques: %d',
                 perfdatas => [
-                    { label => 'techniques', value => 'techniques_absolute', template => '%d',
+                    { label => 'techniques', value => 'techniques', template => '%d',
                       min => 0 },
                 ],
             }

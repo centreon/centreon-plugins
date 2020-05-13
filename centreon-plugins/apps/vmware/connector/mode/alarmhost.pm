@@ -127,7 +127,7 @@ sub set_counters {
                 key_values => [ { name => 'yellow' } ],
                 output_template => '%s warning alarm(s) found(s)',
                 perfdatas => [
-                    { label => 'total_alarm_warning', value => 'yellow_absolute', template => '%s', min => 0 },
+                    { label => 'total_alarm_warning', value => 'yellow', template => '%s', min => 0 },
                 ],
             }
         },
@@ -135,7 +135,7 @@ sub set_counters {
                 key_values => [ { name => 'red' } ],
                 output_template => '%s critical alarm(s) found(s)',
                 perfdatas => [
-                    { label => 'total_alarm_critical', value => 'red_absolute', template => '%s', min => 0 },
+                    { label => 'total_alarm_critical', value => 'red', template => '%s', min => 0 },
                 ],
             }
         },

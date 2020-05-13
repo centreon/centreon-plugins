@@ -52,7 +52,7 @@ sub set_counters {
                 key_values => [ { name => $map[$i], diff => 1 } ],
                 output_template => $map[$i + 1],
                 perfdatas => [
-                    { label => $map[$i], value => $map[$i] . '_absolute', template => '%s', min => 0 },
+                    { label => $map[$i], value => $map[$i] , template => '%s', min => 0 },
                 ],
             }
         },

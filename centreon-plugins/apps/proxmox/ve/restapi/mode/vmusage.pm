@@ -185,22 +185,20 @@ sub set_counters {
             }
         },
         { label => 'read-iops', set => {
-                key_values => [ { name => 'read_io', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'read_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
-                    { label => 'read_iops', value => 'read_io_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'read_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'write-iops', set => {
-                key_values => [ { name => 'write_io', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
+                key_values => [ { name => 'write_io', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
-                    { label => 'write_iops', value => 'write_io_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'write_iops', template => '%.2f',
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -216,22 +214,22 @@ sub set_counters {
 
     $self->{maps_counters}->{vms_traffic} = [
         { label => 'traffic-in', set => {
-                key_values => [ { name => 'traffic_in', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic In : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'traffic_in', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'traffic-out', set => {
-                key_values => [ { name => 'traffic_out', diff => 1 }, { name => 'display' } ],
-                per_second => 1, output_change_bytes => 2,
+                key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
+                output_change_bytes => 2,
                 output_template => 'Traffic Out : %s %s/s',
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'traffic_out', template => '%.2f',
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -251,6 +249,7 @@ sub new {
         'warning-vm-status:s'     => { name => 'warning_vm_status', default => '' },
         'critical-vm-status:s'    => { name => 'critical_vm_status', default => '' }
     });
+
     $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
     return $self;
 }

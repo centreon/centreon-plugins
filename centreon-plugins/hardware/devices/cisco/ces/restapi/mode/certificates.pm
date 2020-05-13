@@ -31,7 +31,7 @@ sub custom_validity_output {
 
     return sprintf(
         'expires in %s', 
-        $self->{result_values}->{generation_time_absolute}
+        $self->{result_values}->{generation_time}
     );
 }
 
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'validity_time' }, { name => 'generation_time' } ],
                 closure_custom_output => $self->can('custom_validity_output'),
                 perfdatas => [
-                    { value => 'validity_time_absolute', template => '%d', min => 0, unit => 's' },
+                    { value => 'validity_time', template => '%d', min => 0, unit => 's' },
                 ],
             }
         }

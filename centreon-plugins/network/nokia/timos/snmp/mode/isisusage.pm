@@ -87,8 +87,8 @@ sub set_counters {
                 key_values => [ { name => 'inService' }, { name => 'display' } ],
                 output_template => 'Total Interfaces InServices : %s',
                 perfdatas => [
-                    { label => 'total_int_inservice', value => 'inService_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_int_inservice', value => 'inService', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
@@ -96,8 +96,8 @@ sub set_counters {
                 key_values => [ { name => 'outOfService' }, { name => 'display' } ],
                 output_template => 'Total Interfaces OutOfServices : %s',
                 perfdatas => [
-                    { label => 'total_int_outservice', value => 'outOfService_absolute', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                    { label => 'total_int_outservice', value => 'outOfService', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },

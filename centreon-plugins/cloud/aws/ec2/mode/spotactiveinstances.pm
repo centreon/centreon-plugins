@@ -36,7 +36,7 @@ sub set_counters {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active instances : %s',
                 perfdatas => [
-                    { label => 'active', value => 'active_absolute', template => '%s', 
+                    { label => 'active', value => 'active', template => '%s', 
                       min => 0 },
                 ],
             }
@@ -45,7 +45,7 @@ sub set_counters {
                 key_values => [ { name => 'healthy' } ],
                 output_template => 'Healthy instances : %s',
                 perfdatas => [
-                    { label => 'healthy', value => 'healthy_absolute', template => '%s',
+                    { label => 'healthy', value => 'healthy', template => '%s',
                       min => 0 },
                 ],
             }
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'unhealthy' } ],
                 output_template => 'Unhealty instances : %s',
                 perfdatas => [
-                    { label => 'unhealthy', value => 'unhealthy_absolute', template => '%s',
+                    { label => 'unhealthy', value => 'unhealthy', template => '%s',
                       min => 0 },
                 ],
             }
