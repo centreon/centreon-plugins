@@ -57,7 +57,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    push @{$self->{ssh_option}}, '-o=BatchMode yes';
+    push @{$self->{ssh_option}}, '-o=BatchMode=yes';
     push @{$self->{ssh_option}}, '-l=' . $self->{ssh_username} if (defined($self->{ssh_username}) && $self->{ssh_username} ne '');
     push @{$self->{ssh_option}}, '-p=' . $self->{ssh_port} if (defined($self->{ssh_port}) && $self->{ssh_port} ne '');
     push @{$self->{ssh_option}}, '-i=' . $self->{ssh_priv_key} if (defined($self->{ssh_priv_key}) && $self->{ssh_priv_key} ne '');
