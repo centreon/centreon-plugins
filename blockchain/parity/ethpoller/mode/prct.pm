@@ -35,15 +35,23 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{balances} = [
-        { label => 'balance-fluctuation-prct', nlabel => 'parity.tracking.balances.variation.persecond', display_ok => 0, set => {
+        { label => 'balance-fluctuation-prct', nlabel => 'parity.tracking.balances.fluctuation', display_ok => 0, set => {
                 key_values => [],
                 manual_keys => 1,
-                closure_custom_calc => $self->can('custom_loss_calc'),
-                closure_custom_output => $self->can('custom_loss_output'),
+                closure_custom_calc => $self->can('custom_prct_calc'),
+                closure_custom_output => $self->can('custom_prct_output'),
                 threshold_use => 'balance_fluctuation',
                 perfdatas => [
-                   { value => 'balance_fluctuation', template => '%d',
+                   { value => 'balance_fluctuation', template => '%.2f',
                      min => 0, label_extra_instance => 1, instance_use => 'display'  },
+                ],
+            }
+        },
+        { label => 'balance', nlabel => 'parity.tracking.balance', set => {
+                key_values => [ { name => 'balance' } ],
+                output_template => "%d (wei)",
+                perfdatas => [
+                    { label => 'balance', template => '%d', value => 'balance_absolute' }
                 ],
             }
         }
@@ -51,26 +59,38 @@ sub set_counters {
 
 }
 
-sub custom_loss_output {
+sub custom_prct_output {
     my ($self, %options) = @_;
 
     # use Data::Dumper;
     # print Dumper('$total_balance');
     return sprintf(
-        "balance variation: %.2f%% ",
+        "balance variation: %.2f ",
         $self->{result_values}->{balance_fluctuation}
     );
 }
 
-sub custom_loss_calc {
+sub custom_prct_calc {
+    use Data::Dumper;
+    
     my ($self, %options) = @_;
 
-        my $new_balance = $options{new_datas}->{$_};
-        my $old_balance = $options{old_datas}->{$_};
+    my ($old_balance, $new_balance) = (0, 0);
+    foreach (keys %{$options{new_datas}}) {
+        # print Dumper($self->{instance});
+        # print Dumper($options{new_datas});
+        # print Dumper($options{new_datas}->{$_});
+        if (/\Q$self->{instance}\E_.*_balance/) {
+            # print Dumper($self->{instance});
+            $new_balance = $options{new_datas}->{$_};
+            $old_balance = $options{old_datas}->{$_};
+            # print Dumper($old_balance);
+            # print Dumper($new_balance);
+        }
+    }
     
-    # use Data::Dumper;
-    # print Dumper($total_balance);
-
+    
+    
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     $self->{result_values}->{balance_fluctuation} = 0;
     if ($old_balance > 0) {
@@ -83,7 +103,7 @@ sub custom_loss_calc {
 sub prefix_output_balances {
     my ($self, %options) = @_;
 
-    return "Balance '" . $options{instance_value}->{display} . "' ";
+    return "Balance '" . $options{instance_value}->{display} . "': ";
 }
 
 sub new {
@@ -111,7 +131,7 @@ sub manage_selection {
     foreach my $balance (@{$result->{balances}}) {
         # print Dumper($balance);
         $self->{balances}->{$balance->{label}} = { display => $balance->{label} };
-        $self->{balances}->{$balance->{label}}->{'balance_fluctuation'} = $balance->{balance};
+        $self->{balances}->{$balance->{label}}->{'balance'} = $balance->{balance};
     }
 
 }
