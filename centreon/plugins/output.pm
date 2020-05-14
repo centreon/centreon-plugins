@@ -1019,10 +1019,14 @@ sub apply_pfdata_invert {
 sub apply_pfdata_percent {
     my ($self, %options) = @_;
 
-    return if (!defined(${$options{perf}}->{max}) || ${$options{perf}}->{max} eq '');
+    ${$options{perf}}->{unit} = '%';
+
+    if (!defined(${$options{perf}}->{max}) || ${$options{perf}}->{max} eq '') {
+        ${$options{perf}}->{value} = 0;
+        return;
+    }
 
     ${$options{perf}}->{value} = sprintf('%.2f', ${$options{perf}}->{value} * 100 / ${$options{perf}}->{max});
-    ${$options{perf}}->{unit} = '%';
     foreach my $threshold ('warning', 'critical') {
         next if (${$options{perf}}->{$threshold} eq '');
         my ($status, $result) = centreon::plugins::misc::parse_threshold(threshold => ${$options{perf}}->{$threshold});
