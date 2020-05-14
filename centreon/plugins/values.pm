@@ -113,7 +113,7 @@ sub threshold_check {
     if (defined($self->{threshold_use})) {
         $value = $self->{result_values}->{ $self->{threshold_use} };
     } else {
-        $value = defined($self->{key_values}->[0]) ? $self->{key_values}->[0]->{name} : '';
+        $value = defined($self->{key_values}->[0]) ? $self->{result_values}->{ $self->{key_values}->[0]->{name} } : '';
     }
 
     return $self->{perfdata}->threshold_check(
