@@ -37,7 +37,7 @@ sub set_counters {
 
     $self->{maps_counters}->{block} = [
        { label => 'block_frequency', nlabel => 'parity.stats.block.persecond', set => {
-                key_values => [ { name => 'block_count', diff => 1 }, { name => 'display' } ],
+                key_values => [ { name => 'block_count', diff => 1 } ],
                 per_second => 1,
                 output_template => "Block frequency: %.2f (block/s)",
                 perfdatas => [
