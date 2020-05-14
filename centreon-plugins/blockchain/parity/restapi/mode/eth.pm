@@ -46,10 +46,10 @@ sub set_counters {
         { name => 'sync', cb_prefix_output => 'prefix_module_output', type => 0 },
     ];
 
-    $self->{maps_counters}->{gas} = [
+    $self->{maps_counters}->{sync} = [
         { label => 'sync_status', nlabel => 'parity.eth.sync.status', set => {
                 key_values => [ { name => 'sync_status' } ],
-                output_template => "The gas price is: %d %% ",
+                output_template => "Syncing: %d %% ",
                 perfdatas => [
                     { label => 'sync_status', value => 'sync_status_absolute', template => '%d', min => 0 }
                 ],                
@@ -213,8 +213,8 @@ sub manage_selection {
     $self->{sync} = { sync_status => $res_sync };
 
     $self->{gas} = { gas_price => $gas_price,
-                     gas_used => hex(@{$result}[5]->{result}->{gasLimit}),
-                     gas_limit => hex(@{$result}[5]->{result}->{gasUsed}) };
+                     gas_used => hex(@{$result}[5]->{result}->{gasUsed}),
+                     gas_limit => hex(@{$result}[5]->{result}->{gasLimit}) };
 
     my $calculated_block_usage = hex(@{$result}[5]->{result}->{gasUsed}) / hex(@{$result}[5]->{result}->{gasLimit});
     $self->{block} =  { block_size => hex(@{$result}[5]->{result}->{size}), 
