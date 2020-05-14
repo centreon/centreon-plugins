@@ -161,7 +161,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'volumeid:s@'        => { name => 'volume_id' },
+        'volume-id:s@'       => { name => 'volume_id' },
         'per-sec'            => { name => 'per_sec' },
         'filter-metric:s'    => { name => 'filter_metric' }
     });

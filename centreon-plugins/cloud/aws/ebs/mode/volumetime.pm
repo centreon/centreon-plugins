@@ -29,19 +29,25 @@ my %metrics_mapping = (
     'VolumeTotalReadTime' => {
         'output'    => 'Total Read Time',
         'label'     => 'total-read-time',
-        'nlabel'    => { 'absolute'    => 'ebs.volume.totalread.time.second' },
+        'nlabel'    => { 
+            'absolute' => 'ebs.volume.totalread.time.second' 
+        },
         'unit'      => 's'
     },
     'VolumeTotalWriteTime' => {
         'output'    => 'Total Write Time',
         'label'     => 'total-write-time',
-        'nlabel'    => { 'absolute'      => 'ebs.volume.totalwrite.time.second' },
+        'nlabel'    => {
+            'absolute' => 'ebs.volume.totalwrite.time.second' 
+        },
         'unit'      => 's'
     },
     'VolumeIdleTime' => {
         'output'          => 'Idle Time',
         'label'           => 'idle-time',
-        'nlabel'          => { 'absolute'      => 'ebs.volume.idle.time.second' },
+        'nlabel'          => {
+            'absolute' => 'ebs.volume.idle.time.second' 
+        },
         'unit'            => 's',
         'display_percent' => 1
     }
@@ -154,7 +160,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'volumeid:s@'        => { name => 'volume_id' },
+        'volume-id:s@'        => { name => 'volume_id' },
         'filter-metric:s'    => { name => 'filter_metric' }
     });
 
