@@ -76,6 +76,13 @@ sub run {
             $value = $prct_used;
             %total_options = ( total => $result->{$oid_fwConnTableLimit}, cast_int => 1);
         }
+    } elsif ($self->{option_results}->{units} eq '%') {
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Couldn't get fwConnTableLimit OID ($oid_fwConnTableLimit) to compute thresholds"
+        );
+        $self->{output}->display();
+        $self->{output}->exit();
     }
 
     my $exit = $self->{perfdata}->threshold_check(value => $value, 
