@@ -31,21 +31,22 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All VM snapshots are ok', skipped_code => { -10 => 1 } },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All VM snapshots are ok', skipped_code => { -10 => 1 } }
     ];
+
     $self->{maps_counters}->{vm} = [
         { label => 'snapshot', set => {
-                key_values => [ { name => 'snapshot' }, { name => 'status' }, { name => 'display' }],
+                key_values => [ { name => 'snapshot' }, { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_snapshot_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
         },
         { label => 'backing', set => {
-                key_values => [ { name => 'backing' }, { name => 'status' }, { name => 'display' }],
+                key_values => [ { name => 'backing' }, { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_backing_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
 }
 
@@ -82,7 +83,7 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-vm:s'       => { name => 'filter_vm' },
         'filter-note:s'     => { name => 'filter_note' },
-        'filter-status:s'   => { name => 'filter_status', default => 'running' },
+        'filter-status:s'   => { name => 'filter_status', default => 'running' }
     });
 
     return $self;
@@ -160,6 +161,13 @@ sub manage_selection {
             status => $status
         };
         $id++;
+    }
+
+    if (scalar(keys %{$self->{vm}}) <= 0) {
+        $self->{output}->output_add(
+            severity => 'OK',
+            short_msg => 'no snapshot found'
+        );
     }
 }
 
