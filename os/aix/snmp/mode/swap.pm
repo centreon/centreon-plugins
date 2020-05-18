@@ -127,13 +127,6 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    # sysDescr values:
-    # Aix 5.2: .*Base Operating System Runtime AIX version: 05.02.*
-    # Aix 5.3: .*Base Operating System Runtime AIX version: 05.03.*
-    # Aix 6.1: .*Base Operating System Runtime AIX version: 06.01.*
-    # Aix 7.1: .*Base Operating System Runtime AIX version: 07.01.*
-    
-    my $oid_sysDescr        = ".1.3.6.1.2.1.1.1"; 
     my $aix_swap_pool       = ".1.3.6.1.4.1.2.6.191.2.4.2.1";    # aixPageEntry
     my $aix_swap_name       = ".1.3.6.1.4.1.2.6.191.2.4.2.1.1";  # aixPageName
     my $aix_swap_total      = ".1.3.6.1.4.1.2.6.191.2.4.2.1.4";  # aixPageSize (in MB)
@@ -145,7 +138,6 @@ sub manage_selection {
     my $results = $options{snmp}->get_multiple_table(
         oids => [ 
             { oid => $aix_swap_pool },
-            { oid => $oid_sysDescr },
         ]
     );
     
@@ -164,17 +156,10 @@ sub manage_selection {
     #  Values are :
     #   1 = "active"
     #   2 = "notActive"
-    #  On AIX 5.x it's ok. But in AIX 6.x, 7.x, it's the contrary ??!!!
-    my $active_swap = 2;
-    if ($results->{$oid_sysDescr}->{$oid_sysDescr . ".0"} =~ /AIX version: 05\./i) {
-        $active_swap = 1;
-    }
+    #  Some systems may however return the contrary.
+    my $active_swap = 1;
     if (defined($self->{option_results}->{paging_state_buggy})) {
-        if ($active_swap == 2) {
-            $active_swap = 1;
-        } else {
-            $active_swap = 2;
-        }
+        $active_swap = 2;
     }
 
     $self->{global} = { nactive => 0, ntotal => 0, total => 0, used => 0 };
