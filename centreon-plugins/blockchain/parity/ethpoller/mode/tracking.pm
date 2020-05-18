@@ -32,36 +32,36 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'events', cb_prefix_output => 'prefix_output_events', type => 1, message_multiple => 'Events metrics are ok' },
-        { name => 'miners', cb_prefix_output => 'prefix_output_miners', type => 1, message_multiple => 'Miners metrics are ok' },
-        { name => 'balances', cb_prefix_output => 'prefix_output_balances', type => 1, message_multiple => 'Balances metrics are ok' }
+        { name => 'mining', cb_prefix_output => 'prefix_output_mining', type => 1, message_multiple => 'Mining metrics are ok' },
+        { name => 'balance', cb_prefix_output => 'prefix_output_balance', type => 1, message_multiple => 'Balances metrics are ok' }
     ];
 
     $self->{maps_counters}->{events} = [
-       { label => 'event_frequency', nlabel => 'parity.tracking.event.persecond', set => {
-                key_values => [ { name => 'event_count', diff => 1 }, { name => 'display' } ],
+       { label => 'events_frequency', nlabel => 'parity.tracking.events.persecond', set => {
+                key_values => [ { name => 'events_count', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 output_template => " %.2f (events/s)",
                 perfdatas => [ 
-                    { label => 'events', template => '%.2f', value => 'event_count_per_second',
+                    { label => 'events', template => '%.2f', value => 'events_count_per_second',
                         label_extra_instance => 1, instance_use => 'display_absolute' } 
                 ],
             }
         }
     ];
 
-    $self->{maps_counters}->{miners} = [
+    $self->{maps_counters}->{mining} = [
        { label => 'mining_frequency', nlabel => 'parity.tracking.mined.block.persecond', set => {
                 key_values => [ { name => 'mining_count', diff => 1 }, { name => 'display' } ],
                 per_second => 1,
                 output_template => " %.2f (blocks/s)",
-                perfdatas => [ { label => 'miners', template => '%.2f', value => 'mining_count_per_second',
+                perfdatas => [ { label => 'mining', template => '%.2f', value => 'mining_count_per_second',
                         label_extra_instance => 1, instance_use => 'display_absolute' } ],
             }
         }
     ];
 
-    $self->{maps_counters}->{balances} = [
-       { label => 'balance_fluctuation', nlabel => 'parity.tracking.balances.variation.persecond', set => {
+    $self->{maps_counters}->{balance} = [
+       { label => 'balance_fluctuation', nlabel => 'parity.tracking.balance.variation.persecond', set => {
                 key_values => [ { name => 'balance', diff => 1 } ],
                 per_second => 1,
                 output_template => " variation: %.2f (diff/sec)",
@@ -81,13 +81,13 @@ sub prefix_output_events {
     return "Event '" . $options{instance_value}->{display} . "' ";
 }
 
-sub prefix_output_miners {
+sub prefix_output_mining {
     my ($self, %options) = @_;
 
     return "Miner '" . $options{instance_value}->{display} . "' ";;
 }
 
-sub prefix_output_balances {
+sub prefix_output_balance {
     my ($self, %options) = @_;
 
     return "Balance '" . $options{instance_value}->{display} . "' ";
@@ -114,8 +114,8 @@ sub manage_selection {
     my $results = $options{custom}->request_api(url_path => '/tracking');
 
     $self->{events} = {};
-    $self->{miners} = {};
-    $self->{balances} = {};
+    $self->{mining} = {};
+    $self->{balance} = {};
 
     foreach my $event (@{$results->{events}}) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
@@ -125,7 +125,7 @@ sub manage_selection {
         }
 
         $self->{events}->{lc($event->{label})} = { display => lc($event->{label}), 
-                                                   event_count => $event->{count} };
+                                                   events_count => $event->{count} };
 
     }
 
@@ -136,7 +136,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{miners}->{lc($miner->{label})} = { display => lc($miner->{label}), 
+        $self->{mining}->{lc($miner->{label})} = { display => lc($miner->{label}), 
                                                    mining_count => $miner->{count} };
 
     }
@@ -148,7 +148,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{balances}->{lc($balance->{label})} = { display => lc($balance->{label}),
+        $self->{balance}->{lc($balance->{label})} = { display => lc($balance->{label}),
                                                         balance => $balance->{balance} };
     }
     

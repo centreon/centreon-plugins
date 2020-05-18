@@ -43,7 +43,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'disk_available', nlabel => 'eth.poller.disk.free', set => {
+        { label => 'disk_available', nlabel => 'eth.poller.disk.available', set => {
                 key_values => [ { name => 'disk_available' } ],
                 output_template => "Disk available: %d ",
                 perfdatas => [
