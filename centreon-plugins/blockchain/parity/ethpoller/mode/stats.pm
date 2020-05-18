@@ -105,18 +105,18 @@ sub manage_selection {
     $self->{transaction} = { transaction_count => $result->{transaction}->{count} };
 
     my $block_timestamp = $result->{block}->{timestamp} == 0 ? '' : localtime($result->{block}->{timestamp});    
-    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{count} . ') was at ' . $block_timestamp);
+    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{count} . ') was on ' . $block_timestamp);
 
     if ($result->{transaction}->{count} > 0) {
         my $tx_timestamp = $result->{transaction}->{timestamp} == 0 ? '' : localtime($result->{transaction}->{timestamp});
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was at ' . $tx_timestamp);
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was on ' . $tx_timestamp);
     } else {
         $self->{output}->output_add(severity  => 'OK', long_msg => 'No transaction...');
     }
   
     if ($result->{transaction}->{count} > 0) {
         my $fork_timestamp = $result->{fork}->{timestamp} == 0 ? '' : localtime($result->{fork}->{timestamp});
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last fork (#' . $result->{fork}->{count} . ') was at ' . $fork_timestamp);   
+        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last fork (#' . $result->{fork}->{count} . ') was on ' . $fork_timestamp);   
     } else {
         $self->{output}->output_add(severity  => 'OK', long_msg => 'No fork occurence...');
     }
