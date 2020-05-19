@@ -211,7 +211,7 @@ sub manage_selection {
     }
 
     foreach (@{$result_logical_interfaces->{'sas-host-phy-statistics'}}) {
-        next if ($self->{ports}->{ $_->{port} });
+        next if (!defined($self->{ports}->{ $_->{port} }));
 
         $self->{ports}->{ $_->{port} }->{interfaces}->{ $_->{phy} } = {
             display => $_->{phy},
