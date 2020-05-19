@@ -138,6 +138,10 @@ sub unix_execute {
         $cmd = $options{options}->{ssh_path} . '/' if (defined($options{options}->{ssh_path}));
         $cmd .= $options{options}->{ssh_command} if (defined($options{options}->{ssh_command}));
 
+        if ($options{options}->{ssh_command} eq 'ssh') {
+            push @$args, '-o=BatchMode=yes';
+        }
+
         foreach (@{$options{options}->{ssh_option}}) {
             if (/^(.*?)(?:=(.*))?$/) {
                 push @$args, $1 if (defined($1));
