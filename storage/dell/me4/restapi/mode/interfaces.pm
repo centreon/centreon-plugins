@@ -146,6 +146,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
+        'filter-port-name:s'     => { name => 'filter_port_name' },
         'unknown-port-status:s'  => { name => 'unknown_port_status', default => '%{health} =~ /unknown/i' },
         'warning-port-status:s'  => { name => 'warning_port_status', default => '%{health} =~ /degraded/i' },
         'critical-port-status:s' => { name => 'critical_port_status', default => '%{health} =~ /fault/i' }
@@ -182,6 +183,10 @@ sub manage_selection {
     $self->{ports} = {};
     foreach my $port (@{$result_ports->{port}}) {
         my $port_name = $port->{port};
+
+        next if (defined($self->{option_results}->{filter_port_name}) && $self->{option_results}->{filter_port_name} ne ''
+            && $port_name !~ /$self->{option_results}->{filter_port_name}/);
+
         $mapping_ports->{ $port->{'durable-id'} } = $port_name;
 
         $self->{ports}->{$port_name} = {
@@ -229,6 +234,10 @@ __END__
 Check interfaces.
 
 =over 8
+
+=item B<--filter-port-name>
+
+Filter port name (Can be a regexp).
 
 =item B<--unknown-port-status>
 
