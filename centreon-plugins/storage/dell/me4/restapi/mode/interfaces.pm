@@ -222,7 +222,8 @@ sub manage_selection {
     }
 
     $self->{cache_name} = 'dell_me4_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_port_name}) ? md5_hex($self->{option_results}->{filter_port_name}) : md5_hex('all'));
 }
 
 1;
