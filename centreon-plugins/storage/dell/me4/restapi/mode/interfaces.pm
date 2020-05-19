@@ -216,7 +216,7 @@ sub manage_selection {
         };
     }
 
-    $self->{cache_name} = 'dell_me4_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'dell_me4_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
