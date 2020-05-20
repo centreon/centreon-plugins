@@ -36,12 +36,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{block} = [
-       { label => 'block_frequency', nlabel => 'parity.stats.block.persecond', set => {
+       { label => 'block_frequency', nlabel => 'parity.stats.block.perminute', set => {
                 key_values => [ { name => 'block_count', diff => 1 } ],
-                per_second => 1,
-                output_template => "Block frequency: %.2f (block/s)",
+                per_minute => 1,
+                output_template => "Block frequency: %.2f (block/min)",
                 perfdatas => [
-                    { label => 'block', value => 'block_count_per_second', template => ' %.2f',
+                    { label => 'block', value => 'block_count_per_minute', template => ' %.2f',
                       label_extra_instance => 1, instance_use => 'display_absolute' }
                 ],                
             }
@@ -49,12 +49,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{transaction} = [
-       { label => 'transaction_frequency', nlabel => 'parity.stats.transaction.persecond', set => {
+       { label => 'transaction_frequency', nlabel => 'parity.stats.transaction.perminute', set => {
                 key_values => [ { name => 'transaction_count', diff => 1 } ],
-                per_second => 1,
-                output_template => "Transaction frequency: %.2f (tx/s)",
+                per_minute => 1,
+                output_template => "Transaction frequency: %.2f (tx/min)",
                 perfdatas => [
-                    { label => 'transaction', value => 'transaction_count_per_second', template => '%.2f', 
+                    { label => 'transaction', value => 'transaction_count_per_minute', template => '%.2f', 
                       label_extra_instance => 1, instance_use => 'display_absolute' }
                 ],                
             }

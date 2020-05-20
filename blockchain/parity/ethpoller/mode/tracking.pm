@@ -37,12 +37,12 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{events} = [
-       { label => 'events_frequency', nlabel => 'parity.tracking.events.persecond', set => {
+       { label => 'events_frequency', nlabel => 'parity.tracking.events.perminute', set => {
                 key_values => [ { name => 'events_count', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
-                output_template => " %.2f (events/s)",
+                per_minute => 1,
+                output_template => " %.2f (events/min)",
                 perfdatas => [ 
-                    { label => 'events', template => '%.2f', value => 'events_count_per_second',
+                    { label => 'events', template => '%.2f', value => 'events_count_per_minute',
                         label_extra_instance => 1, instance_use => 'display_absolute' } 
                 ],
             }
@@ -50,23 +50,23 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{mining} = [
-       { label => 'mining_frequency', nlabel => 'parity.tracking.mined.block.persecond', set => {
+       { label => 'mining_frequency', nlabel => 'parity.tracking.mined.block.perminute', set => {
                 key_values => [ { name => 'mining_count', diff => 1 }, { name => 'display' } ],
-                per_second => 1,
-                output_template => " %.2f (blocks/s)",
-                perfdatas => [ { label => 'mining', template => '%.2f', value => 'mining_count_per_second',
+                per_minute => 1,
+                output_template => " %.2f (blocks/min)",
+                perfdatas => [ { label => 'mining', template => '%.2f', value => 'mining_count_per_minute',
                         label_extra_instance => 1, instance_use => 'display_absolute' } ],
             }
         }
     ];
 
     $self->{maps_counters}->{balance} = [
-       { label => 'balance_fluctuation', nlabel => 'parity.tracking.balance.variation.persecond', set => {
+       { label => 'balance_fluctuation', nlabel => 'parity.tracking.balance.variation.perminute', set => {
                 key_values => [ { name => 'balance', diff => 1 } ],
-                per_second => 1,
-                output_template => " variation: %.2f (diff/sec)",
+                per_minute => 1,
+                output_template => " variation: %.2f (diff/min)",
                 perfdatas => [
-                    { label => 'balances', template => '%.2f', value => 'balance_per_second',
+                    { label => 'balances', template => '%.2f', value => 'balance_per_minute',
                         label_extra_instance => 1, instance_use => 'display_absolute' }
                 ],
             }
