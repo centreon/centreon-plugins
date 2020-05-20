@@ -37,7 +37,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{events} = [
-       { label => 'events_frequency', nlabel => 'parity.tracking.events.perminute', set => {
+       { label => 'events-frequency', nlabel => 'parity.tracking.events.perminute', set => {
                 key_values => [ { name => 'events_count', per_minute => 1 }, { name => 'display' } ],
                 output_template => " %.2f (events/min)",
                 perfdatas => [ 
@@ -48,7 +48,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{mining} = [
-       { label => 'mining_frequency', nlabel => 'parity.tracking.mined.block.perminute', set => {
+       { label => 'mining-frequency', nlabel => 'parity.tracking.mined.block.perminute', set => {
                 key_values => [ { name => 'mining_count', per_minute => 1 }, { name => 'display' } ],
                 output_template => " %.2f (blocks/min)",
                 perfdatas => [
@@ -59,7 +59,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{balance} = [
-       { label => 'balance_fluctuation', nlabel => 'parity.tracking.balance.variation.perminute', set => {
+       { label => 'balance-fluctuation', nlabel => 'parity.tracking.balance.variation.perminute', set => {
                 key_values => [ { name => 'balance', per_minute => 1 }, { name => 'display' } ],
                 output_template => " variation: %.2f (diff/min)",
                 perfdatas => [
