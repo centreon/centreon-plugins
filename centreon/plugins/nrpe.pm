@@ -154,9 +154,9 @@ sub assemble_v3 {
     $unpacked->{buffer_length} = $len;
     $unpacked->{buffer} = $buffer;
     $unpacked->{crc32_value} = "\x00\x00\x00\x00";
-    $unpacked->{packet_type} = $options{type} // 1;
+    $unpacked->{packet_type} = defined($options{type}) ? $options{type} : 1;
     $unpacked->{packet_version} = 3;
-    $unpacked->{result_code} = $options{result_code} // 2324;
+    $unpacked->{result_code} = defined($options{result_code}) ? $options{result_code} : 2324;
 
     $self->{c}->parse(<<PACKET_STRUCT);
 struct Packet{
@@ -185,9 +185,9 @@ sub assemble_v2 {
     my $unpacked;
     $unpacked->{buffer} = $options{check};
     $unpacked->{crc32_value} = "\x00\x00\x00\x00";
-    $unpacked->{packet_type} = $options{type} // 1;
+    $unpacked->{packet_type} = defined($options{type}) ? $options{type} : 1;
     $unpacked->{packet_version} = 2;
-    $unpacked->{result_code} = $options{result_code} // 2324;
+    $unpacked->{result_code} = defined($options{result_code}) ? $options{result_code} : 2324;
 
     $self->{c}->parse(<<PACKET_STRUCT);
 struct Packet{
