@@ -31,11 +31,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
-    return $msg;
+    return sprintf(
+        "Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
 }
 
 sub custom_usage_calc {
@@ -57,7 +58,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, message_separator => ' - ', cb_init => 'skip_global', },
-        { name => 'swap', type => 1, cb_prefix_output => 'prefix_swap_output', message_multiple => 'All Page spaces are ok' },
+        { name => 'swap', type => 1, cb_prefix_output => 'prefix_swap_output', message_multiple => 'All page spaces are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -68,8 +69,8 @@ sub set_counters {
                 threshold_use => 'prct_used',
                 perfdatas => [
                     { label => 'total_page_space', value => 'used', template => '%s', cast_int => 1,
-                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' },
-                ],
+                      unit => 'B', min => 0, max => 'total', threshold_total => 'total' }
+                ]
             }
         },
         { label => 'total-active', nlabel => 'page.space.active.count', display_ok => 0, set => {
@@ -77,10 +78,10 @@ sub set_counters {
                 output_template => 'Total page space active : %s',
                 perfdatas => [
                     { label => 'total_active', value => 'nactive', template => '%s',
-                      min => 0, max => 'ntotal' },
-                ],
+                      min => 0, max => 'ntotal' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{swap} = [
@@ -92,10 +93,10 @@ sub set_counters {
                 perfdatas => [
                     { label => 'page_space', value => 'used', template => '%s', cast_int => 1,
                       unit => 'B', min => 0, max => 'total', threshold_total => 'total',
-                      label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -118,39 +119,29 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'paging-state-buggy'    => { name => 'paging_state_buggy' },
+        'paging-state-buggy'    => { name => 'paging_state_buggy' }
     });
     
     return $self;
 }
 
+my $mapping = {
+    swap_name  => { oid => '.1.3.6.1.4.1.2.6.191.2.4.2.1.1' }, # aixPageName
+    swap_total => { oid => '.1.3.6.1.4.1.2.6.191.2.4.2.1.4' }, # aixPageSize (in MB)
+    swap_usage => { oid => '.1.3.6.1.4.1.2.6.191.2.4.2.1.5' }, # aixPagePercentUsed
+    swap_status => { oid => '.1.3.6.1.4.1.2.6.191.2.4.2.1.6' } # aixPageStatus
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $aix_swap_pool       = ".1.3.6.1.4.1.2.6.191.2.4.2.1";    # aixPageEntry
-    my $aix_swap_name       = ".1.3.6.1.4.1.2.6.191.2.4.2.1.1";  # aixPageName
-    my $aix_swap_total      = ".1.3.6.1.4.1.2.6.191.2.4.2.1.4";  # aixPageSize (in MB)
-    my $aix_swap_usage      = ".1.3.6.1.4.1.2.6.191.2.4.2.1.5";  # aixPagePercentUsed
-    my $aix_swap_status     = ".1.3.6.1.4.1.2.6.191.2.4.2.1.6";  # aixPageStatus
-    my $aix_swap_index      = ".1.3.6.1.4.1.2.6.191.2.4.2.1.8";
-    
-    my @indexes = ();
-    my $results = $options{snmp}->get_multiple_table(
-        oids => [ 
-            { oid => $aix_swap_pool },
-        ]
+
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $aix_swap_pool,
+        end => $mapping->{swap_status}->{oid},
+        nothing_quit => 1
     );
-    
-    foreach my $key (keys %{$results->{$aix_swap_pool}}) {
-        if ($key =~ /^$aix_swap_name\.(.*)/ ) {
-            push @indexes, $1;
-        }
-    }
-    
-    if (scalar(@indexes) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No paging space found.");
-        $self->{output}->option_exit();
-    }
     
     #  Check if the paging space is active.
     #  Values are :
@@ -164,24 +155,25 @@ sub manage_selection {
 
     $self->{global} = { nactive => 0, ntotal => 0, total => 0, used => 0 };
     $self->{swap} = {};
-    foreach (@indexes) {
+
+    foreach (keys %$snmp_result) {
+        next if (! /^$mapping->{swap_status}->{oid}\.(.*)$/);
+
         $self->{global}->{ntotal}++;
-        
-        if ($results->{$aix_swap_pool}->{$aix_swap_status . "." . $_} == $active_swap) {
-            $self->{global}->{nactive}++;
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
+        next if ($result->{swap_status} != $active_swap);
+
+        $self->{global}->{nactive}++;
             
-            my $swap_name = $results->{$aix_swap_pool}->{$aix_swap_name . "." . $_};
-            my $used = ($results->{$aix_swap_pool}->{$aix_swap_usage . "." . $_} * $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} / 100) 
-                * 1024 * 1024;
-            my $total = $results->{$aix_swap_pool}->{$aix_swap_total . "." . $_} * 1024 * 1024;
-            $self->{swap}->{$swap_name} = {
-                display => $swap_name,
-                used => $used,
-                total => $total,
-            };
-            $self->{global}->{used} += $used;
-            $self->{global}->{total} += $total;
-        }
+        my $used = ($result->{swap_usage} * $result->{swap_total} / 100) * 1024 * 1024;
+        my $total = $result->{swap_total} * 1024 * 1024;
+        $self->{swap}->{ $result->{swap_name} } = {
+            display => $result->{swap_name},
+            used => $used,
+            total => $total
+        };
+        $self->{global}->{used} += $used;
+        $self->{global}->{total} += $total;
     }
 }
 
