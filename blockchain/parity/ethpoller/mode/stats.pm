@@ -36,31 +36,41 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{block} = [
-       { label => 'block_frequency', nlabel => 'parity.stats.block.perminute', set => {
-                key_values => [ { name => 'block_count', diff => 1 } ],
+       { label => 'block-frequency', nlabel => 'parity.stats.block.perminute', set => {
+                key_values => [ { name => 'block_count', per_minute => 1 }, { name => 'last_block' }, { name => 'last_block_ts' } ],
                 per_minute => 1,
-                output_template => "Block frequency: %.2f (block/min)",
+                closure_custom_output => $self->can('custom_block_output'),
                 perfdatas => [
-                    { label => 'block', value => 'block_count_per_minute', template => ' %.2f',
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
-                ],                
+                    { label => 'block', value => 'block_count', template => '%.2f' }
+                ],
             }
         }
     ];
 
     $self->{maps_counters}->{transaction} = [
        { label => 'transaction_frequency', nlabel => 'parity.stats.transaction.perminute', set => {
-                key_values => [ { name => 'transaction_count', diff => 1 } ],
+                key_values => [ { name => 'transaction_count', per_minute => 1 } ],
                 per_minute => 1,
                 output_template => "Transaction frequency: %.2f (tx/min)",
                 perfdatas => [
-                    { label => 'transaction', value => 'transaction_count_per_minute', template => '%.2f', 
-                      label_extra_instance => 1, instance_use => 'display_absolute' }
+                    { label => 'transaction', value => 'transaction_count_per_minute', template => '%.2f' }
                 ],                
             }
         }
     ];
 }
+
+sub custom_block_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Count: '%.2f', Last block ID: '%s', Last block timestamp '%s' ",
+        $self->{result_values}->{block_count},
+        $self->{result_values}->{last_block},
+        $self->{result_values}->{last_block_ts}
+    );
+}
+
 
 sub prefix_output_block {
     my ($self, %options) = @_;
@@ -96,16 +106,20 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = "parity_ethpoller_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
-       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+           (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $result = $options{custom}->request_api(url_path => '/stats');
 
-    $self->{block} = { block_count => $result->{block}->{count} };
+    my $last_block = $result->{block}->{count};
+    my $last_block_timestamp = (defined($result->{block}->{timestamp}) && $result->{block}->{timestamp} != 0) ?
+                                    localtime($result->{block}->{timestamp}) :
+                                    'NONE';
+
+    $self->{block} = { block_count => $result->{block}->{count},
+                        last_block => $last_block,
+                       last_block_ts => $last_block_timestamp };
 
     $self->{transaction} = { transaction_count => $result->{transaction}->{count} };
-
-    my $block_timestamp = $result->{block}->{timestamp} == 0 ? '' : localtime($result->{block}->{timestamp});    
-    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block (#' . $result->{block}->{count} . ') was on ' . $block_timestamp);
 
     if ($result->{transaction}->{count} > 0) {
         my $tx_timestamp = $result->{transaction}->{timestamp} == 0 ? '' : localtime($result->{transaction}->{timestamp});
@@ -131,3 +145,4 @@ __END__
 Check Parity eth-poller for stats 
 
 =cut
+
