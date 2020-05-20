@@ -28,12 +28,11 @@ my $mapping = {
     batteryComponentStatus  => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.15.1.6', map => \%map_status },
     batteryFQDD             => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.15.1.20' },
 };
-my $oid_batteryTableEntry = '.1.3.6.1.4.1.674.10892.5.5.1.20.130.15.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_batteryTableEntry };
+    push @{$self->{request}}, { oid => $mapping->{batteryComponentStatus}->{oid} }, { oid => $mapping->{batteryFQDD}->{oid} };
 }
 
 sub check {
@@ -43,10 +42,11 @@ sub check {
     $self->{components}->{storagebattery} = {name => 'storage batteries', total => 0, skip => 0};
     return if ($self->check_filter(section => 'storagebattery'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_batteryTableEntry}})) {
+    my $snmp_result = { %{$self->{results}->{ $mapping->{batteryComponentStatus}->{oid} }}, %{$self->{results}->{ $mapping->{batteryFQDD}->{oid} }} };
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping->{batteryComponentStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_batteryTableEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         next if ($self->check_filter(section => 'storagebattery', instance => $instance));
         $self->{components}->{storagebattery}->{total}++;

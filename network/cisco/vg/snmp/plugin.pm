@@ -34,6 +34,7 @@ sub new {
         'interfaces'       => 'snmp_standard::mode::interfaces',
         'isdn-usage'       => 'snmp_standard::mode::isdnusage',
         'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'voice-call'       => 'centreon::common::cisco::standard::snmp::mode::voicecall'
     );
 
     return $self;

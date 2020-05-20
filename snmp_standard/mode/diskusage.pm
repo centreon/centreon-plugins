@@ -33,11 +33,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
-    my $msg = sprintf("Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_absolute});
-    return $msg;
+    return sprintf(
+        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free_absolute}
+    );
 }
 
 sub set_counters {
@@ -53,10 +54,10 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Partitions count : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 },
-                ],
+                    { label => 'count', value => 'count_absolute', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{diskpath} = [
@@ -65,8 +66,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { label => 'used', value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'storage.space.free.bytes', set => {
@@ -74,8 +75,8 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
                     { label => 'free', value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
-                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'storage.space.usage.percentage', set => {
@@ -83,8 +84,8 @@ sub set_counters {
                 output_template => 'Used : %.2f %%',
                 perfdatas => [
                     { label => 'used_prct', value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100,
-                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => '%', label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'inodes', nlabel => 'storage.inodes.usage.percentage', set => {
@@ -92,10 +93,10 @@ sub set_counters {
                 output_template => 'Inodes Used: %s %%',
                 perfdatas => [
                     { label => 'inodes', value => 'inodes_absolute', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -122,11 +123,12 @@ sub new {
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },
         'space-reservation:s'     => { name => 'space_reservation' },
+        'force-use-mib-percent'   => { name => 'force_use_mib_percent' }
     });
 
     $self->{diskpath_id_selected} = [];
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
-    
+
     return $self;
 }
 
@@ -152,46 +154,51 @@ sub check_options {
     $self->{statefile_cache}->check_options(%options);
 }
 
+my $mapping = {
+    dskTotal32     => { oid => '.1.3.6.1.4.1.2021.9.1.6' }, # kB
+    dskUsed32      => { oid => '.1.3.6.1.4.1.2021.9.1.8' }, # kB
+    dskPercent     => { oid => '.1.3.6.1.4.1.2021.9.1.9' },
+    dskPercentNode => { oid => '.1.3.6.1.4.1.2021.9.1.10' },
+    dskTotalLow    => { oid => '.1.3.6.1.4.1.2021.9.1.11' }, # kB
+    dskTotalHigh   => { oid => '.1.3.6.1.4.1.2021.9.1.12' }, # kB
+    dskUsedLow     => { oid => '.1.3.6.1.4.1.2021.9.1.15' }, # kB
+    dskUsedHigh    => { oid => '.1.3.6.1.4.1.2021.9.1.16' } # kB
+};
+
 sub manage_selection {
     my ($self, %options) = @_;
     
-    $self->{snmp} = $options{snmp};
-    $self->get_selection();
-    
-    my $oid_dskTotalLow = '.1.3.6.1.4.1.2021.9.1.11'; # in kB
-    my $oid_dskTotalHigh = '.1.3.6.1.4.1.2021.9.1.12'; # in kB
-    my $oid_dskUsedLow = '.1.3.6.1.4.1.2021.9.1.15'; # in kB
-    my $oid_dskUsedHigh = '.1.3.6.1.4.1.2021.9.1.16'; # in kB
-    my $oid_dskPercentNode = '.1.3.6.1.4.1.2021.9.1.10';
+    $self->get_selection(snmp => $options{snmp});
 
-    $self->{snmp}->load(
-        oids => [
-            $oid_dskTotalLow, $oid_dskTotalHigh, $oid_dskUsedLow, $oid_dskUsedHigh, $oid_dskPercentNode
-        ], 
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping)) ],
         instances => $self->{diskpath_id_selected},
         nothing_quit => 1
     );
-    my $result = $self->{snmp}->get_leef();
-    
+    my $snmp_result = $options{snmp}->get_leef();
+
     $self->{global}->{count} = 0;
     $self->{diskpath} = {};
     foreach (sort @{$self->{diskpath_id_selected}}) {
         my $name_diskpath = $self->get_display_value(id => $_);
 
-        if (!defined($result->{$oid_dskTotalHigh . "." . $_})) {
-            $self->{output}->add_option_msg(long_msg => sprintf(
-                "skipping partition '%s': not found (need to reload the cache)", 
-                $name_diskpath)
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $_);
+        if (!defined($result->{dskTotal32}) && !defined($result->{dskTotalHigh})) {
+            $self->{output}->add_option_msg(
+                long_msg => sprintf(
+                    "skipping partition '%s': not found (need to reload the cache)", 
+                    $name_diskpath
+                )
             );
             next;
         }
-        
-        my $total_size = (($result->{$oid_dskTotalHigh . "." . $_} << 32) + $result->{$oid_dskTotalLow . "." . $_}) * 1024;
+
+        my $total_size = defined($result->{dskTotalHigh}) ? ((($result->{dskTotalHigh} << 32) + $result->{dskTotalLow}) * 1024) : $result->{dskTotal32} * 1024;
         if ($total_size == 0) {
-            $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath));
+            $self->{output}->output_add(long_msg => sprintf("skipping partition '%s' (total size is 0)", $name_diskpath), debug => 1);
             next;
         }
-        my $total_used = (($result->{$oid_dskUsedHigh . "." . $_} << 32) + $result->{$oid_dskUsedLow . "." . $_}) * 1024;
+        my $total_used = defined($result->{dskUsedHigh}) ? ((($result->{dskUsedHigh} << 32) + $result->{dskUsedLow}) * 1024) : $result->{dskUsed32} * 1024;
 
         my $reserved_value = 0;
         if (defined($self->{option_results}->{space_reservation})) {
@@ -208,35 +215,36 @@ sub manage_selection {
             $prct_free = 0;
         }
 
-        $self->{diskpath}->{$_} = {
+        $prct_used = $result->{dskPercent} if (defined($self->{option_results}->{force_use_mib_percent}));
+        $self->{diskpath}->{$name_diskpath} = {
             display => $name_diskpath,
             total => $total_size,
             used => $total_used,
             free => $free,
             prct_free => $prct_free,
             prct_used => $prct_used,
-            inodes => defined($result->{$oid_dskPercentNode . "." . $_}) ? $result->{$oid_dskPercentNode . "." . $_} : undef,
+            inodes => $result->{dskPercentNode}
         };
         $self->{global}->{count}++;
     }
-    
+
     if (scalar(keys %{$self->{diskpath}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "Issue with disk path information (see details)");
+        $self->{output}->add_option_msg(short_msg => 'Issue with disk path information (see details)');
         $self->{output}->option_exit();
     }
 }
 
 sub reload_cache {
-    my ($self) = @_;
+    my ($self, %options) = @_;
     my $datas = {};
 
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
-    
+
     my $oid_dskPath = '.1.3.6.1.4.1.2021.9.1.2';
-    
-    my $result = $self->{snmp}->get_table(oid => $oid_dskPath);
-    foreach my $key ($self->{snmp}->oid_lex_sort(keys %{$result})) {
+
+    my $result = $options{snmp}->get_table(oid => $oid_dskPath);
+    foreach my $key (keys %$result) {
         next if ($key !~ /\.([0-9]+)$/);        
         my $diskpath_index = $1;
         push @{$datas->{all_ids}}, $diskpath_index;
@@ -255,7 +263,7 @@ sub get_selection {
     my ($self, %options) = @_;
 
     # init cache file
-    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
+    my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
         $self->{output}->add_option_msg(long_msg => $self->{statefile_cache}->get_string_content());
         $self->{output}->option_exit();
@@ -263,18 +271,18 @@ sub get_selection {
 
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
-            $self->reload_cache();
+            $self->reload_cache(snmp => $options{snmp});
             $self->{statefile_cache}->read();
     }
 
     my $all_ids = $self->{statefile_cache}->get(name => 'all_ids');
     if (!defined($self->{option_results}->{use_name}) && defined($self->{option_results}->{diskpath})) {
         # get by ID
-        my $name = $self->{statefile_cache}->get(name => "dskPath_" . $self->{option_results}->{diskpath});
+        my $name = $self->{statefile_cache}->get(name => 'dskPath_' . $self->{option_results}->{diskpath});
         push @{$self->{diskpath_id_selected}}, $self->{option_results}->{diskpath} if (defined($name));
     } else {
         foreach my $i (@{$all_ids}) {
-            my $filter_name = $self->{statefile_cache}->get(name => "dskPath_" . $i);
+            my $filter_name = $self->{statefile_cache}->get(name => 'dskPath_' . $i);
             next if (!defined($filter_name));
             
             if (!defined($self->{option_results}->{diskpath})) {
@@ -292,7 +300,7 @@ sub get_selection {
             }
         }
     }
-    
+
     if (scalar(@{$self->{diskpath_id_selected}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No disk path found. Can be: filters, cache file.");
         $self->{output}->option_exit();
@@ -301,12 +309,13 @@ sub get_selection {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{statefile_cache}->get(name => "dskPath_" . $options{id});
-    
+    my $value = $self->{statefile_cache}->get(name => 'dskPath_' . $options{id});
+
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
         eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
     }
+
     return $value;
 }
 
@@ -365,6 +374,10 @@ Display cache disk path datas.
 
 Some filesystem has space reserved (like ext4 for root).
 The value is in percent of total (Default: none) (results like 'df' command).
+
+=item B<--force-use-mib-percent>
+
+Can be used if you have counters overload by big disks.
 
 =back
 

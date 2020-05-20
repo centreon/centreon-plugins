@@ -28,20 +28,20 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
         { name => 'wifi', type => 1, cb_prefix_output => 'prefix_wifi_output', message_multiple => 'All wifis are ok' }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'temperature-cpum', set => {
                 key_values => [ { name => 'temp_cpum' } ],
                 output_template => 'Temperature cpum : %s C',
                 perfdatas => [
                     { label => 'temp_cpum', value => 'temp_cpum_absolute', template => '%s', 
-                      unit => 'C' },
-                ],
+                      unit => 'C' }
+                ]
             }
         },
         { label => 'temperature-cpub', set => {
@@ -49,8 +49,8 @@ sub set_counters {
                 output_template => 'Temperature cpub : %s C',
                 perfdatas => [
                     { label => 'temp_cpub', value => 'temp_cpub_absolute', template => '%s', 
-                      unit => 'C' },
-                ],
+                      unit => 'C' }
+                ]
             }
         },
         { label => 'temperature-switch', set => {
@@ -58,8 +58,8 @@ sub set_counters {
                 output_template => 'Temperature switch : %s C',
                 perfdatas => [
                     { label => 'temp_sw', value => 'temp_sw_absolute', template => '%s', 
-                      unit => 'C' },
-                ],
+                      unit => 'C' }
+                ]
             }
         },
         { label => 'fan-speed', set => {
@@ -67,8 +67,8 @@ sub set_counters {
                 output_template => 'fan speed : %s rpm',
                 perfdatas => [
                     { label => 'fan_rpm', value => 'fan_rpm_absolute', template => '%s', 
-                      min => 0, unit => 'rpm' },
-                ],
+                      min => 0, unit => 'rpm' }
+                ]
             }
         },
         { label => 'disk-status', threshold => 0, set => {
@@ -76,10 +76,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_disk_status_calc'),
                 closure_custom_output => $self->can('custom_disk_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
-        
+        }
     ];
     
     $self->{maps_counters}->{wifi} = [
@@ -88,17 +87,16 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_wifi_status_calc'),
                 closure_custom_output => $self->can('custom_wifi_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
 sub custom_disk_status_output {
     my ($self, %options) = @_;
-    my $msg = 'Disk status : ' . $self->{result_values}->{status};
 
-    return $msg;
+    return 'Disk status : ' . $self->{result_values}->{status};
 }
 
 sub custom_disk_status_calc {
@@ -110,9 +108,8 @@ sub custom_disk_status_calc {
 
 sub custom_wifi_status_output {
     my ($self, %options) = @_;
-    my $msg = "Wifi '" . $self->{result_values}->{display} . "' status : " . $self->{result_values}->{status};
 
-    return $msg;
+    return "Wifi '" . $self->{result_values}->{display} . "' status : " . $self->{result_values}->{status};
 }
 
 sub custom_wifi_status_calc {
@@ -127,15 +124,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-wifi-status:s"     => { name => 'warning_wifi_status', default => '%{status} =~ /bad_param/i' },
-                                "critical-wifi-status:s"    => { name => 'critical_wifi_status', default => '%{status} =~ /failed/i' },
-                                "warning-disk-status:s"     => { name => 'warning_disk_status', default => '' },
-                                "critical-disk-status:s"    => { name => 'critical_disk_status', default => '%{status} =~ /error/i' },
-                                });
-    
+
+    $options{options}->add_options(arguments => {
+        'warning-wifi-status:s'  => { name => 'warning_wifi_status', default => '%{status} =~ /bad_param/i' },
+        'critical-wifi-status:s' => { name => 'critical_wifi_status', default => '%{status} =~ /failed/i' },
+        'warning-disk-status:s'  => { name => 'warning_disk_status', default => '' },
+        'critical-disk-status:s' => { name => 'critical_disk_status', default => '%{status} =~ /error/i' },
+    });
+
     return $self;
 }
 
@@ -143,18 +139,23 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->change_macros(macros => ['warning_wifi_status', 'critical_wifi_status', 'warning_disk_status', 'critical_disk_status']);
+    $self->change_macros(
+        macros => [
+            'warning_wifi_status', 'critical_wifi_status',
+            'warning_disk_status', 'critical_disk_status'
+        ]
+    );
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $result = $options{custom}->get_data(path => 'system/');
     $self->{global} = { %{$result} };
-    
+
     $result = $options{custom}->get_data(path => 'wifi/ap/');
     $self->{wifi} = {};
-    
+
     $result = [$result] if (ref($result) ne 'ARRAY');
     foreach (@$result) {
         $self->{wifi}->{$_->{id}} = {
@@ -199,14 +200,9 @@ Can used special variables like: %{status}
 Set critical threshold for disk status (Default: '%{status} =~ /error/i').
 Can used special variables like: %{status}
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'temperature-cpum', 'temperature-cpub', 'temperature-switch', 'fan-speed'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'temperature-cpum', 'temperature-cpub', 'temperature-switch', 'fan-speed'.
 
 =back

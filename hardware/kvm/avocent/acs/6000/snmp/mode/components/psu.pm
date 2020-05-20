@@ -33,32 +33,41 @@ my $oid_acsPowerSupply = '.1.3.6.1.4.1.10418.16.2.1.8';
 
 sub load {
     my ($self) = @_;
-    
+
     push @{$self->{request}}, { oid => $oid_acsPowerSupply };
 }
 
 sub check_psu {
     my ($self, %options) = @_;
-    
+
     return if ($self->check_filter(section => 'psu', instance => $options{instance}));
     return if ($options{state} eq 'powerNotInstalled' && 
                $self->absent_problem(section => 'psu', instance => $options{instance}));
     $self->{components}->{psu}->{total}++;
 
-    $self->{output}->output_add(long_msg => sprintf("power supply '%s' status is %s.",
-                                $options{instance}, $options{state}
-                                ));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "power supply '%s' status is %s.",
+            $options{instance}, $options{state}
+        )
+    );
+
     my $exit = $self->get_severity(section => 'psu', value => $options{state});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity =>  $exit,
-                                    short_msg => sprintf("Power supply '%s' status is %s",
-                                                         $options{instance}, $options{state}));
+        $self->{output}->output_add(
+            severity =>  $exit,
+            short_msg => sprintf(
+                "Power supply '%s' status is %s",
+                $options{instance},
+                $options{state}
+            )
+        );
     }
 }
 
 sub check {
     my ($self) = @_;
-    
+
     $self->{output}->output_add(long_msg => "Checking power supplies");
     $self->{components}->{psu} = {name => 'psus', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));

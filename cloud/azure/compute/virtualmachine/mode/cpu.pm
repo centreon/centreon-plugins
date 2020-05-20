@@ -81,13 +81,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "resource:s@"           => { name => 'resource' },
-                                    "resource-group:s"      => { name => 'resource_group' },
-                                    "filter-metric:s"       => { name => 'filter_metric' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'resource:s@'      => { name => 'resource' },
+        'resource-group:s' => { name => 'resource_group' },
+        'filter-metric:s'  => { name => 'filter_metric' }
+    });
+
     return $self;
 }
 
@@ -99,7 +98,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group option or --resource <id>.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{az_resource} = $self->{option_results}->{resource};
     $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
     $self->{az_resource_type} = 'virtualMachines';

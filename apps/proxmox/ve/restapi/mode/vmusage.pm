@@ -172,8 +172,8 @@ sub set_counters {
                 output_use => 'prct_cpu', threshold_use => 'prct_cpu',
                 perfdatas => [
                     { label => 'cpu', value => 'prct_cpu', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'memory', set => {
@@ -181,7 +181,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_memory_calc'),
                 closure_custom_output => $self->can('custom_memory_output'),
                 closure_custom_perfdata => $self->can('custom_memory_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_memory_threshold'),
+                closure_custom_threshold_check => $self->can('custom_memory_threshold')
             }
         },
         { label => 'read-iops', set => {
@@ -190,8 +190,8 @@ sub set_counters {
                 output_template => 'Read IOPs : %.2f', output_error_template => "Read IOPs : %s",
                 perfdatas => [
                     { label => 'read_iops', value => 'read_io_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'write-iops', set => {
@@ -200,8 +200,8 @@ sub set_counters {
                 output_template => 'Write IOPs : %.2f', output_error_template => "Write IOPs : %s",
                 perfdatas => [
                     { label => 'write_iops', value => 'write_io_per_second', template => '%.2f',
-                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'iops', min => 0, label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'swap', set => {
@@ -209,9 +209,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_swap_calc'),
                 closure_custom_output => $self->can('custom_swap_output'),
                 closure_custom_perfdata => $self->can('custom_swap_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_swap_threshold'),
+                closure_custom_threshold_check => $self->can('custom_swap_threshold')
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{vms_traffic} = [
@@ -221,8 +221,8 @@ sub set_counters {
                 output_template => 'Traffic In : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', value => 'traffic_in_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'traffic-out', set => {
@@ -231,10 +231,10 @@ sub set_counters {
                 output_template => 'Traffic Out : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', value => 'traffic_out_per_second', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -249,7 +249,7 @@ sub new {
         'filter-name:s'           => { name => 'filter_name' },
         'use-name'                => { name => 'use_name' },
         'warning-vm-status:s'     => { name => 'warning_vm_status', default => '' },
-        'critical-vm-status:s'    => { name => 'critical_vm_status', default => '' },
+        'critical-vm-status:s'    => { name => 'critical_vm_status', default => '' }
     });
     $self->{statefile_cache_vms} = centreon::plugins::statefile->new(%options);
     return $self;
@@ -308,7 +308,7 @@ sub manage_selection {
             memory_usage => $result->{$vm_id}->{Stats}->{mem},
             memory_total => $result->{$vm_id}->{Stats}->{maxmem},
             swap_usage => $result->{$vm_id}->{Stats}->{swap},
-            swap_total => $result->{$vm_id}->{Stats}->{maxswap},
+            swap_total => defined($result->{$vm_id}->{Stats}->{maxswap}) && $result->{$vm_id}->{Stats}->{maxswap} > 0 ? $result->{$vm_id}->{Stats}->{maxswap} : undef
         };
         $self->{vms_traffic}->{$name} = {
             display => $name,

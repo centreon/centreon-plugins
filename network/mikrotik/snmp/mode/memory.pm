@@ -28,7 +28,7 @@ use warnings;
 sub default_storage_type {
     my ($self, %options) = @_;
     
-    return '^(hrStorageRam|hrStorageFlashMemory)';
+    return '^hrStorageRam$';
 }
 
 sub prefix_storage_output {
@@ -97,7 +97,7 @@ Display cache storage datas.
 
 =item B<--filter-storage-type>
 
-Filter storage types with a regexp (Default: '^(hrStorageRam|hrStorageFlashMemory)$').
+Filter storage types with a regexp (Default: '^hrStorageRam$').
 
 =back
 

@@ -30,14 +30,13 @@ use centreon::plugins::misc;
 
 sub custom_status_output {
     my ($self, %options) = @_;
- 
-    my $msg = sprintf('status : %s', $self->{result_values}->{status});
-    return $msg;
+
+    return sprintf('status : %s', $self->{result_values}->{status});
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
     return 0;
@@ -46,13 +45,12 @@ sub custom_status_calc {
 sub custom_packet_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Packet %s %s : %.2f %% (%s)",
+    return sprintf('Packet %s %s : %.2f %% (%s)',
         ucfirst($self->{result_values}->{type}),
         ucfirst($self->{result_values}->{label}), 
         $self->{result_values}->{result_prct},
         $self->{result_values}->{diff_value}
     );
-    return $msg;
 }
 
 sub custom_packet_calc {
@@ -72,11 +70,11 @@ sub custom_packet_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
     ];
-    
+
     $self->{maps_counters}->{interface} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
@@ -137,7 +135,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         "hostname:s"        => { name => 'hostname' },
         "remote"            => { name => 'remote' },
@@ -171,12 +169,12 @@ sub prefix_interface_output {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->{hostname} = $self->{option_results}->{hostname};
     if (!defined($self->{hostname})) {
         $self->{hostname} = 'me';
     }
-    
+
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
@@ -191,7 +189,7 @@ sub do_selection {
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
     );
-    
+
     my $mapping = {
         ifconfig => {
             get_interface => '^(\S+)(.*?)(\n\n|\n$)',
@@ -210,23 +208,24 @@ sub do_selection {
             error_out => 'TX:.*?errors.*?\d+.*?\d+.*?(\d+)',
         },
     };
-    
+
     my $type = 'ifconfig';
     if ($stdout =~ /^\d+:\s+\S+:\s+</ms) {
         $type = 'iproute';
     }
-    
+
     $self->{interface} = {};
     while ($stdout =~ /$mapping->{$type}->{get_interface}/msg) {
         my ($interface_name, $values) = ($1, $2);
         my $states = '';
         $states .= 'R' if ($values =~ /RUNNING|LOWER_UP/ms);
         $states .= 'U' if ($values =~ /UP/ms);
-        
+        $interface_name =~ s/:$//;
+
         next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
                  $states !~ /$self->{option_results}->{filter_state}/);
-        
+
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
             && $interface_name !~ /$self->{option_results}->{name}/i);
         next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
@@ -249,7 +248,7 @@ sub do_selection {
             }
         }
     }
-    
+
     if (scalar(keys %{$self->{interface}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No interface found.");
         $self->{output}->option_exit();

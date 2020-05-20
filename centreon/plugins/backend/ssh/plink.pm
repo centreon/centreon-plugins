@@ -65,6 +65,7 @@ sub execute {
     my ($self, %options) = @_;
 
     push @{$self->{ssh_option}}, '-T' if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1);
+    $options{command} .= $options{cmd_exit} if (defined($options{cmd_exit}) && $options{cmd_exit} ne '');
 
     my ($content, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
@@ -80,7 +81,8 @@ sub execute {
             ssh_path => $self->{ssh_path},
             ssh_option => $self->{ssh_option},
             timeout => $options{timeout}
-        }
+        },
+        no_quit => $options{no_quit}
     );
 
     if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {

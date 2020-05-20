@@ -33,60 +33,68 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cpu} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'cpu.utilization.total.percentage', set => {
                 key_values => [ { name => 'total' }, { name => 'num' } ],
-                output_template => 'Total CPU Usage : %.2f %%',
+                output_template => '%.2f %% (total)',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'total_absolute', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'num_absolute' },
-                ],
+                    { label => 'cpu_total', value => 'total_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
-        { label => '1m', set => {
+        { label => '1m', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => '1m' }, { name => 'num' } ],
-                output_template => '1 minute : %.2f %%',
+                output_template => '%.2f %% (1min)',
                 perfdatas => [
                     { label => 'cpu_1min', value => '1m_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
-        { label => '10m', set => {
+        { label => '5m', nlabel => 'cpu.utilization.5m.percentage', set => {
+                key_values => [ { name => '5m' }, { name => 'num' } ],
+                output_template => '%.2f %% (5min)',
+                perfdatas => [
+                    { label => 'cpu_5min', value => '5m_absolute', template => '%.2f',
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => '10m', nlabel => 'cpu.utilization.10m.percentage', set => {
                 key_values => [ { name => '10m' }, { name => 'num' } ],
-                output_template => '10 minutes : %.2f %%',
+                output_template => '%.2f %% (10min)',
                 perfdatas => [
                     { label => 'cpu_10min', value => '10m_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         },
-        { label => '1h', set => {
+        { label => '1h', nlabel => 'cpu.utilization.1h.percentage', set => {
                 key_values => [ { name => '1h' }, { name => 'num' } ],
-                output_template => '1 hour : %.2f %%',
+                output_template => '%.2f %% (1h)',
                 perfdatas => [
                     { label => 'cpu_1h', value => '1h_absolute', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'num_absolute' },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_cpu_output {
     my ($self, %options) = @_;
-    
-    return "CPU '" . $options{instance_value}->{num} . "' ";
+
+    return "CPU '" . $options{instance_value}->{num} . "' usage ";
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -94,33 +102,66 @@ my $mapping = {
     s5ChasUtilTotalCPUUsage         => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.4' },
     s5ChasUtilCPUUsageLast1Minute   => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.5' },
     s5ChasUtilCPUUsageLast10Minutes => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.6' },
-    s5ChasUtilCPUUsageLast1Hour     => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.7' },
+    s5ChasUtilCPUUsageLast1Hour     => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.7' }
 };
 
 my $oid_rcSysCpuUtil = '.1.3.6.1.4.1.2272.1.1.20';  # without .0
 my $oid_s5ChasUtilEntry = '.1.3.6.1.4.1.45.1.6.3.8.1.1';
 
+sub check_khi {
+    my ($self, %options) = @_;
+
+    my $oid_rcKhiSlotCpu5MinAve = '.1.3.6.1.4.1.2272.1.85.10.1.1.3';
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_rcKhiSlotCpu5MinAve,
+        nothing_quit => 1
+    );
+
+    foreach (keys %$snmp_result) {
+        /.(\d+)$/;
+
+        $self->{cpu}->{'slot_' . $1} = {
+            num => 'slot_' . $1,
+            '5m' => $snmp_result->{$_}
+        };
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [
-                                                            { oid => $oid_rcSysCpuUtil },
-                                                            { oid => $oid_s5ChasUtilEntry },
-                                                          ], nothing_quit => 1);
-    
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_rcSysCpuUtil },
+            { 
+                oid => $oid_s5ChasUtilEntry,
+                start => $mapping->{s5ChasUtilCPUUsageLast1Minute}->{oid},
+                end => $mapping->{s5ChasUtilCPUUsageLast1Hour}->{oid}
+            }
+        ]
+    );
+
     $self->{cpu} = {};
-    foreach my $oid (keys %{$self->{results}->{$oid_s5ChasUtilEntry}}) {
-        next if ($oid !~ /^$mapping->{s5ChasUtilTotalCPUUsage}->{oid}\.(.*)$/);
+    foreach my $oid (keys %{$snmp_result->{$oid_s5ChasUtilEntry}}) {
+        next if ($oid !~ /^$mapping->{s5ChasUtilCPUUsageLast1Minute}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_s5ChasUtilEntry}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result->{$oid_s5ChasUtilEntry}, instance => $instance);
         
-        $self->{cpu}->{$instance} = { num => $instance, total => $result->{s5ChasUtilTotalCPUUsage},
-                                      '1m' => $result->{s5ChasUtilCPUUsageLast1Minute}, '10m' => $result->{s5ChasUtilCPUUsageLast10Minutes},
-                                      '1h' => $result->{s5ChasUtilCPUUsageLast1Hour} };
+        $self->{cpu}->{$instance} = {
+            num => $instance,
+            total => $result->{s5ChasUtilTotalCPUUsage},
+            '1m' => $result->{s5ChasUtilCPUUsageLast1Minute},
+            '10m' => $result->{s5ChasUtilCPUUsageLast10Minutes},
+            '1h' => $result->{s5ChasUtilCPUUsageLast1Hour}
+        };
     }
-    
-    if (scalar(keys %{$self->{results}->{$oid_rcSysCpuUtil}}) > 0) {
-        $self->{cpu}->{0} = { num => 0, total => $self->{results}->{$oid_rcSysCpuUtil}->{$oid_rcSysCpuUtil . '.0'} };
+
+    if (scalar(keys %{$snmp_result->{$oid_rcSysCpuUtil}}) > 0) {
+        $self->{cpu}->{0} = { num => 0, total => $snmp_result->{$oid_rcSysCpuUtil}->{$oid_rcSysCpuUtil . '.0'} };
+    }
+
+    if (scalar(keys %{$self->{cpu}}) <= 0) {
+        $self->check_khi(snmp => $options{snmp});
     }
 }
 
@@ -137,16 +178,11 @@ Check CPU usages.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^(1m|10m)$'
+Example: --filter-counters='1m|10m'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'total', '1m', '5m', '10m', '1h'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'total', '1m', '5m', '10m', '1h'.
 
 =back

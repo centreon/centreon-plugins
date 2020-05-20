@@ -156,7 +156,7 @@ Filter volume name (can be a regexp).
 
 =item B<--warning-*> B<--critical-*>
 
-Threshold warning.
+Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back

@@ -138,7 +138,7 @@ sub execute {
         $self->{output}->option_exit();
     }
 
-    if ($exit_code != 0) {
+    if ($exit_code != 0 && (!defined($options{no_quit}) || $options{no_quit} != 1)) {
         $self->{output}->add_option_msg(short_msg => sprintf('command execution error [exit code: %s]', $exit_code));
         $self->{output}->option_exit();
     }

@@ -24,48 +24,50 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{type} = $options{new_datas}->{$self->{instance} . '_type'};
-    return 0;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
         { name => 'vpn', type => 1, cb_prefix_output => 'prefix_vpn_output', message_multiple => 'All vpn are ok' }
     ];
-    
+
+    $self->{maps_counters}->{global} = [
+        { label => 'tunnels-total', nlabel => 'vpn.tunnels.total.count', display_ok => 0, set => {
+                key_values => [ { name => 'total' } ],
+                output_template => 'current total number of tunnels: %d',
+                perfdatas => [
+                    { value => 'total_absolute', template => '%d', min => 0 }
+                ]
+            }
+        }
+    ];
+
     $self->{maps_counters}->{vpn} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'type' }, { name => 'status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'filter-name:s'     => { name => 'filter_name' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
@@ -73,7 +75,7 @@ sub new {
         'filter-name:s'     => { name => 'filter_name' },
         'buggy-snmp'        => { name => 'buggy_snmp' },
     });
-    
+
     return $self;
 }
 
@@ -86,37 +88,42 @@ sub check_options {
 
 sub prefix_vpn_output {
     my ($self, %options) = @_;
-    
+
     return "VPN '" . $options{instance_value}->{display} . "' ";
 }
 
-my %map_type = (1 => 'regular', 2 => 'permanent');
-my %map_state = (3 => 'active', 4 => 'destroy', 129 => 'idle', 130 => 'phase1',
+my $map_type = { 1 => 'regular', 2 => 'permanent' };
+my $map_state = {
+    3 => 'active', 4 => 'destroy', 129 => 'idle', 130 => 'phase1',
     131 => 'down', 132 => 'init'
-);
+};
 
 my $mapping = {
     tunnelPeerObjName   => { oid => '.1.3.6.1.4.1.2620.500.9002.1.2' },
-    tunnelState         => { oid => '.1.3.6.1.4.1.2620.500.9002.1.3', map => \%map_state },
-    tunnelType          => { oid => '.1.3.6.1.4.1.2620.500.9002.1.11', map => \%map_type },
+    tunnelState         => { oid => '.1.3.6.1.4.1.2620.500.9002.1.3', map => $map_state },
+    tunnelType          => { oid => '.1.3.6.1.4.1.2620.500.9002.1.11', map => $map_type }
 };
 my $oid_tunnelEntry = '.1.3.6.1.4.1.2620.500.9002.1';
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{vs} = {};
     my $snmp_result;
     if (defined($self->{option_results}->{buggy_snmp})) {
         $snmp_result = $options{snmp}->get_table(oid => $oid_tunnelEntry, nothing_quit => 1);
     } else {
-        $snmp_result = $options{snmp}->get_multiple_table(oids => [
-            { oid => $mapping->{tunnelPeerObjName}->{oid} },
-            { oid => $mapping->{tunnelState}->{oid} },
-            { oid => $mapping->{tunnelType}->{oid} },
-        ], nothing_quit => 1, return_type => 1);
+        $snmp_result = $options{snmp}->get_multiple_table(
+            oids => [
+                { oid => $oid_tunnelEntry, start => $mapping->{tunnelPeerObjName}->{oid}, end => $mapping->{tunnelState}->{oid}  },
+                { oid => $mapping->{tunnelType}->{oid} }
+            ],
+            nothing_quit => 1,
+            return_type => 1
+        );
     }
 
+    $self->{global} = { total => 0 };
+    $self->{vs} = {};
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{tunnelState}->{oid}\.(.*)$/);
         my $instance = $1;
@@ -127,14 +134,15 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{tunnelPeerObjName} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{vpn}->{$instance} = {
             display => $result->{tunnelPeerObjName}, 
             status => $result->{tunnelState},
             type => $result->{tunnelType}
         };
+        $self->{global}->{total}++;
     }
-    
+
     if (scalar(keys %{$self->{vpn}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No vpn found.");
         $self->{output}->option_exit();
@@ -168,6 +176,11 @@ Can used special variables like: %{type}, %{status}, %{display}
 =item B<--buggy-snmp>
 
 Checkpoint snmp can be buggy. Test that option if no response.
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'tunnels-total'.
 
 =back
 

@@ -28,11 +28,11 @@ use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
     my ($self, %options) = @_;
-   
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
     ];
-   
+
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'queries.total.persecond', set => {
                 key_values => [ { name => 'total', diff => 1 } ],
@@ -44,7 +44,7 @@ sub set_counters {
             }
         },
     ];
-    
+
     foreach ('insert', 'query', 'update', 'delete', 'getmore', 'command') {
         push @{$self->{maps_counters}->{global}}, {
             label => $_, nlabel => 'queries.' . $_ . '.persecond',  display_ok => 0, set => {
@@ -71,7 +71,7 @@ sub set_counters {
 sub prefix_output {
     my ($self, %options) = @_;
 
-    return "Requests ";
+    return 'Requests ';
 }
 
 sub new {
@@ -86,14 +86,11 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
 
     $self->{global} = {};
-    
-    my $server_stats = $self->{custom}->run_command(
+    my $server_stats = $options{custom}->run_command(
         database => 'admin',
-        command => $self->{custom}->ordered_hash(serverStatus => 1),
+        command => $options{custom}->ordered_hash(serverStatus => 1),
     );
     
     foreach my $querie (keys %{$server_stats->{opcounters}}) {
@@ -101,7 +98,7 @@ sub manage_selection {
         $self->{global}->{total} += $server_stats->{opcounters}->{$querie};
     }
 
-    $self->{cache_name} = "mongodb_" . $self->{mode} . '_' . $self->{custom}->get_hostname() . '_' . $self->{custom}->get_port() . '_' .
+    $self->{cache_name} = 'mongodb_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

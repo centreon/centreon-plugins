@@ -33,7 +33,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'sshcli-command:s' => { name => 'sshcli_command', default => 'ssh' },
             'sshcli-path:s'    => { name => 'sshcli_path' },
-            'sslcli-option:s@' => { name => 'sshcli_option' }
+            'sshcli-option:s@' => { name => 'sshcli_option' }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'BACKEND SSHCLI OPTIONS', once => 1);
     }
@@ -57,7 +57,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    push @{$self->{ssh_option}}, '-o="BatchMode yes"';
+    push @{$self->{ssh_option}}, '-o=BatchMode yes';
     push @{$self->{ssh_option}}, '-l=' . $self->{ssh_username} if (defined($self->{ssh_username}) && $self->{ssh_username} ne '');
     push @{$self->{ssh_option}}, '-p=' . $self->{ssh_port} if (defined($self->{ssh_port}) && $self->{ssh_port} ne '');
     push @{$self->{ssh_option}}, '-i=' . $self->{ssh_priv_key} if (defined($self->{ssh_priv_key}) && $self->{ssh_priv_key} ne '');
@@ -67,6 +67,7 @@ sub execute {
     my ($self, %options) = @_;
 
     push @{$self->{ssh_option}}, '-T' if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1);
+    $options{command} .= $options{cmd_exit} if (defined($options{cmd_exit}) && $options{cmd_exit} ne '');
 
     my ($content, $exit_code) = centreon::plugins::misc::execute(
         output => $self->{output},
@@ -82,7 +83,8 @@ sub execute {
             ssh_path => $self->{ssh_path},
             ssh_option => $self->{ssh_option},
             timeout => $options{timeout}
-        }
+        },
+        no_quit => $options{no_quit}
     );
 
     if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {

@@ -160,7 +160,7 @@ sub execute {
         $self->{output}->option_exit();
     }
 
-    return $raw_results; 
+    return $raw_results;
 }
 
 sub cloudwatch_get_metrics_set_cmd {
@@ -176,7 +176,7 @@ sub cloudwatch_get_metrics_set_cmd {
     }
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub cloudwatch_get_metrics {
@@ -229,7 +229,7 @@ sub discovery_set_cmd {
     my $cmd_options = $options{service} . " " . $options{command} . " --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub discovery {
@@ -249,7 +249,7 @@ sub cloudwatch_get_alarms_set_cmd {
     my $cmd_options = "cloudwatch describe-alarms --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub cloudwatch_get_alarms {
@@ -282,7 +282,7 @@ sub cloudwatch_list_metrics_set_cmd {
     $cmd_options .= " --metric-name $options{metric}" if (defined($options{metric}));
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub cloudwatch_list_metrics {
@@ -302,7 +302,7 @@ sub cloudwatchlogs_describe_log_groups_set_cmd {
     my $cmd_options = "logs describe-log-groups --region $self->{option_results}->{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub cloudwatchlogs_describe_log_groups {
@@ -329,7 +329,7 @@ sub cloudwatchlogs_filter_log_events_set_cmd {
     }
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub cloudwatchlogs_filter_log_events {
@@ -349,7 +349,7 @@ sub ec2_get_instances_status_set_cmd {
     my $cmd_options = "ec2 describe-instance-status --include-all-instances --no-dry-run --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub ec2_get_instances_status {
@@ -361,12 +361,71 @@ sub ec2_get_instances_status {
     my $instance_results = {};
     foreach (@{$raw_results->{InstanceStatuses}}) {
         $instance_results->{$_->{InstanceId}} = {
-            state => $_->{InstanceState}->{Name}, 
+            state => $_->{InstanceState}->{Name},
             status => => $_->{InstanceStatus}->{Status}
         };
     }
 
     return $instance_results;
+}
+
+sub ec2spot_get_active_instances_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "ec2 describe-spot-fleet-instances --no-dry-run --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+    $cmd_options .= " --spot-fleet-request-id " . $options{spot_fleet_request_id};
+
+    return $cmd_options;
+}
+
+sub ec2spot_get_active_instances_status {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->ec2spot_get_active_instances_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $instance_results = {};
+    foreach (@{$raw_results->{ActiveInstances}}) {
+        $instance_results->{$_->{InstanceId}} = {
+            health      => $_->{InstanceHealth},
+            type        => $_->{InstanceType},
+            request_id  => $_->{SpotInstanceRequestId}
+        };
+    }
+
+    return $instance_results;
+}
+
+sub ec2spot_list_fleet_requests_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "ec2 describe-spot-fleet-requests --no-dry-run --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options;
+}
+
+sub ec2spot_list_fleet_requests {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->ec2spot_list_fleet_requests_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $resource_results = [];
+    foreach my $fleet_request (@{$raw_results->{SpotFleetRequestConfigs}}) {
+        push @{$resource_results}, {
+            SpotFleetRequestState => $fleet_request->{SpotFleetRequestState},
+            SpotFleetRequestId    => $fleet_request->{SpotFleetRequestId},
+            ActivityStatus        => $fleet_request->{ActivityStatus}
+        };
+    }
+
+    return $resource_results;
 }
 
 sub ec2_list_resources_set_cmd {
@@ -377,7 +436,7 @@ sub ec2_list_resources_set_cmd {
     my $cmd_options = "ec2 describe-instances --no-dry-run --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub ec2_list_resources {
@@ -394,7 +453,7 @@ sub ec2_list_resources {
                 my %already = map { $_->{Name} => $_ } @{$resource_results};
                 if ($tag->{Key} eq "aws:autoscaling:groupName") {
                     next if (defined($already{$tag->{Value}}));
-                    push @{$resource_results}, { 
+                    push @{$resource_results}, {
                         Name => $tag->{Value},
                         Type => 'asg',
                     };
@@ -402,7 +461,7 @@ sub ec2_list_resources {
                     push @instance_tags, $tag->{Value};
                 }
             }
-            push @{$resource_results}, { 
+            push @{$resource_results}, {
                 Name => $instance->{InstanceId},
                 Type => 'instance',
                 AvailabilityZone => $instance->{Placement}->{AvailabilityZone},
@@ -411,7 +470,6 @@ sub ec2_list_resources {
                 Tags => join(",", @instance_tags),
                 KeyName => $instance->{KeyName},
             };
-            
         }
     }
 
@@ -426,7 +484,7 @@ sub asg_get_resources_set_cmd {
     my $cmd_options = "autoscaling describe-auto-scaling-groups --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub asg_get_resources {
@@ -446,7 +504,7 @@ sub rds_get_instances_status_set_cmd {
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub rds_get_instances_status {
@@ -471,7 +529,7 @@ sub rds_list_instances_set_cmd {
     my $cmd_options = "rds describe-db-instances --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub rds_list_instances {
@@ -502,7 +560,7 @@ sub rds_list_clusters_set_cmd {
     my $cmd_options = "rds describe-db-clusters --region $options{region} --output json";
     $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
 
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub rds_list_clusters {
@@ -522,6 +580,40 @@ sub rds_list_clusters {
     }
 
     return $cluster_results;
+}
+
+sub vpn_list_connections_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "ec2 describe-vpn-connections --region $options{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options;
+}
+
+sub vpn_list_connections {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->vpn_list_connections_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    my $connections_results = [];
+    foreach my $connection (@{$raw_results->{VpnConnections}}) {
+        my @name_tags;
+            foreach my $tag (@{$connection->{Tags}}) {
+                if ($tag->{Key} eq "Name" && defined($tag->{Value})) {
+                    push @name_tags, $tag->{Value};
+                }
+            }
+        push @{$connections_results}, {
+            id      => $connection->{VpnConnectionId},
+            name    => join(",", @name_tags),
+            state   => $connection->{State}
+        }
+    };
+    return $connections_results;
 }
 
 1;

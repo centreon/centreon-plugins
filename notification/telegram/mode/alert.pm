@@ -111,7 +111,9 @@ sub host_message {
     } else {
         $self->{message} .= ' alert';
     }
-
+    if (defined($self->{option_results}->{host_output}) && $self->{option_results}->{host_output} ne '') {
+        $self->{message} .= "\n " . $self->{option_results}->{host_output};
+    }
     if (defined($self->{option_results}->{link_url}) && $self->{option_results}->{link_url} ne '') {
         $self->{message} .= "\n <a href=\"" . $self->{option_results}->{link_url} . "\">Link</a>";
     }

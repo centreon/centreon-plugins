@@ -127,7 +127,7 @@ sub manage_selection {
     }
 
     $self->{global} = {
-        rta => $total_time_elapsed * 1000 / $self->{option_packets},
+        rta => ($self->{option_packets} > $total_packet_lost) ? $total_time_elapsed * 1000 / ($self->{option_packets} - $total_packet_lost) : 0,
         rtmax => $max_time_elapsed * 1000,
         rtmin => $min_time_elapsed * 1000,
         pl => int($total_packet_lost * 100 / $self->{option_packets}),

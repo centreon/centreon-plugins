@@ -84,6 +84,7 @@ my $lookup_type = [
     { type => 'stonesoft', re => qr/Forcepoint/i },
     { type => 'redback', re => qr/Redback/i },
     { type => 'palo alto', re => qr/Palo Alto/i },
+    { type => 'hp procurve', re => qr/HP.*Switch/i },
     { type => 'hp procurve', re => qr/HP ProCurve/i },
     { type => 'hp standard', re => qr/HPE Comware/i },
     { type => 'hp msl', re => qr/HP MSL/i },
@@ -152,6 +153,7 @@ sub run {
         my %host;
         $host{type} = $self->define_type(desc => $result->{$self->{oid_sysDescr}});
         $host{desc} = $result->{$self->{oid_sysDescr}};
+        $host{desc} =~ s/\n/ /g if (defined($host{desc}));
         $host{ip} = $ip->addr;
         $host{hostname} = $result->{$self->{oid_sysName}};
         $host{snmp_version} = $last_version;

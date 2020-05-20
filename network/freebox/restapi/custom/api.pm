@@ -214,15 +214,18 @@ sub get_performance {
         $encoded = encode_json($json_request);
     };
     if ($@) {
-        $self->{output}->add_option_msg(short_msg => "Cannot encode json request");
+        $self->{output}->add_option_msg(short_msg => 'Cannot encode json request');
         $self->{output}->option_exit();
     }
     
     $self->settings();
-    my $content = $self->{http}->request(url_path => '/api/' . $self->{freebox_api_version} . '/' . $options{path},
-                                         method => 'POST', query_form_post => $encoded, 
-                                         critical_status => '', warning_status => '', unknown_status => '');
+    my $content = $self->{http}->request(
+        url_path => '/api/' . $self->{freebox_api_version} . '/' . $options{path},
+        method => 'POST', query_form_post => $encoded, 
+        critical_status => '', warning_status => '', unknown_status => ''
+    );
     my $decoded = $self->manage_response(content => $content);
+
     my ($datas, $total) = ({}, 0);
     foreach my $data (@{$decoded->{result}->{data}}) {
         foreach my $label (keys %$data) {
@@ -233,9 +236,7 @@ sub get_performance {
         $total++;
     }
     
-    foreach (keys %$datas) {
-        $datas->{$_} /= $total;
-    }
+    $datas->{$_} = $datas->{$_} / $total / 100 foreach (keys %$datas);
 
     return $datas;
 }

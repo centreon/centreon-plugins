@@ -37,7 +37,7 @@ sub set_system {
     $self->{thresholds} = {
         default => [
             ['false', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ]
     };
 
@@ -52,6 +52,7 @@ sub ssh_execute {
 
     ($self->{results}, $self->{exit_code}) = $options{custom}->execute_command(
         command => 'show system environmentals',
+        ForceArray => ['entry']
     );
 }
 

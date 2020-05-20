@@ -291,7 +291,7 @@ List available sql modes.
 
 =item B<--multiple>
 
-Multiple database connections (some mode needs it).
+Multiple database connections (required by some specific modes).
 
 =item B<--pass-manager>
 
