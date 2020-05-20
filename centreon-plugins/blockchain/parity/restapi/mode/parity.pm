@@ -40,7 +40,7 @@ sub set_counters {
                 key_values => [ { name => 'tx_pending' } ],
                 output_template => "Pending transactions: %d",
                 perfdatas => [
-                    { label => 'tx_pending', value => 'tx_pending_absolute', template => '%d', min => 0 }
+                    { label => 'tx_pending', value => 'tx_pending', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'mempool_size' } ],
                 output_template => "Mempool size: %d",
                 perfdatas => [
-                    { label => 'mempool_size', value => 'mempool_size_absolute', template => '%d', min => 0 }
+                    { label => 'mempool_size', value => 'mempool_size', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'mempool_usage' } ],
                 output_template => "Mempool usage: %d %% ",
                 perfdatas => [
-                    { label => 'mempool_usage', value => 'mempool_usage_absolute', template => '%d', min => 0 }
+                    { label => 'mempool_usage', value => 'mempool_usage', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -67,7 +67,7 @@ sub set_counters {
                 key_values => [ { name => 'peers_connected' } ],
                 output_template => "Peers connected: %d",
                 perfdatas => [
-                    { label => 'peers_connected', value => 'peers_connected_absolute', template => '%d', min => 0 }
+                    { label => 'peers_connected', value => 'peers_connected', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'peers_max' } ],
                 output_template => "Peers max: %d",
                 perfdatas => [
-                    { label => 'peers_max', value => 'peers_max_absolute', template => '%d', min => 0 }
+                    { label => 'peers_max', value => 'peers_max', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'peers_usage' } ],
                 output_template => "Mempool usage: %d %% ",
                 perfdatas => [
-                    { label => 'peers_usage', value => 'peers_usage_absolute', template => '%d', min => 0 }
+                    { label => 'peers_usage', value => 'peers_usage', template => '%d', min => 0 }
                 ],                
             }
         },
