@@ -33,18 +33,17 @@ sub new {
     %{$self->{modes}} = (
         'connections'     => 'network::checkpoint::snmp::mode::connections',
         'cpu'             => 'network::checkpoint::snmp::mode::cpu',
+        'disk'            => 'network::checkpoint::snmp::mode::disk',
         'hardware'        => 'network::checkpoint::snmp::mode::hardware',
         'hastate'         => 'network::checkpoint::snmp::mode::hastate',
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
-        'list-storages'   => 'snmp_standard::mode::liststorages',
         'memory'          => 'network::checkpoint::snmp::mode::memory',
-        'storage'         => 'snmp_standard::mode::storage',
         'time'            => 'snmp_standard::mode::ntp',
         'uptime'          => 'snmp_standard::mode::uptime',
         'vpn-status'      => 'network::checkpoint::snmp::mode::vpnstatus',
         'vrrp-status'     => 'snmp_standard::mode::vrrp',
-        'vsx'             => 'network::checkpoint::snmp::mode::vsx',
+        'vsx'             => 'network::checkpoint::snmp::mode::vsx'
     );
 
     return $self;

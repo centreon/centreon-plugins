@@ -152,7 +152,7 @@ Check memory usage.
 
 Filter operating (Default: 'routing|fpc').
 
-=item B<--warning-*> B<--critical-usage>
+=item B<--warning-*> B<--critical-*>
 
 Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
