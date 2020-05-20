@@ -88,14 +88,12 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{custom} = $options{custom};
 
     $self->{global} = {};
 
-    my $server_stats = $self->{custom}->run_command(
+    my $server_stats = $options{custom}->run_command(
         database => 'admin',
-        command => $self->{custom}->ordered_hash(serverStatus => 1),
+        command => $options{custom}->ordered_hash(serverStatus => 1),
     );
     
     $self->{global}->{active} = $server_stats->{connections}->{active};
@@ -103,7 +101,7 @@ sub manage_selection {
     $self->{global}->{usage} = $server_stats->{connections}->{current} / ($server_stats->{connections}->{current} + $server_stats->{connections}->{available});
     $self->{global}->{totalCreated} = $server_stats->{connections}->{totalCreated};
     
-    $self->{cache_name} = "mongodb_" . $self->{mode} . '_' . $self->{custom}->get_hostname() . '_' . $self->{custom}->get_port() . '_' .
+    $self->{cache_name} = "mongodb_" . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $options{custom}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 

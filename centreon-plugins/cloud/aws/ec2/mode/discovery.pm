@@ -32,7 +32,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "prettify"  => { name => 'prettify' },
+        "prettify"      => { name => 'prettify' },
+        "filter-type:s" => { name => 'filter_type' },
     });
     
     return $self;
@@ -86,8 +87,10 @@ sub run {
                 }
                 push @{$ec2{tags}}, { key => $tag->{Key}, value => $tag->{Value} };
             }
-            push @disco_data, \%ec2;
-            push @disco_data, \%asg if (defined($asg{name}) && $asg{name} ne '');
+            push @disco_data, \%ec2 unless (defined($self->{option_results}->{filter_type})
+                && $ec2{type} !~ /$self->{option_results}->{filter_type}/);
+            push @disco_data, \%asg unless ((defined($self->{option_results}->{filter_type})
+                && $asg{type} !~ /$self->{option_results}->{filter_type}/) || !defined($asg{name}) || $asg{name} eq '');
         }
     }
 
@@ -122,6 +125,10 @@ __END__
 EC2/ASG discovery.
 
 =over 8
+
+=item B<--filter-type>
+
+Filter type.
 
 =item B<--prettify>
 

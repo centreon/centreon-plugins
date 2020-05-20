@@ -30,9 +30,9 @@ sub custom_status_output {
     my ($self, %options) = @_;
 
     my $msg = 'status is ' . $self->{result_values}->{overall_status};
-    if ($self->{result_values}->{vsan_status} ne '') {
-        $msg .= ' [vsan status: ' . $self->{result_values}->{vsan_status} . ']';
-    }
+    $msg .= ' [vsan status: ' . $self->{result_values}->{vsan_status} . ']' if ($self->{result_values}->{vsan_status} ne '');
+    $msg .= ' [ha enabled: ' . $self->{result_values}->{ha_enabled} . ']' if ($self->{result_values}->{ha_enabled} ne '');
+    $msg .= ' [drs enabled: ' . $self->{result_values}->{drs_enabled} . ']' if ($self->{result_values}->{drs_enabled} ne '');
     return $msg;
 }
 
@@ -40,18 +40,24 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' },
+        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' }
     ];
     
     $self->{maps_counters}->{cluster} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'overall_status' }, { name => 'vsan_status' }, { name => 'display' } ],
+                key_values => [
+                    { name => 'overall_status' },
+                    { name => 'vsan_status' },
+                    { name => 'ha_enabled' },
+                    { name => 'drs_enabled' },
+                    { name => 'display' }
+                ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -65,41 +71,43 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'cluster-name:s'        => { name => 'cluster_name' },
         'filter'                => { name => 'filter' },
         'scope-datacenter:s'    => { name => 'scope_datacenter' },
         'unknown-status:s'      => { name => 'unknown_status', default => '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i' },
         'warning-status:s'      => { name => 'warning_status', default => '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i' },
+        'critical-status:s'     => { name => 'critical_status', default => '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i' }
     });
-    
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cluster} = {};
     my $response = $options{custom}->execute(
         params => $self->{option_results},
         command => 'statuscluster'
     );
 
+    $self->{cluster} = {};
     foreach my $cluster_id (keys %{$response->{data}}) {
         my $cluster_name = $response->{data}->{$cluster_id}->{name};
         $self->{cluster}->{$cluster_name} = {
             display => $cluster_name, 
             overall_status => $response->{data}->{$cluster_id}->{overall_status},
             vsan_status => defined($response->{data}->{$cluster_id}->{vsan_cluster_status}) ? $response->{data}->{$cluster_id}->{vsan_cluster_status} : '',
+            ha_enabled => defined($response->{data}->{$cluster_id}->{ha_enabled}) ? $response->{data}->{$cluster_id}->{ha_enabled} : '',
+            drs_enabled => defined($response->{data}->{$cluster_id}->{drs_enabled}) ? $response->{data}->{$cluster_id}->{drs_enabled} : ''
         };
     }    
 }
@@ -130,17 +138,17 @@ Search in following datacenter(s) (can be a regexp).
 =item B<--unknown-status>
 
 Set warning threshold for status (Default: '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i').
-Can used special variables like: %{overall_status}, %{vsan_status}
+Can used special variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i').
-Can used special variables like: %{overall_status}, %{vsan_status}
+Can used special variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =item B<--critical-status>
 
 Set critical threshold for status (Default: '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i').
-Can used special variables like: %{overall_status}, %{vsan_status}
+Can used special variables like: %{overall_status}, %{vsan_status}, %{drs_enabled}, %{ha_enabled}
 
 =back
 

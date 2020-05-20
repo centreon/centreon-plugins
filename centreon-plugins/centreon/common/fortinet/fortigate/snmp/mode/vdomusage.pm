@@ -103,6 +103,7 @@ sub set_counters {
                 { name => 'vdom_memory', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vdom_session', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vdom_traffic', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'vdom_policy', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'vdom_status', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
@@ -114,7 +115,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
                     { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute' }
-                ],
+                ]
             }
         },
         { label => 'license-free', nlabel => 'virtualdomains.license.free.count', display_ok => 0, set => {
@@ -122,7 +123,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
                     { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute' }
-                ],
+                ]
             }
         },
         { label => 'license-usage-prct', nlabel => 'virtualdomains.license.usage.percentage', display_ok => 0, set => {
@@ -130,7 +131,7 @@ sub set_counters {
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
                     { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%' }
-                ],
+                ]
             }
         }
     ];
@@ -142,7 +143,7 @@ sub set_counters {
                 perfdatas => [
                     { value => 'cpu_absolute', template => '%.2f', unit => '%', min => 0, max => 100,
                       label_extra_instance => 1, instance_use => 'display_absolute' }
-                ],
+                ]
             }
         }
     ];
@@ -159,6 +160,18 @@ sub set_counters {
         }
     ];
 
+    $self->{maps_counters}->{vdom_policy} = [
+        { label => 'policies-active', nlabel => 'virtualdomain.policies.active.count', set => {
+                key_values => [ { name => 'active_policies' }, { name => 'display' } ],
+                output_template => 'active policies: %d',
+                perfdatas => [
+                    { value => 'active_policies_absolute', template => '%d',
+                      min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
+                ]
+            }
+        }
+    ];
+
     $self->{maps_counters}->{vdom_session} = [
         { label => 'sessions-active', nlabel => 'virtualdomain.sessions.active.count', set => {
                 key_values => [ { name => 'active_sessions' }, { name => 'display' } ],
@@ -166,7 +179,7 @@ sub set_counters {
                 perfdatas => [
                     { value => 'active_sessions_absolute', template => '%d',
                       min => 0, label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                ]
             }
         },
         { label => 'session-rate', nlabel => 'virtualdomain.sessions.rate.persecond', set => {
@@ -175,9 +188,9 @@ sub set_counters {
                 perfdatas => [
                     { value => 'session_rate_absolute', template => '%d',
                       min => 0, unit => '/s', label_extra_instance => 1, instance_use => 'display_absolute' }
-                ],
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{vdom_status} = [
@@ -202,7 +215,7 @@ sub set_counters {
                 perfdatas => [
                     { value => 'traffic_per_second', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                ]
             }
         },
         { label => 'traffic-out', nlabel => 'virtualdomain.traffic.out.bitspersecond', set => {
@@ -215,9 +228,9 @@ sub set_counters {
                 perfdatas => [
                     { value => 'traffic_per_second', template => '%s',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -227,12 +240,15 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-vdomain:s'  => { name => 'filter_vdomain' },
-        'add-traffic'       => { name => 'add_traffic' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' }
+        'filter-vdomain:s'    => { name => 'filter_vdomain' },
+        'add-traffic'         => { name => 'add_traffic' },
+        'add-policy'          => { name => 'add_policy' },
+        'policy-cache-time:s' => { name => 'policy_cache_time', default => 60 },
+        'warning-status:s'    => { name => 'warning_status', default => '' },
+        'critical-status:s'   => { name => 'critical_status', default => '' }
     });
 
+    $self->{cache_policy} = centreon::plugins::statefile->new(%options);
     return $self;
 }
 
@@ -241,6 +257,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->{cache_policy}->check_options(%options) if (defined($self->{option_results}->{add_policy}));
 }
 
 my $map_opmode = { 1 => 'nat', 2 => 'transparent' };
@@ -248,7 +265,7 @@ my $map_ha = { 1 => 'master', 2 => 'backup', 3 => 'standalone' };
 
 my $mapping = {
     fgVdNumber => { oid => '.1.3.6.1.4.1.12356.101.3.1.1' },
-    fgVdMaxVdoms => { oid => '.1.3.6.1.4.1.12356.101.3.1.2' },
+    fgVdMaxVdoms => { oid => '.1.3.6.1.4.1.12356.101.3.1.2' }
 };
 my $mapping_vdom = {
     fgVdEntOpMode   => { oid => '.1.3.6.1.4.1.12356.101.3.2.1.1.3', map => $map_opmode },
@@ -301,6 +318,27 @@ sub add_traffic {
     }
 }
 
+sub add_policy {
+    my ($self, %options) = @_;
+
+    my $oid_fgFwPolID  = '.1.3.6.1.4.1.12356.101.5.1.2.1.1.1';
+
+    my $has_cache_file = $self->{cache_policy}->read(statefile => 'fortinet_fortigate_policy_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port());
+    my $timestamp_cache = $self->{cache_policy}->get(name => 'last_timestamp');
+    my $snmp_result = $self->{cache_policy}->get(name => 'snmp_result');
+    if ($has_cache_file == 0 || !defined($timestamp_cache) || !defined($snmp_result) || 
+        ((time() - $timestamp_cache) > (($self->{option_results}->{policy_cache_time}) * 60))) {
+        $snmp_result = $options{snmp}->get_table(oid => $oid_fgFwPolID);
+        $self->{cache_policy}->write(data => { last_timestamp => time(), snmp_result => $snmp_result });
+    }
+
+    foreach (keys %$snmp_result) {
+        /^$oid_fgFwPolID\.(\d+)/;
+        $self->{vdom}->{$1}->{vdom_policy}->{active_policies}++
+            if (defined($self->{vdom}->{$1}));
+    }
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
@@ -338,8 +376,10 @@ sub manage_selection {
             vdom_cpu => { display => $name },
             vdom_memory => { display => $name },
             vdom_session => { display => $name },
-            vdom_status => { display => $name },
+            vdom_status => { display => $name }
         };
+        $self->{vdom}->{$instance}->{vdom_policy} = { display => $name, active_policies => 0 }
+            if (defined($self->{option_results}->{add_policy}));
     }
 
     return if (scalar(keys %{$self->{vdom}}) <= 0);
@@ -362,6 +402,8 @@ sub manage_selection {
 
     $self->add_traffic(snmp => $options{snmp})
         if (defined($self->{option_results}->{add_traffic}));
+    $self->add_policy(snmp => $options{snmp})
+        if (defined($self->{option_results}->{add_policy}));
 
     $self->{cache_name} = 'fortinet_fortigate_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
@@ -386,6 +428,14 @@ Filter by virtual domain name (can be a regexp).
 
 Add traffic usage by virtual domain.
 
+=item B<--add-policy>
+
+Add number of policies by virtual domain.
+
+=item B<--policy-cache-time>
+
+Time in minutes before reloading cache file (default: 60).
+
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
@@ -401,7 +451,7 @@ Can used special variables like: %{op_mode}, %{ha_state}
 Thresholds.
 Can be: 'cpu-utilization', 'sessions-active', 'session-rate',
 'memory-usage-prct', 'license-usage', 'license-free',
-'license-usage-prct', 'traffic-in', 'traffic-out'.
+'license-usage-prct', 'traffic-in', 'traffic-out', 'policies-active'.
 
 =back
 

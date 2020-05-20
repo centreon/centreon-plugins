@@ -390,8 +390,8 @@ sub manage_selection {
     
     my $results = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oid_sysTrunkTable  },
-            { oid => $oid_sysTrunkStatTable },
+            { oid => $oid_sysTrunkTable, end => $mapping_sysTrunk->{sysTrunkOperBw}->{oid}  },
+            { oid => $oid_sysTrunkStatTable }
         ],
         nothing_quit => 1
     );

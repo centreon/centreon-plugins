@@ -25,23 +25,54 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total_absolute}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute}),
+        $self->{result_values}->{prct_used_absolute},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute}),
+        $self->{result_values}->{prct_free_absolute}
+    );
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory usages are ok' }
+        { name => 'memory', type => 1, cb_prefix_output => 'prefix_memory_output', message_multiple => 'All memory usages are ok', skipped_code => { -10 => 1 } }
     ];
     
     $self->{maps_counters}->{memory} = [
-        { label => 'usage', set => {
-                key_values => [ { name => 'used' }, { name => 'display' } ],
-                output_template => 'Used : %.2f %%',
+        { label => 'usage', display_ok => 0, nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used_absolute', template => '%.2f', min => 0, max => 100, unit => '%',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                    { value => 'used_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
             }
         },
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { value => 'free_absolute', template => '%d', min => 0, max => 'total_absolute',
+                      unit => 'B', cast_int => 1, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'usage-prct', nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' }, { name => 'display' } ],
+                output_template => 'used: %.2f %%',
+                perfdatas => [
+                    { value => 'prct_used_absolute', template => '%.2f', min => 0, max => 100, unit => '%',
+                      label_extra_instance => 1 },
+                ]
+            }
+        }
     ];
 }
 
@@ -53,33 +84,72 @@ sub prefix_memory_output {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
 my $mapping = {
-    s5ChasUtilMemoryAvailable   => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.9' },
+    s5ChasUtilMemoryAvailable   => { oid => '.1.3.6.1.4.1.45.1.6.3.8.1.1.9' }
 };
+my $mapping_khi = {
+    rcKhiSlotMemUsed => { oid => '.1.3.6.1.4.1.2272.1.85.10.1.1.6' }, # KB
+    rcKhiSlotMemFree => { oid => '.1.3.6.1.4.1.2272.1.85.10.1.1.7' }  # KB
+};
+my $oid_rcKhiSlotPerfEntry = '.1.3.6.1.4.1.2272.1.85.10.1.1';
+
+sub check_khi {
+    my ($self, %options) = @_;
+
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_rcKhiSlotPerfEntry,
+        start => $mapping_khi->{rcKhiSlotMemUsed}->{oid},
+        end => $mapping_khi->{rcKhiSlotMemFree}->{oid},
+        nothing_quit => 1
+    );
+
+    foreach (keys %$snmp_result) {
+        next if (! /^$mapping_khi->{rcKhiSlotMemUsed}->{oid}\.(\d+)$/);
+        my $instance = $1;
+        my $result = $options{snmp}->map_instance(mapping => $mapping_khi, results => $snmp_result, instance => $instance);
+
+        my $total = $result->{rcKhiSlotMemUsed} * 1024 + $result->{rcKhiSlotMemFree} * 1024;
+        $self->{memory}->{'slot_' . $1} = {
+            display => 'slot_' . $1,
+            used => $result->{rcKhiSlotMemUsed} * 1024,
+            free => $result->{rcKhiSlotMemFree} * 1024,
+            prct_used => $result->{rcKhiSlotMemUsed} * 1024 / $total,
+            prct_free => $result->{rcKhiSlotMemFree} * 1024 / $total,
+            total => $total
+        };
+    }
+}
 
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $mapping->{s5ChasUtilMemoryAvailable}->{oid},
+    );
+
     $self->{memory} = {};
-    $self->{results} = $options{snmp}->get_table(oid => $mapping->{s5ChasUtilMemoryAvailable}->{oid},
-                                                 nothing_quit => 1);
     foreach my $oid (keys %{$self->{results}}) {
         next if ($oid !~ /^$mapping->{s5ChasUtilMemoryAvailable}->{oid}\.(.*)/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}, instance => $instance);
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
-        $self->{memory}->{$instance} = { display => $instance, 
-                                         used => 100 - $result->{s5ChasUtilMemoryAvailable}};
+        $self->{memory}->{$instance} = {
+            display => $instance, 
+            prct_used => 100 - $result->{s5ChasUtilMemoryAvailable}
+        };
+    }
+
+    if (scalar(keys %{$self->{memory}}) <= 0) {
+        $self->check_khi(snmp => $options{snmp});
     }
 }
 
@@ -93,13 +163,10 @@ Check memory usages.
 
 =over 8
 
-=item B<--warning-usage>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning (in percent).
-
-=item B<--critical-usage>
-
-Threshold critical (in percent).
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back
 

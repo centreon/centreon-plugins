@@ -28,12 +28,11 @@ my $mapping = {
     controllerComponentStatus   => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.1.1.38', map => \%map_status },
     controllerFQDD              => { oid => '.1.3.6.1.4.1.674.10892.5.5.1.20.130.1.1.78' },
 };
-my $oid_controllerTableEntry = '.1.3.6.1.4.1.674.10892.5.5.1.20.130.1.1';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_controllerTableEntry };
+    push @{$self->{request}}, { oid => $mapping->{controllerComponentStatus}->{oid} }, { oid => $mapping->{controllerFQDD}->{oid} };
 }
 
 sub check {
@@ -43,10 +42,11 @@ sub check {
     $self->{components}->{storagectrl} = {name => 'storage controllers', total => 0, skip => 0};
     return if ($self->check_filter(section => 'storagectrl'));
 
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %{$self->{results}->{$oid_controllerTableEntry}})) {
+    my $snmp_result = { %{$self->{results}->{ $mapping->{controllerComponentStatus}->{oid} }}, %{$self->{results}->{ $mapping->{controllerFQDD}->{oid} }} };
+    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$snmp_result)) {
         next if ($oid !~ /^$mapping->{controllerComponentStatus}->{oid}\.(.*)$/);
         my $instance = $1;
-        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_controllerTableEntry}, instance => $instance);
+        my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         
         next if ($self->check_filter(section => 'storagectrl', instance => $instance));
         $self->{components}->{storagectrl}->{total}++;

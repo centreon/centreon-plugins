@@ -32,7 +32,7 @@ sub set_oids_errors {
     $self->{oid_ifInErrors} = '.1.3.6.1.2.1.2.2.1.14';
     $self->{oid_ifOutDiscards} = '.1.3.6.1.2.1.2.2.1.19';
     $self->{oid_ifOutErrors} = '.1.3.6.1.2.1.2.2.1.20';
-    $self->{oid_dot3StatsFCSErrors} = '.1.3.6.1.2.1.10.7.2.1.3';
+    $self->{oid_ifInFCSError} = '.1.3.6.1.2.1.10.7.2.1.3'; # dot3StatsFCSErrors
 }
 
 sub set_counters {
@@ -41,15 +41,15 @@ sub set_counters {
     $self->SUPER::set_counters(%options);
     
     push @{$self->{maps_counters}->{int}}, 
-        { label => 'fcs-errors', filter => 'add_errors', nlabel => 'interface.fcs.errors.count', set => {
-                key_values => [ { name => 'fcserror', diff => 1 }, { name => 'display' } ],
-                output_template => 'FCS Errors : %d',
-                perfdatas => [
-                    { value => 'fcserror_absolute', template => '%d',
-                      label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+        { label => 'in-fcserror', filter => 'add_errors', nlabel => 'interface.packets.in.fcserror.count', set => {
+                key_values => [ { name => 'infcserror', diff => 1 }, { name => 'total_in_packets', diff => 1 }, { name => 'display' }, { name => 'mode_cast' } ],
+                closure_custom_calc => $self->can('custom_errors_calc'),
+                closure_custom_calc_extra_options => { label_ref1 => 'in', label_ref2 => 'fcserror' },
+                closure_custom_output => $self->can('custom_errors_output'), output_error_template => 'Packets In FCS Error : %s',
+                closure_custom_perfdata => $self->can('custom_errors_perfdata'),
+                closure_custom_threshold_check => $self->can('custom_errors_threshold')
             }
-        },
+        }
     ;
 
     push @{$self->{maps_counters}->{int}},
@@ -58,8 +58,8 @@ sub set_counters {
                 output_template => 'Input Power : %s dBm',
                 perfdatas => [
                     { value => 'input_power_absolute', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'bias-current', filter => 'add_optical', nlabel => 'interface.bias.current.milliampere', set => {
@@ -68,7 +68,7 @@ sub set_counters {
                 perfdatas => [
                     { value => 'bias_current_absolute', template => '%s',
                       unit => 'mA', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                ]
             }
         },
         { label => 'output-power', filter => 'add_optical', nlabel => 'interface.output.power.dbm', set => {
@@ -76,8 +76,8 @@ sub set_counters {
                 output_template => 'Output Power : %s dBm',
                 perfdatas => [
                     { value => 'output_power_absolute', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
         },
         { label => 'module-temperature', filter => 'add_optical', nlabel => 'interface.module.temperature.celsius', set => {
@@ -85,10 +85,10 @@ sub set_counters {
                 output_template => 'Module Temperature : %.2f C',
                 perfdatas => [
                     { value => 'module_temperature_absolute', template => '%.2f',
-                      unit => 'C', label_extra_instance => 1, instance_use => 'display_absolute' },
-                ],
+                      unit => 'C', label_extra_instance => 1, instance_use => 'display_absolute' }
+                ]
             }
-        },
+        }
     ;
 }
 
@@ -127,7 +127,7 @@ sub load_errors {
             $self->{oid_ifInErrors},
             $self->{oid_ifOutDiscards},
             $self->{oid_ifOutErrors},
-            $self->{oid_dot3StatsFCSErrors}
+            $self->{oid_ifInFCSError}
         ],
         instances => $self->{array_interface_selected}
     );
@@ -140,7 +140,7 @@ sub add_result_errors {
     $self->{int}->{$options{instance}}->{inerror} = $self->{results}->{$self->{oid_ifInErrors} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{outdiscard} = $self->{results}->{$self->{oid_ifOutDiscards} . '.' . $options{instance}};
     $self->{int}->{$options{instance}}->{outerror} = $self->{results}->{$self->{oid_ifOutErrors} . '.' . $options{instance}};
-    $self->{int}->{$options{instance}}->{fcserror} = $self->{results}->{$self->{oid_dot3StatsFCSErrors} . '.' . $options{instance}};
+    $self->{int}->{$options{instance}}->{infcserror} = $self->{results}->{$self->{oid_ifInFCSError} . '.' . $options{instance}};
 }
 
 my $oid_jnxDomCurrentRxLaserPower = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.5';
@@ -259,33 +259,21 @@ Set critical threshold for all error counters.
 
 Threshold warning (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
-And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
-'in-overflow' (%), 'in-unknownop' (%), 'in-lengtherror' (%), 'in-codeerror' (%), 'in-carriererror' (%),
-'in-jabber' (%), 'in-drop' (%), 'out-tooshort' (%), 'out-toolong' (%), 'out-underrun' (%),
-'out-collision' (%), 'out-excessivecollision' (%), 'out-multiplecollision' (%), 'out-singlecollision' (%),
-'out-excessivedeferred' (%),'out-deferred' (%), 'out-latecollision' (%), 'out-totalcollision' (%),
-'out-drop' (%), 'out-jabber' (%), 'out-fcserror' (%), 'out-fragment' (%),
-'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+And also: 'fcs-errors (%)', 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--critical-*>
 
 Threshold critical (will superseed --warning-errors).
 Can be: 'total-port', 'total-admin-up', 'total-admin-down', 'total-oper-up', 'total-oper-down',
-'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard', 'fcs-errors',
+'in-traffic', 'out-traffic', 'in-error', 'in-discard', 'out-error', 'out-discard',
 'in-ucast' (%), 'in-bcast' (%), 'in-mcast' (%), 'out-ucast' (%), 'out-bcast' (%), 'out-mcast' (%),
 'speed' (b/s).
 
-And also: 'in-tooshort' (%), 'in-toolong' (%), 'in-fcserror' (%), 'in-alignerror' (%), 'in-fragment' (%),
-'in-overflow' (%), 'in-unknownop' (%), 'in-lengtherror' (%), 'in-codeerror' (%), 'in-carriererror' (%),
-'in-jabber' (%), 'in-drop' (%), 'out-tooshort' (%), 'out-toolong' (%), 'out-underrun' (%),
-'out-collision' (%), 'out-excessivecollision' (%), 'out-multiplecollision' (%), 'out-singlecollision' (%),
-'out-excessivedeferred' (%),'out-deferred' (%), 'out-latecollision' (%), 'out-totalcollision' (%),
-'out-drop' (%), 'out-jabber' (%), 'out-fcserror' (%), 'out-fragment' (%),
-'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
+And also: 'in-fcserror' (%), 'input-power' (dBm), 'bias-current' (mA), 'output-power' (dBm), 'module-temperature' (C).
 
 =item B<--units-traffic>
 

@@ -153,7 +153,6 @@ sub settings {
 
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
-    $self->{http}->add_header(key => 'Content-Type', value => 'application/x-www-form-urlencoded');
     if (defined($self->{access_token})) {
         $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{access_token});
     }
@@ -163,7 +162,14 @@ sub settings {
 sub get_access_token {
     my ($self, %options) = @_;
 
-    my $has_cache_file = $options{statefile}->read(statefile => 'azure_api_' . md5_hex($self->{subscription}) . '_' . md5_hex($self->{tenant}) . '_' . md5_hex($self->{client_id}));
+    my $has_cache_file = $options{statefile}->read(
+        statefile =>
+            'azure_api_' . 
+            md5_hex($self->{subscription}) . '_' . 
+            md5_hex($self->{tenant}) . '_' . 
+            md5_hex($self->{client_id}) . '_' .
+            md5_hex($self->{management_endpoint})
+    );
     my $expires_on = $options{statefile}->get(name => 'expires_on');
     my $access_token = $options{statefile}->get(name => 'access_token');
 
@@ -180,7 +186,8 @@ sub get_access_token {
         my $content = $self->{http}->request(
             method => 'POST', query_form_post => $post_data,
             full_url => $self->{login_endpoint} . '/' . $self->{tenant} . '/oauth2/token',
-            hostname => ''
+            hostname => '',
+            header => [ 'Content-Type: application/x-www-form-urlencoded' ]
         );
 
         if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
@@ -220,10 +227,7 @@ sub request_api {
 
     $self->settings();
 
-    $self->{output}->output_add(long_msg => "URL: '" . $options{full_url} . "'", debug => 1);
-
-    my $content = $self->{http}->request(%options);
-    
+    my $content = $self->{http}->request(%options);    
     if (!defined($content) || $content eq '' || $self->{http}->get_header(name => 'content-length') == 0) {
         $self->{output}->add_option_msg(short_msg => "Management endpoint API returns empty content [code: '" . $self->{http}->get_code() . "'] [message: '" . $self->{http}->get_message() . "']");
         $self->{output}->option_exit();
@@ -630,6 +634,26 @@ sub azure_list_sqldatabases {
     my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
     
     return $response->{value};
+}
+
+sub azure_get_log_analytics_set_url {
+    my ($self, %options) = @_;
+
+    my $uri = URI::Encode->new({encode_reserved => 1});
+    my $encoded_query = $uri->encode($options{query});
+    my $encoded_interval = $uri->encode($options{interval});
+    my $url = $self->{management_endpoint} . '/v1/workspaces/' . $options{workspace_id} . '/query?query=' . $encoded_query . '&timespan=' . $encoded_interval;
+
+    return $url;
+}
+
+sub azure_get_log_analytics {
+    my ($self, %options) = @_;
+
+    my $full_url = $self->azure_get_log_analytics_set_url(%options);
+    my $response = $self->request_api(method => 'GET', full_url => $full_url, hostname => '');
+
+    return $response;
 }
 
 1;

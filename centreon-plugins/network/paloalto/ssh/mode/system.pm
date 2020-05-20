@@ -117,6 +117,7 @@ sub new {
     $options{options}->add_options(arguments => { 
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '%{oper_mode} !~ /normal/i' },
+        'timezone:s'        => { name => 'timezone' }
     });
     
     return $self;
@@ -127,6 +128,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
+    $self->{option_results}->{timezone} = 'GMT' if (!defined($self->{option_results}->{timezone}) || $self->{option_results}->{timezone} eq '');
 }
 
 sub get_diff_time {
@@ -135,10 +137,7 @@ sub get_diff_time {
     # '2019/10/15 12:03:58 BST'
     return if ($options{time} !~ /^\s*(\d{4})\/(\d{2})\/(\d{2})\s+(\d+):(\d+):(\d+)\s+(\S+)/);
 
-    my $tz = $7;
-    $tz = 'GMT' if ($tz eq 'BST');
-    $tz = 'Europe/Paris' if ($tz eq 'CEST');
-    $tz = 'America/New_York' if ($tz eq 'EST');
+    my $tz = centreon::plugins::misc::set_timezone(name => $self->{option_results}->{timezone});
     my $dt = DateTime->new(
         year       => $1,
         month      => $2,
@@ -146,7 +145,7 @@ sub get_diff_time {
         hour       => $4,
         minute     => $5,
         second     => $6,
-        time_zone  => $tz
+        %$tz
     );
     return (time() - $dt->epoch);
 }
@@ -197,6 +196,10 @@ Check system.
 
 Only display some counters (regexp can be used).
 Example: --filter-counters='^status$'
+
+=item B<--timezone>
+
+Timezone options. Default is 'GMT'.
 
 =item B<--warning-status>
 

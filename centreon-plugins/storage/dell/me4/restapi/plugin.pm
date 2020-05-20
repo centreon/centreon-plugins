@@ -33,9 +33,10 @@ sub new {
     %{ $self->{modes} } = (
         'controller-statistics' => 'storage::dell::me4::restapi::mode::controllerstatistics',
         'hardware'              => 'storage::dell::me4::restapi::mode::hardware',
+        'interfaces'            => 'storage::dell::me4::restapi::mode::interfaces',
         'list-controllers'      => 'storage::dell::me4::restapi::mode::listcontrollers',
         'list-volumes'          => 'storage::dell::me4::restapi::mode::listvolumes',
-        'volume-statistics'     => 'storage::dell::me4::restapi::mode::volumestatistics',
+        'volume-statistics'     => 'storage::dell::me4::restapi::mode::volumestatistics'
     );
 
     $self->{custom_modes}{api} = 'storage::dell::me4::restapi::custom::api';

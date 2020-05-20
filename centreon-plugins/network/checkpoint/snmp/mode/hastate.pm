@@ -24,20 +24,14 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
+
     my $msg = "HA State: '" . $self->{result_values}->{hastate} . "' ";
     $msg .= "Role: '" . $self->{result_values}->{role} . "' ";
     return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    $self->{result_values}->{hastate} = $options{new_datas}->{$self->{instance} . '_hastate'};
-    $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_role'};
-    return 0;
 }
 
 sub set_counters {
@@ -49,12 +43,12 @@ sub set_counters {
     $self->{maps_counters}->{high_availability} = [
         { label => 'status', threshold => 0,  set => {
                 key_values => [ { name => 'hastate' }, { name => 'role' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
+                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -63,12 +57,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                "warning-status:s"      => { name => 'warning_status', default => '' },
-                                "critical-status:s"     => { name => 'critical_status', default => '%{hastate} !~ /(UP|working)/' },
-                                "no-ha-status:s"        => { name => 'no_ha_status', default => 'UNKNOWN' },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{hastate} !~ /(UP|working)/' },
+        'no-ha-status:s'    => { name => 'no_ha_status', default => 'UNKNOWN' }
+    });
 
     return $self;
 }
@@ -96,20 +89,27 @@ sub manage_selection {
 
     $self->{high_availability} = {};
 
-    my $result = $options{snmp}->get_leef(oids => [$oid_haInstalled, $oid_haState, $oid_haStatCode, $oid_haStarted],
-                                          nothing_quit => 1);
+    my $result = $options{snmp}->get_leef(
+        oids => [$oid_haInstalled, $oid_haState, $oid_haStatCode, $oid_haStarted],
+        nothing_quit => 1
+    );
 
     if ($result->{$oid_haInstalled} < 1 or $result->{$oid_haStarted} eq "no") {
-        $self->{output}->output_add(severity => $self->{option_results}->{no_ha_status},
-                                    short_msg => sprintf("Looks like HA is not started, or not installed .."),
-                                    long_msg => sprintf("HA Installed : '%u' HA Started : '%s'",
-                                                         $result->{$oid_haInstalled},  $result->{$oid_haStarted}),
-                                    );
+        $self->{output}->output_add(
+            severity => $self->{option_results}->{no_ha_status},
+            short_msg => sprintf("Looks like HA is not started, or not installed .."),
+            long_msg => sprintf(
+                "HA Installed : '%u' HA Started : '%s'",
+                $result->{$oid_haInstalled},  $result->{$oid_haStarted}
+            ),
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
-    $self->{high_availability} = { hastate => $map_status{$result->{$oid_haStatCode}},
-                                   role => $result->{$oid_haState} };
+    $self->{high_availability} = {
+        hastate => $map_status{$result->{$oid_haStatCode}},
+        role => $result->{$oid_haState}
+    };
 }
 
 1;

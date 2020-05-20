@@ -33,11 +33,12 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used_absolute});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free_absolute});
 
-    my $msg = sprintf("Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                      $total_size_value . " " . $total_size_unit,
-                      $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
-                      $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute});
-    return $msg;
+    return sprintf(
+        'Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used_absolute},
+        $total_free_value . " " . $total_free_unit, 100 - $self->{result_values}->{prct_used_absolute}
+    );
 }
 
 sub set_counters {
@@ -61,6 +62,7 @@ sub set_counters {
             }
         },
     ];
+
     $self->{maps_counters}->{swap} = [
         { label => 'swap', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
@@ -73,6 +75,7 @@ sub set_counters {
             }
         },
     ];
+
     $self->{maps_counters}->{malloc} = [
         { label => 'failed-malloc', set => {
                 key_values => [ { name => 'failed_mallocs', diff => 1 } ],
@@ -103,9 +106,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }

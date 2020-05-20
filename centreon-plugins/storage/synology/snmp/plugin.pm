@@ -33,12 +33,13 @@ sub new {
     %{$self->{modes}} = (
         'components'  => 'storage::synology::snmp::mode::hardware',
         'cpu'         => 'snmp_standard::mode::cpu',
+        'ha'          => 'storage::synology::snmp::mode::ha',
         'interfaces'  => 'snmp_standard::mode::interfaces',
         'memory'      => 'snmp_standard::mode::memory',
         'load'        => 'snmp_standard::mode::loadaverage',
         'storage'     => 'snmp_standard::mode::storage',
         'temperature' => 'storage::synology::snmp::mode::temperature',
-        'ups'         => 'storage::synology::snmp::mode::ups',
+        'ups'         => 'storage::synology::snmp::mode::ups'
     );
 
     return $self;

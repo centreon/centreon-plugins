@@ -1,3 +1,34 @@
+2020-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Ruckus SmartZone SNMP
+ * Plugin added: Ruckus ZoneDirector SNMP
+ * Plugin added: Ruckus ICX SNMP
+ * Plugin added: Dell Xseries SNMP
+ * Plugin added: Adva FSP150 SNMP
+ * Plugin added: Lenovo Iomega SNMP
+ * Plugin added: Netapp Santricity Rest API
+ * Plugin added: Bluemind
+ * Plugin added: Mulesoft Rest API
+ * Plugin added: Salesforce Rest API
+ * Break: [netapp/snmp] move directory
+ * Break: [netapp/restapi] move directory
+
+2020-04-10 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Dell OS10 SNMP
+ * Plugin added: Sirportly notification
+ * Plugin added: Mobotix Camera SNMP
+ * Plugin added: Ibm MQ MQI
+ * Plugin added: Supermicro BMC SNMP
+ * Plugin added: Eltek Enexus SNMP
+ * Plugin added: Cisco Meraki Rest API
+ * Plugin added: Aws EFS
+ * Core: add backend ssh system (plink, ssh and libssh)
+ * Mode added: [azure] 'alert'
+ * Mode added: [checkpoint/snmp] 'vsx'
+ * Mode added: [synology/snmp] 'ha'
+ * Mode added: [cisco/standard/snmp] 'wan3g'
+ * Break: [fortigate/snmp] 'cpu', 'memory', 'vdom' (merge) 
+ * Break: [supermicro/snmp] move directory
+
 2020-02-04 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: Allied Telesis SNMP
  * Plugin added: UPS HP SNMP

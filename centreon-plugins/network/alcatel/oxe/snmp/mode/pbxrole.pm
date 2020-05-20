@@ -30,9 +30,9 @@ my $thresholds = {
         ['indeterminate', 'UNKNOWN'],
         ['main', 'OK'],
         ['stand-by', 'OK'],
-        ['active-pcs', 'CRITICAL'],
-        ['inactive-pcs', 'CRITICAL'],
-    ],
+        ['inactive-pcs', 'OK'],
+        ['active-pcs', 'WARNING']
+    ]
 };
 my %map_role = (
     0 => 'indeterminate',
@@ -46,11 +46,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "threshold-overload:s@"   => { name => 'threshold_overload' },
-                                });
+
+    $options{options}->add_options(arguments => { 
+        'threshold-overload:s@'   => { name => 'threshold_overload' },
+    });
+
     return $self;
 }
 
@@ -82,12 +82,12 @@ sub run {
     my $oid_pbxRole = '.1.3.6.1.4.1.637.64.4400.1.4.0';
     my $oid_pbxRole_buggy = '.1.3.6.1.4.1.637.64.4400.1.4';
     my $result = $self->{snmp}->get_leef(oids => [$oid_pbxRole, $oid_pbxRole_buggy], nothing_quit => 1);
-    
+
     my $pbx_role = defined($result->{$oid_pbxRole}) ? $map_role{$result->{$oid_pbxRole}} : $map_role{$result->{$oid_pbxRole_buggy}};
     my $exit = $self->get_severity(section => 'role', value => $pbx_role);
     $self->{output}->output_add(severity => $exit,
                                 short_msg => sprintf("PBX Role is '%s'", $pbx_role));
- 
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -95,7 +95,7 @@ sub run {
 sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
-    
+
     if (defined($self->{overload_th}->{$options{section}})) {
         foreach (@{$self->{overload_th}->{$options{section}}}) {            
             if ($options{value} =~ /$_->{filter}/i) {
