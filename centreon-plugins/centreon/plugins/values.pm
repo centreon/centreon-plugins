@@ -241,7 +241,8 @@ sub execute {
         }
     
         if ((defined($value->{diff}) && $value->{diff} == 1) ||
-            (defined($value->{per_second}) && $value->{per_second} == 1)) {            
+            (defined($value->{per_minute}) && $value->{per_minute} == 1) ||
+            (defined($value->{per_second}) && $value->{per_second} == 1)) {
             $options{new_datas}->{$self->{instance} . '_' . $value->{name}} = $options{values}->{$value->{name}};
             $old_datas->{$self->{instance} . '_' . $value->{name}} = $self->{statefile}->get(name => $self->{instance} . '_' . $value->{name});
             if (!defined($old_datas->{$self->{instance} . '_' . $value->{name}})) {
