@@ -87,10 +87,12 @@ sub calc {
 
     # manage only one value ;)
     foreach my $value (@{$self->{key_values}}) {
-        if (defined($value->{per_second}) && $value->{per_second} == 1) {
-            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
-        } elsif (defined($value->{diff}) && $value->{diff} == 1)  {
+        if (defined($value->{diff}) && $value->{diff} == 1)  {
             $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}};
+        } elsif (defined($value->{per_second}) && $value->{per_second} == 1) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / $options{delta_time};
+        } elsif (defined($value->{per_minute}) && $value->{per_minute} == 1) {
+            $self->{result_values}->{$value->{name}} = ($options{new_datas}->{$self->{instance} . '_' . $value->{name}} - $options{old_datas}->{$self->{instance} . '_' . $value->{name}}) / ($options{delta_time} / 60);
         } else {
             $self->{result_values}->{$value->{name}} = $options{new_datas}->{$self->{instance} . '_' . $value->{name}};
         }
