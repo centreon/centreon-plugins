@@ -36,7 +36,7 @@ sub set_counters {
     ];  
 
     $self->{maps_counters}->{mempool} = [
-        { label => 'tx_pending', nlabel => 'parity.pending.transactions', set => {
+        { label => 'mempool_tx_pending', nlabel => 'parity.pending.transactions', set => {
                 key_values => [ { name => 'tx_pending' } ],
                 output_template => "Pending transactions: %d",
                 perfdatas => [
@@ -65,7 +65,7 @@ sub set_counters {
     $self->{maps_counters}->{peers} = [
         { label => 'peers_connected', nlabel => 'parity.peers.connected', set => {
                 key_values => [ { name => 'peers_connected' } ],
-                output_template => "Peers connected: %d",
+                output_template => "Connected peers: %d",
                 perfdatas => [
                     { label => 'peers_connected', value => 'peers_connected', template => '%d', min => 0 }
                 ],                
@@ -81,7 +81,7 @@ sub set_counters {
         },
         { label => 'peers_usage', nlabel => 'parity.peers.usage', set => {
                 key_values => [ { name => 'peers_usage' } ],
-                output_template => "Mempool usage: %d %% ",
+                output_template => "Peers usage: %d %% ",
                 perfdatas => [
                     { label => 'peers_usage', value => 'peers_usage', template => '%d', min => 0 }
                 ],                
@@ -89,6 +89,16 @@ sub set_counters {
         },
     ];
 
+}
+
+sub custom_peers_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Connected peers: %d / %d",
+        $self->{result_values}->{peers_connected},
+        $self->{result_values}->{peers_limit}
+    );
 }
 
 sub new {
@@ -162,19 +172,13 @@ sub manage_selection {
     # use Data::Dumper;
     # print Dumper($result);
 
-    $self->{output}->output_add(long_msg => "Config: [chain name: " . @{$result}[1]->{result} . "] [parity version: " . $res_parity_version . "] [version_hash: " 
-                                            . @{$result}[0]->{result}->{hash}  . "]", severity => 'OK');
-    $self->{output}->output_add(long_msg => "Network: [peers_connected: " . @{$result}[3]->{result}->{connected} . "] [peers_max: " . @{$result}[3]->{result}->{max} . "] [peers: " 
-                                            . scalar(@{$$result[3]->{result}->{peers}})  . "]", severity => 'OK');
-    $self->{output}->output_add(long_msg => "Node: [node_name: " . @{$result}[5]->{result} . "] [enode: " . @{$result}[4]->{result}  . "]", severity => 'OK');
-    $self->{output}->output_add(long_msg => "Mempool: [pending_transactions: " . scalar(@{$$result[2]->{result}})  . "] [transactions_limit: " . @{$result}[6]->{result} . "]", severity => 'OK');
-
     $self->{mempool} = { mempool_usage => scalar(@{$$result[2]->{result}}) / @{$result}[6]->{result} * 100, #TO CHECK division entière 
                          mempool_size => @{$result}[6]->{result},
                          tx_pending => scalar(@{$$result[2]->{result}}) }; 
 
     $self->{peers} = { peers_usage => @{$result}[3]->{result}->{connected} / @{$result}[3]->{result}->{max} * 100, #TO CHECK division entière 
                        peers_max => @{$result}[3]->{result}->{max},
+                       peers_limit => @{$result}[3]->{result}->{max},
                        peers_connected => @{$result}[3]->{result}->{connected} }; 
 }
 
