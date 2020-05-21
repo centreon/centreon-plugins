@@ -48,7 +48,7 @@ sub set_counters {
                 key_values => [ { name => 'peers' } ],
                 output_template => "connected peers: %s ",
                 perfdatas => [
-                    { label => 'peer_count', value => 'peers_absolute', template => '%d', min => 0 }
+                    { label => 'peer_count', value => 'peers', template => '%d', min => 0 }
                 ],                
             }
         },

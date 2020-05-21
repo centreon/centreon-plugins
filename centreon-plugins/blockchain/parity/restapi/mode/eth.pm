@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'sync_status' } ],
                 output_template => "Syncing: %d %% ",
                 perfdatas => [
-                    { label => 'sync_status', value => 'sync_status_absolute', template => '%d', min => 0 }
+                    { label => 'sync_status', value => 'sync_status', template => '%d', min => 0 }
                 ],                
             }
         }
@@ -62,7 +62,7 @@ sub set_counters {
                 key_values => [ { name => 'gas_price' } ],
                 output_template => "The gas price is: %d wei ",
                 perfdatas => [
-                    { label => 'gas_price', value => 'gas_price_absolute', template => '%d', min => 0 }
+                    { label => 'gas_price', value => 'gas_price', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -70,7 +70,7 @@ sub set_counters {
                 key_values => [ { name => 'gas_used' } ],
                 output_template => "The gas used is: %d",
                 perfdatas => [
-                    { label => 'gas_used', value => 'gas_used_absolute', template => '%d', min => 0 }
+                    { label => 'gas_used', value => 'gas_used', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -78,7 +78,7 @@ sub set_counters {
                 key_values => [ { name => 'gas_limit' } ],
                 output_template => "The gas limit is: %d",
                 perfdatas => [
-                    { label => 'gas_limit', value => 'gas_limit_absolute', template => '%d', min => 0 }
+                    { label => 'gas_limit', value => 'gas_limit', template => '%d', min => 0 }
                 ],                
             }
         }
@@ -87,9 +87,9 @@ sub set_counters {
     $self->{maps_counters}->{block} = [  
         { label => 'block_size', nlabel => 'parity.eth.block.size', set => {
                 key_values => [ { name => 'block_size' } ],
-                output_template => "Most recent block size: %d ",
+                output_template => "Block size: %d ",
                 perfdatas => [
-                    { label => 'block_size', value => 'block_size_absolute', template => '%d', min => 0 }
+                    { label => 'block_size', value => 'block_size', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'block_usage' } ],
                 output_template => "Block usage: %d %%",
                 perfdatas => [
-                    { label => 'block_usage', value => 'block_usage_absolute', template => '%d', min => 0 }
+                    { label => 'block_usage', value => 'block_usage', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -105,7 +105,7 @@ sub set_counters {
                 key_values => [ { name => 'block_transactions' } ],
                 output_template => "Block transactions number: %d ",
                 perfdatas => [
-                    { label => 'block_transactions', value => 'block_transactions_absolute', template => '%d', min => 0 }
+                    { label => 'block_transactions', value => 'block_transactions', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -113,23 +113,15 @@ sub set_counters {
                 key_values => [ { name => 'block_gas' } ],
                 output_template => "Block gas: %d ",
                 perfdatas => [
-                    { label => 'block_gas', value => 'block_gas_absolute', template => '%d', min => 0 }
+                    { label => 'block_gas', value => 'block_gas', template => '%d', min => 0 }
                 ],                
             }
         },
-        # { label => 'block_difficulty', nlabel => 'parity.eth.block.difficulty', set => {
-        #         key_values => [ { name => 'block_difficulty' } ],
-        #         output_template => "Block difficulty: %f ",
-        #         perfdatas => [
-        #             { label => 'block_difficulty', value => 'block_difficulty_absolute', template => '%f', min => 0 }
-        #         ],                
-        #     }
-        # },
         { label => 'block_uncles', nlabel => 'parity.eth.block.uncles', set => {
                 key_values => [ { name => 'block_uncles' } ],
                 output_template => "Block uncles: %d ",
                 perfdatas => [
-                    { label => 'block_uncles', value => 'block_uncles_absolute', template => '%d', min => 0 }
+                    { label => 'block_uncles', value => 'block_uncles', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -224,14 +216,14 @@ sub manage_selection {
                         block_uncles => scalar(@{$$result[5]->{result}->{uncles}}), 
                         block_transactions => scalar(@{$$result[5]->{result}->{transactions}})};
 
-    $self->{output}->output_add(severity  => 'OK', long_msg => 'Node status: [is_mining: ' . @{$result}[0]->{result} . '] [sync_start: ' . $res_startingBlock . 
-                                                                '] [sync_current: ' . $res_currentBlock . '] [sync_highest: ' . $res_highestBlock . '] [sync: ' . $res_sync . '%]');
-    $self->{output}->output_add(severity  => 'OK', long_msg => 'Client: [coinbase: ' . @{$result}[1]->{result} . ']');
-    $self->{output}->output_add(severity  => 'OK', long_msg => 'Global: [hashrate: ' . hex(@{$result}[3]->{result}) . 
-                                                                '] [block_number: ' . (defined @{$result}[4]->{result} ? hex(@{$result}[4]->{result}) : 0) . ']');
-    $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block: [block_time: ' . $res_block_time . '] [block_gas_limit: ' . hex(@{$result}[5]->{result}->{gasLimit}) . 
-                                                                '] [block_miner: ' . @{$result}[5]->{result}->{miner} . '] [block_hash: ' . @{$result}[5]->{result}->{hash} . 
-                                                                '] [last_block_number: ' . hex(@{$result}[5]->{result}->{number}) . ']');
+    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Node status: [is_mining: ' . @{$result}[0]->{result} . '] [sync_start: ' . $res_startingBlock . 
+    #                                                             '] [sync_current: ' . $res_currentBlock . '] [sync_highest: ' . $res_highestBlock . '] [sync: ' . $res_sync . '%]');
+    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Client: [coinbase: ' . @{$result}[1]->{result} . ']');
+    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Global: [hashrate: ' . hex(@{$result}[3]->{result}) . 
+    #                                                             '] [block_number: ' . (defined @{$result}[4]->{result} ? hex(@{$result}[4]->{result}) : 0) . ']');
+    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block: [block_time: ' . $res_block_time . '] [block_gas_limit: ' . hex(@{$result}[5]->{result}->{gasLimit}) . 
+    #                                                             '] [block_miner: ' . @{$result}[5]->{result}->{miner} . '] [block_hash: ' . @{$result}[5]->{result}->{hash} . 
+    #                                                             '] [last_block_number: ' . hex(@{$result}[5]->{result}->{number}) . ']');
     
 }
 

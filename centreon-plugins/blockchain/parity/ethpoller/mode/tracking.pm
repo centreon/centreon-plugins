@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use bigint;
+use Time::Seconds;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -33,13 +34,14 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'events', cb_prefix_output => 'prefix_output_events', type => 1, message_multiple => 'Events metrics are ok' },
         { name => 'mining', cb_prefix_output => 'prefix_output_mining', type => 1, message_multiple => 'Mining metrics are ok' },
-        { name => 'balance', cb_prefix_output => 'prefix_output_balance', type => 1, message_multiple => 'Balances metrics are ok' }
+        { name => 'balance', cb_prefix_output => 'prefix_output_balances', type => 1, message_multiple => 'Balances metrics are ok' }
     ];
 
     $self->{maps_counters}->{events} = [
        { label => 'events-frequency', nlabel => 'parity.tracking.events.perminute', set => {
-                key_values => [ { name => 'events_count', per_minute => 1 }, { name => 'display' } ],
-                output_template => " %.2f (events/min)",
+                key_values => [ { name => 'events_count', per_minute => 1 }, { name => 'display' }, 
+                                { name => 'last_event' }, { name => 'last_event_block' }, { name => 'last_event_ts' } ],
+                closure_custom_output => $self->can('custom_event_output'),
                 perfdatas => [ 
                     { template => '%.2f', label_extra_instance => 1, instance_use => 'display' }
                 ]
@@ -49,8 +51,9 @@ sub set_counters {
 
     $self->{maps_counters}->{mining} = [
        { label => 'mining-frequency', nlabel => 'parity.tracking.mined.block.perminute', set => {
-                key_values => [ { name => 'mining_count', per_minute => 1 }, { name => 'display' } ],
-                output_template => " %.2f (blocks/min)",
+                key_values => [ { name => 'mining_count', per_minute => 1 }, { name => 'display' },
+                                , { name => 'last_mining' }, { name => 'last_mining_block' }, { name => 'last_mining_ts' } ],
+                closure_custom_output => $self->can('custom_miner_output'),
                 perfdatas => [
                     { template => '%.2f', label_extra_instance => 1, instance_use => 'display' }
                 ]
@@ -59,15 +62,25 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{balance} = [
-       { label => 'balance-fluctuation', nlabel => 'parity.tracking.balance.variation.perminute', set => {
-                key_values => [ { name => 'balance', per_minute => 1 }, { name => 'display' } ],
-                output_template => " variation: %.2f (diff/min)",
+       { label => 'balance-fluctuation-prct', nlabel => 'parity.tracking.balances.fluctuation', display_ok => 0, set => {
+                key_values => [],
+                manual_keys => 1,
+                closure_custom_calc => $self->can('custom_prct_calc'),
+                closure_custom_output => $self->can('custom_balance_output'),
+                threshold_use => 'balance_fluctuation_prct',
                 perfdatas => [
-                    { template => '%.2f', label_extra_instance => 1, instance_use => 'display' }
-                ]
+                   { value => 'balance_fluctuation_prct', template => '%.2f', unit => '%',
+                     min => 0, label_extra_instance => 1, instance_use => 'display'  }
+                ],
             }
         }
     ];
+}
+
+sub prefix_output_balances {
+    my ($self, %options) = @_;
+
+    return "*Balance* '" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_output_events {
@@ -79,13 +92,68 @@ sub prefix_output_events {
 sub prefix_output_mining {
     my ($self, %options) = @_;
 
-    return "Miner '" . $options{instance_value}->{display} . "' ";;
+    return "Miner '" . $options{instance_value}->{display} . "' ";
 }
 
-sub prefix_output_balance {
+sub custom_balance_output {
+    my ($self, %options) = @_;
+    
+    return sprintf(
+        "Balance: %s ether, Last fluctuation: %.2f ",
+        $self->{result_values}->{balance},
+        $self->{result_values}->{balance_fluctuation_prct}
+    );
+}
+
+sub custom_prct_calc {
     my ($self, %options) = @_;
 
-    return "Balance '" . $options{instance_value}->{display} . "' ";
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{balance} = $options{new_datas}->{$self->{instance} . '_balance'};
+    $self->{result_values}->{balance_old} = $options{old_datas}->{$self->{instance} . '_balance'};
+    $self->{result_values}->{balance_fluctuation_prct} = (defined($self->{result_values}->{balance_old}) && $self->{result_values}->{balance_old} != 0) ? 
+                                                    ($self->{result_values}->{balance} - $self->{result_values}->{balance_old}) / 
+                                                    $self->{result_values}->{balance_old} * 100 : 0; 
+
+    return 0;
+}
+
+sub custom_event_output {
+    my ($self, %options) = @_;
+
+    if (0 eq $self->{result_values}->{last_event}) {
+        return sprintf("No event yet...");
+    } else {
+        my $time_elapsed = time() - $self->{result_values}->{last_event_ts};
+        my $t = Time::Seconds->new($time_elapsed);
+
+        return sprintf(
+            "Event frequency: %.2f/min, Last event (#%s) was %s ago in block #%s",
+            $self->{result_values}->{event_count},
+            $self->{result_values}->{last_event},
+            $t->pretty,
+            $self->{result_values}->{last_event_block}
+        );
+    }
+}
+
+sub custom_miner_output {
+    my ($self, %options) = @_;
+
+    if (0 eq $self->{result_values}->{last_mining}) {
+        return sprintf("No validation yet...");
+    } else {
+        my $time_elapsed = time() - $self->{result_values}->{last_mining_ts};
+        my $t = Time::Seconds->new($time_elapsed);
+
+        return sprintf(
+            "Mining frequency: %.2f/min, Last validation (#%s) was %s ago for block #%s",
+            $self->{result_values}->{mining_count},
+            $self->{result_values}->{last_mining},
+            $t->pretty,
+            $self->{result_values}->{last_mining_block}
+        );
+    }
 }
 
 sub new {
@@ -119,9 +187,14 @@ sub manage_selection {
             next;
         }
 
+        my $last_event_timestamp = (defined($event->{timestamp}) && $event->{timestamp} != 0) ? $event->{timestamp} : 'NONE';
+                                    
         $self->{events}->{lc($event->{label})} = {
             display => lc($event->{label}), 
-            events_count => $event->{count}
+            events_count => $event->{count},
+            last_event => $event->{count},
+            last_event_block => $event->{block},
+            last_event_ts => $last_event_timestamp 
         };
     }
 
@@ -132,9 +205,14 @@ sub manage_selection {
             next;
         }
 
+        my $last_mining_timestamp = (defined($miner->{timestamp}) && $miner->{timestamp} != 0) ? $miner->{timestamp} : 'NONE';
+
         $self->{mining}->{lc($miner->{label})} = {
             display => lc($miner->{label}), 
-            mining_count => $miner->{count}
+            mining_count => $miner->{count},
+            last_mining => $miner->{count},
+            last_mining_block => $miner->{block},
+            last_mining_ts => $last_mining_timestamp
         };
     }
 
@@ -150,6 +228,7 @@ sub manage_selection {
             balance => $balance->{balance}
         };
     }
+    
 }
 
 1;

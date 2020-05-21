@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use bigint;
+use Time::Seconds;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -32,13 +33,13 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'block', cb_prefix_output => 'prefix_output_block', type => 0 },
-        { name => 'transaction', cb_prefix_output => 'prefix_output_transaction', type => 0 }
+        { name => 'transaction', cb_prefix_output => 'prefix_output_transaction', type => 0 },
+        { name => 'fork', cb_prefix_output => 'prefix_output_fork', type => 0 }
     ];
 
     $self->{maps_counters}->{block} = [
        { label => 'block-frequency', nlabel => 'parity.stats.block.perminute', set => {
                 key_values => [ { name => 'block_count', per_minute => 1 }, { name => 'last_block' }, { name => 'last_block_ts' } ],
-                per_minute => 1,
                 closure_custom_output => $self->can('custom_block_output'),
                 perfdatas => [
                     { label => 'block', value => 'block_count', template => '%.2f' }
@@ -48,13 +49,23 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{transaction} = [
-       { label => 'transaction_frequency', nlabel => 'parity.stats.transaction.perminute', set => {
-                key_values => [ { name => 'transaction_count', per_minute => 1 } ],
-                per_minute => 1,
-                output_template => "Transaction frequency: %.2f (tx/min)",
+       { label => 'transaction-frequency', nlabel => 'parity.stats.transaction.perminute', set => {
+                key_values => [ { name => 'transaction_count', per_minute => 1 }, { name => 'last_transaction' }, { name => 'last_transaction_ts' } ],
+                closure_custom_output => $self->can('custom_transaction_output'),
                 perfdatas => [
-                    { label => 'transaction', value => 'transaction_count_per_minute', template => '%.2f' }
+                    { label => 'transaction', value => 'transaction_count', template => '%.2f' }
                 ],                
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{fork} = [
+       { label => 'fork-frequency', nlabel => 'parity.stats.fork.perminute', set => {
+                key_values => [ { name => 'fork_count', per_minute => 1 }, { name => 'last_fork' }, { name => 'last_fork_ts' } ],
+                closure_custom_output => $self->can('custom_fork_output'),
+                perfdatas => [
+                    { label => 'fork', value => 'fork_count', template => '%.2f' }
+                ],
             }
         }
     ];
@@ -63,12 +74,55 @@ sub set_counters {
 sub custom_block_output {
     my ($self, %options) = @_;
 
-    return sprintf(
-        "Count: '%.2f', Last block ID: '%s', Last block timestamp '%s' ",
-        $self->{result_values}->{block_count},
-        $self->{result_values}->{last_block},
-        $self->{result_values}->{last_block_ts}
-    );
+    if (0 eq $self->{result_values}->{block_count}) {
+        return sprintf("No block yet...");
+    } else {
+        my $time_elapsed = time() - $self->{result_values}->{last_block_ts};
+        my $t = Time::Seconds->new($time_elapsed);
+
+        return sprintf(
+            "Block frequency: '%.2f/min', Last block (#%s) was %s ago",
+            $self->{result_values}->{block_count},
+            $self->{result_values}->{last_block},
+            $t->pretty
+        );
+    }
+}
+
+sub custom_transaction_output {
+    my ($self, %options) = @_;
+
+    if (0 eq $self->{result_values}->{transaction_count}) {
+        return sprintf("No transaction yet...");
+    } else {
+        my $time_elapsed = time() - $self->{result_values}->{last_transaction_ts};
+        my $t = Time::Seconds->new($time_elapsed);
+
+        return sprintf(
+            "Transaction frequency: '%.2f/min', Last transaction (#%s) was %s ago",
+            $self->{result_values}->{transaction_count},
+            $self->{result_values}->{last_transaction},
+            $t->pretty
+        );
+    }
+}
+
+sub custom_fork_output {
+    my ($self, %options) = @_;
+
+    if (0 eq $self->{result_values}->{fork_count}) {
+        return sprintf("No fork occurred yet...");
+    } else {
+        my $time_elapsed = time() - $self->{result_values}->{last_fork_ts};
+        my $t = Time::Seconds->new($time_elapsed);
+
+        return sprintf(
+            "Fork frequency: '%.2f/min', Last fork (#%s) was %s ago",
+            $self->{result_values}->{fork_count},
+            $self->{result_values}->{last_fork},
+            $t->pretty
+        );
+    }
 }
 
 
@@ -110,30 +164,27 @@ sub manage_selection {
 
     my $result = $options{custom}->request_api(url_path => '/stats');
 
-    my $last_block = $result->{block}->{count};
     my $last_block_timestamp = (defined($result->{block}->{timestamp}) && $result->{block}->{timestamp} != 0) ?
-                                    localtime($result->{block}->{timestamp}) :
+                                    $result->{block}->{timestamp} :
+                                    'NONE';
+    my $last_transaction_timestamp = (defined($result->{transaction}->{timestamp}) && $result->{transaction}->{timestamp} != 0) ?
+                                    $result->{transaction}->{timestamp} :
+                                    'NONE';
+    my $last_fork_timestamp = (defined($result->{fork}->{timestamp}) && $result->{fork}->{timestamp} != 0) ?
+                                    $result->{fork}->{timestamp} :
                                     'NONE';
 
     $self->{block} = { block_count => $result->{block}->{count},
-                        last_block => $last_block,
+                       last_block => $result->{block}->{count},
                        last_block_ts => $last_block_timestamp };
 
-    $self->{transaction} = { transaction_count => $result->{transaction}->{count} };
-
-    if ($result->{transaction}->{count} > 0) {
-        my $tx_timestamp = $result->{transaction}->{timestamp} == 0 ? '' : localtime($result->{transaction}->{timestamp});
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last transaction (#' . $result->{transaction}->{count} . ') was on ' . $tx_timestamp);
-    } else {
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'No transaction...');
-    }
-  
-    if ($result->{transaction}->{count} > 0) {
-        my $fork_timestamp = $result->{fork}->{timestamp} == 0 ? '' : localtime($result->{fork}->{timestamp});
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'Last fork (#' . $result->{fork}->{count} . ') was on ' . $fork_timestamp);   
-    } else {
-        $self->{output}->output_add(severity  => 'OK', long_msg => 'No fork occurence...');
-    }
+    $self->{transaction} = { transaction_count => $result->{transaction}->{count},
+                             last_transaction => $result->{transaction}->{count},
+                             last_transaction_ts => $last_transaction_timestamp };
+    
+    $self->{fork} = { fork_count => $result->{fork}->{count},
+                      last_fork => $result->{fork}->{count},
+                      last_fork_ts => $last_fork_timestamp };
 }
 
 1;
@@ -145,4 +196,3 @@ __END__
 Check Parity eth-poller for stats 
 
 =cut
-
