@@ -142,7 +142,7 @@ Filter zone name (can be a regexp).
 =item B<--warning-*> <--critical-*>
 
 Thresholds.
-Can be: qtype-a', 'qtype-cname', 'qtype-mx', 'qtype-txt', 'qtype-soa', 'qtype-ptr', 'qtype-ns', 'qtype-any',
+Can be: qtype-a', 'qtype-cname', 'qtype-mx', 'qtype-txt', 'qtype-soa', 'qtype-ptr', 'qtype-ns',
 'nsstat-requestv4', 'nsstat-requestv6'.
 
 =back
