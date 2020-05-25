@@ -184,7 +184,8 @@ Can used special variables like: %{status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Can be: 'requests', 'traffic-in', 'traffic-out',
+'connections-current', 'connections-total'.
 
 =back
 

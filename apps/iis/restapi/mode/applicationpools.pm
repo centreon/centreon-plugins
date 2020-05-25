@@ -148,7 +148,7 @@ Can used special variables like: %{status}, %{auto_start}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Can be: 'requests'.
 
 =back
 
