@@ -93,6 +93,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => 'connections', unit => 'con',
+        nlabel => 'connections.count',
         value => $result->{$oid_fwNumCom},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),

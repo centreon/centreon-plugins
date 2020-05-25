@@ -51,7 +51,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'prct_used'}, { name => 'used' }, { name => 'free' }, { name => 'total' }  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 threshold_use => 'prct_used',
@@ -64,7 +64,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{swap} = [
-        { label => 'swap', set => {
+        { label => 'swap', nlabel => 'swap.usage.bytes', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 threshold_use => 'prct_used',
@@ -77,7 +77,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{malloc} = [
-        { label => 'failed-malloc', set => {
+        { label => 'failed-malloc', nlabel => 'memory.allocations.failed.persecond', set => {
                 key_values => [ { name => 'failed_mallocs', per_second => 1 } ],
                 output_template => 'Failed memory allocations %.2f/s',
                 perfdatas => [
