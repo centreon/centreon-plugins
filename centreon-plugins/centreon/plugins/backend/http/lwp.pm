@@ -123,8 +123,13 @@ sub request {
     my $request_options = $options{request};
     if (!defined($self->{ua})) {
         $self->{ua} = centreon::plugins::backend::http::useragent->new(
-            keep_alive => 1, protocols_allowed => ['http', 'https'], timeout => $request_options->{timeout},
-            credentials => $request_options->{credentials}, username => $request_options->{username}, password => $request_options->{password});
+            keep_alive => 1,
+            protocols_allowed => ['http', 'https'], 
+            timeout => $request_options->{timeout},
+            credentials => $request_options->{credentials},
+            username => $request_options->{username}, 
+            password => $request_options->{password}
+        );
         if (defined($request_options->{cookies_file})) {
             centreon::plugins::misc::mymodule_load(
                 output => $self->{output},

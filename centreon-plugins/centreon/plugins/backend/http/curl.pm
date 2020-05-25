@@ -263,7 +263,9 @@ sub cb_get_header {
 sub request {
     my ($self, %options) = @_;
 
-    $self->{curl_easy} = Net::Curl::Easy->new();
+    if (!defined($self->{curl_easy})) {
+        $self->{curl_easy} = Net::Curl::Easy->new();
+    }
 
     if ($self->{output}->is_debug()) {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_DEBUGFUNCTION'), parameter => \&cb_debug);
@@ -294,8 +296,10 @@ sub request {
 
     if (defined($options{request}->{http_peer_addr}) && $options{request}->{http_peer_addr} ne '') {
         $url =~ /^(?:http|https):\/\/(.*?)(\/|\:|$)/;
-        $self->{curl_easy}->pushopt($self->{constant_cb}->(name => 'CURLOPT_RESOLVE'),
-               [$1 . ':' . $options{request}->{port_force} . ':' . $options{request}->{http_peer_addr}]);
+        $self->{curl_easy}->setopt(
+            $self->{constant_cb}->(name => 'CURLOPT_RESOLVE'),
+            [$1 . ':' . $options{request}->{port_force} . ':' . $options{request}->{http_peer_addr}]
+        );
     }    
 
     my $uri = URI->new($url);
@@ -317,7 +321,7 @@ sub request {
     $self->set_method(%options, content_type_forced => $content_type_forced, headers => $headers);
 
     if (scalar(@$headers) > 0) {
-        $self->{curl_easy}->pushopt($self->{constant_cb}->(name => 'CURLOPT_HTTPHEADER'), $headers);
+        $self->{curl_easy}->setopt($self->{constant_cb}->(name => 'CURLOPT_HTTPHEADER'), $headers);
     }
 
     if (defined($options{request}->{cacert_file}) && $options{request}->{cacert_file} ne '') {
