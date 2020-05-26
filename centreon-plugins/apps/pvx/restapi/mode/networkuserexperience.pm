@@ -75,7 +75,7 @@ sub check_options {
         $self->{output}->option_exit();
     }
 
-    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{instance} eq '') {
+    if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
         $self->{output}->option_exit();
     }
