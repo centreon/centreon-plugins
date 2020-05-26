@@ -208,7 +208,7 @@ sub manage_selection {
                      gas_used => hex(@{$result}[5]->{result}->{gasUsed}),
                      gas_limit => hex(@{$result}[5]->{result}->{gasLimit}) };
 
-    my $calculated_block_usage = hex(@{$result}[5]->{result}->{gasUsed}) / hex(@{$result}[5]->{result}->{gasLimit});
+    my $calculated_block_usage = hex(@{$result}[5]->{result}->{gasUsed}) / hex(@{$result}[5]->{result}->{gasLimit}) * 100;
     $self->{block} =  { block_size => hex(@{$result}[5]->{result}->{size}), 
                         block_gas => hex(@{$result}[5]->{result}->{gasUsed}),
                         block_usage => $calculated_block_usage,
