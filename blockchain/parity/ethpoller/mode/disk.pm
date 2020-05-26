@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_used' } ],
                 output_template => "Disk used: %d ",
                 perfdatas => [
-                    { label => 'disk_used', value => 'disk_used', template => '%d', min => 0 }
+                    { label => 'disk_used', value => 'disk_used', template => '%d', unit => 'o', min => 0 }
                 ],                
             }
         },
@@ -71,7 +71,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_usage' } ],
                 output_template => "Disk usage: %d %%",
                 perfdatas => [
-                    { label => 'disk_usage', value => 'disk_usage', template => '%d', min => 0 }
+                    { label => 'disk_usage', value => 'disk_usage', template => '%.2f', unit => '%', min => 0 }
                 ],                
             }
         },

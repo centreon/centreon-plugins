@@ -80,7 +80,7 @@ sub set_counters {
 sub prefix_output_balances {
     my ($self, %options) = @_;
 
-    return "*Balance* '" . $options{instance_value}->{display} . "' ";
+    return "Balance '" . $options{instance_value}->{display} . "' ";
 }
 
 sub prefix_output_events {

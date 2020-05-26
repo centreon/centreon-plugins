@@ -56,7 +56,7 @@ sub set_counters {
                 key_values => [ { name => 'mempool_usage' } ],
                 output_template => "Mempool usage: %d %% ",
                 perfdatas => [
-                    { label => 'mempool_usage', value => 'mempool_usage', template => '%d', min => 0 }
+                    { label => 'mempool_usage', value => 'mempool_usage', template => '%.2f', unit => '%', min => 0 }
                 ],                
             }
         },
@@ -83,7 +83,7 @@ sub set_counters {
                 key_values => [ { name => 'peers_usage' } ],
                 output_template => "Peers usage: %d %% ",
                 perfdatas => [
-                    { label => 'peers_usage', value => 'peers_usage', template => '%d', min => 0 }
+                    { label => 'peers_usage', value => 'peers_usage', template => '%.2f', unit => '%', min => 0 }
                 ],                
             }
         },
