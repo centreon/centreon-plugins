@@ -107,7 +107,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-free', display_ok => 0, nlabel => 'accesspoint.memory.free.bytes', set => {
+        { label => 'memory-usage-free', display_ok => 0, nlabel => 'accesspoint.memory.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
@@ -115,7 +115,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'accesspoint.memory.usage.percentage', set => {
+        { label => 'memory-usage-prct', display_ok => 0, nlabel => 'accesspoint.memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'ram used: %.2f %%',
                 perfdatas => [
@@ -318,7 +318,7 @@ Can used special variables like: %{zd_connection_status}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'memory-usage', 'usage-free', 'usage-prct', 'traffic-in', 'traffic-out',
+Can be: 'memory-usage', 'memory-usage-free', 'memory-usage-prct', 'traffic-in', 'traffic-out',
 'cpu-utilization', 'connection-accesspoints', 'connection-client-devices-authorized',
 'connection-rogue-devices'.
 

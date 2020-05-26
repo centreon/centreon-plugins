@@ -18,33 +18,33 @@
 # limitations under the License.
 #
 
-package centreon::plugins::backend::http::useragent;
+package apps::monitoring::iplabel::datametrie::restapi::plugin;
 
 use strict;
 use warnings;
-use base 'LWP::UserAgent';
+use base qw(centreon::plugins::script_custom);
 
 sub new {
-    my ($class, %options) = @_;
-    my $self  = {};
+    my ( $class, %options ) = @_;
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self = LWP::UserAgent::new(@_);
-    $self->agent("centreon::plugins::backend::http::useragent");
+    $self->{version} = '0.1';
+    $self->{modes} = {
+        'list-kpi' => 'apps::monitoring::iplabel::datametrie::restapi::mode::listkpi',
+        'kpi'      => 'apps::monitoring::iplabel::datametrie::restapi::mode::kpi'
+    };
 
-    $self->{credentials} = $options{credentials} if defined($options{credentials});
-    $self->{username} = $options{username} if defined($options{username});
-    $self->{password} = $options{password} if defined($options{password});
-
+    $self->{custom_modes}{api} = 'apps::monitoring::iplabel::datametrie::restapi::custom::api';
     return $self;
 }
 
-sub get_basic_credentials {
-    my($self, $realm, $uri, $proxy) = @_;
-    return if $proxy;
-    return $self->{username}, $self->{password} if $self->{credentials} and wantarray;
-    return $self->{username} . ':' . $self->{password} if $self->{credentials};
-    return undef;
-}
-
 1;
+
+__END__
+
+=head1 PLUGIN DESCRIPTION
+
+Check IP-Label Datametrie using Rest API.
+
+=cut
