@@ -86,7 +86,7 @@ sub manage_selection {
     #     $cache->set('peers_count', $peer_count);
     # }
 
-    $self->{output}->output_add(long_msg =>  "Parity version: '" . $res_parity_version . "'. Chain name: '" . @{$result}[1]->{result} . 
+    $self->{output}->output_add(short_msg =>  "Parity version: '" . $res_parity_version . "'. Chain name: '" . @{$result}[1]->{result} . 
                                             "'. Node name: '" . @{$result}[3]->{result} . "'. is_validator: '" . @{$result}[2]->{result} . "'.", severity => 'OK');
 }
 
