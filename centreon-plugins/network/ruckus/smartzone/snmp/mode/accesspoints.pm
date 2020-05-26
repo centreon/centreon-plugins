@@ -236,9 +236,7 @@ Can used special variables like:  %{config_status}, %{connection_status}, %{regi
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'memory-usage', 'usage-free', 'usage-prct', 'traffic-in', 'traffic-out',
-'cpu-utilization', 'connection-accesspoints', 'connection-client-devices-authorized',
-'connection-rogue-devices'.
+Can be: 'traffic-in', 'traffic-out', 'connection-client-devices-authorized'.
 
 =back
 
