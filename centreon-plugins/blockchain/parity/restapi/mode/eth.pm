@@ -173,9 +173,7 @@ sub manage_selection {
     my $gas_price = hex(@{$result}[2]->{result});
     my $res_block_time = @{$result}[5]->{result}->{timestamp} == 0 ? '': localtime(hex(@{$result}[5]->{result}->{timestamp}));
 
-    # use Data::Dumper;
-    # print Dumper($res_block_time) ;
-    # print Dumper(@{$result}[5]->{result}->{timestamp});
+   
    
     # conditional formating:
     my $res_sync = @{$result}[6]->{result} ? hex((@{$result}[6]->{result}->{currentBlock} / @{$result}[6]->{result}->{highestBlock})) * 100 : 100;
@@ -209,6 +207,12 @@ sub manage_selection {
                      gas_limit => hex(@{$result}[5]->{result}->{gasLimit}) };
 
     my $calculated_block_usage = hex(@{$result}[5]->{result}->{gasUsed}) / hex(@{$result}[5]->{result}->{gasLimit}) * 100;
+
+    use Data::Dumper;
+    print Dumper($calculated_block_usage) ;
+    print Dumper(hex(@{$result}[5]->{result}->{gasUsed}));
+    print Dumper(hex(@{$result}[5]->{result}->{gasLimit}));
+
     $self->{block} =  { block_size => hex(@{$result}[5]->{result}->{size}), 
                         block_gas => hex(@{$result}[5]->{result}->{gasUsed}),
                         block_usage => $calculated_block_usage,
