@@ -170,7 +170,7 @@ sub manage_selection {
         $instance = ${$result->{key}}[0]->{value} if (defined(${$result->{key}}[0]->{value}));
         $instance = ${$result->{key}}[0]->{status} if (defined(${$result->{key}}[0]->{status}));
         $self->{instances}->{$instance}->{key} = $instance;
-        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if ($self->{option_results}->{instance} =~ /application/);
+        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if (defined($apps->{$instance}->{name}) && $self->{option_results}->{instance} =~ /application/);
         $self->{instances}->{$instance}->{traffic} = ${$result->{values}}[0]->{value} * 8 / $self->{pvql_timeframe};
         $self->{instances}->{$instance}->{server_traffic} = ${$result->{values}}[1]->{value} * 8 / $self->{pvql_timeframe};
         $self->{instances}->{$instance}->{client_traffic} = ${$result->{values}}[2]->{value} * 8 / $self->{pvql_timeframe};

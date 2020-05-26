@@ -126,7 +126,7 @@ sub manage_selection {
         $instance = ${$result->{key}}[0]->{value} if (defined(${$result->{key}}[0]->{value}));
         $instance = ${$result->{key}}[0]->{status} if (defined(${$result->{key}}[0]->{status}));
         $self->{instances}->{$instance}->{key} = $instance;
-        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if ($self->{option_results}->{instance} =~ /application/);
+        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if (defined($apps->{$instance}->{name}) && $self->{option_results}->{instance} =~ /application/);
         $self->{instances}->{$instance}->{error_hits} = (defined(${$result->{values}}[0]->{value})) ? ${$result->{values}}[0]->{value} / $self->{pvql_timeframe} : 0;
         $self->{instances}->{$instance}->{hits} = ${$result->{values}}[1]->{value} / $self->{pvql_timeframe};
         $self->{instances}->{$instance}->{ratio} = (defined(${$result->{values}}[0]->{value})) ? ${$result->{values}}[1]->{value} / (${$result->{values}}[0]->{value} + ${$result->{values}}[1]->{value}) : 1;
