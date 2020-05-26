@@ -25,7 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use bigint;
-use Time::Seconds;
+# use Time::Seconds;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -77,14 +77,14 @@ sub custom_block_output {
     if (0 eq $self->{result_values}->{block_count}) {
         return sprintf("No block yet...");
     } else {
-        my $time_elapsed = time() - $self->{result_values}->{last_block_ts};
-        my $t = Time::Seconds->new($time_elapsed);
+        # my $time_elapsed = time() - $self->{result_values}->{last_block_ts};
+        # my $t = Time::Seconds->new($time_elapsed);
 
         return sprintf(
-            "Block frequency: '%.2f/min', Last block (#%s) was %s ago",
+            "Block frequency: '%.2f/min', Last block (#%s)",# was %s ago",
             $self->{result_values}->{block_count},
             $self->{result_values}->{last_block},
-            $t->pretty
+            # $t->pretty
         );
     }
 }
@@ -95,14 +95,11 @@ sub custom_transaction_output {
     if (0 eq $self->{result_values}->{transaction_count}) {
         return sprintf("No transaction yet...");
     } else {
-        my $time_elapsed = time() - $self->{result_values}->{last_transaction_ts};
-        my $t = Time::Seconds->new($time_elapsed);
 
         return sprintf(
-            "Transaction frequency: '%.2f/min', Last transaction (#%s) was %s ago",
+            "Transaction frequency: '%.2f/min', Last transaction (#%s)",
             $self->{result_values}->{transaction_count},
-            $self->{result_values}->{last_transaction},
-            $t->pretty
+            $self->{result_values}->{last_transaction}
         );
     }
 }
@@ -113,14 +110,11 @@ sub custom_fork_output {
     if (0 eq $self->{result_values}->{fork_count}) {
         return sprintf("No fork occurred yet...");
     } else {
-        my $time_elapsed = time() - $self->{result_values}->{last_fork_ts};
-        my $t = Time::Seconds->new($time_elapsed);
-
+        
         return sprintf(
-            "Fork frequency: '%.2f/min', Last fork (#%s) was %s ago",
+            "Fork frequency: '%.2f/min', Last fork (#%s)",
             $self->{result_values}->{fork_count},
-            $self->{result_values}->{last_fork},
-            $t->pretty
+            $self->{result_values}->{last_fork}
         );
     }
 }

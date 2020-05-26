@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use bigint;
-use Time::Seconds;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -124,14 +123,11 @@ sub custom_event_output {
     if (0 eq $self->{result_values}->{last_event}) {
         return sprintf("No event yet...");
     } else {
-        my $time_elapsed = time() - $self->{result_values}->{last_event_ts};
-        my $t = Time::Seconds->new($time_elapsed);
-
+       
         return sprintf(
-            "Event frequency: %.2f/min, Last event (#%s) was %s ago in block #%s",
+            "Event frequency: %.2f/min, Last event (#%s) was in block #%s",
             $self->{result_values}->{event_count},
             $self->{result_values}->{last_event},
-            $t->pretty,
             $self->{result_values}->{last_event_block}
         );
     }
@@ -143,14 +139,11 @@ sub custom_miner_output {
     if (0 eq $self->{result_values}->{last_mining}) {
         return sprintf("No validation yet...");
     } else {
-        my $time_elapsed = time() - $self->{result_values}->{last_mining_ts};
-        my $t = Time::Seconds->new($time_elapsed);
-
+        
         return sprintf(
-            "Mining frequency: %.2f/min, Last validation (#%s) was %s ago for block #%s",
+            "Mining frequency: %.2f/min, Last validation (#%s) ago for block #%s",
             $self->{result_values}->{mining_count},
             $self->{result_values}->{last_mining},
-            $t->pretty,
             $self->{result_values}->{last_mining_block}
         );
     }
