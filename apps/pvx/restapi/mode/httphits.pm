@@ -88,6 +88,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{from} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --from option as a PVQL object.");
+        $self->{output}->option_exit();
+    }
+
     if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
         $self->{output}->option_exit();
