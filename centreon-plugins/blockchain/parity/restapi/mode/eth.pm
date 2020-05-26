@@ -97,7 +97,7 @@ sub set_counters {
                 key_values => [ { name => 'block_usage' } ],
                 output_template => "Block usage: %d %%",
                 perfdatas => [
-                    { label => 'block_usage', value => 'block_usage', template => '%d', min => 0 }
+                    { label => 'block_usage', value => 'block_usage', template => '%.2f', unit => '%', min => 0 }
                 ],                
             }
         },

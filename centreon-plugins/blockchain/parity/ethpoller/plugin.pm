@@ -36,7 +36,7 @@ sub new {
         'stats'     => 'blockchain::parity::ethpoller::mode::stats',
         'disk'      => 'blockchain::parity::ethpoller::mode::disk',
         'tracking'  => 'blockchain::parity::ethpoller::mode::tracking',
-        'prct'      => 'blockchain::parity::ethpoller::mode::prct'
+        # 'prct'      => 'blockchain::parity::ethpoller::mode::prct'
     );
     $self->{custom_modes}{api} = 'blockchain::parity::ethpoller::custom::api';
     return $self;
