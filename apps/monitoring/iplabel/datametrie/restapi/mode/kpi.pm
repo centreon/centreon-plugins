@@ -80,7 +80,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
+        'filter-id:s'       => { name => 'filter_id' },
         'filter-name:s'     => { name => 'filter_name' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
@@ -117,6 +118,11 @@ sub manage_selection {
     foreach (@$results) {
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $_->{MONITOR_NAME} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping monitor '" . $_->{MONITOR_NAME} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
+            $_->{MONITOR_ID} !~ /$self->{option_results}->{filter_id}/) {
             $self->{output}->output_add(long_msg => "skipping monitor '" . $_->{MONITOR_NAME} . "': no matching filter.", debug => 1);
             next;
         }
@@ -162,9 +168,13 @@ Check KPI.
 Only display some counters (regexp can be used).
 Example: --filter-counters='status'
 
+=item B<--filter-id>
+
+Filter by monitor id (can be a regexp).
+
 =item B<--filter-name>
 
-Filter monitor name (can be a regexp).
+Filter by monitor name (can be a regexp).
 
 =item B<--unknown-status>
 
