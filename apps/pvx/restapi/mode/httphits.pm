@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'ratio' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Ratio: %.2f',
                 perfdatas => [
-                    { label => 'ratio', value => 'ratio', template => '%.2f',
+                    { label => 'ratio', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'error_hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits Error: %.3f hits/s',
                 perfdatas => [
-                    { label => 'hits_error', value => 'error_hits', template => '%.3f',
+                    { label => 'hits_error', template => '%.3f',
                       min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'hits' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Hits: %.3f hits/s',
                 perfdatas => [
-                    { label => 'hits', value => 'hits', template => '%.3f',
+                    { label => 'hits', template => '%.3f',
                       min => 0, unit => 'hits/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
@@ -78,7 +78,7 @@ sub new {
         'instance:s' => { name => 'instance', default => 'layer' },
         'top:s'      => { name => 'top' },
         'filter:s'   => { name => 'filter' },
-        'from:s'     => { name => 'from', default => 'http' },
+        'from:s'     => { name => 'from', default => 'http' }
     });
 
     return $self;
