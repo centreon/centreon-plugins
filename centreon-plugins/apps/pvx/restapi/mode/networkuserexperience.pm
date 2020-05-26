@@ -70,11 +70,16 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{instance}) || $self->{option_results}->{instance} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
+    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{from} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --from option as a PVQL object.");
         $self->{output}->option_exit();
     }
 
+    if (!defined($self->{option_results}->{from}) || $self->{option_results}->{instance} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --instance option as a PVQL object.");
+        $self->{output}->option_exit();
+    }
+    
     $self->{pvql_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 900;
 }
 
@@ -86,7 +91,6 @@ sub manage_selection {
     $instance_label =~ s/(\w+)/\u\L$1/g;
 
     $self->{instances} = {};
-
     my $apps;
     if ($self->{option_results}->{instance} =~ /application/) {
         my $results = $options{custom}->get_endpoint(url_path => '/get-configuration');
@@ -108,7 +112,7 @@ sub manage_selection {
         $instance = ${$result->{key}}[0]->{value} if (defined(${$result->{key}}[0]->{value}));
         $instance = ${$result->{key}}[0]->{status} if (defined(${$result->{key}}[0]->{status}));
         $self->{instances}->{$instance}->{key} = $instance;
-        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if ($self->{option_results}->{instance} =~ /application/);
+        $self->{instances}->{$instance}->{key} = $apps->{$instance}->{name} if (defined($apps->{$instance}->{name}) && $self->{option_results}->{instance} =~ /application/);
         $self->{instances}->{$instance}->{user_experience} = (defined(${$result->{values}}[0]->{value})) ? ${$result->{values}}[0]->{value} : 0;
         $self->{instances}->{$instance}->{instance_label} = $instance_label;
     }
