@@ -39,7 +39,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_free' } ],
                 output_template => "Disk free: %d ",
                 perfdatas => [
-                    { label => 'disk_free', value => 'disk_free', template => '%d', min => 0 }
+                    { label => 'disk_free', value => 'disk_free', unit => 'B', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -47,7 +47,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_available' } ],
                 output_template => "Disk available: %d ",
                 perfdatas => [
-                    { label => 'disk_available', value => 'disk_available', template => '%d', min => 0 }
+                    { label => 'disk_available', value => 'disk_available', unit => 'B', template => '%d', min => 0 }
                 ],                
             }
         },
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_size' } ],
                 output_template => "Disk size: %d ",
                 perfdatas => [
-                    { label => 'disk_size', value => 'disk_size', template => '%d', min => 0 }
+                    { label => 'disk_size', value => 'disk_size', template => '%d', unit => 'B', min => 0 }
                 ],                
             }
         },
@@ -63,7 +63,7 @@ sub set_counters {
                 key_values => [ { name => 'disk_used' } ],
                 output_template => "Disk used: %d ",
                 perfdatas => [
-                    { label => 'disk_used', value => 'disk_used', template => '%d', unit => 'o', min => 0 }
+                    { label => 'disk_used', value => 'disk_used', template => '%d', unit => 'B', min => 0 }
                 ],                
             }
         },
@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'blockchain_dir' } ],
                 output_template => "Blockchain directory: %d",
                 perfdatas => [
-                    { label => 'blockchain_dir', value => 'blockchain_dir', template => '%d', min => 0 }
+                    { label => 'blockchain_dir', value => 'blockchain_dir', unit => 'B', template => '%d', min => 0 }
                 ],                
             }
         }
