@@ -208,10 +208,10 @@ sub manage_selection {
 
     my $calculated_block_usage = hex(@{$result}[5]->{result}->{gasUsed}) / hex(@{$result}[5]->{result}->{gasLimit}) * 100;
 
-    use Data::Dumper;
-    print Dumper($calculated_block_usage) ;
-    print Dumper(hex(@{$result}[5]->{result}->{gasUsed}));
-    print Dumper(hex(@{$result}[5]->{result}->{gasLimit}));
+    # use Data::Dumper;
+    # print Dumper($calculated_block_usage) ;
+    # print Dumper(hex(@{$result}[5]->{result}->{gasUsed}));
+    # print Dumper(hex(@{$result}[5]->{result}->{gasLimit}));
 
     $self->{block} =  { block_size => hex(@{$result}[5]->{result}->{size}), 
                         block_gas => hex(@{$result}[5]->{result}->{gasUsed}),
