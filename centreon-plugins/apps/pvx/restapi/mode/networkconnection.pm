@@ -37,7 +37,7 @@ sub set_counters {
                 key_values => [ { name => 'syns_ratio' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Ratio: %.2f',
                 perfdatas => [
-                    { label => 'ratio', value => 'syns_ratio', template => '%.2f',
+                    { label => 'ratio', template => '%.2f',
                       min => 0, label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'syns' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Connections Attempts: %.2f conn/s',
                 perfdatas => [
-                    { label => 'attempt', value => 'syns', template => '%.2f',
+                    { label => 'attempt', template => '%.2f',
                       min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
@@ -55,7 +55,7 @@ sub set_counters {
                 key_values => [ { name => 'ct_count' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Successful Connections: %.2f conn/s',
                 perfdatas => [
-                    { label => 'successful', value => 'ct_count', template => '%.2f',
+                    { label => 'successful', template => '%.2f',
                       min => 0, unit => 'connections/s', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }
@@ -64,7 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'ct' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'Average Connection Time: %.3f ms',
                 perfdatas => [
-                    { label => 'connection_time', value => 'ct', template => '%.3f',
+                    { label => 'connection_time', template => '%.3f',
                       min => 0, unit => 'ms', label_extra_instance => 1, instance_use => 'key' },
                 ],
             }

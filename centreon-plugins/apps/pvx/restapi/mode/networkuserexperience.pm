@@ -37,11 +37,11 @@ sub set_counters {
                 key_values => [ { name => 'user_experience' }, { name => 'key' }, { name => 'instance_label' } ],
                 output_template => 'End-User Experience: %.3f s',
                 perfdatas => [
-                    { label => 'time', value => 'user_experience', template => '%.3f',
-                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'key' },
-                ],
+                    { label => 'time', template => '%.3f',
+                      min => 0, unit => 's', label_extra_instance => 1, instance_use => 'key' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -60,7 +60,7 @@ sub new {
         'instance:s' => { name => 'instance', default => 'layer' },
         'top:s'      => { name => 'top' },
         'filter:s'   => { name => 'filter' },
-        'from:s'     => { name => 'from' },
+        'from:s'     => { name => 'from' }
     });
 
     return $self;
