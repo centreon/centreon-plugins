@@ -1,4 +1,8 @@
 2020-XX-XX Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: pfsense FauxAPI
+ * Plugin added: IIS Rest API
+ * Plugin added: Amazon EBS
+ * Plugin added: IP-Label datametrie API
  * Plugin added: ActiveMQ JMX
  * Plugin added: VerneMQ Rest API
  * Plugin added: Ruckus SmartZone SNMP
