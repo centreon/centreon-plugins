@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'alarms'   => 'apps::monitoring::iplabel::datametrie::restapi::mode::alarms',
         'list-kpi' => 'apps::monitoring::iplabel::datametrie::restapi::mode::listkpi',
         'kpi'      => 'apps::monitoring::iplabel::datametrie::restapi::mode::kpi'
     };
