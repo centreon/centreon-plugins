@@ -98,7 +98,7 @@ __END__
 
 =head1 MODE
 
-Check KPI.
+Check current alarms.
 
 =over 8
 
