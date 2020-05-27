@@ -32,15 +32,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-         {
-         "hostname:s"   => { name => 'hostname' },
-         "port:s"       => { name => 'port', },
-         "warning:s"    => { name => 'warning' },
-         "critical:s"   => { name => 'critical' },
-         "timeout:s"    => { name => 'timeout', default => '3' },
-         "ssl"          => { name => 'ssl' },
-         });
+    $options{options}->add_options(arguments => {
+        'hostname:s' => { name => 'hostname' },
+        'port:s'     => { name => 'port', },
+        'warning:s'  => { name => 'warning' },
+        'critical:s' => { name => 'critical' },
+        'timeout:s'  => { name => 'timeout', default => '3' },
+        'ssl'        => { name => 'ssl' }
+    });
+
     return $self;
 }
 
@@ -72,38 +72,49 @@ sub run {
     my ($connection, $timing0, $timeelapsed);
     if (defined($self->{option_results}->{ssl})) {
         $timing0 = [gettimeofday];
-        $connection = IO::Socket::SSL->new(PeerAddr => $self->{option_results}->{hostname},
-                                           PeerPort => $self->{option_results}->{port},
-                                           Timeout => $self->{option_results}->{timeout},
-                                           );
+        $connection = IO::Socket::SSL->new(
+            PeerAddr => $self->{option_results}->{hostname},
+            PeerPort => $self->{option_results}->{port},
+            Timeout => $self->{option_results}->{timeout},
+        );
         $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     } else {
         $timing0 = [gettimeofday];
-        $connection = IO::Socket::INET->new(PeerAddr => $self->{option_results}->{hostname},
-                                            PeerPort => $self->{option_results}->{port},
-                                            Timeout => $self->{option_results}->{timeout},
-                                            );
+        $connection = IO::Socket::INET->new(
+            PeerAddr => $self->{option_results}->{hostname},
+            PeerPort => $self->{option_results}->{port},
+            Timeout => $self->{option_results}->{timeout},
+        );
         $timeelapsed = tv_interval ($timing0, [gettimeofday]);
     }
 
     if (!defined($connection)) {
         if (!defined($!) || ($! eq '')) {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Connection failed on port %s : SSL error", $self->{option_results}->{port}));
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => sprintf("Connection failed on port %s : SSL error", $self->{option_results}->{port})
+            );
         } else {
-            $self->{output}->output_add(severity => 'CRITICAL',
-                                        short_msg => sprintf("Connection failed on port %s : %s", $self->{option_results}->{port}, $!));
+            $self->{output}->output_add(
+                severity => 'CRITICAL',
+                short_msg => sprintf("Connection failed on port %s : %s", $self->{option_results}->{port}, $!)
+            );
         }
     } else {
         my $exit = $self->{perfdata}->threshold_check(value => $timeelapsed, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Response time on port %s is %.3fs", $self->{option_results}->{port}, $timeelapsed));
-        $self->{output}->perfdata_add(label => 'time',
-                                      value => sprintf('%.3f', $timeelapsed),
-                                      unit => 's',
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("Response time on port %s is %.3fs", $self->{option_results}->{port}, $timeelapsed));
+        $self->{output}->perfdata_add(
+            label => 'time',
+            value => sprintf('%.3f', $timeelapsed),
+            unit => 's',
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
+
+        close($connection);
     }
     
     $self->{output}->display();
