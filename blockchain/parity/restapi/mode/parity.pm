@@ -36,7 +36,7 @@ sub set_counters {
     ];  
 
     $self->{maps_counters}->{mempool} = [
-        { label => 'mempool_tx_pending', nlabel => 'parity.pending.transactions', set => {
+        { label => 'mempool-tx-pending', nlabel => 'parity.pending.transactions', set => {
                 key_values => [ { name => 'tx_pending' } ],
                 output_template => "Pending transactions: %d",
                 perfdatas => [
@@ -44,7 +44,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'mempool_size', nlabel => 'parity.mempol.size', set => {
+        { label => 'mempool-size', nlabel => 'parity.mempol.size', set => {
                 key_values => [ { name => 'mempool_size' } ],
                 output_template => "Mempool size: %d",
                 perfdatas => [
@@ -52,7 +52,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'mempool_usage', nlabel => 'parity.mempol.usage', set => {
+        { label => 'mempool-usage', nlabel => 'parity.mempol.usage', set => {
                 key_values => [ { name => 'mempool_usage' } ],
                 output_template => "Mempool usage: %d %% ",
                 perfdatas => [
@@ -63,7 +63,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{peers} = [
-        { label => 'peers_connected', nlabel => 'parity.peers.connected', set => {
+        { label => 'peers-connected', nlabel => 'parity.peers.connected', set => {
                 key_values => [ { name => 'peers_connected' } ],
                 output_template => "Connected peers: %d",
                 perfdatas => [
@@ -71,7 +71,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'peers_max', nlabel => 'parity.peers.max', set => {
+        { label => 'peers-max', nlabel => 'parity.peers.max', set => {
                 key_values => [ { name => 'peers_max' } ],
                 output_template => "Peers max: %d",
                 perfdatas => [
@@ -79,7 +79,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'peers_usage', nlabel => 'parity.peers.usage', set => {
+        { label => 'peers-usage', nlabel => 'parity.peers.usage', set => {
                 key_values => [ { name => 'peers_usage' } ],
                 output_template => "Peers usage: %d %% ",
                 perfdatas => [
