@@ -90,9 +90,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }
@@ -103,8 +102,10 @@ sub get_version {
     my $oid_sysDescr = '.1.3.6.1.2.1.1.1.0'; # 'Data Domain OS 5.4.1.1-411752'
     my $result = $options{snmp}->get_leef(oids => [ $oid_sysDescr ]);
     if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $result->{$oid_sysDescr}))) {
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => 'Cannot get DataDomain OS version.');
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => 'Cannot get DataDomain OS version.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
