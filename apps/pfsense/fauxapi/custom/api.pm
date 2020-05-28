@@ -166,12 +166,14 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
+    my $fauxapi_auth = $self->build_fauxapi_header();
     my $content = $self->{http}->request(
         url_path => '/fauxapi/v1/?action=' . $options{action},
         unknown_status => $self->{unknown_http_status},
         warning_status => $self->{warning_http_status},
         critical_status => $self->{critical_http_status},
-        header => [ 'fauxapi-auth: ' .  $self->build_fauxapi_header() ]
+        curl_backend_options => { header => ['fauxapi-auth:: ' . $fauxapi_auth] },
+        lwp_backend_options => { header => [':fauxapi-auth: ' . $fauxapi_auth] }
     );
 
     if (!defined($content) || $content eq '') {
