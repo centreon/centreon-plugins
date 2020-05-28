@@ -42,10 +42,10 @@ sub set_counters {
                 perfdatas => [
                     { value => 'used', label => 'used', cast_int => 1,
                       unit => 'B', min => 0, max => 'total', threshold_total => 'total', 
-                      label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -91,9 +91,9 @@ sub new {
         'name'              => { name => 'use_name' },
         'filesystem:s'      => { name => 'filesystem' },
         'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' },                                  
+        'regexp-isensitive' => { name => 'use_regexpi' }
     });
-    
+
     return $self;
 }
 

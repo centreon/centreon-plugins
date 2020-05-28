@@ -38,7 +38,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'repl', type => 1, cb_prefix_output => 'prefix_repl_output', message_multiple => 'All replications are ok' },
+        { name => 'repl', type => 1, cb_prefix_output => 'prefix_repl_output', message_multiple => 'All replications are ok' }
     ];
 
     $self->{maps_counters}->{repl} = [
@@ -48,18 +48,18 @@ sub set_counters {
                 output_use => 'state',
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'offset', set => {
                 key_values => [ { name => 'offset' }, { name => 'display' } ],
                 output_template => 'last time peer sync : %s seconds ago',
                 perfdatas => [
-                    { label => 'offset', value => 'offset', template => '%s', 
-                      label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'offset', template => '%s', 
+                      label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -77,7 +77,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '%{state} =~ /initializing|recovering/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} =~ /disabledNeedsResync|uninitialized/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{state} =~ /disabledNeedsResync|uninitialized/i' }
     });
 
     return $self;
@@ -99,11 +99,12 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_sysDescr },
-            { oid => $oid_replicationInfoEntry },
+            { oid => $oid_replicationInfoEntry }
         ],
         nothing_quit => 1
     );
-    if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $self->{results}->{$oid_sysDescr}->{$oid_sysDescr . '.0'}))) {
+
+    if (!($self->{os_version} = storage::emc::DataDomain::lib::functions::get_version(value => $snmp_result->{$oid_sysDescr}->{$oid_sysDescr . '.0'}))) {
         $self->{output}->output_add(
             severity => 'UNKNOWN',
             short_msg => 'Cannot get DataDomain OS version.'
@@ -111,7 +112,12 @@ sub manage_selection {
         $self->{output}->display();
         $self->{output}->exit();
     }
-    
+
+    if (scalar(keys %{$snmp_result->{$oid_replicationInfoEntry}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'no replication informations');
+        $self->{output}->option_exit();
+    }
+
     my ($oid_replSource, $oid_replDestination, $oid_replState);
     my %map_state = (
         1 => 'enabled', 2 => 'disabled', 3 => 'disabledNeedsResync',
@@ -137,7 +143,7 @@ sub manage_selection {
         replState           => { oid => $oid_replState, map => \%map_state },
         replSource          => { oid => $oid_replSource },
         replDestination     => { oid => $oid_replDestination },
-        replSyncedAsOfTime  => { oid => '.1.3.6.1.4.1.19746.1.8.1.1.1.14' },
+        replSyncedAsOfTime  => { oid => '.1.3.6.1.4.1.19746.1.8.1.1.1.14' }
     };
 
     $self->{repl} = {};
