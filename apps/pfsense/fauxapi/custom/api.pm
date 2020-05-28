@@ -129,7 +129,7 @@ sub build_fauxapi_header {
 
     my $timestamp = POSIX::strftime('%Y%m%dZ%H%M%S', gmtime());
     my $nonce = sprintf('%08X', rand(0xFFFFFFFF));
-    my $hash = Digest::SHA::sha256_hex($self->{api_key} . $timestamp . $nonce);
+    my $hash = Digest::SHA::sha256_hex($self->{api_secret} . $timestamp . $nonce);
     return sprintf(
         '%s:%s:%s:%s',
         $self->{api_key},
