@@ -47,7 +47,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{sync} = [
-        { label => 'sync_status', nlabel => 'parity.eth.sync.status', set => {
+        { label => 'sync-status', nlabel => 'parity.eth.sync.status', set => {
                 key_values => [ { name => 'sync_status' } ],
                 output_template => "Syncing: %d %% ",
                 perfdatas => [
@@ -58,7 +58,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{gas} = [
-        { label => 'gas_price', nlabel => 'parity.eth.gas.price', set => {
+        { label => 'gas-price', nlabel => 'parity.eth.gas.price', set => {
                 key_values => [ { name => 'gas_price' } ],
                 output_template => "The gas price is: %d wei ",
                 perfdatas => [
@@ -66,7 +66,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'gas_used', nlabel => 'parity.eth.gas.used', set => {
+        { label => 'gas-used', nlabel => 'parity.eth.gas.used', set => {
                 key_values => [ { name => 'gas_used' } ],
                 output_template => "The gas used is: %d",
                 perfdatas => [
@@ -74,7 +74,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'gas_limit', nlabel => 'parity.eth.gas.limit', set => {
+        { label => 'gas-limit', nlabel => 'parity.eth.gas.limit', set => {
                 key_values => [ { name => 'gas_limit' } ],
                 output_template => "The gas limit is: %d",
                 perfdatas => [
@@ -85,7 +85,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{block} = [  
-        { label => 'block_size', nlabel => 'parity.eth.block.size', set => {
+        { label => 'block-size', nlabel => 'parity.eth.block.size', set => {
                 key_values => [ { name => 'block_size' } ],
                 output_template => "Block size: %d ",
                 perfdatas => [
@@ -93,7 +93,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'block_usage', nlabel => 'parity.eth.block.usage', set => {
+        { label => 'block-usage', nlabel => 'parity.eth.block.usage', set => {
                 key_values => [ { name => 'block_usage' } ],
                 output_template => "Block usage: %d %%",
                 perfdatas => [
@@ -101,7 +101,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'block_transactions', nlabel => 'parity.eth.block.transactions.number', set => {
+        { label => 'block-transactions', nlabel => 'parity.eth.block.transactions.number', set => {
                 key_values => [ { name => 'block_transactions' } ],
                 output_template => "Block transactions number: %d ",
                 perfdatas => [
@@ -109,7 +109,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'block_gas', nlabel => 'parity.eth.block.gas', set => {
+        { label => 'block-gas', nlabel => 'parity.eth.block.gas', set => {
                 key_values => [ { name => 'block_gas' } ],
                 output_template => "Block gas: %d ",
                 perfdatas => [
@@ -117,7 +117,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'block_uncles', nlabel => 'parity.eth.block.uncles', set => {
+        { label => 'block-uncles', nlabel => 'parity.eth.block.uncles', set => {
                 key_values => [ { name => 'block_uncles' } ],
                 output_template => "Block uncles: %d ",
                 perfdatas => [

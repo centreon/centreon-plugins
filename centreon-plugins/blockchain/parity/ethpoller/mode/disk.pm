@@ -35,7 +35,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-       { label => 'disk_free', nlabel => 'eth.poller.disk.free', set => {
+       { label => 'disk-free', nlabel => 'eth.poller.disk.free', set => {
                 key_values => [ { name => 'disk_free' } ],
                 output_template => "Disk free: %d ",
                 perfdatas => [
@@ -43,7 +43,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'disk_available', nlabel => 'eth.poller.disk.available', set => {
+        { label => 'disk-available', nlabel => 'eth.poller.disk.available', set => {
                 key_values => [ { name => 'disk_available' } ],
                 output_template => "Disk available: %d ",
                 perfdatas => [
@@ -51,7 +51,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'disk_size', nlabel => 'eth.poller.disk.size', set => {
+        { label => 'disk-size', nlabel => 'eth.poller.disk.size', set => {
                 key_values => [ { name => 'disk_size' } ],
                 output_template => "Disk size: %d ",
                 perfdatas => [
@@ -59,7 +59,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'disk_used', nlabel => 'eth.poller.disk.used', set => {
+        { label => 'disk-used', nlabel => 'eth.poller.disk.used', set => {
                 key_values => [ { name => 'disk_used' } ],
                 output_template => "Disk used: %d ",
                 perfdatas => [
@@ -67,7 +67,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'disk_usage', nlabel => 'eth.poller.disk.usage', set => {
+        { label => 'disk-usage', nlabel => 'eth.poller.disk.usage', set => {
                 key_values => [ { name => 'disk_usage' } ],
                 output_template => "Disk usage: %d %%",
                 perfdatas => [
@@ -75,7 +75,7 @@ sub set_counters {
                 ],                
             }
         },
-        { label => 'blockchain_dir', nlabel => 'eth.poller.blockchain.directory', set => {
+        { label => 'blockchain-dir', nlabel => 'eth.poller.blockchain.directory', set => {
                 key_values => [ { name => 'blockchain_dir' } ],
                 output_template => "Blockchain directory: %d",
                 perfdatas => [
