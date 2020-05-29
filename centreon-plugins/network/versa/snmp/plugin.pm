@@ -31,7 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'policy-usage'    => 'network::versa::snmp::mode::policyusage',
+        'policy-usage'    => 'network::versa::snmp::mode::qospolicyusage',
         'system'          => 'network::versa::snmp::mode::system',
     );
 
