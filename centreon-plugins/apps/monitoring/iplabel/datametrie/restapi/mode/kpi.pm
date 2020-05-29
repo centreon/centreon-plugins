@@ -64,11 +64,11 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'performance', nlabel => 'kpi.performance.count', set => {
+        { label => 'performance', nlabel => 'kpi.performance.milliseconds', set => {
                 key_values => [ { name => 'performance', no_value => -1 }, { name => 'display' } ],
-                output_template => 'performance: %s',
+                output_template => 'performance: %s ms',
                 perfdatas => [
-                    { template => '%s', min => 0, label_extra_instance => 1 }
+                    { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
                 ]
             }
         }
@@ -194,7 +194,7 @@ Can used special variables like: %{status}, %{display}
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'success-rate' (%) 'sla-availability' (%), 'performance'.
+Can be: 'success-rate' (%) 'sla-availability' (%), 'performance' (ms).
 
 =back
 
