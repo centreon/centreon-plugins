@@ -36,33 +36,41 @@ sub set_counters {
 
     $self->{maps_counters}->{qospolicy} = [
         { label => 'qos-policy-hit-count', nlabel => 'qos.policy.hit.count', set => {
-                key_values => [ { name => 'qosPolicyHitCount', per_minute => 1 }, { name => 'display' } ],
-                output_template => 'hits: %s',
+                key_values => [ { name => 'qosPolicyHitCount', diff => 1 }, { name => 'display' } ],
+                output_template => 'hits: %.2f',
                 perfdatas => [
-                    { label => 'qos_hit_count', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'qos_hit_count', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                ],
+            }
+        },
+        { label => 'qos-policy-session-deny-count', nlabel => 'qos.policy.sessions.deny.count', set => {
+                key_values => [ { name => 'qosPolicySessionDenyCount', diff => 1 }, { name => 'display' } ],
+                output_template => 'session deny: %.2f',
+                perfdatas => [
+                    { label => 'qos_sessions_deny_count', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'qos-policy-dropped-packets', nlabel => 'qos.policy.packets.dropped.count', set => {
                 key_values => [ { name => 'qosPolicyDropPktCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'dropped packets: %s/min',
+                output_template => 'dropped packets: %.2f',
                 perfdatas => [
-                    { label => 'qos_dropped_packets', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'qos_dropped_packets', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'qos-policy-dropped-bytes', nlabel => 'appqos.policy.dropped.bytes', set => {
                 key_values => [ { name => 'qosPolicyDropByteCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'dropped packets (volume): %s %s/s',
+                output_template => 'dropped packets (volume): %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'qos_dropped_packets_bytes', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'qos_dropped_packets_bytes', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'qos-policy-forwarded-packets', nlabel => 'qos.policy.packets.forwarded.count', set => {
-                key_values => [ { name => 'qosPolicyForwardPktCount', per_minute => 1 }, { name => 'display' } ],
-                output_template => 'forwarded packets: %s/min',
+                key_values => [ { name => 'qosPolicyForwardPktCount', diff => 1 }, { name => 'display' } ],
+                output_template => 'forwarded packets: %.2f',
                 perfdatas => [
                     { label => 'qos_forwarded_packets', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
@@ -70,10 +78,10 @@ sub set_counters {
         },
         { label => 'qos-policy-forwarded-bytes', nlabel => 'qos.policy.forwarded.bytes', set => {
                 key_values => [ { name => 'qosPolicyForwardByteCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'forwarded packets (volume): %s %s/s',
+                output_template => 'forwarded packets (volume): %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'qos_forwarded_packets_bytes', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'qos_forwarded_packets_bytes', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         }
@@ -81,33 +89,33 @@ sub set_counters {
 
     $self->{maps_counters}->{appqospolicy} = [
         { label => 'appqos-policy-hit-count', nlabel => 'appqos.policy.hit.count', set => {
-                key_values => [ { name => 'appQosPolicyHitCount', per_minute => 1 }, { name => 'display' } ],
-                output_template => 'hits: %s',
+                key_values => [ { name => 'appQosPolicyHitCount', diff => 1 }, { name => 'display' } ],
+                output_template => 'hits: %.2f',
                 perfdatas => [
-                    { label => 'appqos_hit_count', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'appqos_hit_count', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'appqos-policy-dropped-packets', nlabel => 'appqos.policy.packets.dropped.count', set => {
                 key_values => [ { name => 'appQosPolicyDropPktCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'dropped packets: %s/min',
+                output_template => 'dropped packets: %.2f',
                 perfdatas => [
-                    { label => 'appqos_dropped_packets', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'appqos_dropped_packets', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'appqos-policy-dropped-bytes', nlabel => 'appqos.policy.dropped.bytes', set => {
                 key_values => [ { name => 'appQosPolicyDropByteCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'dropped packets (volume): %s %s/s',
+                output_template => 'dropped packets (volume): %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'appqos_dropped_packets_bytes', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'appqos_dropped_packets_bytes', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         },
         { label => 'appqos-policy-forwarded-packets', nlabel => 'appqos.policy.packets.forwarded.count', set => {
-                key_values => [ { name => 'appQosPolicyForwardPktCount', per_minute => 1 }, { name => 'display' } ],
-                output_template => 'forwarded packets: %s/min',
+                key_values => [ { name => 'appQosPolicyForwardPktCount', diff => 1 }, { name => 'display' } ],
+                output_template => 'forwarded packets: %s',
                 perfdatas => [
                     { label => 'appqos_forwarded_packets', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
@@ -115,10 +123,10 @@ sub set_counters {
         },
         { label => 'appqos-policy-forwarded-bytes', nlabel => 'appqos.policy.forwarded.bytes', set => {
                 key_values => [ { name => 'appQosPolicyForwardByteCount', diff => 1 }, { name => 'display' } ],
-                output_template => 'forwarded packets (volume): %s %s/s',
+                output_template => 'forwarded packets (volume): %.2f %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'appqos_forwarded_packets_bytes', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
+                    { label => 'appqos_forwarded_packets_bytes', template => '%.2f', min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
         }
@@ -161,10 +169,6 @@ my $mapping_qos_policy = {
     qosPolicyForwardPktCount    => { oid => '.1.3.6.1.4.1.42359.2.2.1.2.1.5.1.1.11' },
     qosPolicyForwardByteCount   => { oid => '.1.3.6.1.4.1.42359.2.2.1.2.1.5.1.1.12' },
     qosPolicySessionDenyCount   => { oid => '.1.3.6.1.4.1.42359.2.2.1.2.1.5.1.1.13' },
-    qosPolicyDropPktsPPS        => { oid => '.1.3.6.1.4.1.42359.2.2.1.2.1.5.1.1.14' },
-    qosPolicyDropBytesPPS       => { oid => '.1.3.6.1.4.1.42359.2.2.1.2.1.5.1.1.15' },
-    qosPolicyDropPktsKBPS       => { oid => '.1.3.6.1.4.1.42359.2.2.1.2.1.5.1.1.16' },
-    qosPolicyDropBytesKBPS      => { oid => '.1.3.6.1.4.1.42359.2.2.1.2.1.5.1.1.17' }
 };
 
 my $mapping_app_qos_policy = {
@@ -189,7 +193,7 @@ sub manage_selection {
     $self->{results} = $options{snmp}->get_multiple_table(oids => [ 
             { oid => $oid_qosPolicyEntry,
                 start => $mapping_qos_policy->{qosPolicyOrgName}->{oid},
-                end => $mapping_qos_policy->{qosPolicyDropBytesKBPS}->{oid} },
+                end => $mapping_qos_policy->{qosPolicySessionDenyCount}->{oid} },
             { oid => $oid_appQosPolicyEntry,
                 start => $mapping_app_qos_policy->{appQosPolicyOrgName}->{oid},
                 end => $mapping_app_qos_policy->{appQosPolicyForwardByteCount}->{oid} }
