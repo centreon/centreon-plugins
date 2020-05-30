@@ -125,9 +125,6 @@ sub custom_mining_prct_calc {
     $self->{result_values}->{total_block} = Math::BigFloat->new($options{new_datas}->{$self->{instance} . '_total_block'});
     $self->{result_values}->{mining_prct} = (defined($self->{result_values}->{total_block}) && $self->{result_values}->{total_block} != 0) ? 
                                                     $self->{result_values}->{mined_block_count} / $self->{result_values}->{total_block} * 100 : 0; 
-    use Data::Dumper;
-    print Dumper($self->{result_values}->{mined_block_count});
-    print Dumper($self->{result_values}->{total_block});
     return 0;
 }
 
