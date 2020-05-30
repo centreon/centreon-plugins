@@ -95,7 +95,7 @@ sub set_counters {
         },
         { label => 'block-usage', nlabel => 'parity.eth.block.usage', set => {
                 key_values => [ { name => 'block_usage' } ],
-                output_template => "Block usage: %d %%",
+                output_template => "Block usage: %.2f %%",
                 perfdatas => [
                     { label => 'block_usage', value => 'block_usage', template => '%.2f', unit => '%', min => 0 }
                 ],                

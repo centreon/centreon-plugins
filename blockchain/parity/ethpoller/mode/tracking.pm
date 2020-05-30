@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use bigint;
+use Math::BigFloat;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -57,6 +58,18 @@ sub set_counters {
                     { template => '%.2f', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
+        },
+        { label => 'mining-prct', nlabel => 'parity.tracking.mined.block.prct', display_ok => 0, set => {
+                key_values => [],
+                manual_keys => 1,
+                closure_custom_calc => $self->can('custom_mining_prct_calc'),
+                closure_custom_output => $self->can('custom_mining_prct_output'),
+                threshold_use => 'mining_prct',
+                perfdatas => [
+                   { value => 'mining_prct', template => '%.2f', unit => '%',
+                     min => 0, label_extra_instance => 1, instance_use => 'display'  }
+                ],
+            }
         }
     ];
 
@@ -64,8 +77,8 @@ sub set_counters {
        { label => 'balance-fluctuation-prct', nlabel => 'parity.tracking.balances.fluctuation', display_ok => 0, set => {
                 key_values => [],
                 manual_keys => 1,
-                closure_custom_calc => $self->can('custom_prct_calc'),
-                closure_custom_output => $self->can('custom_balance_output'),
+                closure_custom_calc => $self->can('custom_balance_prct_calc'),
+                closure_custom_output => $self->can('custom_balance_prct_output'),
                 threshold_use => 'balance_fluctuation_prct',
                 perfdatas => [
                    { value => 'balance_fluctuation_prct', template => '%.2f', unit => '%',
@@ -94,7 +107,31 @@ sub prefix_output_mining {
     return "Miner '" . $options{instance_value}->{display} . "' ";
 }
 
-sub custom_balance_output {
+sub custom_mining_prct_output {
+    my ($self, %options) = @_;
+    
+    return sprintf(
+        "Mined: %d blocks, witch corresponds to %.2f %% of total validated block",
+        $self->{result_values}->{mined_block_count},
+        $self->{result_values}->{mining_prct}
+    );
+}
+
+sub custom_mining_prct_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{mined_block_count} = Math::BigFloat->new($options{new_datas}->{$self->{instance} . '_mined_block_count'});
+    $self->{result_values}->{total_block} = Math::BigFloat->new($options{new_datas}->{$self->{instance} . '_total_block'});
+    $self->{result_values}->{mining_prct} = (defined($self->{result_values}->{total_block}) && $self->{result_values}->{total_block} != 0) ? 
+                                                    $self->{result_values}->{mined_block_count} / $self->{result_values}->{total_block} * 100 : 0; 
+    use Data::Dumper;
+    print Dumper($self->{result_values}->{mined_block_count});
+    print Dumper($self->{result_values}->{total_block});
+    return 0;
+}
+
+sub custom_balance_prct_output {
     my ($self, %options) = @_;
     
     return sprintf(
@@ -104,12 +141,12 @@ sub custom_balance_output {
     );
 }
 
-sub custom_prct_calc {
+sub custom_balance_prct_calc {
     my ($self, %options) = @_;
 
     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{balance} = $options{new_datas}->{$self->{instance} . '_balance'};
-    $self->{result_values}->{balance_old} = $options{old_datas}->{$self->{instance} . '_balance'};
+    $self->{result_values}->{balance} = Math::BigFloat->new($options{new_datas}->{$self->{instance} . '_balance'});
+    $self->{result_values}->{balance_old} = Math::BigFloat->new($options{old_datas}->{$self->{instance} . '_balance'});
     $self->{result_values}->{balance_fluctuation_prct} = (defined($self->{result_values}->{balance_old}) && $self->{result_values}->{balance_old} != 0) ? 
                                                     ($self->{result_values}->{balance} - $self->{result_values}->{balance_old}) / 
                                                     $self->{result_values}->{balance_old} * 100 : 0; 
@@ -205,7 +242,9 @@ sub manage_selection {
             mining_count => $miner->{count},
             last_mining => $miner->{count},
             last_mining_block => $miner->{block},
-            last_mining_ts => $last_mining_timestamp
+            last_mining_ts => $last_mining_timestamp,
+            total_block => $miner->{currentBlock},
+            mined_block_count => $miner->{count}
         };
     }
 
