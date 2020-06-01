@@ -146,7 +146,7 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
-    if (!defined($decoded->{code}) || $decoded->{code} != 200) {
+    if (!defined($decoded->{cod}) || $decoded->{cod} != 200) {
         $self->{output}->output_add(long_msg => "Error message : " . $decoded->{errorDetails}, debug => 1);
         $self->{output}->add_option_msg(short_msg => "API return error code '" . $decoded->{result} . "' (add --debug option for detailed message)");
         $self->{output}->option_exit();
