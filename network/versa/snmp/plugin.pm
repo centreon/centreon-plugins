@@ -30,10 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
-        'policy-usage'    => 'network::versa::snmp::mode::qospolicyusage',
-        'system'          => 'network::versa::snmp::mode::system',
-    );
+    $self->{modes} = {
+        'devices'          => 'network::versa::snmp::mode::devices',
+        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
+        'interfaces'       => 'snmp_standard::mode::interfaces',
+        'qos-policy'       => 'network::versa::snmp::mode::qospolicy'
+    };
 
     return $self;
 }
