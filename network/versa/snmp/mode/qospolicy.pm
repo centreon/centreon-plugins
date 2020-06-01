@@ -330,7 +330,7 @@ __END__
 
 =head1 MODE
 
-Check policy usage.
+Check QoS policies.
 
 =over 8
 

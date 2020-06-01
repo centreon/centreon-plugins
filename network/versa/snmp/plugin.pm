@@ -31,10 +31,14 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'devices'          => 'network::versa::snmp::mode::devices',
-        'list-interfaces'  => 'snmp_standard::mode::listinterfaces',
-        'interfaces'       => 'snmp_standard::mode::interfaces',
-        'qos-policy'       => 'network::versa::snmp::mode::qospolicy'
+        'devices'         => 'network::versa::snmp::mode::devices',
+        'list-interfaces' => 'snmp_standard::mode::listinterfaces',
+        'list-ipsec'      => 'network::versa::snmp::mode::listipsec',
+        'list-sdwan'      => 'network::versa::snmp::mode::listsdwan',
+        'interfaces'      => 'snmp_standard::mode::interfaces',
+        'ipsec'           => 'network::versa::snmp::mode::ipsec',
+        'qos-policy'      => 'network::versa::snmp::mode::qospolicy',
+        'sdwan'           => 'network::versa::snmp::mode::sdwan'
     };
 
     return $self;
@@ -46,7 +50,7 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Versa Equipments in SNMP.
+Check Versa equipments in SNMP.
 
 =cut
 
