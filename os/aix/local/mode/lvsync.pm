@@ -20,53 +20,89 @@
 
 package os::aix::local::mode::lvsync;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+
+sub custom_status_output { 
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'state: %s [lp: %s  pp: %s  pv: %s]',
+        $self->{result_values}->{state},
+        $self->{result_values}->{lp},
+        $self->{result_values}->{pp},
+        $self->{result_values}->{pv}
+    );
+}
+
+sub prefix_lv_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        "Logical volume '%s' [mount point: %s] ",
+        $options{instance_value}->{lv},
+        $options{instance_value}->{mount}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'lvs', type => 1, cb_prefix_output => 'prefix_lv_output', message_multiple => 'All logical volumes are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{lvs} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [
+                    { name => 'state' }, { name => 'mount' },
+                    { name => 'lv' }, { name => 'pp' },
+                    { name => 'pv' }, { name => 'lp' },
+                    { name => 'type' }
+                ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
+            }
+        }
+    ];
+};
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'lsvg' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-o | lsvg -i -l 2>&1' },
-                                  "filter-state:s"    => { name => 'filter_state', default => 'stale' },
-                                  "filter-type:s"     => { name => 'filter_type', },
-                                  "name:s"            => { name => 'name' },
-                                  "regexp"              => { name => 'use_regexp' },
-                                  "regexp-isensitive"   => { name => 'use_regexpi' },
-                                });
+    $options{options}->add_options(arguments => {
+        'filter-type:s'     => { name => 'filter_type' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{state} =~ /stale/i' },
+    });
+
     $self->{result} = {};
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
+
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'lsvg',
+        command_options => '-o | lsvg -i -l 2>&1'
+    );
+
+    $self->{lvs} = {};
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
@@ -75,62 +111,27 @@ sub manage_selection {
             next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
             my ($lv, $type, $lp, $pp, $pv, $lvstate, $mount) = ($1, $2, $3, $4, $5, $6, $7);
             
-            next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                     $lvstate !~ /$self->{option_results}->{filter_state}/);
             next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-                     $type !~ /$self->{option_results}->{filter_type}/);
-
-            next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-                && $mount !~ /$self->{option_results}->{name}/i);
-            next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-                && $mount !~ /$self->{option_results}->{name}/);
-            next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-                && $mount ne $self->{option_results}->{name});
+                $type !~ /$self->{option_results}->{filter_type}/);
+            next if (defined($self->{option_results}->{filter_mount}) && $self->{option_results}->{filter_mount} ne '' &&
+                $mount !~ /$self->{option_results}->{filter_mount}/);
             
-            $self->{result}->{$mount} = {lv => $lv, type => $type, lp => $lp, pp => $pp, pv => $pv, lvstate => $lvstate};
+            $self->{lvs}->{$mount} = {
+                lv => $lv,
+                mount => $mount,
+                type => $type,
+                lp => $lp,
+                pp => $pp,
+                pv => $pv, 
+                state => $lvstate
+            };
         }
     }
-    
-}
 
-sub run {
-    my ($self, %options) = @_;
-    
-    $self->manage_selection();
-    
-    if (scalar(keys %{$self->{result}}) <= 0) {
-        $self->{output}->output_add(long_msg => 'All LV are ok.');
-        $self->{output}->output_add(severity => 'OK',
-                                    short_msg => 'All LV are ok.');
-    } else {
-        my $num_disk_check = 0;
-        foreach my $name (sort(keys %{$self->{result}})) {
-            $num_disk_check++;
-            my $lv = $self->{result}->{$name}->{lv};
-            my $type = $self->{result}->{$name}->{type};
-            my $lp = $self->{result}->{$name}->{lp};
-            my $pp = $self->{result}->{$name}->{pp};
-            my $pv = $self->{result}->{$name}->{pv};
-            my $lvstate = $self->{result}->{$name}->{lvstate};
-            my $mount = $name;
-            
-            $self->{output}->output_add(long_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
-                                             $mount, $lvstate,
-                                             $lp, $pp, $pv));
-            $self->{output}->output_add(severity => 'critical',
-                                        short_msg => sprintf("LV '%s' MountPoint: '%s' State: '%s' [LP: %s  PP: %s  PV: %s]", $lv,
-                                            $mount, $lvstate,
-                                            $lp, $pp, $pv));
-        }
-    
-        if ($num_disk_check == 0) {
-            $self->{output}->add_option_msg(short_msg => "No lv checked.");
-            $self->{output}->option_exit();
-        }
+    if (scalar(keys %{$self->{lvs}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No logical volumes found.");
+        $self->{output}->option_exit();
     }
-    
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -140,69 +141,32 @@ __END__
 =head1 MODE
 
 Check vg mirroring.
+Command used: lsvg -o | lsvg -i -l 2>&1
 
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'lsvg').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-o | lsvg -i -l 2>&1').
-
-=item B<--name>
-
-Set the storage mount point (empty means 'check all storages')
-
-=item B<--regexp>
-
-Allows to use regexp to filter storage mount point (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
-
-=item B<--filter-state>
-
-Filter filesystem state (Default: stale) (regexp can be used).
 
 =item B<--filter-type>
 
 Filter filesystem type (regexp can be used).
+
+=item B<--filter-mount>
+
+Filter storage mount point (regexp can be used).
+
+=item B<--unknown-status>
+
+Set unknown threshold for status.
+Can used special variables like: %{state}, %{lv}, %{mount}, %{type}.
+
+=item B<--warning-status>
+
+Set warning threshold for status.
+Can used special variables like: %{state}, %{lv}, %{mount}, %{type}.
+
+=item B<--critical-status>
+
+Set critical threshold for status (Default: '%{state} =~ /stale/i').
+Can used special variables like: %{state}, %{lv}, %{mount}, %{type}.
 
 =back
 

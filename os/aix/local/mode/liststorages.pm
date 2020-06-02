@@ -24,29 +24,17 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'df' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-P -k 2>&1' },
-                                  "filter-fs:s"       => { name => 'filter_fs', },
-                                  "filter-mount:s"    => { name => 'filter_mount', },
-                                });
-    $self->{result} = {};
+    $options{options}->add_options(arguments => {
+        'filter-fs:s'    => { name => 'filter_fs' },
+        'filter-mount:s' => { name => 'filter_mount' }
+    });
+
     return $self;
 }
 
@@ -58,12 +46,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'df',
+        command_options => '-P -k 2>&1'
+    );
+
+    my $results = {};
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
@@ -73,29 +61,39 @@ sub manage_selection {
         
         if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
             $fs !~ /$self->{option_results}->{filter_fs}/) {
-            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter fs");
+            $self->{output}->output_add(long_msg => "skipping storage '" . $mount . "': no matching filter fs", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_mount}) && $self->{option_results}->{filter_mount} ne '' &&
             $mount !~ /$self->{option_results}->{filter_mount}/) {
-            $self->{output}->output_add(long_msg => "Skipping storage '" . $mount . "': no matching filter mount");
+            $self->{output}->output_add(long_msg => "skipping storage '" . $mount . "': no matching filter mount", debug => 1);
             next;
         }
         
-        $self->{result}->{$mount} = {fs => $fs};
+        $results->{$mount} = { fs => $fs };
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 	
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [fs = " . $self->{result}->{$name}->{fs} . ']');
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort(keys %$results)) {
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "'%s' [fs = %s]",
+                $name,
+                $results->{$name}->{fs}
+            )
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List storages:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List storages:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -109,11 +107,12 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         fs => $self->{result}->{$name}->{fs},
-                                         );
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort(keys %$results)) {     
+        $self->{output}->add_disco_entry(
+            name => $name,
+            fs => $results->{$name}->{fs},
+        );
     }
 }
 
@@ -124,49 +123,9 @@ __END__
 =head1 MODE
 
 List storages.
+Command used: df -P -k 2>&1
 
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'df').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-P -k 2>&1').
 
 =item B<--filter-fs>
 

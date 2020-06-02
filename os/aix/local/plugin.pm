@@ -22,7 +22,7 @@ package os::aix::local::plugin;
 
 use strict;
 use warnings;
-use base qw(centreon::plugins::script_simple);
+use base qw(centreon::plugins::script_custom);
 
 sub new {
     my ($class, %options) = @_;
@@ -30,15 +30,17 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cmd-return'    => 'os::aix::local::mode::cmdreturn',
         'errpt'         => 'os::aix::local::mode::errpt',
         'inodes'        => 'os::aix::local::mode::inodes',
         'list-storages' => 'os::aix::local::mode::liststorages',
         'lvsync'        => 'os::aix::local::mode::lvsync',
         'process'       => 'os::aix::local::mode::process',
-        'storage'       => 'os::aix::local::mode::storage',
-    );
+        'storage'       => 'os::aix::local::mode::storage'
+    };
+
+    $self->{custom_modes}->{cli} = 'os::aix::local::custom::cli';
 
     return $self;
 }
