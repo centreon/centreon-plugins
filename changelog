@@ -1,4 +1,4 @@
-2020-XX-XX Quentin Garnier <qgarnier@centreon.com>
+2020-06-02 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: pfsense FauxAPI
  * Plugin added: IIS Rest API
  * Plugin added: Amazon EBS
@@ -16,6 +16,7 @@
  * Plugin added: Bluemind
  * Plugin added: Mulesoft Rest API
  * Plugin added: Salesforce Rest API
+ * Plugin added: Versa SNMP
  * Break: [netapp/snmp] move directory
  * Break: [netapp/restapi] move directory
 
