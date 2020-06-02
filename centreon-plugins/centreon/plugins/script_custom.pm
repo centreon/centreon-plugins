@@ -44,8 +44,8 @@ sub new {
         }
     );
     $self->{version} = '1.0';
-    %{$self->{modes}} = ();
-    %{$self->{custom_modes}} = ();
+    $self->{modes} = {};
+    $self->{custom_modes} = {};
     $self->{default} = undef;
     $self->{customdefault} = {};
     $self->{custommode_current} = undef;
