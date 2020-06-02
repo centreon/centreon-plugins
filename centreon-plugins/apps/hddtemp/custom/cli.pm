@@ -102,7 +102,7 @@ sub list_drives {
             hostname => $self->{option_results}->{hostname},
             command => defined($self->{option_results}->{command_drives}) && $self->{option_results}->{command_drives} ne '' ? $self->{option_results}->{command_drives} : 'lsblk',
             command_path => $self->{option_results}->{command_path_drives},
-            command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options_drives} ne '' ? $self->{option_results}->{command_options_drives} : '-I 8 -d -o NAME -p -n',
+            command_options => defined($self->{option_results}->{command_options_drives}) && $self->{option_results}->{command_options_drives} ne '' ? $self->{option_results}->{command_options_drives} : '-I 8 -d -o NAME -p -n',
             timeout => $self->{option_results}->{timeout}
         );
     } else {
@@ -111,7 +111,7 @@ sub list_drives {
             options => { timeout => $self->{option_results}->{timeout} },
             command => defined($self->{option_results}->{command_drives}) && $self->{option_results}->{command_drives} ne '' ? $self->{option_results}->{command_drives} : 'lsblk',
             command_path => $self->{option_results}->{command_path_drives},
-            command_options => defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options_drives} ne '' ? $self->{option_results}->{command_options_drives} : '-I 8 -d -o NAME -p -n'
+            command_options => defined($self->{option_results}->{command_options_drives}) && $self->{option_results}->{command_options_drives} ne '' ? $self->{option_results}->{command_options_drives} : '-I 8 -d -o NAME -p -n'
         );
     }
 
