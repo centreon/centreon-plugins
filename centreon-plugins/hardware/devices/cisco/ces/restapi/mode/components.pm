@@ -29,7 +29,7 @@ sub set_system {
     my ($self, %options) = @_;
         
     $self->{regexp_threshold_overload_check_section_option} =
-        '^(?:ad|aic|aoc|camera|st|software|temperature|vic|vis|voc|webex)$';
+        '^(?:ad|aic|aoc|camera|st|software|temperature|vic|vis|voc|webex)';
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:aiclatency|aocdelay)$';
 
     $self->{cb_hook2} = 'execute_custom';
