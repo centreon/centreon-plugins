@@ -35,7 +35,7 @@ sub new {
     );
 
     $self->{custom_modes}{api} = 'apps::openweathermap::restapi::custom::api';
-    return $self;²
+    return $self;
 }
 
 1;
