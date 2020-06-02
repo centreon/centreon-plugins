@@ -33,7 +33,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'warning:s'   => { name => 'warning' },
         'critical:s'  => { name => 'critical' },
-        'units:s'     => { name => 'units', default => 'absolute' },
+        'units:s'     => { name => 'units', default => 'absolute' }
     });
 
     return $self;
@@ -93,6 +93,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => 'connections', unit => 'con',
+        nlabel => 'connections.active.count',
         value => $result->{$oid_fwNumCom},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', %total_options),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', %total_options),
