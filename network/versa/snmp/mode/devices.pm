@@ -115,7 +115,8 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
+    $options{options}->add_options(arguments => {
+        'filter-vsn-id:s' => { name => 'filter_vsn_id' }
     });
 
     return $self;
@@ -148,6 +149,12 @@ sub manage_selection {
 
         my $result = $options{snmp}->map_instance(mapping => $mapping_device, results => $snmp_result, instance => $instance);
 
+        if (defined($self->{option_results}->{filter_vsn_id}) && $self->{option_results}->{filter_vsn_id} ne '' &&
+            $result->{vsn_id} !~ /$self->{option_results}->{filter_vsn_id}/) {
+            $self->{output}->output_add(long_msg => "skipping device '" . $result->{vsn_id} . "'.", debug => 1);
+            next;
+        }
+
         $self->{devices}->{ $result->{vsn_id} } = $result;
         $self->{devices}->{ $result->{vsn_id} }->{sessions_active_prct} = $result->{sessions_active} * 100/ $result->{sessions_max};
         $self->{devices}->{ $result->{vsn_id} }->{sessions_failed_prct} = $result->{sessions_failed} * 100/ $result->{sessions_max};
@@ -169,10 +176,15 @@ Check device system statistics (cpu, memory, sessions).
 Only display some counters (regexp can be used).
 Example: --filter-counters='cpu_load'
 
+=item B<--filter-vsn-id>
+
+Filter monitoring on vsn id (can be a regexp).
+
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'cpu', 'memory', 'active-sessions', 'failed-sessions', 'sessions-used-prct', 'sessions-free-prct'.
+Can be: 'cpu-utilization', 'memory-usage', 'sessions-active', 'sessions-active-prct',
+'sessions-failed', 'sessions-failed-prct'. 
 
 =back
 

@@ -191,7 +191,7 @@ Check ipsec tunnels.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='qos-policy-hit'
+Example: --filter-counters='traffic'
 
 =item B<--filter-org>
 
