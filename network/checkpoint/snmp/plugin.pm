@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.5';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'connections'     => 'network::checkpoint::snmp::mode::connections',
         'cpu'             => 'network::checkpoint::snmp::mode::cpu',
         'disk'            => 'network::checkpoint::snmp::mode::disk',
@@ -44,7 +44,7 @@ sub new {
         'vpn-status'      => 'network::checkpoint::snmp::mode::vpnstatus',
         'vrrp-status'     => 'snmp_standard::mode::vrrp',
         'vsx'             => 'network::checkpoint::snmp::mode::vsx'
-    );
+    };
 
     return $self;
 }

@@ -46,38 +46,38 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'memory', type => 0, cb_prefix_output => 'prefix_memory_output' },
-        { name => 'swap', type => 0, cb_prefix_output => 'prefix_swap_output' },
+        { name => 'swap', type => 0, cb_prefix_output => 'prefix_swap_output', skipped_code => { -10 => 1 } },
         { name => 'malloc', type => 0, skipped_code => { -10 => 1 } },
     ];
 
     $self->{maps_counters}->{memory} = [
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'prct_used'}, { name => 'used' }, { name => 'free' }, { name => 'total' }  ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'memory', value => 'used', template => '%.2f', threshold_total => 'total', cast_int => 1,
-                      min => 0, max => 'total', unit => 'B' },
-                ],
+                    { label => 'memory', value => 'used', template => '%s', threshold_total => 'total', cast_int => 1,
+                      min => 0, max => 'total', unit => 'B' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{swap} = [
-        { label => 'swap', set => {
+        { label => 'swap', nlabel => 'swap.usage.bytes', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 threshold_use => 'prct_used',
                 perfdatas => [
-                    { label => 'swap', value => 'used', template => '%.2f', threshold_total => 'total', cast_int => 1,
-                      min => 0, max => 'total', unit => 'B' },
-                ],
+                    { label => 'swap', value => 'used', template => '%s', threshold_total => 'total', cast_int => 1,
+                      min => 0, max => 'total', unit => 'B' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{malloc} = [
-        { label => 'failed-malloc', set => {
+        { label => 'failed-malloc', nlabel => 'memory.allocations.failed.persecond', set => {
                 key_values => [ { name => 'failed_mallocs', per_second => 1 } ],
                 output_template => 'Failed memory allocations %.2f/s',
                 perfdatas => [
@@ -165,17 +165,12 @@ Check memory, swap usage and failed memory allocations per sec
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^(failed-malloc)$'
+Example: --filter-counters='failed-malloc'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
-Threshold warning.
-Can be: 'memory', 'swap', 'failed-malloc'
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'memory', 'swap', 'failed-malloc'
+Thresholds.
+Can be: 'memory' (%), 'swap' (%), 'failed-malloc'
 
 =back
 
