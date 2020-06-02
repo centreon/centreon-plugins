@@ -24,24 +24,13 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'errpt' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '' },
         'error-type:s'      => { name => 'error_type' },
         'error-class:s'     => { name => 'error_class' },
         'error-id:s'        => { name => 'error_id' },
@@ -51,16 +40,16 @@ sub new {
         'filter-resource:s' => { name => 'filter_resource' },
         'filter-id:s'	    => { name => 'filter_id' },
         'exclude-id:s'      => { name => 'exclude_id' },
-        'format-date'       => { name => 'format_date' },
+        'format-date'       => { name => 'format_date' }
     });
-    $self->{result} = {};
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
-    
+
     if (defined($self->{option_results}->{exclude_id}) && defined($self->{option_results}->{error_id})) {
         $self->{output}->add_option_msg(short_msg => "Please use --error-id OR --exclude-id, these options are mutually exclusives");
     	$self->{output}->option_exit();
@@ -69,8 +58,8 @@ sub check_options {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    my $extra_options = '';
 
+    my $extra_options = '';
     if (defined($self->{option_results}->{error_type})){
         $extra_options .= ' -T '.$self->{option_results}->{error_type};
     }
@@ -88,7 +77,7 @@ sub manage_selection {
         if (defined($self->{option_results}->{timezone})){
             $ENV{TZ} = $self->{option_results}->{timezone};
         }
-        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime($retention);
+        my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime($retention);
         $year = $year - 100;
         if (length($sec) == 1){
             $sec = '0' . $sec;
@@ -109,17 +98,13 @@ sub manage_selection {
         $retention = $mon . $mday . $hour . $min . $year;
         $extra_options .= ' -s '.$retention;
     }
-    
-    $extra_options .= $self->{option_results}->{command_options};
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'errpt',
         command_options => $extra_options
     );
+
+    my $results = {};
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
@@ -127,50 +112,65 @@ sub manage_selection {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.*)/);
         
         my ($identifier, $timestamp, $resource_name, $description) = ($1, $2, $5, $6);
-        $self->{result}->{ $timestamp . '~' . $identifier . '~' . $resource_name } = { description => $description };
+        $results->{ $timestamp . '~' . $identifier . '~' . $resource_name } = { description => $description };
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
+
     my $extra_message = '';
-    
     if (defined($self->{option_results}->{retention})) {
         $extra_message = ' since ' . $self->{option_results}->{retention} . ' seconds';
     }
-    
-    $self->manage_selection();
+
+    my $results = $self->manage_selection(custom => $options{custom});
     $self->{output}->output_add(
         severity => 'OK',
         short_msg => sprintf("No error found%s.", $extra_message)
     );
 
     my $total_error = 0;
-    foreach my $errpt_error (sort(keys %{$self->{result}})) {
+    foreach my $errpt_error (sort(keys %$results)) {
 	    my @split_error = split ('~', $errpt_error);
 	    my $timestamp = $split_error[0];
         my $identifier = $split_error[1];
         my $resource_name = $split_error[2];
-        my $description = $self->{result}->{$errpt_error}->{description};
-        
+        my $description = $results->{$errpt_error}->{description};
+
         next if (defined($self->{option_results}->{filter_resource}) && $self->{option_results}->{filter_resource} ne '' &&
-                 $resource_name !~ /$self->{option_results}->{filter_resource}/);
+            $resource_name !~ /$self->{option_results}->{filter_resource}/);
         next if (defined($self->{option_results}->{filter_id}) && $self->{option_results}->{filter_id} ne '' &&
-                 $identifier !~ /$self->{option_results}->{filter_id}/);
+            $identifier !~ /$self->{option_results}->{filter_id}/);
 
         my $output_date = $split_error[0];
         if (defined($self->{option_results}->{format_date})) {
             my ($month, $day, $hour, $minute, $year) = unpack("(A2)*", $output_date);
             $output_date = sprintf("20%s/%s/%s %s:%s", $year, $month, $day, $hour, $minute);
         }
-        
+
         $total_error++;
         if (defined($description)) {
-            $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s Description: %s", $identifier,
-                                                $output_date, $resource_name, $description));           
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "Error '%s' Date: %s ResourceName: %s Description: %s",
+                    $identifier,
+                    $output_date,
+                    $resource_name,
+                    $description
+                )
+            );           
         } else {
-            $self->{output}->output_add(long_msg => sprintf("Error '%s' Date: %s ResourceName: %s", $identifier,
-                                                $output_date, $resource_name));
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "Error '%s' Date: %s ResourceName: %s",
+                    $identifier,
+                    $output_date,
+                    $resource_name
+                )
+            );
         }
     }
 
@@ -192,45 +192,9 @@ __END__
 =head1 MODE
 
 Check errpt messages.
+Command used: 'errpt' with dynamic options
 
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'errpt').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
 
 =item B<--error-type>
 
