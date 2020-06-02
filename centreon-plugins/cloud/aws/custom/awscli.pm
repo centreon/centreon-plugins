@@ -43,6 +43,7 @@ sub new {
         $options{options}->add_options(arguments => {
             'aws-secret-key:s'    => { name => 'aws_secret_key' },
             'aws-access-key:s'    => { name => 'aws_access_key' },
+            'aws-session-token:s' => { name => 'aws_session_token' },
             'aws-profile:s'       => { name => 'aws_profile' },
             'endpoint-url:s'      => { name => 'endpoint_url' },
             'region:s'            => { name => 'region' },
@@ -55,7 +56,7 @@ sub new {
             'command:s'           => { name => 'command', default => 'aws' },
             'command-path:s'      => { name => 'command_path' },
             'command-options:s'   => { name => 'command_options', default => '' },
-            'proxyurl:s'          => { name => 'proxyurl' },
+            'proxyurl:s'          => { name => 'proxyurl' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AWSCLI OPTIONS', once => 1);
@@ -107,6 +108,9 @@ sub check_options {
     }
     if (defined($self->{option_results}->{aws_access_key}) && $self->{option_results}->{aws_access_key} ne '') {
         $ENV{AWS_ACCESS_KEY_ID} = $self->{option_results}->{aws_access_key};
+    }
+    if (defined($self->{option_results}->{aws_session_token}) && $self->{option_results}->{aws_session_token} ne '') {
+        $ENV{AWS_SESSION_TOKEN} = $self->{option_results}->{aws_session_token};
     }
     if (defined($self->{option_results}->{aws_profile}) && $self->{option_results}->{aws_profile} ne '') {
         $ENV{AWS_PROFILE} = $self->{option_results}->{aws_profile};
@@ -673,6 +677,10 @@ Set AWS secret key.
 =item B<--aws-access-key>
 
 Set AWS access key.
+
+=item B<--aws-session-token>
+
+Set AWS session token.
 
 =item B<--aws-profile>
 

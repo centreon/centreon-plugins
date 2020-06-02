@@ -44,12 +44,13 @@ sub new {
         $options{options}->add_options(arguments => {
             'aws-secret-key:s'    => { name => 'aws_secret_key' },
             'aws-access-key:s'    => { name => 'aws_access_key' },
+            'aws-session-token:s' => { name => 'aws_session_token' },
             'region:s'            => { name => 'region' },
             'timeframe:s'         => { name => 'timeframe' },
             'period:s'            => { name => 'period' },
             'statistic:s@'        => { name => 'statistic' },
             'zeroed'              => { name => 'zeroed' },
-            'proxyurl:s'          => { name => 'proxyurl' },
+            'proxyurl:s'          => { name => 'proxyurl' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
@@ -101,6 +102,9 @@ sub check_options {
     }
     if (defined($self->{option_results}->{aws_access_key}) && $self->{option_results}->{aws_access_key} ne '') {
         $ENV{AWS_ACCESS_KEY} = $self->{option_results}->{aws_access_key};
+    }
+    if (defined($self->{option_results}->{aws_session_token}) && $self->{option_results}->{aws_session_token} ne '') {
+        $ENV{AWS_SESSION_TOKEN} = $self->{option_results}->{aws_session_token};
     }
 
     if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
@@ -580,6 +584,10 @@ Set AWS secret key.
 =item B<--aws-access-key>
 
 Set AWS access key.
+
+=item B<--aws-session-token>
+
+Set AWS session token.
 
 =item B<--region>
 
