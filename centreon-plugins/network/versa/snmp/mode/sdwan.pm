@@ -233,7 +233,7 @@ Check SD-Wan rules.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='qos-policy-hit'
+Example: --filter-counters='traffic'
 
 =item B<--filter-org>
 
@@ -248,7 +248,6 @@ A policy may have 1 to n associated rules
 =item B<--filter-rule>
 
 Filter monitoring on 'rule' -rule name- (can be a regexp)
-Rules are unique
 
 =item B<--warning-*> B<--critical-*>
 
