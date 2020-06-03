@@ -173,7 +173,7 @@ sub azure_get_metrics_set_cmd {
         "--interval $options{interval} --aggregation '" . join('\' \'', @{$options{aggregations}}) . "' --only-show-errors --output json --resource '$options{resource}' " .
         "--resource-group '$options{resource_group}' --resource-type '$options{resource_type}' --resource-namespace '$options{resource_namespace}'";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
-    $cmd_options .= " --filter '$options{dimension}'" if defined $options{dimension};
+    $cmd_options .= " --filter '$options{dimension}'" if defined($options{dimension});
     
     return $cmd_options;
 }
