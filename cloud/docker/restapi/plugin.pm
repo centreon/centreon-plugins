@@ -29,11 +29,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $self->{version} = '0.3';
+    $self->{version} = '0.4';
     %{$self->{modes}} = (
         'container-usage'   => 'cloud::docker::restapi::mode::containerusage',
         'list-containers'   => 'cloud::docker::restapi::mode::listcontainers',
         'node-status'       => 'cloud::docker::restapi::mode::nodestatus',
+        'service-status'       => 'cloud::docker::restapi::mode::servicesstatus',
     );
 
     $self->{custom_modes}{api} = 'cloud::docker::restapi::custom::api';

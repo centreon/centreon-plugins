@@ -291,6 +291,46 @@ sub internal_api_get_container_stats {
     return $container_stats;
 }
 
+sub internal_api_list_services {
+    my ($self, %options) = @_;
+    
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
+        url_path => '/services',
+        unknown_status => '', critical_status => '', warning_status => '');
+    my $services;
+    eval {
+        $services = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $services = [];
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Service '$options{node_name}': cannot decode json list services response: $@");
+    }
+    
+    return $services;
+}
+
+sub internal_api_list_tasks {
+    my ($self, %options) = @_;
+    
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
+        url_path => '/tasks',
+        unknown_status => '', critical_status => '', warning_status => '');
+    my $tasks;
+    eval {
+        $tasks = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $tasks = [];
+        $self->{output}->output_add(severity => 'UNKNOWN',
+                                    short_msg => "Task '$options{node_name}': cannot decode json list services response: $@");
+    }
+    
+    return $tasks;
+}
+
 sub api_list_containers {
     my ($self, %options) = @_;
     
@@ -362,6 +402,46 @@ sub api_get_containers {
     
     $self->api_display();
     return $content_total;
+}
+
+# retrieve informations about service state - called by servicestatus mode
+sub api_list_services {
+    my ($self, %options) = @_;
+    
+    my $services = {};
+    foreach my $node_name (@{$self->{node_names}}) {        
+        my $list_tasks = $self->internal_api_list_tasks(node_name => $node_name);
+        my $list_services = $self->internal_api_list_services(node_name => $node_name);
+        foreach my $task (@$list_tasks) {
+            $services->{$task->{ID}} = {
+                NodeId => $task->{NodeID},
+                NodeName => $self->internal_get_by_id(list => $self->internal_api_list_nodes(node_name => $node_name), Id => $task->{NodeID})->{Description}->{Hostname},
+                ServiceId => $task->{ServiceID},
+                ServiceName => $self->internal_get_by_id(list => $self->internal_api_list_services(node_name => $node_name), Id => $task->{ServiceID})->{Spec}->{Name},
+                ContainerId => $task->{Status}->{ContainerStatus}->{ContainerID},
+                DesiredState => $task->{DesiredState},
+                State => $task->{Status}->{State},
+                StateMessage => $task->{Status}->{Message},
+            };
+        }
+    }
+    return $services;
+}
+
+# search a specific ID on given list
+sub internal_get_by_id{
+    my ($self, %options) = @_;
+
+    my $obj;
+    my $l = $options{list};
+    foreach my $o (@$l) {
+        if ($o->{ID} eq $options{Id}) {
+            $obj = $o;
+            last;
+        }
+    }
+
+    return $obj;
 }
 
 1;
