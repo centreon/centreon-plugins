@@ -289,14 +289,13 @@ sub azure_get_metrics_set_url {
     my $encoded_metrics = $uri->encode(join(',', @{$options{metrics}}));
     my $encoded_aggregations = $uri->encode(join(',', @{$options{aggregations}}));
     my $encoded_timespan = $uri->encode($options{start_time} . '/' . $options{end_time});
-    $self->{api_version} = '2018-01-01' if defined $options{dimension};
 
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
         $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
         "/" . $options{resource} . "/providers/microsoft.insights/metrics?api-version=" . $self->{api_version} .
         "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations .
         "&timespan=" . $encoded_timespan . "&interval=" . $options{interval};
-    $url .= "&\$filter=" . $options{dimension} if defined $options{dimension};
+    $url .= "&\$filter=" . $options{dimension} if defined($options{dimension});
 
     return $url;
 }
