@@ -279,7 +279,7 @@ sub convert_duration {
         $duration = $d->minutes * 60 + $d->seconds;
     }
 
-    return $duration; 
+    return $duration;
 }
 
 sub azure_get_metrics_set_url {
@@ -295,8 +295,9 @@ sub azure_get_metrics_set_url {
         "/" . $options{resource} . "/providers/microsoft.insights/metrics?api-version=" . $self->{api_version} .
         "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations .
         "&timespan=" . $encoded_timespan . "&interval=" . $options{interval};
+    $url .= "&\$filter=" . $options{dimension} if defined($options{dimension});
 
-    return $url; 
+    return $url;
 }
 
 sub azure_get_metrics {
@@ -351,8 +352,8 @@ sub azure_get_resource_health_set_url {
     my $url = $self->{management_endpoint} . "/subscriptions/" . $self->{subscription} . "/resourceGroups/" .
         $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
         "/" . $options{resource} . "/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=" . $self->{api_version};
-        
-    return $url; 
+
+    return $url;
 }
 
 sub azure_get_resource_health {
