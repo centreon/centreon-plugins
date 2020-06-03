@@ -53,7 +53,7 @@ sub new {
             'basic'       => { name => 'basic' },
             'username:s'  => { name => 'username' },
             'password:s'  => { name => 'password' },
-            'timeout:s'   => { name => 'timeout' },
+            'timeout:s'   => { name => 'timeout', default => 10 },
             'timeframe:s' => { name => 'timeframe' },
             'timezone:s'  => { name => 'timezone', default => 'UTC' }
         });
