@@ -39,9 +39,9 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'orange', nlabel => 'alarms.orange.count', set => {
-                key_values => [ { name => 'orange' } ],
-                output_template => 'orange: %s',
+        { label => 'black', nlabel => 'alarms.black.count', set => {
+                key_values => [ { name => 'black' } ],
+                output_template => 'black: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -50,6 +50,14 @@ sub set_counters {
         { label => 'red', nlabel => 'alarms.red.count', set => {
                 key_values => [ { name => 'red' } ],
                 output_template => 'red: %s',
+                perfdatas => [
+                    { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'orange', nlabel => 'alarms.orange.count', set => {
+                key_values => [ { name => 'orange' } ],
+                output_template => 'orange: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
                 ]
@@ -84,7 +92,7 @@ sub manage_selection {
         label => 'Get_Current_Alarms_All_Monitors'
     );
 
-    $self->{global} = { orange => 0, red => 0 };
+    $self->{global} = { orange => 0, red => 0, black => 0 };
     return if (ref($results) ne 'ARRAY');
 
     foreach (@$results) {
@@ -105,12 +113,12 @@ Check current alarms.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='orange'
+Example: --filter-counters='black'
 
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'orange', 'red'.
+Can be: 'black', 'red', 'orange'.
 
 =back
 
