@@ -234,7 +234,7 @@ Set monitor metrics (Required) (Can be multiple).
 
 Specify the metric dimension (required for some specific metrics)
 Syntax example:
---filter-dimension="$metriname eq '$metricvalue'"
+--filter-dimension="$metricname eq '$metricvalue'"
 
 =item B<--warning-metric>
 

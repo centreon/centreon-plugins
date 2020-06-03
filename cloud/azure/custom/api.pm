@@ -296,7 +296,7 @@ sub azure_get_metrics_set_url {
         "/" . $options{resource} . "/providers/microsoft.insights/metrics?api-version=" . $self->{api_version} .
         "&metricnames=" . $encoded_metrics . "&aggregation=" . $encoded_aggregations .
         "&timespan=" . $encoded_timespan . "&interval=" . $options{interval};
-    $url .= "&$filter=" . $options{dimension} if defined $options{dimension};
+    $url .= "&\$filter=" . $options{dimension} if defined $options{dimension};
 
     return $url;
 }

@@ -113,7 +113,7 @@ sub execute {
     my ($self, %options) = @_;
 
     $self->{output}->output_add(long_msg => "Command line: '" . $self->{option_results}->{command} . " " . $options{cmd_options} . "'", debug => 1);
-    
+
     my ($response) = centreon::plugins::misc::execute(
         output => $self->{output},
         options => $self->{option_results},
@@ -133,7 +133,7 @@ sub execute {
         $self->{output}->option_exit();
     }
 
-    return $raw_results; 
+    return $raw_results;
 }
 
 sub convert_duration {
@@ -161,7 +161,7 @@ sub convert_duration {
         $duration = $d->minutes * 60 + $d->seconds;
     }
 
-    return $duration; 
+    return $duration;
 }
 
 sub azure_get_metrics_set_cmd {
@@ -173,20 +173,21 @@ sub azure_get_metrics_set_cmd {
         "--interval $options{interval} --aggregation '" . join('\' \'', @{$options{aggregations}}) . "' --only-show-errors --output json --resource '$options{resource}' " .
         "--resource-group '$options{resource_group}' --resource-type '$options{resource_type}' --resource-namespace '$options{resource_namespace}'";
     $cmd_options .= " --subscription '$self->{subscription}'" if (defined($self->{subscription}) && $self->{subscription} ne '');
+    $cmd_options .= "--filter '$options{dimension}'" if defined $options{dimension};
     
-    return $cmd_options; 
+    return $cmd_options;
 }
 
 sub azure_get_metrics {
     my ($self, %options) = @_;
-    
+
     my $results = {};
     my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601.'Z';
     my $end_time = DateTime->now->iso8601.'Z';
 
     my $cmd_options = $self->azure_get_metrics_set_cmd(%options, start_time => $start_time, end_time => $end_time);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
-    
+
     foreach my $metric (@{$raw_results->{value}}) {
         my $metric_name = lc($metric->{name}->{value});
         $metric_name =~ s/ /_/g;
@@ -214,7 +215,7 @@ sub azure_get_metrics {
                 }
             }
         }
-        
+
         if (defined($results->{$metric_name}->{average})) {
             $results->{$metric_name}->{average} /= $results->{$metric_name}->{points};
         }
