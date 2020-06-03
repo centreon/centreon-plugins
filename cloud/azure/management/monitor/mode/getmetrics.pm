@@ -70,11 +70,11 @@ sub custom_metric_calc {
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'metrics', type => 1, message_multiple => 'All metrics are ok' },
     ];
-    
+
     $self->{maps_counters}->{metrics} = [
         { label => 'metric', set => {
                 key_values => [ { name => 'value' }, { name => 'name' }, { name => 'label' }, { name => 'aggregation' },
@@ -85,22 +85,23 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_metric_threshold'),
             }
         }
-    ];    
+    ];
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         "resource:s"            => { name => 'resource' },
         "resource-group:s"      => { name => 'resource_group' },
         "resource-type:s"       => { name => 'resource_type' },
         "resource-namespace:s"  => { name => 'resource_namespace' },
         "metric:s@"             => { name => 'metric' },
+        "filter-dimension:s"    => { name => 'filter_dimension'}
     });
-    
+
     return $self;
 }
 
@@ -118,13 +119,13 @@ sub check_options {
     if ($self->{az_resource} =~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\..*\/.*\/.*$/) {
         $self->{az_resource_group} = '';
         $self->{az_resource_type} = '';
-        $self->{az_resource_namespace} = '';            
+        $self->{az_resource_namespace} = '';
     } else {
         $self->{az_resource_group} = $self->{option_results}->{resource_group};
         $self->{az_resource_type} = $self->{option_results}->{resource_type};
         $self->{az_resource_namespace} = $self->{option_results}->{resource_namespace};
     }
-    
+
     $self->{az_metrics} = [];
     if (defined($self->{option_results}->{metric})) {
         $self->{az_metrics} = $self->{option_results}->{metric};
@@ -133,10 +134,10 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --metric option.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{az_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{az_interval} = defined($self->{option_results}->{interval}) ? $self->{option_results}->{interval} : "PT1M";
-    
+
     $self->{az_aggregation} = ['Average'];
     if (defined($self->{option_results}->{aggregation})) {
         $self->{az_aggregation} = [];
@@ -146,27 +147,32 @@ sub check_options {
             }
         }
     }
+
+    if (defined($self->{option_results}->{filter_dimension}) && $self->{option_results}->{filter_dimension} ne '') {
+        $self->{az_metrics_dimension} = $self->{option_results}->{filter_dimension};
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my ($results, $raw_results) = $options{custom}->azure_get_metrics(
-        resource => $self->{az_resource},
-        resource_group => $self->{az_resource_group},
-        resource_type => $self->{az_resource_type},
-        resource_namespace => $self->{az_resource_namespace},
-        metrics => $self->{az_metrics},
-        aggregations => $self->{az_aggregation},
-        timeframe => $self->{az_timeframe},
-        interval => $self->{az_interval},
+        resource            => $self->{az_resource},
+        resource_group      => $self->{az_resource_group},
+        resource_type       => $self->{az_resource_type},
+        resource_namespace  => $self->{az_resource_namespace},
+        metrics             => $self->{az_metrics},
+        aggregations        => $self->{az_aggregation},
+        timeframe           => $self->{az_timeframe},
+        interval            => $self->{az_interval},
+        dimension           => $self->{az_metrics_dimension}
     );
-    
+
     $self->{metrics} = {};
     foreach my $label (keys %{$results}) {
         foreach my $aggregation (('minimum', 'maximum', 'average', 'total')) {
             next if (!defined($results->{$label}->{$aggregation}));
-     
+
             $self->{metrics}->{$label . '_' . $aggregation} = {
                 display => $self->{az_resource},
                 name => $results->{$label}->{name},
@@ -176,6 +182,10 @@ sub manage_selection {
                 perf_label => $label . '_' . $aggregation,
             };
         }
+    }
+    if (scalar(keys %{$self->{metrics}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => "No metric found (Are the filters properly set?)");
+        $self->{output}->option_exit();
     }
 
     $self->{output}->output_add(long_msg => sprintf("Raw data:\n%s", Dumper($raw_results)), debug => 1);
@@ -219,6 +229,12 @@ Set resource type (Required if resource's name is used).
 =item B<--metric>
 
 Set monitor metrics (Required) (Can be multiple).
+
+=item B<--filter-dimension>
+
+Specify the metric dimension (required for some specific metrics)
+Syntax example:
+--filter-dimension="$metriname eq '$metricvalue'"
 
 =item B<--warning-metric>
 
