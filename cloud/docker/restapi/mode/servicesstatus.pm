@@ -102,11 +102,14 @@ sub run {
                " [statemessage = '" . $StateMessage . "']";
 
         # check service health
-        if ($DesiredState ne $State && $State ne "complete" && $State ne "preparing"){
-            $CountFailedServices++;
-            push @FailedServices, $msg;
+        if ($DesiredState ne $State && 
+            $State ne "complete" && 
+            $State ne "preparing" &&
+            $State ne "assigned"){
+              $CountFailedServices++;
+              push @FailedServices, $msg;
         } else {
-            push @SuccessServices, $msg;
+              push @SuccessServices, $msg;
         }
     }
 
