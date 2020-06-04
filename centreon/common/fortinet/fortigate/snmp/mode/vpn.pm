@@ -82,7 +82,7 @@ sub set_counters {
         },
         { label => 'traffic-in', nlabel => 'vpn.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 output_template => 'Traffic In: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
@@ -91,7 +91,7 @@ sub set_counters {
         },
         { label => 'traffic-out', nlabel => 'vpn.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
-                output_change_bytes => 1,
+                output_change_bytes => 2,
                 output_template => 'Traffic Out: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
@@ -235,8 +235,8 @@ sub manage_selection {
                 display => $name,
                 instance => $instance,
                 state => $result->{fgVpnTunEntStatus},
-                traffic_in => $result->{fgVpnTunEntInOctets},
-                traffic_out => $result->{fgVpnTunEntOutOctets},
+                traffic_in => $result->{fgVpnTunEntInOctets} * 8,
+                traffic_out => $result->{fgVpnTunEntOutOctets} * 8,
             };
         }
     }    
