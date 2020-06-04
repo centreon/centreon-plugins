@@ -46,7 +46,7 @@ sub set_counters {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
                 output_template => 'Health: %.2f %%', output_error_template => 'Health: %s',
                 perfdatas => [
-                    { label => 'health', template => '%.2f',
+                    { label => 'health', nlabel => 'vserver.health.percentage', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
@@ -56,7 +56,7 @@ sub set_counters {
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', template => '%.2f',
+                    { label => 'traffic_in', nlabel => 'vserver.traffic.in.bitspersecond', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
@@ -66,7 +66,7 @@ sub set_counters {
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', template => '%.2f',
+                    { label => 'traffic_out', nlabel => 'vserver.traffic.out.bitspersecond', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
@@ -75,7 +75,7 @@ sub set_counters {
                 key_values => [ { name => 'clients', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Client Connections : %s',
                 perfdatas => [
-                    { label => 'clients', template => '%s',
+                    { label => 'clients', nlabel => 'vserver.connections.client.count', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }
@@ -84,7 +84,7 @@ sub set_counters {
                 key_values => [ { name => 'servers', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Server Connections : %s',
                 perfdatas => [
-                    { label => 'servers', template => '%s',
+                    { label => 'servers', nlabel => 'vserver.connections.server.count', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display' },
                 ],
             }

@@ -33,7 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'active', set => {
+        { label => 'active', nlabel => 'connections.server.active.count', set => {
                 key_values => [ { name => 'active' } ],
                 output_template => 'Active Server TCP connections : %s',
                 perfdatas => [
@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'server', set => {
+        { label => 'server', nlabel => 'connections.server.count', set => {
                 key_values => [ { name => 'server' } ],
                 output_template => 'Server TCP connections  : %s',
                 perfdatas => [
@@ -51,7 +51,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'client', set => {
+        { label => 'client', nlabel => 'connections.client.count', set => {
                 key_values => [ { name => 'client' } ],
                 output_template => 'Client TCP connections : %s',
                 perfdatas => [

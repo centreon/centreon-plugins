@@ -83,6 +83,7 @@ sub run {
 
     $self->{output}->perfdata_add(
         label => "used", unit => 'B',
+        nlabel => 'memory.usage.bytes',
         value => int($used),
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
