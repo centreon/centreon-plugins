@@ -430,9 +430,15 @@ sub convert_bytes {
     my (%options) = @_;
 
     my %expo = (k => 1, m => 2, g => 3, t => 4, p => 5);
-    my $value = $options{value};
+    my ($value, $unit) = ($options{value}, $options{unit});
+    if (defined($options{pattern})) {
+        return undef if ($value !~ /$options{pattern}/);
+        $value = $1;
+        $unit = $2;
+    }
+    
     my $base = defined($options{network}) ? 1000 : 1024;    
-    if ($options{unit} =~ /([kmgt])b/i) {
+    if ($unit =~ /([kmgtp])i?b/i) {
         $value = $value * ($base ** $expo{lc($1)});
     }
 
