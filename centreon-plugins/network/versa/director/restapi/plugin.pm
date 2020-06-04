@@ -31,7 +31,8 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'devices' => 'network::versa::director::restapi::mode::devices'
+        'devices'      => 'network::versa::director::restapi::mode::devices',
+        'list-devices' => 'network::versa::director::restapi::mode::listdevices'
     };
 
     $self->{custom_modes}->{api} = 'network::versa::director::restapi::custom::api';
