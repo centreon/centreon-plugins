@@ -29,8 +29,8 @@ my %metrics_mapping = (
     'VolumeTotalReadTime' => {
         'output'    => 'Total Read Time',
         'label'     => 'total-read-time',
-        'nlabel'    => { 
-            'absolute' => 'ebs.volume.totalread.time.second' 
+        'nlabel'    => {
+            'absolute' => 'ebs.volume.totalread.time.second'
         },
         'unit'      => 's'
     },
@@ -38,7 +38,7 @@ my %metrics_mapping = (
         'output'    => 'Total Write Time',
         'label'     => 'total-write-time',
         'nlabel'    => {
-            'absolute' => 'ebs.volume.totalwrite.time.second' 
+            'absolute' => 'ebs.volume.totalwrite.time.second'
         },
         'unit'      => 's'
     },
@@ -46,7 +46,7 @@ my %metrics_mapping = (
         'output'          => 'Idle Time',
         'label'           => 'idle-time',
         'nlabel'          => {
-            'absolute' => 'ebs.volume.idle.time.second' 
+            'absolute' => 'ebs.volume.idle.time.second'
         },
         'unit'            => 's',
         'display_percent' => 1
@@ -172,7 +172,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{volume_id}) || $self->{option_results}->{volume_id} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --volumeid option.");
+        $self->{output}->add_option_msg(short_msg => "Need to specify --volume-id option.");
         $self->{output}->option_exit();
     };
 
@@ -254,7 +254,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.ht
 
 =over 8
 
-=item B<--volumeid>
+=item B<--volume-id>
 
 Set the VolumeId (Required).
 
