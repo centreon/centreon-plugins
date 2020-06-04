@@ -59,7 +59,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-nodes', display_ok => 0, set => {
+        { label => 'total-nodes', nlabel => 'nodes.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'total_nodes' } ],
                 output_template => 'Total nodes: %d',
                 perfdatas => [
@@ -68,7 +68,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'synchronized', set => {
+        { label => 'synchronized', nlabel => 'nodes.synchronized.count', set => {
                 key_values => [ { name => 'synchronized' } ],
                 output_template => 'Synchronized: %d',
                 perfdatas => [
@@ -77,7 +77,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'not-synchronized', set => {
+        { label => 'not-synchronized', nlabel => 'nodes.notsynchronized.count', set => {
                 key_values => [ { name => 'not_synchronized' } ],
                 output_template => 'Not Synchronized: %d',
                 perfdatas => [
@@ -86,7 +86,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-checksums', display_ok => 0, set => {
+        { label => 'total-checksums', nlabel => 'checksums.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'total_checksums' } ],
                 output_template => 'Total Checksums: %d',
                 perfdatas => [

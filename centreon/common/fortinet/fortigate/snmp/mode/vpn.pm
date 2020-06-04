@@ -46,7 +46,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'users', set => {
+        { label => 'users', nlabel => 'vpn.users.logged.count', set => {
                 key_values => [ { name => 'users' } ],
                 output_template => 'Logged users: %s',
                 perfdatas => [
@@ -54,7 +54,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'sessions', set => {
+        { label => 'sessions', nlabel => 'vpn.websessions.active.count', set => {
                 key_values => [ { name => 'sessions' }],
                 output_template => 'Active web sessions: %s',
                 perfdatas => [
@@ -62,7 +62,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'tunnels', set => {
+        { label => 'tunnels', nlabel => 'vpn.tunnels.active.count', set => {
                 key_values => [ { name => 'tunnels' } ],
                 output_template => 'Active Tunnels: %s',
                 perfdatas => [
@@ -80,7 +80,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'vpn.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Traffic In: %s %s/s',
@@ -89,7 +89,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'vpn.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 1,
                 output_template => 'Traffic Out: %s %s/s',

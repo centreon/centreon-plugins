@@ -116,6 +116,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => "sessions",
+        nlabel => 'sessions.active.count',
         value => $result->{$oid_fgSysSesCount},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
@@ -138,6 +139,7 @@ sub run {
             
     $self->{output}->perfdata_add(
         label => 'session_avg_setup1',
+        nlabel => 'sessions.setup.1s.persecond',
         value => $result->{$oid_fgSysSesRate1},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn1'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit1'),
@@ -145,6 +147,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => 'session_avg_setup10',
+        nlabel => 'sessions.setup.10s.persecond',
         value => $result->{$oid_fgSysSesRate10},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn10'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit10'),
@@ -152,6 +155,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => 'session_avg_setup30',
+        nlabel => 'sessions.setup.30s.persecond',
         value => $result->{$oid_fgSysSesRate30},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn30'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit30'),
@@ -159,6 +163,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => 'session_avg_setup60',
+        nlabel => 'sessions.setup.60s.persecond',
         value => $result->{$oid_fgSysSesRate60},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warn60'),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'crit60'),

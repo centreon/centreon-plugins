@@ -58,7 +58,7 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold,
             }
         },
-        { label => 'in-traffic', set => {
+        { label => 'in-traffic', nlabel => 'traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'traffic in : %s %s/s',
@@ -68,7 +68,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'out-traffic', set => {
+        { label => 'out-traffic', nlabel => 'traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
                 output_template => 'traffic out : %s %s/s',
@@ -78,7 +78,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'clients', set => {
+        { label => 'clients', nlabel => 'connections.client.count', set => {
                 key_values => [ { name => 'clients' }, { name => 'display' } ],
                 output_template => 'current client connections : %s',
                 perfdatas => [
@@ -87,7 +87,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
                 output_template => 'cpu usage : %.2f %%',
                 perfdatas => [
@@ -96,7 +96,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'memory.usage.bytes', set => {
                 key_values => [ { name => 'memory' }, { name => 'display' } ],
                 output_template => 'memory usage : %.2f %%',
                 perfdatas => [

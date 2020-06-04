@@ -90,6 +90,7 @@ sub run {
     );
     $self->{output}->perfdata_add(
         label => "used", unit => 'B',
+        nlabel => 'storage.space.usage.bytes',
         value => $fgSysDiskUsage,
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $fgSysDiskCapacity, cast_int => 1),
         critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $fgSysDiskCapacity, cast_int => 1),
