@@ -174,7 +174,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     if (!defined($self->{option_results}->{volume_id}) || $self->{option_results}->{volume_id} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --volumeid option.");
+        $self->{output}->add_option_msg(short_msg => "Need to specify --volume-id option.");
         $self->{output}->option_exit();
     };
 
@@ -255,7 +255,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.ht
 
 =over 8
 
-=item B<--volumeid>
+=item B<--volume-id>
 
 Set the VolumeId (Required).
 
