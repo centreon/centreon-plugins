@@ -123,6 +123,9 @@ sub manage_selection {
             next;
         }
         
+        $result->{wgPolicyL3PackageBytes} *= 8;
+        $result->{wgPolicyL2PackageBytes} *= 8;
+
         $self->{policy}->{$instance} = { display => $result->{wgPolicyName}, 
             %$result
         };

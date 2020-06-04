@@ -89,8 +89,8 @@ sub manage_selection {
             $oid_wgSystemTotalSendBytes, $oid_wgSystemTotalRecvBytes, $oid_wgSystemCurrActiveConns
         ], nothing_quit => 1);
 
-    $self->{global} = { out_traffic => $snmp_result->{$oid_wgSystemTotalSendBytes}, 
-        in_traffic => $snmp_result->{$oid_wgSystemTotalRecvBytes}, connections => $snmp_result->{$oid_wgSystemCurrActiveConns} };
+    $self->{global} = { out_traffic => $snmp_result->{$oid_wgSystemTotalSendBytes} * 8,
+        in_traffic => $snmp_result->{$oid_wgSystemTotalRecvBytes} * 8, connections => $snmp_result->{$oid_wgSystemCurrActiveConns} };
      $self->{cache_name} = "watchguard_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
