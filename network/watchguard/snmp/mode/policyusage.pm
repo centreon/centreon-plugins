@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{policy} = [
-        { label => 'current-connections', set => {
+        { label => 'current-connections', nlabel => 'connections.current.count', set => {
                 key_values => [ { name => 'wgPolicyCurrActiveConns' }, { name => 'display' } ],
                 output_template => 'Current connections : %s',
                 perfdatas => [
@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-connections', set => {
+        { label => 'total-connections', nlabel => 'connections.total.count', set => {
                 key_values => [ { name => 'wgPolicyActiveStreams', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total connections : %s',
                 perfdatas => [
@@ -50,7 +50,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'l3-traffic', set => {
+        { label => 'l3-traffic', nlabel => 'traffic.l3.bitspersecond', set => {
                 key_values => [ { name => 'wgPolicyL3PackageBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'L3 Traffic : %s %s/s',
                 output_change_bytes => 2,
@@ -59,7 +59,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'l2-traffic', set => {
+        { label => 'l2-traffic', nlabel => 'traffic.l2.bitspersecond', set => {
                 key_values => [ { name => 'wgPolicyL2PackageBytes', per_second => 1 }, { name => 'display' } ],
                 output_template => 'L2 Traffic : %s %s/s',
                 output_change_bytes => 2,

@@ -34,7 +34,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'connections', set => {
+        { label => 'connections', nlabel => 'connections.count', set => {
                 key_values => [ { name => 'connections' } ],
                 output_template => 'Current connections : %s',
                 perfdatas => [
@@ -42,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'in-traffic', set => {
+        { label => 'in-traffic', nlabel => 'traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in_traffic', per_second => 1 } ],
                 output_template => 'Traffic In : %s %s/s',
                 output_change_bytes => 2,
@@ -51,7 +51,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'out-traffic', set => {
+        { label => 'out-traffic', nlabel => 'traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out_traffic', per_second => 1 } ],
                 output_template => 'Traffic Out : %s %s/s',
                 output_change_bytes => 2,
