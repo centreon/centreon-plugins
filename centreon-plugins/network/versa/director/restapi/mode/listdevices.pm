@@ -44,7 +44,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    return $options{custom}->get_appliances();
+    return $options{custom}->get_appliances(disable_cache => 1);
 }
 
 sub run {
