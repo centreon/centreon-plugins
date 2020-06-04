@@ -283,7 +283,7 @@ See 'https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cloudwatch_ebs.ht
 
 =over 8
 
-=item B<--volumeid>
+=item B<--volume-id>
 
 Set the VolumeId (Required).
 
@@ -294,11 +294,11 @@ Can be: VolumeReadOps, VolumeWriteOps, VolumeThroughputPercentage, VolumeConsume
 
 =item B<--warning-$metric$>
 
-Warning thresholds ($metric$ can be: 'iops-read', 'iops-write', 'iops-throughput', 'iops-consumed-rw', 'iops-queue-length').
+Warning thresholds ($metric$ can be: 'iops-read', 'iops-write', 'iops-throughput', 'iops-consumed', 'iops-queue-length').
 
 =item B<--critical-$metric$>
 
-Critical thresholds ($metric$ can be: 'iops-read', 'iops-write', 'iops-throughput', 'iops-consumed-rw', 'iops-queue-length').
+Critical thresholds ($metric$ can be: 'iops-read', 'iops-write', 'iops-throughput', 'iops-consumed', 'iops-queue-length').
 
 =item B<--per-sec>
 
