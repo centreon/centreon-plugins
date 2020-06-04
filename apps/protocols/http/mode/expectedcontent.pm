@@ -147,7 +147,8 @@ sub load_request {
     my ($self, %options) = @_;
 
     $self->{options_request} = {};
-    if (defined($self->{option_results}->{data}) && $self->{option_results}->{data} ne '') {
+    if (defined($self->{option_results}->{data}) && $self->{option_results}->{data} ne '' &&
+        $self->{option_results}->{method} ne 'PATCH' && $self->{option_results}->{method} ne 'PUT') {
         $self->{option_results}->{method} = 'POST';
         if (-f $self->{option_results}->{data} and -r $self->{option_results}->{data}) {
             local $/ = undef;
