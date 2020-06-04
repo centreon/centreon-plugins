@@ -254,11 +254,11 @@ sub cache_versa_entities {
 sub get_organizations {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/organizations.json');
+    my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/organizations.json');
 
     $self->cache_versa_entities();
     return $self->{cache_organizations} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-    my $datas = $self->request_api(endpoint => '/api/config/nms/provider/organizations/organization');
+    #my $datas = $self->request_api(endpoint => '/api/config/nms/provider/organizations/organization');
 
     my $results = { entries => {}, names => { } };
 
@@ -275,11 +275,11 @@ sub get_organizations {
 sub get_appliances {
     my ($self, %options) = @_;
 
-    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/appliances.json');
+    my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/appliances.json');
 
     $self->cache_versa_entities();
     return $self->{cache_appliances} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-    my $datas = $self->request_api(endpoint => '/api/config/nms/provider/appliances/appliance');
+    #my $datas = $self->request_api(endpoint => '/api/config/nms/provider/appliances/appliance');
 
     my $results = { entries => {}, names => { }, types => { } };
 
