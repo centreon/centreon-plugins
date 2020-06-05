@@ -48,7 +48,7 @@ sub set_counters {
         {
             name => 'services', type => 2, message_multiple => 'All services running well', 
             format_output => '%s services not in desired stated',
-            display_counter_problem => {  nlabel => 'alerts.problems.current.count', min => 0 },
+            display_counter_problem => {  nlabel => 'services.tasks.problems.count', min => 0 },
             group => [ { name => 'service', cb_prefix_output => 'prefix_service_output', skipped_code => { -11 => 1 } } ]
         }
     ];
