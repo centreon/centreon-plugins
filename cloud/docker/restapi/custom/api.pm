@@ -43,23 +43,23 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s@"   => { name => 'hostname' },
-            "port:s"        => { name => 'port', default => 8080 },
-            "proto:s"       => { name => 'proto' },
-            "credentials"   => { name => 'credentials' },
-            "basic"         => { name => 'basic' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "timeout:s"     => { name => 'timeout', default => 10 },
-            "cert-file:s"   => { name => 'cert_file' },
-            "key-file:s"    => { name => 'key_file' },
-            "cacert-file:s" => { name => 'cacert_file' },
-            "cert-pwd:s"    => { name => 'cert_pwd' },
-            "cert-pkcs12"   => { name => 'cert_pkcs12' },
-            "api-display"           => { name => 'api_display' },
-            "api-write-file:s"      => { name => 'api_write_file' },
-            "api-read-file:s"       => { name => 'api_read_file' },
-            "reload-cache-time:s"   => { name => 'reload_cache_time', default => 300 },
+            'hostname:s@'   => { name => 'hostname' },
+            'port:s'        => { name => 'port', default => 8080 },
+            'proto:s'       => { name => 'proto' },
+            'credentials'   => { name => 'credentials' },
+            'basic'         => { name => 'basic' },
+            'username:s'    => { name => 'username' },
+            'password:s'    => { name => 'password' },
+            'timeout:s'     => { name => 'timeout', default => 10 },
+            'cert-file:s'   => { name => 'cert_file' },
+            'key-file:s'    => { name => 'key_file' },
+            'cacert-file:s' => { name => 'cacert_file' },
+            'cert-pwd:s'    => { name => 'cert_pwd' },
+            'cert-pkcs12'   => { name => 'cert_pkcs12' },
+            'api-display'           => { name => 'api_display' },
+            'api-write-file:s'      => { name => 'api_write_file' },
+            'api-read-file:s'       => { name => 'api_read_file' },
+            'reload-cache-time:s'   => { name => 'reload_cache_time', default => 300 },
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -108,14 +108,14 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify hostname option.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{node_names} = [];
     foreach my $node_name (@{$self->{hostname}}) {
         if ($node_name ne '') {
             push @{$self->{node_names}}, $node_name;
         }
     }
-    
+
     $self->{http}->set_options(%{$self->{option_results}});
 
     return 0;
@@ -123,33 +123,38 @@ sub check_options {
 
 sub api_display {
     my ($self, %options) = @_;
-    
+
     if (defined($self->{option_results}->{api_display})) {
         if (!defined($self->{option_results}->{api_write_file}) || $self->{option_results}->{api_write_file} eq '') {
-            $self->{output}->output_add(severity => 'OK',
-                                        short_msg => $options{content});
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => $options{content}
+            );
             $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
             $self->{output}->exit();
         }
         
         if (!open (FH, '>', $self->{option_results}->{api_write_file})) {
-            $self->output_add(severity => 'UNKNOWN',
-                              short_msg => "cannot open file  '" . $self->{option_results}->{api_write_file} . "': $!");
-            
+            $self->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "cannot open file  '" . $self->{option_results}->{api_write_file} . "': $!"
+            );
         }
-        
+
         FH->autoflush(1);
         print FH $options{content};
         close FH;
-        $self->output_add(severity => 'OK',
-                          short_msg => "Data written in file '" . $self->{option_results}->{api_write_file} . "': $!");
+        $self->output_add(
+            severity => 'OK',
+            short_msg => "Data written in file '" . $self->{option_results}->{api_write_file} . "': $!"
+        );
         $self->{output}->exit();
     }
 }
 
 sub api_read_file {
     my ($self, %options) = @_;
-    
+
     my $file_content = do {
         local $/ = undef;
         if (!open my $fh, "<", $self->{option_results}->{api_read_file}) {
@@ -158,7 +163,7 @@ sub api_read_file {
         }
         <$fh>;
     };
-    
+
     my $content;
     eval {
         $content = JSON::XS->new->utf8->decode($file_content);
@@ -173,14 +178,26 @@ sub api_read_file {
 
 sub get_hostnames {
     my ($self, %options) = @_;
-    
+
     return $self->{hostname};
 }
 
 sub get_port {
     my ($self, %options) = @_;
-    
+
     return $self->{option_results}->{port};
+}
+
+sub internal_get_by_id{
+    my ($self, %options) = @_;
+
+    foreach my $obj (@{$options{list}}) {
+        if ($obj->{ID} eq $options{Id}) {
+            return $obj;
+        }
+    }
+
+    return undef;
 }
 
 sub cache_containers {
@@ -192,7 +209,7 @@ sub cache_containers {
     if ($has_cache_file == 0 || !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($options{reload_cache_time})))) {
         $containers = {};
         my $datas = { last_timestamp => time(), containers => $containers };
-        
+
         foreach my $node_name (@{$self->{node_names}}) {
             my $list_containers = $self->internal_api_list_containers(node_name => $node_name);
             foreach my $container (@$list_containers) {
@@ -215,15 +232,20 @@ sub internal_api_list_nodes {
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/nodes',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '',
+        critical_status => '',
+        warning_status => ''
+    );
     my $nodes;
     eval {
         $nodes = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
         $nodes = [];
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json list nodes response: $@"
+        );
     } else {
         $nodes = [] if (ref($nodes) eq 'HASH'); # nodes is not in a swarm
     }
@@ -237,17 +259,22 @@ sub internal_api_info {
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/info',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '',
+        critical_status => '',
+        warning_status => ''
+    );
     my $nodes;
     eval {
         $nodes = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
         $nodes = [];
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json info response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json info response: $@"
+        );
     }
-    
+
     return $nodes;
 }
 
@@ -257,15 +284,20 @@ sub internal_api_list_containers {
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/containers/json?all=true',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '',
+        critical_status => '',
+        warning_status => ''
+    );
     my $containers;
     eval {
         $containers = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
         $containers = [];
-        $self->{output}->output_add(severity => 'UNKNOWN',
-                                    short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@");
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get containers response: $@"
+        );
     }
     
     return $containers;
@@ -273,27 +305,104 @@ sub internal_api_list_containers {
 
 sub internal_api_get_container_stats {
     my ($self, %options) = @_;
-    
+
     my $response = $self->{http}->request(
         hostname => $options{node_name},
         url_path => '/containers/' . $options{container_id} . '/stats?stream=false',
-        unknown_status => '', critical_status => '', warning_status => '');
+        unknown_status => '',
+        critical_status => '',
+        warning_status => ''
+    );
     my $container_stats;
     eval {
         $container_stats = JSON::XS->new->utf8->decode($response);
     };
     if ($@) {
         $container_stats = {};
-        $self->output_add(severity => 'UNKNOWN',
-                          short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@");
+        $self->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Node '$options{node_name}': cannot decode json get container stats response: $@"
+        );
     }
-    
+
     return $container_stats;
+}
+
+sub internal_api_list_services {
+    my ($self, %options) = @_;
+
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
+        url_path => '/services',
+        unknown_status => '', critical_status => '', warning_status => '');
+    my $services;
+    eval {
+        $services = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $services = [];
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Service '$options{node_name}': cannot decode json list services response: $@"
+        );
+    }
+
+    return $services;
+}
+
+sub internal_api_list_tasks {
+    my ($self, %options) = @_;
+
+    my $response = $self->{http}->request(
+        hostname => $options{node_name},
+        url_path => '/tasks',
+        unknown_status => '',
+        critical_status => '',
+        warning_status => ''
+    );
+    my $tasks;
+    eval {
+        $tasks = JSON::XS->new->utf8->decode($response);
+    };
+    if ($@) {
+        $tasks = [];
+        $self->{output}->output_add(
+            severity => 'UNKNOWN',
+            short_msg => "Task '$options{node_name}': cannot decode json list services response: $@"
+        );
+    }
+
+    return $tasks;
+}
+
+sub api_list_services {
+    my ($self, %options) = @_;
+
+    my $services = {};
+    foreach my $node_name (@{$self->{node_names}}) {        
+        my $list_tasks = $self->internal_api_list_tasks(node_name => $node_name);
+        my $list_services = $self->internal_api_list_services(node_name => $node_name);
+        foreach my $task (@$list_tasks) {
+            $services->{ $task->{ServiceID} } = {} if (!defined($services->{ $task->{ServiceID} }));
+            my $service = $self->internal_get_by_id(list => $list_services, Id => $task->{ServiceID});
+            $services->{ $task->{ServiceID} }->{ $task->{ID} } = {
+                node_id => $task->{NodeID},
+                node_name => $node_name,
+                service_name => $service->{Spec}->{Name},
+                container_id => $task->{Status}->{ContainerStatus}->{ContainerID},
+                desired_state => defined($task->{DesiredState}) && $task->{DesiredState} ne '' ? $task->{DesiredState} : '-',
+                state => defined($task->{Status}->{State}) && $task->{Status}->{State} ne '' ? $task->{Status}->{State} : '-',
+                state_message => defined($task->{Status}->{Message}) && $task->{Status}->{Message} ne '' ? $task->{Status}->{Message} : '-'
+            };
+        }
+    }
+
+    return $services;
 }
 
 sub api_list_containers {
     my ($self, %options) = @_;
-    
+
     my $containers = {};
     foreach my $node_name (@{$self->{node_names}}) {
         my $list_containers = $self->internal_api_list_containers(node_name => $node_name);
@@ -305,13 +414,13 @@ sub api_list_containers {
             };
         }
     }
-    
+
     return $containers;
 }
 
 sub api_list_nodes {
     my ($self, %options) = @_;
-    
+
     my $nodes = {};
     foreach my $node_name (@{$self->{node_names}}) {
         my $info_node = $self->internal_api_info(node_name => $node_name);
@@ -325,7 +434,7 @@ sub api_list_nodes {
             push @{$nodes->{$node_name}->{nodes}}, { Status => $node->{Status}->{State}, ManagerStatus => $node->{ManagerStatus}->{Reachability}, Addr => $node->{Status}->{Addr} };
         }
     }
-    
+
     return $nodes;
 }
 
@@ -350,7 +459,7 @@ sub api_get_containers {
                 last;
             }
         }
-        
+
         if (defined($container_id)) {
             $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
         }
@@ -359,7 +468,7 @@ sub api_get_containers {
             $content_total->{$container_id}->{Stats} = $self->internal_api_get_container_stats(node_name => $content_total->{$container_id}->{NodeName}, container_id => $container_id);
         }
     }
-    
+
     $self->api_display();
     return $content_total;
 }

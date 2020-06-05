@@ -28,19 +28,8 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{status} . ' [manager status: ' . $self->{result_values}->{manager_status} . ']';
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{manager_status} = $options{new_datas}->{$self->{instance} . '_manager_status'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    
-    return 0;
+    return 'status : ' . $self->{result_values}->{status} . ' [manager status: ' . $self->{result_values}->{manager_status} . ']';
 }
 
 sub set_counters {
@@ -54,41 +43,40 @@ sub set_counters {
     $self->{maps_counters}->{nodes} = [
          { label => 'node-status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'manager_status' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
     $self->{maps_counters}->{node} = [
          { label => 'containers-running', set => {
                 key_values => [ { name => 'containers_running' }, { name => 'display' } ],
                 output_template => 'Containers Running : %s',
                 perfdatas => [
-                    { label => 'containers_running', value => 'containers_running', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'containers_running', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'containers-stopped', set => {
                 key_values => [ { name => 'containers_stopped' }, { name => 'display' } ],
                 output_template => 'Containers Stopped : %s',
                 perfdatas => [
-                    { label => 'containers_stopped', value => 'containers_stopped', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'containers_stopped', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'containers-running', set => {
                 key_values => [ { name => 'containers_paused' }, { name => 'display' } ],
                 output_template => 'Containers Paused : %s',
                 perfdatas => [
-                    { label => 'containers_paused', value => 'containers_paused', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'containers_paused', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -96,13 +84,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "warning-node-status:s"  => { name => 'warning_node_status', default => '' },
-                                  "critical-node-status:s" => { name => 'critical_node_status', default => '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/' },
-                                });
-   
+
+    $options{options}->add_options(arguments => {
+        'warning-node-status:s'  => { name => 'warning_node_status', default => '' },
+        'critical-node-status:s' => { name => 'critical_node_status', default => '%{status} !~ /ready/ || %{manager_status} !~ /reachable|-/' }
+    });
+
     return $self;
 }
 
