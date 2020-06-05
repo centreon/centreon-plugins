@@ -180,6 +180,9 @@ sub set_method {
     if ($options{request}->{method} eq 'DELETE') {
         $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CUSTOMREQUEST'), parameter => $options{request}->{method});
     }
+    if ($options{request}->{method} eq 'PATCH') {
+        $self->curl_setopt(option => $self->{constant_cb}->(name => 'CURLOPT_CUSTOMREQUEST'), parameter => $options{request}->{method});
+    }
 }
 
 sub set_auth {
