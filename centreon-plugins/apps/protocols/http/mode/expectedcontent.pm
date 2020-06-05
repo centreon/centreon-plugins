@@ -148,7 +148,8 @@ sub load_request {
 
     $self->{options_request} = {};
     if (defined($self->{option_results}->{data}) && $self->{option_results}->{data} ne '') {
-        $self->{option_results}->{method} = 'POST';
+        $self->{option_results}->{method} = defined($self->{option_results}->{method}) && $self->{option_results}->{method} ne '' ?
+            $self->{option_results}->{method} : 'POST';
         if (-f $self->{option_results}->{data} and -r $self->{option_results}->{data}) {
             local $/ = undef;
             my $fh;

@@ -166,7 +166,7 @@ sub request {
     if (defined($request_options->{no_follow})) {
         $self->{ua}->requests_redirectable(undef);
     } else {
-        $self->{ua}->requests_redirectable([ 'GET', 'HEAD', 'POST' ]);
+        $self->{ua}->requests_redirectable([ 'GET', 'HEAD', 'POST', 'PUT', 'DELETE', 'PATCH' ]);
     }
     if (defined($request_options->{http_peer_addr})) {
         push @LWP::Protocol::http::EXTRA_SOCK_OPTS, PeerAddr => $request_options->{http_peer_addr};
@@ -196,7 +196,7 @@ sub request {
         }
     }
 
-    if ($request_options->{method} eq 'POST') {
+    if ($request_options->{method} ne 'GET') {
         if (defined($content_type_forced)) {
             $req->content_type($content_type_forced);
             $req->content($request_options->{query_form_post});
