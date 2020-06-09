@@ -39,7 +39,9 @@ sub new {
         'load'        => 'snmp_standard::mode::loadaverage',
         'storage'     => 'snmp_standard::mode::storage',
         'temperature' => 'storage::synology::snmp::mode::temperature',
+        'time'        => 'snmp_standard::mode::ntp',
         'ups'         => 'storage::synology::snmp::mode::ups'
+        'uptime'      => 'snmp_standard::mode::uptime',
     );
 
     return $self;
