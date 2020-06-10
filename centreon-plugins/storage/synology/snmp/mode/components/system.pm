@@ -38,13 +38,13 @@ sub load {
 sub check {
     my ($self) = @_;
 
-    $self->{output}->output_add(long_msg => "Checking system status");
+    $self->{output}->output_add(long_msg => "Checking system partition status");
     $self->{components}->{system} = {name => 'system', total => 0, skip => 0};
     return if ($self->check_filter(section => 'system'));
     $self->{components}->{system}->{total}++;
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{synoSystemsystemStatus}->{oid}}, instance => '0');
-    $self->{output}->output_add(long_msg => sprintf("system status is %s.",
+    $self->{output}->output_add(long_msg => sprintf("system partition status is %s.",
                                     $result->{synoSystemsystemStatus}));
     my $exit = $self->get_severity(label => 'default', section => 'system', value => $result->{synoSystemsystemStatus});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
