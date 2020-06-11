@@ -70,7 +70,8 @@ sub set_counters {
                     { name => 'service_name' }, { name => 'task_id' },
                     { name => 'node_name' }, { name => 'node_id' },
                     { name => 'desired_state' }, { name => 'state_message' },
-                    { name => 'service_id' }, { name => 'container_id' }
+                    { name => 'service_id' }, { name => 'container_id' },
+                    { name => 'state'}
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -93,7 +94,7 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'filter-service-name:s' => { name => 'filter_service_nname' },
+        'filter-service-name:s' => { name => 'filter_service_name' },
         'unknown-status:s'      => { name => 'unknown_status', default => '' },
         'warning-status:s'      => { name => 'warning_status', default => '' },
         'critical-status:s'     => { name => 'critical_status', default => '%{desired_state} ne %{state} and %{state} !~ /complete|preparing|assigned/' }
@@ -122,8 +123,8 @@ sub manage_selection {
     foreach my $service_id (keys %$results) {
         foreach my $task_id (keys %{$results->{$service_id}}) {
             if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
-                $_->{Name} !~ /$self->{option_results}->{filter_service_name}/) {
-                $self->{output}->output_add(long_msg => "skipping service '" . $_->{service_name} . "': no matching filter type.", debug => 1);
+                $task_id->{Name} !~ /$self->{option_results}->{filter_service_name}/) {
+                $self->{output}->output_add(long_msg => "skipping service '" . $task_id->{service_name} . "': no matching filter type.", debug => 1);
                 next;
             }
 
