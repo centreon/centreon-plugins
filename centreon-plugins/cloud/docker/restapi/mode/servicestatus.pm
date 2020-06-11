@@ -123,7 +123,7 @@ sub manage_selection {
     foreach my $service_id (keys %$results) {
         foreach my $task_id (keys %{$results->{$service_id}}) {
             if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
-                $task_id->{Name} !~ /$self->{option_results}->{filter_service_name}/) {
+                $results->{$service_id}->{$task_id}->{service_name} !~ /$self->{option_results}->{filter_service_name}/) {
                 $self->{output}->output_add(long_msg => "skipping service '" . $task_id->{service_name} . "': no matching filter type.", debug => 1);
                 next;
             }
