@@ -53,6 +53,7 @@ sub set_system {
             ['ok', 'OK'],
             ['nonCriticalUpper', 'WARNING'],
             ['criticalUpper', 'CRITICAL'],
+            ['nonRecoverableUpper', 'CRITICAL'],
             ['nonCriticalLower', 'WARNING'],
             ['criticalLower', 'CRITICAL'],
             ['nonRecoverableLower', 'CRITICAL'],
