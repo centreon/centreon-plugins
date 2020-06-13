@@ -233,6 +233,8 @@ sub manage_selection {
         # Let's lc the instance label to make metrics "clean"...
         $user->{'User Principal Name'} = lc($user->{'User Principal Name'});
 
+        $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
+
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
@@ -247,7 +249,6 @@ sub manage_selection {
             next;
         }
     
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'};
         $self->{active}->{active}++;
 
         $self->{global}->{viewed_edited_file_count} += ($user->{'Viewed Or Edited File Count'} ne '') ? $user->{'Viewed Or Edited File Count'} : 0;

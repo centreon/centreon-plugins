@@ -181,6 +181,8 @@ sub manage_selection {
     my $results = $options{custom}->office_get_teams_device_usage();
 
     foreach my $user (@{$results}) {
+        $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
+
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
@@ -203,7 +205,6 @@ sub manage_selection {
             next;
         }
 
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'};
         $self->{active}->{active} += $used_devices;
 
         $self->{global}->{windows}++ if ($user->{'Used Windows'} =~ /Yes/);

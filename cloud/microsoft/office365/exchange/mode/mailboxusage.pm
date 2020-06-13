@@ -251,6 +251,8 @@ sub manage_selection {
         # Let's lc the instance label to make metrics "clean"...
         $mailbox->{'User Principal Name'} = lc($mailbox->{'User Principal Name'});
 
+        $self->{active}->{report_date} = $mailbox->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
+
         if (defined($self->{option_results}->{filter_mailbox}) && $self->{option_results}->{filter_mailbox} ne '' &&
             $mailbox->{'User Principal Name'} !~ /$self->{option_results}->{filter_mailbox}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $mailbox->{'User Principal Name'} . "': no matching filter name.", debug => 1);
@@ -266,7 +268,6 @@ sub manage_selection {
             next;
         }
 
-        $self->{active}->{report_date} = $mailbox->{'Report Refresh Date'};
         $self->{active}->{active}++;
         
         $self->{global}->{storage_used_active} += ($mailbox->{'Storage Used (Byte)'} ne '') ? $mailbox->{'Storage Used (Byte)'} : 0;

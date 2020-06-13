@@ -271,6 +271,8 @@ sub manage_selection {
         # As it's used as the instance label, let's keep the URL as short as possible, removing its domain name...
         $site->{'Site URL'} =~ s/^[^\/]*\/\/[^\/]*//;
 
+        $self->{active}->{report_date} = $site->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
+
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
             $site->{'Site URL'} !~ /$self->{option_results}->{filter_url}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no matching filter name.", debug => 1);
@@ -291,7 +293,6 @@ sub manage_selection {
             next;
         }
     
-        $self->{active}->{report_date} = $site->{'Report Refresh Date'};
         $self->{active}->{active}++;
 
         $self->{global}->{storage_used_active} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
