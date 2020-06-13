@@ -340,17 +340,17 @@ Can be: 'url', 'owner' (can be a regexp).
 
 Threshold warning.
 Can be: 'active-sites', 'total-usage-active' (count),
-'total-usage-inactive' (count), 'total-file-count' (count),
-'active-file-count' (count), 'usage' (count),
-'file-count' (count), 'active-file-count' (count).
+'total-usage-inactive' (count), 'total-file-count-active' (count),
+'total-file-count-inactive' (count), 'total-active-file-count' (count),
+'usage' (count), 'file-count' (count), 'active-file-count' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
 Can be: 'active-sites', 'total-usage-active' (count),
-'total-usage-inactive' (count), 'total-file-count' (count),
-'active-file-count' (count), 'usage' (count),
-'file-count' (count), 'active-file-count' (count).
+'total-usage-inactive' (count), 'total-file-count-active' (count),
+'total-file-count-inactive' (count), 'total-active-file-count' (count),
+'usage' (count), 'file-count' (count), 'active-file-count' (count).
 
 =item B<--filter-counters>
 

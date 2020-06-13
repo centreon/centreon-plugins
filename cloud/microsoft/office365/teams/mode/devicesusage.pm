@@ -236,14 +236,14 @@ Filter users.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-users', 'windows' (count), 'mac' (count),
+Can be: 'active-devices', 'windows' (count), 'mac' (count),
 'web' (count), 'ios' (count), 'android-phone' (count),
 'windows-phone' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-users', 'windows' (count), 'mac' (count),
+Can be: 'active-devices', 'windows' (count), 'mac' (count),
 'web' (count), 'ios' (count), 'android-phone' (count),
 'windows-phone' (count).
 
