@@ -307,8 +307,9 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->{active} = { active => 0, total => 0, report_date => '' };
-    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0, file_count => 0,
-                        active_file_count => 0 , visited_file_count => 0 , page_view_count => 0 };
+    $self->{global} = { storage_used_active => 0, storage_used_inactive => 0,
+                        file_count_active => 0, file_count_inactive => 0,
+                        active_file_count => 0 , visited_page_count => 0 , page_view_count => 0 };
     $self->{sites} = {};
 
     my $results = $options{custom}->office_get_sharepoint_site_usage();
