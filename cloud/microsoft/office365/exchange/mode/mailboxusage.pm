@@ -204,11 +204,11 @@ sub set_counters {
             }
         },
         { label => 'items', nlabel => 'exchange.mailboxes.items.count', set => {
-                key_values => [ { name => 'items' } ],
+                key_values => [ { name => 'items' }, { name => 'name' } ],
                 output_template => 'Items: %d',
                 perfdatas => [
                     { label => 'items', value => 'items', template => '%d',
-                      min => 0 },
+                      min => 0, label_extra_instance => 1, instance_use => 'name' },
                 ],
             }
         },
