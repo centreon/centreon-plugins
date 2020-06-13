@@ -193,16 +193,27 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-file-count', nlabel => 'onedrive.sites.active.files.total.count', set => {
-                key_values => [ { name => 'file_count' } ],
+        { label => 'total-file-count-active', nlabel => 'onedrive.sites.active.files.total.count', set => {
+                key_values => [ { name => 'file_count_active' } ],
                 output_template => 'File Count (active sites): %d',
                 perfdatas => [
-                    { label => 'total_file_count', value => 'file_count', template => '%d',
+                    { label => 'total_file_count_active', value => 'file_count_active', template => '%d',
                       min => 0 },
                 ],
             }
         },
-        { label => 'total-active-file-count', nlabel => 'onedrive.sites.active.files.active.total.count', set => {
+        { label => 'total-file-count-inactive', nlabel => 'onedrive.sites.inactive.files.total.count', set => {
+                key_values => [ { name => 'file_count_inactive' } ],
+                output_template => 'File Count (inactive sites): %d',
+                perfdatas => [
+                    { label => 'total_file_count_inactive', value => 'file_count_inactive', template => '%d',
+                      min => 0 },
+                ],
+            }
+        },
+
+
+        { label => 'total-active-file-count', nlabel => 'onedrive.sites.files.active.total.count', set => {
                 key_values => [ { name => 'active_file_count' } ],
                 output_template => 'Active File Count (active sites): %d',
                 perfdatas => [
@@ -289,6 +300,7 @@ sub manage_selection {
         if (!defined($site->{'Last Activity Date'}) || $site->{'Last Activity Date'} eq '' ||
             ($site->{'Last Activity Date'} ne $site->{'Report Refresh Date'})) {
             $self->{global}->{storage_used_inactive} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
+            $self->{global}->{file_count_inactive} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
             $self->{output}->output_add(long_msg => "skipping '" . $site->{'Site URL'} . "': no activity.", debug => 1);
             next;
         }
@@ -296,7 +308,7 @@ sub manage_selection {
         $self->{active}->{active}++;
 
         $self->{global}->{storage_used_active} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
-        $self->{global}->{file_count} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
+        $self->{global}->{file_count_active} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
         $self->{global}->{active_file_count} += ($site->{'Active File Count'} ne '') ? $site->{'Active File Count'} : 0;
 
         $self->{sites}->{$site->{'Site URL'}}->{url} = $site->{'Site URL'};
