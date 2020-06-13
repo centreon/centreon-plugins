@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::microsoft::office365::onedrive::mode::usage;
+package cloud::microsoft::office365::onedrive::mode::siteusage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -211,8 +211,6 @@ sub set_counters {
                 ],
             }
         },
-
-
         { label => 'total-active-file-count', nlabel => 'onedrive.sites.files.active.total.count', set => {
                 key_values => [ { name => 'active_file_count' } ],
                 output_template => 'Active File Count (active sites): %d',
