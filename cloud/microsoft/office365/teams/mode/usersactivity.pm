@@ -34,7 +34,7 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_users',
+    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'teams.users.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -109,7 +109,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-team-chat', set => {
+        { label => 'total-team-chat', nlabel => 'teams.users.messages.team.total.count', set => {
                 key_values => [ { name => 'team_chat' } ],
                 output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
@@ -118,7 +118,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-private-chat', set => {
+        { label => 'total-private-chat', nlabel => 'teams.users.messages.private.total.count', set => {
                 key_values => [ { name => 'private_chat' } ],
                 output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
@@ -127,7 +127,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-call', set => {
+        { label => 'total-call', nlabel => 'teams.users.call.total.count', set => {
                 key_values => [ { name => 'call' } ],
                 output_template => 'Call Count: %d',
                 perfdatas => [
@@ -136,7 +136,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-meeting', set => {
+        { label => 'total-meeting', nlabel => 'teams.users.meeting.total.count', set => {
                 key_values => [ { name => 'meeting' } ],
                 output_template => 'Meeting Count: %d',
                 perfdatas => [
@@ -147,7 +147,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{users} = [
-        { label => 'team-chat', set => {
+        { label => 'team-chat', nlabel => 'teams.users.messages.team.count', set => {
                 key_values => [ { name => 'team_chat' }, { name => 'name' } ],
                 output_template => 'Team Chat Message Count: %d',
                 perfdatas => [
@@ -156,7 +156,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'private-chat', set => {
+        { label => 'private-chat', nlabel => 'teams.users.messages.private.count', set => {
                 key_values => [ { name => 'private_chat' }, { name => 'name' } ],
                 output_template => 'Private Chat Message Count: %d',
                 perfdatas => [
@@ -165,7 +165,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'call', set => {
+        { label => 'call', nlabel => 'teams.users.call.count', set => {
                 key_values => [ { name => 'call' }, { name => 'name' } ],
                 output_template => 'Call Count: %d',
                 perfdatas => [
@@ -174,7 +174,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'meeting', set => {
+        { label => 'meeting', nlabel => 'teams.users.meeting.count', set => {
                 key_values => [ { name => 'meeting' }, { name => 'name' } ],
                 output_template => 'Meeting Count: %d',
                 perfdatas => [
@@ -210,6 +210,9 @@ sub manage_selection {
     my $results = $options{custom}->office_get_teams_activity();
 
     foreach my $user (@{$results}) {
+        # Let's lc the instance label to make metrics "clean"...
+        $user->{'User Principal Name'} = lc($user->{'User Principal Name'});
+
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);

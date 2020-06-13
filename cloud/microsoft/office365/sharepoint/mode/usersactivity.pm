@@ -34,7 +34,7 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_users',
+    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'sharepoint.users.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -109,7 +109,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-viewed-edited-file-count', set => {
+        { label => 'total-viewed-edited-file-count', nlabel => 'sharepoint.users.files.viewed.total.count', set => {
                 key_values => [ { name => 'viewed_edited_file_count' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
@@ -118,7 +118,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-synced-file-count', set => {
+        { label => 'total-synced-file-count', nlabel => 'sharepoint.users.files.synced.total.count', set => {
                 key_values => [ { name => 'synced_file_count' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
@@ -127,7 +127,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-shared-int-file-count', set => {
+        { label => 'total-shared-int-file-count', nlabel => 'sharepoint.users.files.shared.internally.total.count', set => {
                 key_values => [ { name => 'shared_int_file_count' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
@@ -136,7 +136,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-shared-ext-file-count', set => {
+        { label => 'total-shared-ext-file-count', nlabel => 'sharepoint.users.files.shared.externally.total.count', set => {
                 key_values => [ { name => 'shared_ext_file_count' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
@@ -145,7 +145,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-visited-page-count', set => {
+        { label => 'total-visited-page-count', nlabel => 'sharepoint.users.pages.visited.total.count', set => {
                 key_values => [ { name => 'visited_page_count' } ],
                 output_template => 'Visited Page Count (active sites): %d',
                 perfdatas => [
@@ -156,7 +156,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{users} = [
-        { label => 'viewed-edited-file-count', set => {
+        { label => 'viewed-edited-file-count', nlabel => 'sharepoint.users.files.viewed.count', set => {
                 key_values => [ { name => 'viewed_edited_file_count' }, { name => 'name' } ],
                 output_template => 'Viewed or Edited File Count: %d',
                 perfdatas => [
@@ -165,7 +165,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'synced-file-count', set => {
+        { label => 'synced-file-count', nlabel => 'sharepoint.users.files.synced.count', set => {
                 key_values => [ { name => 'synced_file_count' }, { name => 'name' } ],
                 output_template => 'Synced File Count: %d',
                 perfdatas => [
@@ -174,7 +174,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'shared-int-file-count', set => {
+        { label => 'shared-int-file-count', nlabel => 'sharepoint.users.files.shared.internally.count', set => {
                 key_values => [ { name => 'shared_int_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Internally File Count: %d',
                 perfdatas => [
@@ -183,7 +183,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'shared-ext-file-count', set => {
+        { label => 'shared-ext-file-count', nlabel => 'sharepoint.users.files.shared.externally.count', set => {
                 key_values => [ { name => 'shared_ext_file_count' }, { name => 'name' } ],
                 output_template => 'Shared Externally File Count: %d',
                 perfdatas => [
@@ -192,7 +192,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'visited-page-count', set => {
+        { label => 'visited-page-count', nlabel => 'sharepoint.users.pages.visited.count', set => {
                 key_values => [ { name => 'visited_page_count' }, { name => 'name' } ],
                 output_template => 'Visited Page Count: %d',
                 perfdatas => [
@@ -230,6 +230,9 @@ sub manage_selection {
     my $results = $options{custom}->office_get_sharepoint_activity();
 
     foreach my $user (@{$results}) {
+        # Let's lc the instance label to make metrics "clean"...
+        $user->{'User Principal Name'} = lc($user->{'User Principal Name'});
+
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);

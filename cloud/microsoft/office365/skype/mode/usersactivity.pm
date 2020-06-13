@@ -34,7 +34,7 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_users',
+    $self->{output}->perfdata_add(label => 'active_users', nlabel => 'skype.users.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -109,7 +109,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-peer-to-peer-sessions', set => {
+        { label => 'total-peer-to-peer-sessions', nlabel => 'skype.users.sessions.p2p.total.count', set => {
                 key_values => [ { name => 'peer_to_peer_sessions' } ],
                 output_template => 'Peer-to-peer Sessions Count: %d',
                 perfdatas => [
@@ -118,7 +118,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-organized-conference', set => {
+        { label => 'total-organized-conference', nlabel => 'skype.users.conferences.organized.total.count', set => {
                 key_values => [ { name => 'organized_conference' } ],
                 output_template => 'Organized Conference Count: %d',
                 perfdatas => [
@@ -127,7 +127,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-participated-conference', set => {
+        { label => 'total-participated-conference', nlabel => 'skype.users.conferences.participated.total.count', set => {
                 key_values => [ { name => 'participated_conference' } ],
                 output_template => 'Participated Conference Count: %d',
                 perfdatas => [
@@ -138,7 +138,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{users} = [
-        { label => 'peer-to-peer-sessions', set => {
+        { label => 'peer-to-peer-sessions', nlabel => 'skype.users.sessions.p2p.count', set => {
                 key_values => [ { name => 'peer_to_peer_sessions' }, { name => 'name' } ],
                 output_template => 'Peer-to-peer Sessions Count: %d',
                 perfdatas => [
@@ -147,7 +147,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'organized-conference', set => {
+        { label => 'organized-conference', nlabel => 'skype.users.conferences.organized.count', set => {
                 key_values => [ { name => 'organized_conference' }, { name => 'name' } ],
                 output_template => 'Organized Conference Count: %d',
                 perfdatas => [
@@ -156,7 +156,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'participated-conference', set => {
+        { label => 'participated-conference', nlabel => 'skype.users.conferences.participated.count', set => {
                 key_values => [ { name => 'participated_conference' }, { name => 'name' } ],
                 output_template => 'Participated Conference Count: %d',
                 perfdatas => [
@@ -192,6 +192,9 @@ sub manage_selection {
     my $results = $options{custom}->office_get_skype_activity();
 
     foreach my $user (@{$results}) {
+        # Let's lc the instance label to make metrics "clean"...
+        $user->{'User Principal Name'} = lc($user->{'User Principal Name'});
+
         $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
 
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&

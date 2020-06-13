@@ -34,11 +34,11 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_users',
+    $self->{output}->perfdata_add(label => 'active_devices', nlabel => 'skype.devices.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
-                                  unit => 'users', min => 0, max => $self->{result_values}->{total});
+                                  unit => 'devices', min => 0, max => $self->{result_values}->{total});
 }
 
 sub custom_active_threshold {
@@ -58,7 +58,7 @@ sub custom_active_threshold {
 sub custom_active_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Active users on %s : %d/%d (%.2f%%)",
+    my $msg = sprintf("Active devices on %s : %d/%d (%.2f%%)",
                         $self->{result_values}->{report_date},
                         $self->{result_values}->{active},
                         $self->{result_values}->{total},
@@ -92,7 +92,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{active} = [
-        { label => 'active-users', set => {
+        { label => 'active-devices', set => {
                 key_values => [ { name => 'active' }, { name => 'total' }, { name => 'report_date' } ],
                 closure_custom_calc => $self->can('custom_active_calc'),
                 closure_custom_output => $self->can('custom_active_output'),
@@ -102,7 +102,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'windows', set => {
+        { label => 'windows', nlabel => 'skype.devices.windows.count', set => {
                 key_values => [ { name => 'windows' } ],
                 output_template => 'Windows: %d',
                 perfdatas => [
@@ -111,7 +111,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'ipad', set => {
+        { label => 'ipad', nlabel => 'skype.devices.ipad.count', set => {
                 key_values => [ { name => 'ipad' } ],
                 output_template => 'iPad: %d',
                 perfdatas => [
@@ -120,7 +120,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'iphone', set => {
+        { label => 'iphone', nlabel => 'skype.devices.iphone.count', set => {
                 key_values => [ { name => 'iphone' } ],
                 output_template => 'iPhone: %d',
                 perfdatas => [
@@ -129,7 +129,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'android-phone', set => {
+        { label => 'android-phone', nlabel => 'skype.devices.android.count', set => {
                 key_values => [ { name => 'android_phone' } ],
                 output_template => 'Android Phone: %d',
                 perfdatas => [
@@ -138,7 +138,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'windows-phone', set => {
+        { label => 'windows-phone', nlabel => 'skype.devices.windowsphone.count', set => {
                 key_values => [ { name => 'windows_phone' } ],
                 output_template => 'Windows Phone: %d',
                 perfdatas => [
@@ -179,8 +179,15 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
-    
-        $self->{active}->{total}++;
+
+        my $used_devices = 0;
+        $used_devices++ if ($user->{'Used Windows'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used iPad'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used iPhone'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used Android Phone'} =~ /Yes/);
+        $used_devices++ if ($user->{'Used Windows Phone'} =~ /Yes/);
+
+        $self->{active}->{total} += $used_devices;
 
         if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
             ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
@@ -188,7 +195,7 @@ sub manage_selection {
             next;
         }
 
-        $self->{active}->{active}++;
+        $self->{active}->{active} += $used_devices;
 
         $self->{global}->{windows}++ if ($user->{'Used Windows'} =~ /Yes/);
         $self->{global}->{ipad}++ if ($user->{'Used iPad'} =~ /Yes/);
@@ -218,14 +225,14 @@ Filter users.
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-users', 'windows' (count), 'ipad' (count),
+Can be: 'active-devices', 'windows' (count), 'ipad' (count),
 'iphone' (count), 'android-phone' (count),
 'windows-phone' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-users', 'windows' (count), 'ipad' (count),
+Can be: 'active-devices', 'windows' (count), 'ipad' (count),
 'iphone' (count), 'android-phone' (count),
 'windows-phone' (count).
 

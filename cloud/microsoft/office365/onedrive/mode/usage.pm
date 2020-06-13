@@ -34,7 +34,7 @@ sub custom_active_perfdata {
         $total_options{cast_int} = 1;
     }
 
-    $self->{output}->perfdata_add(label => 'active_sites',
+    $self->{output}->perfdata_add(label => 'active_sites', nlabel => 'onedrive.sites.active.count',
                                   value => $self->{result_values}->{active},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, %total_options),
                                   critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label}, %total_options),
@@ -83,7 +83,7 @@ sub custom_usage_perfdata {
     my $extra_label = '';
     $extra_label = '_' . $self->{result_values}->{display} if (!defined($options{extra_instance}) || $options{extra_instance} != 0);
     
-    $self->{output}->perfdata_add(label => 'used' . $extra_label,
+    $self->{output}->perfdata_add(label => 'used' . $extra_label, nlabel => $self->{result_values}->{display} . '#onedrive.sites.usage.bytes',
                                   unit => 'B',
                                   value => $self->{result_values}->{used},
                                   warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{total}, cast_int => 1),
@@ -173,7 +173,7 @@ sub set_counters {
         },
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total-usage-active', set => {
+        { label => 'total-usage-active', nlabel => 'onedrive.sites.active.usage.total.bytes', set => {
                 key_values => [ { name => 'storage_used_active' } ],
                 output_template => 'Usage (active sites): %s %s',
                 output_change_bytes => 1,
@@ -183,7 +183,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-usage-inactive', set => {
+        { label => 'total-usage-inactive', nlabel => 'onedrive.sites.inactive.usage.total.bytes', set => {
                 key_values => [ { name => 'storage_used_inactive' } ],
                 output_template => 'Usage (inactive sites): %s %s',
                 output_change_bytes => 1,
@@ -193,7 +193,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-file-count', set => {
+        { label => 'total-file-count', nlabel => 'onedrive.sites.active.files.total.count', set => {
                 key_values => [ { name => 'file_count' } ],
                 output_template => 'File Count (active sites): %d',
                 perfdatas => [
@@ -202,7 +202,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'total-active-file-count', set => {
+        { label => 'total-active-file-count', nlabel => 'onedrive.sites.active.files.active.total.count', set => {
                 key_values => [ { name => 'active_file_count' } ],
                 output_template => 'Active File Count (active sites): %d',
                 perfdatas => [
@@ -221,7 +221,7 @@ sub set_counters {
                 closure_custom_threshold_check => $self->can('custom_usage_threshold'),
             }
         },
-        { label => 'file-count', set => {
+        { label => 'file-count', nlabel => 'onedrive.sites.files.count', set => {
                 key_values => [ { name => 'file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'File Count: %d',
                 perfdatas => [
@@ -230,7 +230,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => 'active-file-count', set => {
+        { label => 'active-file-count', nlabel => 'onedrive.sites.files.active.count', set => {
                 key_values => [ { name => 'active_file_count' }, { name => 'url' }, { name => 'owner' } ],
                 output_template => 'Active File Count: %d',
                 perfdatas => [
@@ -268,6 +268,9 @@ sub manage_selection {
     my $results = $options{custom}->office_get_onedrive_usage();
 
     foreach my $site (@{$results}) {
+        # As it's used as the instance label, let's keep the URL as short as possible, removing its domain name...
+        $site->{'Site URL'} =~ s/^[^\/]*\/\/[^\/]*//;
+
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
             $site->{'Site URL'} !~ /$self->{option_results}->{filter_url}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no matching filter name.", debug => 1);
