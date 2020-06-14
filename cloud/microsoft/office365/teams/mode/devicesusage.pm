@@ -178,11 +178,14 @@ sub manage_selection {
     $self->{active} = { active => 0, total => 0, report_date => '' };
     $self->{global} = { windows => 0, mac => 0, web => 0, ios => 0, android_phone => 0, windows_phone => 0 };
 
-    my $results = $options{custom}->office_get_teams_device_usage();
+    my $results = $options{custom}->office_get_teams_device_usage(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_teams_device_usage(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $user (@{$results}) {
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
-
+    foreach my $user (@{$results}, @{$results_daily}) {
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
@@ -197,11 +200,11 @@ sub manage_selection {
         $used_devices++ if ($user->{'Used Android Phone'} =~ /Yes/);
         $used_devices++ if ($user->{'Used Windows Phone'} =~ /Yes/);
 
-        $self->{active}->{total} += $used_devices;
-
-        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
-            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+        if ($user->{'Report Period'} != 1) {
+            if (!defined($user->{'Last Activity Date'}) || ($user->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total} += $used_devices;
             next;
         }
 
@@ -222,7 +225,7 @@ __END__
 
 =head1 MODE
 
-Check devices usage (reporting period over the last 7 days).
+Check devices usage (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-teams-device-usage?view=o365-worldwide)

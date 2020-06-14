@@ -177,7 +177,7 @@ sub set_counters {
                 output_template => 'Usage (active mailboxes): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_active', value => 'storage_used_active', template => '%d',
+                    { label => 'total_usage_active', value => 'storage_used_active', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -187,7 +187,7 @@ sub set_counters {
                 output_template => 'Usage (inactive mailboxes): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_inactive', value => 'storage_used_inactive', template => '%d',
+                    { label => 'total_usage_inactive', value => 'storage_used_inactive', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -245,24 +245,26 @@ sub manage_selection {
     $self->{global} = { storage_used_active => 0, storage_used_inactive => 0 };
     $self->{mailboxes} = {};
 
-    my $results = $options{custom}->office_get_exchange_mailbox_usage();
+    my $results = $options{custom}->office_get_exchange_mailbox_usage(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       #$results_daily = $options{custom}->office_get_exchange_mailbox_usage(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $mailbox (@{$results}) {
+    foreach my $mailbox (@{$results}, @{$results_daily}) {
         # Let's lc the instance label to make metrics "clean"...
         $mailbox->{'User Principal Name'} = lc($mailbox->{'User Principal Name'});
-
-        $self->{active}->{report_date} = $mailbox->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
 
         if (defined($self->{option_results}->{filter_mailbox}) && $self->{option_results}->{filter_mailbox} ne '' &&
             $mailbox->{'User Principal Name'} !~ /$self->{option_results}->{filter_mailbox}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $mailbox->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
-    
+
         $self->{active}->{total}++;
 
-        if (!defined($mailbox->{'Last Activity Date'}) || $mailbox->{'Last Activity Date'} eq '' ||
-            ($mailbox->{'Last Activity Date'} ne $mailbox->{'Report Refresh Date'})) {
+        if (!defined($mailbox->{'Last Activity Date'}) || ($mailbox->{'Last Activity Date'} ne $self->{active}->{report_date})) {
             $self->{global}->{storage_used_inactive} += ($mailbox->{'Storage Used (Byte)'} ne '') ? $mailbox->{'Storage Used (Byte)'} : 0;
             $self->{output}->output_add(long_msg => "skipping '" . $mailbox->{'User Principal Name'} . "': no activity.", debug => 1);
             next;
@@ -287,7 +289,7 @@ __END__
 
 =head1 MODE
 
-Check mailbox usage (reporting period over the last 7 days).
+Check mailbox usage (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/mailbox-usage?view=o365-worldwide)

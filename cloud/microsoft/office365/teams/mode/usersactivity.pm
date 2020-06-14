@@ -207,13 +207,16 @@ sub manage_selection {
     $self->{global} = { team_chat => 0, private_chat => 0, call => 0, meeting => 0 };
     $self->{users} = {};
 
-    my $results = $options{custom}->office_get_teams_activity();
+    my $results = $options{custom}->office_get_teams_activity(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_teams_activity(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $user (@{$results}) {
+    foreach my $user (@{$results}, @{$results_daily}) {
         # Let's lc the instance label to make metrics "clean"...
         $user->{'User Principal Name'} = lc($user->{'User Principal Name'});
-
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
 
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
@@ -221,11 +224,11 @@ sub manage_selection {
             next;
         }
     
-        $self->{active}->{total}++;
-
-        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
-            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+        if ($user->{'Report Period'} != 1) {
+            if (!defined($user->{'Last Activity Date'}) || ($user->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total}++;
             next;
         }
 
@@ -241,7 +244,6 @@ sub manage_selection {
         $self->{users}->{$user->{'User Principal Name'}}->{private_chat} = $user->{'Private Chat Message Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{call} = $user->{'Call Count'};
         $self->{users}->{$user->{'User Principal Name'}}->{meeting} = $user->{'Meeting Count'};
-        $self->{users}->{$user->{'User Principal Name'}}->{last_activity_date} = $user->{'Last Activity Date'};
     }
 }
 
@@ -251,7 +253,7 @@ __END__
 
 =head1 MODE
 
-Check users activity (reporting period over the last 7 days).
+Check users activity (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/microsoft-teams-user-activity?view=o365-worldwide)

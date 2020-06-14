@@ -189,25 +189,28 @@ sub manage_selection {
     $self->{global} = { send_count => 0, receive_count => 0 , read_count => 0 };
     $self->{users} = {};
 
-    my $results = $options{custom}->office_get_exchange_activity();
+    my $results = $options{custom}->office_get_exchange_activity(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_exchange_activity(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $user (@{$results}) {
+    foreach my $user (@{$results}, @{$results_daily}) {
         # Let's lc the instance label to make metrics "clean"...
         $user->{'User Principal Name'} = lc($user->{'User Principal Name'});
-
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
 
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $user->{'User Principal Name'} . "': no matching filter name.", debug => 1);
             next;
         }
-    
-        $self->{active}->{total}++;
 
-        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
-            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+        if ($user->{'Report Period'} != 1) {
+            if (!defined($user->{'Last Activity Date'}) || ($user->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total}++;
             next;
         }
 
@@ -230,7 +233,7 @@ __END__
 
 =head1 MODE
 
-Check email activity (reporting period over the last 7 days).
+Check email activity (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/office365/admin/activity-reports/email-activity?view=o365-worldwide)

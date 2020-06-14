@@ -178,7 +178,7 @@ sub set_counters {
                 output_template => 'Usage (active sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_active', value => 'storage_used_active', template => '%d',
+                    { label => 'total_usage_active', value => 'storage_used_active', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -188,7 +188,7 @@ sub set_counters {
                 output_template => 'Usage (inactive sites): %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'storage_used_inactive', value => 'storage_used_inactive', template => '%d',
+                    { label => 'total_usage_inactive', value => 'storage_used_inactive', template => '%d',
                       min => 0, unit => 'B' },
                 ],
             }
@@ -312,13 +312,16 @@ sub manage_selection {
                         active_file_count => 0 , visited_page_count => 0 , page_view_count => 0 };
     $self->{sites} = {};
 
-    my $results = $options{custom}->office_get_sharepoint_site_usage();
+    my $results = $options{custom}->office_get_sharepoint_site_usage(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_sharepoint_site_usage(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $site (@{$results}) {
+    foreach my $site (@{$results}, @{$results_daily}) {
         # As it's used as the instance label, let's keep the URL as short as possible, removing its domain name...
         $site->{'Site URL'} =~ s/^[^\/]*\/\/[^\/]*//;
-
-        $self->{active}->{report_date} = $site->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
 
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
             $site->{'Site URL'} !~ /$self->{option_results}->{filter_url}/) {
@@ -331,16 +334,16 @@ sub manage_selection {
             next;
         }
 
-        $self->{active}->{total}++;
-
-        if (!defined($site->{'Last Activity Date'}) || $site->{'Last Activity Date'} eq '' ||
-            ($site->{'Last Activity Date'} ne $site->{'Report Refresh Date'})) {
-            $self->{global}->{storage_used_inactive} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
-            $self->{global}->{file_count_inactive} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
-            $self->{output}->output_add(long_msg => "skipping '" . $site->{'Site URL'} . "': no activity.", debug => 1);
+        if ($site->{'Report Period'} != 1) {
+            if (!defined($site->{'Last Activity Date'}) || ($site->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{global}->{storage_used_inactive} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
+                $self->{global}->{file_count_inactive} += ($site->{'File Count'} ne '') ? $site->{'File Count'} : 0;
+                $self->{output}->output_add(long_msg => "skipping '" . $site->{'Site URL'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total}++;
             next;
         }
-    
+
         $self->{active}->{active}++;
 
         $self->{global}->{storage_used_active} += ($site->{'Storage Used (Byte)'} ne '') ? $site->{'Storage Used (Byte)'} : 0;
@@ -367,10 +370,10 @@ __END__
 
 =head1 MODE
 
-Check sites usage (reporting period over the last 7 days).
+Check sites usage (reporting period over the last refreshed day).
 
 (See link for details about metrics :
-https://docs.microsoft.com/en-us/office365/admin/activity-reports/sharepoint-site-usage?view=o365-worldwide)
+https://docs.microsoft.com/en-us/microsoft-365/admin/activity-reports/sharepoint-site-usage?view=o365-worldwide)
 
 =over 8
 
@@ -382,20 +385,22 @@ Can be: 'url', 'id' (can be a regexp).
 =item B<--warning-*>
 
 Threshold warning.
-Can be: 'active-sites', 'total-usage-active' (count),
-'total-usage-inactive' (count), 'total-file-count-active' (count),
-'total-file-count-inactive' (count), 'total-active-file-count' (count),
-'total-visited-page-count' (count), 'total-page-view-count' (count),
+Can be: 'active-sites',
+'total-usage-active' (count), 'total-usage-inactive' (count),
+'total-file-count-active' (count), 'total-file-count-inactive' (count),
+'total-active-file-count' (count), 'total-visited-page-count' (count),
+'total-page-view-count' (count),
 'usage' (count), 'file-count' (count), 'active-file-count' (count),
 'visited-page-count' (count), 'page-view-count' (count).
 
 =item B<--critical-*>
 
 Threshold critical.
-Can be: 'active-sites', 'total-usage-active' (count),
-'total-usage-inactive' (count), 'total-file-count-active' (count),
-'total-file-count-inactive' (count), 'total-active-file-count' (count),
-'total-visited-page-count' (count), 'total-page-view-count' (count),
+Can be: 'active-sites',
+'total-usage-active' (count), 'total-usage-inactive' (count),
+'total-file-count-active' (count), 'total-file-count-inactive' (count),
+'total-active-file-count' (count), 'total-visited-page-count' (count),
+'total-page-view-count' (count),
 'usage' (count), 'file-count' (count), 'active-file-count' (count),
 'visited-page-count' (count), 'page-view-count' (count).
 

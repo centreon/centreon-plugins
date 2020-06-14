@@ -189,13 +189,16 @@ sub manage_selection {
     $self->{global} = { peer_to_peer_sessions => 0, organized_conference => 0, participated_conference => 0 };
     $self->{users} = {};
 
-    my $results = $options{custom}->office_get_skype_activity();
+    my $results = $options{custom}->office_get_skype_activity(param => "period='D7'");
+    my $results_daily = [];
+    if (scalar(@{$results})) {
+       $self->{active}->{report_date} = @{$results}[0]->{'Report Refresh Date'};
+       $results_daily = $options{custom}->office_get_skype_activity(param => "date=" . $self->{active}->{report_date});
+    }
 
-    foreach my $user (@{$results}) {
+    foreach my $user (@{$results}, @{$results_daily}) {
         # Let's lc the instance label to make metrics "clean"...
         $user->{'User Principal Name'} = lc($user->{'User Principal Name'});
-
-        $self->{active}->{report_date} = $user->{'Report Refresh Date'} if ($self->{active}->{report_date} eq '');
 
         if (defined($self->{option_results}->{filter_user}) && $self->{option_results}->{filter_user} ne '' &&
             $user->{'User Principal Name'} !~ /$self->{option_results}->{filter_user}/) {
@@ -203,11 +206,11 @@ sub manage_selection {
             next;
         }
     
-        $self->{active}->{total}++;
-
-        if (!defined($user->{'Last Activity Date'}) || $user->{'Last Activity Date'} eq '' ||
-            ($user->{'Last Activity Date'} ne $user->{'Report Refresh Date'})) {
-            $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+        if ($user->{'Report Period'} != 1) {
+            if (!defined($user->{'Last Activity Date'}) || ($user->{'Last Activity Date'} ne $self->{active}->{report_date})) {
+                $self->{output}->output_add(long_msg => "skipping '" . $user->{'User Principal Name'} . "': no activity.", debug => 1);
+            }
+            $self->{active}->{total}++;
             next;
         }
 
@@ -230,7 +233,7 @@ __END__
 
 =head1 MODE
 
-Check users activity (reporting period over the last 7 days).
+Check users activity (reporting period over the last refreshed day).
 
 (See link for details about metrics :
 https://docs.microsoft.com/en-us/SkypeForBusiness/skype-for-business-online-reporting/activity-report)
