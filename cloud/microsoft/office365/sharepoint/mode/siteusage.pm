@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use Time::Local;
 
 sub custom_active_perfdata {
     my ($self, %options) = @_;
@@ -33,6 +34,9 @@ sub custom_active_perfdata {
         $total_options{total} = $self->{result_values}->{total};
         $total_options{cast_int} = 1;
     }
+
+    $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
+    $self->{output}->perfdata_add(label => 'perfdate', value => timegm(0,0,0,$3,$2-1,$1-1900));
 
     $self->{output}->perfdata_add(label => 'active_sites', nlabel => 'sharepoint.sites.active.count',
                                   value => $self->{result_values}->{active},
