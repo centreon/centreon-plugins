@@ -29,7 +29,6 @@ my $mapping = {
     v6 => {
         temperatureValue => { oid => '.1.3.6.1.4.1.4526.22.5.1.2' },
         temperatureType => { oid => '.1.3.6.1.4.1.4526.22.5.1.3' },
-        temperatureMax => { oid => '.1.3.6.1.4.1.4526.22.5.1.5' }
     },
     v4 => {
         temperatureValue => { oid => '.1.3.6.1.4.1.4526.18.5.1.2' },
@@ -66,8 +65,7 @@ sub check {
         next if ($self->check_filter(section => 'temperature', instance => $instance));
         $self->{components}->{temperature}->{total}++;
         
-        my $temperatureMax_string = defined($result->{temperatureMax}) && $result->{temperatureMax} != -1 ? "  ($result->{temperatureMax} max)" : '';
-        my $temperatureMax_unit = defined($result->{temperatureMax}) && $self->{mib_ver} eq 'v6' ? 'C' : 'F';
+        my $temperature_unit = $self->{mib_ver} eq 'v6' ? 'C' : 'F';
         my $temperature_status = defined($result->{temperatureStatus}) ? $result->{temperatureStatus} : 'n/a';
 
         $self->{output}->output_add(
@@ -75,8 +73,8 @@ sub check {
                 "temperature '%s' status is %s [value = %s%s]", 
                 $instance,
                 defined($result->{temperatureStatus}) ? $result->{temperatureStatus} : 'n/a',
-                $temperature_status,
-                $temperatureMax_unit
+                $result->{temperatureValue},
+                $temperature_unit
             )
         );
         my $exit = $self->get_severity(label => 'default', section => 'temperature', value => $temperature_status);
@@ -91,12 +89,12 @@ sub check {
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
             $self->{output}->output_add(
                 severity => $exit2,
-                short_msg => sprintf("Temperature '%s' is %s%s", $instance, $result->{temperatureValue}, $temperatureMax_unit)
+                short_msg => sprintf("Temperature '%s' is %s%s", $instance, $result->{temperatureValue}, $temperature_unit)
             );
         }
         $self->{output}->perfdata_add(
-            label => 'temp', unit => $temperatureMax_unit,
-            nlabel => 'hardware.temperature.' . (($temperatureMax_unit eq 'C') ? 'celsius' : 'fahrenheit'),
+            label => 'temp', unit => $temperature_unit,
+            nlabel => 'hardware.temperature.' . (($temperature_unit eq 'C') ? 'celsius' : 'fahrenheit'),
             instances => $instance,
             value => $result->{temperatureValue},
             warning => $warn,

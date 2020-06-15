@@ -65,14 +65,14 @@ sub check {
         next if ($self->check_filter(section => 'disk', instance => $instance));
         $self->{components}->{disk}->{total}++;
 
-        my $temperature_string = defined($result->{diskTemperature}) && $result->{diskTemperature} != -1 ? " (temperature $result->{diskTemperature}" : '';
-        my $temperature_unit = $temperature_string ne '' && $self->{mib_ver} eq 'v6' ? 'C)' : '';
-        $temperature_unit = $temperature_string ne '' && $self->{mib_ver} eq 'v4' ? 'F)' : '';
+        my $temperature_value = defined($result->{diskTemperature}) && $result->{diskTemperature} != -1 ? $result->{diskTemperature} : '-';
+        my $temperature_unit = $temperature_string ne '' && $self->{mib_ver} eq 'v6' ? 'C' : '';
+        $temperature_unit = $temperature_string ne '' && $self->{mib_ver} eq 'v4' ? 'F' : '';
         
         $self->{output}->output_add(
             long_msg => sprintf(
                 "disk '%s' status is %s [temperature: %s%s]",
-                $instance, $result->{diskState}, $temperature_string, $temperature_unit
+                $instance, $result->{diskState}, $temperature_value, $temperature_unit
             )
         );
 
