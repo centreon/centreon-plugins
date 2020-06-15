@@ -27,18 +27,17 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'log [created: %s] [stream: %s] [message: %s] ',
         centreon::plugins::misc::change_seconds(value => $self->{result_values}->{since}),
         $self->{result_values}->{stream_name},
         $self->{result_values}->{message}
     );
-    return $msg;
 }
 
 sub set_counters {
@@ -53,12 +52,11 @@ sub set_counters {
     $self->{maps_counters}->{alarm} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'message' }, { name => 'stream_name' }, { name => 'since' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -68,11 +66,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'group-name:s'      => { name => 'group_name' },
-        'stream-name:s@'    => { name => 'stream_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
+        'group-name:s'       => { name => 'group_name' },
+        'stream-name:s@'     => { name => 'stream_name' },
+        'start-time-since:s' => { name => 'start_time_since' },
+        'unknown-status:s'   => { name => 'unknown_status', default => '' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
@@ -87,46 +86,54 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'please set --group-name option');
         $self->{output}->option_exit();
     }
+    if (defined($self->{option_results}->{start_time_since}) && $self->{option_results}->{start_time_since} =~ /(\d+)/) {
+        $self->{start_time} = time() - $1;
+    }
 
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
-    $self->{statefile_cache}->check_options(%options);
+    if (!defined($self->{start_time})) {
+        $self->{statefile_cache}->check_options(%options);
+    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{statefile_cache}->read(
-        statefile =>
-            'cache_aws_' . $self->{mode} . '_' . $options{custom}->get_region() .
-            (defined($self->{option_results}->{group_name}) ? md5_hex($self->{option_results}->{group_name}) : md5_hex('all')) . '_' .
-            (defined($self->{option_results}->{stream_name}) ? md5_hex(join(',' . $self->{option_results}->{stream_name})) : md5_hex('all'))
-    );
-    my $last_time = $self->{statefile_cache}->get(name => 'last_time');
-    my $current_time = time();
-    $self->{statefile_cache}->write(data => { last_time => $current_time });
-
-    if (!defined($last_time)) {
-        $self->{output}->output_add(
-            severity => 'OK',
-            short_msg => 'first execution. create cache'
+    if (!defined($self->{start_time})) {
+        $self->{statefile_cache}->read(
+            statefile =>
+                'cache_aws_' . $self->{mode} . '_' . $options{custom}->get_region() .
+                (defined($self->{option_results}->{group_name}) ? md5_hex($self->{option_results}->{group_name}) : md5_hex('all')) . '_' .
+                (defined($self->{option_results}->{stream_name}) ? md5_hex(join(',' . $self->{option_results}->{stream_name})) : md5_hex('all'))
         );
-        $self->{output}->display();
-        $self->{output}->exit();
+        $self->{start_time} = $self->{statefile_cache}->get(name => 'last_time');
+        my $current_time = time();
+        $self->{statefile_cache}->write(data => { last_time => $current_time });
+
+        if (!defined($self->{start_time})) {
+            $self->{output}->output_add(
+                severity => 'OK',
+                short_msg => 'first execution. create cache'
+            );
+            $self->{output}->display();
+            $self->{output}->exit();
+        }
     }
 
     $self->{alarms}->{global} = { alarm => {} };
     my $results = $options{custom}->cloudwatchlogs_filter_log_events(
         group_name => $self->{option_results}->{group_name},
         stream_names => $self->{option_results}->{stream_name},
-        start_time => $last_time * 1000
+        start_time => $self->{start_time} * 1000
     );
 
     my $i = 1;
-    foreach (@$results) {
-        $self->{alarms}->{global}->{alarm}->{$i} = { 
-            message => $_->{message},
-            stream_name => $_->{logStreamName},
-            since => int($current_time - ($_->{timestamp} / 1000))
+    foreach my $entry (@$results) {
+        $entry->{message} =~ s/[\|\n]/ -- /msg;
+        $self->{alarms}->{global}->{alarm}->{$i} = {
+            message => $entry->{message},
+            stream_name => $entry->{logStreamName},
+            since => int($current_time - ($entry->{timestamp} / 1000))
         };
         $i++;
     }
@@ -149,6 +156,11 @@ Set log group name (Required).
 =item B<--stream-name>
 
 Filters the results to only logs from the log stream (multiple option).
+
+=item B<--start-time-since>
+
+Lookup logs last X seconds ago.
+If not set: lookup logs since the last execution. 
 
 =item B<--unknown-status>
 
