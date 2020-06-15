@@ -90,6 +90,16 @@ sub check_options {
         $self->{start_time} = time() - $1;
     }
 
+    $self->{stream_names} = undef;
+    if (defined($self->{option_results}->{stream_name})) {
+        foreach my $stream_name (@{$self->{option_results}->{stream_name}}) {
+            if ($stream_name ne '') {
+                $self->{stream_names} = [] if (!defined($self->{stream_names}));
+                push @{$self->{stream_names}}, $stream_name;
+            }
+        }
+    }
+
     $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
     if (!defined($self->{start_time})) {
         $self->{statefile_cache}->check_options(%options);
@@ -104,7 +114,7 @@ sub manage_selection {
             statefile =>
                 'cache_aws_' . $self->{mode} . '_' . $options{custom}->get_region() .
                 (defined($self->{option_results}->{group_name}) ? md5_hex($self->{option_results}->{group_name}) : md5_hex('all')) . '_' .
-                (defined($self->{option_results}->{stream_name}) ? md5_hex(join(',' . $self->{option_results}->{stream_name})) : md5_hex('all'))
+                (defined($self->{stream_names}) ? md5_hex(join('-', @{$self->{stream_names}})) : md5_hex('all'))
         );
         $self->{start_time} = $self->{statefile_cache}->get(name => 'last_time');
         my $current_time = time();
@@ -123,7 +133,7 @@ sub manage_selection {
     $self->{alarms}->{global} = { alarm => {} };
     my $results = $options{custom}->cloudwatchlogs_filter_log_events(
         group_name => $self->{option_results}->{group_name},
-        stream_names => $self->{option_results}->{stream_name},
+        stream_names => $self->{stream_names},
         start_time => $self->{start_time} * 1000
     );
 
