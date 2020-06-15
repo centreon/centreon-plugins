@@ -31,7 +31,7 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok' },
+        { name => 'device', type => 1, cb_prefix_output => 'prefix_device_output', message_multiple => 'All devices are ok' }
     ];
     
     $self->{maps_counters}->{device} = [
@@ -41,7 +41,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Status', name_status => 'fmDeviceEntState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'device-con-status', threshold => 0, set => {
@@ -50,7 +50,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Connection Status', name_status => 'fmDeviceEntConnectState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'device-db-status', threshold => 0, set => {
@@ -59,7 +59,7 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'DB Status', name_status => 'fmDeviceEntDbState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'device-config-status', threshold => 0, set => {
@@ -68,17 +68,16 @@ sub set_counters {
                 closure_custom_calc_extra_options => { output_label => 'Configuration Status', name_status => 'fmDeviceEntConfigState' },
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = $self->{result_values}->{output_label} . ' : ' . $self->{result_values}->{status};
 
-    return $msg;
+    return $self->{result_values}->{output_label} . ' : ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -95,19 +94,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"                   => { name => 'filter_name' },
-                                  "warning-device-status:s"         => { name => 'warning_device_status', default => '' },
-                                  "critical-device-status:s"        => { name => 'critical_device_status', default => '' },
-                                  "warning-device-con-status:s"     => { name => 'warning_device_con_status', default => '' },
-                                  "critical-device-con-status:s"    => { name => 'critical_device_con_status', default => '%{status} =~ /down/i' },
-                                  "warning-device-db-status:s"      => { name => 'warning_device_db_status', default => '' },
-                                  "critical-device-db-status:s"     => { name => 'critical_device_db_status', default => '' },
-                                  "warning-device-config-status:s"  => { name => 'warning_device_config_status', default => '' },
-                                  "critical-device-config-status:s" => { name => 'critical_device_config_status', default => '' },
-                                });
-    
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'                   => { name => 'filter_name' },
+        'warning-device-status:s'         => { name => 'warning_device_status', default => '' },
+        'critical-device-status:s'        => { name => 'critical_device_status', default => '' },
+        'warning-device-con-status:s'     => { name => 'warning_device_con_status', default => '' },
+        'critical-device-con-status:s'    => { name => 'critical_device_con_status', default => '%{status} =~ /down/i' },
+        'warning-device-db-status:s'      => { name => 'warning_device_db_status', default => '' },
+        'critical-device-db-status:s'     => { name => 'critical_device_db_status', default => '' },
+        'warning-device-config-status:s'  => { name => 'warning_device_config_status', default => '' },
+        'critical-device-config-status:s' => { name => 'critical_device_config_status', default => '' }
+    });
+
     return $self;
 }
 
@@ -115,8 +113,10 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
     
-    $self->change_macros(macros => ['warning_device_status', 'critical_device_status', 'warning_device_con_status', 'critical_device_con_status',
-        'warning_device_db_status', 'critical_device_db_status', 'warning_device_config_status', 'critical_device_config_status']);
+    $self->change_macros(macros => [
+        'warning_device_status', 'critical_device_status', 'warning_device_con_status', 'critical_device_con_status',
+        'warning_device_db_status', 'critical_device_db_status', 'warning_device_config_status', 'critical_device_config_status'
+    ]);
 }
 
 sub prefix_device_output {
@@ -128,7 +128,8 @@ sub prefix_device_output {
 my %map_connection_state = (0 => 'unknown', 1 => 'up', 2 => 'down');
 my %map_db_state = (0 => 'unknown', 1 => 'not-modified', 2 => 'modified');
 my %map_config_state = (0 =>  'unknown', 1 => 'in-sync', 2 => 'out-of-sync');
-my %map_device_state = (0 => 'none', 1 => 'unknown', 2 => 'checked-in', 3 => 'in-progress',
+my %map_device_state = (
+    0 => 'none', 1 => 'unknown', 2 => 'checked-in', 3 => 'in-progress',
     4 => 'installed', 5 => 'aborted', 6 => 'sched', 7 => 'retry', 8 => 'canceled',
     9 => 'pending', 10 => 'retrieved', 11 => 'changed-conf', 12 => 'sync-fail',
     13 => 'timeout', 14 => 'rev-reverted', 15 => 'auto-updated'
@@ -147,10 +148,14 @@ my $oid_fmDeviceEntry = '.1.3.6.1.4.1.12356.103.6.2.1';
 sub manage_selection {
     my ($self, %options) = @_;
     
-    my $snmp_result = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_fmDeviceEntName },
-                                                                   { oid => $oid_fmDeviceEntry, start => $mapping->{fmDeviceEntConnectState}->{oid}, end => $mapping->{fmDeviceEntState}->{oid} },
-                                                                 ],
-                                                         nothing_quit => 1);
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => [
+            { oid => $oid_fmDeviceEntName },
+            { oid => $oid_fmDeviceEntry, start => $mapping->{fmDeviceEntConnectState}->{oid}, end => $mapping->{fmDeviceEntState}->{oid} },
+        ],
+        nothing_quit => 1
+    );
+
     $self->{device} = {};
     foreach my $oid (keys %{$snmp_result->{ $oid_fmDeviceEntName }}) {
         $oid =~ /^$oid_fmDeviceEntName\.(.*)$/;
@@ -168,9 +173,9 @@ sub manage_selection {
             display => $name, %$result
         };
     }
-    
+
     if (scalar(keys %{$self->{device}}) <= 0) {
-        $self->{output}->add_option_msg(short_msg => "No device found.");
+        $self->{output}->add_option_msg(short_msg => 'No device found.');
         $self->{output}->option_exit();
     }
 }
