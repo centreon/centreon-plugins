@@ -40,27 +40,27 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'qoe-voice', nlabel => 'qoe.voice.count', set => {
+        { label => 'qoe-voice-global', nlabel => 'global.qoe.voice.count', set => {
                 key_values => [ { name => 'voice' } ],
-                output_template => 'Voice QOE: %s',
+                output_template => 'Global voice QOE: %s',
                 perfdatas => [
                     { value => 'voice', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1  },
                 ],
             }
         },
-        { label => 'qoe-video', nlabel => 'qoe.video.count', set => {
+        { label => 'qoe-video-global', nlabel => 'global.qoe.video.count', set => {
                 key_values => [ { name => 'video' } ],
-                output_template => 'Video QOE: %s',
+                output_template => 'Global video QOE: %s',
                 perfdatas => [
                     { value => 'video', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1  },
                 ],
             }
         },
-        { label => 'qoe-transactional', nlabel => 'qoe.transactional.count', set => {
+        { label => 'qoe-transactional-global', nlabel => 'global.qoe.transactional.count', set => {
                 key_values => [ { name => 'transactional' } ],
-                output_template => 'Transactional QOE: %s',
+                output_template => 'Global transactional QOE: %s',
                 perfdatas => [
                     { value => 'transactional', template => '%s',
                       min => 0, max => 10, label_extra_instance => 1  },
@@ -122,12 +122,12 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-edge-name:s' => { name => 'filter_edge_name' },
         'filter-link-name:s' => { name => 'filter_link_name' },
     });
-   
+
     return $self;
 }
 
@@ -219,7 +219,8 @@ Filter link by name (Can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'qoe-voice', 'qoe-video', 'qoe-transactional'.
+Can be: 'qoe-voice-global', 'qoe-video-global', 'qoe-transactional-global' (global values) and/or
+'qoe-voice', 'qoe-video', 'qoe-transactional' (per link values).
 
 =back
 
