@@ -40,7 +40,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'qoe-voice-global', nlabel => 'global.qoe.voice.global.count', set => {
+        { label => 'qoe-voice-global', nlabel => 'global.qoe.voice.count', set => {
                 key_values => [ { name => 'voice' } ],
                 output_template => 'Global voice QOE: %s',
                 perfdatas => [
