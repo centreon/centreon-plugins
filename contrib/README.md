@@ -8,7 +8,7 @@ Compile the wrapper:
 
     # gcc -o cwrapper_perl cwrapper_perl.c `perl -MExtUtils::Embed -e ccopts -e ldopts`
     
-Create a fatpack: https://github.com/centreon/centreon-plugins/blob/master/docs/en/user/guide.rst#can-i-have-one-standalone-perl-file-
+Create a fatpack: https://github.com/centreon/centreon-plugins/blob/master/doc/en/user/guide.rst#can-i-have-one-standalone-perl-file-
 
 Comment following lines in the end of fatpack file:
 
