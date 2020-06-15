@@ -66,9 +66,8 @@ sub check {
         $self->{components}->{disk}->{total}++;
 
         my $temperature_value = defined($result->{diskTemperature}) && $result->{diskTemperature} != -1 ? $result->{diskTemperature} : '-';
-        my $temperature_unit = $temperature_string ne '' && $self->{mib_ver} eq 'v6' ? 'C' : '';
-        $temperature_unit = $temperature_string ne '' && $self->{mib_ver} eq 'v4' ? 'F' : '';
-        
+        my $temperature_unit = $self->{mib_ver} eq 'v6' ? 'C' : 'F';
+
         $self->{output}->output_add(
             long_msg => sprintf(
                 "disk '%s' status is %s [temperature: %s%s]",
