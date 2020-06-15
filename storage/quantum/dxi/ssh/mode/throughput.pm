@@ -112,7 +112,7 @@ sub manage_selection {
     #     Read Throughput = 6.98 MB/s
     $self->{global} = {};
     foreach (split(/\n/, $stdout)) {
-        $self->{global}->{write_rate} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Write\sThroughput\s=\s(.*)$/i)
+        $self->{global}->{write_rate} = $options{custom}->convert_to_bytes(raw_value => $1) if (/.*Write\sThroughput\s=\s(.*)$/i);
         $self->{global}->{read_rate} = $options{custom}->convert_to_bytes(raw_value => $1)  if (/.*Read\sThroughput\s=\s(.*)$/i);
     }
 }
