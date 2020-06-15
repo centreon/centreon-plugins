@@ -42,12 +42,13 @@ sub set_system {
             ['Ok', 'OK'],
             ['Unknown', 'CRITICAL'],
             ['Failed', 'CRITICAL'],
+            ['n/a', 'OK' ]
         ],
         disk => [
             ['Online', 'OK'],
             ['Ok', 'OK'],
             ['Unknown', 'OK'],
-            ['Offline', 'CRITICAL'],
+            ['Offline', 'CRITICAL']
         ],
         psu => [
             ['On', 'OK'],
@@ -61,8 +62,8 @@ sub set_system {
             ['Unprotected', 'WARNING'],
             ['Degraded', 'CRITICAL'],
             ['Dead', 'CRITICAL'],
-            ['Unknown', 'CRITICAL'],
-        ],
+            ['Unknown', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'storage::netgear::readynas::snmp::mode::components';
