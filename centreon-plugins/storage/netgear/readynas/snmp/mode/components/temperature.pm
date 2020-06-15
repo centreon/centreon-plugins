@@ -67,20 +67,32 @@ sub check {
         $self->{components}->{temperature}->{total}++;
         
         my $temperatureMax_string = defined($result->{temperatureMax}) && $result->{temperatureMax} != -1 ? "  ($result->{temperatureMax} max)" : '';
-        my $temperatureMax_unit = defined($result->{temperatureMax}) && $self->{mib_ver} == 6 ? 'C' : 'F';
-        
-        $self->{output}->output_add(long_msg => sprintf("temperature '%s' status is %s [value = %s%s]", 
-                                        $instance, $result->{temperatureStatus}, $result->{temperatureValue}, $temperatureMax_unit));
-        my $exit = $self->get_severity(label => 'default', section => 'temperature', value => $result->{temperatureStatus});
+        my $temperatureMax_unit = defined($result->{temperatureMax}) && $self->{mib_ver} eq 'v6' ? 'C' : 'F';
+        my $temperature_status = defined($result->{temperatureStatus}) ? $result->{temperatureStatus} : 'n/a';
+
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "temperature '%s' status is %s [value = %s%s]", 
+                $instance,
+                defined($result->{temperatureStatus}) ? $result->{temperatureStatus} : 'n/a',
+                $temperature_status,
+                $temperatureMax_unit
+            )
+        );
+        my $exit = $self->get_severity(label => 'default', section => 'temperature', value => $temperature_status);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("Temperature '%s' status is %s.", $instance, $result->{temperatureStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("Temperature '%s' status is %s.", $instance, $temperature_status)
+            );
         }
                 
         my ($exit2, $warn, $crit) = $self->get_severity_numeric(section => 'temperature', instance => $instance, value => $result->{temperatureValue});
         if (!$self->{output}->is_status(value => $exit2, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit2,
-                                        short_msg => sprintf("Temperature '%s' is %s%s", $instance, $result->{temperatureValue}, $temperatureMax_unit));
+            $self->{output}->output_add(
+                severity => $exit2,
+                short_msg => sprintf("Temperature '%s' is %s%s", $instance, $result->{temperatureValue}, $temperatureMax_unit)
+            );
         }
         $self->{output}->perfdata_add(
             label => 'temp', unit => $temperatureMax_unit,
