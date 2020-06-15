@@ -28,23 +28,26 @@ use warnings;
 my $mapping = {
     v6 => {
         diskState       => { oid => '.1.3.6.1.4.1.4526.22.3.1.9' },
-        diskTemperature => { oid => '.1.3.6.1.4.1.4526.22.3.1.10' },
+        diskTemperature => { oid => '.1.3.6.1.4.1.4526.22.3.1.10' }
     },
     v4 => {
         diskState       => { oid => '.1.3.6.1.4.1.4526.18.3.1.4' },
-        diskTemperature => { oid => '.1.3.6.1.4.1.4526.18.3.1.5' },
-    },
+        diskTemperature => { oid => '.1.3.6.1.4.1.4526.18.3.1.5' }
+    }
 };
 my $oid_diskTable = {
     v4 => '.1.3.6.1.4.1.4526.18.3',
-    v6 => '.1.3.6.1.4.1.4526.22.3',
+    v6 => '.1.3.6.1.4.1.4526.22.3'
 };
 
 sub load {
     my ($self) = @_;
 
-    push @{$self->{request}}, { oid => $oid_diskTable->{$self->{mib_ver}}, 
-        start => $mapping->{$self->{mib_ver}}->{diskState}, end => $mapping->{$self->{mib_ver}}->{diskTemperature} };
+    push @{$self->{request}}, {
+        oid => $oid_diskTable->{$self->{mib_ver}}, 
+        start => $mapping->{$self->{mib_ver}}->{diskState}->{oid},
+        end => $mapping->{$self->{mib_ver}}->{diskTemperature}->{oid}
+    };
 }
 
 sub check {

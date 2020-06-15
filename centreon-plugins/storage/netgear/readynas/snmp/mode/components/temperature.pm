@@ -29,23 +29,25 @@ my $mapping = {
     v6 => {
         temperatureValue => { oid => '.1.3.6.1.4.1.4526.22.5.1.2' },
         temperatureType => { oid => '.1.3.6.1.4.1.4526.22.5.1.3' },
-        temperatureMax => { oid => '.1.3.6.1.4.1.4526.22.5.1.5' },
+        temperatureMax => { oid => '.1.3.6.1.4.1.4526.22.5.1.5' }
     },
     v4 => {
         temperatureValue => { oid => '.1.3.6.1.4.1.4526.18.5.1.2' },
-        temperatureStatus => { oid => '.1.3.6.1.4.1.4526.18.5.1.3' },
-    },
+        temperatureStatus => { oid => '.1.3.6.1.4.1.4526.18.5.1.3' }
+    }
 };
 my $oid_temperatureTable = {
     v4 => '.1.3.6.1.4.1.4526.18.5',
-    v6 => '.1.3.6.1.4.1.4526.22.5',
+    v6 => '.1.3.6.1.4.1.4526.22.5'
 };
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_temperatureTable->{$self->{mib_ver}}, 
-        start => $mapping->{$self->{mib_ver}}->{temperatureValue} };
+    push @{$self->{request}}, {
+        oid => $oid_temperatureTable->{$self->{mib_ver}},
+        start => $mapping->{$self->{mib_ver}}->{temperatureValue}->{oid}
+    };
 }
 
 sub check {

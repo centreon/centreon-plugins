@@ -28,23 +28,26 @@ use warnings;
 my $mapping = {
     v6 => {
         volumeName    => { oid => '.1.3.6.1.4.1.4526.22.7.1.2' },
-        volumeStatus  => { oid => '.1.3.6.1.4.1.4526.22.7.1.4' },
+        volumeStatus  => { oid => '.1.3.6.1.4.1.4526.22.7.1.4' }
     },
     v4 => {
         volumeName    => { oid => '.1.3.6.1.4.1.4526.18.7.1.2' },
-        volumeStatus  => { oid => '.1.3.6.1.4.1.4526.18.7.1.4' },
-    },
+        volumeStatus  => { oid => '.1.3.6.1.4.1.4526.18.7.1.4' }
+    }
 };
 my $oid_volumeTable = {
     v4 => '.1.3.6.1.4.1.4526.18.7',
-    v6 => '.1.3.6.1.4.1.4526.22.7',
+    v6 => '.1.3.6.1.4.1.4526.22.7'
 };
 
 sub load {
     my ($self) = @_;
     
-     push @{$self->{request}}, { oid => $oid_volumeTable->{$self->{mib_ver}}, 
-        start => $mapping->{$self->{mib_ver}}->{volumeName}, end => $mapping->{$self->{mib_ver}}->{volumeStatus} };
+     push @{$self->{request}}, {
+        oid => $oid_volumeTable->{$self->{mib_ver}},
+        start => $mapping->{$self->{mib_ver}}->{volumeName}->{oid},
+        end => $mapping->{$self->{mib_ver}}->{volumeStatus}->{oid}
+    };
 }
 
 sub check {
