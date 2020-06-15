@@ -35,15 +35,16 @@ sub new {
 
     if (defined($options{options})) {
         $options{options}->add_options(arguments => {
-            'memcached:s'           => { name => 'memcached' },
-            'redis-server:s'        => { name => 'redis_server' },
-            'redis-attribute:s%'    => { name => 'redis_attribute' },
-            'redis-db:s'            => { name => 'redis_db' },
-            'memexpiration:s'       => { name => 'memexpiration', default => 86400 },
-            'statefile-dir:s'       => { name => 'statefile_dir', default => $default_dir },
-            'statefile-suffix:s'    => { name => 'statefile_suffix', default => '' },
-            'statefile-concat-cwd'  => { name => 'statefile_concat_cwd' },
-            'statefile-storable'    => { name => 'statefile_storable' },
+            'memcached:s'          => { name => 'memcached' },
+            'redis-server:s'       => { name => 'redis_server' },
+            'redis-attribute:s%'   => { name => 'redis_attribute' },
+            'redis-db:s'           => { name => 'redis_db' },
+            'memexpiration:s'      => { name => 'memexpiration', default => 86400 },
+            'statefile-dir:s'      => { name => 'statefile_dir', default => $default_dir },
+            'statefile-suffix:s'   => { name => 'statefile_suffix', default => '' },
+            'statefile-concat-cwd' => { name => 'statefile_concat_cwd' },
+            'statefile-storable'   => { name => 'statefile_storable' },
+            'failback-file'        => { name => 'failback_file' }
         });
         $options{options}->add_help(package => __PACKAGE__, sections => 'RETENTION OPTIONS', once => 1);
     }
@@ -89,6 +90,7 @@ sub check_options {
             error_msg => "Cannot load module 'Redis'."
         );
         eval {
+            $options{option_results}->{redis_server} .= ':6379' if ($options{option_results}->{redis_server} !~ /:\d+$/);
             $self->{redis_cnx} = Redis->new(
                 server => $options{option_results}->{redis_server}, 
                 eval $self->{redis_attributes}
@@ -100,6 +102,10 @@ sub check_options {
                 $self->{redis_cnx}->select($options{option_results}->{redis_db});
             }
         };
+        if (!defined($self->{redis_cnx}) && !defined($options{option_results}->{failback_file})) {
+            $self->{output}->add_option_msg(short_msg => "redis connection issue: $@");
+            $self->{output}->option_exit();
+        }
     }
 
     $self->{statefile_dir} = $options{option_results}->{statefile_dir};
@@ -285,7 +291,7 @@ Memcached server to use (only one server).
 
 =item B<--redis-server>
 
-Redis server to use (only one server).
+Redis server to use (only one server). SYntax: address[:port]
 
 =item B<--redis-attribute>
 
@@ -294,6 +300,10 @@ Set Redis Options (--redis-attribute="cnx_timeout=5").
 =item B<--redis-db>
 
 Set Redis database index.
+
+=item B<--failback-file>
+
+Failback on a local file if redis connection failed.
 
 =item B<--memexpiration>
 
