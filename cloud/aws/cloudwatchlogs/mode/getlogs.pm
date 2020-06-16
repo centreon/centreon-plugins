@@ -109,6 +109,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    my $current_time = time();
     if (!defined($self->{start_time})) {
         $self->{statefile_cache}->read(
             statefile =>
@@ -117,7 +118,6 @@ sub manage_selection {
                 (defined($self->{stream_names}) ? md5_hex(join('-', @{$self->{stream_names}})) : md5_hex('all'))
         );
         $self->{start_time} = $self->{statefile_cache}->get(name => 'last_time');
-        my $current_time = time();
         $self->{statefile_cache}->write(data => { last_time => $current_time });
 
         if (!defined($self->{start_time})) {
