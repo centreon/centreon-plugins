@@ -173,12 +173,12 @@ Can used special variables like: %{status}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonRecoverable|non critical|other/i').
+Set warning threshold for status (Default: '%{status} =~ /non critical|other/i').
 Can used special variables like: %{status}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{status} =~ /^critical/i').
+Set critical threshold for status (Default: '%{status} =~ /^critical|nonRecoverable/i').
 Can used special variables like: %{status}
 
 =item B<--unknown-storage-status>
@@ -188,12 +188,12 @@ Can used special variables like: %{status}
 
 =item B<--warning-storage-status>
 
-Set warning threshold for status (Default: '%{status} =~ /nonRecoverable|non critical|other/i').
+Set warning threshold for status (Default: '%{status} =~ /non critical|other/i').
 Can used special variables like: %{status}
 
 =item B<--critical-storage-status>
 
-Set critical threshold for status (Default: '%{status} =~ /^critical/i').
+Set critical threshold for status (Default: '%{status} =~ /^critical|nonRecoverable/i').
 Can used special variables like: %{status}
 
 =back
