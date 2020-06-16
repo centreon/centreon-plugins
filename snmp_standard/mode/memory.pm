@@ -56,7 +56,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'ram', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{ram} = [
@@ -64,8 +64,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 }
+                    { label => 'used', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
                 ]
             }
         },
@@ -73,8 +72,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 }
+                    { label => 'free', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
                 ]
             }
         },
@@ -82,8 +80,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Ram Used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%' }
+                    { label => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -92,8 +89,7 @@ sub set_counters {
                 output_template => 'Buffer: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'buffer', value => 'memBuffer', template => '%d',
-                      min => 0, unit => 'B' }
+                    { label => 'buffer', template => '%d', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -102,8 +98,7 @@ sub set_counters {
                 output_template => 'Cached: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cached', value => 'memCached', template => '%d',
-                      min => 0, unit => 'B' }
+                    { label => 'cached', template => '%d', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -112,19 +107,17 @@ sub set_counters {
                 output_template => 'Shared: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'shared', value => 'memShared', template => '%d',
-                      min => 0, unit => 'B' }
+                    { label => 'shared', template => '%d', min => 0, unit => 'B' }
                 ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{swap} = [
         { label => 'swap', nlabel => 'swap.usage.bytes', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'swap', value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 }
+                    { label => 'swap', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
                 ]
             }
         },
@@ -132,7 +125,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'swap_free', value => 'free', template => '%d', min => 0, max => 'total',
+                    { label => 'swap_free', template => '%d', min => 0, max => 'total',
                       unit => 'B', cast_int => 1 }
                 ]
             }
@@ -141,8 +134,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Swap Used : %.2f %%',
                 perfdatas => [
-                    { label => 'swap_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%' }
+                    { label => 'swap_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         }
@@ -158,8 +150,8 @@ sub new {
         'units:s'           => { name => 'units', default => '%' },
         'free'              => { name => 'free' },
         'swap'              => { name => 'check_swap' },
-        'redhat'            => { name => 'redhat' },
-        'autodetect-redhat' => { name => 'autodetect_redhat' }
+        'redhat'            => { name => 'redhat' }, # for legacy (do nothing)
+        'autodetect-redhat' => { name => 'autodetect_redhat' } # for legacy (do nothing)
     });
 
     return $self;
@@ -185,7 +177,6 @@ sub check_options {
 }
 
 my $mapping = {
-    sysDescr     => { oid => '.1.3.6.1.2.1.1.1' },
     memTotalSwap => { oid => '.1.3.6.1.4.1.2021.4.3' },
     memAvailSwap => { oid => '.1.3.6.1.4.1.2021.4.4' },
     memTotalReal => { oid => '.1.3.6.1.4.1.2021.4.5' },
@@ -193,26 +184,8 @@ my $mapping = {
     memTotalFree => { oid => '.1.3.6.1.4.1.2021.4.11' },
     memShared    => { oid => '.1.3.6.1.4.1.2021.4.13' },
     memBuffer    => { oid => '.1.3.6.1.4.1.2021.4.14' },
-    memCached    => { oid => '.1.3.6.1.4.1.2021.4.15' },
+    memCached    => { oid => '.1.3.6.1.4.1.2021.4.15' }
 };
-
-sub autodetect_rhel7 {
-    my ($self, %options) = @_;
-
-    # https://access.redhat.com/articles/3078#RHEL7
-    # rhel 7.6: "Linux dev 3.10.0-957.10.1.el7.x86_64 #1 SMP Mon Mar 18 15:06:45 UTC 2019 x86_64"
-    # rhel 7.7: "Linux dev 3.10.0-1062.1.1.el7.x86_64 #1 SMP Fri Sep 13 22:55:44 UTC 2019 x86_64"
-    # oracle 7.6: "Linux dev 4.14.35-1844.3.2.el7uek.x86_64 #2 SMP Mon Feb 25 17:43:37 PST 2019 x86_64"
-    # oracle 7.7: "Linux dev 4.14.35-1902.6.6.el7uek.x86_64 #2 SMP Tue Oct 8 07:32:21 PDT 2019 x86_64 x86_64 x86_64"
-    return if (!defined($options{result}->{sysDescr})); 
-    if ($options{result}->{sysDescr} =~ /3\.10\.0-(\d+)\..*?el7\./) {
-        my $build = $1;
-        $self->{option_results}->{redhat} = 1 if ($build >= 1062);
-    } elsif ($options{result}->{sysDescr} =~ /4\.14\.35-(\d+)\..*?\.el7uek\./) {
-        my $build = $1;
-        $self->{option_results}->{redhat} = 1 if ($build >= 1902);
-    }
-}
 
 sub memory_calc {
     my ($self, %options) = @_;
@@ -224,63 +197,12 @@ sub memory_calc {
     my ($used, $free, $prct_used, $prct_free) = (0, 0, 0, 0);
 
     if ($total != 0) {
-        #### procps-ng-3.3.10-23
-        ## Mem:
-        ## total = MemTotal in /proc/meminfo
-        ## used = total - free - buffer - cache
-        ## free = MemFree in /proc/meminfo
-        ## shared = Shmem in /proc/meminfo
-        ## buffers = Buffers in /proc/meminfo
-        ## cache = Cached and Slab in /proc/meminfo
-        ## available = MemAvailable in /proc/meminfo
-        ## Swap:
-        ## total = SwapTotal in /proc/meminfo
-        ## used = total - free
-        ## free = SwapFree in /proc/meminfo
-        #### net-snmp-5.7.2-38
-        ## memTotalSwap = SwapTotal in /proc/meminfo
-        ## memAvailSwap = SwapFree in /proc/meminfo
-        ## memTotalReal = MemTotal in /proc/meminfo
-        ## memAvailReal = MemFree in /proc/meminfo
-        ## memTotalFree = memAvailSwap + memAvailReal
-        ## memShared = MemShared in /proc/meminfo
-        ## memBuffer = Buffers in /proc/meminfo
-        ## memCached = Cached in /proc/meminfo (missing Slab)
-
-        #### procps-ng-3.3.10-26
-        ## Mem:
-        ## total = MemTotal in /proc/meminfo
-        ## used = total - free - buffer - cache
-        ## free = MemFree in /proc/meminfo
-        ## shared = Shmem in /proc/meminfo
-        ## buffers = Buffers in /proc/meminfo
-        ## cache = Cached and SReclaimable in /proc/meminfo (https://gitlab.com/procps-ng/procps/commit/05d751c4f076a2f0118b914c5e51cfbb4762ad8e)
-        ## available = MemAvailable in /proc/meminfo
-        ## Swap:
-        ## total = SwapTotal in /proc/meminfo
-        ## used = total - free
-        ## free = SwapFree in /proc/meminfo
-        #### net-snmp-5.7.2-43
-        ## memTotalSwap = SwapTotal in /proc/meminfo
-        ## memAvailSwap = SwapFree in /proc/meminfo
-        ## memTotalReal = MemTotal in /proc/meminfo
-        ## memAvailReal = MemFree + Buffers + Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
-        ## memTotalFree = memAvailSwap + memAvailReal
-        ## memShared = MemShared in /proc/meminfo
-        ## memBuffer = Buffers in /proc/meminfo
-        ## memCached = Cached + SReclaimable in /proc/meminfo (https://bugzilla.redhat.com/attachment.cgi?id=1554747&action=diff)
-
-        $used = (defined($self->{option_results}->{redhat})) ? $total - $available : $total - $available - $buffer - $cached;
-        $free = (defined($self->{option_results}->{redhat})) ? $available : $total - $used;
-        # if the value is negative. maybe the autodetect failed.
-        if ($used < 0 && defined($self->{option_results}->{autodetect_redhat})) {
-            $used = $total - $available;
-            $free = $available;
-        }
+        $used = $total - $available - $buffer - $cached;
+        $free = $total - $used;
         $prct_used = $used * 100 / $total;
         $prct_free = 100 - $prct_used;
     }
-    
+
     $self->{ram} = {
         total => $total,
         used => $used,
@@ -289,7 +211,7 @@ sub memory_calc {
         prct_free => $prct_free,
         memShared => ($options{result}->{memShared}) ? $options{result}->{memShared} * 1024 : 0,
         memBuffer => $buffer,
-        memCached => $cached,
+        memCached => $cached
     };
 }
 
@@ -311,7 +233,7 @@ sub swap_calc {
         used => $used,
         free => $free,
         prct_used => $prct_used,
-        prct_free => $prct_free,
+        prct_free => $prct_free
     };
 }
 
@@ -319,11 +241,11 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $results = $options{snmp}->get_leef(
-        oids => [ map($_->{oid} . '.0', values(%$mapping)) ]
+        oids => [ map($_->{oid} . '.0', values(%$mapping)) ],
+        nothing_quit => 1
     );
     my $result = $options{snmp}->map_instance(mapping => $mapping, results => $results, instance => 0);
 
-    $self->autodetect_rhel7(result => $result) if (defined($self->{option_results}->{autodetect_redhat}));
     $self->memory_calc(result => $result);
     if (defined($self->{option_results}->{check_swap})) {
         $self->swap_calc(result => $result);
@@ -358,20 +280,6 @@ Thresholds.
 Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%), 
 'swap' (B), 'swap-free' (B), 'swap-prct' (%),
 'buffer' (B), 'cached' (B), 'shared' (B).
-
-=item B<--autodetect-redhat>
-
-Try to detect autodetect rhel 7.7 version and higher.
-
-=item B<--redhat>
-
-If using RedHat distribution with net-snmp >= 5.7.2-43.
-
-This version: used = memTotalReal - memAvailReal // free = memAvailReal
-
-Others versions: used = memTotalReal - memAvailReal - memBuffer - memCached // free = total - used
-
-(grep for '##' in this mode for more informations)
 
 =back
 
