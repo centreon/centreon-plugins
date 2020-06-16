@@ -40,7 +40,7 @@ sub set_system {
             ['enabledAndNotReady', 'WARNING'],
         ],
         'default.status' => [
-            ['other', 'UNKNOWN'],
+            ['other', 'WARNING'],
             ['unknown', 'UNKNOWN'],
             ['ok', 'OK'],
             ['nonCritical', 'WARNING'],
@@ -48,7 +48,7 @@ sub set_system {
             ['nonRecoverable', 'CRITICAL'],
         ],
         'probe.status' => [
-            ['other', 'UNKNOWN'],
+            ['other', 'WARNING'],
             ['unknown', 'UNKNOWN'],
             ['ok', 'OK'],
             ['nonCriticalUpper', 'WARNING'],
