@@ -49,6 +49,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global_roomanalytics', type => 0, skipped_code => { -10 => 1 } },
         { name => 'global_video_incoming', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
         { name => 'global_video_outgoing', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
         { name => 'global_audio_incoming', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
@@ -61,6 +62,17 @@ sub set_counters {
                 output_template => 'total calls finished: %d',
                 perfdatas => [
                     { value => 'new_calls', template => '%d', min => 0 },
+                ],
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{'global_roomanalytics'} = [
+        { label => 'peoplecount', nlabel => 'calls.roomanalytics.people.count', set => {
+                key_values => [ { name => 'peoplecount' } ],
+                output_template => 'people count: %s',
+                perfdatas => [
+                    { value => 'peoplecount', template => '%d', min => 0 },
                 ],
             }
         }
@@ -145,6 +157,7 @@ sub manage_selection {
     $self->{global_video_outgoing} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'video outgoing' };
     $self->{global_audio_incoming} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'audio incoming' };
     $self->{global_audio_outgoing} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'audio outgoing' };
+    $self->{global_roomanalytics} = { peoplecount => 0};
 
     return if (!defined($result->{CallHistoryGetResult}->{Entry}));
 
@@ -171,6 +184,10 @@ sub manage_selection {
                     $self->{'global_' . lc($type) . '_' . lc($direction)}->{pkts} += $2;
                 }
             }
+        }
+        $self->{'global_roomanalytics'}->{peoplecount} = $_->{RoomAnalytics}->{PeopleCount};
+        if ($_->{RoomAnalytics}->{PeopleCount} =~ /^N\/A$/) {
+            $self->{'global_roomanalytics'}->{peoplecount} = 0;
         }
     }
 
