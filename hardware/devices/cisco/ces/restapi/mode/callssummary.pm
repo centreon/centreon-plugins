@@ -53,7 +53,7 @@ sub set_counters {
         { name => 'global_video_incoming', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
         { name => 'global_video_outgoing', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
         { name => 'global_audio_incoming', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'global_audio_outgoing', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global_audio_outgoing', cb_prefix_output => 'prefix_global_output', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -61,8 +61,8 @@ sub set_counters {
                 key_values => [ { name => 'new_calls' } ],
                 output_template => 'total calls finished: %d',
                 perfdatas => [
-                    { value => 'new_calls', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         }
     ];
@@ -72,8 +72,8 @@ sub set_counters {
                 key_values => [ { name => 'peoplecount' } ],
                 output_template => 'people count: %s',
                 perfdatas => [
-                    { value => 'peoplecount', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         }
     ];
@@ -85,26 +85,26 @@ sub set_counters {
                         key_values => [ { name => 'loss' }, { name => 'pkts' }, { name => 'loss_prct' } ],
                         closure_custom_output => $self->can('custom_loss_output'),
                         perfdatas => [
-                            { value => 'loss', template => '%d', min => 0  },
-                        ],
+                            { template => '%d', min => 0  }
+                        ]
                     }
                 },
                 { label => 'packetloss-prct', nlabel => 'calls.' . $type . '.' . $direction . '.packetloss.percentage', display_ok => 0, set => {
                         key_values => [ { name => 'loss_prct' }, { name => 'loss' }, { name => 'pkts' } ],
                         closure_custom_output => $self->can('custom_loss_output'),
                         perfdatas => [
-                            { value => 'loss_prct', template => '%d', unit => '%', min => 0, max => 100 },
-                        ],
+                            { template => '%d', unit => '%', min => 0, max => 100 }
+                        ]
                     }
                 },
                 { label => 'maxjitter', nlabel => 'calls.' . $type . '.' . $direction . '.maxjitter.count', set => {
                         key_values => [ { name => 'maxjitter' } ],
                         output_template => 'max jitter: %s ms',
                         perfdatas => [
-                            { value => 'maxjitter', template => '%d', unit => 'ms', min => 0  },
-                        ],
+                            { template => '%d', unit => 'ms', min => 0  }
+                        ]
                     }
-                },
+                }
             ];
         }
     }
@@ -157,7 +157,7 @@ sub manage_selection {
     $self->{global_video_outgoing} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'video outgoing' };
     $self->{global_audio_incoming} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'audio incoming' };
     $self->{global_audio_outgoing} = { loss => 0, pkts => 0, loss_prct => 0, maxjitter => 0, label => 'audio outgoing' };
-    $self->{global_roomanalytics} = { peoplecount => 0};
+    $self->{global_roomanalytics} = { peoplecount => 0 };
 
     return if (!defined($result->{CallHistoryGetResult}->{Entry}));
 
@@ -185,9 +185,9 @@ sub manage_selection {
                 }
             }
         }
-        $self->{'global_roomanalytics'}->{peoplecount} = $_->{RoomAnalytics}->{PeopleCount};
+        $self->{global_roomanalytics}->{peoplecount} = $_->{RoomAnalytics}->{PeopleCount};
         if ($_->{RoomAnalytics}->{PeopleCount} =~ /^N\/A$/) {
-            $self->{'global_roomanalytics'}->{peoplecount} = 0;
+            $self->{global_roomanalytics}->{peoplecount} = 0;
         }
     }
 

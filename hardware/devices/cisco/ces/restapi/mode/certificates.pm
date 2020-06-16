@@ -39,7 +39,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'All certificates are ok', skipped_code => { -10 => 1 } },
+        { name => 'certificates', type => 1, cb_prefix_output => 'prefix_certificate_output', message_multiple => 'All certificates are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{certificates} = [
@@ -47,8 +47,8 @@ sub set_counters {
                 key_values => [ { name => 'validity_time' }, { name => 'generation_time' } ],
                 closure_custom_output => $self->can('custom_validity_output'),
                 perfdatas => [
-                    { value => 'validity_time', template => '%d', min => 0, unit => 's' },
-                ],
+                    { template => '%d', min => 0, unit => 's' }
+                ]
             }
         }
     ];
@@ -102,7 +102,7 @@ sub manage_selection {
             $self->{certificates}->{$_->{item}} = {
                 display => $_->{SubjectName},
                 validity_time => $end_date - time(),
-                generation_time => centreon::plugins::misc::change_seconds(value => $end_date - time()),
+                generation_time => centreon::plugins::misc::change_seconds(value => $end_date - time())
             };
         }
     }

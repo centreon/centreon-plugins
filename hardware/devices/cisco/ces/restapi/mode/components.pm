@@ -54,17 +54,17 @@ sub set_system {
             ['InProgress', 'OK'],
             ['InstallationFailed', 'CRITICAL'],
             ['Failed', 'CRITICAL'],
-            ['Succeeded', 'OK'],
+            ['Succeeded', 'OK']
         ],
         software_urgency => [
             ['Low', 'OK'],
             ['Medium', 'OK'],
-            ['Critical', 'CRITICAL'],
+            ['Critical', 'CRITICAL']
         ],
         signal_state => [
             ['OK', 'OK'],
             ['Unsupported', 'WARNING'],
-            ['Unknown', 'UNKNOWN'],
+            ['Unknown', 'UNKNOWN']
         ],
         format_status => [
             ['Ok', 'OK'],
@@ -72,24 +72,24 @@ sub set_system {
             ['NotFound', 'OK'],
             ['Error', 'CRITICAL'],
             ['Interlaced', 'OK'],
-            ['Unknown', 'UNKNOWN'],
+            ['Unknown', 'UNKNOWN']
         ],
         webex => [
             ['Disabled', 'OK'],
             ['Stopped', 'OK'],
             ['Error', 'CRITICAL'],
             ['Registered', 'OK'],
-            ['Registering', 'OK'],
+            ['Registering', 'OK']
         ],
         st_status => [
             ['Inactive', 'WARNING'],
-            ['Active', 'OK'],
+            ['Active', 'OK']
         ],
         st_availability => [
             ['Unavailable', 'WARNING'],
             ['Available', 'OK'],
-            ['Off', 'OK'],
-        ],
+            ['Off', 'OK']
+        ]
     };
 
     $self->{components_exec_load} = 0;
