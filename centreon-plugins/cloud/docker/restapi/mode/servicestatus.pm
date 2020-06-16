@@ -71,7 +71,7 @@ sub set_counters {
                     { name => 'node_name' }, { name => 'node_id' },
                     { name => 'desired_state' }, { name => 'state_message' },
                     { name => 'service_id' }, { name => 'container_id' },
-                    { name => 'state'}
+                    { name => 'state' }
                 ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
@@ -124,7 +124,7 @@ sub manage_selection {
         foreach my $task_id (keys %{$results->{$service_id}}) {
             if (defined($self->{option_results}->{filter_service_name}) && $self->{option_results}->{filter_service_name} ne '' &&
                 $results->{$service_id}->{$task_id}->{service_name} !~ /$self->{option_results}->{filter_service_name}/) {
-                $self->{output}->output_add(long_msg => "skipping service '" . $task_id->{service_name} . "': no matching filter type.", debug => 1);
+                $self->{output}->output_add(long_msg => "skipping service '" . $results->{$service_id}->{$task_id}->{service_name} . "': no matching filter type.", debug => 1);
                 next;
             }
 
