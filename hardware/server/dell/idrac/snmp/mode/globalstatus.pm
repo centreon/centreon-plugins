@@ -88,11 +88,11 @@ sub new {
     
     $options{options}->add_options(arguments => {
         "unknown-status:s"          => { name => 'unknown_status', default => '%{status} =~ /^unknown/i' },
-        "warning-status:s"          => { name => 'warning_status', default => '%{status} =~ /nonRecoverable|non critical|other/i' },
-        "critical-status:s"         => { name => 'critical_status', default => '%{status} =~ /^critical/i' },
+        "warning-status:s"          => { name => 'warning_status', default => '%{status} =~ /non critical|other/i' },
+        "critical-status:s"         => { name => 'critical_status', default => '%{status} =~ /^critical|nonRecoverable/i' },
         "unknown-storage-status:s"  => { name => 'unknown_storage_status', default => '%{status} =~ /^unknown/i' },
-        "warning-storage-status:s"  => { name => 'warning_storage_status', default => '%{status} =~ /nonRecoverable|non critical|other/i' },
-        "critical-storage-status:s" => { name => 'critical_storage_status', default => '%{status} =~ /^critical/i' },
+        "warning-storage-status:s"  => { name => 'warning_storage_status', default => '%{status} =~ /non critical|other/i' },
+        "critical-storage-status:s" => { name => 'critical_storage_status', default => '%{status} =~ /^critical|nonRecoverable/i' },
     });
 
     return $self;
