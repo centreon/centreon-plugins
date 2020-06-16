@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -37,8 +37,8 @@ sub set_counters {
                 key_values => [ { name => 'sessions' } ],
                 output_template => 'total current sessions: %d',
                 perfdatas => [
-                    { value => 'sessions', template => '%d', min => 0 },
-                ],
+                    { template => '%d', min => 0 }
+                ]
             }
         }
     ];

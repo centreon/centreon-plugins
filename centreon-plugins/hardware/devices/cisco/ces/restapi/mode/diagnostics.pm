@@ -63,9 +63,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -77,7 +77,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-msg:s'        => { name => 'filter_msg' },
         'warning-status:s'    => { name => 'warning_status', default => '%{level} =~ /warning|minor/i' },
-        'critical-status:s'   => { name => 'critical_status', default => '%{level} =~ /critical|major/i' },
+        'critical-status:s'   => { name => 'critical_status', default => '%{level} =~ /critical|major/i' }
     });
 
     return $self;

@@ -125,8 +125,8 @@ sub set_counters {
                 output_use => 'traffic_per_seconds',  threshold_use => 'traffic_per_seconds',
                 perfdatas => [
                     { value => 'traffic_per_seconds', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display'  },
-                ],
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display'  }
+                ]
             }
         },
         { label => 'channels-maxjitter', nlabel => 'call.channels.maxjitter.milliseconds', set => {
@@ -137,8 +137,8 @@ sub set_counters {
                 output_use => 'max_jitter',  threshold_use => 'max_jitter',
                 perfdatas => [
                     { value => 'max_jitter', template => '%d',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display'  },
-                ],
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display'  }
+                ]
             }
         },
         { label => 'channels-packetloss', nlabel => 'call.channels.packetloss.count', set => {
@@ -149,8 +149,8 @@ sub set_counters {
                 threshold_use => 'packets_loss',
                 perfdatas => [
                     { value => 'packets_loss', template => '%d',
-                      min => 0, label_extra_instance => 1, instance_use => 'display'  },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display'  }
+                ]
             }
         },
         { label => 'channels-packetloss-prct', nlabel => 'call.channels.packetloss.percentage', display_ok => 0, set => {
@@ -161,10 +161,10 @@ sub set_counters {
                 threshold_use => 'packets_loss_prct',
                 perfdatas => [
                     { value => 'packets_loss_prct', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display'  },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display'  }
+                ]
             }
-        },
+        }
     ];
 }
 
