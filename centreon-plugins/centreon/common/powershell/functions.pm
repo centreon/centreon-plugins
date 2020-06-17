@@ -39,9 +39,9 @@ function Escape-JSONString($str) {
 
 sub convert_to_json {
     my (%options) = @_;
-        
+
     my $ps = q{
-function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
+function ConvertTo-JSON-20($maxDepth = 4) {
     begin {
         $data = @()
     }
@@ -49,12 +49,8 @@ function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
         $data += $_
     }
     
-    end{    
-        if ($data.length -eq 1 -and $forceArray -eq $false) {
-            $value = $data[0]
-        } else {    
-            $value = $data
-        }
+    end{
+        $value = $data
 
         if ($value -eq $null) {
             return "null"

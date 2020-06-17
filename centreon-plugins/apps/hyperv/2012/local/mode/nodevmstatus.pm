@@ -27,22 +27,13 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::nodevmstatus;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use apps::hyperv::2012::local::mode::resources::types qw($node_vm_state);
+use JSON::XS;
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    my $msg = 'status : ' . $self->{result_values}->{status} . " (state: " . $self->{result_values}->{state} . ", is clustered: " . $self->{result_values}->{is_clustered} . ")";
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{is_clustered} = $options{new_datas}->{$self->{instance} . '_is_clustered'};
-    return 0;
+    return 'status: ' . $self->{result_values}->{status} . " (state: " . $self->{result_values}->{state} . ", is clustered: " . $self->{result_values}->{is_clustered} . ")";
 }
 
 sub set_counters {
@@ -54,12 +45,11 @@ sub set_counters {
     $self->{maps_counters}->{vm} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'vm' }, { name => 'state' }, { name => 'status' }, { name => 'is_clustered' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -85,7 +75,7 @@ sub new {
         'filter-vm:s'       => { name => 'filter_vm' },
         'filter-note:s'     => { name => 'filter_note' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /Operating normally/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{status} !~ /Operating normally/i' }
     });
 
     return $self;
@@ -130,28 +120,44 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
-    #[name= XXXX1 ][state= Running ][status= Operating normally ][IsClustered= True ][note= ]
-    #[name= XXXX2 ][state= Running ][status= Operating normally ][IsClustered= False ][note= ]
-    #[name= XXXX3 ][state= Running ][status= Operating normally ][IsClustered= False ][note= ]
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #   { "name": "XXXX1", "state": 2, "status": "Operating normally", "is_clustered": true, "note": null },
+    #   { "name": "XXXX2", "state": 2, "status": "Operating normally", "is_clustered": false, "note": null },
+    #   { "name": "XXXX3", "state": 2, "status": "Operating normally", "is_clustered": true, "note": null }
+    #]
     $self->{vm} = {};
 
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[IsClustered=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
+    foreach my $node (@$decoded) {
         my ($name, $state, $status, $is_clustered, $note) = ($1, $2, $3, $4, $5);
 
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
-            $name !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
+            $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
-            $note !~ /$self->{option_results}->{filter_note}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $note . "': no matching filter.", debug => 1);
+            defined($node->{note}) && $node->{note} !~ /$self->{option_results}->{filter_note}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{vm}->{$id} = { display => $name, vm => $name, status => $status, state => $state, is_clustered => $is_clustered };
+        $self->{vm}->{$id} = {
+            vm => $node->{name},
+            status => $node->{status},
+            state => $node_vm_state->{ $node->{state} },
+            is_clustered => $node->{is_clustered} =~ /True|1/i ? 1 : 0
+        };
         $id++;
     }
 

@@ -26,38 +26,31 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::scvmmvmstatus;
+use apps::hyperv::2012::local::mode::resources::types qw($scvmm_vm_status);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use JSON::XS;
 
 sub custom_status_output {
     my ($self, %options) = @_;
     
-    return 'status : ' . $self->{result_values}->{status};
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{hostgroup} = $options{new_datas}->{$self->{instance} . '_hostgroup'};
-    return 0;
+    return 'status: ' . $self->{result_values}->{status};
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' }
     ];
+
     $self->{maps_counters}->{vm} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'vm' }, { name => 'hostgroup' }, { name => 'status' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -88,7 +81,7 @@ sub new {
         'filter-description:s' => { name => 'filter_description' },
         'filter-hostgroup:s'   => { name => 'filter_hostgroup' },
         'warning-status:s'     => { name => 'warning_status', default => '' },
-        'critical-status:s'    => { name => 'critical_status', default => '%{status} !~ /Running|Stopped/i' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{status} !~ /Running|Stopped/i' }
     });
 
     return $self;
@@ -147,27 +140,44 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    #[name= test-server ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
-    #[name= test-server2 ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server2 ]
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #   { "name": "test-server", "description": "", "status": 0, "cloud": "", "host_group_path": "All Hosts\\\CORP\\\Test\\\test-server" },
+    #   { "name": "test-server2", "description": "", "status": 0, "cloud": "", "host_group_path": "All Hosts\\\CORP\\\Test\\\test-server2" }
+    #]
     $self->{vm} = {};
 
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[description=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
-        my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5);
-    
-        my $filtered = 0;
-        $values{hostgroup} =~ s/\\/\//g;
-        foreach (('vm', 'description', 'hostgroup')) {
-            if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
-                $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);
-                $filtered = 1;
-                last;
-            }
+    foreach my $node (@$decoded) {
+        if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
+            $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_description}) && $self->{option_results}->{filter_description} ne '' &&
+            $node->{description} !~ /$self->{option_results}->{filter_description}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{node} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_hostgroup}) && $self->{option_results}->{filter_hostgroup} ne '' &&
+            $node->{host_group_path} !~ /$self->{option_results}->{filter_hostgroup}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{node} . "': no matching filter.", debug => 1);
+            next;
         }
 
-        $self->{vm}->{$id} = { display => $values{vm}, vm => $values{vm}, status => $values{status}, hostgroup => $values{hostgroup} }
-            if ($filtered == 0);
+        $self->{vm}->{$id} = {
+            vm => $node->{name},
+            status => $scvmm_vm_status->{ $node->{status} },
+            hostgroup => $node->{host_group_path} 
+        };
         $id++;
     }
 

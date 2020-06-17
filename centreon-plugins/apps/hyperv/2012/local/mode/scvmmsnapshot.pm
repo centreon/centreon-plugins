@@ -26,27 +26,29 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::scvmmsnapshot;
+use apps::hyperv::2012::local::mode::resources::types qw($scvmm_vm_status);
+use JSON::XS;
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All VM snapshots are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All VM snapshots are ok' }
     ];
     $self->{maps_counters}->{vm} = [
         { label => 'snapshot', set => {
-                key_values => [ { name => 'snapshot' }, { name => 'display' }],
+                key_values => [ { name => 'snapshot' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_vm_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
 }
 
 sub custom_vm_output {
     my ($self, %options) = @_;
 
-    return 'checkpoint started since : ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot});
+    return 'checkpoint started since: ' . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot});
 }
 
 sub prefix_vm_output {
@@ -75,7 +77,7 @@ sub new {
         'filter-vm:s'          => { name => 'filter_vm' },
         'filter-description:s' => { name => 'filter_description' },
         'filter-hostgroup:s'   => { name => 'filter_hostgroup' },
-        'filter-status:s'      => { name => 'filter_status', default => 'running' },
+        'filter-status:s'      => { name => 'filter_status', default => 'running' }
     });
 
     return $self;
@@ -133,34 +135,54 @@ sub manage_selection {
         $self->{output}->exit();
     }
 
-    #[name= test-server ][description=  ][status= Running ][cloud=  ][hostgrouppath= All Hosts\CORP\Test\test-server ]
-    #[checkpointAddedTime= 1475502741.957 ]
-    #[checkpointAddedTime= 1475502963.21 ]
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #  {
+    #    "name": "test-server", "description": "", "status": 0, "cloud": "", "host_group_path": "All Hosts\\\CORP\\\Test\\\test-server",
+    #    "checkpoints": [
+    #       { "added_time": 1475502741.957 },
+    #       { "added_time": 1475502963.21 }
+    #    ]
+    #  }
+    #]
     $self->{vm} = {};
 
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[description=\s*(.*?)\s*\]\[status=\s*(.*?)\s*\]\[cloud=\s*(.*?)\s*\]\[hostgrouppath=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
-        my %values = (vm => $1, description => $2, status => $3, cloud => $4, hostgroup => $5);
-        my $content = $6;
+    foreach my $node (@$decoded) {
+        $node->{hostgroup} = $node->{host_group_path};
+        $node->{vm} = $node->{name};
+        $node->{status} = $scvmm_vm_status->{ $node->{status} };
 
         my $chkpt = -1;
-        while ($content =~ /\[checkpointAddedTime=\s*(.*?)\s*\]/msig) {
-            $chkpt = $1 if ($chkpt == -1 || $chkpt > $1);
+        foreach (@{$node->{checkpoints}}) {
+            $chkpt = $_->{added_time} if ($chkpt == -1 || $chkpt > $_->{added_time});
         }
         next if ($chkpt == -1);
 
         my $filtered = 0;
-        $values{hostgroup} =~ s/\\/\//g;
         foreach (('vm', 'description', 'status', 'hostgroup')) {
             if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
-                $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);
+                $node->{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $node->{$_} . "': no matching filter.", debug => 1);
                 $filtered = 1;
                 last;
             }
         }
 
-        $self->{vm}->{$id} = { display => $values{vm}, snapshot => time() - $chkpt }  if ($filtered == 0);
+        next if ($filtered == 1);
+
+        $self->{vm}->{$id} = {
+            display => $node->{name},
+            snapshot => time() - $chkpt
+        };
         $id++;
     }
 }

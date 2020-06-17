@@ -22,6 +22,7 @@ package centreon::common::powershell::hyperv::2012::scvmmintegrationservice;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -29,6 +30,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
@@ -42,21 +49,29 @@ Try {
     $connection = Get-VMMServer -ComputerName "' . $options{scvmm_hostname} . '" -TCPPort ' . $options{scvmm_port} . ' -Credential $UserCredential
     $vms = Get-SCVirtualMachine -VMMServer $connection
 
+    $items = New-Object System.Collections.Generic.List[Hashtable];
     Foreach ($vm in $vms) {
+        $item = @{}
+
         $desc = $vm.description -replace "\r",""
         $desc = $desc -replace "\n"," - "
-        Write-Host ("[VM={0}]" -f $vm.Name) -NoNewline
-        Write-Host ("[Description={0}]" -f $desc) -NoNewline
-        Write-Host ("[Status={0}]" -f $vm.Status) -NoNewline
-        Write-Host ("[Cloud={0}]" -f $vm.Cloud) -NoNewline
-        Write-Host ("[HostGroup={0}]" -f $vm.HostGroupPath) -NoNewline
-        Write-Host ("[VMAddition={0}]" -f $vm.VMAddition) -NoNewline
-        Write-Host ("[OperatingSystemShutdownEnabled={0}]" -f $vm.OperatingSystemShutdownEnabled) -NoNewline
-        Write-Host ("[TimeSynchronizationEnabled={0}]" -f $vm.TimeSynchronizationEnabled) -NoNewline
-        Write-Host ("[DataExchangeEnabled={0}]" -f $vm.DataExchangeEnabled) -NoNewline
-        Write-Host ("[HeartbeatEnabled={0}]" -f $vm.HeartbeatEnabled) -NoNewline
-        Write-Host ("[BackupEnabled={0}]" -f $vm.BackupEnabled)        
+        $item.name = $vm.Name
+        $item.status = $vm.Status.value__
+        $item.description = $desc
+        $item.cloud = $vm.Cloud
+        $item.host_group_path = $vm.HostGroupPath
+        $item.vm_addition = $vm.VMAddition
+        $item.operating_system_shutdown_enabled = $vm.OperatingSystemShutdownEnabled
+        $item.time_synchronization_enabled = $vm.TimeSynchronizationEnabled
+        $item.data_exchange_enabled = $vm.DataExchangeEnabled
+        $item.heartbeat_enabled = $vm.HeartbeatEnabled
+        $item.backup_enabled = $vm.BackupEnabled
+
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

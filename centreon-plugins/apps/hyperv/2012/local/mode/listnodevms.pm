@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::listnodevms;
+use apps::hyperv::2012::local::mode::resources::types qw($node_vm_state);
+use JSON::XS;
 
 sub new {
     my ($class, %options) = @_;
@@ -39,7 +41,7 @@ sub new {
         'command-options:s' => { name => 'command_options', default => '-InputFormat none -NoLogo -EncodedCommand' },
         'no-ps'             => { name => 'no_ps' },
         'ps-exec-only'      => { name => 'ps_exec_only' },
-        'ps-display'        => { name => 'ps_display' },
+        'ps-display'        => { name => 'ps_display' }
     });
 
     return $self;
@@ -48,6 +50,25 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::init(%options);
+}
+
+sub manage_selection {
+    my ($self, %options) = @_;
+
+    #[
+    #   { "name": "XXXX1", "state": 2, "status": "Operating normally", "is_clustered": true, "note": null },
+    #   { "name": "XXXX2", "state": 2, "status": "Operating normally", "is_clustered": false, "note": null },
+    #   { "name": "XXXX3", "state": 2, "status": "Operating normally", "is_clustered": true, "note": null }
+    #]
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($options{stdout});
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+    return $decoded;
 }
 
 sub run {
@@ -82,9 +103,20 @@ sub run {
     } else {
         $self->{output}->output_add(
             severity => 'OK',
-            short_msg => 'List Virtual Machines:'
+            short_msg => 'List virtual machines:'
         );
-        centreon::common::powershell::hyperv::2012::listnodevms::list($self, stdout => $stdout);
+
+        my $decoded = $self->manage_selection(stdout => $stdout);
+        foreach my $node (@$decoded) {
+            $self->{output}->output_add(
+                long_msg => sprintf(
+                    "'%s' [state = %s] [status = %s]",
+                    $node->{name},
+                    $node_vm_state->{ $node->{state} },
+                    $node->{status}
+                )
+            );
+        }
     }
 
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
@@ -112,7 +144,18 @@ sub disco_show {
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
     );
-    centreon::common::powershell::hyperv::2012::listnodevms::disco_show($self, stdout => $stdout);
+    
+    my $decoded = $self->manage_selection(stdout => $stdout);
+    
+    foreach my $node (@$decoded) {
+        $self->{output}->add_disco_entry(
+            name => $node->{name},
+            state => $node_vm_state->{ $node->{state} },
+            status => $node->{status},
+            is_clustered => $node->{is_clustered} =~ /True|1/i ? 1 : 0,
+            note => defined($node->{note}) ? $node->{note} : ''
+        );
+    }
 }
 
 1;

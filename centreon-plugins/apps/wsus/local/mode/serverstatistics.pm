@@ -40,74 +40,66 @@ sub set_counters {
                 key_values => [ { name => 'ComputerTargetCount' } ],
                 output_template => 'Computers: %d',
                 perfdatas => [
-                    { label => 'computers', value => 'ComputerTargetCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'computers', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'computer-groups', set => {
                 key_values => [ { name => 'CustomComputerTargetGroupCount' } ],
                 output_template => 'Computer Groups: %d',
                 perfdatas => [
-                    { label => 'computer_groups', value => 'CustomComputerTargetGroupCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'computer_groups', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'updates', set => {
                 key_values => [ { name => 'UpdateCount' } ],
                 output_template => 'Updates: %d',
                 perfdatas => [
-                    { label => 'updates', value => 'UpdateCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'updates', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'approved-updates', set => {
                 key_values => [ { name => 'ApprovedUpdateCount' } ],
                 output_template => 'Approved Updates: %d',
                 perfdatas => [
-                    { label => 'approved_updates', value => 'ApprovedUpdateCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'approved_updates', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'declined-updates', set => {
                 key_values => [ { name => 'DeclinedUpdateCount' } ],
                 output_template => 'Declined Updates: %d',
                 perfdatas => [
-                    { label => 'declined_updates', value => 'DeclinedUpdateCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'declined_updates', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'not-approved-updates', set => {
                 key_values => [ { name => 'NotApprovedUpdateCount' } ],
                 output_template => 'Not Approved Updates: %d',
                 perfdatas => [
-                    { label => 'not_approved_updates', value => 'NotApprovedUpdateCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'not_approved_updates', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'stale-updates', set => {
                 key_values => [ { name => 'UpdatesWithStaleUpdateApprovalsCount' } ],
                 output_template => 'Stale Updates: %d',
                 perfdatas => [
-                    { label => 'stale_updates', value => 'UpdatesWithStaleUpdateApprovalsCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'stale_updates', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'expired-updates', set => {
                 key_values => [ { name => 'ExpiredUpdateCount' } ],
                 output_template => 'Expired Updates: %d',
                 perfdatas => [
-                    { label => 'expired_updates', value => 'ExpiredUpdateCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'expired_updates', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -126,7 +118,7 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'wsus-server:s'     => { name => 'wsus_server', default => 'localhost' },
         'wsus-port:s'       => { name => 'wsus_port', default => 8530 },
-        'use-ssl'           => { name => 'use_ssl' },
+        'use-ssl'           => { name => 'use_ssl' }
     });
     
     return $self;

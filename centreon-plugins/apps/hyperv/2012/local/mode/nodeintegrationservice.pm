@@ -26,40 +26,20 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::nodeintegrationservice;
+use apps::hyperv::2012::local::mode::resources::types qw($node_vm_state $node_vm_integration_service_operational_status);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use JSON::XS;
 
 sub custom_service_status_output {
     my ($self, %options) = @_;
-    my $msg = 'status : ' . $self->{result_values}->{primary_status} . '/' . $self->{result_values}->{secondary_status};
 
-    return $msg;
-}
-
-sub custom_service_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{primary_status} = $options{new_datas}->{$self->{instance} . '_primary_status'};
-    $self->{result_values}->{secondary_status} = $options{new_datas}->{$self->{instance} . '_secondary_status'};
-    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
-    $self->{result_values}->{service} = $options{new_datas}->{$self->{instance} . '_service'};
-    return 0;
+    return 'status: ' . $self->{result_values}->{primary_status} . '/' . $self->{result_values}->{secondary_status};
 }
 
 sub custom_global_status_output {
     my ($self, %options) = @_;
-    my $msg = 'state/version : ' . $self->{result_values}->{integration_service_state} . '/' . $self->{result_values}->{integration_service_version};
 
-    return $msg;
-}
-
-sub custom_global_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{integration_service_state} = $options{new_datas}->{$self->{instance} . '_integration_service_state'};
-    $self->{result_values}->{integration_service_version} = $options{new_datas}->{$self->{instance} . '_integration_service_version'};
-    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    return 0;
+    return 'state/version: ' . $self->{result_values}->{integration_service_state} . '/' . $self->{result_values}->{integration_service_version};
 }
 
 sub set_counters {
@@ -74,36 +54,34 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'global-status', threshold => 0, set => {
                 key_values => [ { name => 'integration_service_state' }, { name => 'integration_service_version' }, { name => 'state' }, { name => 'vm' } ],
-                closure_custom_calc => $self->can('custom_global_status_calc'),
                 closure_custom_output => $self->can('custom_global_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{service} = [
         { label => 'service-status', threshold => 0, set => {
                 key_values => [ { name => 'primary_status' }, { name => 'secondary_status' }, { name => 'enabled' }, { name => 'vm' }, { name => 'service' } ],
-                closure_custom_calc => $self->can('custom_service_status_calc'),
                 closure_custom_output => $self->can('custom_service_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
 sub vm_long_output {
     my ($self, %options) = @_;
     
-    return "checking virtual machine '" . $options{instance_value}->{display} . "'";
+    return "checking virtual machine '" . $options{instance_value}->{vm} . "'";
 }
 
 sub prefix_vm_output {
     my ($self, %options) = @_;
     
-    return "VM '" . $options{instance_value}->{display} . "' ";
+    return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
 sub prefix_service_output {
@@ -137,7 +115,7 @@ sub new {
         'warning-global-status:s'   => { name => 'warning_global_status', default => '%{integration_service_state} =~ /Update required/i' },
         'critical-global-status:s'  => { name => 'critical_global_status', default => '' },
         'warning-service-status:s'  => { name => 'warning_service_status', default => '' },
-        'critical-service-status:s' => { name => 'critical_service_status', default => '%{primary_status} !~ /Ok/i' },
+        'critical-service-status:s' => { name => 'critical_service_status', default => '%{primary_status} !~ /Ok/i' }
     });
 
     return $self;
@@ -182,48 +160,84 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
-    #[name= test1 ][state= Running ][IntegrationServicesState= Update required ][IntegrationServicesVersion= 3.1 ][note= ]
-    #[service= Time Synchronization ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Heartbeat ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Key-Value Pair Exchange ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Shutdown ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= VSS ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Guest Service Interface ][enabled= False][primaryOperationalStatus= Ok ][secondaryOperationalStatus=  ]
-    #[name= test2 ][state= Running ][IntegrationServicesState=  ][IntegrationServicesVersion= ][note= ]
-    #[service= Time Synchronization ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Heartbeat ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Key-Value Pair Exchange ][enabled= True][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
-    #[service= Shutdown ][enabled= False][primaryOperationalStatus= NoContact ][secondaryOperationalStatus=  ]
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #   {
+    #     "name": "test1", "state": 2, "integration_services_state": "Update required", "integration_services_version": "3.1", "note": null,
+    #     "services": [
+    #         { "service": "Time Synchronization", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "Key-Value Pair Exchange", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "Shutdown", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "VSS", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "Guest Service Interface", "enabled": false, "primary_operational_status": 2, "secondary_operational_status": null }
+    #     ]
+    #   },
+    #   {
+    #     "name": "test2", "state": 2, "integration_services_state": null, "integration_services_version": null, "note": null,
+    #     "services": [
+    #         { "service": "Time Synchronization", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "Key-Value Pair Exchange", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "Shutdown", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "VSS", "enabled": true, "primary_operational_status": 12, "secondary_operational_status": null },
+    #         { "service": "Guest Service Interface", "enabled": false, "primary_operational_status": 2, "secondary_operational_status": null }
+    #     ]
+    #   }
+    #]
     $self->{vm} = {};
     
     my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[IntegrationServicesState=\s*(.*?)\s*\]\[IntegrationServicesVersion=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
-        my ($name, $status, $integration_service_state, $integration_service_version, $note, $content) = ($1, $2, $3, $4, $5, $6);
-
+    foreach my $node (@$decoded) {
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
-            $name !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
+            $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
-            $status !~ /$self->{option_results}->{filter_status}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $status . "': no matching filter.", debug => 1);
+            $node_vm_state->{ $node->{state} } !~ /$self->{option_results}->{filter_status}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
-            $note !~ /$self->{option_results}->{filter_note}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $note . "': no matching filter.", debug => 1);
+            defined($node->{note}) && $node->{note} !~ /$self->{option_results}->{filter_note}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
         
-        $self->{vm}->{$id} = { display => $name, vm => $name, service => {} };
-        $self->{vm}->{$id}->{global} = { 
-            $name => { vm => $name, integration_service_state => $integration_service_state, integration_service_version => $integration_service_version, state => $status } 
+        $self->{vm}->{$id} = {
+            vm => $node->{name},
+            service => {}
         };
+        $self->{vm}->{$id}->{global} = { 
+            $node->{name} => {
+                vm => $node->{name},
+                integration_service_state => defined($node->{integration_services_state}) ? $node->{integration_services_state} : '-',
+                integration_service_version => defined($node->{integration_services_version}) ? $node->{integration_services_version} : '-',
+                state => $node_vm_state->{ $node->{state} }
+            } 
+        };
+
         my $id2 = 1;
-        while ($content =~ /^\[service=\s*(.*?)\s*\]\[enabled=\s*(.*?)\s*\]\[primaryOperationalStatus=\s*(.*?)\s*\]\[secondaryOperationalStatus=\s*(.*?)\s*\]/msig) {
-            $self->{vm}->{$id}->{service}->{$id2} = { vm => $name, service => $1, enabled => $2, primary_status => $3, secondary_status => $4 };
+        foreach my $service (@{$node->{services}}) {
+            $self->{vm}->{$id}->{service}->{$id2} = {
+                vm => $node->{name},
+                service => $service->{service},
+                enabled => $service->{enabled} =~ /True|1/i ? 1 : 0,
+                primary_status => 
+                    defined($service->{primary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{primary_operational_status} }) ?
+                        $node_vm_integration_service_operational_status->{ $service->{primary_operational_status} } : '-',
+                secondary_status =>
+                    defined($service->{secondary_operational_status}) && defined($node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} }) ?
+                        $node_vm_integration_service_operational_status->{ $service->{secondary_operational_status} } : '-'
+            };
             $id2++;
         }
         

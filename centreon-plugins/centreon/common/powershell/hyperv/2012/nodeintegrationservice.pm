@@ -22,6 +22,7 @@ package centreon::common::powershell::hyperv::2012::nodeintegrationservice;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -29,20 +30,49 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
     $ErrorActionPreference = "Stop"
 
     $vms = Get-VM
+
+    $items = New-Object System.Collections.Generic.List[Hashtable];
     Foreach ($vm in $vms) {
+        $item = @{}
+
         $note = $vm.Notes -replace "\r",""
         $note = $note -replace "\n"," - "
-        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][IntegrationServicesState=" $vm.IntegrationServicesState "][IntegrationServicesVersion=" $vm.IntegrationServicesVersion "][note=" $note "]"
+
+        $item.name = $vm.VMName
+        $item.state = $vm.State.value__
+        $item.integration_services_state = $vm.IntegrationServicesState
+        $item.integration_services_version = $vm.IntegrationServicesVersion
+        $item.note = $note
+        
+        $services = New-Object System.Collections.Generic.List[Hashtable];
         Foreach ($service in $VM.VMIntegrationService) {
-            Write-Host "[service=" $service.Name "][enabled=" $service.Enabled "][primaryOperationalStatus=" $service.PrimaryOperationalStatus "][secondaryOperationalStatus=" $service.SecondaryOperationalStatus "]"
+            $service = @{}
+
+            $service.name = $service.Name
+            $service.enabled = $service.Enabled
+            $service.primary_operational_status = $service.PrimaryOperationalStatus.value__
+            $service.secondary_operational_status = $service.SecondaryOperationalStatus.value__
+            $services.Add($service)
         }
+
+        $item.services = $services
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

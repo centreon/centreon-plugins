@@ -32,55 +32,50 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_output' }
     ];
-    
+
     $self->{maps_counters}->{global} = [
         { label => 'with-client-errors', set => {
                 key_values => [ { name => 'UpdatesWithClientErrorsCount' } ],
                 output_template => 'With Client Errors: %d',
                 perfdatas => [
-                    { label => 'updates_with_client_errors', value => 'UpdatesWithClientErrorsCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'updates_with_client_errors', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'with-server-errors', set => {
                 key_values => [ { name => 'UpdatesWithServerErrorsCount' } ],
                 output_template => 'With Server Errors: %d',
                 perfdatas => [
-                    { label => 'updates_with_server_errors', value => 'UpdatesWithServerErrorsCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'updates_with_server_errors', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'needing-files', set => {
                 key_values => [ { name => 'UpdatesNeedingFilesCount' } ],
                 output_template => 'Needing Files: %d',
                 perfdatas => [
-                    { label => 'updates_needing_files_count', value => 'UpdatesNeedingFilesCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'updates_needing_files_count', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'needed-by-computers', set => {
                 key_values => [ { name => 'UpdatesNeededByComputersCount' } ],
                 output_template => 'Needed By Computers: %d',
                 perfdatas => [
-                    { label => 'updates_needed_by_computers', value => 'UpdatesNeededByComputersCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'updates_needed_by_computers', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'up-to-date', set => {
                 key_values => [ { name => 'UpdatesUpToDateCount' } ],
                 output_template => 'Up-to-date: %s',
                 perfdatas => [
-                    { label => 'updates_up_to_date', value => 'UpdatesUpToDateCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'updates_up_to_date', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
