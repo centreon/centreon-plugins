@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -34,8 +34,24 @@ sub custom_status_output {
         $self->{result_values}->{sync_status},
         $self->{result_values}->{hostname},
         $self->{result_values}->{role},
-        $self->{result_values}->{checksum},
+        $self->{result_values}->{checksum}
     );
+}
+
+sub custom_status_calc {
+    my ($self, %options) = @_;
+
+    $self->{result_values}->{roleLast} = $options{old_datas}->{$self->{instance} . '_role'};
+    $self->{result_values}->{role} = $options{new_datas}->{$self->{instance} . '_role'};
+    if (!defined($options{old_datas}->{$self->{instance} . '_role'})) {
+        $self->{error_msg} = "buffer creation";
+        return -2;
+    }
+
+    $self->{result_values}->{sync_status} = $options{new_datas}->{$self->{instance} . '_sync_status'};
+    $self->{result_values}->{hostname} = $options{new_datas}->{$self->{instance} . '_hostname'};
+    $self->{result_values}->{checksum} = $options{new_datas}->{$self->{instance} . '_checksum'};
+    return 0;
 }
 
 sub prefix_status_output {
@@ -55,7 +71,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' },
+        { name => 'nodes', type => 1, cb_prefix_output => 'prefix_status_output', message_multiple => 'All cluster nodes status are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -63,48 +79,45 @@ sub set_counters {
                 key_values => [ { name => 'total_nodes' } ],
                 output_template => 'Total nodes: %d',
                 perfdatas => [
-                    { label => 'total_nodes', value => 'total_nodes', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total_nodes', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'synchronized', set => {
                 key_values => [ { name => 'synchronized' } ],
                 output_template => 'Synchronized: %d',
                 perfdatas => [
-                    { label => 'synchronized_nodes', value => 'synchronized', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'synchronized_nodes', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'not-synchronized', set => {
                 key_values => [ { name => 'not_synchronized' } ],
                 output_template => 'Not Synchronized: %d',
                 perfdatas => [
-                    { label => 'not_synchronized_nodes', value => 'not_synchronized', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'not_synchronized_nodes', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'total-checksums', display_ok => 0, set => {
                 key_values => [ { name => 'total_checksums' } ],
                 output_template => 'Total Checksums: %d',
                 perfdatas => [
-                    { label => 'total_checksums', value => 'total_checksums', template => '%d', min => 0 },
-                ],
+                    { label => 'total_checksums', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{nodes} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'serial' }, { name => 'hostname' }, { name => 'sync_status' }, { name => 'role' }, { name => 'checksum' } ],
-                closure_custom_calc => \&catalog_status_calc,
+                closure_custom_calc => \&custom_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -115,7 +128,7 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{sync_status} =~ /not synchronized/' },
+        'critical-status:s' => { name => 'critical_status', default => '%{role} ne %{roleLast} or %{sync_status} =~ /not synchronized/' },
         'one-node-status:s' => { name => 'one_node_status' }, # not used, use --opt-exit instead
     });
 
@@ -129,22 +142,22 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-my %map_ha_mode = (
+my $map_ha_mode = {
     1 => 'standalone',
     2 => 'activeActive',
-    3 => 'activePassive',
-);
-my %map_sync_status = (
+    3 => 'activePassive'
+};
+my $map_sync_status = {
     0 => 'not synchronized',
-    1 => 'synchronized',
-);
+    1 => 'synchronized'
+};
 
 my $mapping = {
     fgHaStatsSerial         => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.2' },
     fgHaStatsHostname       => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.11' },
-    fgHaStatsSyncStatus     => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.12', map => \%map_sync_status },
+    fgHaStatsSyncStatus     => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.12', map => $map_sync_status },
     fgHaStatsGlobalChecksum => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.15' },
-    fgHaStatsMasterSerial   => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' },
+    fgHaStatsMasterSerial   => { oid => '.1.3.6.1.4.1.12356.101.13.2.1.1.16' }
 };
 my $oid_fgHaStatsEntry = '.1.3.6.1.4.1.12356.101.13.2.1.1';
 my $oid_fgHaSystemMode = '.1.3.6.1.4.1.12356.101.13.1.1.0';
@@ -154,12 +167,12 @@ sub manage_selection {
 
     my $mode = $options{snmp}->get_leef(oids => [ $oid_fgHaSystemMode ], nothing_quit => 1);
     
-    if ($map_ha_mode{$mode->{$oid_fgHaSystemMode}} =~ /standalone/) {
+    if ($map_ha_mode->{ $mode->{$oid_fgHaSystemMode} } =~ /standalone/) {
         $self->{output}->add_option_msg(short_msg => "No cluster configuration (standalone mode)");
         $self->{output}->option_exit();
     }
 
-    $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode{$mode->{$oid_fgHaSystemMode}});
+    $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode->{ $mode->{$oid_fgHaSystemMode} });
 
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_fgHaStatsEntry,
@@ -173,7 +186,7 @@ sub manage_selection {
     foreach my $oid (keys %$snmp_result) {
         next if ($oid !~ /^$mapping->{fgHaStatsSerial}->{oid}\.(.*)$/);
         my $instance = $1;
-        
+
         my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
 
         $checksums->{$result->{fgHaStatsGlobalChecksum}} = 1;
@@ -215,12 +228,12 @@ Can be: 'total-nodes', 'synchronized', 'not-synchronized',
 =item B<--warning-status>
 
 Set warning threshold for status (Default: '').
-Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}
+Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '%{sync_status} !~ /synchronized/').
-Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}
+Set critical threshold for status (Default: '%{role} ne %{roleLast} or %{sync_status} !~ /synchronized/').
+Can used special variables like: %{serial}, %{hostname}, %{sync_status}, %{role}, %{roleLast}
 
 =back
 
