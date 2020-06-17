@@ -26,6 +26,8 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::nodesnapshot;
+use apps::hyperv::2012::local::mode::resources::types qw($node_vm_state);
+use JSON::XS;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -53,19 +55,19 @@ sub set_counters {
 sub custom_snapshot_output {
     my ($self, %options) = @_;
 
-    return "[status = " . $self->{result_values}->{status} . "] checkpoint started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot}) . "' ago";
+    return "checkpoint started " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{snapshot}) . " ago";
 }
 
 sub custom_backing_output {
     my ($self, %options) = @_;
     
-    return "[status = " . $self->{result_values}->{status} . "] backing started '" . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing}) . "' ago";
+    return "backing started " . centreon::plugins::misc::change_seconds(value => $self->{result_values}->{backing}) . " ago";
 }
 
 sub prefix_vm_output {
     my ($self, %options) = @_;
-    
-    return "VM '" . $options{instance_value}->{display} . "' ";
+
+    return "VM '" . $options{instance_value}->{display} . "' [status = " . $options{instance_value}->{status} . '] ';
 }
 
 sub new {
@@ -112,7 +114,7 @@ sub manage_selection {
         command => $self->{option_results}->{command},
         command_path => $self->{option_results}->{command_path},
         command_options => $self->{option_results}->{command_options}
-    );
+   );
     if (defined($self->{option_results}->{ps_exec_only})) {
         $self->{output}->output_add(
             severity => 'OK',
@@ -121,44 +123,59 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
-    #[name= ISC1-SV04404 ][state= Running ][note= ]
-    #[checkpointCreationTime= 1475502921.28734 ][type= snapshot]
-    #[checkpointCreationTime= 1475503073.81975 ][type= backing]
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #  {
+    #     "name": "ISC1-SV04404", "state": 2, "note": null,
+    #     "checkpoints": [
+    #         { "creation_time": 1475502921.28734, "type": "snapshot" },
+    #         { "creation_time": 1475503073.81975, "type": "backing" }
+    #     ]
+    #  }
+    #]
     $self->{vm} = {};
-    
+
     my ($id, $time) = (1, time());
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[note=\s*(.*?)\s*\](.*?)(?=\[name=|\z)/msig) {
+    foreach my $node (@$decoded) {
         my ($name, $status, $note, $content) = ($1, $2, $3, $4);
-        my %chkpt = (backing => -1, snapshot => -1);
-        while ($content =~ /\[checkpointCreationTime=\s*(.*?)\s*\]\[type=\s*(.*?)\s*\]/msig) {
-            my ($timestamp, $type) = ($1, $2);
-            $timestamp =~ s/,/\./g;
-            $chkpt{$type} = $timestamp if ($timestamp > 0 && ($chkpt{$type} == -1 || $chkpt{$type} > $timestamp));
+
+        my $checkpoint = { backing => -1, snapshot => -1 };
+        foreach my $chkpt (@{$node->{checkpoints}}) {
+            $chkpt->{creation_time} =~ s/,/\./g;
+            $checkpoint->{ $chkpt->{type} } = $chkpt->{creation_time} if ($chkpt->{creation_time} > 0 && ($checkpoint->{ $chkpt->{type} } == -1 || $checkpoint->{ $chkpt->{type} } > $chkpt->{creation_time}));
         }
-        next if ($chkpt{backing} == -1 && $chkpt{snapshot} == -1);
+        next if ($checkpoint->{backing} == -1 && $checkpoint->{snapshot} == -1);
 
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
-            $name !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
+            $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
          if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
-            $note !~ /$self->{option_results}->{filter_note}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $note . "': no matching filter.", debug => 1);
+             defined($node->{note}) && $node->{note} !~ /$self->{option_results}->{filter_note}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
-            $status !~ /$self->{option_results}->{filter_status}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $status . "': no matching filter.", debug => 1);
+            $node_vm_state->{ $node->{state} } !~ /$self->{option_results}->{filter_status}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
         
         $self->{vm}->{$id} = {
-            display => $name,
-            snapshot => $chkpt{snapshot} > 0 ? $time - $chkpt{snapshot} : undef,
-            backing => $chkpt{backing} > 0 ? $time - $chkpt{backing} : undef,
-            status => $status
+            display => $node->{name},
+            snapshot => $checkpoint->{snapshot} > 0 ? $time - $checkpoint->{snapshot} : undef,
+            backing => $checkpoint->{backing} > 0 ? $time - $checkpoint->{backing} : undef,
+            status => $node_vm_state->{ $node->{state} }
         };
         $id++;
     }

@@ -26,45 +26,37 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::nodereplication;
+use apps::hyperv::2012::local::mode::resources::types qw($node_replication_state);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use JSON::XS;
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = 'replication health : ' . $self->{result_values}->{health};
-    return $msg;
-}
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    $self->{result_values}->{health} = $options{new_datas}->{$self->{instance} . '_health'};
-    return 0;
+    return 'replication health: ' . $self->{result_values}->{health};
 }
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' }
     ];
+
     $self->{maps_counters}->{vm} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'vm' }, { name => 'state' }, { name => 'health' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
 sub prefix_vm_output {
     my ($self, %options) = @_;
-    
+
     return "VM '" . $options{instance_value}->{vm} . "' ";
 }
 
@@ -83,7 +75,7 @@ sub new {
         'ps-display'        => { name => 'ps_display' },
         'filter-vm:s'       => { name => 'filter_vm' },
         'warning-status:s'  => { name => 'warning_status', default => '%{health} =~ /Warning/i' },
-        'critical-status:s' => { name => 'critical_status', default => '%{health} =~ /Critical/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{health} =~ /Critical/i' }
     });
 
     return $self;
@@ -128,23 +120,35 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
-    #[name= XXXX1 ][state= Running ][health= Critical ]
-    #[name= XXXX2 ][state= Running ][health= Normal ]
-    #[name= XXXX3 ][state= Running ][health= Warning ]
-    $self->{vm} = {};
-    
-    my $id = 1;
-    while ($stdout =~ /^\[name=\s*(.*?)\s*\]\[state=\s*(.*?)\s*\]\[health=\s*(.*?)\s*\].*?(?=\[name=|\z)/msig) {
-        my ($name, $status, $health) = ($1, $2, $3);
 
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #  { "name": "XXXX1", "state": "Replicating", "health": "Critical" },
+    #  { "name": "XXXX2", "state": "Replicating", "health": "Normal" },
+    #  { "name": "XXXX3", "state": "Replicating", "health": "Warning" }
+    #]
+    $self->{vm} = {};
+    my $id = 1;
+    foreach my $node (@$decoded) {
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $name !~ /$self->{option_results}->{filter_vm}/i) {
             $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-        
-        $self->{vm}->{$id} = { display => $name, vm => $name, state => $status, health => $health };
+
+        $self->{vm}->{$id} = {
+            vm => $node->{name},
+            state => $node_replication_state->{ $node->{state} },
+            health => $node->{health}
+        };
         $id++;
     }
 }

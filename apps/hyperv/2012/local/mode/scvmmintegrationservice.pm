@@ -26,34 +26,34 @@ use strict;
 use warnings;
 use centreon::plugins::misc;
 use centreon::common::powershell::hyperv::2012::scvmmintegrationservice;
+use apps::hyperv::2012::local::mode::resources::types qw($scvmm_vm_status);
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use JSON::XS;
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    
-    my $msg = 'VMAddition : ' . $self->{result_values}->{vmaddition};
-    return $msg;
+
+    return 'VMAddition: ' . $self->{result_values}->{vmaddition};
 }
 
 sub custom_status_calc {
     my ($self, %options) = @_;
-    
+
     $self->{result_values}->{vm} = $options{new_datas}->{$self->{instance} . '_vm'};
     $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{vmaddition} = $options{new_datas}->{$self->{instance} . '_vmaddition'};
-    $self->{result_values}->{operatingsystemshutdownenabled} = $options{new_datas}->{$self->{instance} . '_operatingsystemshutdownenabled'};
-    $self->{result_values}->{timesynchronizationenabled} = $options{new_datas}->{$self->{instance} . '_timesynchronizationenabled'};
-    $self->{result_values}->{dataexchangeenabled} = $options{new_datas}->{$self->{instance} . '_dataexchangeenabled'};
-    $self->{result_values}->{heartbeatenabled} = $options{new_datas}->{$self->{instance} . '_heartbeatenabled'};
-    $self->{result_values}->{backupenabled} = $options{new_datas}->{$self->{instance} . '_backupenabled'};
+    $self->{result_values}->{vmaddition} = $options{new_datas}->{$self->{instance} . '_vm_addition'};
+    $self->{result_values}->{operatingsystemshutdownenabled} = $options{new_datas}->{$self->{instance} . '_operating_system_shutdown_enabled'};
+    $self->{result_values}->{timesynchronizationenabled} = $options{new_datas}->{$self->{instance} . '_time_synchronization_enabled'};
+    $self->{result_values}->{dataexchangeenabled} = $options{new_datas}->{$self->{instance} . '_data_exchange_enabled'};
+    $self->{result_values}->{heartbeatenabled} = $options{new_datas}->{$self->{instance} . '_heartbeat_enabled'};
+    $self->{result_values}->{backupenabled} = $options{new_datas}->{$self->{instance} . '_backup_enabled'};
     return 0;
 }
 
 sub custom_integrationservice_output {
     my ($self, %options) = @_;
-    my $msg = $self->{result_values}->{output_label} . ' : ' . $self->{result_values}->{service_status};
 
-    return $msg;
+    return $self->{result_values}->{output_label} . ': ' . $self->{result_values}->{service_status};
 }
 
 sub custom_integrationservice_calc {
@@ -70,64 +70,65 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All integration services are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All integration services are ok' }
     ];
+
     $self->{maps_counters}->{vm} = [
-        { label => 'status', , threshold => 0, set => {
-                key_values => [ { name => 'vm' }, { name => 'status' }, { name => 'vmaddition' }, 
-                    { name => 'operatingsystemshutdownenabled' }, { name => 'timesynchronizationenabled' }, 
-                    { name => 'dataexchangeenabled' }, { name => 'heartbeatenabled' }, { name => 'backupenabled' } ],
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'vm' }, { name => 'status' }, { name => 'vm_addition' }, 
+                    { name => 'operating_system_shutdown_enabled' }, { name => 'time_synchronization_enabled' }, 
+                    { name => 'data_exchange_enabled' }, { name => 'heartbeat_enabled' }, { name => 'backup_enabled' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'osshutdown-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'operatingsystemshutdownenabled' } ],
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'operating_system_shutdown_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
-                closure_custom_calc_extra_options => { output_label => 'Operating System Shutdown', name_status => 'operatingsystemshutdownenabled' },
+                closure_custom_calc_extra_options => { output_label => 'operating system shutdown', name_status => 'operating_system_shutdown_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'timesync-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'timesynchronizationenabled' } ],
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'time_synchronization_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
-                closure_custom_calc_extra_options => { output_label => 'Time Synchronization', name_status => 'timesynchronizationenabled' },
+                closure_custom_calc_extra_options => { output_label => 'time synchronization', name_status => 'time_synchronization_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'dataexchange-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'dataexchangeenabled' } ],
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'data_exchange_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
-                closure_custom_calc_extra_options => { output_label => 'Data Exchange', name_status => 'dataexchangeenabled' },
+                closure_custom_calc_extra_options => { output_label => 'data exchange', name_status => 'data_exchange_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'heartbeat-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'heartbeatenabled' } ],
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'heartbeat_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
-                closure_custom_calc_extra_options => { output_label => 'Heartbeat', name_status => 'heartbeatenabled' },
+                closure_custom_calc_extra_options => { output_label => 'heartbeat', name_status => 'heartbeat_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'backup-status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'backupenabled' } ],
+                key_values => [ { name => 'status' }, { name => 'vm' }, { name => 'backup_enabled' } ],
                 closure_custom_calc => $self->can('custom_integrationservice_calc'),
-                closure_custom_calc_extra_options => { output_label => 'Backup', name_status => 'backupenabled' },
+                closure_custom_calc_extra_options => { output_label => 'backup', name_status => 'backup_enabled' },
                 closure_custom_output => $self->can('custom_integrationservice_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -169,7 +170,7 @@ sub new {
         'warning-heartbeat-status:s'      => { name => 'warning_heartbeat_status', default => '' },
         'critical-heartbeat-status:s'     => { name => 'critical_heartbeat_status', default => '' },
         'warning-backup-status:s'         => { name => 'warning_backup_status', default => '' },
-        'critical-backup-status:s'        => { name => 'critical_backup_status', default => '' },
+        'critical-backup-status:s'        => { name => 'critical_backup_status', default => '' }
     });
 
     return $self;
@@ -186,7 +187,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Need to specify --" . $label_opt . " option.");
             $self->{output}->option_exit();
         }
-    }    
+    }
 
     $self->change_macros(macros => [
         'warning_status', 'critical_status', 'warning_osshutdown_status', 'critical_osshutdown_status',
@@ -232,33 +233,54 @@ sub manage_selection {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
         $self->{output}->exit();
     }
-    
-    #[VM= test1 ][Description= Test Descr -  - pp -  - aa ][Status= Running ][Cloud=  ][HostGroup= All Hosts\CORP\test1 ][VMAddition= 6.3.9600.16384 ]
-    #[VM= test2 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test2 ][VMAddition= Not Detected ]
-    #[VM= test3 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test3 ][VMAddition= Not Detected ]
-    #[VM= test4 ][Description=  ][Status= HostNotResponding ][Cloud=  ][HostGroup= All Hosts\CORP\test4 ][VMAddition= Not Detected ]
+
+    my $decoded;
+    eval {
+        $decoded = JSON::XS->new->utf8->decode($stdout);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
+        $self->{output}->option_exit();
+    }
+
+    #[
+    #   { "name": "test1", "description": "Test Descr -  - pp -  - aa", "status": 0, "cloud": "", "host_group_path": "All Hosts\\\CORP\\\test1", "vm_addition": "6.3.9600.16384" },
+    #   {
+    #      "name": "test2", "description": "", "status": 0, "cloud": "", "host_group_path": "All Hosts\\\CORP\\\test2", "vm_addition": "Not Detected",
+    #      "operating_system_shutdown_enabled": true,
+    #      "time_synchronization_enabled": false,
+    #      "data_exchange_enabled": true,
+    #      "heartbeat_enabled": false,
+    #      "backup_enabled": true
+    #   }
+    #]
     $self->{vm} = {};
 
     my $id = 1;
-    my @lines = split /\n/, $stdout;
-    foreach my $line (@lines) {
-        my %values;
-        while ($line =~ /\[(.*?)=\s*(.*?)\s*\]/g) {
-            $values{lc($1)} = $2;
+    foreach my $node (@$decoded) {
+        $node->{hostgroup} = $node->{host_group_path};
+        $node->{vm} = $node->{name};
+        $node->{status} = $scvmm_vm_status->{ $node->{status} };
+
+        foreach (('operating_system_shutdown_enabled', 'time_synchronization_enabled', 'data_exchange_enabled', 'heartbeat_enabled', 'backup_enabled')) {
+            $node->{$_} = ($node->{$_} =~ /True|1/i ? 1 : 0) if (defined($node->{$_}));
         }
 
-        $values{hostgroup} =~ s/\\/\//g;
         my $filtered = 0;
         foreach (('vm', 'description', 'status', 'hostgroup')) {
             if (defined($self->{option_results}->{'filter_' . $_}) && $self->{option_results}->{'filter_' . $_} ne '' &&
-                $values{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
-                $self->{output}->output_add(long_msg => "skipping  '" . $values{$_} . "': no matching filter.", debug => 1);
+                $node->{$_} !~ /$self->{option_results}->{'filter_' . $_}/i) {
+                $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
                 $filtered = 1;
                 last;
             }
         }
 
-        $self->{vm}->{$id} = { %values } if ($filtered == 0);
+        next if ($filtered == 1);
+
+        $self->{vm}->{$id} = {
+            %$node
+        };
         $id++;
     }
 }

@@ -57,7 +57,7 @@ Try {
         $items.Add($item)
     }
 
-    $jsonString = $items | ConvertTo-JSON-20 -forceArray 1
+    $jsonString = $items | ConvertTo-JSON-20
     Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception

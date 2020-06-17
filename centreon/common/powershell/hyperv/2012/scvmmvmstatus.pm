@@ -22,6 +22,7 @@ package centreon::common::powershell::hyperv::2012::scvmmvmstatus;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -29,6 +30,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
@@ -42,11 +49,22 @@ Try {
     $connection = Get-VMMServer -ComputerName "' . $options{scvmm_hostname} . '" -TCPPort ' . $options{scvmm_port} . ' -Credential $UserCredential
     $vms = Get-SCVirtualMachine -VMMServer $connection
 
+    $items = New-Object System.Collections.Generic.List[Hashtable];
     Foreach ($vm in $vms) {
+        $item = @{}
+
         $desc = $vm.description -replace "\r",""
         $desc = $desc -replace "\n"," - "
-        Write-Host "[name=" $vm.Name "][description=" $desc "][status=" $vm.Status "][cloud=" $vm.Cloud "][hostgrouppath=" $vm.HostGroupPath "]"
+        $item.name = $vm.Name
+        $item.description = $desc
+        $item.status = $vm.Status.value__
+        $item.cloud = $vm.Cloud
+        $item.host_group_path = $vm.HostGroupPath
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

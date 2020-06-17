@@ -22,6 +22,7 @@ package centreon::common::powershell::hyperv::2012::nodesnapshot;
 
 use strict;
 use warnings;
+use centreon::common::powershell::functions;
 
 sub get_powershell {
     my (%options) = @_;
@@ -29,6 +30,12 @@ sub get_powershell {
     my $ps = '
 $culture = new-object "System.Globalization.CultureInfo" "en-us"    
 [System.Threading.Thread]::CurrentThread.CurrentUICulture = $culture
+';
+
+    $ps .= centreon::common::powershell::functions::escape_jsonstring(%options);
+    $ps .= centreon::common::powershell::functions::convert_to_json(%options);
+
+    $ps .= '
 $ProgressPreference = "SilentlyContinue"
 
 Try {
@@ -37,18 +44,24 @@ Try {
     if ($vms.Length -gt 0) {
         $snapshots = Get-VMSnapshot -VMName *
     }
-    
+
+    $items = New-Object System.Collections.Generic.List[Hashtable];
     Foreach ($vm in $vms) {
-        $i=0
+        $item = @{}
+
         $note = $vm.Notes -replace "\r",""
         $note = $note -replace "\n"," - "
+        $item.note = $note
+        $item.name = $vm.VMName
+        $item.state = $vm.State.value__
+
+        $checkpoints = New-Object System.Collections.Generic.List[Hashtable];
         Foreach ($snap in $snapshots) {
             if ($snap.VMName -eq $vm.VMName) {
-                if ($i -eq 0) {
-                    Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
-                }
-                Write-Host "[checkpointCreationTime=" (get-date -date $snap.CreationTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "][type= snapshot]"
-                $i=1
+                $checkpoint = @{}
+                $checkpoint.type = "snapshot"
+                $checkpoint.creation_time = (get-date -date $snap.CreationTime.ToUniversalTime() -UFormat ' . "'%s'" . ')
+                $checkpoints.Add($checkpoint)
             }
         }
         if ($vm.status -imatch "Backing") {
@@ -56,16 +69,21 @@ Try {
             Foreach ($VMDisk in $VMDisks) {
                 $VHD = Get-VHD $VMDisk.Path
                 if ($VHD.Path -imatch ".avhdx" -or $VHD.VhdType -imatch "Differencing") {
+                    $checkpoint = @{}
                     $parent = Get-Item $VHD.ParentPath
-                    if ($i -eq 0) {
-                        Write-Host "[name=" $vm.VMName "][state=" $vm.State "][note=" $note "]"
-                    }
-                    Write-Host "[checkpointCreationTime=" (get-date -date $parent.LastWriteTime.ToUniversalTime() -UFormat ' . "'%s'" . ') "][type= backing]"
-                    $i=1
+                    $checkpoint.type = "backing"
+                    $checkpoint.creation_time = (get-date -date $parent.LastWriteTime.ToUniversalTime() -UFormat ' . "'%s'" . ')
+                    $checkpoints.Add($checkpoint)
                 }
             }
         }
+
+        $item.checkpoints = $checkpoints
+        $items.Add($item)
     }
+
+    $jsonString = $items | ConvertTo-JSON-20
+    Write-Host $jsonString
 } Catch {
     Write-Host $Error[0].Exception
     exit 1

@@ -40,47 +40,42 @@ sub set_counters {
                 key_values => [ { name => 'ComputersUpToDateCount' } ],
                 output_template => 'Up-to-date: %d',
                 perfdatas => [
-                    { label => 'computers_up_to_date', value => 'ComputersUpToDateCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'computers_up_to_date', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'needing-updates', set => {
                 key_values => [ { name => 'ComputerTargetsNeedingUpdatesCount' } ],
                 output_template => 'Needing Updates: %d',
                 perfdatas => [
-                    { label => 'computers_needing_updates', value => 'ComputerTargetsNeedingUpdatesCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'computers_needing_updates', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'with-update-errors', set => {
                 key_values => [ { name => 'ComputerTargetsWithUpdateErrorsCount' } ],
                 output_template => 'With Update Errors: %d',
                 perfdatas => [
-                    { label => 'computers_with_update_errors', value => 'ComputerTargetsWithUpdateErrorsCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'computers_with_update_errors', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'not-contacted', set => {
                 key_values => [ { name => 'ComputersNotContactedSinceCount' } ],
                 output_template => 'Not Contacted: %d',
                 perfdatas => [
-                    { label => 'computers_not_contacted', value => 'ComputersNotContactedSinceCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'computers_not_contacted', template => '%d', min => 0 }
+                ]
             }
         },
         { label => 'unassigned', set => {
                 key_values => [ { name => 'UnassignedComputersCount' } ],
                 output_template => 'Unassigned: %s',
                 perfdatas => [
-                    { label => 'computers_unassigned', value => 'UnassignedComputersCount',
-                      template => '%d', min => 0 },
-                ],
+                    { label => 'computers_unassigned', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -106,7 +101,7 @@ sub new {
         'wsus-server:s'       => { name => 'wsus_server', default => 'localhost' },
         'wsus-port:s'         => { name => 'wsus_port', default => 8530 },
         'not-updated-since:s' => { name => 'not_updated_since', default => 10 },
-        'use-ssl'             => { name => 'use_ssl' },
+        'use-ssl'             => { name => 'use_ssl' }
     });
 
     return $self;
