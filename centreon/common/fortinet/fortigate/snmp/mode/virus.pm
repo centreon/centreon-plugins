@@ -39,8 +39,8 @@ sub set_counters {
                 output_template => 'virus detected: %s',
                 perfdatas => [
                     { label => 'virus_detected', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'virus-detected-psec', nlabel => 'domain.virus.detected.persecond', display_ok => 0, set => {
@@ -48,8 +48,8 @@ sub set_counters {
                 output_template => 'virus detected: %.2f/s',
                 perfdatas => [
                     { label => 'domain.virus.detected.persecond', template => '%.2f',
-                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'virus-blocked', nlabel => 'domain.virus.blocked.count', set => {
@@ -57,8 +57,8 @@ sub set_counters {
                 output_template => 'virus blocked: %s',
                 perfdatas => [
                     { label => 'virus_blocked', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'virus-blocked-psec', nlabel => 'domain.virus.blocked.persecond', display_ok => 0, set => {
@@ -66,8 +66,8 @@ sub set_counters {
                 output_template => 'virus blocked: %.2f/s',
                 perfdatas => [
                     { label => 'domain.virus.blocked.persecond', template => '%.2f',
-                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         }
     ];
@@ -85,7 +85,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -104,7 +104,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
             { oid => $oid_fgVdEntName },
-            { oid => $oid_fgAvStatsEntry, end => $mapping->{fgAvVirusBlocked}->{oid} },
+            { oid => $oid_fgAvStatsEntry, end => $mapping->{fgAvVirusBlocked}->{oid} }
         ],
         nothing_quit => 1
     );
