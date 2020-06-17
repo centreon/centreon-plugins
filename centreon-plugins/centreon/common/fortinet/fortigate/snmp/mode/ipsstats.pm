@@ -38,83 +38,83 @@ sub set_counters {
                 key_values => [ { name => 'fgIpsIntrusionsDetected', diff => 1 }, { name => 'display' } ],
                 output_template => 'Intrusions detected : %s',
                 perfdatas => [
-                    { label => 'intrusions_detected', value => 'fgIpsIntrusionsDetected', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'intrusions_detected', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'intrusions-blocked', nlabel => 'domain.intrusions.blocked.count', set => {
                 key_values => [ { name => 'fgIpsIntrusionsBlocked', diff => 1 }, { name => 'display' } ],
                 output_template => 'Intrusions blocked : %s',
                 perfdatas => [
-                    { label => 'intrusions_blocked', value => 'fgIpsIntrusionsBlocked', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'intrusions_blocked', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'crit-sev-detections', nlabel => 'domain.intrusions.detected.critical.severity.count', set => {
                 key_values => [ { name => 'fgIpsCritSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Critical severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'crit_sev_detections', value => 'fgIpsCritSevDetections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'crit_sev_detections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'high-sev-detections', nlabel => 'domain.intrusions.detected.high.severity.count', set => {
                 key_values => [ { name => 'fgIpsHighSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'High severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'high_sev_detections', value => 'fgIpsHighSevDetections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'high_sev_detections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'med-sev-detections', nlabel => 'domain.intrusions.detected.medium.severity.count', set => {
                 key_values => [ { name => 'fgIpsMedSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Medium severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'med_sev_detections', value => 'fgIpsMedSevDetections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'med_sev_detections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'low-sev-detections', nlabel => 'domain.intrusions.detected.low.severity.count', set => {
                 key_values => [ { name => 'fgIpsLowSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Low severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'low_sev_detections', value => 'fgIpsLowSevDetections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'low_sev_detections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'info-sev-detections', nlabel => 'domain.intrusions.detected.info.severity.count', set => {
                 key_values => [ { name => 'fgIpsInfoSevDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Informational severity intrusions detected : %s',
                 perfdatas => [
-                    { label => 'info_sev_detections', value => 'fgIpsInfoSevDetections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'info_sev_detections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'signature-detections', nlabel => 'domain.intrusions.detected.signature.count', set => {
                 key_values => [ { name => 'fgIpsSignatureDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Signature intrusions detected : %s',
                 perfdatas => [
-                    { label => 'signature_detection', value => 'fgIpsSignatureDetections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'signature_detection', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'anomaly-detections', nlabel => 'domain.intrusions.detected.anomaly.count', set => {
                 key_values => [ { name => 'fgIpsAnomalyDetections', diff => 1 }, { name => 'display' } ],
                 output_template => 'Anomaly intrusions detected : %s',
                 perfdatas => [
-                    { label => 'anomaly_detections', value => 'fgIpsAnomalyDetections', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'anomaly_detections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -130,7 +130,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s' => { name => 'filter_name' },
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -145,7 +145,7 @@ my $mapping = {
     fgIpsLowSevDetections         => { oid => '.1.3.6.1.4.1.12356.101.9.2.1.1.6' },
     fgIpsInfoSevDetections        => { oid => '.1.3.6.1.4.1.12356.101.9.2.1.1.7' },
     fgIpsSignatureDetections      => { oid => '.1.3.6.1.4.1.12356.101.9.2.1.1.8' },
-    fgIpsAnomalyDetections        => { oid => '.1.3.6.1.4.1.12356.101.9.2.1.1.9' },
+    fgIpsAnomalyDetections        => { oid => '.1.3.6.1.4.1.12356.101.9.2.1.1.9' }
 };
 my $oid_fgIpsStatsEntry = '.1.3.6.1.4.1.12356.101.9.2.1.1';
 my $oid_fgVdEntName     = '.1.3.6.1.4.1.12356.101.3.2.1.1.2';
@@ -155,8 +155,8 @@ sub manage_selection {
 
     my $snmp_result = $options{snmp}->get_multiple_table(
         oids => [
-            { oid => $oid_fgVdEntName},
-            { oid => $oid_fgIpsStatsEntry},
+            { oid => $oid_fgVdEntName },
+            { oid => $oid_fgIpsStatsEntry }
         ],
         nothing_quit => 1
     );
@@ -176,7 +176,7 @@ sub manage_selection {
         $self->{domain}->{$instance} = $result;
         $self->{domain}->{$instance}->{display} = $snmp_result->{$oid_fgVdEntName}->{$oid};
     }
-    
+
     if (scalar(keys %{$self->{domain}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No domain found.");
         $self->{output}->option_exit();

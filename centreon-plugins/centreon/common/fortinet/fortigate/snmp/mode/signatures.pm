@@ -33,7 +33,7 @@ sub set_counters {
         { name => 'av', type => 0, cb_prefix_output => 'prefix_av_output' },
         { name => 'avet', type => 0, cb_prefix_output => 'prefix_avet_output' },
         { name => 'ips', type => 0, cb_prefix_output => 'prefix_ips_output' },
-        { name => 'ipset', type => 0, cb_prefix_output => 'prefix_ipset_output' },
+        { name => 'ipset', type => 0, cb_prefix_output => 'prefix_ipset_output' }
     ];
 
     $self->{maps_counters}->{av} = [
@@ -43,11 +43,12 @@ sub set_counters {
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
                     { label => 'av_update', value => 'value',
-                      template => '%d', min => 0, unit => 's' },
-                ],
+                      template => '%d', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{avet} = [
         { label => 'avet', set => {
                 key_values => [ { name => 'human' }, { name => 'value' }  ],
@@ -55,11 +56,12 @@ sub set_counters {
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
                     { label => 'avet_update', value => 'value',
-                      template => '%d', min => 0, unit => 's' },
-                ],
+                      template => '%d', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{ips} = [
         { label => 'ips', set => {
                 key_values => [ { name => 'human' }, { name => 'value' } ],
@@ -67,11 +69,12 @@ sub set_counters {
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
                     { label => 'ips_update', value => 'value',
-                      template => '%d', min => 0, unit => 's' },
-                ],
+                      template => '%d', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{ipset} = [
         { label => 'ipset', set => {
                 key_values => [ { name => 'human' }, { name => 'value' } ],
@@ -79,10 +82,10 @@ sub set_counters {
                 output_template => "last refresh is: '%s'",
                 perfdatas => [
                     { label => 'ipset_update', value => 'value',
-                      template => '%d', min => 0, unit => 's' },
-                ],
+                      template => '%d', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
 }
 

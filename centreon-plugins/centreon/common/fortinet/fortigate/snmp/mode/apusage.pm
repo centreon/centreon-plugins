@@ -55,7 +55,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'in-traffic', set => {
@@ -64,8 +64,8 @@ sub set_counters {
                 output_template => 'traffic in : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'out-traffic', set => {
@@ -74,8 +74,8 @@ sub set_counters {
                 output_template => 'traffic out : %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'clients', set => {
@@ -83,8 +83,8 @@ sub set_counters {
                 output_template => 'current client connections : %s',
                 perfdatas => [
                     { label => 'clients', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'cpu', set => {
@@ -92,8 +92,8 @@ sub set_counters {
                 output_template => 'cpu usage : %.2f %%',
                 perfdatas => [
                     { label => 'cpu', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'memory', set => {
@@ -101,10 +101,10 @@ sub set_counters {
                 output_template => 'memory usage : %.2f %%',
                 perfdatas => [
                     { label => 'memory', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -123,7 +123,7 @@ sub new {
         'filter-name:s'     => { name => 'filter_name' },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{admin} eq "enable" and %{status} !~ /online/i' },
+        'critical-status:s' => { name => 'critical_status', default => '%{admin} eq "enable" and %{status} !~ /online/i' }
     });
 
     return $self;
@@ -146,7 +146,7 @@ my %map_ap_connect_status = (
 
 my $mapping = {
     fgWcWtpConfigWtpAdmin   => { oid => '.1.3.6.1.4.1.12356.101.14.4.3.1.2', map => \%map_ap_admin },
-    fgWcWtpConfigWtpName    => { oid => '.1.3.6.1.4.1.12356.101.14.4.3.1.3' },
+    fgWcWtpConfigWtpName    => { oid => '.1.3.6.1.4.1.12356.101.14.4.3.1.3' }
 };
 
 my $mapping2 = {
@@ -155,7 +155,7 @@ my $mapping2 = {
     fgWcWtpSessionWtpByteRxCount    => { oid => '.1.3.6.1.4.1.12356.101.14.4.4.1.18' },
     fgWcWtpSessionWtpByteTxCount    => { oid => '.1.3.6.1.4.1.12356.101.14.4.4.1.19' },
     fgWcWtpSessionWtpCpuUsage       => { oid => '.1.3.6.1.4.1.12356.101.14.4.4.1.20' },
-    fgWcWtpSessionWtpMemoryUsage    => { oid => '.1.3.6.1.4.1.12356.101.14.4.4.1.21' },
+    fgWcWtpSessionWtpMemoryUsage    => { oid => '.1.3.6.1.4.1.12356.101.14.4.4.1.21' }
 };
 my $oid_fgWcWtpConfigEntry = '.1.3.6.1.4.1.12356.101.14.4.3.1';
 
