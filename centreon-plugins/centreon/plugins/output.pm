@@ -28,6 +28,7 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
+
     if (!defined($options{options})) {
         print "Class Output: Need to specify 'options' argument to load.\n";
         exit 3;
@@ -48,11 +49,13 @@ sub new {
         'opt-exit:s'              => { name => 'opt_exit', default => 'unknown' },
         'output-xml'              => { name => 'output_xml' },
         'output-json'             => { name => 'output_json' },
+        'output-ignore-perfdata'  => { name => 'output_ignore_perfdata' },
+        'output-ignore-label'     => { name => 'output_ignore_label' },
         'output-openmetrics'      => { name => 'output_openmetrics' },
         'output-file:s'           => { name => 'output_file' },
         'disco-format'            => { name => 'disco_format' },
         'disco-show'              => { name => 'disco_show' },
-        'float-precision:s'       => { name => 'float_precision', default => 8 },
+        'float-precision:s'       => { name => 'float_precision', default => 8 }
     });
 
     %{$self->{option_results}} = ();
@@ -491,8 +494,8 @@ sub output_txt {
 
 sub display {
     my ($self, %options) = @_;
-    my $nolabel = defined($options{nolabel}) ? 1 : 0;
-    my $force_ignore_perfdata = (defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) ? 1 : 0;
+    my $nolabel = (defined($options{nolabel}) || defined($self->{option_results}->{output_ignore_label})) ? 1 : 0;
+    my $force_ignore_perfdata = ((defined($options{force_ignore_perfdata}) && $options{force_ignore_perfdata} == 1) || $self->{option_results}->{output_ignore_perfdata}) ? 1 : 0;
     my $force_long_output = (defined($options{force_long_output}) && $options{force_long_output} == 1) ? 1 : 0;
     $force_long_output = 1 if (defined($self->{option_results}->{debug}));
 
@@ -504,8 +507,10 @@ sub display {
 
     if (defined($self->{option_results}->{output_file})) {
         if (!open (STDOUT, '>', $self->{option_results}->{output_file})) {
-            $self->output_add(severity => 'UNKNOWN',
-                              short_msg => "cannot open file  '" . $self->{option_results}->{output_file} . "': $!");
+            $self->output_add(
+                severity => 'UNKNOWN',
+                short_msg => "cannot open file  '" . $self->{option_results}->{output_file} . "': $!"
+            );
         }
     }
     if (defined($self->{option_results}->{output_xml})) {
@@ -545,7 +550,7 @@ sub die_exit {
     # $options{exit_litteral} = string litteral exit
     # $options{nolabel} = interger label display
     my $exit_litteral = defined($options{exit_litteral}) ? $options{exit_litteral} : $self->{option_results}->{opt_exit};
-    my $nolabel = defined($options{nolabel}) ? 1 : 0;
+    my $nolabel = (defined($options{nolabel}) || defined($self->{option_results}->{output_ignore_label})) ? 1 : 0;
     # ignore long output in the following case
     $self->{option_results}->{verbose} = undef;
 
@@ -572,7 +577,7 @@ sub option_exit {
     # $options{exit_litteral} = string litteral exit
     # $options{nolabel} = interger label display
     my $exit_litteral = defined($options{exit_litteral}) ? $options{exit_litteral} : $self->{option_results}->{opt_exit};
-    my $nolabel = defined($options{nolabel}) ? 1 : 0;
+    my $nolabel = (defined($options{nolabel}) || defined($self->{option_results}->{output_ignore_label})) ? 1 : 0;
 
     if (defined($self->{option_results}->{output_xml})) {
         $self->create_xml_document();
@@ -678,8 +683,10 @@ sub is_litteral_status {
 sub create_json_document {
     my ($self) = @_;
 
-    if (centreon::plugins::misc::mymodule_load(no_quit => 1, module => 'JSON',
-                                           error_msg => "Cannot load module 'JSON'.")) {
+    if (centreon::plugins::misc::mymodule_load(
+        no_quit => 1, module => 'JSON',
+        error_msg => "Cannot load module 'JSON'.")
+        ) {
         print "Cannot load module 'JSON'\n";
         $self->exit(exit_litteral => 'unknown');
     }
@@ -690,8 +697,10 @@ sub create_json_document {
 sub create_xml_document {
     my ($self) = @_;
 
-    if (centreon::plugins::misc::mymodule_load(no_quit => 1, module => 'XML::LibXML',
-                                           error_msg => "Cannot load module 'XML::LibXML'.")) {
+    if (centreon::plugins::misc::mymodule_load(
+        no_quit => 1, module => 'XML::LibXML',
+        error_msg => "Cannot load module 'XML::LibXML'.")
+        ) {
         print "Cannot load module 'XML::LibXML'\n";
         $self->exit(exit_litteral => 'unknown');
     }
@@ -790,8 +799,10 @@ sub to_utf8 {
 
     if ($self->{encode_utf8_import} == 0) {
         # Some Perl version dont have the following module (like Perl 5.6.x)
-        if (centreon::plugins::misc::mymodule_load(no_quit => 1, module => 'Encode',
-                                                   error_msg => "Cannot load module 'Encode'.")) {
+        if (centreon::plugins::misc::mymodule_load(
+            no_quit => 1, module => 'Encode',
+            error_msg => "Cannot load module 'Encode'.")
+            ) {
             print "Cannot load module 'Encode'\n";
             $self->exit(exit_litteral => 'unknown');
         }
@@ -1366,6 +1377,14 @@ Filter UOM that match the regexp.
 Optional exit code for an execution error (i.e. wrong option provided,
 SSH connection refused, timeout, etc)
 (Default: unknown).
+
+=item B<--output-ignore-perfdata>
+
+Remove perfdata from output.
+
+=item B<--output-ignore-label>
+
+Remove label status from output.
 
 =item B<--output-xml>
 
