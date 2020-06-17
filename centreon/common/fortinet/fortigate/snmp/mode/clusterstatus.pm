@@ -123,13 +123,13 @@ sub set_counters {
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
         'warning-status:s'  => { name => 'warning_status', default => '' },
         'critical-status:s' => { name => 'critical_status', default => '%{role} ne %{roleLast} or %{sync_status} =~ /not synchronized/' },
-        'one-node-status:s' => { name => 'one_node_status' }, # not used, use --opt-exit instead
+        'one-node-status:s' => { name => 'one_node_status' } # not used, use --opt-exit instead
     });
 
     return $self;
@@ -207,6 +207,9 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => 'No cluster nodes found');
         $self->{output}->option_exit();
     }
+
+    $self->{cache_name} = 'fortinet_fortigate_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
