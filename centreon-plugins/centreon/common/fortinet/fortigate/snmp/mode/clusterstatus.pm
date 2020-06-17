@@ -25,6 +25,7 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
