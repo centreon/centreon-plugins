@@ -36,24 +36,24 @@ sub set_system {
         temperature => [
             ['true', 'CRITICAL'],
             ['reading error', 'CRITICAL'],
-            ['false', 'OK'],
+            ['false', 'OK']
         ],
         voltage => [
             ['true', 'CRITICAL'],
             ['reading error', 'CRITICAL'],
-            ['false', 'OK'],
+            ['false', 'OK']
         ],
         fan => [
             ['true', 'CRITICAL'],
             ['reading error', 'CRITICAL'],
-            ['false', 'OK'],
+            ['false', 'OK']
         ],
         psu => [
             ['up', 'OK'],
             ['down', 'CRITICAL'],
-            ['dummy', 'OK'], 
-            ['.*', 'UNKNOWN'],
-        ],        
+            ['dummy', 'OK'],
+            ['^present', 'OK']
+        ],
         raiddisk => [
             ['online', 'OK'],
             ['missing', 'OK'],
@@ -70,9 +70,8 @@ sub set_system {
             ['rebuild', 'WARNING'],
             ['failed', 'CRITICAL'],
             ['copyback', 'WARNING'],
-            ['other_offline', 'WARNING'],
-            ['.*', 'UNKNOWN'],
-        ],
+            ['other_offline', 'WARNING']
+        ]
     };
     
     $self->{components_path} = 'network::checkpoint::snmp::mode::components';

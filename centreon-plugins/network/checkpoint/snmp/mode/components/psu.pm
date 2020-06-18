@@ -24,7 +24,7 @@ use strict;
 use warnings;
 
 my $mapping = {
-    powerSupplyStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.9.1.1.2' },
+    powerSupplyStatus => { oid => '.1.3.6.1.4.1.2620.1.6.7.9.1.1.2' }
 };
 my $oid_powerSupplyStatus = '.1.3.6.1.4.1.2620.1.6.7.9.1.1.2';
 
