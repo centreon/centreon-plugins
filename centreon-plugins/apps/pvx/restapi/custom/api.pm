@@ -169,7 +169,7 @@ sub query_range {
 
     my $tz = centreon::plugins::misc::set_timezone(name => $self->{timezone});
     my $dt = DateTime->now(%$tz);
-    my $start_time = $dt->subtract(seconds => $options{timeframe})->epoch();
+    my $start_time = $dt->epoch() - $options{timeframe};
     my $end_time = $dt->epoch();
     my $uri = URI::Encode->new({encode_reserved => 1});
 
