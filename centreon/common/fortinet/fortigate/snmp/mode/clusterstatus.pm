@@ -52,6 +52,7 @@ sub custom_status_calc {
     $self->{result_values}->{sync_status} = $options{new_datas}->{$self->{instance} . '_sync_status'};
     $self->{result_values}->{hostname} = $options{new_datas}->{$self->{instance} . '_hostname'};
     $self->{result_values}->{checksum} = $options{new_datas}->{$self->{instance} . '_checksum'};
+    $self->{result_values}->{serial} = $options{new_datas}->{$self->{instance} . '_serial'};
     return 0;
 }
 
