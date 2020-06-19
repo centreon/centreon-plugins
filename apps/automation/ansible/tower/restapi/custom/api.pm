@@ -211,17 +211,15 @@ sub settings {
     $self->build_options_for_httplib();
 
     # When using session authentication, we must set www-form-urlencoded as content-type
-    # if (defined($self->{session_id}) || defined($self->{api_token}) || defined($self->{api_username})) {
     $self->{http}->add_header(key => 'Content-Type', value => 'application/json;charset=UTF-8');
     $self->{http}->add_header(key => 'Accept', value => 'application/json;charset=UTF-8');
-    # }
     if (defined $self->{api_token}) {
         $self->{http}->add_header(key => 'Authorization', value => 'Bearer ' . $self->{api_token});
     } elsif (defined($self->{api_username}) && defined($self->{api_password})) {
-        # XXX store base64 encoded info as self property ?
+        # XXX store base64 encoded info as an object property ?
         $self->{http}->add_header(key => 'Authorization', value => 'Basic ' . encode_base64($self->{api_username} . ':' . $self->{api_password}, ''));  
     } else {
-        # XXX Do we really want this ?
+        # XXX Do we really want session authentication wwith cookies ?
         $self->session_authentication();
     }
     $self->{http}->set_options(%{$self->{option_results}});
@@ -363,8 +361,6 @@ sub plugin_exit() {
     my $force_ignore_perfdata = defined($options{force_ignore_perfdata}) ? $options{force_ignore_perfdata} : 1;
     my $force_long_output = defined($options{force_long_output}) ? $options{force_long_output} : 1;
 
-    # $self->{output}->output_add(severity => $options{severity},
-    #     short_msg => $options{short_message});
     $self->{output}->output_add(severity => $self->{status},
         short_msg => $options{short_message});
     $self->{output}->display(force_ignore_perfdata => $force_ignore_perfdata, force_long_output => $force_long_output);

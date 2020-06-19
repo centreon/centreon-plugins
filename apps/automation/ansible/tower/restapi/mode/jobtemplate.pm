@@ -76,11 +76,9 @@ sub run {
     my %status;
     my $path = '/api/v2/job_templates/' . $self->{option_results}->{job_template} . '/launch/';
 
-    # Extra vars, inventories,...
     my $json_request = {};
 
     # https://docs.ansible.com/ansible-tower/3.2.6/html/towerapi/launch_jobtemplate.html
-    # Add 0 to lure Perl for a number, ahahah !
     $json_request->{inventory} = ($self->{option_results}->{inventory} + 0) if defined($self->{option_results}->{inventory});
     $json_request->{credential} = ($self->{option_results}->{credential} + 0) if defined($self->{option_results}->{credential});
     $json_request->{limit} = $self->{option_results}->{limit} if defined($self->{option_results}->{limit});
@@ -122,7 +120,6 @@ sub run {
     # Handle the OK state when no hosts matched.
     if ($options{custom}->get_status() =~ /^OK$/ ) {
         # Get job_host_summaries containing the hosts that ran the play.
-        # $path = '/api/v2/jobs/' . $self->{option_results}->{job} . '/job_host_summaries/';
         my $summary_event = $options{custom}->request_api(
                         url_path => $result->{url} . 'job_host_summaries/',
                         method => 'GET',
@@ -134,7 +131,8 @@ sub run {
             push @short_messages, ' But no hosts matched !'
         }
     }
-    # Add job uri
+
+    # Add job uri detail
     push @short_messages, '(' . $self->{option_results}->{proto} . '://' . $self->{option_results}->{hostname} . $result->{url} . ')';
 
     $options{custom}->plugin_exit(short_message => join('. ', @short_messages));

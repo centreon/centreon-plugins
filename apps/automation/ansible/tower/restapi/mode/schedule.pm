@@ -64,8 +64,8 @@ sub run {
         $options{custom}->plugin_exit(short_message => $schedule_name . ' is disabled.');
     }
 
-    # Get all jobs starting with the latest for the schedule. If we checked first the job-template/ or jobs/
-    # we could have some jobs launched manually
+    # Get all jobs starting with the latest for the schedule. If we checked only the job-template/ or jobs/
+    # endpoint we could have some jobs launched manually and not by the scheduler
     $path = '/api/v2/schedules/' . $self->{option_results}->{schedule} . '/jobs/?order_by=-id&page_size=1';
     my $last_jobs = $options{custom}->request_api(
                         url_path => $path,
@@ -78,7 +78,6 @@ sub run {
     my $last_job = $last_jobs->{results}[0];
     my $last_job_uri;
     # Get finished date and compute freshness for ie : 2020-06-11T09:20:41.809341Z
-    # Remove microseconds - not parsed with Time::Piece
     if (defined($last_job->{finished})) {
         my $finished = ParseDate($last_job->{finished});
         my $now = localtime;

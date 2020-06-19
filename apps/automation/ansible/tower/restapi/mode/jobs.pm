@@ -27,7 +27,6 @@ sub new {
     }
 
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
-    # $self->{http} = centreon::plugins::http->new(%options);
     $self->{mode} = $options{mode};
 
     return $self;
@@ -55,14 +54,13 @@ sub run {
     my $job_name = $result->{name};
 
     # An other approach to find play logs with no match
-    # $path = '/api/v2/jobs/' . $self->{option_results}->{job} . '/job_events/';
-    # my $event = $options{custom}->request_api(
+    #$path = '/api/v2/jobs/' . $self->{option_results}->{job} . '/job_events/';
+    #my $event = $options{custom}->request_api(
     #                 url_path => $path,
     #                 method => 'GET',
     #                 status_code => 200);
-
     # Contains events hash or 0 if none found.
-    # my @filtered_events = grep { $_->{event} =~ /^playbook_on_no_hosts_matched$/ } @{$event->{results}};
+    #my @filtered_events = grep { $_->{event} =~ /^playbook_on_no_hosts_matched$/ } @{$event->{results}};
 
     # Compute exit code
     $options{custom}->escalate_status(status => $options{custom}->get_job_status_severity(status => $result->{status}));
