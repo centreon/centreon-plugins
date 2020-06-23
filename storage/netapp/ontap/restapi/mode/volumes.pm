@@ -172,7 +172,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $volumes = $options{custom}->request_api(url_path => '/api/storage/volumes?fields=*');
+    my $volumes = $options{custom}->request_api(endpoint => '/api/storage/volumes?fields=*');
 
     $self->{volumes} = {};
     foreach (@{$volumes->{records}}) {
