@@ -80,18 +80,19 @@ sub new {
 
     $self->{version} = '1.0';
     $options{options}->add_options(arguments => {
-        'component:s'             => { name => 'component', default => '.*' },
-        'no-component:s'          => { name => 'no_component' },
-        'threshold-overload:s@'   => { name => 'threshold_overload' },
-        'add-name-instance'       => { name => 'add_name_instance' },
+        'component:s'            => { name => 'component', default => '.*' },
+        'no-component:s'         => { name => 'no_component' },
+        'threshold-overload:s@'  => { name => 'threshold_overload' },
+        'add-name-instance'      => { name => 'add_name_instance' },
+        'no-component-count'     => { name => 'no_component_count' }
     });
 
     $self->{performance} = (defined($options{no_performance}) && $options{no_performance} == 1) ?
         0 : 1;
     if ($self->{performance} == 1) {
         $options{options}->add_options(arguments => {
-            'warning:s@'     => { name => 'warning' },
-            'critical:s@'   => { name => 'critical' },
+            'warning:s@'  => { name => 'warning' },
+            'critical:s@' => { name => 'critical' },
         });
     }
 
@@ -107,7 +108,7 @@ sub new {
         0 : 1;
     if ($self->{absent} == 1) {
         $options{options}->add_options(arguments => {
-            'absent-problem:s@'       => { name => 'absent_problem' },
+            'absent-problem:s@' => { name => 'absent_problem' },
         });
     }
 
@@ -120,13 +121,12 @@ sub new {
     $self->{components_exec_load} = 1;
     $self->set_system();
 
-    $self->{count} = (defined($options{no_count}) && $options{no_count} == 1) ?
-        0 : 1;
+    $self->{count} = (defined($options{no_count}) && $options{no_count} == 1) ? 0 : 1;
     if ($self->{count} == 1) {
         foreach my $component (@{$self->{components_module}}) {
             $options{options}->add_options(arguments => {
-                'warning-count-' . $component . ':s'    => { name => 'warning_count_' . $component },
-                'critical-count-' . $component . ':s'    => { name => 'critical_count_' . $component },
+                'warning-count-' . $component . ':s'  => { name => 'warning_count_' . $component },
+                'critical-count-' . $component . ':s' => { name => 'critical_count_' . $component },
             });
         }
     }
@@ -290,7 +290,7 @@ sub display {
 
     foreach my $comp (sort(keys %{$self->{components}})) {
         # Skipping short msg when no components
-        next if ($self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
+        next if (!defined($self->{option_results}->{no_component_count}) && $self->{components}->{$comp}->{total} == 0 && $self->{components}->{$comp}->{skip} == 0);
 
         if ($self->{count} == 1) {
             ($exit, $warn, $crit) = $self->get_severity_count(label => $comp, value => $self->{components}->{$comp}->{total});
