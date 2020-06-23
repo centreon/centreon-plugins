@@ -18,13 +18,12 @@
 # limitations under the License.
 #
 
-package storage::emc::unisphere::restapi::mode::liststorageresources;
+package storage::netapp::ontap::restapi::mode::listvolumes;
 
 use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use storage::emc::unisphere::restapi::mode::components::resources qw($health_status);
 
 sub new {
     my ($class, %options) = @_;
@@ -32,7 +31,6 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' },
     });
 
     return $self;
@@ -46,27 +44,24 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
     
-    return $options{custom}->request_api(url_path => '/api/types/storageResource/instances?fields=name,health');
+    return $options{custom}->request_api(url_path => '/api/storage/volumes?fields=*');
 }
 
 sub run {
     my ($self, %options) = @_;
 
-    my $storages = $self->manage_selection(%options);
-    foreach (@{$storages->{entries}}) {
-        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
-            && $_->{content}->{name} !~ /$self->{option_results}->{filter_name}/);
-        
+    my $volumes = $self->manage_selection(%options);
+    foreach (@{$volumes->{records}}) {
         $self->{output}->output_add(long_msg => sprintf(
-            '[name = %s][status = %s]',
-            $_->{content}->{name},
-            $health_status->{ $_->{content}->{health}->{value} },
+            '[name = %s][state = %s]',
+            $_->{name},
+            $_->{state}
         ));
     }
 
     $self->{output}->output_add(
         severity => 'OK',
-        short_msg => 'List storage resources:'
+        short_msg => 'List volumes:'
     );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
@@ -75,17 +70,17 @@ sub run {
 sub disco_format {
     my ($self, %options) = @_;
     
-    $self->{output}->add_disco_format(elements => ['name', 'status']);
+    $self->{output}->add_disco_format(elements => ['name', 'state']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $storages = $self->manage_selection(%options);
-    foreach (@{$storages->{entries}}) {
+    my $volumes = $self->manage_selection(%options);
+    foreach (@{$volumes->{records}}) {
         $self->{output}->add_disco_entry(
-            name => $_->{content}->{name},
-            status => $health_status->{ $_->{content}->{health}->{value} },
+            name => $_->{name},
+            state => $_->{state}
         );
     }
 }
@@ -96,13 +91,9 @@ __END__
 
 =head1 MODE
 
-List pools.
+List volumes.
 
 =over 8
-
-=item B<--filter-name>
-
-Filter pool name (Can be a regexp).
 
 =back
 
