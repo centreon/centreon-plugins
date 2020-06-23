@@ -50,10 +50,16 @@ Try {
             type = $disk.DriveType;
             providername = $disk.ProviderName;
             desc = $disk.VolumeName;
-            size = $disk.Size.toString();
-            freespace = $disk.FreeSpace.toString()
+            size = $null;
+            freespace = $null;
         }
 
+        if ($disk.Size -ne $null) {
+            $item.size = $disk.Size.toString()
+        }
+        if ($disk.FreeSpace -ne $null) {
+            $item.freespace = $disk.FreeSpace.toString()
+        }
         $items.Add($item)
     }
 
