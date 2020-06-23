@@ -36,59 +36,58 @@ sub set_counters {
     $self->{maps_counters}->{vservers} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'state' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => $self->can('custom_threshold_output'),
+                closure_custom_threshold_check => $self->can('custom_threshold_output')
             }
         },
-        { label => 'health', set => {
+        { label => 'health', nlabel => 'vserver.health.percentage', set => {
                 key_values => [ { name => 'health' }, { name => 'display' } ],
                 output_template => 'Health: %.2f %%', output_error_template => 'Health: %s',
                 perfdatas => [
                     { label => 'health', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'in-traffic', set => {
+        { label => 'in-traffic', nlabel => 'vserver.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic In: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'out-traffic', set => {
+        { label => 'out-traffic', nlabel => 'vserver.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
                 output_template => 'Traffic Out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f',
-                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'clients', set => {
+        { label => 'clients', nlabel => 'vserver.connections.client.count', set => {
                 key_values => [ { name => 'clients', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Client Connections : %s',
                 perfdatas => [
                     { label => 'clients', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'servers', set => {
+        { label => 'servers', nlabel => 'vserver.connections.server.count', set => {
                 key_values => [ { name => 'servers', diff => 1 }, { name => 'display' } ],
                 output_template => 'Total Server Connections : %s',
                 perfdatas => [
                     { label => 'servers', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -138,16 +137,8 @@ sub custom_threshold_output {
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg = 'State : ' . $self->{result_values}->{state};
 
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    
-    $self->{result_values}->{state} = $options{new_datas}->{$self->{instance} . '_state'};
-    return 0;
+    return 'State : ' . $self->{result_values}->{state};
 }
 
 sub new {
@@ -158,7 +149,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-name:s'         => { name => 'filter_name' },
         'filter-type:s'         => { name => 'filter_type' },
-        'threshold-overload:s@' => { name => 'threshold_overload' },
+        'threshold-overload:s@' => { name => 'threshold_overload' }
     });
 
     return $self;
@@ -226,7 +217,7 @@ sub manage_selection {
         oids => [
             { oid => $mapping->{vsvrFullName}->{oid} },
             { oid => $mapping->{vsvrState}->{oid} },
-            { oid => $mapping->{vsvrEntityType}->{oid} },
+            { oid => $mapping->{vsvrEntityType}->{oid} }
         ],
         return_type => 1,
         nothing_quit => 1

@@ -33,33 +33,30 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'active', set => {
+        { label => 'active', nlabel => 'connections.server.active.count', set => {
                 key_values => [ { name => 'active' } ],
-                output_template => 'Active Server TCP connections : %s',
+                output_template => 'Active Server TCP connections: %s',
                 perfdatas => [
-                    { label => 'active_server', value => 'active', template => '%s', 
-                      unit => 'con', min => 0 },
-                ],
+                    { label => 'active_server', template => '%s', unit => 'con', min => 0 }
+                ]
             }
         },
-        { label => 'server', set => {
+        { label => 'server', nlabel => 'connections.server.count', set => {
                 key_values => [ { name => 'server' } ],
-                output_template => 'Server TCP connections  : %s',
+                output_template => 'Server TCP connections: %s',
                 perfdatas => [
-                    { label => 'server', value => 'server', template => '%s', 
-                      unit => 'con', min => 0 },
-                ],
+                    { label => 'server', template => '%s', unit => 'con', min => 0 }
+                ]
             }
         },
-        { label => 'client', set => {
+        { label => 'client', nlabel => 'connections.client.count', set => {
                 key_values => [ { name => 'client' } ],
-                output_template => 'Client TCP connections : %s',
+                output_template => 'Client TCP connections: %s',
                 perfdatas => [
-                    { label => 'client', value => 'client', template => '%s', 
-                      unit => 'con', min => 0 },
-                ],
+                    { label => 'client', template => '%s',  unit => 'con', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -67,11 +64,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
