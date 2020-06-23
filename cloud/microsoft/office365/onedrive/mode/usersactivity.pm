@@ -36,7 +36,7 @@ sub custom_active_perfdata {
     }
 
     $self->{result_values}->{report_date} =~ /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/;
-    $self->{output}->perfdata_add(label => 'perfdate', value => timegm(0,0,0,$3,$2-1,$1-1900));
+    $self->{output}->perfdata_add(label => 'perfdate', value => timelocal(0,0,0,$3,$2-1,$1-1900));
 
     $self->{output}->perfdata_add(label => 'active_users', nlabel => 'onedrive.users.active.count',
                                   value => $self->{result_values}->{active},
