@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'arp'                 => 'snmp_standard::mode::arp',
         'configuration'       => 'centreon::common::cisco::standard::snmp::mode::configuration',
         'cpu'                 => 'centreon::common::cisco::standard::snmp::mode::cpu',
@@ -48,8 +48,9 @@ sub new {
         'stack'               => 'centreon::common::cisco::standard::snmp::mode::stack',
         'uptime'              => 'snmp_standard::mode::uptime',
         'voice-call'          => 'centreon::common::cisco::standard::snmp::mode::voicecall',
+        'vss'                 => 'centreon::common::cisco::standard::snmp::mode::vss',
         'wan3g'               => 'centreon::common::cisco::standard::snmp::mode::wan3g'
-    );
+    };
 
     return $self;
 }
