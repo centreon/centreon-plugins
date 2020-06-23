@@ -31,7 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'hardware' => 'storage::netapp::ontap::restapi::mode::hardware'
+        'hardware'     => 'storage::netapp::ontap::restapi::mode::hardware',
+        'list-volumes' => 'storage::netapp::ontap::restapi::mode::listvolumes',
+        'volumes'      => 'storage::netapp::ontap::restapi::mode::volumes'
     };
 
     $self->{custom_modes}{api} = 'storage::netapp::ontap::restapi::custom::api';
