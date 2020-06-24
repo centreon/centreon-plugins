@@ -31,9 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'cluster'      => 'storage::netapp::ontap::restapi::mode::cluster',
         'hardware'     => 'storage::netapp::ontap::restapi::mode::hardware',
         'list-volumes' => 'storage::netapp::ontap::restapi::mode::listvolumes',
         'luns'         => 'storage::netapp::ontap::restapi::mode::luns',
+        'snapmirrors'  => 'storage::netapp::ontap::restapi::mode::snapmirrors',
         'volumes'      => 'storage::netapp::ontap::restapi::mode::volumes'
     };
 
