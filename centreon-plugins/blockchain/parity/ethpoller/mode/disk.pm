@@ -79,7 +79,7 @@ sub set_counters {
                 key_values => [ { name => 'blockchain_dir' } ],
                 output_template => "Blockchain directory: %d",
                 perfdatas => [
-                    { label => 'blockchain_dir', value => 'blockchain_dir', unit => 'B', template => '%d', min => 0 }
+                    { label => 'blockchain_dir', value => 'blockchain_dir', template => '%d', min => 0 }
                 ],                
             }
         }
