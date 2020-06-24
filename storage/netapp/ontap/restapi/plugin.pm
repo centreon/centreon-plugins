@@ -33,6 +33,7 @@ sub new {
     $self->{modes} = {
         'hardware'     => 'storage::netapp::ontap::restapi::mode::hardware',
         'list-volumes' => 'storage::netapp::ontap::restapi::mode::listvolumes',
+        'luns'         => 'storage::netapp::ontap::restapi::mode::luns',
         'volumes'      => 'storage::netapp::ontap::restapi::mode::volumes'
     };
 
