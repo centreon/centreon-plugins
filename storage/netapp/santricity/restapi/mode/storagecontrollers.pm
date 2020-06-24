@@ -190,7 +190,7 @@ sub manage_selection {
         }
     }
 
-    $self->{cache_name} = 'netapp_santricity' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
+    $self->{cache_name} = 'netapp_santricity_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_storage_name}) ? md5_hex($self->{option_results}->{filter_storage_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_controller_name}) ? md5_hex($self->{option_results}->{filter_controller_name}) : md5_hex('all'));
