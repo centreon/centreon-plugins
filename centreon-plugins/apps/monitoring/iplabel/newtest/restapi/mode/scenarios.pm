@@ -53,7 +53,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'robots', type => 3, cb_prefix_output => 'prefix_robot_output', cb_long_output => 'robot_long_output', indent_long_output => '    ', message_multiple => 'All robots are ok',
             group => [
-                { name => 'scenarios', display_long => 1, cb_prefix_output => 'prefix_scenario_output',  message_multiple => 'All scenarios are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'scenarios', display_long => 1, cb_prefix_output => 'prefix_scenario_output',  message_multiple => 'All scenarios are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -128,6 +128,45 @@ sub manage_selection {
         $last_timestamp = time() - (60 * 5);
     }
 
+    my $instances = $options{custom}->request_api(endpoint => '/rest/api/instances');
+    $self->{robots} = {};
+    my $scenarios_last_exec = {};
+    foreach (@$instances) {
+        if (defined($self->{option_results}->{filter_robot_name}) && $self->{option_results}->{filter_robot_name} ne '' &&
+            $_->{Robot}->{Name} !~ /$self->{option_results}->{filter_robot_name}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{Scenario}->{Name} . "': no matching filter.", debug => 1);
+            next;
+        }
+        if (defined($self->{option_results}->{filter_scenario_name}) && $self->{option_results}->{filter_scenario_name} ne '' &&
+            $_->{Scenario}->{Name} !~ /$self->{option_results}->{filter_scenario_name}/) {
+            $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{Scenario}->{Name} . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        if (!defined($self->{robots}->{ $_->{Robot}->{Name} })) {
+            $self->{robots}->{ $_->{Robot}->{Name} } = {
+                display => $_->{Robot}->{Name},
+                scenarios => {}
+            };
+        }
+        if (!defined($self->{robots}->{ $_->{Robot}->{Name} }->{scenarios}->{ $_->{Scenario}->{Name} })) {
+            $self->{robots}->{ $_->{Robot}->{Name}}->{scenarios}->{ $_->{Scenario}->{Name} } = {
+                display => $_->{Scenario}->{Name},
+                red_seconds => 0,
+                orange_seconds => 0,
+                grey_seconds => 0,
+                green_seconds => 0,
+                execution_time_total => 0,
+                execution_count => 0
+            };
+        }
+
+        my $uuid = $_->{Robot}->{Name} . '~' . $_->{Scenario}->{Name};
+        if (!defined($scenarios_last_exec->{$uuid})) {
+            $scenarios_last_exec->{$uuid} = $self->read_statefile_key(key => $uuid . '_last_exec');
+        }
+    }
+
     my $results = $options{custom}->request_api(endpoint => '/rest/api/results?range=' . $timespan);
 
     my $mapping_status = {
@@ -160,52 +199,20 @@ sub manage_selection {
     #    "ErrorMessage": ""
     #}
 
-    $self->{robots} = {};
-
-    my $scenarios_last_exec = {};
     my $i = scalar(@$results) - 1;
     for (; $i >= 0; $i--) {
-        if (defined($self->{option_results}->{filter_robot_name}) && $self->{option_results}->{filter_robot_name} ne '' &&
-            $results->[$i]->{Robot}->{Name} !~ /$self->{option_results}->{filter_robot_name}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $results->[$i]->{Measure}->{Name} . "': no matching filter.", debug => 1);
-            next;
-        }
-        if (defined($self->{option_results}->{filter_scenario_name}) && $self->{option_results}->{filter_scenario_name} ne '' &&
-            $results->[$i]->{Measure}->{Name} !~ /$self->{option_results}->{filter_scenario_name}/) {
-            $self->{output}->output_add(long_msg => "skipping scenario '" . $results->[$i]->{Measure}->{Name} . "': no matching filter.", debug => 1);
-            next;
-        }
+        next if (!defined($self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} }));
 
         next if ($results->[$i]->{ExecutionDateUtc} !~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)$/);
         my $exec_time = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, time_zone => 'UTC');
         my $exec_epoch = $exec_time->epoch();
 
-        if (!defined($self->{robots}->{ $results->[$i]->{Robot}->{Name} })) {
-            $self->{robots}->{ $results->[$i]->{Robot}->{Name} } = {
-                display => $results->[$i]->{Robot}->{Name},
-                scenarios => {}
-            };
-        }
-        if (!defined($self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} })) {
-            $self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} } = {
-                display => $results->[$i]->{Measure}->{Name},
-                red_seconds => 0,
-                orange_seconds => 0,
-                grey_seconds => 0,
-                green_seconds => 0,
-                execution_time_total => 0,
-                execution_count => 0
-            };
-        }
-
         my $uuid = $results->[$i]->{Robot}->{Name} . '~' . $results->[$i]->{Measure}->{Name};
         if (!defined($scenarios_last_exec->{$uuid})) {
-            $scenarios_last_exec->{$uuid} = $self->read_statefile_key(key => $uuid . '_last_exec');
-            if (!defined($scenarios_last_exec->{$uuid})) {
-                $scenarios_last_exec->{$uuid} = { time => $last_timestamp, status => lc($results->[$i]->{Status}) };
-                next;
-            }
+            $scenarios_last_exec->{$uuid} = { time => $last_timestamp, status => lc($results->[$i]->{Status}) };
+            next;
         }
+
         next if ($exec_epoch < $last_timestamp);
 
         $self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} }->{ $mapping_status->{ $scenarios_last_exec->{$uuid}->{status} } . '_seconds' } += $exec_epoch - $scenarios_last_exec->{$uuid}->{time};
@@ -221,6 +228,8 @@ sub manage_selection {
     foreach my $robot_name (keys %{$self->{robots}}) {
         foreach my $scenario_name (keys %{$self->{robots}->{$robot_name}->{scenarios}}) {
             my $uuid = $robot_name . '~' . $scenario_name;
+            next if (!defined($scenarios_last_exec->{$uuid}->{time}));
+
             $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{ $mapping_status->{ $scenarios_last_exec->{$uuid}->{status} } . '_seconds' } += $current_timestamp - $scenarios_last_exec->{$uuid}->{time};
             $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{last_exec} = $scenarios_last_exec->{$uuid};
            
