@@ -74,18 +74,27 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{balance} = [
-       { label => 'balance-fluctuation-prct', nlabel => 'parity.tracking.balances.fluctuation', display_ok => 0, set => {
-                key_values => [],
-                manual_keys => 1,
-                closure_custom_calc => $self->can('custom_balance_prct_calc'),
-                closure_custom_output => $self->can('custom_balance_prct_output'),
-                threshold_use => 'balance_fluctuation_prct',
+    #    { label => 'balance-fluctuation-prct', nlabel => 'parity.tracking.balances.fluctuation', display_ok => 0, set => {
+    #             key_values => [],
+    #             manual_keys => 1,
+    #             closure_custom_calc => $self->can('custom_balance_prct_calc'),
+    #             closure_custom_output => $self->can('custom_balance_prct_output'),
+    #             threshold_use => 'balance_fluctuation_prct',
+    #             perfdatas => [
+    #                { value => 'balance_fluctuation_prct', template => '%.2f', unit => '%',
+    #                  min => 0, label_extra_instance => 1, instance_use => 'display'  }
+    #             ],
+    #         }
+    #     }
+        { label => 'balance-changes', nlabel => 'parity.tracking.balance.changes.perminute', set => {
+                key_values => [ { name => 'balance_count', per_minute => 1 }, { name => 'display' },
+                                { name => 'last_balance' } ],
+                closure_custom_output => $self->can('custom_balance_output'),
                 perfdatas => [
-                   { value => 'balance_fluctuation_prct', template => '%.2f', unit => '%',
-                     min => 0, label_extra_instance => 1, instance_use => 'display'  }
-                ],
+                    { template => '%.2f', label_extra_instance => 1, unit => 'wei', instance_use => 'display' }
+                ]
             }
-        }
+        },
     ];
 }
 
@@ -183,6 +192,21 @@ sub custom_miner_output {
     }
 }
 
+sub custom_balance_output {
+    my ($self, %options) = @_;
+
+    if (0 eq $self->{result_values}->{balance_count}) {
+        return sprintf("No change in balance. Balance still %s wei",
+            $self->{result_values}->{last_balance});
+    } else {
+        return sprintf(
+            "Balance changes: %.2f/min. New balance: %s",
+            $self->{result_values}->{balance_count},
+            $self->{result_values}->{last_balance}
+        );
+    }
+}
+
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
@@ -254,7 +278,8 @@ sub manage_selection {
 
         $self->{balance}->{lc($balance->{label})} = {
             display => lc($balance->{label}),
-            balance => $balance->{balance}
+            balance_count => $balance->{balance},
+            last_balance => $balance->{balance}
         };
     }
     
