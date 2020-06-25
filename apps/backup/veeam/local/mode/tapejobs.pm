@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::common::powershell::veeam::tapejobs;
 use apps::backup::veeam::local::mode::resources::types qw($job_tape_type $job_tape_result $job_tape_state);
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::misc;
 use JSON::XS;
 
@@ -46,7 +46,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -10 => 1 } },
+        { name => 'job', type => 1, cb_prefix_output => 'prefix_job_output', message_multiple => 'All jobs are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -54,10 +54,10 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total jobs: %s',
                 perfdatas => [
-                    { value => 'total', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{job} = [
@@ -67,10 +67,9 @@ sub set_counters {
                     { name => 'type' }, { name => 'last_result' },
                     { name => 'last_state' }
                 ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         }
     ];
@@ -147,7 +146,7 @@ sub manage_selection {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($stdout);
+        $decoded = JSON::XS->new->decode($stdout);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");

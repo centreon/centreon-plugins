@@ -69,7 +69,7 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Total Jobs : %s',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%s', min => 0 }
+                    { label => 'total', template => '%s', min => 0 }
                 ]
             }
         }
@@ -170,7 +170,7 @@ sub manage_selection {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($stdout);
+        $decoded = JSON::XS->new->decode($stdout);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
