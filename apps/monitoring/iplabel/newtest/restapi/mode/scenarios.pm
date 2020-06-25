@@ -53,7 +53,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'robots', type => 3, cb_prefix_output => 'prefix_robot_output', cb_long_output => 'robot_long_output', indent_long_output => '    ', message_multiple => 'All robots are ok',
             group => [
-                { name => 'scenarios', display_long => 1, cb_prefix_output => 'prefix_scenario_output',  message_multiple => 'All scenarios are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'scenarios', display_long => 1, cb_prefix_output => 'prefix_scenario_output',  message_multiple => 'all scenarios are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
@@ -96,6 +96,14 @@ sub set_counters {
                     { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
                 ]
             }
+        },
+        { label => 'execution-time', nlabel => 'scenario.execution.time.milliseconds', set => {
+                key_values => [ { name => 'execution_time' }, { name => 'display' } ],
+                output_template => 'execution time: %s ms',
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'ms', label_extra_instance => 1 }
+                ]
+            }
         }
     ];
 }
@@ -119,7 +127,7 @@ sub manage_selection {
     $self->{cache_name} = 'iplabel_newtest_' . $self->{mode} . '_' . $options{custom}->get_hostname()  . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_robot_name}) ? md5_hex($self->{option_results}->{filter_robot_name}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{filter_robot_name}) ? md5_hex($self->{option_results}->{filter_scenario_name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_scenario_name}) ? md5_hex($self->{option_results}->{filter_scenario_name}) : md5_hex('all'));
     my $last_timestamp = $self->read_statefile_key(key => 'last_timestamp');
     my $timespan = 5;
     if (defined($last_timestamp)) {
@@ -131,25 +139,28 @@ sub manage_selection {
     my $instances = $options{custom}->request_api(endpoint => '/rest/api/instances');
     $self->{robots} = {};
     my $scenarios_last_exec = {};
+    my $query_filter = [];
     foreach (@$instances) {
         if (defined($self->{option_results}->{filter_robot_name}) && $self->{option_results}->{filter_robot_name} ne '' &&
-            $_->{Robot}->{Name} !~ /$self->{option_results}->{filter_robot_name}/) {
+            $_->{Robot}->{Name} !~ /$self->{option_results}->{filter_robot_name}/i) {
             $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{Scenario}->{Name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_scenario_name}) && $self->{option_results}->{filter_scenario_name} ne '' &&
-            $_->{Scenario}->{Name} !~ /$self->{option_results}->{filter_scenario_name}/) {
+            $_->{Scenario}->{Name} !~ /$self->{option_results}->{filter_scenario_name}/i) {
             $self->{output}->output_add(long_msg => "skipping scenario '" . $_->{Scenario}->{Name} . "': no matching filter.", debug => 1);
             next;
         }
 
         if (!defined($self->{robots}->{ $_->{Robot}->{Name} })) {
+            push @$query_filter, 'robot=' . $_->{Robot}->{Id};
             $self->{robots}->{ $_->{Robot}->{Name} } = {
                 display => $_->{Robot}->{Name},
                 scenarios => {}
             };
         }
         if (!defined($self->{robots}->{ $_->{Robot}->{Name} }->{scenarios}->{ $_->{Scenario}->{Name} })) {
+            push @$query_filter, 'scenario=' . $_->{Scenario}->{Id};
             $self->{robots}->{ $_->{Robot}->{Name}}->{scenarios}->{ $_->{Scenario}->{Name} } = {
                 display => $_->{Scenario}->{Name},
                 red_seconds => 0,
@@ -167,7 +178,16 @@ sub manage_selection {
         }
     }
 
-    my $results = $options{custom}->request_api(endpoint => '/rest/api/results?range=' . $timespan);
+    my $query_filter_string = '';
+    my $query_filter_num = scalar(@$query_filter);
+    # if it's too big, we request everything
+    if ($query_filter_num > 0 && $query_filter_num < 50) {
+        $query_filter_string = '&' . join('&', @$query_filter);
+    }
+    my $results = [];
+    if ($query_filter_num > 0) {
+        $results = $options{custom}->request_api(endpoint => '/rest/api/results?range=' . $timespan . $query_filter_string);
+    }
 
     my $mapping_status = {
         completed => 'green',
@@ -201,7 +221,7 @@ sub manage_selection {
 
     my $i = scalar(@$results) - 1;
     for (; $i >= 0; $i--) {
-        next if (!defined($self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} }));
+        next if (!defined($self->{robots}->{ $results->[$i]->{Robot}->{Name} }) || !defined($self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} }));
 
         next if ($results->[$i]->{ExecutionDateUtc} !~ /^(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)$/);
         my $exec_time = DateTime->new(year => $1, month => $2, day => $3, hour => $4, minute => $5, second => $6, time_zone => 'UTC');
@@ -210,6 +230,8 @@ sub manage_selection {
         my $uuid = $results->[$i]->{Robot}->{Name} . '~' . $results->[$i]->{Measure}->{Name};
         if (!defined($scenarios_last_exec->{$uuid})) {
             $scenarios_last_exec->{$uuid} = { time => $last_timestamp, status => lc($results->[$i]->{Status}) };
+            $self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} }->{execution_time_total} += $results->[$i]->{Value};
+            $self->{robots}->{ $results->[$i]->{Robot}->{Name} }->{scenarios}->{ $results->[$i]->{Measure}->{Name} }->{execution_count}++;
             next;
         }
 
@@ -232,7 +254,17 @@ sub manage_selection {
 
             $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{ $mapping_status->{ $scenarios_last_exec->{$uuid}->{status} } . '_seconds' } += $current_timestamp - $scenarios_last_exec->{$uuid}->{time};
             $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{last_exec} = $scenarios_last_exec->{$uuid};
-           
+
+            if ($self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{execution_count} > 0) {
+                $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{execution_time} =
+                    int($self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{execution_time_total} /
+                        $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{execution_count});
+                $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{last_exec}->{execution_time} = $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{execution_time};
+            } elsif (defined($scenarios_last_exec->{$uuid}->{execution_time})) {
+                $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{execution_time} = $scenarios_last_exec->{$uuid}->{execution_time};
+                $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{last_exec}->{execution_time} = $scenarios_last_exec->{$uuid}->{execution_time};
+            }
+
             my $total_time = $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{green_seconds} +
                 $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{red_seconds} +
                 $self->{robots}->{ $robot_name }->{scenarios}->{ $scenario_name }->{orange_seconds} +
