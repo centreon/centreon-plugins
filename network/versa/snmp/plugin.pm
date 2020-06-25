@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
+        'bgp-peers'       => 'network::versa::snmp::mode::bgppeers',
         'devices'         => 'network::versa::snmp::mode::devices',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'list-ipsec'      => 'network::versa::snmp::mode::listipsec',
