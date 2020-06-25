@@ -137,28 +137,28 @@ sub custom_mining_prct_calc {
     return 0;
 }
 
-sub custom_balance_prct_output {
-    my ($self, %options) = @_;
+# sub custom_balance_prct_output {
+#     my ($self, %options) = @_;
     
-    return sprintf(
-        "Balance: %s ether, Last fluctuation: %.2f ",
-        $self->{result_values}->{balance},
-        $self->{result_values}->{balance_fluctuation_prct}
-    );
-}
+#     return sprintf(
+#         "Balance: %s ether, Last fluctuation: %.2f ",
+#         $self->{result_values}->{balance},
+#         $self->{result_values}->{balance_fluctuation_prct}
+#     );
+# }
 
-sub custom_balance_prct_calc {
-    my ($self, %options) = @_;
+# sub custom_balance_prct_calc {
+#     my ($self, %options) = @_;
 
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{balance} = Math::BigFloat->new($options{new_datas}->{$self->{instance} . '_balance'});
-    $self->{result_values}->{balance_old} = Math::BigFloat->new($options{old_datas}->{$self->{instance} . '_balance'});
-    $self->{result_values}->{balance_fluctuation_prct} = (defined($self->{result_values}->{balance_old}) && $self->{result_values}->{balance_old} != 0) ? 
-                                                    ($self->{result_values}->{balance} - $self->{result_values}->{balance_old}) / 
-                                                    $self->{result_values}->{balance_old} * 100 : 0; 
+#     $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+#     $self->{result_values}->{balance} = Math::BigFloat->new($options{new_datas}->{$self->{instance} . '_balance'});
+#     $self->{result_values}->{balance_old} = Math::BigFloat->new($options{old_datas}->{$self->{instance} . '_balance'});
+#     $self->{result_values}->{balance_fluctuation_prct} = (defined($self->{result_values}->{balance_old}) && $self->{result_values}->{balance_old} != 0) ? 
+#                                                     ($self->{result_values}->{balance} - $self->{result_values}->{balance_old}) / 
+#                                                     $self->{result_values}->{balance_old} * 100 : 0; 
 
-    return 0;
-}
+#     return 0;
+# }
 
 sub custom_event_output {
     my ($self, %options) = @_;
@@ -196,7 +196,7 @@ sub custom_balance_output {
     my ($self, %options) = @_;
 
     if (0 eq $self->{result_values}->{balance_count}) {
-        return sprintf("No change in balance. Balance still %s wei",
+        return sprintf("No change in balance in last minute. Balance still %s wei",
             $self->{result_values}->{last_balance});
     } else {
         return sprintf(
