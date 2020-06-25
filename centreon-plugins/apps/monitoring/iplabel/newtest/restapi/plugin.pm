@@ -31,7 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'scenarios' => 'apps::monitoring::iplabel::newtest::restapi::mode::scenarios'
+        'discovery'      => 'apps::monitoring::iplabel::newtest::restapi::mode::discovery',
+        'list-instances' => 'apps::monitoring::iplabel::newtest::restapi::mode::listinstances',
+        'scenarios'      => 'apps::monitoring::iplabel::newtest::restapi::mode::scenarios'
     };
 
     $self->{custom_modes}{api} = 'apps::monitoring::iplabel::newtest::restapi::custom::api';
