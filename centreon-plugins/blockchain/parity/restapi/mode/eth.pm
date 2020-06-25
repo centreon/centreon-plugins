@@ -176,10 +176,18 @@ sub manage_selection {
    
    
     # conditional formating:
-    my $res_sync = @{$result}[6]->{result} ? hex((@{$result}[6]->{result}->{currentBlock} / @{$result}[6]->{result}->{highestBlock})) * 100 : 100;
-    my $res_startingBlock = $res_sync != 100 ? hex(@{$result}[6]->{result}->{startingBlock}) : 'none';
-    my $res_currentBlock = $res_sync != 100 ? hex(@{$result}[6]->{result}->{currentBlock}) : 'none';
-    my $res_highestBlock = $res_sync != 100 ? hex(@{$result}[6]->{result}->{highestBlock}) : 'none';
+    my $res_sync = 100;
+    # my $res_startingBlock = 'none';
+    # my $res_currentBlock = 'none';
+    # my $res_highestBlock = 'none';
+    
+    if (@{$result}[6]->{result}) {
+        my $res_sync = hex(@{$result}[6]->{result}->{highestBlock}) != 0 ? (hex(@{$result}[6]->{result}->{currentBlock}) * 100) / hex(@{$result}[6]->{result}->{highestBlock}) : 'none';
+        # my $res_startingBlock = hex(@{$result}[6]->{result}->{startingBlock});
+        # my $res_currentBlock = hex(@{$result}[6]->{result}->{currentBlock});
+        # my $res_highestBlock = hex(@{$result}[6]->{result}->{highestBlock});
+    } 
+    
 
     # Alerts management 
     # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
