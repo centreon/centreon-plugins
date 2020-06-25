@@ -62,7 +62,7 @@ sub manage_selection {
     #]
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->utf8->decode($options{stdout});
+        $decoded = JSON::XS->new->decode($options{stdout});
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
