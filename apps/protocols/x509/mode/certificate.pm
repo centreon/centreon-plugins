@@ -84,6 +84,7 @@ sub new {
         'port:s'            => { name => 'port' },
         'servername:s'      => { name => 'servername' },
         'ssl-opt:s@'        => { name => 'ssl_opt' },
+        'ssl-ignore-errors' => { name => 'ssl_ignore_errors' },
         'timeout:s'         => { name => 'timeout', default => '3' },
         'warning-status:s'  => { name => 'warning_status', default => '%{expiration} < 60' },
         'critical-status:s' => { name => 'critical_status', default => '%{expiration} < 30' },
@@ -145,7 +146,7 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "Error creating SSL socket: $!, SSL error: $SSL_ERROR");
         $self->{output}->option_exit();
     }
-    if (defined($SSL_ERROR)) {
+    if (!defined($self->{option_results}->{ssl_ignore_errors}) && defined($SSL_ERROR)) {
         $self->{output}->add_option_msg(short_msg => "SSL error: $SSL_ERROR");
         $self->{output}->option_exit();
     }
@@ -174,7 +175,7 @@ sub manage_selection {
         issuer => $issuer,
         expiration => $dt->epoch,
         date => $notafterdate,
-        alt_subjects => $alt_subjects,
+        alt_subjects => $alt_subjects
     };
 }
 
@@ -209,6 +210,10 @@ Examples:
 Do not verify certificate: --ssl-opt="SSL_verify_mode => SSL_VERIFY_NONE"
 
 Verify certificate: --ssl-opt="SSL_verify_mode => SSL_VERIFY_PEER" --ssl-opt="SSL_version => TLSv1"
+
+=item B<--ssl-ignore-errors>
+
+Ignore SSL handshake errors. For example: 'SSL error: SSL wants a read first'.
 
 =item B<--timeout>
 
