@@ -51,7 +51,7 @@ sub set_counters {
     
     $self->{maps_counters}->{websites} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'status' }, { name => 'auto_start' }, { name => 'display' } ],
+                key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
