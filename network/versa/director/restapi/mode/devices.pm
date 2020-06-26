@@ -26,6 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use centreon::plugins::misc;
+use Digest::MD5 qw(md5_hex);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -76,7 +77,9 @@ sub set_counters {
                 { name => 'device_status', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_memory', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'device_disk', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'device_alarms', type => 0, cb_prefix_output => 'prefix_alarm_output', skipped_code => { -10 => 1 } }
+                { name => 'device_alarms', type => 0, cb_prefix_output => 'prefix_alarm_output', skipped_code => { -10 => 1 } },
+                { name => 'device_policy', type => 0, cb_prefix_output => 'prefix_policy_output', skipped_code => { -10 => 1 } },
+                { name => 'device_health', display_long => 1, cb_prefix_output => 'prefix_health_output',  message_multiple => 'all health monitors are ok', type => 1, skipped_code => { -10 => 1 } },
             ]
         }
     ];
@@ -111,7 +114,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -119,7 +122,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memory_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -127,7 +130,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'memory used: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
         }
@@ -138,7 +141,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_disk_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -146,7 +149,7 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_disk_output'),
                 perfdatas => [
-                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1, label_extra_instance => 1 }
                 ]
             }
         },
@@ -154,7 +157,7 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'disk used: %.2f %%',
                 perfdatas => [
-                    { template => '%.2f', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
         }
@@ -168,11 +171,57 @@ sub set_counters {
                 key_values => [ { name => $_ }, { name => 'display' } ],
                 output_template => $_ . ': %s',
                 perfdatas => [
-                    { template => '%d', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, label_extra_instance => 1 }
                 ]
             }
         };
-    }   
+    }
+
+    $self->{maps_counters}->{device_policy} = [
+        { label => 'packets-dropped-novalidlink', nlabel => 'policy.violation.packets.dropped.novalidlink.count', set => {
+                key_values => [ { name => 'dropped_novalidlink', diff => 1 },  { name => 'display' } ],
+                output_template => 'packets dropped by no valid link: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'packets-dropped-slaaction', nlabel => 'policy.violation.packets.dropped.slaaction.count', set => {
+                key_values => [ { name => 'dropped_sla', diff => 1 },  { name => 'display' } ],
+                output_template => 'packets dropped by sla action: %s',
+                perfdatas => [
+                    { template => '%d', min => 0, label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{device_health} = [
+        { label => 'health-up', nlabel => 'health.up.count', set => {
+                key_values => [ { name => 'up' }, { name => 'total' }, { name => 'display' } ],
+                output_template => 'up: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'health-down', nlabel => 'health.down.count', set => {
+                key_values => [ { name => 'down' }, { name => 'total' }, { name => 'display' } ],
+                output_template => 'down: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
+                ]
+            }
+        },
+        { label => 'health-disabled', nlabel => 'health.disabled.count', set => {
+                key_values => [ { name => 'disabled' }, { name => 'total' }, { name => 'display' } ],
+                output_template => 'disabled: %s',
+                perfdatas => [
+                    { template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
 }
 
 sub device_long_output {
@@ -199,18 +248,30 @@ sub prefix_alarm_output {
     return 'alarms ';
 }
 
+sub prefix_policy_output {
+    my ($self, %options) = @_;
+
+    return 'policy violation ';
+}
+
+sub prefix_health_output {
+    my ($self, %options) = @_;
+
+    return "health monitor '" . $options{instance_value}->{display} . "' ";
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-device-name:s'     => { name => 'filter_device_name' },
-        'filter-device-type:s'     => { name => 'filter_device_type' },
-        'filter-device-org-name:s' => { name => 'filter_device_org_name' },
-        'unknown-status:s'         => { name => 'unknown_status', default => '' },
-        'warning-status:s'         => { name => 'warning_status', default => '' },
-        'critical-status:s'        => { name => 'critical_status', default => '%{ping_status} ne "reachable" or %{services_status} ne "good"' }
+        'organization:s'       => { name => 'organization' },
+        'filter-device-name:s' => { name => 'filter_device_name' },
+        'filter-device-type:s' => { name => 'filter_device_type' },
+        'unknown-status:s'     => { name => 'unknown_status', default => '' },
+        'warning-status:s'     => { name => 'warning_status', default => '' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{ping_status} ne "reachable" or %{services_status} ne "good"' }
     });
 
     return $self;
@@ -220,6 +281,11 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
+    if (!defined($self->{option_results}->{organization}) || $self->{option_results}->{organization} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --organization option");
+        $self->{output}->option_exit();
+    }
+
     $self->change_macros(macros => [
         'unknown_status', 'warning_status', 'critical_status'
     ]);
@@ -228,12 +294,11 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $organizations = $options{custom}->get_organizations();
-    my $devices = $options{custom}->get_appliances();
+    my $devices = $options{custom}->get_appliances_status_under_organization(organization => $self->{option_results}->{organization});
 
     $self->{global} = { total => 0 };
     $self->{devices} = {};
-    foreach my $device (values %{$devices->{entries}}) {
+    foreach my $device (@{$devices->{List}->{value}}) {
         if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
             $device->{name} !~ /$self->{option_results}->{filter_device_name}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $device->{name} . "': no matching filter name.", debug => 1);
@@ -244,19 +309,6 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping device '" . $device->{name} . "': no matching filter type.", debug => 1);
             next;
         }
-        if (defined($self->{option_results}->{filter_device_org_name}) && $self->{option_results}->{filter_device_org_name} ne '') {
-            my $matched = 0;
-            foreach (@{$device->{orgs}}) {
-                if ($organizations->{entries}->{ $_->{uuid} }->{name} =~ /$self->{option_results}->{filter_device_org_name}/) {
-                    $matched = 1;
-                    last;
-                }
-            }
-            if ($matched == 0) {
-                $self->{output}->output_add(long_msg => "skipping device '" . $device->{name} . "': no matching filter org.", debug => 1);
-                next;
-            }
-        }
 
         #"ping-status": "REACHABLE",
         #"sync-status": "OUT_OF_SYNC",
@@ -264,36 +316,41 @@ sub manage_selection {
         #"overall-status": "POWERED_ON",
         #"controller-status": "Unavailable",
         #"path-status": "Unavailable",
-        # "Hardware": {
+        #"Hardware": {
         #     "memory": "7.80GiB",
 	    #     "freeMemory": "1.19GiB",
 	    #     "diskSize": "80G",
 	    #     "freeDisk": "33G",
         #}
-        my $appliance_status = $options{custom}->execute(endpoint => '/vnms/dashboard/applianceStatus/' . $device->{uuid});
 
         $self->{devices}->{ $device->{name} } = {
             display => $device->{name},
             type => $device->{type},
             device_status => {
                 display => $device->{name},
-                ping_status => lc($appliance_status->{'versanms.ApplianceStatus'}->{'ping-status'}),
-                sync_status => lc($appliance_status->{'versanms.ApplianceStatus'}->{'sync-status'}),
-                services_status => lc($appliance_status->{'versanms.ApplianceStatus'}->{'services-status'}),
-                path_status => lc($appliance_status->{'versanms.ApplianceStatus'}->{'path-status'}),
-                controller_status => lc($appliance_status->{'versanms.ApplianceStatus'}->{'controller-status'})
+                ping_status => lc($device->{'ping-status'}),
+                sync_status => lc($device->{'sync-status'}),
+                services_status => lc($device->{'services-status'}),
+                path_status => lc($device->{'path-status'}),
+                controller_status => lc($device->{'controller-status'})
             },
             device_alarms => {
                 display => $device->{name}
-            }
+            },
+            device_policy => {
+                display => $device->{name},
+                dropped_novalidlink => $device->{policyViolation}->{rows}->[0]->{columnValues}->[1],
+                dropped_sla => $device->{policyViolation}->{rows}->[0]->{columnValues}->[2]
+            },
+            device_health => {}
         };
 
         my $total = centreon::plugins::misc::convert_bytes(
-            value => $appliance_status->{'versanms.ApplianceStatus'}->{Hardware}->{memory},
+            value => $device->{Hardware}->{memory},
             pattern => '([0-9\.]+)(.*)$'
         );
         my $free = centreon::plugins::misc::convert_bytes(
-            value => $appliance_status->{'versanms.ApplianceStatus'}->{Hardware}->{freeMemory},
+            value => $device->{Hardware}->{freeMemory},
             pattern => '([0-9\.]+)(.*)$'
         );
         $self->{devices}->{ $device->{name} }->{device_memory} = {
@@ -306,11 +363,11 @@ sub manage_selection {
         };
 
         $total = centreon::plugins::misc::convert_bytes(
-            value => $appliance_status->{'versanms.ApplianceStatus'}->{Hardware}->{diskSize},
+            value => $device->{Hardware}->{diskSize},
             pattern => '([0-9\.]+)(.*)$'
         );
         $free = centreon::plugins::misc::convert_bytes(
-            value => $appliance_status->{'versanms.ApplianceStatus'}->{Hardware}->{freeDisk},
+            value => $device->{Hardware}->{freeDisk},
             pattern => '([0-9\.]+)(.*)$'
         );
         $self->{devices}->{ $device->{name} }->{device_disk} = {
@@ -322,16 +379,27 @@ sub manage_selection {
             prct_free => ($free * 100 / $total)
         };
 
-        foreach (@{$appliance_status->{'versanms.ApplianceStatus'}->{alarmSummary}->{rows}}) {
+        foreach (@{$device->{alarmSummary}->{rows}}) {
             $self->{devices}->{ $device->{name} }->{device_alarms}->{ lc($_->{firstColumnValue}) } = $_->{columnValues}->[0];
+        }
+
+        foreach (@{$device->{cpeHealth}->{rows}}) {
+            $self->{devices}->{ $device->{name} }->{device_health}->{ lc($_->{firstColumnValue}) } = {
+                display => lc($_->{firstColumnValue}),
+                up => $_->{columnValues}->[0],
+                down => $_->{columnValues}->[1],
+                disabled => $_->{columnValues}->[2],
+                total => $_->{columnValues}->[0] + $_->{columnValues}->[1] + $_->{columnValues}->[2]
+            };
         }
 
         $self->{global}->{total}++;
     }
 
-    if (scalar(keys %{$self->{devices}}) <= 0) {
-        $self->{output}->output_add(short_msg => 'no devices found');
-    }
+    $self->{cache_name} = 'versa_' . $self->{mode} . '_' . $options{custom}->get_hostname() . '_' . $self->{option_results}->{organization} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_device_name}) ? md5_hex($self->{option_results}->{filter_device_name}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_device_type}) ? md5_hex($self->{option_results}->{filter_device_type}) : md5_hex('all'))
 }
 
 1;
@@ -344,6 +412,10 @@ Check devices.
 
 =over 8
 
+=item B<--organization>
+
+Check device under a organization (Required).
+
 =item B<--filter-device-name>
 
 Filter device by name (Can be a regexp).
@@ -351,10 +423,6 @@ Filter device by name (Can be a regexp).
 =item B<--filter-device-type>
 
 Filter device by type (Can be a regexp).
-
-=item B<--filter-device-org-name>
-
-Filter device by organization name (Can be a regexp).
 
 =item B<--unknown-status>
 
@@ -374,9 +442,11 @@ Can used special variables like: %{ping_status}, %{services_status}, %{sync_stat
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'total',
-'traffic-in', 'traffic-out', 'connections-success', 'connections-auth',
-'connections-assoc', 'connections-dhcp', 'connections-dns'.
+Can be: 'total','memory-usage', 'memory-usage-free', 'memory-usage-prct',
+'disk-usage', 'disk-usage-free', 'disk-usage-prct',
+'alarms-critical', 'alarms-major', 'alarms-minor', 'alarms-warning', 'alarms-indeterminate',
+'health-up', 'health-down', 'health-disabled',
+'packets-dropped-novalidlink', 'packets dropped by sla action'.
 
 =back
 
