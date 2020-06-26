@@ -254,11 +254,11 @@ sub cache_versa_entities {
 sub get_organizations {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/organizations.json');
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/organizations.json');
 
     $self->cache_versa_entities();
     return $self->{cache_organizations} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-    #my $datas = $self->request_api(endpoint => '/api/config/nms/provider/organizations/organization');
+    my $datas = $self->request_api(endpoint => '/api/config/nms/provider/organizations/organization');
 
     my $results = { entries => {}, names => { } };
 
@@ -275,11 +275,11 @@ sub get_organizations {
 sub get_appliances {
     my ($self, %options) = @_;
 
-    my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/appliances.json');
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/appliances.json');
 
     $self->cache_versa_entities();
     return $self->{cache_appliances} if (!defined($options{disable_cache}) || $options{disable_cache} == 0);
-    #my $datas = $self->request_api(endpoint => '/api/config/nms/provider/appliances/appliance');
+    my $datas = $self->request_api(endpoint => '/api/config/nms/provider/appliances/appliance');
 
     my $results = { entries => {}, names => { }, types => { } };
 
@@ -295,10 +295,17 @@ sub get_appliances {
     return $results;
 }
 
-sub execute {
+sub get_appliances_status_under_organization {
     my ($self, %options) = @_;
 
-    #return $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/plop.json');
+    #my $datas = $self->bouchon(file => '/home/qgarnier/clients/plugins/todo/versa/Versa-Centreon/tutu.txt.pretty');
+
+    my $datas = $self->request_api(endpoint => '/vnms/dashboard/tenantDetailAppliances/' . $options{organization});
+    return $datas;
+}
+
+sub execute {
+    my ($self, %options) = @_;
 
     $self->cache_versa_entities();
     my $results = $self->request_api(
