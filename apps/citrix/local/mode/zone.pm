@@ -89,7 +89,7 @@ sub run {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => $numServers . " servers in zone '" . $zone . "'");
         }
-        $self->{output}->perfdata_add(label => 'servers_' . $zone,
+        $self->{output}->perfdata_add(label => 'servers_' . $zone, nlabel => $zone . '#zone.servers.count',
                                       value => $numServers,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

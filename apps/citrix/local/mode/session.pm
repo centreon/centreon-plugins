@@ -127,7 +127,7 @@ sub run {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => "Server '" . $server . "' active sessions : " . $activeSessions . " [disconnected sessions : " . $disconnectedSessions . "] [total sessions : " . $sessions . "]");
         }
-        $self->{output}->perfdata_add(label => 'active_sessions_' . $server,
+        $self->{output}->perfdata_add(label => 'active_sessions_' . $server, nlabel => $server . '#sessions.active.count',
                                       value => $activeSessions,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),

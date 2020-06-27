@@ -90,7 +90,7 @@ sub run {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => $numServers . " servers in in folder '" . $folderDN . "'");
         }
-        $self->{output}->perfdata_add(label => 'servers_' . $folderDN,
+        $self->{output}->perfdata_add(label => 'servers_' . $folderDN, nlabel => $folderDN . '#folder.servers.count',
                                       value => $numServers,
                                       warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
                                       critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
