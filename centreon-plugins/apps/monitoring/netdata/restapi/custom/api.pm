@@ -22,12 +22,8 @@ package apps::monitoring::netdata::restapi::custom::api;
 
 use strict;
 use warnings;
-use DateTime;
 use centreon::plugins::http;
-use centreon::plugins::statefile;
 use JSON::XS;
-use URI::Encode;
-use Digest::MD5 qw(md5_hex);
 
 sub new {
     my ($class, %options) = @_;
@@ -45,12 +41,11 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            'hostname:s'            => { name => 'hostname' },
-            'port:s'                => { name => 'port' },
-            'proto:s'               => { name => 'proto' },
-            'timeout:s'             => { name => 'timeout' },
-            'reload-cache-time:s'   => { name => 'reload_cache_time' },
-            'endpoint:s'            => { name => 'endpoint'},
+            'hostname:s' => { name => 'hostname' },
+            'port:s'     => { name => 'port' },
+            'proto:s'    => { name => 'proto' },
+            'timeout:s'  => { name => 'timeout' },
+            'endpoint:s' => { name => 'endpoint'}
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
@@ -93,6 +88,11 @@ sub check_options {
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 10;
     $self->{endpoint} = (defined($self->{option_results}->{endpoint})) ? $self->{option_results}->{endpoint} : '/api/v1';
 
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+        $self->{output}->option_exit();
+    }
+
     return 0;
 }
 
@@ -106,25 +106,23 @@ sub build_options_for_httplib {
     $self->{option_results}->{timeout} = $self->{timeout};
     $self->{option_results}->{warning_status} = '';
     $self->{option_results}->{critical_status} = '';
-    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} > 400';
+    $self->{option_results}->{unknown_status} = '%{http_code} < 200 or %{http_code} >= 400';
 }
 
 sub settings {
     my ($self, %options) = @_;
 
+    return if (defined($self->{settings_done}));
     $self->build_options_for_httplib();
     $self->{http}->add_header(key => 'Accept', value => 'application/json');
     $self->{http}->set_options(%{$self->{option_results}});
+    $self->{settings_done} = 1;
 }
 
 sub request_api {
     my ($self, %options) = @_;
 
-    $self->settings(content_type => 'application/x-www-form-urlencoded');
-
-    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port} .
-        $options{url_path} . "'", debug => 1);
-
+    $self->settings();
     my $content = $self->{http}->request(%options);
 
     if (!defined($content) || $content eq '') {
@@ -137,7 +135,6 @@ sub request_api {
         $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
@@ -163,7 +160,10 @@ sub list_charts {
     my ($self, %options) = @_;
 
     my $url_path = $self->{endpoint} . '/charts';
-    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+    my $response = $self->request_api(
+        method => 'GET',
+        url_path => $url_path
+    );
 
     return $response;
 }
@@ -172,8 +172,11 @@ sub get_chart_properties {
     my ($self, %options) = @_;
 
     my $url_path = $self->{endpoint} . '/chart';
-    $url_path .= '?chart=' . $options{chart};
-    my $response = $self->request_api(method => 'GET', url_path => $url_path);
+    my $response = $self->request_api(
+        method => 'GET',
+        url_path => $url_path,
+        get_param => ['chart=' . $options{chart}]
+    );
     my $filter_info = defined ($options{filter_info}) ? $options{filter_info} : '';
 
     return defined ($filter_info) ? $response->{$filter_info} : $response;
@@ -183,14 +186,21 @@ sub get_data {
     my ($self, %options) = @_;
 
     my $url_path = $self->{endpoint} . '/data';
-    $url_path .= '?chart=' . $options{chart};
-    $url_path .= '&options=null2zero';
-    $url_path .= '&options=abs' if defined ($options{absolute});
-    $url_path .= '&after=-' . $options{after_period};
-    $url_path .= '&group=' . $options{group};
-    $url_path .= defined ($options{points}) ? '&points=' . $options{points} : '&points=1';
-    $url_path .= '&dimensions=' . $options{dimensions} if defined ($options{dimensions});
-    my $response = $self->request_api(method => 'GET', url_path => $url_path),;
+    my $get_param = [
+        'chart=' . $options{chart},
+        'options=null2zero',
+        'after=-' . $options{after_period},
+        'group=' . $options{group},
+        defined($options{points}) ? 'points=' . $options{points} : 'points=1'
+    ];
+    push @$get_param, 'options=abs' if (defined($options{absolute}));
+    push @$get_param, 'dimensions=' . $options{dimensions} if (defined($options{dimensions}));
+
+    my $response = $self->request_api(
+        method => 'GET',
+        url_path => $url_path,
+        get_param => $get_param
+    );
 
     return $response;
 }

@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::monitoring::netdata::restapi::mode::loadaverage;
+package apps::monitoring::netdata::restapi::mode::load;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -28,14 +28,14 @@ use warnings;
 sub prefix_load_output {
     my ($self, %options) = @_;
 
-    return "Load average ";
+    return 'Load average ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'loadaverage', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 }, cb_prefix_output => 'prefix_load_output' }
+        { name => 'loadaverage', type => 0, skipped_code => { -10 => 1 }, cb_prefix_output => 'prefix_load_output' }
     ];
 
     $self->{maps_counters}->{loadaverage} = [
@@ -43,7 +43,7 @@ sub set_counters {
                 key_values => [ { name => 'load1' } ],
                 output_template => '%.2f (1m)',
                 perfdatas => [
-                    { label => 'load1', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0 }
                 ]
             }
         },
@@ -51,7 +51,7 @@ sub set_counters {
                 key_values => [ { name => 'load5' } ],
                 output_template => '%.2f (5m)',
                 perfdatas => [
-                    { label => 'load5', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0 }
                 ]
             }
         },
@@ -59,7 +59,7 @@ sub set_counters {
                 key_values => [ { name => 'load15' }, { name => 'load1' }, { name => 'load5' } ],
                 output_template => '%.2f (15m)',
                 perfdatas => [
-                    { label => 'load15', template => '%.2f', min => 0 }
+                    { template => '%.2f', min => 0 }
                 ]
             }
         }
@@ -72,20 +72,16 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-          'chart-period:s'      => { name => 'chart_period', default => '300' },
-          'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
+        'chart-period:s'      => { name => 'chart_period', default => '300' },
+        'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
+
     my $result = $options{custom}->get_data(
         chart => 'system.load',
         points => $self->{option_results}->{chart_point},

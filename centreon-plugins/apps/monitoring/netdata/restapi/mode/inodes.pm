@@ -37,11 +37,10 @@ sub set_counters {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
                 output_template => 'Used: %.2f %%',
                 perfdatas => [
-                    { label => 'prct_used', value => 'prct_used', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%d', unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -64,11 +63,6 @@ sub new {
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 sub manage_selection {
@@ -172,7 +166,6 @@ Critical threshold on FS used Inodes (in %).
 
 On specific systems, partitions can have reserved space/inodes (like ext4 for root).
 This option will consider this space in the calculation (like for the 'df' command).
-
 
 =back
 

@@ -38,23 +38,21 @@ sub set_counters {
                 key_values => [ { name => 'average' }, { name => 'count' } ],
                 output_template => '%.2f %%',
                 perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{cpu_results} = [
         { label => 'core', nlabel => 'core.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'usage' }, { name => 'display' } ],
-                output_template => 'usage : %.2f %%',
+                output_template => 'usage: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu', value => 'usage', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -76,17 +74,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-          'chart-period:s'      => { name => 'chart_period', default => '300' },
-          'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
+        'chart-period:s'      => { name => 'chart_period', default => '300' },
+        'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
 }
 
 sub manage_selection {
@@ -98,21 +90,30 @@ sub manage_selection {
         my $cpu_core = 'cpu.cpu' . $i;
         my $result = $options{custom}->get_data(
             chart => $cpu_core,
-            points => $self->{option_results}->{chart_point},
             after_period => $self->{option_results}->{chart_period},
             group => $self->{option_results}->{chart_statistics}
         );
-        foreach my $cpu_value (@{$result->{data}}) {
-            foreach my $cpu_label (@{$result->{labels}}) {
-                $self->{cpu_core}->{$i}->{$cpu_label} = shift @{$cpu_value};
+
+        my ($usage, $count) = (0, 0);
+        foreach my $data (@{$result->{data}}) {
+            while (my ($index, $label) = each(@{$result->{labels}})) {
+                next if ($label eq 'time');
+
+                $usage += $data->[$index];
             }
+            $count++;
         }
-        $self->{cpu_results}->{$i} = {
-            display => $cpu_core,
-            usage => $self->{cpu_core}->{$i}->{user}
-        };
-        $cpu_total_usage += $self->{cpu_results}->{$i}->{usage};
+
+        if ($count > 0) {
+            $self->{cpu_results}->{$i} = {
+                display => $i,
+                usage => $usage / $count
+            };
+
+            $cpu_total_usage += ($usage / $count);
+        }
     }
+
     my $avg_cpu = $cpu_total_usage / $cpu_number;
     $self->{cpu_avg} = {
         average => $avg_cpu,

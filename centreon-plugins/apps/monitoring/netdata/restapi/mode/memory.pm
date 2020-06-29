@@ -29,7 +29,7 @@ sub custom_usage_output {
     my ($self, %options) = @_;
 
     return sprintf(
-        'Ram Total: %s %s Used (-buffers/cache): %s %s (%.2f%%) Free: %s %s (%.2f%%)',
+        'Ram total: %s %s used (-buffers/cache): %s %s (%.2f%%) free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
         $self->{result_values}->{prct_used},
@@ -42,7 +42,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'ram', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'ram', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{ram} = [
@@ -50,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
                 ]
             }
         },
@@ -58,15 +58,15 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
                 ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => 'Ram Used : %.2f %%',
+                output_template => 'Ram used : %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
                 ]
             }
         },
@@ -75,7 +75,7 @@ sub set_counters {
                 output_template => 'Buffer: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'buffer', template => '%d', min => 0, unit => 'B' }
+                    { template => '%d', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -84,7 +84,7 @@ sub set_counters {
                 output_template => 'Cached: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'cached', template => '%d', min => 0, unit => 'B' }
+                    { template => '%d', min => 0, unit => 'B' }
                 ]
             }
         },
@@ -93,7 +93,7 @@ sub set_counters {
                 output_template => 'Shared: %s %s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'shared', template => '%d', min => 0, unit => 'B' }
+                    { template => '%d', min => 0, unit => 'B' }
                 ]
             }
         }
@@ -106,21 +106,16 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-          'chart-period:s'      => { name => 'chart_period', default => '300' },
-          'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
+        'chart-period:s'      => { name => 'chart_period', default => '300' },
+        'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
+
     my $result = $options{custom}->get_data(
         chart => 'system.ram',
         points => $self->{option_results}->{chart_point},

@@ -28,20 +28,21 @@ use warnings;
 sub custom_swap_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)",
+    return sprintf(
+        'Swap total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
         $self->{result_values}->{prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
-        $self->{result_values}->{prct_free});
-    return $msg;
+        $self->{result_values}->{prct_free}
+    );
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } },
+        { name => 'swap', type => 0, message_separator => ' - ', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{swap} = [
@@ -49,29 +50,26 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'swap.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 },
-                ],
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'swap.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
-                output_template => 'Used : %.2f %%',
+                output_template => 'Swap used: %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
-                      unit => '%' },
-                ],
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -81,31 +79,27 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-          'chart-period:s'      => { name => 'chart_period', default => '300' },
-          'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
+        'chart-period:s'      => { name => 'chart_period', default => '300' },
+        'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
-        my $result = $options{custom}->get_data(
-            chart => 'system.swap',
-            points => $self->{option_results}->{chart_point},
-            after_period => $self->{option_results}->{chart_period},
-            group => $self->{option_results}->{chart_statistics}
-        );
-        foreach my $swap_value (@{$result->{data}}) {
-            foreach my $swap_label (@{$result->{labels}}) {
-                $self->{swap_data}->{$swap_label} = shift @{$swap_value};
-            }
+
+    my $result = $options{custom}->get_data(
+        chart => 'system.swap',
+        points => $self->{option_results}->{chart_point},
+        after_period => $self->{option_results}->{chart_period},
+        group => $self->{option_results}->{chart_statistics}
+    );
+    foreach my $swap_value (@{$result->{data}}) {
+        foreach my $swap_label (@{$result->{labels}}) {
+            $self->{swap_data}->{$swap_label} = shift @{$swap_value};
         }
+    }
 
     my $used = $self->{swap_data}->{used} * 1024 * 1024;
     my $free = $self->{swap_data}->{free} * 1024 * 1024;

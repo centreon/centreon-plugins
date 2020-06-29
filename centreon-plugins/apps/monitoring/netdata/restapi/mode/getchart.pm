@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_metric_perfdata {
     my ($self, %options) = @_;
@@ -34,7 +34,7 @@ sub custom_metric_perfdata {
         value => $self->{result_values}->{value},
         unit  => $self->{result_values}->{unit},
         warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-metric'),
-        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-metric')
     );
 }
 
@@ -60,34 +60,22 @@ sub custom_metric_output {
     );
 }
 
-sub custom_metric_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{value} = $options{new_datas}->{$self->{instance} . '_value'};
-    $self->{result_values}->{perf_label} = $options{new_datas}->{$self->{instance} . '_perf_label'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{unit} = $options{new_datas}->{$self->{instance} . '_unit'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, message_multiple => 'All metrics are ok' },
+        { name => 'metric', type => 1, message_multiple => 'All metrics are ok' }
     ];
 
     $self->{maps_counters}->{metric} = [
         { label => 'metric', set => {
                 key_values => [ { name => 'value' }, { name => 'perf_label' }, { name => 'display' }, { name => 'unit' } ],
-                closure_custom_calc => $self->can('custom_metric_calc'),
                 closure_custom_output => $self->can('custom_metric_output'),
                 closure_custom_perfdata => $self->can('custom_metric_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_metric_threshold'),
+                closure_custom_threshold_check => $self->can('custom_metric_threshold')
             }
         }
     ];
-
 }
 
 sub new {
@@ -113,7 +101,6 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Missing --chart-name option or value.");
        $self->{output}->option_exit();
     }
-
 }
 
 sub manage_selection {
@@ -141,14 +128,15 @@ sub manage_selection {
             $self->{metrics}->{$chart_name}->{$chart_label} = shift @{$chart_value};
         }
     }
+
     foreach my $metric (keys %{$self->{metrics}->{$chart_name}}) {
-        next if $metric eq 'time';
+        next if ($metric eq 'time');
         foreach my $value (values %{$self->{metrics}->{$chart_name}}) {
             $self->{metric}->{$metric . '_' . $stat} = {
                     display => $metric . '_' . $stat,
                     value => $value,
                     unit => $unit,
-                    perf_label => $metric . '_' . $stat,
+                    perf_label => $metric . '_' . $stat
             };
         }
     }
