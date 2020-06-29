@@ -86,13 +86,7 @@ __END__
 
 =head1 MODE
 
-List Mulesoft Anypoint applications.
-
-=over 8
-
-=item B<--filter-name>
-
-Filter application name (Can be a regexp).
+List system disks using the Netdata agent Restapi.
 
 =back
 
