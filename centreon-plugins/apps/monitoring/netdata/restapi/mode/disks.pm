@@ -175,7 +175,7 @@ Check disks FS usage of *nix based servers using the Netdata agent RestAPI.
 
 Example:
 perl centreon_plugins.pl --plugin=apps::monitoring::netdata::restapi::plugin
---mode=diskusage --hostname=10.0.0.1 --chart-period=300 --chart-statistics=average --warning-usage-prct=80 --critical-usage-prct=90 --verbose
+--mode=disks --hostname=10.0.0.1 --chart-period=300 --chart-statistics=average --warning-usage-prct=80 --critical-usage-prct=90 --verbose
 
 More information on'https://learn.netdata.cloud/docs/agent/web/api'.
 
