@@ -111,7 +111,7 @@ Check the average load of *nix based servers using the Netdata agent RestAPI.
 
 Example:
 perl centreon-plugins/centreon_plugins.pl --plugin=apps::monitoring::netdata::restapi::plugin
---mode=loadaverage --hostname=10.0.0.1 --chart-period=300 --warning-load15='4' --critical-load15='5' --verbose
+--mode=load --hostname=10.0.0.1 --chart-period=300 --warning-load15='4' --critical-load15='5' --verbose
 
 More information on 'https://learn.netdata.cloud/docs/agent/web/api'.
 
