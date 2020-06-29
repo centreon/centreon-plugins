@@ -309,8 +309,7 @@ sub set_counters_global {
                 output_template => 'AdminStatus Up : %s', output_error_template => 'AdminStatus Up : %s',
                 output_use => 'global_admin_up',  threshold_use => 'global_admin_up',
                 perfdatas => [
-                    { label => 'total_admin_up', value => 'global_admin_up', template => '%s',
-                      min => 0, max => 'total_port' }
+                    { label => 'total_admin_up', template => '%s', min => 0, max => 'total_port' }
                 ]
             }
         },
@@ -319,8 +318,7 @@ sub set_counters_global {
                 output_template => 'AdminStatus Down : %s', output_error_template => 'AdminStatus Down : %s',
                 output_use => 'global_admin_down',  threshold_use => 'global_admin_down',
                 perfdatas => [
-                    { label => 'total_admin_down', value => 'global_admin_down', template => '%s',
-                      min => 0, max => 'total_port' }
+                    { label => 'total_admin_down', template => '%s', min => 0, max => 'total_port' }
                 ]
             }
         },
@@ -329,8 +327,7 @@ sub set_counters_global {
                 output_template => 'OperStatus Up : %s', output_error_template => 'OperStatus Up : %s',
                 output_use => 'global_oper_up',  threshold_use => 'global_oper_up',
                 perfdatas => [
-                    { label => 'total_oper_up', value => 'global_oper_up', template => '%s',
-                      min => 0, max => 'total_port' }
+                    { label => 'total_oper_up', template => '%s', min => 0, max => 'total_port' }
                 ]
             }
         },
@@ -339,8 +336,7 @@ sub set_counters_global {
                 output_template => 'OperStatus Down : %s', output_error_template => 'OperStatus Down : %s',
                 output_use => 'global_oper_down',  threshold_use => 'global_oper_down',
                 perfdatas => [
-                    { label => 'global_oper_down', value => 'global_oper_down', template => '%s',
-                      min => 0, max => 'total_port' }
+                    { label => 'global_oper_down', template => '%s', min => 0, max => 'total_port' }
                 ]
             }
         }
@@ -800,7 +796,8 @@ sub new {
         'show-cache'              => { name => 'show_cache' },
         'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
         'nagvis-perfdata'         => { name => 'nagvis_perfdata' },
-        'force-counters32'        => { name => 'force_counters32' }
+        'force-counters32'        => { name => 'force_counters32' },
+         'force-counters64'       => { name => 'force_counters64' }
     });
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { 'add-traffic' => { name => 'add_traffic' } });
@@ -1055,10 +1052,13 @@ sub load_traffic {
     my ($self, %options) = @_;
 
     $self->set_oids_traffic();
-    $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
-    if ($self->{get_speed} == 1) {
-        $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
+    if (!defined($self->{option_results}->{force_counters64})) {
+        $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
+        if ($self->{get_speed} == 1) {
+            $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
+        }
     }
+
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(oids => [$self->{oid_in64}, $self->{oid_out64}], instances => $self->{array_interface_selected});
         if ($self->{get_speed} == 1) {
@@ -1083,14 +1083,17 @@ sub load_errors {
 sub load_cast {
     my ($self, %options) = @_;
 
-    $self->set_oids_cast();    
-    $self->{snmp}->load(
-        oids => [
-            $self->{oid_ifInUcastPkts}, $self->{oid_ifInBroadcastPkts}, $self->{oid_ifInMulticastPkts},
-            $self->{oid_ifOutUcastPkts}, $self->{oid_ifOutMulticastPkts}, $self->{oid_ifOutBroadcastPkts}
-        ],
-        instances => $self->{array_interface_selected}
-    );
+    $self->set_oids_cast();
+    if (!defined($self->{option_results}->{force_counters64})) {  
+        $self->{snmp}->load(
+            oids => [
+                $self->{oid_ifInUcastPkts}, $self->{oid_ifInBroadcastPkts}, $self->{oid_ifInMulticastPkts},
+                $self->{oid_ifOutUcastPkts}, $self->{oid_ifOutMulticastPkts}, $self->{oid_ifOutBroadcastPkts}
+            ],
+            instances => $self->{array_interface_selected}
+        );
+    }
+
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(
             oids => [
@@ -1116,7 +1119,9 @@ sub load_volume {
     my ($self, %options) = @_;
     
     $self->set_oids_traffic();
-    $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
+    if (!defined($self->{option_results}->{force_counters64})) {
+        $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
+    }
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
         $self->{snmp}->load(oids => [$self->{oid_in64}, $self->{oid_out64}], instances => $self->{array_interface_selected});
     }
@@ -1430,6 +1435,10 @@ Set interface speed for outgoing traffic (in Mb).
 =item B<--no-skipped-counters>
 
 Don't skip counters when no change.
+
+=item B<--force-counters64>
+
+Force to use 64 bits counters only. Can be used to improve performance.
 
 =item B<--force-counters32>
 
