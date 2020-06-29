@@ -57,7 +57,7 @@ sub run {
         );
     }
 
-    $self->{output}->output_add(severity => 'OK', short_msg => 'Server interfaces:');
+    $self->{output}->output_add(severity => 'OK', short_msg => 'Server disks:');
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
