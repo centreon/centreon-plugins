@@ -516,7 +516,7 @@ sub set_counters_speed {
                       unit => 'b/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
-        },
+        }
     ;
 }
 
@@ -1107,7 +1107,9 @@ sub load_cast {
 
 sub load_speed {
     my ($self, %options) = @_;
-    
+
+    return if (defined($self->{option_results}->{add_traffic}) && ($self->{get_speed} == 1));
+
     $self->set_oids_speed();
     $self->{snmp}->load(oids => [$self->{oid_speed32}], instances => $self->{array_interface_selected});
     if (!$self->{snmp}->is_snmpv1() && !defined($self->{option_results}->{force_counters32})) {
@@ -1117,7 +1119,9 @@ sub load_speed {
 
 sub load_volume {
     my ($self, %options) = @_;
-    
+
+    return if (defined($self->{option_results}->{add_traffic}));
+
     $self->set_oids_traffic();
     if (!defined($self->{option_results}->{force_counters64})) {
         $self->{snmp}->load(oids => [$self->{oid_in32}, $self->{oid_out32}], instances => $self->{array_interface_selected});
