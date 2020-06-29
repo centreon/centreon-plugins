@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.5';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'cluster-status'  => 'network::paloalto::snmp::mode::clusterstatus',
         'cpu'             => 'network::paloalto::snmp::mode::cpu',
         'gp-usage'        => 'network::paloalto::snmp::mode::gpusage',
@@ -40,7 +40,8 @@ sub new {
         'memory'          => 'network::paloalto::snmp::mode::memory',
         'panorama'        => 'network::paloalto::snmp::mode::panorama',
         'sessions'        => 'network::paloalto::snmp::mode::sessions',
-    );
+        'signatures'      => 'network::paloalto::snmp::mode::signatures'
+    };
 
     return $self;
 }
