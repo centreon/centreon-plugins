@@ -99,6 +99,7 @@ sub prefix_alarm_output {
 sub manage_selection {
     my ($self, %options) = @_;
 
+    $self->{global} = { warning => 0, critical => 0 };
     $self->{alarms} = {};
     my $result = $options{custom}->get_alarms();
     foreach my $alarm (values %{$result->{alarms}}) {
@@ -119,11 +120,7 @@ sub manage_selection {
         $self->{global}->{critical}++ if ($alarm->{status} =~ m/CRITICAL/);
     }
 
-    $self->{global} = {
-        total => scalar(keys %{$self->{alarms}}),
-        warning => 0,
-        critical => 0
-    };
+    $self->{global}->{total} = scalar(keys %{$self->{alarms}});
 }
 
 1;
