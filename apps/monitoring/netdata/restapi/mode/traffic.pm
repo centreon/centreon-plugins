@@ -39,26 +39,24 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{interfaces} = [
-        { label => 'traffic-in', nlabel => 'network.trafficin.bitspersecond', set => {
-                key_values => [ { name => 'traffic_in' }, { name => 'traffic_out' }, { name => 'display' } ],
-                output_template => 'Traffic In: %.2f%s/s',
+        { label => 'traffic-in', nlabel => 'network.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'traffic_in' }, { name => 'speed' }, { name => 'display' } ],
+                output_template => 'traffic in: %.2f%s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_in', value => 'traffic_in', template => '%d', min => 0, max => 'speed',
-                      unit => 'b/s', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'speed', unit => 'b/s', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'traffic-out', nlabel => 'network.trafficin.bitspersecond', set => {
-                key_values => [ { name => 'traffic_out' }, { name => 'traffic_in' }, { name => 'display' } ],
-                output_template => 'Traffic Out: %.2f%s/s',
+        { label => 'traffic-out', nlabel => 'network.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'traffic_out' }, { name => 'speed' }, { name => 'display' } ],
+                output_template => 'traffic out: %.2f%s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_out', value => 'traffic_out', template => '%d', min => 0, max => 'speed',
-                      unit => 'b/s', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%d', min => 0, max => 'speed', unit => 'b/s', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
-        },
+        }
     ];
 }
 
@@ -68,33 +66,30 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-          'chart-period:s'      => { name => 'chart_period', default => '300' },
-          'chart-statistics:s'  => { name => 'chart_statistics', default => 'average' },
-          'interface-name:s'    => { name => 'interface_name' },
-          'speed:s'             => { name => 'speed', default => '1000000000'}
+        'chart-period:s'     => { name => 'chart_period', default => '300' },
+        'chart-statistics:s' => { name => 'chart_statistics', default => 'average' },
+        'interface-name:s'   => { name => 'interface_name' },
+        'speed:s'            => { name => 'speed' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     my $full_list = $options{custom}->list_charts();
+    my $interface_list = [];
 
     foreach my $chart (values %{$full_list->{charts}}) {
         next if ($chart->{name} !~ '^net\.');
-        push @{$self->{interface_list}}, $chart->{name};
+        push @$interface_list, { name => $chart->{name}, speed => $chart->{chart_variables}->{nic_speed_max} };
     }
 
-    foreach my $interface (@{$self->{interface_list}}) {
+    $self->{interfaces} = {};
+    foreach my $int (@$interface_list) {
         my $result = $options{custom}->get_data(
-            chart => $interface,
+            chart => $int->{name},
             dimensions => 'received,sent',
             points => $self->{option_results}->{chart_point},
             after_period => $self->{option_results}->{chart_period},
@@ -102,24 +97,29 @@ sub manage_selection {
             absolute => 1
         );
 
-        $interface =~ s/net.//;
+        $int->{name} =~ s/net.//;
 
         next if (defined($self->{option_results}->{interface_name}) &&
             $self->{option_results}->{interface_name} ne '' &&
-            $interface !~ /$self->{option_results}->{interface_name}/
+            $int->{name} !~ /$self->{option_results}->{interface_name}/
         );
 
-        foreach my $interface_value (@{$result->{data}}) {
-            foreach my $interface_label (@{$result->{labels}}) {
-                $self->{interface}->{$interface}->{$interface_label} = shift @{$interface_value};
+        my $count = 0;
+        # In Kb/s
+        my $metrics = { received => 0, sent => 0 };
+        foreach my $data (@{$result->{data}}) {
+            while (my ($index, $label) = each(@{$result->{labels}})) {
+                $metrics->{$label} += $data->[$index];
             }
+            $count++;
         }
 
-        $self->{interfaces}->{$interface} = {
-            display => $interface,
-            traffic_in => $self->{interface}->{$interface}->{received} * 1000,
-            traffic_out => $self->{interface}->{$interface}->{sent} * 1000,
-            speed => $self->{option_results}->{speed}
+        $self->{interfaces}->{ $int->{name} } = {
+            display => $int->{name},
+            traffic_in => $metrics->{received} * 1000,
+            traffic_out => $metrics->{sent} * 1000,
+            speed => defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '' ?
+                $self->{option_results}->{speed} : $int->{speed} * 1000 * 1000
         };
     }
 
@@ -163,8 +163,8 @@ Example: --interface-name='^eth0$'
 
 =item B<--speed>
 
-Set interfaces speed in B/s.
-Default: 1000000000 (1GB/s).
+Set interfaces speed in b/s.
+Default: 1000000000 (1Gb/s).
 
 =item B<--warning-traffic-*>
 

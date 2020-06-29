@@ -24,12 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return sprintf('Status: %s, Current state: %s', $self->{result_values}->{status}, $self->{result_values}->{value_string});
+    return sprintf('status: %s, current state: %s', $self->{result_values}->{status}, $self->{result_values}->{value_string});
 }
 
 sub set_counters {
@@ -43,28 +43,27 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'alarms-total', nlabel => 'netdata.alarms.current.total.count', set => {
                 key_values      => [ { name => 'total' }  ],
-                output_template => "%s",
-                perfdatas       => [ { value => 'total', template => '%d', min => 0 } ]
+                output_template => 'total: %s',
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'alarms-warning', nlabel => 'netdata.alarms.current.warning.count', set => {
                 key_values      => [ { name => 'warning' }  ],
-                output_template => "Warning Alarms : %s",
-                perfdatas       => [ { value => 'warning', template => '%d', min => 0 } ],
+                output_template => 'warning: %s',
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'alarms-critical', nlabel => 'netdata.alarms.current.critical.count', set => {
                 key_values      => [ { name => 'critical' }  ],
-                output_template => "Critical Alarms : %s",
-                perfdatas       => [ { value => 'critical', template => '%d', min => 0 } ],
+                output_template => 'critical: %s',
+                perfdatas       => [ { template => '%d', min => 0 } ]
+            }
         }
-        },
    ];
 
     $self->{maps_counters}->{alarms} = [
         { label => 'alarm', threshold => 0, set => {
                 key_values => [ { name => 'display' }, { name => 'name' }, { name => 'status' }, { name => 'value_string'} ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
@@ -79,21 +78,16 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-status:s'   => { name => 'filter_status' },
+        'filter-status:s'   => { name => 'filter_status' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-}
-
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Total alarms ";
+    return 'Alarms ';
 }
 
 sub prefix_alarm_output {
@@ -111,20 +105,25 @@ sub manage_selection {
         next if ( defined($self->{option_results}->{filter_status})
             && $self->{option_results}->{filter_status} ne ''
             && $alarm->{status} !~ /$self->{option_results}->{filter_status}/ );
+
         $self->{alarms}->{$alarm} = {
-            display         => $alarm,
-            id              => $alarm->{id},
-            name            => $alarm->{name},
-            chart           => $alarm->{chart},
-            status          => $alarm->{status},
-            value_string    => $alarm->{value_string}
+            display      => $alarm,
+            id           => $alarm->{id},
+            name         => $alarm->{name},
+            chart        => $alarm->{chart},
+            status       => $alarm->{status},
+            value_string => $alarm->{value_string}
         };
 
-        $self->{global}->{warning}++ if $alarm->{status} =~ m/WARNING/;
-        $self->{global}->{critical}++ if $alarm->{status} =~ m/CRITICAL/;
+        $self->{global}->{warning}++ if ($alarm->{status} =~ m/WARNING/);
+        $self->{global}->{critical}++ if ($alarm->{status} =~ m/CRITICAL/);
     }
 
-    $self->{global}->{total} = scalar (keys %{$self->{alarms}});
+    $self->{global} = {
+        total => scalar(keys %{$self->{alarms}}),
+        warning => 0,
+        critical => 0
+    };
 }
 
 1;
