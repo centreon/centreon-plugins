@@ -31,16 +31,18 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'alarms'      => 'apps::monitoring::netdata::restapi::mode::alarms',
-        'cpu'         => 'apps::monitoring::netdata::restapi::mode::cpu',
-        'disks'       => 'apps::monitoring::netdata::restapi::mode::disks',
-        'get-chart'   => 'apps::monitoring::netdata::restapi::mode::getchart',
-        'inodes'      => 'apps::monitoring::netdata::restapi::mode::inodes',
-        'list-charts' => 'apps::monitoring::netdata::restapi::mode::listcharts',
-        'load'        => 'apps::monitoring::netdata::restapi::mode::load',
-        'memory'      => 'apps::monitoring::netdata::restapi::mode::memory',
-        'swap'        => 'apps::monitoring::netdata::restapi::mode::swap',
-        'traffic'     => 'apps::monitoring::netdata::restapi::mode::traffic'
+        'alarms'          => 'apps::monitoring::netdata::restapi::mode::alarms',
+        'cpu'             => 'apps::monitoring::netdata::restapi::mode::cpu',
+        'disks'           => 'apps::monitoring::netdata::restapi::mode::disks',
+        'get-chart'       => 'apps::monitoring::netdata::restapi::mode::getchart',
+        'inodes'          => 'apps::monitoring::netdata::restapi::mode::inodes',
+        'list-charts'     => 'apps::monitoring::netdata::restapi::mode::listcharts',
+        'list-disks'      => 'apps::monitoring::netdata::restapi::mode::listdisks',
+        'list-interfaces' => 'apps::monitoring::netdata::restapi::mode::listinterfaces',
+        'load'            => 'apps::monitoring::netdata::restapi::mode::load',
+        'memory'          => 'apps::monitoring::netdata::restapi::mode::memory',
+        'swap'            => 'apps::monitoring::netdata::restapi::mode::swap',
+        'traffic'         => 'apps::monitoring::netdata::restapi::mode::traffic'
     };
 
     $self->{custom_modes}->{restapi} = 'apps::monitoring::netdata::restapi::custom::api';
