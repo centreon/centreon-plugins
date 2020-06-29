@@ -111,12 +111,20 @@ sub execute {
     $cmd .= $options{command} . ' ' if (defined($options{command}));
     $cmd .= $options{command_options} if (defined($options{command_options}));
 
-    # ssh_pipe useless ? maybe.
-    my $ret = $self->{ssh}->execute_simple(
-        cmd => $cmd,
-        timeout => $options{timeout},
-        timeout_nodata => $options{timeout}
-    );
+    my $ret;
+    if (!defined($options{ssh_pipe}) || $options{ssh_pipe} == 0) {
+        $ret = $self->{ssh}->execute_simple(
+            cmd => $cmd,
+            timeout => $options{timeout},
+            timeout_nodata => $options{timeout}
+        );
+    } else {
+        $ret = $self->{ssh}->execute_simple(
+            input_data => $cmd,
+            timeout => $options{timeout},
+            timeout_nodata => $options{timeout}
+        );
+    }
 
     $self->{output}->output_add(long_msg => $ret->{stdout}, debug => 1) if (defined($ret->{stdout}));
     $self->{output}->output_add(long_msg => $ret->{stderr}, debug => 1) if (defined($ret->{stderr}));
@@ -136,6 +144,12 @@ sub execute {
             )
         );
         $self->{output}->option_exit();
+    }
+
+    if (defined($options{ssh_pipe}) && $options{ssh_pipe} == 1) {
+        # Last failed login: Tue Feb 25 09:30:20 EST 2020 from 10.40.1.160 on ssh:notty
+        # There was 1 failed login attempt since the last successful login.
+        $content =~ s/^(?:Last failed login:|There was.*?failed login).*?\n//msg;
     }
 
     if ($exit_code != 0 && (!defined($options{no_quit}) || $options{no_quit} != 1)) {
