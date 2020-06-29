@@ -236,6 +236,7 @@ sub new {
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },
         'space-reservation:s'     => { name => 'space_reservation' },
+        'filter-duplicate'        => { name => 'filter_duplicate' },
         'filter-storage-type:s'   => { name => 'filter_storage_type', default => $self->default_storage_type() },
         'add-access'              => { name => 'add_access' },
     });
@@ -348,6 +349,18 @@ sub manage_selection {
             next;
         }
         
+        if (defined($self->{option_results}->{filter_duplicate})) {
+            my $sid = $_;
+            my @duplicate = grep {
+                ($self->{storage}->{$_}->{allocation_units} == $result->{$oid_hrStorageAllocationUnits . "." . $sid}) &&
+                ($self->{storage}->{$_}->{size} == $result->{$oid_hrStorageSize . "." . $sid}) &&
+                ($self->{storage}->{$_}->{used} == $result->{$oid_hrStorageUsed . "." . $sid})
+            } keys $self->{storage};
+            if (scalar(@duplicate)) {
+                next;
+            }
+        }
+
         $self->{storage}->{$_} = {
             display => $name_storage,
             allocation_units => $result->{$oid_hrStorageAllocationUnits . "." . $_},
@@ -580,6 +593,10 @@ Display cache storage datas.
 
 Some filesystem has space reserved (like ext4 for root).
 The value is in percent of total (Default: none) (results like 'df' command).
+
+=item B<--filter-duplicate>
+
+Filter duplicate storages (in used size and total size).
 
 =item B<--filter-storage-type>
 
