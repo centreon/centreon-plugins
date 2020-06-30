@@ -37,8 +37,10 @@ sub new {
         'ipsec-tunnel'    => 'network::watchguard::snmp::mode::ipsectunnel',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'list-storages'   => 'snmp_standard::mode::liststorages',
+        'memory'          => 'snmp_standard::mode::memory',
         'policy-usage'    => 'network::watchguard::snmp::mode::policyusage',
         'storage'         => 'snmp_standard::mode::storage',
+        'swap'            => 'snmp_standard::mode::swap',
         'system'          => 'network::watchguard::snmp::mode::system',
         'time'            => 'snmp_standard::mode::ntp',
         'uptime'          => 'snmp_standard::mode::uptime'
