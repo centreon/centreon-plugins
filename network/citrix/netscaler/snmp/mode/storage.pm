@@ -110,7 +110,7 @@ sub custom_usage_calc {
     return 0;
 }
 
-sub prefix_volume_output {
+sub prefix_storage_output {
     my ($self, %options) = @_;
 
     return "Storage '" . $options{instance_value}->{display} . "' ";
