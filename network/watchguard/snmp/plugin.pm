@@ -31,12 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'cpu'             => 'network::watchguard::snmp::mode::cpu',
+        'cpu'             => 'snmp_standard::mode::cpu',
         'hardware'        => 'snmp_standard::mode::hardwaredevice',
         'interfaces'      => 'snmp_standard::mode::interfaces',
         'ipsec-tunnel'    => 'network::watchguard::snmp::mode::ipsectunnel',
         'list-interfaces' => 'snmp_standard::mode::listinterfaces',
         'list-storages'   => 'snmp_standard::mode::liststorages',
+        'load'            => 'snmp_standard::mode::loadaverage',
         'memory'          => 'snmp_standard::mode::memory',
         'policy-usage'    => 'network::watchguard::snmp::mode::policyusage',
         'storage'         => 'snmp_standard::mode::storage',
