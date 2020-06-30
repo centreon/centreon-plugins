@@ -94,7 +94,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'write-iops', nlabel => 'volume.io.write.usage.iops', set => {
+        { label => 'write-iops', nlabel => 'cluster.io.write.usage.iops', set => {
                 key_values => [ { name => 'write_iops' }, { name => 'display' } ],
                 output_template => 'write iops: %s',
                 perfdatas => [
@@ -110,7 +110,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'write-latency', nlabel => 'volume.io.write.latency.milliseconds', set => {
+        { label => 'write-latency', nlabel => 'cluster.io.write.latency.milliseconds', set => {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'write latency: %s ms',
                 perfdatas => [
