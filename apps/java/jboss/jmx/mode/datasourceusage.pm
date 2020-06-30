@@ -99,13 +99,15 @@ sub manage_selection {
              [ { name => 'AvailableConnectionCount' }, { name => 'ConnectionCount' }, { name => 'ConnectionCreatedCount' }, { name => 'InUseConnectionCount' } ] },
         { mbean => "jboss.as:data-source=*,statistics=pool,subsystem=datasources", attributes => 
              [ { name => 'AvailableCount' }, { name => 'ActiveCount' }, { name => 'CreatedCount' }, { name => 'InUseCount' } ] },
+        { mbean => "jboss.as.expr:xa-data-source=*,statistics=pool,subsystem=datasources", attributes =>
+             [ { name => 'AvailableCount' }, { name => 'ActiveCount' }, { name => 'CreatedCount' }, { name => 'InUseCount' } ] },
     ];
     
     my $result = $options{custom}->get_attributes(request => $request, nothing_quit => 1);
 
     $self->{datasource} = {};
     foreach my $key (keys %$result) {
-        $key =~ /(?:[:,])(?:name|data-source)=(.*?)(?:,|$)/;
+        $key =~ /(?:[:,])(?:name|data-source|xa-data-source)=(.*?)(?:,|$)/;
         my $ds_name = $1;
         $ds_name =~ s/^"(.*)"$/$1/;
         
