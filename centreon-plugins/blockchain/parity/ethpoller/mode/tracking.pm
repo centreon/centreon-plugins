@@ -223,7 +223,8 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cache_name} = "parity_ethpoller_" . $self->{mode} . '_' . (defined($self->{option_results}->{hostname}) ? $self->{option_results}->{hostname} : 'me') . '_' .
-       (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
+           (defined($self->{option_results}->{port}) ? $self->{option_results}->{port} : 'default') . '_' .
+           (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 
     my $results = $options{custom}->request_api(url_path => '/tracking');
 
