@@ -85,7 +85,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-prct', nlabel => 'pool.space.usage.percentage', display_ok => 0, set => {
+        { label => 'usage-prct', nlabel => 'volume.space.usage.percentage', display_ok => 0, set => {
                 key_values => [ { name => 'prct_used_space' }, { name => 'display' } ],
                 output_template => 'space used: %.2f %%',
                 perfdatas => [
@@ -112,7 +112,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'read-iops', nlabel => 'system.io.read.usage.iops', set => {
+        { label => 'read-iops', nlabel => 'volume.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_iops' } ],
                 output_template => 'read iops: %s',
                 perfdatas => [
