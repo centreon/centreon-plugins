@@ -92,7 +92,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'read-iops', nlabel => 'system.io.read.usage.iops', set => {
+        { label => 'read-iops', nlabel => 'volume.io.read.usage.iops', set => {
                 key_values => [ { name => 'read_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'read: %.2f iops',
                 perfdatas => [
@@ -100,7 +100,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'write-iops', nlabel => 'system.io.write.usage.iops', set => {
+        { label => 'write-iops', nlabel => 'volume.io.write.usage.iops', set => {
                 key_values => [ { name => 'write_iops', per_second => 1 }, { name => 'display' } ],
                 output_template => 'write: %.2f iops',
                 perfdatas => [
