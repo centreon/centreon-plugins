@@ -41,12 +41,12 @@ sub new {
             'list-sqlmode'      => { name => 'list_sqlmode' },
             'multiple'          => { name => 'multiple' },
             'no-sanity-options' => { name => 'no_sanity_options' },
-            'pass-manager:s'    => { name => 'pass_manager' },
+            'pass-manager:s'    => { name => 'pass_manager' }
         }
     );
     $self->{version} = '1.0';
     %{$self->{modes}} = ();
-    %{$self->{sql_modes}} = ('dbi' => 'centreon::plugins::dbi');
+    $self->{sql_modes} = { 'dbi' => 'centreon::plugins::dbi' };
     $self->{default} = undef;
     $self->{sqldefault} = {};
     $self->{sqlmode_current} = undef;
@@ -93,9 +93,16 @@ sub init {
 
     if (defined($self->{sqlmode_name}) && $self->{sqlmode_name} ne '') {
         $self->is_sqlmode(sqlmode => $self->{sqlmode_name});
-        centreon::plugins::misc::mymodule_load(output => $self->{output}, module => $self->{sql_modes}{$self->{sqlmode_name}}, 
-                                               error_msg => "Cannot load module --sqlmode.");
-        $self->{sqlmode_current} = $self->{sql_modes}{$self->{sqlmode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{sqlmode_name});
+        centreon::plugins::misc::mymodule_load(
+            output => $self->{output}, module => $self->{sql_modes}->{$self->{sqlmode_name}}, 
+            error_msg => "Cannot load module --sqlmode."
+        );
+        $self->{sqlmode_current} = $self->{sql_modes}->{$self->{sqlmode_name}}->new(
+            options => $self->{options},
+            output => $self->{output}, 
+            custommode_name => $self->{custommode_name},
+            mode_name => $self->{mode_name}
+        );
     } else {
         $self->{output}->add_option_msg(short_msg => "Need to specify '--sqlmode'.");
         $self->{output}->option_exit();
@@ -143,7 +150,7 @@ sub init {
     $self->{sqlmode_current}->set_defaults(default => $self->{sqldefault});
 
     while ($self->{sqlmode_current}->check_options()) {
-        $self->{sqlmode_current} = $self->{sql_modes}{$self->{sqlmode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{sqlmode_name});
+        $self->{sqlmode_current} = $self->{sql_modes}->{$self->{sqlmode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{sqlmode_name});
         $self->{sqlmode_current}->set_options(option_results => $self->{option_results});
         push @{$self->{sqlmode_stored}}, $self->{sqlmode_current};
     }
@@ -206,7 +213,7 @@ sub is_sqlmode {
     my ($self, %options) = @_;
     
     # $options->{sqlmode} = mode
-    if (!defined($self->{sql_modes}{$options{sqlmode}})) {
+    if (!defined($self->{sql_modes}->{$options{sqlmode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{sqlmode} . "' doesn't exist (use --list-sqlmode option to show available modes).");
         $self->{output}->option_exit();
     }

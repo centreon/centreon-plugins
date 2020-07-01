@@ -31,10 +31,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
 
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
@@ -59,50 +55,28 @@ sub new {
             'case-insensitive'         => { name => 'case_insensitive' },
             'unknown-connector-status:s'  => { name => 'unknown_connector_status' },
             'warning-connector-status:s'  => { name => 'warning_connector_status' },
-            'critical-connector-status:s' => { name => 'critical_connector_status' },
+            'critical-connector-status:s' => { name => 'critical_connector_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'CONNECTOR OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
 
     $self->{json_send} = {};
     $self->{result} = undef;
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
-sub set_defaults {
-    my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still hostname
-    # return 0 = no hostname left
 
     $self->{connector_hostname} = (defined($self->{option_results}->{connector_hostname})) ? shift(@{$self->{option_results}->{connector_hostname}}) : undef;
     $self->{connector_port} = (defined($self->{option_results}->{connector_port})) ? shift(@{$self->{option_results}->{connector_port}}) : 5700;

@@ -34,16 +34,16 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "subnet:s"              => { name => 'subnet' },
-        "snmp-port:s"           => { name => 'snmp_port', default => 161 },
-        "snmp-version:s@"       => { name => 'snmp_version' },
-        "snmp-community:s@"     => { name => 'snmp_community' },
-        "snmp-timeout:s"        => { name => 'snmp_timeout', default => 1 },
-        "prettify"              => { name => 'prettify' },
+        'subnet:s'          => { name => 'subnet' },
+        'snmp-port:s'       => { name => 'snmp_port', default => 161 },
+        'snmp-version:s@'   => { name => 'snmp_version' },
+        'snmp-community:s@' => { name => 'snmp_community' },
+        'snmp-timeout:s'    => { name => 'snmp_timeout', default => 1 },
+        'prettify'          => { name => 'prettify' }
     });
-    
+
     $self->{snmp} = centreon::plugins::snmp->new(%options, noptions => 1);
-                                
+
     return $self;
 }
 

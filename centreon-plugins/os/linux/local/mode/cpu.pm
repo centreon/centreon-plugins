@@ -109,10 +109,10 @@ sub set_counters {
                 output_use => 'prct_used', threshold_use => 'prct_used',
                 perfdatas => [
                     { label => 'total_cpu_avg', value => 'prct_used', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                      min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{cpu_core} = [
@@ -126,10 +126,10 @@ sub set_counters {
                 output_use => 'prct_used', threshold_use => 'prct_used',
                 perfdatas => [
                     { label => 'cpu', value => 'prct_used', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1 },
-                ],
+                      min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -144,43 +144,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'cat' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '/proc/stat 2>&1' }
+    $options{options}->add_options(arguments => {
     });
 
-    $self->{hostname} = undef;
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'cat',
+        command_options => '/proc/stat 2>&1'
     );
 
     $self->{cpu_avg} = {};
@@ -202,9 +177,8 @@ sub manage_selection {
         $self->{cpu_avg}->{'cpu' . $cpu_number . '_iowait'} = $6;
     }
  
-    $self->{cache_name} = "cache_linux_local_" . md5_hex($self->{hostname})  . '_' . $self->{mode} . '_' .
-        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{ssh_option}) ? md5_hex(join('', @{$self->{option_results}->{ssh_option}})) : md5_hex('all'));
+    $self->{cache_name} = 'cache_linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
 1;
@@ -214,49 +188,9 @@ __END__
 =head1 MODE
 
 Check system CPUs (need '/proc/stat' file).
+Command used: cat /proc/stat 2>&1
 
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'cat').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '/proc/stat 2>&1').
 
 =item B<--warning-average>
 

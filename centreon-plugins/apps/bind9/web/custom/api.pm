@@ -41,52 +41,32 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s" => { name => 'hostname' },
-            "port:s"     => { name => 'port' },
-            "proto:s"    => { name => 'proto' },
-            "url-path:s" => { name => 'url_path' },
-            "timeout:s"  => { name => 'timeout' },
-            "unknown-status:s"  => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
-            "warning-status:s"  => { name => 'warning_status' },
-            "critical-status:s" => { name => 'critical_status' },
+            'hostname:s' => { name => 'hostname' },
+            'port:s'     => { name => 'port' },
+            'proto:s'    => { name => 'proto' },
+            'url-path:s' => { name => 'url_path' },
+            'timeout:s'  => { name => 'timeout' },
+            'unknown-status:s'  => { name => 'unknown_status', default => '%{http_code} < 200 or %{http_code} >= 300' },
+            'warning-status:s'  => { name => 'warning_status' },
+            'critical-status:s' => { name => 'critical_status' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};    
     $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
 
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
-sub set_defaults {
-    my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

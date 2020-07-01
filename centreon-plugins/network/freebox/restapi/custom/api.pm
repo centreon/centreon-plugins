@@ -42,18 +42,17 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s@"             => { name => 'hostname' },
-            "freebox-app-id:s@"       => { name => 'freebox_app_id' },
-            "freebox-app-token:s@"    => { name => 'freebox_app_token' },
-            "freebox-api-version:s@"  => { name => 'freebox_api_version', },
-            "timeout:s@"              => { name => 'timeout' },
-            "resolution:s@"           => { name => 'resolution' },
+            'hostname:s@'            => { name => 'hostname' },
+            'freebox-app-id:s@'      => { name => 'freebox_app_id' },
+            'freebox-app-token:s@'   => { name => 'freebox_app_token' },
+            'freebox-api-version:s@' => { name => 'freebox_api_version', },
+            'timeout:s@'             => { name => 'timeout' },
+            'resolution:s@'          => { name => 'resolution' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
 
     $self->{session_token} = undef;
@@ -68,21 +67,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

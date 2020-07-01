@@ -38,26 +38,26 @@ sub set_counters {
                 key_values => [ { name => 'data' }, { name => 'display' } ],
                 output_template => 'Data Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'data_used', value => 'data', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'data_used', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'meta-usage', set => {
                 key_values => [ { name => 'meta' }, { name => 'display' } ],
                 output_template => 'Meta Usage : %.2f %%',
                 perfdatas => [
-                    { label => 'meta_used', value => 'meta', template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'meta_used', template => '%.2f',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_dlvm_output {
     my ($self, %options) = @_;
-    
+
     return "Direct LVM '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -67,16 +67,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'lvs' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '--separator="," 2>&1' },
         'filter-lv:s'       => { name => 'filter_lv' },
         'filter-vg:s'       => { name => 'filter_vg' }
     });
@@ -87,15 +77,12 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options},
+    my ($stdout, $exit_code) = $options{custom}->execute_command(
+        command => 'lvs',
+        command_options => '--separator="," 2>&1',
         no_quit => 1
     );
+
     $self->{dlvm} = {};
     #  LV,VG,Attr,LSize,Pool,Origin,Data%,Meta%,Move,Log,Cpy%Sync,Convert
     #  thinpool,docker,twi-aot---,71.25g,,,1.95,0.06,,,,
@@ -122,7 +109,7 @@ sub manage_selection {
 
         $self->{dlvm}->{$display} = { display => $display, data => $data, meta => $meta };
     }
-    
+
     if (scalar(keys %{$self->{dlvm}}) <= 0) {
         if ($exit_code != 0) {
             $self->{output}->output_add(long_msg => "command output:" . $stdout);
@@ -139,49 +126,9 @@ __END__
 =head1 MODE
 
 Check directl lvm usage.
+Command used: lvs --separator="," 2>&1
 
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'lvs').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '--separator="," 2>&1').
 
 =item B<--warning-*>
 

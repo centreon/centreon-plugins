@@ -51,7 +51,7 @@ sub init {
         arguments => {
             'host:s@'     => { name => 'db_host' },
             'port:s@'     => { name => 'db_port' },
-            'database:s@' => { name => 'db_name' },
+            'database:s@' => { name => 'db_name' }
         }
     );
     $self->{options}->parse_options();

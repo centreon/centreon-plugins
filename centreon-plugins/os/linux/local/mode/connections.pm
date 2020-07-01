@@ -61,30 +61,23 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', },
-                                  "command-path:s"    => { name => 'command_path', },
-                                  "command-options:s" => { name => 'command_options', },
-                                  "warning:s"       => { name => 'warning', },
-                                  "critical:s"      => { name => 'critical', },
-                                  "service:s@"      => { name => 'service', },
-                                  "application:s@"  => { name => 'application', },
-                                  "con-mode:s"      => { name => 'con_mode', default => 'netstat' },
-                                });
-    @{$self->{connections}} = ();
+    $options{options}->add_options(arguments => { 
+        'warning:s'      => { name => 'warning', },
+        'critical:s'     => { name => 'critical', },
+        'service:s@'     => { name => 'service', },
+        'application:s@' => { name => 'application', },
+        'con-mode:s'     => { name => 'con_mode', default => 'netstat' }
+    });
+
+    $self->{connections} = [];
     $self->{services} = { total => { filter => '(?!(udp*))#.*?#.*?#.*?#.*?#(?!(listen))', builtin => 1, number => 0, msg => 'Total connections: %d' } };
     $self->{applications} = {};
-    $self->{states} = { closed => 0, listen => 0, synSent => 0, synReceived => 0,
-                        established => 0, finWait1 => 0, finWait2 => 0, closeWait => 0,
-                        lastAck => 0, closing => 0, timeWait => 0 };
+    $self->{states} = {
+        closed => 0, listen => 0, synSent => 0, synReceived => 0,
+        established => 0, finWait1 => 0, finWait2 => 0, closeWait => 0,
+        lastAck => 0, closing => 0, timeWait => 0
+    };
+
     return $self;
 }
 
@@ -144,29 +137,24 @@ sub ss_build {
 
 sub build_connections {
     my ($self, %options) = @_;
-    
+
     if ($self->{option_results}->{con_mode} !~ /^ss|netstat$/) {
         $self->{output}->add_option_msg(short_msg => "Unknown --con-mode option.");
         $self->{output}->option_exit();
     }
-    
-    if (!defined($self->{option_results}->{command})) {
-        if ($self->{option_results}->{con_mode} eq 'netstat') {
-            $self->{option_results}->{command} = 'netstat';
-            $self->{option_results}->{command_options} = '-antu 2>&1';
-        } else {
-            $self->{option_results}->{command} = 'ss';
-            $self->{option_results}->{command_options} = '-a -A tcp,udp -n 2>&1';
-        }
+
+    my ($command, $command_options) = ('netstat', '-antu 2>&1');
+    if ($self->{option_results}->{con_mode} eq 'ss') {
+        $command = 'ss';
+        $command_options = '-a -A tcp,udp -n 2>&1';
     }
-    
-    $self->{stdout} = centreon::plugins::misc::execute(output => $self->{output},
-                                                       options => $self->{option_results},
-                                                       sudo => $self->{option_results}->{sudo},
-                                                       command => $self->{option_results}->{command},
-                                                       command_path => $self->{option_results}->{command_path},
-                                                       command_options => $self->{option_results}->{command_options});
-    if ($self->{option_results}->{command} eq 'ss') {
+
+    ($self->{stdout}) = $options{custom}->execute_command(
+        command => $command,
+        command_options => $command_options
+    );
+
+    if ($self->{option_results}->{con_mode} eq 'ss') {
         $self->ss_build();
     } else {
         $self->netstat_build();
@@ -175,10 +163,10 @@ sub build_connections {
 
 sub check_services {
     my ($self, %options) = @_;
-    
+
     foreach my $service (@{$self->{option_results}->{service}}) {
         my ($tag, $ipv, $state, $port_src, $port_dst, $filter_ip_src, $filter_ip_dst, $warn, $crit) = split /,/, $service;
-        
+
         if (!defined($tag) || $tag eq '') {
             $self->{output}->add_option_msg(short_msg => "Tag for service '" . $service . "' must be defined.");
             $self->{output}->option_exit();
@@ -187,15 +175,18 @@ sub check_services {
             $self->{output}->add_option_msg(short_msg => "Tag '" . $tag . "' (service) already exists.");
             $self->{output}->option_exit();
         }
-        
-        $self->{services}->{$tag} = { filter => ((defined($ipv) && $ipv ne '') ? $ipv : '.*?') . '#' . 
-                                                ((defined($filter_ip_src) && $filter_ip_src ne '') ? $filter_ip_src : '.*?') . '#' . 
-                                                ((defined($port_src) && $port_src ne '') ? $port_src : '.*?') . '#' . 
-                                                ((defined($filter_ip_dst) && $filter_ip_dst ne '') ? $filter_ip_dst : '.*?') . '#' . 
-                                                ((defined($port_dst) && $port_dst ne '') ? $port_dst : '.*?') . '#' . 
-                                                ((defined($state) && $state ne '') ? lc($state) : '(?!(listen))')
-                                                , 
-                                      builtin => 0, number => 0 };
+
+        $self->{services}->{$tag} = {
+            filter => 
+                ((defined($ipv) && $ipv ne '') ? $ipv : '.*?') . '#' . 
+                ((defined($filter_ip_src) && $filter_ip_src ne '') ? $filter_ip_src : '.*?') . '#' . 
+                ((defined($port_src) && $port_src ne '') ? $port_src : '.*?') . '#' . 
+                ((defined($filter_ip_dst) && $filter_ip_dst ne '') ? $filter_ip_dst : '.*?') . '#' . 
+                ((defined($port_dst) && $port_dst ne '') ? $port_dst : '.*?') . '#' . 
+                ((defined($state) && $state ne '') ? lc($state) : '(?!(listen))'), 
+            builtin => 0,
+            number => 0
+        };
         if (($self->{perfdata}->threshold_validate(label => 'warning-service-' . $tag, value => $warn)) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $warn . "' for service '$tag'.");
             $self->{output}->option_exit();
@@ -209,10 +200,10 @@ sub check_services {
 
 sub check_applications {
     my ($self, %options) = @_;
-    
+
     foreach my $app (@{$self->{option_results}->{application}}) {
         my ($tag, $services, $warn, $crit) = split /,/, $app;
-        
+
         if (!defined($tag) || $tag eq '') {
             $self->{output}->add_option_msg(short_msg => "Tag for application '" . $app . "' must be defined.");
             $self->{output}->option_exit();
@@ -223,8 +214,8 @@ sub check_applications {
         }
         
         $self->{applications}->{$tag} = {
-                                            services => {},
-                                        };
+            services => {}
+        };
         foreach my $service (split /\|/, $services) {
             if (!defined($self->{services}->{$service})) {
                 $self->{output}->add_option_msg(short_msg => "Service '" . $service . "' is not defined.");
@@ -232,7 +223,7 @@ sub check_applications {
             }
             $self->{applications}->{$tag}->{services}->{$service} = 1;
         }
-        
+
         if (($self->{perfdata}->threshold_validate(label => 'warning-app-' . $tag, value => $warn)) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $warn . "' for application '$tag'.");
             $self->{output}->option_exit();
@@ -246,28 +237,34 @@ sub check_applications {
 
 sub test_services {
     my ($self, %options) = @_;
-    
+
     foreach my $tag (keys %{$self->{services}}) {
         foreach (@{$self->{connections}}) {
             if (/$self->{services}->{$tag}->{filter}/) {
                 $self->{services}->{$tag}->{number}++;
             }
-        }        
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $self->{services}->{$tag}->{number}, 
-                               threshold => [ { label => 'critical-service-' . $tag, 'exit_litteral' => 'critical' }, { label => 'warning-service-' . $tag, exit_litteral => 'warning' } ]);
+        }
+
+        my $exit_code = $self->{perfdata}->threshold_check(
+            value => $self->{services}->{$tag}->{number}, 
+            threshold => [ { label => 'critical-service-' . $tag, 'exit_litteral' => 'critical' }, { label => 'warning-service-' . $tag, exit_litteral => 'warning' } ]
+        );
         my ($perf_label, $msg) = ('service_' . $tag, "Service '$tag' connections: %d");
         if ($self->{services}->{$tag}->{builtin} == 1) {
             ($perf_label, $msg) = ($tag, $self->{services}->{$tag}->{msg});
         }
-        
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf($msg, $self->{services}->{$tag}->{number}));
-        $self->{output}->perfdata_add(label => $perf_label,
-                                      value => $self->{services}->{$tag}->{number},
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-service-' . $tag),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-service-' . $tag),
-                                      min => 0);
+
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf($msg, $self->{services}->{$tag}->{number})
+        );
+        $self->{output}->perfdata_add(
+            label => $perf_label,
+            value => $self->{services}->{$tag}->{number},
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-service-' . $tag),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-service-' . $tag),
+            min => 0
+        );
     }
 }
 
@@ -276,20 +273,26 @@ sub test_applications {
 
     foreach my $tag (keys %{$self->{applications}}) {
         my $number = 0;
-        
+
         foreach (keys %{$self->{applications}->{$tag}->{services}}) {
             $number += $self->{services}->{$_}->{number};
         }
-        
-        my $exit_code = $self->{perfdata}->threshold_check(value => $number, 
-                               threshold => [ { label => 'critical-app-' . $tag, 'exit_litteral' => 'critical' }, { label => 'warning-app-' . $tag, exit_litteral => 'warning' } ]);
-        $self->{output}->output_add(severity => $exit_code,
-                                    short_msg => sprintf("Applicatin '%s' connections: %d", $tag, $number));
-        $self->{output}->perfdata_add(label => 'app_' . $tag,
-                                      value => $number,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-app-' . $tag),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-app-' . $tag),
-                                      min => 0);
+
+        my $exit_code = $self->{perfdata}->threshold_check(
+            value => $number, 
+            threshold => [ { label => 'critical-app-' . $tag, 'exit_litteral' => 'critical' }, { label => 'warning-app-' . $tag, exit_litteral => 'warning' } ]
+        );
+        $self->{output}->output_add(
+            severity => $exit_code,
+            short_msg => sprintf("Applicatin '%s' connections: %d", $tag, $number)
+        );
+        $self->{output}->perfdata_add(
+            label => 'app_' . $tag,
+            value => $number,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-app-' . $tag),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-app-' . $tag),
+            min => 0
+        );
     }
 }
 
@@ -311,16 +314,17 @@ sub check_options {
 
 sub run {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
-    
-    $self->build_connections();
+
+    $self->build_connections(custom => $options{custom});
     $self->test_services();
     $self->test_applications();
-    
+
     foreach (keys %{$self->{states}}) {
-        $self->{output}->perfdata_add(label => 'con_' . $_,
-                                      value => $self->{states}->{$_},
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'con_' . $_,
+            value => $self->{states}->{$_},
+            min => 0
+        );
     }
 
     $self->{output}->display();
@@ -334,7 +338,9 @@ __END__
 =head1 MODE
 
 Check tcp/udp connections (udp connections are not in total. Use option '--service' to check it).
-'ipx', 'x25' connections are not checked (need output to do it. If you have, you can post it in forge :)
+'ipx', 'x25' connections are not checked (need output to do it. If you have, you can post it in github :)
+
+Command used: 'netstat -antu 2>&1' or 'ss -a -A tcp,udp -n 2>&1'
 
 =over 8
 
@@ -401,49 +407,6 @@ List of services (used the tag name. Separated by '|').
 nagios-perfdata - number of connections.
 
 =back
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'netstat').
-Can be changed if you have output in a file.
-If --con-mode='ss', command 'ss' will be used.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-antu 2>&1').
-If --con-mode='ss', argument default will '-a -A tcp,udp -n'.
 
 =item B<--con-mode>
 

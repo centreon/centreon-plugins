@@ -58,11 +58,11 @@ sub new {
         'sql'                      => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'               => 'centreon::common::protocols::sql::mode::sqlstring',
         'tablespace-usage'         => 'database::oracle::mode::tablespaceusage',
-        'tnsping'                  => 'database::oracle::mode::tnsping',
+        'tnsping'                  => 'database::oracle::mode::tnsping'
     );
 
-    $self->{sql_modes}{dbi} = 'database::oracle::dbi';
-    $self->{sql_modes}{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
+    $self->{sql_modes}->{dbi} = 'database::oracle::dbi';
+    $self->{sql_modes}->{sqlpluscmd} = 'database::oracle::sqlpluscmd';						 
 						 
     return $self;
 }
@@ -75,7 +75,7 @@ sub init {
         'port:s@'       => { name => 'port' },
         'sid:s'         => { name => 'sid' },
         'servicename:s' => { name => 'servicename' },
-        'container:s'   => { name => 'container' },
+        'container:s'   => { name => 'container' }
     });
 
     $self->{options}->parse_options();

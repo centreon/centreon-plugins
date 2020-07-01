@@ -45,11 +45,11 @@ sub new {
         'sql'                          => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'                   => 'centreon::common::protocols::sql::mode::sqlstring',
         'threads-connected'            => 'database::mysql::mode::threadsconnected',
-        'uptime'                       => 'database::mysql::mode::uptime',
+        'uptime'                       => 'database::mysql::mode::uptime'
     );
 
-    $self->{sql_modes}{dbi} = 'database::mysql::dbi';
-    $self->{sql_modes}{mysqlcmd} = 'database::mysql::mysqlcmd';
+    $self->{sql_modes}->{dbi} = 'database::mysql::dbi';
+    $self->{sql_modes}->{mysqlcmd} = 'database::mysql::mysqlcmd';
 
     return $self;
 }
@@ -59,9 +59,9 @@ sub init {
 
     $self->{options}->add_options(
         arguments => {
-            'host:s@'  => { name => 'db_host' },
-            'port:s@'  => { name => 'db_port' },
-            'socket:s@'  => { name => 'db_socket' },
+            'host:s@'   => { name => 'db_host' },
+            'port:s@'   => { name => 'db_port' },
+            'socket:s@' => { name => 'db_socket' }
         }
     );
     $self->{options}->parse_options();
@@ -85,7 +85,7 @@ sub init {
         }
     }
 
-    $self->SUPER::init(%options);    
+    $self->SUPER::init(%options);
 }
 
 1;

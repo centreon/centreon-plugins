@@ -42,22 +42,20 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {
-            "hostname:s@"         => { name => 'hostname' },
-            "xtremio-username:s@" => { name => 'xtremio_username' },
-            "xtremio-password:s@" => { name => 'xtremio_password' },
-            "timeout:s@"          => { name => 'timeout' },
-            "reload-cache-time:s" => { name => 'reload_cache_time' },
+            'hostname:s@'         => { name => 'hostname' },
+            'xtremio-username:s@' => { name => 'xtremio_username' },
+            'xtremio-password:s@' => { name => 'xtremio_password' },
+            'timeout:s@'          => { name => 'timeout' },
+            'reload-cache-time:s' => { name => 'reload_cache_time' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};    
     $self->{http} = centreon::plugins::http->new(%options);
     $self->{statefile_cache_cluster} = centreon::plugins::statefile->new(%options);
 
     return $self;
-
 }
 
 sub set_options {
@@ -66,21 +64,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

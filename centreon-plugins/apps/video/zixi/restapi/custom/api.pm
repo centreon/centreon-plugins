@@ -41,55 +41,32 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            "hostname:s@" => { name => 'hostname' },
-            "port:s@"     => { name => 'port' },
-            "proto:s@"    => { name => 'proto' },
-            "username:s@" => { name => 'username' },
-            "password:s@" => { name => 'password' },
-            "timeout:s@"  => { name => 'timeout' },
+            'hostname:s@' => { name => 'hostname' },
+            'port:s@'     => { name => 'port' },
+            'proto:s@'    => { name => 'proto' },
+            'username:s@' => { name => 'username' },
+            'password:s@' => { name => 'password' },
+            'timeout:s@'  => { name => 'timeout' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};    
     $self->{http} = centreon::plugins::http->new(%options);
 
     return $self;
-
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
-sub set_defaults {
-    my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still hostname
-    # return 0 = no hostname left
 
     $self->{hostname} = (defined($self->{option_results}->{hostname})) ? shift(@{$self->{option_results}->{hostname}}) : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : 4444;
@@ -135,8 +112,10 @@ sub get {
 
     $self->settings();
 
-    my $response = $self->{http}->request(url_path => $options{path},
-                                          critical_status => '', warning_status => '');
+    my $response = $self->{http}->request(
+        url_path => $options{path},
+        critical_status => '', warning_status => ''
+    );
     my $content;
     eval {
         $content = JSON::XS->new->utf8->decode($response);

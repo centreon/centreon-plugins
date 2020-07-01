@@ -28,10 +28,6 @@ sub new {
     my ($class, %options) = @_;
     my $self  = {};
     bless $self, $class;
-    # $options{options} = options object
-    # $options{output} = output object
-    # $options{exit_value} = integer
-    # $options{noptions} = integer
 
     if (!defined($options{output})) {
         print "Class Custom: Need to specify 'output' argument.\n";
@@ -43,31 +39,29 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "remote"            => { name => 'remote' },
-                      "ssh-address:s"     => { name => 'ssh_address' },
-                      "ssh-option:s@"     => { name => 'ssh_option' },
-                      "ssh-path:s"        => { name => 'ssh_path' },
-                      "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                      "navicli-command:s"       => { name => 'navicli_command', default => 'navicli' },
-                      "navicli-path:s"          => { name => 'navicli_path', default => '/opt/Navisphere/bin' },
-                      "naviseccli-command:s"    => { name => 'naviseccli_command', default => 'naviseccli' },
-                      "naviseccli-path:s"       => { name => 'naviseccli_path', default => '/opt/Navisphere/bin' },
-                      "sudo:s"                  => { name => 'sudo', },
-                      "special-arg:s@"      => { name => 'special_arg' },
-                      "hostname:s@"         => { name => 'hostname' },
-                      "secfilepath:s@"      => { name => 'secfilepath' },
-                      "username:s@"         => { name => 'username' },
-                      "password:s@"         => { name => 'password' },
-                      "scope:s@"            => { name => 'scope' },
-                      "timeout:s@"          => { name => 'timeout' },
-                    });
+        $options{options}->add_options(arguments => {
+            'remote'               => { name => 'remote' },
+            'ssh-address:s'        => { name => 'ssh_address' },
+            'ssh-option:s@'        => { name => 'ssh_option' },
+            'ssh-path:s'           => { name => 'ssh_path' },
+            'ssh-command:s'        => { name => 'ssh_command', default => 'ssh' },
+            'navicli-command:s'    => { name => 'navicli_command', default => 'navicli' },
+            'navicli-path:s'       => { name => 'navicli_path', default => '/opt/Navisphere/bin' },
+            'naviseccli-command:s' => { name => 'naviseccli_command', default => 'naviseccli' },
+            'naviseccli-path:s'    => { name => 'naviseccli_path', default => '/opt/Navisphere/bin' },
+            'sudo:s'               => { name => 'sudo', },
+            'special-arg:s@'       => { name => 'special_arg' },
+            'hostname:s@'          => { name => 'hostname' },
+            'secfilepath:s@'       => { name => 'secfilepath' },
+            'username:s@'          => { name => 'username' },
+            'password:s@'          => { name => 'password' },
+            'scope:s@'             => { name => 'scope' },
+            'timeout:s@'           => { name => 'timeout' }
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'NAVISPHERE OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     
     # 1 means we use a file to read
     $self->{no_navicmd} = 0;
@@ -76,32 +70,13 @@ sub new {
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
-sub set_defaults {
-    my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub build_command {
     my ($self, %options) = @_;
@@ -196,13 +171,14 @@ sub execute_command {
     
     # Need to set timeout over command.
     $self->{option_results}->{timeout} = $self->{timeout} + 5;
-    return centreon::plugins::misc::execute(output => $self->{output},
-                                            options => $self->{option_results},
-                                            sudo => $self->{sudo},
-                                            command => $self->{cmd},
-                                            command_path => undef,
-                                            command_options => undef
-                                            );
+    return centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{sudo},
+        command => $self->{cmd},
+        command_path => undef,
+        command_options => undef
+    );
 }
 
 1;

@@ -43,20 +43,20 @@ sub new {
         $options{output}->option_exit();
     }
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    { "psql-cmd:s"               => { name => 'psql_cmd', default => '/usr/bin/psql' },
-                      "host:s@"                  => { name => 'host' },
-                      "port:s@"                  => { name => 'port' },
-                      "username:s@"              => { name => 'username' },
-                      "password:s@"              => { name => 'password' },
-                      "dbname:s@"                => { name => 'dbname' },
-                      "sql-errors-exit:s"        => { name => 'sql_errors_exit', default => 'unknown' },
+        $options{options}->add_options(arguments => {
+            'psql-cmd:s'        => { name => 'psql_cmd', default => '/usr/bin/psql' },
+            'host:s@'           => { name => 'host' },
+            'port:s@'           => { name => 'port' },
+            'username:s@'       => { name => 'username' },
+            'password:s@'       => { name => 'password' },
+            'dbname:s@'         => { name => 'dbname' },
+            'sql-errors-exit:s' => { name => 'sql_errors_exit', default => 'unknown' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'PSQLCMD OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
+    $self->{custommode_name} = $options{custommode_name};
     $self->{args} = undef;
     $self->{stdout} = undef;
     $self->{columns} = undef;
@@ -74,22 +74,17 @@ sub new {
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
+        if ($_ eq $self->{custommode_name}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
                 foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
                     if (!defined($self->{option_results}->{$opt}[$i])) {
@@ -103,8 +98,6 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still data_source
-    # return 0 = no data_source left
     
     $self->{host} = (defined($self->{option_results}->{host})) ? shift(@{$self->{option_results}->{host}}) : undef;
     $self->{port} = (defined($self->{option_results}->{port})) ? shift(@{$self->{option_results}->{port}}) : undef;
