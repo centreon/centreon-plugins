@@ -31,25 +31,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "warning:s"         => { name => 'warning', },
-                                  "critical:s"        => { name => 'critical', },
-                                  "separate-dirs"     => { name => 'separate_dirs', },
-                                  "max-depth:s"       => { name => 'max_depth', },
-                                  "exclude-du:s@"     => { name => 'exclude_du', },
-                                  "filter-plugin:s"   => { name => 'filter_plugin', },
-                                  "files:s"           => { name => 'files', },
-                                  "time:s"            => { name => 'time', },
-                                });
+    $options{options}->add_options(arguments => {
+        'warning:s'         => { name => 'warning' },
+        'critical:s'        => { name => 'critical' },
+        'separate-dirs'     => { name => 'separate_dirs' },
+        'max-depth:s'       => { name => 'max_depth' },
+        'exclude-du:s@'     => { name => 'exclude_du' },
+        'filter-plugin:s'   => { name => 'filter_plugin' },
+        'files:s'           => { name => 'files' },
+        'time:s'            => { name => 'time' }
+    });
 
     return $self;
 }
@@ -70,26 +61,25 @@ sub check_options {
        $self->{output}->add_option_msg(short_msg => "Need to specify files option.");
        $self->{output}->option_exit();
     }
-    
+
     #### Create command_options
-    $self->{option_results}->{command} = 'du';
-    $self->{option_results}->{command_options} = '-x --time-style=+%s';
+    $self->{command_options} = '-x --time-style=+%s';
     if (defined($self->{option_results}->{separate_dirs})) {
-        $self->{option_results}->{command_options} .= ' --separate-dirs';
+        $self->{command_options} .= ' --separate-dirs';
     }
     if (defined($self->{option_results}->{max_depth})) {
-        $self->{option_results}->{command_options} .= ' --max-depth=' . $self->{option_results}->{max_depth};
+        $self->{command_options} .= ' --max-depth=' . $self->{option_results}->{max_depth};
     }
     if (defined($self->{option_results}->{time})) {
-        $self->{option_results}->{command_options} .= ' --time=' . $self->{option_results}->{time};
+        $self->{command_options} .= ' --time=' . $self->{option_results}->{time};
     } else {
-        $self->{option_results}->{command_options} .= ' --time';
+        $self->{command_options} .= ' --time';
     }
     foreach my $exclude (@{$self->{option_results}->{exclude_du}}) {
-        $self->{option_results}->{command_options} .= " --exclude='" . $exclude . "'";
+        $self->{command_options} .= " --exclude='" . $exclude . "'";
     }
-    $self->{option_results}->{command_options} .= ' ' . $self->{option_results}->{files};
-    $self->{option_results}->{command_options} .= ' 2>&1';
+    $self->{command_options} .= ' ' . $self->{option_results}->{files};
+    $self->{command_options} .= ' 2>&1';
 }
 
 sub run {
@@ -97,15 +87,15 @@ sub run {
     my $total_size = 0;
     my $current_time = time();
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    
-    $self->{output}->output_add(severity => 'OK', 
-                                short_msg => "All file/directory times are ok.");
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'du',
+        command_options => $self->{command_options}
+    );
+
+    $self->{output}->output_add(
+        severity => 'OK', 
+        short_msg => 'All file/directory times are ok.'
+    );
     foreach (split(/\n/, $stdout)) {
         next if (!/(\d+)\t+(\d+)\t+(.*)/);
         my ($size, $time, $name) = ($1, $2, centreon::plugins::misc::trim($3));
@@ -114,18 +104,23 @@ sub run {
         next if (defined($self->{option_results}->{filter_plugin}) && $self->{option_results}->{filter_plugin} ne '' &&
                  $name !~ /$self->{option_results}->{filter_plugin}/);
         
-        my $exit_code = $self->{perfdata}->threshold_check(value => $diff_time, 
-                                                           threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
+        my $exit_code = $self->{perfdata}->threshold_check(
+            value => $diff_time, 
+            threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]
+        );
         $self->{output}->output_add(long_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($time))));
         if (!$self->{output}->is_status(litteral => 1, value => $exit_code, compare => 'ok')) {
-            $self->{output}->output_add(severity => $exit_code,
-                                        short_msg => sprintf("%s: %s seconds (time: %s)", $name, $diff_time, scalar(localtime($time))));
+            $self->{output}->output_add(
+                severity => $exit_code,
+                short_msg => sprintf('%s: %s seconds (time: %s)', $name, $diff_time, scalar(localtime($time)))
+            );
         }
-        $self->{output}->perfdata_add(label => $name, unit => 's',
-                                      value => $diff_time,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      );
+        $self->{output}->perfdata_add(
+            label => $name, unit => 's',
+            value => $diff_time,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical')
+        );
     }
       
     $self->{output}->display();
@@ -175,38 +170,6 @@ Shell pattern can be used.
 
 Filter files/directories in the plugin. Values from exclude files/directories are counted in parent directories!!!
 Perl Regexp can be used.
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command-path>
-
-Command path (Default: none).
 
 =back
 
