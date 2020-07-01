@@ -46,60 +46,37 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "url:s@"              => { name => 'url' },
-                      "timeout:s@"          => { name => 'timeout' },
-                      "username:s@"         => { name => 'username' },
-                      "password:s@"         => { name => 'password' },
-                      "proxy-url:s@"        => { name => 'proxy_url' },
-                      "proxy-username:s@"   => { name => 'proxy_username' },
-                      "proxy-password:s@"   => { name => 'proxy_password' },
-                      "target-url:s@"       => { name => 'target_url' },
-                      "target-username:s@"  => { name => 'target_username' },
-                      "target-password:s@"  => { name => 'target_password' },
-                    });
+        $options{options}->add_options(arguments => {
+            'url:s@'             => { name => 'url' },
+            'timeout:s@'         => { name => 'timeout' },
+            'username:s@'        => { name => 'username' },
+            'password:s@'        => { name => 'password' },
+            'proxy-url:s@'       => { name => 'proxy_url' },
+            'proxy-username:s@'  => { name => 'proxy_username' },
+            'proxy-password:s@'  => { name => 'proxy_password' },
+            'target-url:s@'      => { name => 'target_url' },
+            'target-username:s@' => { name => 'target_username' },
+            'target-password:s@' => { name => 'target_password' }
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'JOLOKIA OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
 
     $self->{jmx4perl} = undef;
     return $self;
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
-sub set_defaults {
-    my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still url
-    # return 0 = no url left
 
     foreach (('url', 'timeout', 'username', 'password', 'proxy_url', 'proxy_username', 
               'proxy_password', 'target_url', 'target_username', 'target_password')) {
@@ -163,9 +140,10 @@ sub connect {
 sub _add_request {
     my ($self, %options) = @_;
     
-    my $request = JMX::Jmx4Perl::Request->new(READ, $options{object}, 
-                                              $options{attribute}
-                                              );
+    my $request = JMX::Jmx4Perl::Request->new(
+        READ, $options{object}, 
+        $options{attribute}
+    );
     if (!$request->is_mbean_pattern($options{object})) {
         $request->{path} = $options{path};
     }
@@ -283,10 +261,15 @@ sub list_attributes {
     my $mbeans = $self->{jmx4perl}->search($pattern);
     print "List attributes:\n";
     for my $mbean (@$mbeans) {
-        my $request = JMX::Jmx4Perl::Request->new(READ, $mbean, undef, {maxDepth => $max_depth,
-                                                                        maxObjects => $max_objects,
-                                                                        maxCollectionSize => $max_collection_size,
-                                                                        ignoreErrors => 1});
+        my $request = JMX::Jmx4Perl::Request->new(
+            READ, $mbean, undef,
+            {
+                maxDepth => $max_depth,
+                maxObjects => $max_objects,
+                maxCollectionSize => $max_collection_size,
+                ignoreErrors => 1
+            }
+        );
         my $response = $self->{jmx4perl}->request($request);
         if ($response->is_error) {
             print "ERROR: " . $response->error_text . "\n";

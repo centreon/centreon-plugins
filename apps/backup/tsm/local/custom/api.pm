@@ -39,26 +39,24 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {                      
-                      "tsm-hostname:s"      => { name => 'tsm_hostname' },
-                      "tsm-username:s"      => { name => 'tsm_username' },
-                      "tsm-password:s"      => { name => 'tsm_password' },
-                      "ssh-hostname:s"      => { name => 'ssh_hostname' },
-                      "ssh-option:s@"       => { name => 'ssh_option' },
-                      "ssh-path:s"          => { name => 'ssh_path' },
-                      "ssh-command:s"       => { name => 'ssh_command', default => 'ssh' },
-                      "timeout:s"           => { name => 'timeout', default => 45 },
-                      "sudo"                => { name => 'sudo' },
-                      "command:s"           => { name => 'command', default => 'dsmadmc' },
-                      "command-path:s"      => { name => 'command_path', default => '/opt/tivoli/tsm/client/ba/bin' },
-                      "command-options:s"   => { name => 'command_options', default => '' },
-                    });
+        $options{options}->add_options(arguments =>  {                      
+            'tsm-hostname:s'    => { name => 'tsm_hostname' },
+            'tsm-username:s'    => { name => 'tsm_username' },
+            'tsm-password:s'    => { name => 'tsm_password' },
+            'ssh-hostname:s'    => { name => 'ssh_hostname' },
+            'ssh-option:s@'     => { name => 'ssh_option' },
+            'ssh-path:s'        => { name => 'ssh_path' },
+            'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+            'timeout:s'         => { name => 'timeout', default => 45 },
+            'sudo'              => { name => 'sudo' },
+            'command:s'         => { name => 'command', default => 'dsmadmc' },
+            'command-path:s'    => { name => 'command_path', default => '/opt/tivoli/tsm/client/ba/bin' },
+            'command-options:s' => { name => 'command_options', default => '' }
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'TSM CLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     
     return $self;
 }
@@ -69,21 +67,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

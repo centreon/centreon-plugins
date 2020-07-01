@@ -41,17 +41,16 @@ sub new {
     
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments => {                      
-            "hostname:s"    => { name => 'hostname' },
-            "username:s"    => { name => 'username' },
-            "password:s"    => { name => 'password' },
-            "timeout:s"     => { name => 'timeout' },
-            "api-path:s"    => { name => 'api_path' },
+            'hostname:s' => { name => 'hostname' },
+            'username:s' => { name => 'username' },
+            'password:s' => { name => 'password' },
+            'timeout:s'  => { name => 'timeout' },
+            'api-path:s' => { name => 'api_path' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     $self->{http} = centreon::plugins::http->new(%options);
     
     return $self;
@@ -63,21 +62,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

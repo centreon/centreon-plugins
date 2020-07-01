@@ -39,22 +39,20 @@ sub new {
     }
     
     if (!defined($options{noptions})) {
-        $options{options}->add_options(arguments => 
-                    {
-                      "rtu-port:s@"         => { name => 'rtu_port' },
-                      "rtu-baudrate:s@"     => { name => 'rtu_baudrate' },
-                      "rtu-databits:s@"     => { name => 'rtu_databits' },
-                      "rtu-parity:s@"       => { name => 'rtu_parity' },
-                      "rtu-stopbits:s@"     => { name => 'rtu_stopbits' },
-                      "tcp-host:s@"         => { name => 'tcp_host' },
-                      "tcp-port:s@"         => { name => 'tcp_port' },
-                      "timeout:s@"          => { name => 'timeout' },
-                    });
+        $options{options}->add_options(arguments =>  {
+            'rtu-port:s@'     => { name => 'rtu_port' },
+            'rtu-baudrate:s@' => { name => 'rtu_baudrate' },
+            'rtu-databits:s@' => { name => 'rtu_databits' },
+            'rtu-parity:s@'   => { name => 'rtu_parity' },
+            'rtu-stopbits:s@' => { name => 'rtu_stopbits' },
+            'tcp-host:s@'     => { name => 'tcp_host' },
+            'tcp-port:s@'     => { name => 'tcp_port' },
+            'timeout:s@'      => { name => 'timeout' }
+        });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'MODBUS OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
 
     return $self;
 }
@@ -74,21 +72,7 @@ sub set_options {
     }
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

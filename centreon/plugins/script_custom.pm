@@ -40,7 +40,7 @@ sub new {
             'list-custommode'   => { name => 'list_custommode' },
             'multiple'          => { name => 'multiple' },
             'no-sanity-options' => { name => 'no_sanity_options' },
-            'pass-manager:s'    => { name => 'pass_manager' },
+            'pass-manager:s'    => { name => 'pass_manager' }
         }
     );
     $self->{version} = '1.0';
@@ -70,10 +70,15 @@ sub load_custom_mode {
     
     $self->is_custommode(custommode => $self->{custommode_name});
     centreon::plugins::misc::mymodule_load(
-        output => $self->{output}, module => $self->{custom_modes}{$self->{custommode_name}}, 
+        output => $self->{output}, module => $self->{custom_modes}->{$self->{custommode_name}}, 
         error_msg => 'Cannot load module --custommode.'
     );
-    $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
+    $self->{custommode_current} = $self->{custom_modes}->{$self->{custommode_name}}->new(
+        options => $self->{options},
+        output => $self->{output},
+        custommode_name => $self->{custommode_name},
+        mode_name => $self->{mode_name}
+    );
 }
 
 sub init {
@@ -149,7 +154,7 @@ sub init {
     $self->{custommode_current}->set_defaults(default => $self->{customdefault});
 
     while ($self->{custommode_current}->check_options()) {
-        $self->{custommode_current} = $self->{custom_modes}{$self->{custommode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
+        $self->{custommode_current} = $self->{custom_modes}->{$self->{custommode_name}}->new(noptions => 1, options => $self->{options}, output => $self->{output}, mode => $self->{custommode_name});
         $self->{custommode_current}->set_options(option_results => $self->{option_results});
         push @{$self->{custommode_stored}}, $self->{custommode_current};
     }
@@ -210,7 +215,7 @@ sub is_mode {
 sub is_custommode {
     my ($self, %options) = @_;
     
-    if (!defined($self->{custom_modes}{$options{custommode}})) {
+    if (!defined($self->{custom_modes}->{$options{custommode}})) {
         $self->{output}->add_option_msg(short_msg => "mode '" . $options{custommode} . "' doesn't exist (use --list-custommode option to show available modes).");
         $self->{output}->option_exit();
     }

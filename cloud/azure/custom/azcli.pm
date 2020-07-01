@@ -54,13 +54,12 @@ sub new {
             'command:s'           => { name => 'command', default => 'az' },
             'command-path:s'      => { name => 'command_path' },
             'command-options:s'   => { name => 'command_options', default => '' },
-            'proxyurl:s'          => { name => 'proxyurl' },
+            'proxyurl:s'          => { name => 'proxyurl' }
         });
     }
     $options{options}->add_help(package => __PACKAGE__, sections => 'AZCLI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{mode} = $options{mode};
     
     return $self;
 }
@@ -71,21 +70,7 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {
-    my ($self, %options) = @_;
-
-    foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{mode}) {
-            for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
-                foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
-                    if (!defined($self->{option_results}->{$opt}[$i])) {
-                        $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
-                    }
-                }
-            }
-        }
-    }
-}
+sub set_defaults {}
 
 sub check_options {
     my ($self, %options) = @_;

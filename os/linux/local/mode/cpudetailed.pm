@@ -37,7 +37,7 @@ my $maps = [
     { counter => 'softirq', output => 'Soft Irq %.2f %%', position => 7 },
     { counter => 'steal', output => 'Steal %.2f %%', position => 8 },
     { counter => 'guest', output => 'Guest %.2f %%', position => 9 },
-    { counter => 'guestnice', output => 'Guest Nice %.2f %%', position => 10 },
+    { counter => 'guestnice', output => 'Guest Nice %.2f %%', position => 10 }
 ];
 
 sub new {
@@ -45,26 +45,16 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'cat' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '/proc/stat 2>&1' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     foreach (@{$maps}) {
         $options{options}->add_options(arguments => {
-                                                    'warning-' . $_->{counter} . ':s'    => { name => 'warning_' . $_->{counter} },
-                                                    'critical-' . $_->{counter} . ':s'    => { name => 'critical_' . $_->{counter} },
-                                                    });
+            'warning-' . $_->{counter} . ':s'    => { name => 'warning_' . $_->{counter} },
+            'critical-' . $_->{counter} . ':s'    => { name => 'critical_' . $_->{counter} },
+        });
     }
-    
+
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);
     $self->{hostname} = undef;
     return $self;
@@ -95,20 +85,19 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
-    $self->{statefile_cache}->read(statefile => 'cache_linux_local_' . $self->{hostname}  . '_' .  $self->{mode});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'cat',
+        command_options => '/proc/stat 2>&1'
+    );
+
+    $self->{statefile_cache}->read(statefile => 'cache_linux_local_' . $options{custom}->get_identifier()  . '_' .  $self->{mode});
     # Manage values
     my ($buffer_creation, $exit) = (0, 0);
     my $save_datas = {};
     my $new_datas = {};
     my $old_datas = {};
     my ($total_datas, $total_cpu_num) = ({}, 0);
-    
+
     foreach my $line (split(/\n/, $stdout)) {
         next if ($line !~ /cpu(\d+)\s+/);
         my $cpu_number = $1;
@@ -138,7 +127,7 @@ sub run {
             $old_datas->{$cpu_number}->{total} += $old_datas->{$cpu_number}->{$_->{counter}};
         }
     }
-    
+
     $self->{statefile_cache}->write(data => $save_datas);
     if ($buffer_creation == 1) {
         $self->{output}->output_add(severity => 'OK',
@@ -148,10 +137,10 @@ sub run {
             $self->{output}->exit();
         }
     }
-    
+
     $self->{output}->output_add(severity => 'OK', 
                                 short_msg => "CPUs usages are ok.");
-    
+
     foreach my $cpu_number (sort keys(%$new_datas)) {
         # In buffer creation. New cpu
         next if (scalar(keys %{$old_datas->{$cpu_number}}) <= 1);
@@ -221,6 +210,7 @@ __END__
 
 Check average usage for each CPUs (need '/proc/stat' file)
 (User, Nice, System, Idle, Wait, Interrupt, SoftIRQ, Steal, Guest, GuestNice)
+Command used: cat /proc/stat 2>&1
 
 =over 8
 
@@ -233,47 +223,6 @@ Can be: 'user', 'nice', 'system', 'idle', 'wait', 'interrupt', 'softirq', 'steal
 
 Threshold critical in percent.
 Can be: 'user', 'nice', 'system', 'idle', 'wait', 'interrupt', 'softirq', 'steal', 'guest', 'guestnice'.
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'cat').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '/proc/stat 2>&1').
 
 =back
 

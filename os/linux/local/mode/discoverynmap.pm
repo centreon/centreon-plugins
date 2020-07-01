@@ -34,16 +34,8 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "subnet:s"              => { name => 'subnet' },
-        "command:s"             => { name => 'command', default => 'nmap' },
-        "command-path:s"        => { name => 'command_path' },
-        "command-options:s"     => {
-            name => 'command_options',
-            default => '-sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX -'
-        },
-        "timeout:s"             => { name => 'timeout', default => 120 },
-        "sudo"                  => { name => 'sudo' },
-        "prettify"              => { name => 'prettify' },
+        'subnet:s'              => { name => 'subnet' },
+        'prettify'              => { name => 'prettify' }
     });
                                     
     return $self;
@@ -116,15 +108,11 @@ sub run {
     
     $disco_stats->{start_time} = time();
 
-    my $command_options = $self->{option_results}->{command_options} . ' ' . $self->{option_results}->{subnet};
-
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $command_options
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'nmap',
+        command_options => '-sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - ',
+        command_options_suffix => $self->{option_results}->{subnet},
+        timeout => 120
     );
 
     my $results = $self->decode_xml_response(
@@ -193,6 +181,7 @@ __END__
 =head1 MODE
 
 Resources discovery.
+Command used: nmap -sS -sU -R -O --osscan-limit --osscan-guess -p U:161,162,T:21-25,80,139,443,3306,8080,8443 -oX - __SUBNET_OPTION__
 
 =over 8
 
