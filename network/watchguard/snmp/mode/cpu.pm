@@ -33,8 +33,7 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{global} = [
-        # I did not put '1m' in the label below, to mimic snmp_standard::mode::cpu
-        { label => '1min', nlabel => 'cpu.utilization.percentage', set => {
+        { label => '1min', set => {
                 key_values => [ { name => '1min' } ],
                 output_template => '1 minute : %.2f %%',
                 perfdatas => [
@@ -43,7 +42,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '5min', nlabel => 'cpu.utilization.5m.percentage', set => {
+        { label => '5min', set => {
                 key_values => [ { name => '5min' } ],
                 output_template => '5 minutes : %.2f %%',
                 perfdatas => [
@@ -52,7 +51,7 @@ sub set_counters {
                 ],
             }
         },
-        { label => '15min', nlabel => 'cpu.utilization.15m.percentage', set => {
+        { label => '15min', set => {
                 key_values => [ { name => '15min' } ],
                 output_template => '15 minutes : %.2f %%',
                 perfdatas => [
