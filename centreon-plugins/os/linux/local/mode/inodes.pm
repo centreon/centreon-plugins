@@ -36,19 +36,19 @@ sub set_counters {
     $self->{maps_counters}->{inodes} = [
         { label => 'usage', set => {
                 key_values => [ { name => 'used' }, { name => 'display' } ],
-                output_template => 'Used: %s %%',
+                output_template => 'used: %s %%',
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'used', template => '%d',
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_inodes_output {
     my ($self, %options) = @_;
-    
+
     return "Inodes partition '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -57,46 +57,32 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'df' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-P -i -T 2>&1' },
-                                  "filter-type:s"     => { name => 'filter_type', },
-                                  "filter-fs:s"       => { name => 'filter_fs', },
-                                  "name:s"            => { name => 'name' },
-                                  "regexp"              => { name => 'use_regexp' },
-                                  "regexp-isensitive"   => { name => 'use_regexpi' },
-                                });
-    $self->{result} = {};
+    $options{options}->add_options(arguments => {
+        'filter-type:s'     => { name => 'filter_type', },
+        'filter-fs:s'       => { name => 'filter_fs', },
+        'name:s'            => { name => 'name' },
+        'regexp'            => { name => 'use_regexp' },
+        'regexp-isensitive' => { name => 'use_regexpi' }
+    });
+
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options},
+    my ($stdout, $exit_code) = $options{custom}->execute_command(
+        command => 'df',
+        command_options => '-P -i -T 2>&1',
         no_quit => 1
     );
+
     $self->{inodes} = {};
     my @lines = split /\n/, $stdout;
     foreach my $line (@lines) {
         next if ($line !~ /^(\S+)\s+(\S+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\S+)\s+(.*)/);
         my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
-        
+
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
                  $fs !~ /$self->{option_results}->{filter_fs}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
@@ -108,11 +94,12 @@ sub manage_selection {
             && $mount !~ /$self->{option_results}->{name}/);
         next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
             && $mount ne $self->{option_results}->{name});
-        
+
         $percent =~ s/%//g;
+        next if ($percent eq '-');
         $self->{inodes}->{$mount} = { display => $mount, fs => $fs, type => $type, total => $size, used => $percent };
     }
-    
+
     if (scalar(keys %{$self->{inodes}}) <= 0) {
         if ($exit_code != 0) {
             $self->{output}->output_add(long_msg => "command output:" . $stdout);
@@ -130,48 +117,9 @@ __END__
 
 Check Inodes space usage on partitions.
 
+Command used: df -P -i -T 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'df').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-P -i -T 2>&1').
 
 =item B<--warning-usage>
 

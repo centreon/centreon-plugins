@@ -73,8 +73,8 @@ sub set_counters {
                 output_use => 'usage_persecond', threshold_use => 'usage_persecond',
                 perfdatas => [
                     { label => 'readio', value => 'usage_persecond', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-usage', nlabel => 'device.io.write.usage.bytespersecond', set => {
@@ -85,8 +85,8 @@ sub set_counters {
                 output_use => 'usage_persecond', threshold_use => 'usage_persecond',
                 perfdatas => [
                     { label => 'writeio', value => 'usage_persecond', template => '%d',
-                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'read-time', nlabel => 'device.io.read.time.milliseconds', set => {
@@ -94,8 +94,8 @@ sub set_counters {
                 output_template => 'read time : %.2f ms',
                 perfdatas => [
                     { label => 'readtime', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'write-time', nlabel => 'device.io.write.time.milliseconds', set => {
@@ -103,8 +103,8 @@ sub set_counters {
                 output_template => 'write time : %.2f ms',
                 perfdatas => [
                     { label => 'writetime', template => '%.2f',
-                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => 'ms', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'utils', nlabel => 'device.io.utils.percentage', set => {
@@ -122,10 +122,10 @@ sub set_counters {
                 output_use => 'utils', threshold_use => 'utils',
                 perfdatas => [
                     { label => 'utils', value => 'utils',  template => '%.2f',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -141,48 +141,23 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'hostname:s'            => { name => 'hostname' },
-        'remote'                => { name => 'remote' },
-        'ssh-option:s@'         => { name => 'ssh_option' },
-        'ssh-path:s'            => { name => 'ssh_path' },
-        'ssh-command:s'         => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'             => { name => 'timeout', default => 30 },
-        'sudo'                  => { name => 'sudo' },
-        'command:s'             => { name => 'command', default => 'tail' },
-        'command-path:s'        => { name => 'command_path', },
-        'command-options:s'     => { name => 'command_options', default => '-n +1 /proc/stat /proc/diskstats 2>&1' },
         'name:s'                => { name => 'name' },
         'regexp'                => { name => 'use_regexp' },
         'regexp-isensitive'     => { name => 'use_regexpi' },
         'interrupt-frequency:s' => { name => 'interrupt_frequency', default => 1000 },
-        'bytes_per_sector:s'    => { name => 'bytes_per_sector', default => 512 },
-        'skip'                  => { name => 'skip' },
+        'bytes-per-sector:s'    => { name => 'bytes_per_sector', default => 512 },
+        'skip'                  => { name => 'skip' }
     });
 
-    $self->{hostname} = undef;
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'tail',
+        command_options => '-n +1 /proc/stat /proc/diskstats 2>&1'
     );
     
     $stdout =~ /\/proc\/stat(.*?)\/proc\/diskstats.*?\n(.*)/msg;
@@ -224,7 +199,7 @@ sub manage_selection {
             cpu_system => $cpu_system,
             cpu_idle => $cpu_idle,
             cpu_user => $cpu_user,
-            cpu_iowait => $cpu_iowait,
+            cpu_iowait => $cpu_iowait
         };
     }
 
@@ -237,7 +212,9 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{cache_name} = 'cache_linux_local_' . $self->{hostname}  . '_' . $self->{mode} . '_' . (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'))
+    $self->{cache_name} = 'cache_linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'));
 }
 
 1;
@@ -247,7 +224,9 @@ __END__
 =head1 MODE
 
 Check some disk io counters:
-read and writes bytes per seconds, milliseconds time spent reading and writing, %util (like iostat) 
+read and writes bytes per seconds, milliseconds time spent reading and writing, %util (like iostat)
+
+Command used: tail -n +1 /proc/stat /proc/diskstats 2>&1
 
 =over 8
 
