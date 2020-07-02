@@ -30,14 +30,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf(
+    return sprintf(
         'status : %s/%s/%s [boot: %s]',
         $self->{result_values}->{load},
         $self->{result_values}->{active},
         $self->{result_values}->{sub},
         $self->{result_values}->{boot}
     );
-    return $msg;
 }
 
 sub set_counters {
@@ -53,47 +52,43 @@ sub set_counters {
                 key_values => [ { name => 'running' }, { name => 'total' } ],
                 output_template => 'Total Running: %s',
                 perfdatas => [
-                    { label => 'total_running', value => 'running', template => '%s', 
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_running', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'total-failed', nlabel => 'systemd.services.failed.count', set => {
                 key_values => [ { name => 'failed' }, { name => 'total' } ],
                 output_template => 'Total Failed: %s',
                 perfdatas => [
-                    { label => 'total_failed', value => 'failed', template => '%s', 
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_failed', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'total-dead', nlabel => 'systemd.services.dead.count', set => {
                 key_values => [ { name => 'dead' }, { name => 'total' } ],
                 output_template => 'Total Dead: %s',
                 perfdatas => [
-                    { label => 'total_dead', value => 'dead', template => '%s', 
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_dead', template => '%s', min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'total-exited', nlabel => 'systemd.services.exited.count', set => {
                 key_values => [ { name => 'exited' }, { name => 'total' } ],
                 output_template => 'Total Exited: %s',
                 perfdatas => [
-                    { label => 'total_exited', value => 'exited', template => '%s', 
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_exited', template => '%s', min => 0, max => 'total' }
+                ]
             }
-        },
+        }
     ];
     $self->{maps_counters}->{sc} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'load' }, { name => 'active' },  { name => 'sub' }, { name => 'boot' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -101,22 +96,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        'hostname:s'         => { name => 'hostname' },
-        'remote'             => { name => 'remote' },
-        'ssh-option:s@'      => { name => 'ssh_option' },
-        'ssh-path:s'         => { name => 'ssh_path' },
-        'ssh-command:s'      => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'          => { name => 'timeout', default => 30 },
-        'sudo'               => { name => 'sudo' },
-        'command:s'          => { name => 'command', default => 'systemctl' },
-        'command-path:s'     => { name => 'command_path' },
-        'command-options:s'  => { name => 'command_options', default => '-a --no-pager --no-legend' },
-        'command-options2:s' => { name => 'command_options2', default => 'list-unit-files --no-pager --no-legend' },
-        'filter-name:s'      => { name => 'filter_name' },
-        'warning-status:s'   => { name => 'warning_status', default => '' },
-        'critical-status:s'  => { name => 'critical_status', default => '%{active} =~ /failed/i' },
+
+    $options{options}->add_options(arguments => {
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{active} =~ /failed/i' }
     });
 
     return $self;
@@ -131,20 +115,16 @@ sub check_options {
 
 sub prefix_sc_output {
     my ($self, %options) = @_;
-    
+
     return "Service '" . $options{instance_value}->{display} . "' ";
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'systemctl',
+        command_options => '-a --no-pager --no-legend'
     );
 
     $self->{global} = { running => 0, exited => 0, failed => 0, dead => 0, total => 0 };
@@ -171,13 +151,9 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options2}
+    ($stdout) = $options{custom}->execute_command(
+        command => 'systemctl',
+        command_options => 'list-unit-files --no-pager --no-legend'
     );
     #runlevel4.target                              enabled 
     #runlevel5.target                              static  
@@ -197,52 +173,9 @@ __END__
 
 Check systemd services status.
 
+Command used: 'systemctl -a --no-pager --no-legend' and 'systemctl list-unit-files --no-pager --no-legend'
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'systemctl').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-a --no-pager --no-legend').
-
-=item B<--command-options2>
-
-Command options (Default: 'list-unit-files --no-pager --no-legend').
 
 =item B<--filter-name>
 

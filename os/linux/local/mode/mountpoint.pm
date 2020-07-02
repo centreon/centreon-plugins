@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
@@ -51,7 +50,7 @@ sub set_counters {
                 key_values => [ { name => 'display' }, { name => 'options' }, { name => 'type' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         }
     ];
@@ -62,25 +61,14 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                    "hostname:s"            => { name => 'hostname' },
-                                    "remote"                => { name => 'remote' },
-                                    "ssh-option:s@"         => { name => 'ssh_option' },
-                                    "ssh-path:s"            => { name => 'ssh_path' },
-                                    "ssh-command:s"         => { name => 'ssh_command', default => 'ssh' },
-                                    "timeout:s"             => { name => 'timeout', default => 30 },
-                                    "sudo"                  => { name => 'sudo' },
-                                    "command:s"             => { name => 'command', default => 'mount' },
-                                    "command-path:s"        => { name => 'command_path' },
-                                    "command-options:s"     => { name => 'command_options', default => ' 2>&1' },
-                                    "filter-device:s"       => { name => 'filter_device' },
-                                    "filter-mountpoint:s"   => { name => 'filter_mountpoint' },
-                                    "filter-type:s"         => { name => 'filter_type' },
-                                    "warning-status:s"      => { name => 'warning_status', default => '' },
-                                    "critical-status:s"     => { name => 'critical_status', default => '%{options} !~ /^rw/i && %{type} !~ /tmpfs/i' },
-                                });
-    $self->{result} = {};
+    $options{options}->add_options(arguments => {
+        'filter-device:s'       => { name => 'filter_device' },
+        'filter-mountpoint:s'   => { name => 'filter_mountpoint' },
+        'filter-type:s'         => { name => 'filter_type' },
+        'warning-status:s'      => { name => 'warning_status', default => '' },
+        'critical-status:s'     => { name => 'critical_status', default => '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i' }
+    });
+
     return $self;
 }
 
@@ -94,13 +82,9 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options},
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'mount',
+        command_options => '2>&1',
         no_quit => 1
     );
 
@@ -148,47 +132,9 @@ __END__
 
 Check mount points options.
 
+Command used: mount 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'mount').
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: ' 2>&1').
 
 =item B<--filter-mountpoint>
 
@@ -209,7 +155,7 @@ Threshold warning.
 =item B<--critical-status>
 
 Threshold critical
-(Default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs/i').
+(Default: '%{options} !~ /^rw/i && %{type} !~ /tmpfs|squashfs/i').
 
 =back
 

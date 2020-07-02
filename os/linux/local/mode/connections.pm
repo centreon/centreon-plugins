@@ -24,7 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 my %map_ss_states = (
     UNCONN => 'closed',
@@ -410,7 +409,7 @@ nagios-perfdata - number of connections.
 
 =item B<--con-mode>
 
-Default mode for parsing and command (Default: 'netstat').
+Default mode for parsing and command: 'netstat' (default) or 'ss'.
 
 =back
 

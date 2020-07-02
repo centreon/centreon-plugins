@@ -110,7 +110,7 @@ sub execute_command {
             hostname => $self->{option_results}->{hostname},
             sudo => $self->{option_results}->{sudo},
             command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command},
-            command_path => $self->{option_results}->{command_path},
+            command_path => defined($self->{option_results}->{command}) && $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path} : $options{command_path},
             command_options => $command_options,
             timeout => $timeout,
             no_quit => $options{no_quit}
@@ -121,7 +121,7 @@ sub execute_command {
             sudo => $self->{option_results}->{sudo},
             options => { timeout => $timeout },
             command => defined($self->{option_results}->{command}) && $self->{option_results}->{command} ne '' ? $self->{option_results}->{command} : $options{command},
-            command_path => $self->{option_results}->{command_path},
+            command_path => defined($self->{option_results}->{command}) && $self->{option_results}->{command_path} ne '' ? $self->{option_results}->{command_path} : $options{command_path},
             command_options => $command_options,
             no_quit => $options{no_quit}
         );

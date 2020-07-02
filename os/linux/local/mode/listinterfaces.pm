@@ -24,7 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
@@ -32,23 +31,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command', default => 'ip' },
-        "command-path:s"    => { name => 'command_path', default => '/sbin' },
-        "command-options:s" => { name => 'command_options', default => '-s addr 2>&1' },
-        "filter-name:s"     => { name => 'filter_name' },
-        "filter-state:s"    => { name => 'filter_state' },
-        "no-loopback"       => { name => 'no_loopback' },
-        "skip-novalues"     => { name => 'skip_novalues' },
+        'filter-name:s'  => { name => 'filter_name' },
+        'filter-state:s' => { name => 'filter_state' },
+        'no-loopback'    => { name => 'no_loopback' },
+        'skip-novalues'  => { name => 'skip_novalues' }
     });
-    
-    $self->{result} = {};
+
     return $self;
 }
 
@@ -60,31 +48,29 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command_path => '/sbin',
+        command => 'ip',
+        command_options => '-s addr 2>&1'
     );
-    
+
     my $mapping = {
         ifconfig => {
             get_interface => '^(\S+)(.*?)(\n\n|\n$)',
-            test => 'RX bytes:\S+.*?TX bytes:\S+',
+            test => 'RX bytes:\S+.*?TX bytes:\S+'
         },
         iproute => {
             get_interface => '^\d+:\s+(\S+)(.*?)(?=\n\d|\Z$)',
-            test => 'RX:\s+bytes.*?\d+',
-        },
+            test => 'RX:\s+bytes.*?\d+'
+        }
     };
     
     my $type = 'ifconfig';
     if ($stdout =~ /^\d+:\s+\S+:\s+</ms) {
         $type = 'iproute';
     }
-    
+
+    my $results = {};
     while ($stdout =~ /$mapping->{$type}->{get_interface}/msg) {
         my ($interface_name, $values) = ($1, $2);
         $interface_name =~ s/:$//;
@@ -112,38 +98,42 @@ sub manage_selection {
             next;
         }
 
-        $self->{result}->{$interface_name} = { state => $states };
+        $results->{$interface_name} = { state => $states };
     }    
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 	
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [state = '" . $self->{result}->{$name}->{state} . "']");
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort(keys %$results)) {
+        $self->{output}->output_add(long_msg => "'" . $name . "' [state = '" . $results->{$name}->{state} . "']");
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List interfaces:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List interfaces:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
 
 sub disco_format {
     my ($self, %options) = @_;
-    
+
     $self->{output}->add_disco_format(elements => ['name', 'state']);
 }
 
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {     
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort(keys %$results)) {     
         $self->{output}->add_disco_entry(
             name => $name,
-            state => $self->{result}->{$name}->{state}
+            state => $results->{$name}->{state}
         );
     }
 }
@@ -156,48 +146,9 @@ __END__
 
 List storages.
 
+Command used: /sbin/ip -s addr 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'ip').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/sbin').
-
-=item B<--command-options>
-
-Command options (Default: '-s addr 2>&1').
 
 =item B<--filter-name>
 
