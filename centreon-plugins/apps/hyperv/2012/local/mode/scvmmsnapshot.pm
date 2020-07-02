@@ -162,7 +162,8 @@ sub manage_selection {
         $node->{status} = $scvmm_vm_status->{ $node->{status} };
 
         my $chkpt = -1;
-        foreach (@{$node->{checkpoints}}) {
+        my $checkpoints = (ref($node->{checkpoints}) eq 'ARRAY') ? $node->{checkpoints} : [ $node->{checkpoints} ];
+        foreach (@$checkpoints) {
             $chkpt = $_->{added_time} if ($chkpt == -1 || $chkpt > $_->{added_time});
         }
         next if ($chkpt == -1);

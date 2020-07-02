@@ -149,7 +149,8 @@ sub manage_selection {
         my ($name, $status, $note, $content) = ($1, $2, $3, $4);
 
         my $checkpoint = { backing => -1, snapshot => -1 };
-        foreach my $chkpt (@{$node->{checkpoints}}) {
+        my $checkpoints = (ref($node->{checkpoints}) eq 'ARRAY') ? $node->{checkpoints} : [ $node->{checkpoints} ];
+        foreach my $chkpt (@$checkpoints) {
             $chkpt->{creation_time} =~ s/,/\./g;
             $checkpoint->{ $chkpt->{type} } = $chkpt->{creation_time} if ($chkpt->{creation_time} > 0 && ($checkpoint->{ $chkpt->{type} } == -1 || $checkpoint->{ $chkpt->{type} } > $chkpt->{creation_time}));
         }
