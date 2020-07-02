@@ -41,7 +41,7 @@ sub convert_to_json {
     my (%options) = @_;
 
     my $ps = q{
-function ConvertTo-JSON-20($maxDepth = 4) {
+function ConvertTo-JSON-20($maxDepth = 4,$forceArray = $false) {
     begin {
         $data = @()
     }
@@ -50,7 +50,11 @@ function ConvertTo-JSON-20($maxDepth = 4) {
     }
     
     end{
-        $value = $data
+        if ($data.length -eq 1 -and $forceArray -eq $false) {
+            $value = $data[0]
+        } else {    
+            $value = $data
+        }
 
         if ($value -eq $null) {
             return "null"

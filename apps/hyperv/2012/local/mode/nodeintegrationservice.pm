@@ -226,7 +226,9 @@ sub manage_selection {
         };
 
         my $id2 = 1;
-        foreach my $service (@{$node->{services}}) {
+        my $services = (ref($node->{services}) eq 'ARRAY') ? $node->{services} : [ $node->{services} ];
+
+        foreach my $service (@$services) {
             $self->{vm}->{$id}->{service}->{$id2} = {
                 vm => $node->{name},
                 service => $service->{service},

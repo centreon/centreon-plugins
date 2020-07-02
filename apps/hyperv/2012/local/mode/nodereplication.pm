@@ -139,8 +139,8 @@ sub manage_selection {
     my $id = 1;
     foreach my $node (@$decoded) {
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
-            $name !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
+            $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
 
