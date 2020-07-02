@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -40,8 +39,8 @@ sub set_counters {
                 output_template => 'pgpgin : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'pgpgin', template => '%d', unit => 'B/s', min => 0 },
-                ],
+                    { label => 'pgpgin', template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'pgpgout', nlabel => 'system.pgpgout.usage.bytespersecond', set => {
@@ -49,8 +48,8 @@ sub set_counters {
                 output_template => 'pgpgout : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'pgpgout', template => '%d', unit => 'B/s', min => 0 },
-                ],
+                    { label => 'pgpgout', template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'pswpin', nlabel => 'system.pswpin.usage.bytespersecond', set => {
@@ -58,8 +57,8 @@ sub set_counters {
                 output_template => 'pswpin : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'pswpin', template => '%d', unit => 'B/s', min => 0 },
-                ],
+                    { label => 'pswpin', template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'pswpout', nlabel => 'system.pswpout.usage.bytespersecond', set => {
@@ -67,8 +66,8 @@ sub set_counters {
                 output_template => 'pswpout : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'pswpout', template => '%d', unit => 'B/s', min => 0 },
-                ],
+                    { label => 'pswpout', template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'pgfault', nlabel => 'system.pgfault.usage.bytespersecond', set => {
@@ -76,8 +75,8 @@ sub set_counters {
                 output_template => 'pgfault : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'pgfault', template => '%d', unit => 'B/s', min => 0 },
-                ],
+                    { label => 'pgfault', template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'pgmajfault', nlabel => 'system.pgmajfault.usage.bytespersecond', set => {
@@ -85,10 +84,10 @@ sub set_counters {
                 output_template => 'pgmajfault : %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'pgmajfault', template => '%d', unit => 'B/s', min => 0 },
-                ],
+                    { label => 'pgmajfault', template => '%d', unit => 'B/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -98,16 +97,6 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'cat' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '/proc/vmstat 2>&1' },
     });
 
     return $self;
@@ -119,26 +108,12 @@ sub prefix_global_output {
     return 'Paging ';
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'cat',
+        command_options => '/proc/vmstat 2>&1'
     );
         
     $self->{global} = {};
@@ -149,7 +124,7 @@ sub manage_selection {
     $self->{global}->{pgfault} = $stdout =~ /^pgfault.*?(\d+)/msi ? $1 * 1024: undef;
     $self->{global}->{pgmajfault} = $stdout =~ /^pgmajfault.*?(\d+)/msi ? $1 * 1014: undef;
     
-    $self->{cache_name} = "cache_linux_local_" . $self->{hostname}  . '_' . $self->{mode} . '_' . 
+    $self->{cache_name} = 'cache_linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' . 
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
 }
 
@@ -161,48 +136,9 @@ __END__
 
 Check paging informations.
 
+Command used: cat /proc/vmstat 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'cat').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '/proc/vmstat 2>&1').
 
 =item B<--warning-*>
 

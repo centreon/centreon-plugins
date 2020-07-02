@@ -24,28 +24,25 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub custom_swap_output {
     my ($self, %options) = @_;
     
-    my $output = sprintf(
+    return sprintf(
         'Swap Total: %s %s Used: %s %s (%.2f%%) Free: %s %s (%.2f%%)',
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
         $self->{result_values}->{prct_used},
         $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
-        $self->{result_values}->{prct_free},
+        $self->{result_values}->{prct_free}
     );
-    return $output;
 }
-
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'swap', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'swap', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{swap} = [
@@ -53,27 +50,26 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 },
-                ],
-            },
+                    { label => 'used', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
         },
         { label => 'usage-free', display_ok => 0, nlabel => 'swap.free.bytes', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_swap_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free', template => '%d', min => 0, max => 'total',
-                      unit => 'B', cast_int => 1 },
-                ],
-            },
+                    { label => 'free', template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'swap.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'Swap used: %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100, unit => '%' },
-                ],
-            },
-        },
+                    { label => 'used_prct', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
     ];
 }
 
@@ -83,17 +79,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'cat' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '/proc/meminfo 2>&1' },
-        'no-swap:s'         => { name => 'no_swap' },
+        'no-swap:s' => { name => 'no_swap' }
     });
 
     $self->{no_swap} = 'critical';
@@ -117,15 +103,11 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'cat',
+        command_options => '/proc/meminfo 2>&1'
     );
-    
+
     my ($total_size, $swap_free);
     foreach (split(/\n/, $stdout)) {
         if (/^SwapTotal:\s+(\d+)/i) {
@@ -141,8 +123,10 @@ sub manage_selection {
     }
 
     if ($total_size == 0) {
-        $self->{output}->output_add(severity => $self->{no_swap},
-                                    short_msg => 'No active swap.');
+        $self->{output}->output_add(
+            severity => $self->{no_swap},
+            short_msg => 'No active swap.'
+        );
         $self->{output}->display();
         $self->{output}->exit();
     }
@@ -171,52 +155,13 @@ __END__
 
 Check swap memory (need '/proc/meminfo' file).
 
+Command used: cat /proc/meminfo 2>&1
+
 =over 8
 
 =item B<--no-swap>
 
 Threshold if no active swap (default: 'critical').
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'cat').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '/proc/meminfo 2>&1').
 
 =item B<--warning-*> B<--critical-*>
 

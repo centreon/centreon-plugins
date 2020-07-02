@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -38,10 +37,10 @@ sub set_counters {
                 key_values => [ { name => 'openfiles' } ],
                 output_template => 'current open files: %s',
                 perfdatas => [
-                    { value => 'openfiles', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -51,44 +50,20 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'lsof' },
-        'command-path:s'    => { name => 'command_path' },
-        'command-options:s' => { name => 'command_options', default => '-a -d ^mem -d ^cwd -d ^rtd -d ^txt -d ^DEL 2>&1' },
         'filter-username:s' => { name => 'filter_username' },
         'filter-appname:s'  => { name => 'filter_appname' },
-        'filter-pid:s'      => { name => 'filter_pid' },
+        'filter-pid:s'      => { name => 'filter_pid' }
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'lsof',
+        command_options => '-a -d ^mem -d ^cwd -d ^rtd -d ^txt -d ^DEL 2>&1'
     );
 
     $self->{global} = { openfiles => 0 };
@@ -116,48 +91,9 @@ __END__
 
 Check open files.
 
+Command used: lsof -a -d ^mem -d ^cwd -d ^rtd -d ^txt -d ^DEL 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'lsof').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-a -d ^mem -d ^cwd -d ^rtd -d ^txt -d ^DEL 2>&1').
 
 =item B<--filter-appname>
 

@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 use Digest::MD5 qw(md5_hex);
-use centreon::plugins::misc;
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -101,7 +100,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } },
+        { name => 'interface', type => 1, cb_prefix_output => 'prefix_interface_output', message_multiple => 'All interfaces are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{interface} = [
@@ -109,7 +108,7 @@ sub set_counters {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
         { label => 'in', set => {
@@ -117,7 +116,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic In : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'out', set => {
@@ -125,9 +124,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 closure_custom_output => $self->can('custom_traffic_output'), output_error_template => 'Traffic Out : %s',
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -137,16 +136,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'        => { name => 'hostname' },
-        'remote'            => { name => 'remote' },
-        'ssh-option:s@'     => { name => 'ssh_option' },
-        'ssh-path:s'        => { name => 'ssh_path' },
-        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'         => { name => 'timeout', default => 30 },
-        'sudo'              => { name => 'sudo' },
-        'command:s'         => { name => 'command', default => 'ip' },
-        'command-path:s'    => { name => 'command_path', default => '/sbin' },
-        'command-options:s' => { name => 'command_options', default => '-s addr 2>&1' },
         'filter-state:s'    => { name => 'filter_state', },
         'units:s'           => { name => 'units', default => 'b/s' },
         'name:s'            => { name => 'name' },
@@ -172,10 +161,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{hostname} = $self->{option_results}->{hostname};
-    if (!defined($self->{hostname})) {
-        $self->{hostname} = 'me';
-    }
     if (defined($self->{option_results}->{speed}) && $self->{option_results}->{speed} ne '') {
         if ($self->{option_results}->{speed} !~ /^[0-9]+(\.[0-9]+){0,1}$/) {
             $self->{output}->add_option_msg(short_msg => "Speed must be a positive number '" . $self->{option_results}->{speed} . "' (can be a float also).");
@@ -196,14 +181,10 @@ sub check_options {
 sub do_selection {
     my ($self, %options) = @_;
 
-    $self->{interface} = {};
-    my $stdout = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options}
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'ip',
+        command_path => '/sbin',
+        command_options => '-s addr 2>&1'
     );
 
     # ifconfig
@@ -212,7 +193,8 @@ sub do_selection {
         # ip addr
         $interface_pattern = '^\d+:\s+(\S+)(.*?)(?=\n\d|\Z$)';
     }
-    
+
+    $self->{interface} = {};
     while ($stdout =~ /$interface_pattern/msg) {
         my ($interface_name, $values) = ($1, $2);
 
@@ -258,8 +240,8 @@ sub do_selection {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->do_selection();
-    $self->{cache_name} = "cache_linux_local_" . $self->{hostname} . '_' . $self->{mode} . '_' .
+    $self->do_selection(custom => $options{custom});
+    $self->{cache_name} = 'cache_linux_local_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'));
 }
@@ -272,48 +254,9 @@ __END__
 
 Check Traffic
 
+Command used: /sbin/ip -s addr 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'ip').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: '/sbin').
-
-=item B<--command-options>
-
-Command options (Default: '-s addr 2>&1').
 
 =item B<--warning-in>
 

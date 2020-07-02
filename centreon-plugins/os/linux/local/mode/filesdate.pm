@@ -32,14 +32,14 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'warning:s'         => { name => 'warning' },
-        'critical:s'        => { name => 'critical' },
-        'separate-dirs'     => { name => 'separate_dirs' },
-        'max-depth:s'       => { name => 'max_depth' },
-        'exclude-du:s@'     => { name => 'exclude_du' },
-        'filter-plugin:s'   => { name => 'filter_plugin' },
-        'files:s'           => { name => 'files' },
-        'time:s'            => { name => 'time' }
+        'warning:s'       => { name => 'warning' },
+        'critical:s'      => { name => 'critical' },
+        'separate-dirs'   => { name => 'separate_dirs' },
+        'max-depth:s'     => { name => 'max_depth' },
+        'exclude-du:s@'   => { name => 'exclude_du' },
+        'filter-plugin:s' => { name => 'filter_plugin' },
+        'files:s'         => { name => 'files' },
+        'time:s'          => { name => 'time' }
     });
 
     return $self;

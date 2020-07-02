@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub custom_usage_perfdata {
     my ($self, %options) = @_;
@@ -34,19 +33,25 @@ sub custom_usage_perfdata {
     if (!defined($options{extra_instance}) || $options{extra_instance} != 0) {
         $extra_label .= '_' . $self->{result_values}->{display};
     }
-    $self->{output}->perfdata_add(label => $self->{result_values}->{label_ref} . '_used' . $extra_label, unit => $unit,
-                                  value => $self->{result_values}->{used},
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{warn_label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{crit_label}, total => $self->{result_values}->{total}, cast_int => 1),
-                                  min => 0);
+    $self->{output}->perfdata_add(
+        label => $self->{result_values}->{label_ref} . '_used' . $extra_label, unit => $unit,
+        value => $self->{result_values}->{used},
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{result_values}->{warn_label}, total => $self->{result_values}->{total}, cast_int => 1),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{result_values}->{crit_label}, total => $self->{result_values}->{total}, cast_int => 1),
+        min => 0
+    );
 }
 
 sub custom_usage_threshold {
     my ($self, %options) = @_;
 
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{used}, 
-        threshold => [ { label => 'critical-' . $self->{result_values}->{crit_label}, exit_litteral => 'critical' }, 
-                       { label => 'warning-' . $self->{result_values}->{warn_label}, exit_litteral => 'warning' } ]);
+    my $exit = $self->{perfdata}->threshold_check(
+        value => $self->{result_values}->{used}, 
+        threshold => [
+            { label => 'critical-' . $self->{result_values}->{crit_label}, exit_litteral => 'critical' }, 
+            { label => 'warning-' . $self->{result_values}->{warn_label}, exit_litteral => 'warning' }
+        ]
+    );
     return $exit;
 }
 
@@ -66,11 +71,12 @@ sub custom_usage_output {
         $limit_hard = sprintf(" (%.2f %% of hard limit)", $self->{result_values}->{used} * 100 / $self->{result_values}->{crit_limit});
     }
 
-    my $msg = sprintf("%s Used: %s%s%s",
-                      ucfirst($self->{result_values}->{label_ref}),
-                      $value,
-                      $limit_soft, $limit_hard);
-    return $msg;
+    return sprintf(
+        "%s Used: %s%s%s",
+        ucfirst($self->{result_values}->{label_ref}),
+        $value,
+        $limit_soft, $limit_hard
+    );
 }
 
 sub custom_usage_calc {
@@ -113,7 +119,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'data' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'inode-usage', set => {
@@ -121,9 +127,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'), closure_custom_calc_extra_options => { label_ref => 'inode' },
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
-        },
+        }
     ];
 }
 
@@ -139,34 +145,19 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command', default => 'repquota' },
-        "command-path:s"    => { name => 'command_path' },
-        "command-options:s" => { name => 'command_options', default => '-a -i 2>&1' },
-        "filter-user:s"     => { name => 'filter_user', },
-        "filter-fs:s"       => { name => 'filter_fs', },
+        'filter-user:s' => { name => 'filter_user' },
+        'filter-fs:s'   => { name => 'filter_fs' }
     });
 
-    $self->{result} = {};
     return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options},
+    my ($stdout, $exit_code) = $options{custom}->execute_command(
+        command => 'repquota',
+        command_options => '-a -i 2>&1',
         no_quit => 1
     );
     
@@ -201,7 +192,8 @@ sub manage_selection {
                 next;
             }
             
-            $self->{quota}->{$name} = { display => $name,
+            $self->{quota}->{$name} = {
+                display => $name,
                 data_used => $data_used, data_soft => $data_soft, data_hard => $data_hard,
                 inode_used => $inode_used, inode_soft => $inode_soft, inode_hard => $inode_hard,
             };
@@ -225,57 +217,13 @@ __END__
 
 Check quota usage on partitions.
 
+Command used: repquota -a -i 2>&1
+
 =over 8
 
-=item B<--remote>
+=item B<--warning-*> B<--critical-*>
 
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'repquota').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-a -i 2>&1').
-
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'inode-usage', 'data-usage'.
-
-=item B<--critical-*>
-
-Threshold critical.
+Thresholds.
 Can be: 'inode-usage', 'data-usage'.
 
 =item B<--filter-user>

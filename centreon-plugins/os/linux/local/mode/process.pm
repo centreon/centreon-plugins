@@ -34,36 +34,25 @@ my %state_map = (
     S => 'InterruptibleSleep',
     R => 'running',
     D => 'UninterrupibleSleep',
-    I => 'IdleKernelThread',
+    I => 'IdleKernelThread'
 );
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        "hostname:s"        => { name => 'hostname' },
-        "remote"            => { name => 'remote' },
-        "ssh-option:s@"     => { name => 'ssh_option' },
-        "ssh-path:s"        => { name => 'ssh_path' },
-        "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-        "timeout:s"         => { name => 'timeout', default => 30 },
-        "sudo"              => { name => 'sudo' },
-        "command:s"         => { name => 'command', default => 'ps' },
-        "command-path:s"    => { name => 'command_path' },
-        "command-options:s" => { name => 'command_options', default => '-e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1' },
-        "warning:s"         => { name => 'warning' },
-        "critical:s"        => { name => 'critical' },
-        "warning-time:s"    => { name => 'warning_time' },
-        "critical-time:s"   => { name => 'critical_time' },
-        "filter-command:s"  => { name => 'filter_command' },
-        "filter-arg:s"      => { name => 'filter_arg' },
-        "filter-state:s"    => { name => 'filter_state' },
-        "filter-ppid:s"	    => { name => 'filter_ppid' },
+        'warning:s'        => { name => 'warning' },
+        'critical:s'       => { name => 'critical' },
+        'warning-time:s'   => { name => 'warning_time' },
+        'critical-time:s'  => { name => 'critical_time' },
+        'filter-command:s' => { name => 'filter_command' },
+        'filter-arg:s'     => { name => 'filter_arg' },
+        'filter-state:s'   => { name => 'filter_state' },
+        'filter-ppid:s'	   => { name => 'filter_ppid' }
     });
 
-    $self->{result} = {};
     return $self;
 }
 
@@ -92,18 +81,18 @@ sub check_options {
 sub parse_output {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'ps',
+        command_options => '-e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1'
+    );
+
+    $self->{result} = {};
     my @lines = split /\n/, $stdout;
     my $line = shift @lines;
     foreach my $line (@lines) {
         next if ($line !~ /^(.*?)===(.*?)===(.*?)===(.*?)===(.*?)===(.*)$/);
         my ($state, $elapsed, $pid, $ppid, $cmd, $args) = ($1, $2, $3, $4, $5, $6);
-        
+
         $self->{result}->{centreon::plugins::misc::trim($pid)} = {
             ppid => centreon::plugins::misc::trim($ppid), 
             state => centreon::plugins::misc::trim($state),
@@ -116,7 +105,7 @@ sub parse_output {
 
 sub check_time {
     my ($self, %options) = @_;
-    
+
     my $time = $self->{result}->{$options{pid}}->{elapsed};
     # Format: [[dd-]hh:]mm:ss
     my @values = split /:/, $time;
@@ -134,15 +123,17 @@ sub check_time {
 
     my $exit = $self->{perfdata}->threshold_check(value => $total_seconds_elapsed, threshold => [ { label => 'critical-time', 'exit_litteral' => 'critical' }, { label => 'warning-time', exit_litteral => 'warning' } ]);
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => "Time issue for process " . $self->{result}->{$options{pid}}->{cmd});
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => "Time issue for process " . $self->{result}->{$options{pid}}->{cmd}
+        );
     }
 }
 
 sub run {
     my ($self, %options) = @_;
 	
-    $self->parse_output();
+    $self->parse_output(custom => $options{custom});
     
     my $num_processes_match = 0;
     foreach my $pid (keys %{$self->{result}}) {
@@ -155,22 +146,29 @@ sub run {
         next if (defined($self->{option_results}->{filter_ppid}) && $self->{option_results}->{filter_ppid} ne '' &&
                  $self->{result}->{$pid}->{ppid} !~ /$self->{option_results}->{filter_ppid}/);
 		 
-        $self->{output}->output_add(long_msg => 'Process: [command => ' . $self->{result}->{$pid}->{cmd} . 
-                                                          '] [arg => ' . $self->{result}->{$pid}->{args} .
-                                                          '] [state => ' . $state_map{$self->{result}->{$pid}->{state}} . ']');
+        $self->{output}->output_add(
+            long_msg =>
+                'Process: [command => ' . $self->{result}->{$pid}->{cmd} . 
+                '] [arg => ' . $self->{result}->{$pid}->{args} .
+                '] [state => ' . $state_map{$self->{result}->{$pid}->{state}} . ']'
+        );
         $self->check_time(pid => $pid);
         $num_processes_match++;
     }
     
     my $exit = $self->{perfdata}->threshold_check(value => $num_processes_match, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => "Number of current processes: $num_processes_match");
-    $self->{output}->perfdata_add(label => 'nbproc',
-                                  value => $num_processes_match,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-    
+    $self->{output}->output_add(
+        severity => $exit,
+        short_msg => "Number of current processes: $num_processes_match"
+    );
+    $self->{output}->perfdata_add(
+        label => 'nbproc',
+        value => $num_processes_match,
+        warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+        critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+        min => 0
+    );
+
     $self->{output}->display();
     $self->{output}->exit();
 }
@@ -184,48 +182,9 @@ __END__
 Check linux processes.
 Can filter on commands, arguments and states.
 
+Command used: ps -e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'ps').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '-e -o state -o ===%t===%p===%P=== -o comm:50 -o ===%a  -w 2>&1').
 
 =item B<--warning>
 

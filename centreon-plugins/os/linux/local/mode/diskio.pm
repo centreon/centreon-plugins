@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
 
 sub custom_usage_calc {

@@ -24,7 +24,6 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub set_counters {
     my ($self, %options) = @_;
@@ -39,44 +38,32 @@ sub set_counters {
                 key_values => [ { name => 'total' } ],
                 output_template => 'Number of pending updates : %d',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%d',
-                      min => 0 },
-                ],
+                    { label => 'total', template => '%d', min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{updates} = [
         { label => 'update', set => {
                 key_values => [ { name => 'package' }, { name => 'version' }, { name => 'repository' } ],
-                closure_custom_calc => $self->can('custom_updates_calc'),
                 closure_custom_output => $self->can('custom_updates_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => sub { return 'ok'; }
             }
-        },
+        }
     ];
 }
 
 sub custom_updates_output {
     my ($self, %options) = @_;
     
-    my $msg = sprintf(
+    return sprintf(
         "Package '%s' [version: %s] [repository: %s]",
         $self->{result_values}->{package},
         $self->{result_values}->{version},
         $self->{result_values}->{repository}
     );
-    return $msg;
-}
-
-sub custom_updates_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{package} = $options{new_datas}->{$self->{instance} . '_package'};
-    $self->{result_values}->{version} = $options{new_datas}->{$self->{instance} . '_version'};
-    $self->{result_values}->{repository} = $options{new_datas}->{$self->{instance} . '_repository'};
-    return 0;
 }
 
 sub new {
@@ -85,34 +72,42 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'hostname:s'          => { name => 'hostname' },
-        'remote'              => { name => 'remote' },
-        'ssh-option:s@'       => { name => 'ssh_option' },
-        'ssh-path:s'          => { name => 'ssh_path' },
-        'ssh-command:s'       => { name => 'ssh_command', default => 'ssh' },
-        'timeout:s'           => { name => 'timeout', default => 30 },
-        'sudo'                => { name => 'sudo' },
-        'command:s'           => { name => 'command', default => 'yum' },
-        'command-path:s'      => { name => 'command_path', },
-        'command-options:s'   => { name => 'command_options', default => 'check-update 2>&1' },
+        'os-mode:s'           => { name => 'os_mode', default => 'rhel' },
         'filter-package:s'    => { name => 'filter_package' },
-        'filter-repository:s' => { name => 'filter_repository' },
+        'filter-repository:s' => { name => 'filter_repository' }
     });
 
-    $self->{result} = {};
     return $self;
+}
+
+sub check_options {
+    my ($self, %options) = @_;
+    $self->SUPER::check_options(%options);
+
+    if (!defined($self->{option_results}->{os_mode}) ||
+        $self->{option_results}->{os_mode} eq '' ||
+        $self->{option_results}->{os_mode} eq 'rhel'
+        ) {
+        $self->{command} = 'yum';
+        $self->{command_options} = 'check-update 2>&1';
+    } elsif ($self->{option_results}->{os_mode} eq 'debian') {
+        $self->{command} = 'apt-get';
+        $self->{command_options} = 'upgrade -sVq 2>&1';
+    } elsif ($self->{option_results}->{os_mode} eq 'suse') {
+        $self->{command} = 'zypper';
+        $self->{command_options} = 'list-updates 2>&1';
+    } else {
+        $self->{output}->add_option_msg(short_msg => "os mode '" . $self->{option_results}->{os_mode} . "' not implemented" );
+        $self->{output}->option_exit();
+    }    
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
-        output => $self->{output},
-        options => $self->{option_results},
-        sudo => $self->{option_results}->{sudo},
-        command => $self->{option_results}->{command},
-        command_path => $self->{option_results}->{command_path},
-        command_options => $self->{option_results}->{command_options},
+    my ($stdout) = $options{custom}->execute_command(
+        command => $self->{command},
+        command_options => $self->{command_options},
         no_quit => 1
     );
 
@@ -136,7 +131,7 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $repository . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{updates}->{$package} = {
             package => $package,
             version => $version,
@@ -155,49 +150,15 @@ __END__
 
 Check pending updates.
 
+For rhel/centos: yum check-update 2>&1
+For Debian: apt-get upgrade -sVq 2>&1
+For Suse: zypper list-updates 2>&1
+
 =over 8
 
-=item B<--remote>
+=item B<--os-mode>
 
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (Default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (Default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'yum').
-Use 'apt-get' for Debian, 'zypper' for SUSE.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: 'check-updates 2>&1').
-Use 'upgrade -sVq 2>&1' for Debian, 'list-updates 2>&1' for SUSE.
+Default mode for parsing and command: 'rhel' (default), 'debian', 'suse'.
 
 =item B<--warning-total>
 

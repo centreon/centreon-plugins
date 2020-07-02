@@ -24,7 +24,6 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 use centreon::plugins::statefile;
 
 my $maps = [

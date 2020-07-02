@@ -24,28 +24,16 @@ use base qw(centreon::plugins::mode);
 
 use strict;
 use warnings;
-use centreon::plugins::misc;
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'cat' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '/proc/partitions 2>&1' },
-                                  "filter-name:s"     => { name => 'filter_name', },
-                                });
-    $self->{result} = {};
+    $options{options}->add_options(arguments => {
+        'filter-name:s' => { name => 'filter_name' }
+    });
+
     return $self;
 }
 
@@ -57,12 +45,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $stdout = centreon::plugins::misc::execute(output => $self->{output},
-                                                  options => $self->{option_results},
-                                                  sudo => $self->{option_results}->{sudo},
-                                                  command => $self->{option_results}->{command},
-                                                  command_path => $self->{option_results}->{command_path},
-                                                  command_options => $self->{option_results}->{command_options});
+    my ($stdout) = $options{custom}->execute_command(
+        command => 'cat',
+        command_options => '/proc/partitions 2>&1'
+    );
+
+    my $results = {};
     my @lines = split /\n/, $stdout;
     # Header not needed
     shift @lines;
@@ -76,20 +64,24 @@ sub manage_selection {
             next;
         }
         
-        $self->{result}->{$name} = 1;
+        $results->{$name} = 1;
     }
+
+    return $results;
 }
 
 sub run {
     my ($self, %options) = @_;
 	
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort(keys %$results)) {
         $self->{output}->output_add(long_msg => "'" . $name . "'");
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List partitions:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List partitions:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -103,10 +95,9 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    $self->manage_selection();
-    foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         );
+    my $results = $self->manage_selection(custom => $options{custom});
+    foreach my $name (sort(keys %$results)) {     
+        $self->{output}->add_disco_entry(name => $name);
     }
 }
 
@@ -118,48 +109,9 @@ __END__
 
 List partitions.
 
+Command used: cat /proc/partitions 2>&1
+
 =over 8
-
-=item B<--remote>
-
-Execute command remotely in 'ssh'.
-
-=item B<--hostname>
-
-Hostname to query (need --remote).
-
-=item B<--ssh-option>
-
-Specify multiple options like the user (example: --ssh-option='-l=centreon-engine' --ssh-option='-p=52').
-
-=item B<--ssh-path>
-
-Specify ssh command path (default: none)
-
-=item B<--ssh-command>
-
-Specify ssh command (default: 'ssh'). Useful to use 'plink'.
-
-=item B<--timeout>
-
-Timeout in seconds for the command (Default: 30).
-
-=item B<--sudo>
-
-Use 'sudo' to execute the command.
-
-=item B<--command>
-
-Command to get information (Default: 'cat').
-Can be changed if you have output in a file.
-
-=item B<--command-path>
-
-Command path (Default: none).
-
-=item B<--command-options>
-
-Command options (Default: '/proc/partitions 2>&1').
 
 =item B<--filter-name>
 
