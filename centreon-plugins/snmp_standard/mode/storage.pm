@@ -350,22 +350,23 @@ sub manage_selection {
         }
         
         if (defined($self->{option_results}->{filter_duplicate})) {
-            my $sid = $_;
-            my @duplicate = grep {
-                ($self->{storage}->{$_}->{allocation_units} == $result->{$oid_hrStorageAllocationUnits . "." . $sid}) &&
-                ($self->{storage}->{$_}->{size} == $result->{$oid_hrStorageSize . "." . $sid}) &&
-                ($self->{storage}->{$_}->{used} == $result->{$oid_hrStorageUsed . "." . $sid})
-            } keys $self->{storage};
-            if (scalar(@duplicate)) {
-                next;
-            }
+            my $duplicate = 0;
+            foreach my $entry (values %{$self->{storage}}) {
+                if (($entry->{allocation_units} == $result->{$oid_hrStorageAllocationUnits . '.' . $_}) &&
+                    ($entry->{size} == $result->{$oid_hrStorageSize . "." . $_}) &&
+                    ($entry->{used} == $result->{$oid_hrStorageUsed . "." . $_})) {
+                    $duplicate = 1;
+                    last;
+                }
+            }                
+            next if ($duplicate == 1);
         }
 
         $self->{storage}->{$_} = {
             display => $name_storage,
-            allocation_units => $result->{$oid_hrStorageAllocationUnits . "." . $_},
-            size => $result->{$oid_hrStorageSize . "." . $_},
-            used => $result->{$oid_hrStorageUsed . "." . $_},
+            allocation_units => $result->{$oid_hrStorageAllocationUnits . '.' . $_},
+            size => $result->{$oid_hrStorageSize . '.' . $_},
+            used => $result->{$oid_hrStorageUsed . '.' . $_},
             access => defined($access_result->{$_}) ? $access_result->{$_} : undef,
         };
         $self->{global}->{count}++;
