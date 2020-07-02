@@ -298,7 +298,7 @@ sub manage_selection {
 
     $self->{global} = { total => 0 };
     $self->{devices} = {};
-    foreach my $device (@{$devices->{List}->{value}}) {
+    foreach my $device (@$devices) {
         if (defined($self->{option_results}->{filter_device_name}) && $self->{option_results}->{filter_device_name} ne '' &&
             $device->{name} !~ /$self->{option_results}->{filter_device_name}/) {
             $self->{output}->output_add(long_msg => "skipping device '" . $device->{name} . "': no matching filter name.", debug => 1);
@@ -332,7 +332,7 @@ sub manage_selection {
                 sync_status => lc($device->{'sync-status'}),
                 services_status => lc($device->{'services-status'}),
                 path_status => lc($device->{'path-status'}),
-                controller_status => lc($device->{'controller-status'})
+                controller_status => defined($device->{'controller-status'}) ? lc($device->{'controller-status'}) : '-'
             },
             device_alarms => {
                 display => $device->{name}
