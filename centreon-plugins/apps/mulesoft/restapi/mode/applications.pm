@@ -117,7 +117,8 @@ sub manage_selection {
 
     $self->{global} = { started => 0, stopped => 0, failed => 0 };
     $self->{applications} = {};
-    my $result = $options{custom}->list_applications();
+    my $result = $options{custom}->list_objects(api_type => 'arm', endpoint => '/applications');
+    foreach ('started', 'stopped', 'failed') { $self->{global}->{$_} = 0; };
 
     foreach my $application (@{$result}) {
         next if ( defined($self->{option_results}->{filter_name})

@@ -117,7 +117,9 @@ sub manage_selection {
 
     $self->{global} = { started => 0, stopped => 0, failed => 0 };
     $self->{clusters} = {};
-    my $result = $options{custom}->list_clusters();
+    my $result = $options{custom}->list_objects(api_type => 'arm', endpoint => '/clusters');
+    foreach ('running', 'disconnected') { $self->{global}->{$_} = 0; };
+    
     foreach my $cluster (@{$result}) {
         next if ( defined($self->{option_results}->{filter_name})
             && $self->{option_results}->{filter_name} ne ''
