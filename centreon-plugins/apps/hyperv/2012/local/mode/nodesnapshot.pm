@@ -151,6 +151,7 @@ sub manage_selection {
         my $checkpoint = { backing => -1, snapshot => -1 };
         my $checkpoints = (ref($node->{checkpoints}) eq 'ARRAY') ? $node->{checkpoints} : [ $node->{checkpoints} ];
         foreach my $chkpt (@$checkpoints) {
+            next if (!defined($chkpt));
             $chkpt->{creation_time} =~ s/,/\./g;
             $checkpoint->{ $chkpt->{type} } = $chkpt->{creation_time} if ($chkpt->{creation_time} > 0 && ($checkpoint->{ $chkpt->{type} } == -1 || $checkpoint->{ $chkpt->{type} } > $chkpt->{creation_time}));
         }
@@ -158,20 +159,20 @@ sub manage_selection {
 
         if (defined($self->{option_results}->{filter_vm}) && $self->{option_results}->{filter_vm} ne '' &&
             $node->{name} !~ /$self->{option_results}->{filter_vm}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
-         if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
+        if (defined($self->{option_results}->{filter_note}) && $self->{option_results}->{filter_note} ne '' &&
              defined($node->{note}) && $node->{note} !~ /$self->{option_results}->{filter_note}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
         if (defined($self->{option_results}->{filter_status}) && $self->{option_results}->{filter_status} ne '' &&
             $node_vm_state->{ $node->{state} } !~ /$self->{option_results}->{filter_status}/i) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $node->{name} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $node->{name} . "': no matching filter.", debug => 1);
             next;
         }
-        
+
         $self->{vm}->{$id} = {
             display => $node->{name},
             snapshot => $checkpoint->{snapshot} > 0 ? $time - $checkpoint->{snapshot} : undef,
