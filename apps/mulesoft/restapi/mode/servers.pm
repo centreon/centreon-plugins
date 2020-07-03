@@ -24,10 +24,11 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
+
     return sprintf('Id: %s, Status: %s', $self->{result_values}->{id}, $self->{result_values}->{status});
 }
 
@@ -43,19 +44,19 @@ sub set_counters {
         { label => 'total', nlabel => 'mulesoft.servers.total.count', set => {
                 key_values      => [ { name => 'total' }  ],
                 output_template => '%s',
-                perfdatas       => [ { value => 'total', template => '%d', min => 0 } ]
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'running', nlabel => 'mulesoft.servers.status.running.count', set => {
                 key_values      => [ { name => 'running' }  ],
                 output_template => 'running : %s',
-                perfdatas       => [ { value => 'running', template => '%d', min => 0 } ]
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'disconnected', nlabel => 'mulesoft.servers.status.disconnected.count', set => {
                 key_values      => [ { name => 'disconnected' }  ],
                 output_template => 'disconnected : %s',
-                perfdatas       => [ { value => 'disconnected', template => '%d', min => 0 } ]
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         }
    ];
@@ -63,7 +64,6 @@ sub set_counters {
     $self->{maps_counters}->{servers} = [
         { label => 'status', threshold => 0, set => {
             key_values => [ { name => 'id' }, { name => 'status' }, { name => 'name'}, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
@@ -96,7 +96,7 @@ sub check_options {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Total servers :";
+    return 'Total servers :';
 }
 
 sub prefix_server_output {

@@ -45,40 +45,40 @@ sub set_counters {
     $self->{maps_counters}->{queues} = [
         { label => 'total', nlabel => 'mulesoft.mq.messages.total.count', set => {
                 key_values      => [ { name => 'total' }, { name => 'display' } ],
-                output_template => "Total : %s",
-                perfdatas       => [ { value => 'total', template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+                output_template => 'Total : %s',
+                perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'inflight', nlabel => 'mulesoft.mq.inflight.count', set => {
                 key_values      => [ { name => 'inflight' }, { name => 'display' } ],
-                output_template => "inflight : %s",
-                perfdatas       => [ { value => 'inflight', template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+                output_template => 'inflight : %s',
+                perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'received', nlabel => 'mulesoft.mq.received.count', set => {
                 key_values      => [ { name => 'received' }, { name => 'display' } ],
-                output_template => "received : %s",
-                perfdatas       => [ { value => 'received', template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+                output_template => 'received : %s',
+                perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'sent', nlabel => 'mulesoft.mq.sent.count', set => {
                 key_values      => [ { name => 'sent' }, { name => 'display' } ],
-                output_template => "sent : %s",
-                perfdatas       => [ { value => 'sent', template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+                output_template => 'sent : %s',
+                perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'visible', nlabel => 'mulesoft.mq.visible.count', set => {
                 key_values      => [ { name => 'visible' }, { name => 'display' } ],
-                output_template => "visible : %s",
-                perfdatas       => [ { value => 'visible', template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+                output_template => 'visible : %s',
+                perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
         },
         { label => 'acked', nlabel => 'mulesoft.mq.acked.count', set => {
                 key_values      => [ { name => 'acked' }, { name => 'display' } ],
-                output_template => "acked : %s",
-                perfdatas       => [ { value => 'acked', template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
+                output_template => 'acked : %s',
+                perfdatas       => [ { template => '%d', min => 0, cast_int => 1, label_extra_instance => 1, instance_use => 'display' } ]
             }
-        },
+        }
    ];
 }
 
@@ -88,10 +88,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'     => { name => 'filter_name' },
-        'region-id:s'       => { name => 'region_id' },
-        'timeframe:s'       => { name => 'timeframe', default => '600' },
-        'period:s'          => { name => 'period', default => '60' }
+        'filter-name:s' => { name => 'filter_name' },
+        'region-id:s'   => { name => 'region_id' },
+        'timeframe:s'   => { name => 'timeframe', default => '600' },
+        'period:s'      => { name => 'period', default => '60' }
     });
 
     return $self;
@@ -106,7 +106,6 @@ sub check_options {
         $self->{output}->option_exit();
     }
 }
-
 
 sub manage_selection {
     my ($self, %options) = @_;

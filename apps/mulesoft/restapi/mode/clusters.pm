@@ -31,13 +31,6 @@ sub custom_status_output {
     return my $msg = sprintf('Id: %s, Status: %s', $self->{result_values}->{id}, $self->{result_values}->{status});
 }
 
-sub custom_status_calc {
-    my ($self, %options) = @_;
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{id} = $options{new_datas}->{$self->{instance} . '_id'};
-    return 0;
-}
-
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -48,34 +41,33 @@ sub set_counters {
 
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'mulesoft.clusters.total.count', set => {
-            key_values      => [ { name => 'total' }  ],
-            output_template => "Total : %s",
-            perfdatas       => [ { value => 'total', template => '%d', min => 0 } ],
+                key_values      => [ { name => 'total' }  ],
+                output_template => "Total : %s",
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'running', nlabel => 'mulesoft.clusters.status.running.count', set => {
-            key_values      => [ { name => 'running' }  ],
-            output_template => "Running : %s",
-            perfdatas       => [ { value => 'running', template => '%d', min => 0 } ]
+                key_values      => [ { name => 'running' }  ],
+                output_template => "Running : %s",
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'disconnected', nlabel => 'mulesoft.clusters.status.disconnected.count', set => {
-            key_values      => [ { name => 'disconnected' }  ],
-            output_template => "Disconnected : %s",
-            perfdatas       => [ { value => 'disconnected', template => '%d', min => 0 } ]
+                key_values      => [ { name => 'disconnected' }  ],
+                output_template => "Disconnected : %s",
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         }
    ];
 
     $self->{maps_counters}->{clusters} = [
         { label => 'status', threshold => 0, set => {
-            key_values => [ { name => 'id' }, { name => 'status' }, { name => 'name'}, { name => 'display' } ],
-            closure_custom_calc => $self->can('custom_status_calc'),
-            closure_custom_output => $self->can('custom_status_output'),
-            closure_custom_perfdata => sub { return 0; },
-            closure_custom_threshold_check => \&catalog_status_threshold,
+                key_values => [ { name => 'id' }, { name => 'status' }, { name => 'name'}, { name => 'display' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -85,9 +77,9 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "filter-name:s"        => { name => 'filter_name' },
-        "warning-status:s"     => { name => 'warning_status', default => '' },
-        "critical-status:s"    => { name => 'critical_status', default => '' },
+        'filter-name:s'     => { name => 'filter_name' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' }
     });
 
     return $self;
