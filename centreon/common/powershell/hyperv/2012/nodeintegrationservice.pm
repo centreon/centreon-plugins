@@ -53,18 +53,18 @@ Try {
         $item.name = $vm.VMName
         $item.state = $vm.State.value__
         $item.integration_services_state = $vm.IntegrationServicesState
-        $item.integration_services_version = $vm.IntegrationServicesVersion
+        $item.integration_services_version = $vm.IntegrationServicesVersion.toString()
         $item.note = $note
-        
-        $services = New-Object System.Collections.Generic.List[Hashtable];
-        Foreach ($service in $VM.VMIntegrationService) {
-            $service = @{}
 
-            $service.name = $service.Name
-            $service.enabled = $service.Enabled
-            $service.primary_operational_status = $service.PrimaryOperationalStatus.value__
-            $service.secondary_operational_status = $service.SecondaryOperationalStatus.value__
-            $services.Add($service)
+        $services = New-Object System.Collections.Generic.List[Hashtable];
+        Foreach ($service in $vm.VMIntegrationService) {
+            $item_service = @{}
+
+            $item_service.service = $service.Name
+            $item_service.enabled = $service.Enabled
+            $item_service.primary_operational_status = $service.PrimaryOperationalStatus.value__
+            $item_service.secondary_operational_status = $service.SecondaryOperationalStatus.value__
+            $services.Add($item_service)
         }
 
         $item.services = $services
