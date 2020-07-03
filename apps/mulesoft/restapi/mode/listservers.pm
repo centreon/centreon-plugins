@@ -45,7 +45,7 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->list_servers();
+    my $result = $options{custom}->list_objects(api_type => 'arm', endpoint => '/servers');
     foreach my $server (@{$result}) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
             && $server->{name} !~ /$self->{option_results}->{filter_name}/);
@@ -74,8 +74,10 @@ sub disco_format {
 sub disco_show {
     my ($self, %options) = @_;
 
-    my $result = $options{custom}->list_servers();
+    my $result = $options{custom}->list_objects(api_type => 'arm', endpoint => '/servers');
     foreach my $server (@{$result}) {
+        next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne ''
+            && $server->{name} !~ /$self->{option_results}->{filter_name}/);
         $self->{output}->add_disco_entry(
             id => $server->{id},
             name => $server->{name},

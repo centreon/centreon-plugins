@@ -42,19 +42,19 @@ sub set_counters {
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'mulesoft.servers.total.count', set => {
                 key_values      => [ { name => 'total' }  ],
-                output_template => 'Total : %s',
+                output_template => '%s',
                 perfdatas       => [ { value => 'total', template => '%d', min => 0 } ]
             }
         },
         { label => 'running', nlabel => 'mulesoft.servers.status.running.count', set => {
                 key_values      => [ { name => 'running' }  ],
-                output_template => 'Running : %s',
+                output_template => 'running : %s',
                 perfdatas       => [ { value => 'running', template => '%d', min => 0 } ]
             }
         },
         { label => 'disconnected', nlabel => 'mulesoft.servers.status.disconnected.count', set => {
                 key_values      => [ { name => 'disconnected' }  ],
-                output_template => 'Disconnected : %s',
+                output_template => 'disconnected : %s',
                 perfdatas       => [ { value => 'disconnected', template => '%d', min => 0 } ]
             }
         }
@@ -96,7 +96,7 @@ sub check_options {
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return "Total servers ";
+    return "Total servers :";
 }
 
 sub prefix_server_output {
@@ -110,7 +110,9 @@ sub manage_selection {
 
     $self->{global} = { started => 0, stopped => 0, failed => 0 };
     $self->{servers} = {};
-    my $result = $options{custom}->list_servers();
+    my $result = $options{custom}->list_objects(api_type => 'arm', endpoint => '/servers');
+    foreach ('running', 'disconnected') { $self->{global}->{$_} = 0; };
+
     foreach my $server (@{$result}) {
         next if ( defined($self->{option_results}->{filter_name})
             && $self->{option_results}->{filter_name} ne ''
