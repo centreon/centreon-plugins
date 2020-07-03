@@ -93,14 +93,14 @@ sub check_options {
     $self->{reload_cache_time} = (defined($self->{option_results}->{reload_cache_time})) ? $self->{option_results}->{reload_cache_time} : 180;
     $self->{cache}->check_options(option_results => $self->{option_results});
 
-    if (!defined($self->{environment_id}) || $self->{environment_id} eq '' || !defined($self->{organization_id}) || $self->{organization_id} eq '' ) {
-            $self->{output}->add_option_msg(short_msg => "--environment-id and --organization-id must be set");
-            $self->{output}->option_exit();
-        }
-    if (!defined($self->{api_username}) || $self->{api_username} eq '' || !defined($self->{api_password}) || $self->{api_password} eq '' ) {
-            $self->{output}->add_option_msg(short_msg => "--api-username and --api-password must be set");
-            $self->{output}->option_exit();
-        }
+    if ($self->{environment_id} eq '' || $self->{organization_id} eq '' ) {
+        $self->{output}->add_option_msg(short_msg => "--environment-id and --organization-id must be set");
+        $self->{output}->option_exit();
+    }
+    if ($self->{api_username} eq '' || $self->{api_password} eq '' ) {
+        $self->{output}->add_option_msg(short_msg => "--api-username and --api-password must be set");
+        $self->{output}->option_exit();
+    }
 
     return 0;
 }
@@ -185,9 +185,6 @@ sub request_api {
 
     $self->settings(content_type => 'application/x-www-form-urlencoded', environment_header => 1, organization_header => 1);
 
-    $self->{output}->output_add(long_msg => "URL: '" . $self->{proto} . '://' . $self->{hostname} . ':' . $self->{port} .
-        $options{url_path} . "'", debug => 1);
-
     my $content = $self->{http}->request(%options);
 
     if (!defined($content) || $content eq '') {
@@ -201,7 +198,6 @@ sub request_api {
     };
 
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }

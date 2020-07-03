@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -44,25 +44,25 @@ sub set_counters {
         { label => 'total', nlabel => 'mulesoft.applications.total.count', set => {
                 key_values      => [ { name => 'total' }  ],
                 output_template => "Total : %s",
-                perfdatas       => [ { value => 'total', template => '%d', min => 0 } ]
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'started', nlabel => 'mulesoft.applications.status.started.count', set => {
                 key_values      => [ { name => 'started' }  ],
                 output_template => "Started : %s",
-                perfdatas       => [ { value => 'started', template => '%d', min => 0 } ]
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'stopped', nlabel => 'mulesoft.applications.status.stopped.count', set => {
                 key_values      => [ { name => 'stopped' }  ],
                 output_template => "Stopped : %s",
-                perfdatas       => [ { value => 'stopped', template => '%d', min => 0 } ]
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         },
         { label => 'failed', nlabel => 'mulesoft.applications.status.failed.count', set => {
                 key_values      => [ { name => 'failed' }  ],
                 output_template => "Failed : %s",
-                perfdatas       => [ { value => 'failed', template => '%d', min => 0 } ]
+                perfdatas       => [ { template => '%d', min => 0 } ]
             }
         }
    ];
@@ -70,7 +70,6 @@ sub set_counters {
     $self->{maps_counters}->{applications} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'id' }, { name => 'status' }, { name => 'name'}, { name => 'display' } ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold

@@ -30,17 +30,17 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'applications'      => 'apps::mulesoft::restapi::mode::applications',
         'clusters'          => 'apps::mulesoft::restapi::mode::clusters',
-        'messages'          => 'apps::mulesoft::restapi::mode::messages',
-        'servers'           => 'apps::mulesoft::restapi::mode::servers',
         'list-applications' => 'apps::mulesoft::restapi::mode::listapplications',
         'list-queues'       => 'apps::mulesoft::restapi::mode::listqueues',
-        'list-servers'      => 'apps::mulesoft::restapi::mode::listservers'
-    );
+        'list-servers'      => 'apps::mulesoft::restapi::mode::listservers',
+        'messages'          => 'apps::mulesoft::restapi::mode::messages',
+        'servers'           => 'apps::mulesoft::restapi::mode::servers'
+    };
 
-    $self->{custom_modes}{restapi} = 'apps::mulesoft::restapi::custom::api';
+    $self->{custom_modes}->{restapi} = 'apps::mulesoft::restapi::custom::api';
     return $self;
 }
 
