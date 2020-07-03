@@ -31,11 +31,13 @@ sub new {
 
     $self->{version} = '1.0';
     %{$self->{modes}} = (
-        'applications'        => 'apps::mulesoft::restapi::mode::applications',
-        'listapplications'    => 'apps::mulesoft::restapi::mode::listapplications',
-        'servers'             => 'apps::mulesoft::restapi::mode::servers',
-        'listservers'         => 'apps::mulesoft::restapi::mode::listservers',
-        'clusters'            => 'apps::mulesoft::restapi::mode::clusters'
+        'applications'      => 'apps::mulesoft::restapi::mode::applications',
+        'clusters'          => 'apps::mulesoft::restapi::mode::clusters',
+        'messages'          => 'apps::mulesoft::restapi::mode::messages',
+        'servers'           => 'apps::mulesoft::restapi::mode::servers',
+        'list-applications' => 'apps::mulesoft::restapi::mode::listapplications',
+        'list-queues'       => 'apps::mulesoft::restapi::mode::listqueues',
+        'list-servers'      => 'apps::mulesoft::restapi::mode::listservers'
     );
 
     $self->{custom_modes}{restapi} = 'apps::mulesoft::restapi::custom::api';
