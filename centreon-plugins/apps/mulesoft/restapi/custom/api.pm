@@ -220,11 +220,6 @@ sub request_api {
         $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
         $self->{output}->option_exit();
     }
-    # if ( defined($decoded->{error_code}) ) {
-    #     $self->{output}->output_add(long_msg => "Error message : " . $decoded->{error}, debug => 1);
-    #     $self->{output}->add_option_msg(short_msg => "API returns error code '" . $decoded->{error_code} . "' (add --debug option for detailed message)");
-    #     $self->{output}->option_exit();
-    # }
 
     return $decoded;
 }
@@ -270,52 +265,6 @@ sub get_objects_status {
     };
 
 }
-
-
-# sub list_applications {
-#     my ($self, %options) = @_;
-
-#     my $url_path = $self->{monitoring_endpoint}->{arm} . '/applications';
-#     my $response = $self->request_api(method => 'GET', url_path => $url_path);
-
-#     return $response->{data};
-# }
-
-# sub get_application_status {
-#     my ($self, %options) = @_;
-
-#     my $url_path = $self->{monitoring_endpoint} . '/applications/' . $options{applicationId};
-#     my $response = $self->request_api(method => 'GET', url_path => $url_path);
-
-#     return $response->{data};
-# }
-
-# sub list_servers {
-#     my ($self, %options) = @_;
-
-#     my $url_path = $self->{monitoring_endpoint} . '/servers/';
-#     my $response = $self->request_api(method => 'GET', url_path => $url_path);
-
-#     return $response->{data};
-# }
-
-# sub get_server_status {
-#     my ($self, %options) = @_;
-
-#     my $url_path = $self->{monitoring_endpoint} . '/servers/' . $options{serverId};
-#     my $response = $self->request_api(method => 'GET', url_path => $url_path);
-
-#     return $response->{data};
-# }
-
-# sub list_clusters {
-#     my ($self, %options) = @_;
-
-#     my $url_path = $self->{monitoring_endpoint} . '/clusters/';
-#     my $response = $self->request_api(method => 'GET', url_path => $url_path);
-
-#     return $response->{data};
-# }
 
 sub cache_hosts {
     my ($self, %options) = @_;
