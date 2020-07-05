@@ -105,7 +105,7 @@ sub manage_selection {
         oid => $oid_wgIpsecTunnelEntry,
         start => $mapping->{wgIpsecTunnelLocalAddr}->{oid},
         end => $mapping->{wgIpsecTunnelPeerAddr}->{oid},
-        nothing_quit => 1
+        nothing_quit => 0
     );
     foreach (keys %$snmp_result) {
         next if (!/$mapping->{wgIpsecTunnelLocalAddr}->{oid}\.(.*)/);
