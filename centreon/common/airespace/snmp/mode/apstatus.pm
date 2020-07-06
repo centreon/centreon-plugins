@@ -39,16 +39,28 @@ sub skip_global {
     scalar(keys %{$self->{ap}}) == 1 ? return(1) : return(0);
 }
 
-sub prefix_ap_output {
-    my ($self, %options) = @_;
-
-    return "Access point '" . $options{instance_value}->{display} . "' ";
-}
-
 sub prefix_global_output {
     my ($self, %options) = @_;
 
-    return 'Access point ';
+    return 'Access points ';
+}
+
+sub ap_long_output {
+    my ($self, %options) = @_;
+
+    return "checking access point '" . $options{instance_value}->{display} . "'";
+}
+
+sub prefix_ap_output {
+    my ($self, %options) = @_;
+
+    return "access point '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_interface_output {
+    my ($self, %options) = @_;
+
+    return "radio interface '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -56,8 +68,14 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', cb_init => 'skip_global', },
-        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All access points are ok' }
+        { name => 'ap', type => 3, cb_prefix_output => 'prefix_ap_output', cb_long_output => 'ap_long_output', indent_long_output => '    ', message_multiple => 'All access points are ok',
+            group => [
+                { name => 'ap_global', type => 0 },
+                { name => 'interfaces', type => 1, display_long => 1, cb_prefix_output => 'prefix_interface_output',  message_multiple => 'radio interfaces are ok', skipped_code => { -10 => 1 } }
+            ]
+        }
     ];
+
     $self->{maps_counters}->{global} = [
         { label => 'total', nlabel => 'accesspoints.total.count', set => {
                 key_values => [ { name => 'total' } ],
@@ -101,12 +119,23 @@ sub set_counters {
         }
     ];
     
-    $self->{maps_counters}->{ap} = [
+    $self->{maps_counters}->{ap_global} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{interfaces} = [
+        { label => 'radio-interface-channels-utilization', nlabel => 'accesspoint.radio.interface.channels.utilization.percentage', set => {
+                key_values => [ { name => 'channels_util' } ],
+                output_template => 'channels utilization: %s %%',
+                perfdatas => [
+                    { label => 'radio_interface_channels_utilization', template => '%s', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
             }
         }
     ];
@@ -118,10 +147,11 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'filter-group:s'    => { name => 'filter_group' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/' }
+        'filter-name:s'        => { name => 'filter_name' },
+        'filter-group:s'       => { name => 'filter_group' },
+        'warning-status:s'     => { name => 'warning_status', default => '' },
+        'critical-status:s'    => { name => 'critical_status', default => '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/' },
+        'add-radio-interfaces' => { name => 'add_radio_interfaces' }
     });
 
     return $self;
@@ -152,6 +182,7 @@ my $mapping2 = {
     bsnAPAdminStatus     => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => $map_admin_status }
 };
 my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
+my $oid_bsnAPIfLoadChannelUtilization = '.1.3.6.1.4.1.14179.2.2.13.1.3';
 
 sub manage_selection {
     my ($self, %options) = @_;
@@ -190,8 +221,11 @@ sub manage_selection {
             next;
         }
 
-        $self->{ap}->{$instance} = {
-            display => $result->{bsnAPName}
+        $self->{ap}->{ $result->{bsnAPName} } = {
+            instance => $instance,
+            display => $result->{bsnAPName},
+            ap_global => { display => $result->{bsnAPName} },
+            interfaces => {}
         };
     }
 
@@ -202,19 +236,32 @@ sub manage_selection {
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping2)) ],
-        instances => [ keys %{$self->{ap}} ],
+        instances => [ map($_->{instance}, values %{$self->{ap}}) ],
         instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef();
 
+    my $snmp_result_radio;
+    $snmp_result_radio = $options{snmp}->get_table(oid => $oid_bsnAPIfLoadChannelUtilization)
+        if (defined($self->{option_results}->{add_radio_interfaces}));
     foreach (keys %{$self->{ap}}) {
-        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
-    
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $self->{ap}->{$_}->{instance});
+
         $self->{global}->{total}++;
         $self->{global}->{$result->{bsnAPOperationStatus}}++;
         $self->{global}->{$result->{bsnAPAdminStatus}}++;
-        $self->{ap}->{$_}->{opstatus} = $result->{bsnAPOperationStatus};
-        $self->{ap}->{$_}->{admstatus} = $result->{bsnAPAdminStatus};
+        $self->{ap}->{$_}->{ap_global}->{opstatus} = $result->{bsnAPOperationStatus};
+        $self->{ap}->{$_}->{ap_global}->{admstatus} = $result->{bsnAPAdminStatus};
+
+        next if (!defined($self->{option_results}->{add_radio_interfaces}));
+
+        foreach my $oid (keys %$snmp_result_radio) {
+            next if ($oid !~ /^$oid_bsnAPIfLoadChannelUtilization\.$self->{ap}->{$_}->{instance}\.(\d+)/);
+            $self->{ap}->{$_}->{interfaces}->{$1} = {
+                display => $1,
+                channels_util => $snmp_result_radio->{$oid}
+            };
+        }
     }
 }
 
@@ -241,6 +288,10 @@ Filter access point name (can be a regexp).
 
 Filter access point group (can be a regexp).
 
+=item B<--add-radio-interfaces>
+
+Monitor radio interfaces channels utilization.
+
 =item B<--warning-status>
 
 Set warning threshold for status.
@@ -252,6 +303,10 @@ Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opst
 Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 
 =item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'total', 'total-associated', 'total-disassociating', 'total-enabled',
+'total-disabled', 'radio-interface-channels-utilization' (%).
 
 =back
 
