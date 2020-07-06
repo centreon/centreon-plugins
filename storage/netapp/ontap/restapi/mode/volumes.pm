@@ -99,7 +99,7 @@ sub set_counters {
                 output_template => 'read: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%d', unit => 'B/s' }
+                    { template => '%d', unit => 'B/s', label_extra_instance => 1 }
                 ]
             }
         },
@@ -108,7 +108,7 @@ sub set_counters {
                 output_template => 'write: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { template => '%d', unit => 'B/s', min => 0 }
+                    { template => '%d', unit => 'B/s', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
@@ -116,7 +116,7 @@ sub set_counters {
                 key_values => [ { name => 'read_iops' } ],
                 output_template => 'read iops: %s',
                 perfdatas => [
-                    { template => '%s', unit => 'iops', min => 0 }
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
@@ -124,7 +124,7 @@ sub set_counters {
                 key_values => [ { name => 'write_iops' } ],
                 output_template => 'write iops: %s',
                 perfdatas => [
-                    { template => '%s', unit => 'iops', min => 0 }
+                    { template => '%s', unit => 'iops', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
@@ -132,7 +132,7 @@ sub set_counters {
                 key_values => [ { name => 'read_latency' } ],
                 output_template => 'read latency: %s ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0 }
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
             }
         },
@@ -140,7 +140,7 @@ sub set_counters {
                 key_values => [ { name => 'write_latency' } ],
                 output_template => 'write latency: %s ms',
                 perfdatas => [
-                    { template => '%s', unit => 'ms', min => 0 }
+                    { template => '%s', unit => 'ms', min => 0, label_extra_instance => 1 }
                 ]
             }
         }
