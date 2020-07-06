@@ -28,90 +28,87 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold)
 
 sub custom_status_output {
     my ($self, %options) = @_;
-    my $msg;
-    
-    if ($self->{result_values}->{admstatus} eq 'disabled') {
-        $msg = ' is disabled';
-    } else {
-        $msg = 'Status : ' . $self->{result_values}->{opstatus};
-    }
 
+    my $msg = $self->{result_values}->{admstatus} eq 'disabled' ? 'is disabled' : 'status: ' . $self->{result_values}->{opstatus};
     return $msg;
 }
 
-sub custom_status_calc {
+sub skip_global {
     my ($self, %options) = @_;
-    
-    $self->{result_values}->{opstatus} = $options{new_datas}->{$self->{instance} . '_opstatus'};
-    $self->{result_values}->{admstatus} = $options{new_datas}->{$self->{instance} . '_admstatus'};
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    return 0;
+
+    scalar(keys %{$self->{ap}}) == 1 ? return(1) : return(0);
+}
+
+sub prefix_ap_output {
+    my ($self, %options) = @_;
+
+    return "Access point '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Access point ';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, cb_init => 'skip_global', },
-        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All AP status are ok' }
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output', cb_init => 'skip_global', },
+        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All access points are ok' }
     ];
     $self->{maps_counters}->{global} = [
-        { label => 'total', set => {
+        { label => 'total', nlabel => 'accesspoints.total.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total ap : %s',
+                output_template => 'total: %s',
                 perfdatas => [
-                    { label => 'total', value => 'total', template => '%s', 
-                      min => 0 },
-                ],
+                    { label => 'total', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'total-associated', set => {
+        { label => 'total-associated', nlabel => 'accesspoints.associated.count', set => {
                 key_values => [ { name => 'associated' } ],
-                output_template => 'Total ap associated : %s',
+                output_template => 'associated: %s',
                 perfdatas => [
-                    { label => 'total_associated', value => 'associated', template => '%s', 
-                      min => 0 },
-                ],
+                    { label => 'total_associated', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'total-disassociating', set => {
+        { label => 'total-disassociating', nlabel => 'accesspoints.disassociating.count', set => {
                 key_values => [ { name => 'disassociating' } ],
-                output_template => 'Total ap disassociating : %s',
+                output_template => 'disassociating: %s',
                 perfdatas => [
-                    { label => 'total_disassociating', value => 'disassociating', template => '%s', 
-                      min => 0 },
-                ],
+                    { label => 'total_disassociating', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'total-enabled', set => {
+        { label => 'total-enabled', nlabel => 'accesspoints.enabled.count', set => {
                 key_values => [ { name => 'enable' } ],
-                output_template => 'Total ap enabled : %s',
+                output_template => 'enabled: %s',
                 perfdatas => [
-                    { label => 'total_enabled', value => 'enable', template => '%s', 
-                      min => 0 },
-                ],
+                    { label => 'total_enabled', template => '%s', min => 0 }
+                ]
             }
         },
-        { label => 'total-disabled', set => {
+        { label => 'total-disabled', nlabel => 'accesspoints.disabled.count', set => {
                 key_values => [ { name => 'disable' } ],
-                output_template => 'Total ap disabled : %s',
+                output_template => 'disabled: %s',
                 perfdatas => [
-                    { label => 'total_disabled', value => 'disable', template => '%s', 
-                      min => 0 },
-                ],
+                    { label => 'total_disabled', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{ap} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'opstatus' }, { name => 'admstatus' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -119,14 +116,14 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "filter-name:s"           => { name => 'filter_name' },
-                                  "warning-status:s"        => { name => 'warning_status', default => '' },
-                                  "critical-status:s"       => { name => 'critical_status', default => '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/' },
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'     => { name => 'filter_name' },
+        'filter-group:s'    => { name => 'filter_group' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/' }
+    });
+
     return $self;
 }
 
@@ -137,35 +134,22 @@ sub check_options {
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
-sub skip_global {
-    my ($self, %options) = @_;
-    
-    scalar(keys %{$self->{ap}}) == 1 ? return(1) : return(0);
-}
-
-sub prefix_ap_output {
-    my ($self, %options) = @_;
-    
-    return "AP '" . $options{instance_value}->{display} . "' ";
-}
-
-my %map_admin_status = (
+my $map_admin_status = {
     1 => 'enable',
-    2 => 'disable',
-);
-my %map_operation_status = (
+    2 => 'disable'
+};
+my $map_operation_status = {
     1 => 'associated',
     2 => 'disassociating',
-    3 => 'downloading',
-);
+    3 => 'downloading'
+};
 my $mapping = {
-    bsnAPName        => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' },
+    bsnAPName          => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' },
+    bsnAPGroupVlanName => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.30' }
 };
 my $mapping2 = {
-    bsnAPOperationStatus    => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.6', map => \%map_operation_status },
-};
-my $mapping3 = {
-    bsnAPAdminStatus        => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => \%map_admin_status },
+    bsnAPOperationStatus => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.6', map => $map_operation_status },
+    bsnAPAdminStatus     => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.37', map => $map_admin_status }
 };
 my $oid_agentInventoryMachineModel = '.1.3.6.1.4.1.14179.1.1.1.3';
 
@@ -174,36 +158,63 @@ sub manage_selection {
 
     $self->{ap} = {};
     $self->{global} = { total => 0, associated => 0, disassociating => 0, downloading => 0, enable => 0, disable => 0 };
-    $self->{results} = $options{snmp}->get_multiple_table(oids => [ { oid => $oid_agentInventoryMachineModel },
-                                                                   { oid => $mapping->{bsnAPName}->{oid} },
-                                                                   { oid => $mapping2->{bsnAPOperationStatus}->{oid} },
-                                                                   { oid => $mapping3->{bsnAPAdminStatus}->{oid} },
-                                                                 ],
-                                                         nothing_quit => 1);
-    $self->{output}->output_add(long_msg => "Model: " . 
-        (defined($self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'}) ? $self->{results}->{$oid_agentInventoryMachineModel}->{$oid_agentInventoryMachineModel . '.0'} : 'unknown'));
-    foreach my $oid (keys %{$self->{results}->{ $mapping->{bsnAPName}->{oid} }}) {
-        $oid =~ /^$mapping->{bsnAPName}->{oid}\.(.*)$/;
+
+    my $request = [ { oid => $oid_agentInventoryMachineModel }, { oid => $mapping->{bsnAPName}->{oid} } ];
+    push @$request, { oid => $mapping->{bsnAPGroupVlanName}->{oid} }
+        if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '');
+    
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => $request,
+        return_type => 1,
+        nothing_quit => 1
+    );
+
+    $self->{output}->output_add(
+        long_msg => 'Model: ' . 
+            (defined($snmp_result->{$oid_agentInventoryMachineModel . '.0'}) ? $snmp_result->{$oid_agentInventoryMachineModel . '.0'} : 'unknown')
+    );
+
+    foreach (keys %$snmp_result) {
+        next if (! /^$mapping->{bsnAPName}->{oid}\.(.*)/);
         my $instance = $1;
-        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{ $mapping->{bsnAPName}->{oid} }, instance => $instance);
-        my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $self->{results}->{ $mapping2->{bsnAPOperationStatus}->{oid} }, instance => $instance);
-        my $result3 = $options{snmp}->map_instance(mapping => $mapping3, results => $self->{results}->{ $mapping3->{bsnAPAdminStatus}->{oid} }, instance => $instance);
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
             $result->{bsnAPName} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $result->{bsnAPName} . "': no matching filter.", debug => 1);
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{bsnAPName} . "'.", debug => 1);
             next;
         }
-        
-        $self->{global}->{total}++;
-        $self->{global}->{$result2->{bsnAPOperationStatus}}++;
-        $self->{global}->{$result3->{bsnAPAdminStatus}}++;
-        
-        $self->{ap}->{$instance} = { display => $result->{bsnAPName}, 
-                                     opstatus => $result2->{bsnAPOperationStatus}, admstatus => $result3->{bsnAPAdminStatus}};
+        if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '' &&
+            $result->{bsnAPGroupVlanName} !~ /$self->{option_results}->{filter_group}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{bsnAPName} . "'.", debug => 1);
+            next;
+        }
+
+        $self->{ap}->{$instance} = {
+            display => $result->{bsnAPName}
+        };
     }
-    
+
     if (scalar(keys %{$self->{ap}}) <= 0) {
         $self->{output}->output_add(long_msg => 'no AP associated (can be: slave wireless controller or your filter)');
+        return ;
+    }
+
+    $options{snmp}->load(
+        oids => [ map($_->{oid}, values(%$mapping2)) ],
+        instances => [ keys %{$self->{ap}} ],
+        instance_regexp => '^(.*)$'
+    );
+    $snmp_result = $options{snmp}->get_leef();
+
+    foreach (keys %{$self->{ap}}) {
+        my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
+    
+        $self->{global}->{total}++;
+        $self->{global}->{$result->{bsnAPOperationStatus}}++;
+        $self->{global}->{$result->{bsnAPAdminStatus}}++;
+        $self->{ap}->{$_}->{opstatus} = $result->{bsnAPOperationStatus};
+        $self->{ap}->{$_}->{admstatus} = $result->{bsnAPAdminStatus};
     }
 }
 
@@ -224,7 +235,11 @@ Example: --filter-counters='^total-disassociating|total-associated$'
 
 =item B<--filter-name>
 
-Filter AP name (can be a regexp).
+Filter access point name (can be a regexp).
+
+=item B<--filter-group>
+
+Filter access point group (can be a regexp).
 
 =item B<--warning-status>
 
@@ -236,15 +251,7 @@ Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 Set critical threshold for status (Default: '%{admstatus} eq "enable" and %{opstatus} !~ /associated|downloading/').
 Can used special variables like: %{admstatus}, %{opstatus}, %{display}
 
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'total', 'total-associated', 'total-disassociating', 'total-enabled', 'total-disabled'.
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'total', 'total-associated', 'total-disassociating', 'total-enabled', 'total-disabled'.
+=item B<--warning-*> B<--critical-*>
 
 =back
 
