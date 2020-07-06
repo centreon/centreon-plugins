@@ -80,6 +80,9 @@ sub new {
     return $self;
 }
 
+my $map_admin_status = {
+    1 => 'enable', 2 => 'disable'
+};
 my $mapping = {
     ap_name    => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
     group_name => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.30' } # bsnAPGroupVlanName
