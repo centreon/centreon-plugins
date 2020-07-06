@@ -20,61 +20,51 @@
 
 package centreon::common::airespace::snmp::mode::cpu;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'cpu', type => 0 }
+    ];
+
+    $self->{maps_counters}->{cpu} = [
+        { label => 'cpu-utilization', nlabel => 'cpu.utilization.percentage', set => {
+                key_values => [ { name => 'cpu_usage' } ],
+                output_template => 'cpu usage is: %.2f%%',
+                perfdatas => [
+                    { template => '%.2f', unit => '%', min => 0, max => 100 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' }
     });
 
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_agentCurrentCPUUtilization = '.1.3.6.1.4.1.14179.1.1.3.1.0';
-    
-    $self->{results} = $self->{snmp}->get_leef(oids => [ $oid_agentCurrentCPUUtilization ],
-                                               nothing_quit => 1);
-    
-    my $cpu = $self->{results}->{$oid_agentCurrentCPUUtilization};
-        
-    my $exit = $self->{perfdata}->threshold_check(value => $cpu, 
-                           threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("CPU Usage is %.2f%%", $cpu));
-    $self->{output}->perfdata_add(label => "cpu", unit => '%',
-                                  value => $cpu,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0, max => 100);
-    
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [ $oid_agentCurrentCPUUtilization ],
+        nothing_quit => 1
+    );
+
+    $self->{cpu} = { cpu_usage => $snmp_result->{$oid_agentCurrentCPUUtilization} };
 }
 
 1;
@@ -87,11 +77,11 @@ Check cpu usage (AIRESPACE-SWITCHING-MIB).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-cpu-utilization>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-cpu-utilization>
 
 Threshold critical in percent.
 

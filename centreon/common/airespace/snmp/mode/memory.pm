@@ -20,70 +20,87 @@
 
 package centreon::common::airespace::snmp::mode::memory;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 
+sub custom_usage_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'Ram total: %s %s used: %s %s (%.2f%%) free: %s %s (%.2f%%)',
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{total}),
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{used}),
+        $self->{result_values}->{prct_used},
+        $self->{perfdata}->change_bytes(value => $self->{result_values}->{free}),
+        $self->{result_values}->{prct_free}
+    );
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'memory', type => 0, skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{memory} = [
+        { label => 'usage', nlabel => 'memory.usage.bytes', set => {
+                key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'usage-free', display_ok => 0, nlabel => 'memory.free.bytes', set => {
+                key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
+                closure_custom_output => $self->can('custom_usage_output'),
+                perfdatas => [
+                    { template => '%d', min => 0, max => 'total', unit => 'B', cast_int => 1 }
+                ]
+            }
+        },
+        { label => 'usage-prct', display_ok => 0, nlabel => 'memory.usage.percentage', set => {
+                key_values => [ { name => 'prct_used' } ],
+                output_template => 'Ram used: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning' },
-                                  "critical:s"              => { name => 'critical' },
-                                });
+    $options{options}->add_options(arguments => {
+    });
+
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_agentTotalMemory = '.1.3.6.1.4.1.14179.1.1.5.2.0'; # in Kbytes
     my $oid_agentFreeMemory = '.1.3.6.1.4.1.14179.1.1.5.3.0'; # in Kbytes
+    my $result = $options{snmp}->get_leef(oids => [$oid_agentTotalMemory, $oid_agentFreeMemory], nothing_quit => 1);
 
-    my $result = $self->{snmp}->get_leef(oids => [$oid_agentTotalMemory, $oid_agentFreeMemory], 
-                                         nothing_quit => 1);
     my $free = $result->{$oid_agentFreeMemory} * 1024;
-    my $total_size = $result->{$oid_agentTotalMemory} * 1024;
-    my $used = $total_size - $free;    
-    
-    my $prct_used = $used * 100 / $total_size;
-    my $exit = $self->{perfdata}->threshold_check(value => $prct_used, threshold => [ { label => 'critical', exit_litteral => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-
-    my ($total_value, $total_unit) = $self->{perfdata}->change_bytes(value => $total_size);
-    my ($used_value, $used_unit) = $self->{perfdata}->change_bytes(value => $used);
-    
-    $self->{output}->output_add(severity => $exit,
-                                short_msg => sprintf("Ram used %s (%.2f%%), Total: %s",
-                                            $used_value . " " . $used_unit, $prct_used,
-                                            $total_value . " " . $total_unit));
-
-    $self->{output}->perfdata_add(label => "used", unit => 'B',
-                                  value => $used,
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning', total => $total_size, cast_int => 1),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical', total => $total_size, cast_int => 1),
-                                  min => 0, max => $total_size);
-                                  
-    $self->{output}->display();
-    $self->{output}->exit();
+    my $total = $result->{$oid_agentTotalMemory} * 1024;
+    my $prct_used = ($total - $free) * 100 / $total;
+    $self->{memory} = {
+        total => $total,
+        used => $total - $free,
+        free => $free,
+        prct_used => $prct_used,
+        prct_free => 100 - $prct_used
+    }
 }
 
 1;
@@ -96,13 +113,11 @@ Check memory usage (AIRESPACE-SWITCHING-MIB).
 
 =over 8
 
-=item B<--warning>
 
-Threshold warning in percent.
+=item B<--warning-*> B<--critical-*>
 
-=item B<--critical>
-
-Threshold critical in percent.
+Thresholds.
+Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
 
 =back
 
