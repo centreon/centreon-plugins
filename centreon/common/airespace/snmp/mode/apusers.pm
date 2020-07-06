@@ -164,9 +164,10 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'filter-ssid:s'  => { name => 'filter_ssid' },
-        'filter-ap:s'    => { name => 'filter_ap' },
-        'filter-group:s' => { name => 'filter_group' }
+        'filter-ssid:s'   => { name => 'filter_ssid' },
+        'filter-ap:s'     => { name => 'filter_ap' },
+        'filter-group:s'  => { name => 'filter_group' },
+        'ignore-ap-users' => { name => 'ignore_ap_users' }
     });
 
     return $self;
@@ -240,6 +241,8 @@ sub manage_selection {
         $self->{global}->{'total_' . $result->{status}}++;
     }
 
+    return if (defined($self->{option_results}->{ignore_ap_users}));
+
     my $request = [ { oid => $mapping2->{ap_name}->{oid} }, { oid => $oid_bsnAPIfLoadNumOfClients } ];
     push @$request, { oid => $mapping2->{group_name}->{oid} }
         if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '');
@@ -299,6 +302,10 @@ Filter by access point name (can be a regexp).
 =item B<--filter-group>
 
 Filter by access point group (can be a regexp).
+
+=item B<--ignore-ap-users>
+
+Unmonitor users by access points.
 
 =item B<--warning-*> B<--critical-*>
 
