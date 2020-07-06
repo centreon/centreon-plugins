@@ -25,38 +25,55 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub set_counters {
+sub ap_long_output {
     my ($self, %options) = @_;
-    
-    $self->{maps_counters_type} = [
-        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All AP interference statistics are ok' },
-    ];
-    $self->{maps_counters}->{ap} = [
-        { label => 'interference-power', set => {
-                key_values => [ { name => 'interference_power' }, { name => 'label_perfdata' } ],
-                output_template => 'Interference Power : %s',
-                perfdatas => [
-                    { label => 'interference_power', value => 'interference_power', template => '%s',
-                      label_extra_instance => 1, instance_use => 'label_perfdata'  },
-                ],
-            }
-        },
-        { label => 'interference-util', set => {
-                key_values => [ { name => 'interference_util' }, { name => 'label_perfdata' } ],
-                output_template => 'Interference Utilization : %s %%',
-                perfdatas => [
-                    { label => 'interference_util', value => 'interference_util', template => '%s', 
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'label_perfdata'  },
-                ],
-            }
-        },
-    ];
+
+    return "checking access point '" . $options{instance_value}->{display} . "'";
 }
 
 sub prefix_ap_output {
     my ($self, %options) = @_;
+
+    return "access point '" . $options{instance_value}->{display} . "' ";
+}
+
+sub prefix_channel_output {
+    my ($self, %options) = @_;
+
+    return "channel '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
     
-    return $options{instance_value}->{display} . " ";
+    $self->{maps_counters_type} = [
+        { name => 'ap', type => 3, cb_prefix_output => 'prefix_ap_output', cb_long_output => 'ap_long_output', indent_long_output => '    ', message_multiple => 'All access points are ok',
+            group => [
+                { name => 'channels', display_long => 1, cb_prefix_output => 'prefix_channel_output',  message_multiple => 'channels are ok', type => 1, skipped_code => { -10 => 1 } }
+            ]
+        }
+    ];
+
+    $self->{maps_counters}->{channels} = [
+        { label => 'interference-power', nlabel => 'accesspoint.interference.power.count', set => {
+                key_values => [ { name => 'interference_power' }, { name => 'display' } ],
+                output_template => 'interference power: %s',
+                perfdatas => [
+                    { label => 'interference_power', template => '%s',
+                      label_extra_instance => 1  }
+                ]
+            }
+        },
+        { label => 'interference-util', nlabel => 'accesspoint.interference.utilization.percentage', set => {
+                key_values => [ { name => 'interference_util' }, { name => 'display' } ],
+                output_template => 'interference utilization: %s %%',
+                perfdatas => [
+                    { label => 'interference_util', template => '%s', 
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1  }
+                ]
+            }
+        }
+    ];
 }
 
 sub new {
@@ -65,58 +82,80 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'filter-channel:s'  => { name => 'filter_channel' },
+        'filter-name:s'    => { name => 'filter_name' },
+        'filter-channel:s' => { name => 'filter_channel' },
+        'filter-group:s'   => { name => 'filter_group' }
     });
-    
+
     return $self;
 }
 
-my $oid_bsnAPName = '.1.3.6.1.4.1.14179.2.2.1.1.3';
-my $oid_bsnAPIfInterferencePower = '.1.3.6.1.4.1.14179.2.2.14.1.2';
-my $oid_bsnAPIfInterferenceUtilization = '.1.3.6.1.4.1.14179.2.2.14.1.22';
+my $mapping = {
+    ap_name    => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.3' }, # bsnAPName
+    group_name => { oid => '.1.3.6.1.4.1.14179.2.2.1.1.30' } # bsnAPGroupVlanName
+};
+my $mapping2 = {
+    interference_power => { oid => '.1.3.6.1.4.1.14179.2.2.14.1.2' }, # bsnAPIfInterferencePower
+    interference_util  => { oid => '.1.3.6.1.4.1.14179.2.2.14.1.22' } # bsnAPIfInterferenceUtilization
+};
 
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{ap} = {};
-    $self->{results} = $options{snmp}->get_multiple_table(
-        oids => [
-            { oid => $oid_bsnAPName },
-            { oid => $oid_bsnAPIfInterferencePower },
-            { oid => $oid_bsnAPIfInterferenceUtilization },
-        ],
+    my $request = [
+        { oid => $mapping->{ap_name}->{oid} },
+        { oid => $mapping2->{interference_power}->{oid} },
+        { oid => $mapping2->{interference_util}->{oid} }
+    ];
+    push @$request, { oid => $mapping->{group_name}->{oid} }
+        if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '');
+    
+    my $snmp_result = $options{snmp}->get_multiple_table(
+        oids => $request,
+        return_type => 1,
         nothing_quit => 1
     );
-    foreach my $oid (keys %{$self->{results}->{$oid_bsnAPName}}) {
-        $oid =~ /^$oid_bsnAPName\.(.*)$/;
-        my $instance_mac = $1;        
+
+    foreach (keys %$snmp_result) {
+        next if (! /^$mapping->{ap_name}->{oid}\.(.*)/);
+        my $instance = $1;
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $instance);
         if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
-            $self->{results}->{$oid_bsnAPName}->{$oid} !~ /$self->{option_results}->{filter_name}/) {
-            $self->{output}->output_add(long_msg => "Skipping  '" . $self->{results}->{$oid_bsnAPName}->{$oid} . "': no matching filter.");
+            $result->{ap_name} !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{ap_name} . "'.", debug => 1);
             next;
         }
-        my $instance_end;
-        foreach my $oid2 (keys %{$self->{results}->{$oid_bsnAPIfInterferencePower}}) {
-            if ($oid2 =~ /^$oid_bsnAPIfInterferencePower\.$instance_mac\.(\d+)\.(\d+)$/) {
-                $instance_end = $1 . '.' . $2;
-                
-                if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} ne '' &&
-                    $instance_end !~ /$self->{option_results}->{filter_channel}/) {
-                    $self->{output}->output_add(long_msg => "Skipping channel '" . $instance_end . "': no matching filter.");
-                    next;
-                }
-                
-                $self->{ap}->{$instance_mac . '.' . $instance_end} = {
-                    display => "AP '" . $self->{results}->{$oid_bsnAPName}->{$oid} . "' Slot $1 Channel $2",
-                    label_perfdata => $self->{results}->{$oid_bsnAPName}->{$oid} . "_$1_$2",
-                    interference_power => $self->{results}->{$oid_bsnAPIfInterferencePower}->{$oid_bsnAPIfInterferencePower . '.' . $instance_mac . '.' . $instance_end},
-                    interference_util => $self->{results}->{$oid_bsnAPIfInterferenceUtilization}->{$oid_bsnAPIfInterferenceUtilization . '.' . $instance_mac . '.' . $instance_end}
-                };
+        if (defined($self->{option_results}->{filter_group}) && $self->{option_results}->{filter_group} ne '' &&
+            $result->{group_name} !~ /$self->{option_results}->{filter_group}/) {
+            $self->{output}->output_add(long_msg => "skipping '" . $result->{ap_name} . "'.", debug => 1);
+            next;
+        }
+
+        $self->{ap}->{ $result->{ap_name} } = {
+            display => $result->{ap_name},
+            channels => {}
+        };
+
+        foreach my $oid (keys %$snmp_result) {
+            next if ($oid !~ /^$mapping2->{interference_power}->{oid}\.$instance\.(\d+)\.(\d+)$/);
+            my ($slot_id, $channel_id) = ($1, $2);
+
+            my $result2 = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $instance . '.' . $slot_id . '.' . $channel_id);
+            my $name = "slot$slot_id:channel$channel_id";
+            if (defined($self->{option_results}->{filter_channel}) && $self->{option_results}->{filter_channel} ne '' &&
+                $name !~ /$self->{option_results}->{filter_channel}/) {
+                $self->{output}->output_add(long_msg => "skipping channel '" . $name . "': no matching filter.", debug => 1);
+                next;
             }
+
+            $self->{ap}->{ $result->{ap_name} }->{channels}->{$name} = {
+                display => $name,
+                %$result2
+            };
         }
     }
-    
+
     if (scalar(keys %{$self->{ap}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found.");
         $self->{output}->option_exit();
@@ -138,23 +177,22 @@ Check AP Channel Interference.
 Only display some counters (regexp can be used).
 Example: --filter-counters='interference-util'
 
-=item B<--warning-*>
-
-Threshold warning.
-Can be: 'interference-power', 'interference-util' (%).
-
-=item B<--critical-*>
-
-Threshold critical.
-Can be: 'interference-power', 'interference-util' (%).
-
 =item B<--filter-name>
 
-Filter AP name (can be a regexp).
+Filter access point name (can be a regexp).
+
+=item B<--filter-group>
+
+Filter access point group (can be a regexp).
 
 =item B<--filter-channel>
 
-Filter Channel (can be a regexp). Example: --filter-channel='0\.3'
+Filter channel (can be a regexp). Example: --filter-channel='slot0:channel3'
+
+=item B<--warning-*> B<--critical-*>
+
+Thresholds.
+Can be: 'interference-power', 'interference-util' (%).
 
 =back
 
