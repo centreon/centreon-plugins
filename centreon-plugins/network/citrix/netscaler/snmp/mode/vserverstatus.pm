@@ -149,6 +149,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-name:s'         => { name => 'filter_name' },
         'filter-type:s'         => { name => 'filter_type' },
+        'force-counters64'      => { name => 'force_counters64' },
         'threshold-overload:s@' => { name => 'threshold_overload' }
     });
 
@@ -249,12 +250,15 @@ sub manage_selection {
     }
     
     $options{snmp}->load(
-        oids => [
+        oids => defined($self->{option_results}->{force_counters64}) ? [
+            $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
+            $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
+        ] : [
             $mapping2->{vsvrTotalRequestBytesLow}->{oid}, $mapping2->{vsvrTotalRequestBytesHigh}->{oid},
             $mapping2->{vsvrTotalResponseBytesLow}->{oid}, $mapping2->{vsvrTotalResponseBytesHigh}->{oid},
             $mapping2->{vsvrTotalRequestBytes}->{oid}, $mapping2->{vsvrTotalResponseBytes}->{oid},
             $mapping2->{vsvrTotalClients}->{oid}, $mapping2->{vsvrHealth}->{oid}, $mapping2->{vsvrTotalServers}->{oid}
-        ], 
+        ],
         instances => [keys %{$self->{vservers}}], instance_regexp => '^(.*)$'
     );
     $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
@@ -306,6 +310,11 @@ Filter by virtual server name (can be a regexp).
 =item B<--filter-type>
 
 Filter which type of vserver (can be a regexp).
+
+=item B<--force-counters64>
+
+Force to use 64 bits counters only. Can be used to improve performance,
+or to solve a missing counters bug.
 
 =item B<--threshold-overload>
 
