@@ -32,7 +32,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok' },
+        { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -52,8 +52,8 @@ sub set_counters {
                 output_template => 'Traffic In : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'tunnel-traffic-out', nlabel => 'ipsec.tunnel.traffic.out.bitspersecond', set => {
@@ -61,16 +61,16 @@ sub set_counters {
                 output_template => 'Traffic Out : %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
 sub prefix_tunnel_output {
     my ($self, %options) = @_;
-    
+
     return "Tunnel '" . $options{instance_value}->{display} . "' ";
 }
 
@@ -78,7 +78,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' }
     });
@@ -104,8 +104,7 @@ sub manage_selection {
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_wgIpsecTunnelEntry,
         start => $mapping->{wgIpsecTunnelLocalAddr}->{oid},
-        end => $mapping->{wgIpsecTunnelPeerAddr}->{oid},
-        nothing_quit => 1
+        end => $mapping->{wgIpsecTunnelPeerAddr}->{oid}
     );
     foreach (keys %$snmp_result) {
         next if (!/$mapping->{wgIpsecTunnelLocalAddr}->{oid}\.(.*)/);
@@ -120,12 +119,14 @@ sub manage_selection {
 
         $self->{tunnel}->{$instance} = { display => $name };
     }
-    
+
     if (scalar(keys %{$self->{tunnel}}) > 0) {
         $options{snmp}->load(oids => [
                 map($_->{oid}, values(%$mapping2))
             ],
-            instances => [keys %{$self->{tunnel}}], instance_regexp => '^(.*)$');
+            instances => [keys %{$self->{tunnel}}],
+            instance_regexp => '^(.*)$'
+        );
         $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
         foreach (keys %{$self->{tunnel}}) {
             my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
