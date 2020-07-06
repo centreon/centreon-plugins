@@ -20,84 +20,90 @@
 
 package database::mssql::mode::transactions;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::statefile;
+use Digest::MD5 qw(md5_hex);
+
+sub prefix_database_output {
+    my ($self, %options) = @_;
+
+    return "Database '" . $options{instance_value}->{display} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'global', type => 0 },
+        { name => 'database', type => 1, cb_prefix_output => 'prefix_database_output', message_multiple => 'All databases are ok', skipped_code => { -10 => 1 } }
+    ];
+
+    $self->{maps_counters}->{global} = [
+        { label => 'databases-transactions', nlabel => 'databases.transactions.persecond', set => {
+                key_values => [ { name => 'transactions', per_second => 1 } ],
+                output_template => 'total transactions: %.2f/s',
+                perfdatas => [
+                    { template => '%.2f', unit => '/s', min => 0 }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{database} = [
+        { label => 'database-transactions', nlabel => 'database.transactions.persecond', set => {
+                key_values => [ { name => 'transactions', per_second => 1 }, { name => 'display' } ],
+                output_template => 'transactions: %.2f/s',
+                perfdatas => [
+                    { template => '%.2f', unit => '/s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1, force_new_perfdata => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"               => { name => 'warning', },
-                                  "critical:s"              => { name => 'critical', },
-                                });
-	$self->{statefile_cache} = centreon::plugins::statefile->new(%options);
+    $options{options}->add_options(arguments => {
+        'filter-database:s' => { name => 'filter_database' }
+    });
+
     return $self;
 }
 
-sub check_options {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
 
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
+    $options{sql}->connect();
+    $options{sql}->query(query => q{SELECT instance_name, cntr_value FROM sys.dm_os_performance_counters WHERE UPPER(counter_name) = UPPER('transactions/sec')});
+    my $result = $options{sql}->fetchall_arrayref();
+
+    $self->{global} = {};
+    $self->{database} = {};
+    foreach my $row (@$result) {
+        if ($row->[0] eq '_Total') {
+            $self->{global}->{transactions} = $row->[1];
+            next;
+        }
+        if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
+            $row->[0] !~ /$self->{option_results}->{filter_database}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $row->[0] . "': no matching filter.", debug => 1);
+            next;
+        }
+
+        $self->{database}->{ $row->[0] } = {
+            display => $row->[0],
+            transactions => $row->[1]
+        };
     }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-	$self->{statefile_cache}->check_options(%options);
-}
-
-sub run {
-    my ($self, %options) = @_;
-    # $options{sql} = sqlmode object
-    $self->{sql} = $options{sql};
-
-    $self->{sql}->connect();
-    $self->{sql}->query(query => q{SELECT cntr_value FROM sys.dm_os_performance_counters WHERE UPPER(counter_name) = UPPER('transactions/sec') AND instance_name = '_Total'});
-    my $transactions = $self->{sql}->fetchrow_array();
-
-	$self->{statefile_cache}->read(statefile => 'mssql_' . $self->{mode} . '_' . $self->{sql}->get_unique_id4save());
-    sleep 1;
-
-	my $old_timestamp = $self->{statefile_cache}->get(name => 'last_timestamp');
-	my $old_transactions = $self->{statefile_cache}->get(name => 'transactions');
-
-	my $new_datas = {};
-	$new_datas->{last_timestamp} = time();
-	$new_datas->{transactions} = $transactions;
-
-	$self->{statefile_cache}->write(data => $new_datas);
-	if (!defined($old_timestamp) || !defined($old_transactions)) {
-		$self->{output}->output_add(severity => 'OK',
-									short_msg => "Buffer creation...");
-		$self->{output}->display();
-		$self->{output}->exit();
-	}
-	my $delta_time = $new_datas->{last_timestamp} - $old_timestamp;
-	$delta_time = 1 if ($delta_time == 0);
-
-    my $transactionsPerSec = ($transactions - $old_transactions) / $delta_time ;
-
-    my $exit_code = $self->{perfdata}->threshold_check(value => $transactionsPerSec, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-    $self->{output}->output_add(severity => $exit_code,
-                                  short_msg => sprintf("%.2f transactions/s.", $transactionsPerSec));
-    $self->{output}->perfdata_add(label => 'transactions',
-                                  value => sprintf("%.2f", $transactionsPerSec),
-                                  unit => '/s',
-                                  warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                  critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                  min => 0);
-
-    $self->{output}->display();
-    $self->{output}->exit();
+    
+    $self->{cache_name} = 'mssql_' . $self->{mode} . '_' . $options{sql}->get_unique_id4save() . '_' .
+        (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
+        (defined($self->{option_results}->{filter_database}) ? md5_hex($self->{option_results}->{filter_database}) : md5_hex('all'));
 }
 
 1;
@@ -106,17 +112,18 @@ __END__
 
 =head1 MODE
 
-Check MSSQL transactions per second.
+Check MSSQL transactions.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-database>
 
-Threshold warning.
+Filter database name (can be a regexp).
 
-=item B<--critical>
+=item B<--warning-*> B<--critical-*> 
 
-Threshold critical.
+Thresholds.
+Can be: 'databases-transactions', 'database-transactions'.
 
 =back
 
