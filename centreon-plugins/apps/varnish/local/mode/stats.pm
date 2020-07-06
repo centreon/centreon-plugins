@@ -147,7 +147,9 @@ sub configure_varnish_stats {
         { entry => 'n_wrk_max', nlabel => 'workers.threads.limited.count', display_ok => 0, diff => 1 },
         { entry => 'n_wrk_lqueue', nlabel => 'workers.requests.queue.length.count', display_ok => 0, diff => 1 },
         { entry => 'n_wrk_queued', nlabel => 'workers.requests.queued.count', display_ok => 0, diff => 1 },
-        { entry => 'n_wrk_drop', nlabel => 'workers.requests.dropped.count', display_ok => 0, diff => 1 }
+        { entry => 'n_wrk_drop', nlabel => 'workers.requests.dropped.count', display_ok => 0, diff => 1 },
+
+        { entry => 's0.g_space', category => 'SMA', nlabel => 'storage.space.free.bytes', display_ok => 0, custom_output => $self->can('custom_output_scale_bytes') },
     ];
 }
 
@@ -199,8 +201,8 @@ sub set_counters {
                     perfdatas => [
                         { label => $_->{entry}, 
                           template => defined($_->{per_second}) ? '%.2f' : '%s',
-                          min => 0 },
-                    ],
+                          min => 0 }
+                    ]
                 }
             }
         ;
@@ -232,12 +234,14 @@ sub check_varnish_old {
     my ($self, %options) = @_;
 
     return if (!defined($options{json}->{uptime}));
-     #   "cache_hit": {"value": 56320, "flag": "a", "description": "Cache hits"},
-     #   "cache_hitpass": {"value": 0, "flag": "a", "description": "Cache hits for pass"},
+    #   "cache_hit": {"value": 56320, "flag": "a", "description": "Cache hits"},
+    #   "cache_hitpass": {"value": 0, "flag": "a", "description": "Cache hits for pass"},
+    #   "SMA.s0.g_space": {"type": "SMA", "ident": "s0", "value": 2147483648, "flag": "i", "description": "Bytes available"},
     foreach (@{$self->{varnish_stats}}) {
-        next if (!defined($options{json}->{$_->{entry}}));
-        $self->{global}->{$_->{entry}} = $options{json}->{$_->{entry}}->{value};
-        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{$_->{entry}}->{description};
+        my $entry = defined($_->{category}) ? $_->{category} . '.' . $_->{entry} : $_->{entry};
+        next if (!defined($options{json}->{$entry}));
+        $self->{global}->{$_->{entry}} = $options{json}->{$entry}->{value};
+        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{$entry}->{description};
     }
 }
 
@@ -249,10 +253,12 @@ sub check_varnish_new {
     #   "MAIN.cache_hit": {"type": "MAIN", "value": 18437, "flag": "a", "description": "Cache hits"},
     #   "MAIN.cache_hitpass": {"type": "MAIN", "value": 3488, "flag": "a", "description": "Cache hits for pass"},
     #   "MAIN.cache_miss": {"type": "MAIN", "value": 5782, "flag": "a", "description": "Cache misses"},
+    #   "SMA.s0.g_space": { "description": "Bytes available", "flag": "g", "format": "B", "value": 4244053932 },
     foreach (@{$self->{varnish_stats}}) {
-        next if (!defined($options{json}->{'MAIN.' . $_->{entry}}));
-        $self->{global}->{$_->{entry}} = $options{json}->{'MAIN.' . $_->{entry}}->{value};
-        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{'MAIN.' . $_->{entry}}->{description};
+        my $category = defined($_->{category}) ? $_->{category} : 'MAIN';
+        next if (!defined($options{json}->{$category . '.' . $_->{entry}}));
+        $self->{global}->{$_->{entry}} = $options{json}->{$category . '.' . $_->{entry}}->{value};
+        $self->{global}->{$_->{entry} . '_description'} = $options{json}->{$category . '.' . $_->{entry}}->{description};
     }
 }
 
