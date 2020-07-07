@@ -72,7 +72,7 @@ sub set_counters {
     $self->{maps_counters_type} = [
         { name => 'accounts', type => 3, cb_prefix_output => 'prefix_account_output', cb_long_output => 'account_long_output', indent_long_output => '    ', message_multiple => 'All accounts are ok',
             group => [
-                { name => 'licenses', display_long => 1, cb_prefix_output => 'prefix_license_output',  message_multiple => 'licenses are ok', type => 1, skipped_code => { -10 => 1 } }
+                { name => 'licenses', display_long => 1, cb_prefix_output => 'prefix_license_output', message_multiple => 'licenses are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];

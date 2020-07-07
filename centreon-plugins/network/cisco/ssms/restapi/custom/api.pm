@@ -215,19 +215,14 @@ sub request_api {
     return $decoded;
 }
 
-sub get_licenses {
+sub get_alerts {
     my ($self, %options) = @_;
 
-    #my $plop = do {
-    #    local $/ = undef;
-    #    if (!open my $fh, "<", '/tmp/licenses.pretty') {
-    #        $self->{output}->add_option_msg(short_msg => "Could not open file $self->{option_results}->{$_} : $!");
-    #        $self->{output}->option_exit();
-    #    }
-    #    <$fh>;
-    #};
-    #$plop = JSON::XS->new->utf8->decode($plop);
-    #return $plop;
+    return $self->request_api(endpoint => '/api/v1/accounts/' . $options{account} . '/alerts');
+}
+
+sub get_licenses {
+    my ($self, %options) = @_;
 
     return $self->request_api(endpoint => '/api/v1/accounts/' . $options{account} . '/licenses');
 }
