@@ -52,8 +52,7 @@ sub set_counters {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
-                    { label => 'poweredon', value => 'poweredon', template => '%s',
-                      min => 0, max => 'total' }
+                    { label => 'poweredon', template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
@@ -61,22 +60,20 @@ sub set_counters {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
-                    { label => 'poweredoff', value => 'poweredoff', template => '%s',
-                      min => 0, max => 'total' }
+                    { label => 'poweredoff', template => '%s', min => 0, max => 'total' }
                 ]
             }
         },
-         { label => 'total-suspended', nlabel => 'host.vm.suspended.current.count', set => {
+        { label => 'total-suspended', nlabel => 'host.vm.suspended.current.count', set => {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
-                    { label => 'suspended', value => 'suspended', template => '%s',
-                      min => 0, max => 'total' }
+                    { label => 'suspended', template => '%s', min => 0, max => 'total' }
                 ]
             }
-        },
+        }
     ];
-    
+
     $self->{maps_counters}->{host} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'state' } ],
@@ -90,8 +87,7 @@ sub set_counters {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
-                    { label => 'poweredon', value => 'poweredon', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 }
+                    { label => 'poweredon', template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
                 ]
             }
         },
@@ -99,8 +95,7 @@ sub set_counters {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
-                    { label => 'poweredoff', value => 'poweredoff', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 }
+                    { label => 'poweredoff', template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
                 ]
             }
         },
@@ -108,8 +103,7 @@ sub set_counters {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
-                    { label => 'suspended', value => 'suspended', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 }
+                    { label => 'suspended', template => '%s', min => 0, max => 'total', label_extra_instance => 1 }
                 ]
             }
         }
@@ -128,13 +122,13 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "esx-hostname:s"        => { name => 'esx_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'esx-hostname:s'     => { name => 'esx_hostname' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'scope-cluster:s'    => { name => 'scope_cluster' },
+        'unknown-status:s'   => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '' }
     });
 
     return $self;
