@@ -58,7 +58,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'DBI OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{custommode_name} = $options{custommode_name};
+    $self->{sqlmode_name} = $options{sqlmode_name};
     $self->{instance} = undef;
     $self->{statement_handle} = undef;
     $self->{version} = undef;
@@ -100,22 +100,17 @@ sub handle_ALRM {
     $self->{output}->exit();
 }
 
-# Method to manage multiples
 sub set_options {
     my ($self, %options) = @_;
-    # options{options_result}
 
     $self->{option_results} = $options{option_results};
 }
 
-# Method to manage multiples
 sub set_defaults {
     my ($self, %options) = @_;
-    # options{default}
-    
-    # Manage default value
+
     foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{custommode_name}) {
+        if ($_ eq $self->{sqlmode_name}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
                 foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
                     if (!defined($self->{option_results}->{$opt}[$i])) {
@@ -129,8 +124,6 @@ sub set_defaults {
 
 sub check_options {
     my ($self, %options) = @_;
-    # return 1 = ok still data_source
-    # return 0 = no data_source left
     
     $self->{data_source} = (defined($self->{option_results}->{data_source})) ? shift(@{$self->{option_results}->{data_source}}) : undef;
     $self->{username} = (defined($self->{option_results}->{username})) ? shift(@{$self->{option_results}->{username}}) : undef;
