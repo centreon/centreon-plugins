@@ -24,6 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+use centreon::plugins::misc;
 use Digest::MD5 qw(md5_hex);
 
 sub prefix_database_output {
@@ -85,18 +86,19 @@ sub manage_selection {
     $self->{global} = {};
     $self->{database} = {};
     foreach my $row (@$result) {
-        if ($row->[0] =~ /_Total/) {
+        my $name = centreon::plugins::misc::trim($row->[0]);
+        if ($name eq '_Total') {
             $self->{global}->{transactions} = $row->[1];
             next;
         }
         if (defined($self->{option_results}->{filter_database}) && $self->{option_results}->{filter_database} ne '' &&
-            $row->[0] !~ /$self->{option_results}->{filter_database}/) {
-            $self->{output}->output_add(long_msg => "skipping  '" . $row->[0] . "': no matching filter.", debug => 1);
+            $name !~ /$self->{option_results}->{filter_database}/) {
+            $self->{output}->output_add(long_msg => "skipping  '" . $name . "': no matching filter.", debug => 1);
             next;
         }
 
-        $self->{database}->{ $row->[0] } = {
-            display => $row->[0],
+        $self->{database}->{ $name } = {
+            display => $name,
             transactions => $row->[1]
         };
     }
