@@ -31,6 +31,7 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
+        'alerts'   => 'network::cisco::ssms::restapi::mode::alerts',
         'licenses' => 'network::cisco::ssms::restapi::mode::licenses'
     };
 
