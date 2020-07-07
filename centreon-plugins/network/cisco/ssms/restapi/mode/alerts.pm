@@ -189,7 +189,7 @@ Filter alerts by message type (can be a regexp).
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage' (B), 'usage-free' (B), 'usage-prct' (%).
+Can be: 'alerts-minor', 'alerts-major'.
 
 =back
 
