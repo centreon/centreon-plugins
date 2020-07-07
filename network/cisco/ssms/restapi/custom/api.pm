@@ -23,6 +23,7 @@ package network::cisco::ssms::restapi::custom::api;
 use strict;
 use warnings;
 use centreon::plugins::http;
+use centreon::plugins::statefile;
 use JSON::XS;
 use Digest::MD5 qw(md5_hex);
 
@@ -57,6 +58,7 @@ sub new {
 
     $self->{output} = $options{output};
     $self->{http} = centreon::plugins::http->new(%options);
+    $self->{cache} = centreon::plugins::statefile->new(%options);
 
     return $self;
 }
@@ -94,6 +96,8 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => "Need to specify --client-secret option.");
         $self->{output}->option_exit();
     }
+
+    $self->{cache}->check_options(option_results => $self->{option_results});
 
     return 0;
 }
