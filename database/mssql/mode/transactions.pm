@@ -85,7 +85,7 @@ sub manage_selection {
     $self->{global} = {};
     $self->{database} = {};
     foreach my $row (@$result) {
-        if ($row->[0] eq '_Total') {
+        if ($row->[0] =~ /_Total/) {
             $self->{global}->{transactions} = $row->[1];
             next;
         }
