@@ -484,6 +484,8 @@ sub run_multiple_instances {
     my $multiple_parent = defined($options{multiple_parent}) && $options{multiple_parent} == 1 ? $options{multiple_parent} : 0;
     my $indent_long_output = defined($options{indent_long_output}) ? $options{indent_long_output} : '';
     my $no_message_multiple = 1;
+    my $display_long = (!defined($options{config}->{display_long}) || $options{config}->{display_long} != 0) ? 1 : 0;
+    my $display_short = (!defined($options{config}->{display_short}) || $options{config}->{display_short} != 0) ? 1 : 0;
 
     my $multiple = 1;
     if (scalar(keys %{$self->{$options{config}->{name}}}) <= 1) {
@@ -551,7 +553,7 @@ sub run_multiple_instances {
         $prefix_output = $self->call_object_callback(method_name => $options{config}->{cb_prefix_output}, instance_value => $self->{$options{config}->{name}}->{$id})
             if (defined($options{config}->{cb_prefix_output}));
         $prefix_output = '' if (!defined($prefix_output));
-        
+
         $suffix_output = $self->call_object_callback(method_name => $options{config}->{cb_suffix_output}) 
         if (defined($options{config}->{cb_suffix_output}));
         $suffix_output = '' if (!defined($suffix_output));
@@ -559,7 +561,7 @@ sub run_multiple_instances {
         my $exit = $self->{output}->get_most_critical(status => [ @exits ]);
         if (scalar @{$self->{maps_counters}->{$options{config}->{name}}} > 0 && $long_msg ne '') {
             $self->{output}->output_add(long_msg => $indent_long_output . $prefix_output . $long_msg . $suffix_output)
-                if (!defined($options{config}->{display_long}) || $options{config}->{display_long} != 0);
+                if ($display_long == 1);
         }
         
         if (!$self->{output}->is_status(litteral => 1, value => $exit, compare => 'ok')) {
@@ -570,12 +572,14 @@ sub run_multiple_instances {
         }
 
         if ($multiple == 0 && $multiple_parent == 0) {
-            $self->run_multiple_prefix_output(severity => 'ok', short_msg => $prefix_output . $long_msg . $suffix_output);            
+            $self->run_multiple_prefix_output(severity => 'ok', short_msg => $prefix_output . $long_msg . $suffix_output)
+                if ($display_short == 1);
         }
     }
 
     if ($no_message_multiple == 0 && $multiple == 1 && $multiple_parent == 0) {
-        $self->run_multiple_prefix_output(severity => 'ok', short_msg => $options{config}->{message_multiple});
+        $self->run_multiple_prefix_output(severity => 'ok', short_msg => $options{config}->{message_multiple})
+            if ($display_short == 1);
     }
 }
 
@@ -589,7 +593,7 @@ sub run_multiple_prefix_output {
         $separator{separator} = '';
     }
 
-    $self->{output}->output_add(severity => $options{severity}, short_msg => "$options{short_msg}", %separator);
+    $self->{output}->output_add(severity => $options{severity}, short_msg => $options{short_msg}, %separator);
 }
 
 sub run_multiple {
