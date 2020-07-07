@@ -31,7 +31,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'backup-age'           => 'database::mssql::mode::backupage',
         'blocked-processes'    => 'database::mssql::mode::blockedprocesses',
         'cache-hitratio'       => 'database::mssql::mode::cachehitratio',
@@ -46,10 +46,10 @@ sub new {
         'page-life-expectancy' => 'database::mssql::mode::pagelifeexpectancy',
         'sql'                  => 'centreon::common::protocols::sql::mode::sql',
         'sql-string'           => 'centreon::common::protocols::sql::mode::sqlstring',
-        'transactions'         => 'database::mssql::mode::transactions',
-    );
+        'transactions'         => 'database::mssql::mode::transactions'
+    };
 
-    $self->{sql_modes}{dbi} = 'database::mssql::dbi';
+    $self->{sql_modes}->{dbi} = 'database::mssql::dbi';
     return $self;
 }
 

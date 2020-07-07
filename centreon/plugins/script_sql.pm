@@ -45,7 +45,7 @@ sub new {
         }
     );
     $self->{version} = '1.0';
-    %{$self->{modes}} = ();
+    $self->{modes} = {};
     $self->{sql_modes} = { 'dbi' => 'centreon::plugins::dbi' };
     $self->{default} = undef;
     $self->{sqldefault} = {};
@@ -100,7 +100,7 @@ sub init {
         $self->{sqlmode_current} = $self->{sql_modes}->{$self->{sqlmode_name}}->new(
             options => $self->{options},
             output => $self->{output}, 
-            custommode_name => $self->{custommode_name},
+            sqlmode_name => $self->{sqlmode_name},
             mode_name => $self->{mode_name}
         );
     } else {
