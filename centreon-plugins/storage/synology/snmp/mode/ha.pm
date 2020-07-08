@@ -61,7 +61,7 @@ sub set_counters {
                 key_values => [ { name => 'heartbeat_latency' } ],
                 output_template => 'heartbeat latency: %s us',
                 perfdatas => [
-                    { value => 'heartbeat_latency', template => '%s', min => 0, unit => 'us' }
+                    { template => '%s', min => 0, unit => 'us' }
                 ]
             }
         }
@@ -72,7 +72,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
         'warning-status:s'  => { name => 'warning_status', default => '%{cluster_status} =~ /warning/i || %{heartbeat_status} =~ /abnormal/i' },

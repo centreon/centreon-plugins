@@ -23,10 +23,10 @@ package storage::synology::snmp::mode::components::psu;
 use strict;
 use warnings;
 
-my %map_status = (1 => 'Normal', 2 => 'Failed');
+my $map_status = { 1 => 'Normal', 2 => 'Failed' };
 
 my $mapping = {
-    synoSystempowerStatus => { oid => '.1.3.6.1.4.1.6574.1.3', map => \%map_status  },
+    synoSystempowerStatus => { oid => '.1.3.6.1.4.1.6574.1.3', map => $map_status  }
 };
 
 sub load {
@@ -44,12 +44,18 @@ sub check {
     $self->{components}->{psu}->{total}++;
 
     my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{synoSystempowerStatus}->{oid}}, instance => '0');
-    $self->{output}->output_add(long_msg => sprintf("power supply status is %s.",
-                                    $result->{synoSystempowerStatus}));
+    $self->{output}->output_add(
+        long_msg => sprintf(
+            "power supply status is %s.",
+            $result->{synoSystempowerStatus}
+        )
+    );
     my $exit = $self->get_severity(label => 'default', section => 'psu', value => $result->{synoSystempowerStatus});
     if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("Power Supply status is %s.", $result->{synoSystempowerStatus}));
+        $self->{output}->output_add(
+            severity => $exit,
+            short_msg => sprintf("Power Supply status is %s.", $result->{synoSystempowerStatus})
+        );
     }
 }
 

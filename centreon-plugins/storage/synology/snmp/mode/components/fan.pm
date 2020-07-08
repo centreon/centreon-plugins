@@ -23,18 +23,20 @@ package storage::synology::snmp::mode::components::fan;
 use strict;
 use warnings;
 
-my %map_status = (1 => 'Normal', 2 => 'Failed');
+my $map_status = { 1 => 'Normal', 2 => 'Failed' };
 
 my $mapping = {
-    synoSystemsystemFanStatus   => { oid => '.1.3.6.1.4.1.6574.1.4.1', map => \%map_status  },
-    synoSystemcpuFanStatus      => { oid => '.1.3.6.1.4.1.6574.1.4.2', map => \%map_status  },
+    synoSystemsystemFanStatus => { oid => '.1.3.6.1.4.1.6574.1.4.1', map => $map_status  },
+    synoSystemcpuFanStatus    => { oid => '.1.3.6.1.4.1.6574.1.4.2', map => map_status  }
 };
 my $oid_fan = '.1.3.6.1.4.1.6574.1.4';
 
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $oid_fan };
+    push @{$self->{request}}, {
+        oid => $oid_fan
+    };
 }
 
 sub check {
@@ -48,23 +50,35 @@ sub check {
     if (!$self->check_filter(section => 'fan', instance => 'cpu')) {
         $self->{components}->{fan}->{total}++;
 
-        $self->{output}->output_add(long_msg => sprintf("cpu fan state is %s.",
-                                          $result->{synoSystemcpuFanStatus}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "cpu fan state is %s.",
+                $result->{synoSystemcpuFanStatus}
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'fan', instance => 'cpu', value => $result->{synoSystemcpuFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("CPU fan status is %s", $result->{synoSystemcpuFanStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("CPU fan status is %s", $result->{synoSystemcpuFanStatus})
+            );
         }
     }
     
     if (!$self->check_filter(section => 'fan', instance => 'system')) {
         $self->{components}->{fan}->{total}++;
-        $self->{output}->output_add(long_msg => sprintf("system fan state is %s.",
-                                        $result->{synoSystemsystemFanStatus}));
+        $self->{output}->output_add(
+            long_msg => sprintf(
+                "system fan state is %s.",
+                $result->{synoSystemsystemFanStatus}
+            )
+        );
         my $exit = $self->get_severity(label => 'default', section => 'fan', instance => 'system', value => $result->{synoSystemsystemFanStatus});
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => sprintf("System fan status is %s", $result->{synoSystemsystemFanStatus}));
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => sprintf("System fan status is %s", $result->{synoSystemsystemFanStatus})
+            );
         }
     }
 }
