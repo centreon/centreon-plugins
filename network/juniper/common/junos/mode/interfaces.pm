@@ -57,8 +57,7 @@ sub set_counters {
                 key_values => [ { name => 'input_power' }, { name => 'display' } ],
                 output_template => 'Input Power : %s dBm',
                 perfdatas => [
-                    { value => 'input_power', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -66,8 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'bias_current' }, { name => 'display' } ],
                 output_template => 'Bias Current : %s mA',
                 perfdatas => [
-                    { value => 'bias_current', template => '%s',
-                      unit => 'mA', label_extra_instance => 1, instance_use => 'display' },
+                    { template => '%s', unit => 'mA', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -75,8 +73,7 @@ sub set_counters {
                 key_values => [ { name => 'output_power' }, { name => 'display' } ],
                 output_template => 'Output Power : %s dBm',
                 perfdatas => [
-                    { value => 'output_power', template => '%s',
-                      unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', unit => 'dBm', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
@@ -84,8 +81,7 @@ sub set_counters {
                 key_values => [ { name => 'module_temperature' }, { name => 'display' } ],
                 output_template => 'Module Temperature : %.2f C',
                 perfdatas => [
-                    { value => 'module_temperature', template => '%.2f',
-                      unit => 'C', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%.2f', unit => 'C', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -143,10 +139,20 @@ sub add_result_errors {
     $self->{int}->{$options{instance}}->{infcserror} = $self->{results}->{$self->{oid_ifInFCSError} . '.' . $options{instance}};
 }
 
-my $oid_jnxDomCurrentRxLaserPower = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.5';
-my $oid_jnxDomCurrentTxLaserBiasCurrent = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.6';
-my $oid_jnxDomCurrentTxLaserOutputPower = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.7';
-my $oid_jnxDomCurrentModuleTemperature = '.1.3.6.1.4.1.2636.3.60.1.1.1.1.8';
+my $mapping_optical = {
+    input_power        => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.5'  }, # jnxDomCurrentRxLaserPower
+    bias_current       => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.6'  }, # jnxDomCurrentTxLaserBiasCurrent
+    output_power       => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.7'  }, # jnxDomCurrentTxLaserOutputPower
+    module_temperature => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.8'  }, # jnxDomCurrentModuleTemperature
+    rx_high_critical   => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.9'  }, # jnxDomCurrentRxLaserPowerHighAlarmThreshold
+    rx_low_critical    => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.10' }, # jnxDomCurrentRxLaserPowerLowAlarmThreshold
+    rx_high_warning    => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.11' }, # jnxDomCurrentRxLaserPowerHighWarningThreshold
+    rx_low_warning     => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.12' }, # jnxDomCurrentRxLaserPowerLowWarningThreshold
+    tx_high_critical   => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.17' }, # jnxDomCurrentTxLaserOutputPowerHighAlarmThreshold
+    tx_low_critical    => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.18' }, # jnxDomCurrentTxLaserOutputPowerLowAlarmThreshold
+    tx_high_warning    => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.19' }, # jnxDomCurrentTxLaserOutputPowerHighWarningThreshold
+    tx_low_warning     => { oid => '.1.3.6.1.4.1.2636.3.60.1.1.1.1.20' }  # jnxDomCurrentTxLaserOutputPowerLowWarningThreshold
+};
 
 sub custom_load {
     my ($self, %options) = @_;
@@ -154,12 +160,7 @@ sub custom_load {
     return if (!defined($self->{option_results}->{add_optical}));
     
     $self->{snmp}->load(
-        oids => [ 
-            $oid_jnxDomCurrentRxLaserPower,
-            $oid_jnxDomCurrentTxLaserBiasCurrent,
-            $oid_jnxDomCurrentTxLaserOutputPower,
-            $oid_jnxDomCurrentModuleTemperature
-        ], 
+        oids => [ map($_->{oid}, values(%$mapping_optical)) ],
         instances => $self->{array_interface_selected}
     );
 }
@@ -168,26 +169,64 @@ sub custom_add_result {
     my ($self, %options) = @_;
 
     return if (!defined($self->{option_results}->{add_optical}));
-    
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping_optical, results => $self->{results}, instance => $options{instance});
+
     $self->{int}->{$options{instance}}->{input_power} = undef;
-    if (defined($self->{results}->{$oid_jnxDomCurrentRxLaserPower . '.' . $options{instance}}) &&
-        $self->{results}->{$oid_jnxDomCurrentRxLaserPower . '.' . $options{instance}} != 0) {
-        $self->{int}->{$options{instance}}->{input_power} = $self->{results}->{$oid_jnxDomCurrentRxLaserPower . '.' . $options{instance}} / 100;
+    if (defined($result->{input_power}) && $result->{input_power} != 0) {
+        $self->{int}->{$options{instance}}->{input_power} = $result->{input_power} / 100;
+
+        my ($warn_val, $crit_val) = ('', '');
+        if ((!defined($self->{option_results}->{'warning-input-power'}) || $self->{option_results}->{'warning-input-power'} eq '') &&
+            (!defined($self->{option_results}->{'critical-input-power'}) || $self->{option_results}->{'critical-input-power'} eq '') &&
+            (!defined($self->{option_results}->{'warning-instance-interface-input-power-dbm'}) || $self->{option_results}->{'warning-instance-interface-input-power-dbm'} eq '') &&
+            (!defined($self->{option_results}->{'critical-instance-interface-input-power-dbm'}) || $self->{option_results}->{'critical-instance-interface-input-power-dbm'} eq '')) {
+            $crit_val = ($result->{rx_low_critical} / 100) . ':'
+                if (defined($result->{rx_low_critical}) && $result->{rx_low_critical} != 0);
+            $crit_val .= ($result->{rx_high_critical} / 100)
+                if (defined($result->{rx_high_critical}) && $result->{rx_high_critical} != 0);
+            $self->{perfdata}->threshold_validate(label => 'critical-input-power', value => $crit_val);
+            $self->{perfdata}->threshold_validate(label => 'critical-instance-interface-input-power-dbm', value => $crit_val);
+
+            $warn_val = ($result->{rx_low_warning} / 100) . ':'
+                if (defined($result->{rx_low_warning}) && $result->{rx_low_warning} != 0);
+            $warn_val .= ($result->{rx_high_warning} / 100)
+                if (defined($result->{rx_high_warning}) && $result->{rx_high_warning} != 0);
+            $self->{perfdata}->threshold_validate(label => 'warning-input-power', value => $warn_val);
+            $self->{perfdata}->threshold_validate(label => 'warning-instance-interface-input-power-dbm', value => $warn_val);
+        }
     }    
     $self->{int}->{$options{instance}}->{bias_current} = undef;
-    if (defined($self->{results}->{$oid_jnxDomCurrentTxLaserBiasCurrent . '.' . $options{instance}}) &&
-        $self->{results}->{$oid_jnxDomCurrentTxLaserBiasCurrent . '.' . $options{instance}} != 0) {
-        $self->{int}->{$options{instance}}->{bias_current} = $self->{results}->{$oid_jnxDomCurrentTxLaserBiasCurrent . '.' . $options{instance}} / 100;
+    if (defined($result->{bias_current}) && $result->{bias_current} != 0) {
+        $self->{int}->{$options{instance}}->{bias_current} = $result->{bias_current} / 100;
     }    
     $self->{int}->{$options{instance}}->{output_power} = undef;
-    if (defined($self->{results}->{$oid_jnxDomCurrentTxLaserOutputPower . '.' . $options{instance}}) &&
-        $self->{results}->{$oid_jnxDomCurrentTxLaserOutputPower . '.' . $options{instance}} != 0) {
-        $self->{int}->{$options{instance}}->{output_power} = $self->{results}->{$oid_jnxDomCurrentTxLaserOutputPower . '.' . $options{instance}} / 100;
+    if (defined($result->{output_power}) && $result->{output_power} != 0) {
+        $self->{int}->{$options{instance}}->{output_power} = $result->{output_power} / 100;
+
+        my ($warn_val, $crit_val) = ('', '');
+        if ((!defined($self->{option_results}->{'warning-output-power'}) || $self->{option_results}->{'warning-output-power'} eq '') &&
+            (!defined($self->{option_results}->{'critical-output-power'}) || $self->{option_results}->{'critical-output-power'} eq '') &&
+            (!defined($self->{option_results}->{'warning-instance-interface-output-power-dbm'}) || $self->{option_results}->{'warning-instance-interface-output-power-dbm'} eq '') &&
+            (!defined($self->{option_results}->{'critical-instance-interface-output-power-dbm'}) || $self->{option_results}->{'critical-instance-interface-output-power-dbm'} eq '')) {
+            $crit_val = ($result->{tx_low_critical} / 100) . ':'
+                if (defined($result->{tx_low_critical}) && $result->{tx_low_critical} != 0);
+            $crit_val .= ($result->{tx_high_critical} / 100)
+                if (defined($result->{tx_high_critical}) && $result->{tx_high_critical} != 0);
+            $self->{perfdata}->threshold_validate(label => 'critical-output-power', value => $crit_val);
+            $self->{perfdata}->threshold_validate(label => 'critical-instance-interface-output-power-dbm', value => $crit_val);
+
+            $warn_val = ($result->{tx_low_warning} / 100) . ':'
+                if (defined($result->{tx_low_warning}) && $result->{tx_low_warning} != 0);
+            $warn_val .= ($result->{tx_high_warning} / 100)
+                if (defined($result->{tx_high_warning}) && $result->{tx_high_warning} != 0);
+            $self->{perfdata}->threshold_validate(label => 'warning-output-power', value => $warn_val);
+            $self->{perfdata}->threshold_validate(label => 'warning-instance-interface-output-power-dbm', value => $warn_val);
+        }
     }
     $self->{int}->{$options{instance}}->{module_temperature} = undef;
-    if (defined($self->{results}->{$oid_jnxDomCurrentModuleTemperature . '.' . $options{instance}}) &&
-        $self->{results}->{$oid_jnxDomCurrentModuleTemperature . '.' . $options{instance}} != 0) {
-        $self->{int}->{$options{instance}}->{module_temperature} = $self->{results}->{$oid_jnxDomCurrentModuleTemperature . '.' . $options{instance}};
+    if (defined($result->{module_temperature}) && $result->{module_temperature} != 0) {
+        $self->{int}->{$options{instance}}->{module_temperature} = $result->{module_temperature};
     }
 }
 
