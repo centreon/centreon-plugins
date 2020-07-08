@@ -72,9 +72,13 @@ sub new {
     # Sometimes, we need to set ENV
     $self->{env} = undef;
     
-    $self->set_signal_handlers();
-    
     return $self;
+}
+
+sub prepare_destroy {
+    my ($self) = @_;
+
+    %handlers = ();
 }
 
 sub set_signal_handlers {
@@ -93,6 +97,7 @@ sub class_handle_ALRM {
 sub handle_ALRM {
     my $self = shift;
 
+    $self->prepare_destroy();
     $self->disconnect();
     $self->{output}->output_add(severity => $self->{sql_errors_exit},
                                 short_msg => 'Timeout');
@@ -213,7 +218,8 @@ sub connect {
             $ENV{$_} = $self->{env}->{$_};
         }
     }
-    
+
+    $self->set_signal_handlers();
     alarm($self->{timeout}) if (defined($self->{timeout}));
     $self->{instance} = DBI->connect(
         "DBI:". $self->{data_source},
@@ -222,6 +228,7 @@ sub connect {
         { RaiseError => 0, PrintError => 0, AutoCommit => 1, %{$self->{connect_options_hash}} }
     );
     alarm(0) if (defined($self->{timeout}));
+    $self->prepare_destroy();
 
     if (!defined($self->{instance})) {
         my $err_msg = sprintf('Cannot connect: %s', defined($DBI::errstr) ? $DBI::errstr : '(no error string)');
