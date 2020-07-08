@@ -72,13 +72,20 @@ sub set_system {
     
     $self->{components_path} = 'storage::synology::snmp::mode::components';
     $self->{components_module} = ['psu', 'fan', 'disk', 'raid', 'system'];
+
+    $self->{request_leef} = [];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
     
     $self->{snmp} = $options{snmp};
-    $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    if (scalar(@{$self->{request}}) > 0) {
+        $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
+    }
+    if (scalar(@{$self->{request_leef}}) > 0) {
+        $self->{results_leef} = $self->{snmp}->get_leef(oids => $self->{request_leef});
+    }
 }
 
 sub new {

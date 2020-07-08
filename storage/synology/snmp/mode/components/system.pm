@@ -26,13 +26,13 @@ use warnings;
 my $map_status = { 1 => 'Normal', 2 => 'Failed' };
 
 my $mapping = {
-    synoSystemsystemStatus => { oid => '.1.3.6.1.4.1.6574.1.1', map => $map_status  }
+    synoSystemsystemStatus => { oid => '.1.3.6.1.4.1.6574.1.1', map => $map_status }
 };
 
 sub load {
     my ($self) = @_;
-    
-    push @{$self->{request}}, { oid => $mapping->{synoSystemsystemStatus}->{oid} };
+
+    push @{$self->{request_leef}}, $mapping->{synoSystemsystemStatus}->{oid} . '.0';
 }
 
 sub check {
@@ -41,9 +41,12 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking system partition status");
     $self->{components}->{system} = {name => 'system', total => 0, skip => 0};
     return if ($self->check_filter(section => 'system'));
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results_leef}, instance => '0');
+    return if (!defined($result->{synoSystemsystemStatus}));
+
     $self->{components}->{system}->{total}++;
 
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{synoSystemsystemStatus}->{oid}}, instance => '0');
     $self->{output}->output_add(
         long_msg => sprintf(
             "system partition status is %s.",

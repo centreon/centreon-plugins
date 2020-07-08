@@ -34,9 +34,7 @@ my $oid_fan = '.1.3.6.1.4.1.6574.1.4';
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, {
-        oid => $oid_fan
-    };
+    push @{$self->{request_leef}}, $mapping->{synoSystemsystemFanStatus}->{oid} . '.0', $mapping->{synoSystemcpuFanStatus}->{oid} . '.0';
 }
 
 sub check {
@@ -45,9 +43,9 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking cpu fan");
     $self->{components}->{fan} = {name => 'fan', total => 0, skip => 0};
     return if ($self->check_filter(section => 'fan'));
-    
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$oid_fan}, instance => '0');
-    if (!$self->check_filter(section => 'fan', instance => 'cpu')) {
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results_leef}, instance => '0');
+    if (defined($result->{synoSystemcpuFanStatus}) && !$self->check_filter(section => 'fan', instance => 'cpu')) {
         $self->{components}->{fan}->{total}++;
 
         $self->{output}->output_add(
@@ -65,7 +63,7 @@ sub check {
         }
     }
     
-    if (!$self->check_filter(section => 'fan', instance => 'system')) {
+    if (defined($result->{synoSystemsystemFanStatus}) && !$self->check_filter(section => 'fan', instance => 'system')) {
         $self->{components}->{fan}->{total}++;
         $self->{output}->output_add(
             long_msg => sprintf(
