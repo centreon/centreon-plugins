@@ -1151,6 +1151,31 @@ sub apply_pfdata_average {
         if ($num > 0);
 }
 
+sub apply_perfdata_thresholds {
+    my ($self, %options) = @_;
+
+    foreach (('warning', 'critical')) {
+        next if (!defined($options{$_}));
+
+        my @thresholds = split(':', $options{$_}, -1);
+        for (my $i = 0; $i < scalar(@thresholds); $i++) {
+            if ($thresholds[$i] =~ /(\d+(?:\.\d+)?)\s*%/) {
+                if (!defined($options{max}) || $options{max} eq '') {
+                    $thresholds[$i] = '';
+                    next;
+                }
+                $thresholds[$i] = $1 * $options{max} / 100;
+            } elsif ($thresholds[$i] =~ /(\d+(?:\.\d+)?)/) {
+                $thresholds[$i] = $1;
+            } else {
+                $thresholds[$i] = '';
+            }
+        }
+
+        ${$options{perf}}->{$_} = join(':', @thresholds);
+    }
+}
+
 sub load_perfdata_extend_args {
     my ($self, %options) = @_;
 
@@ -1169,8 +1194,8 @@ sub load_perfdata_extend_args {
 sub parse_perfdata_extend_args {
     my ($self, %options) = @_;
 
-    # --extend-perfdata=searchlabel,newlabel,method[,[newuom],[min],[max]]
-    my ($pfdata_match, $pfdata_substitute, $method, $uom_sub, $min_sub, $max_sub) = 
+    # --extend-perfdata=searchlabel,newlabel,method[,[newuom],[min],[max],[warning],[critical]]
+    my ($pfdata_match, $pfdata_substitute, $method, $uom_sub, $min_sub, $max_sub, $warn_sub, $crit_sub) = 
         split /,/, $options{arg};
     return if ((!defined($pfdata_match) || $pfdata_match eq '') && $options{type} != 3);
 
@@ -1181,6 +1206,8 @@ sub parse_perfdata_extend_args {
         uom_sub => defined($uom_sub) && $uom_sub ne '' ? $uom_sub : undef,
         min_sub => defined($min_sub) && $min_sub ne '' ? $min_sub : undef,
         max_sub => defined($max_sub) && $max_sub ne '' ? $max_sub : undef,
+        warn_sub => defined($warn_sub) && $warn_sub ne '' ? $warn_sub : undef,
+        crit_sub => defined($crit_sub) && $crit_sub ne '' ? $crit_sub : undef,
         type => $options{type}
     };
 
@@ -1245,6 +1272,12 @@ sub apply_perfdata_extend {
                 $func->($self, perf => \$new_perf, args => $extend->{method_args});
             }
 
+            $self->apply_perfdata_thresholds(
+                perf => \$new_perf,
+                warning => $extend->{warn_sub},
+                critical => $extend->{crit_sub},
+                max => $new_perf->{max}
+            );
             if (length($new_perf->{value})) {
                 push @{$self->{perfdatas}}, $new_perf;
             }
@@ -1271,6 +1304,12 @@ sub apply_perfdata_extend {
             $new_perf->{unit} = $extend->{uom_sub} if (defined($extend->{uom_sub}));
             $new_perf->{min} = $extend->{min_sub} if (defined($extend->{min_sub}));
             $new_perf->{max} = $extend->{max_sub} if (defined($extend->{max_sub}));
+            $self->apply_perfdata_thresholds(
+                perf => \$new_perf,
+                warning => $extend->{warn_sub},
+                critical => $extend->{crit_sub},
+                max => $new_perf->{max}
+            );
 
             if ($extend->{type} == 1) {
                 $self->{perfdatas}->[$i] = $new_perf;
