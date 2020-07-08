@@ -32,7 +32,7 @@ my $mapping = {
 sub load {
     my ($self) = @_;
     
-    push @{$self->{request}}, { oid => $mapping->{synoSystempowerStatus}->{oid} };
+    push @{$self->{request_leef}}, $mapping->{synoSystempowerStatus}->{oid} . '.0';
 }
 
 sub check {
@@ -41,9 +41,12 @@ sub check {
     $self->{output}->output_add(long_msg => "Checking power supply");
     $self->{components}->{psu} = {name => 'psu', total => 0, skip => 0};
     return if ($self->check_filter(section => 'psu'));
+
+    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results_leef}, instance => '0');
+    return if (!defined($result->{synoSystempowerStatus}));
+
     $self->{components}->{psu}->{total}++;
 
-    my $result = $self->{snmp}->map_instance(mapping => $mapping, results => $self->{results}->{$mapping->{synoSystempowerStatus}->{oid}}, instance => '0');
     $self->{output}->output_add(
         long_msg => sprintf(
             "power supply status is %s.",
