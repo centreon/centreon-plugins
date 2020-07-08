@@ -31,12 +31,9 @@ sub new {
 
     $self->{version} = '0.1';
     %{$self->{modes}} = ( 
-        # 'watchlist' => 'blockchain::parity::ethpoller::mode::watchlist',
-        # 'fork'      => 'blockchain::parity::ethpoller::mode::fork',
         'stats'     => 'blockchain::parity::ethpoller::mode::stats',
         'disk'      => 'blockchain::parity::ethpoller::mode::disk',
-        'tracking'  => 'blockchain::parity::ethpoller::mode::tracking',
-        # 'prct'      => 'blockchain::parity::ethpoller::mode::prct'
+        'tracking'  => 'blockchain::parity::ethpoller::mode::tracking'
     );
     $self->{custom_modes}{api} = 'blockchain::parity::ethpoller::custom::api';
     return $self;
@@ -48,6 +45,6 @@ __END__
 
 =head1 PLUGIN DESCRIPTION
 
-Check Parity blockchain accounts, contracts and forks from eth-poller with HTTP GET
+Check Parity blockchain accounts, contracts and forks from eth-poller with HTTP GET requests
 
 =cut

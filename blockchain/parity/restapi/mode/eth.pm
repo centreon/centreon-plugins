@@ -174,40 +174,11 @@ sub manage_selection {
     my $gas_price = hex(@{$result}[2]->{result});
     my $res_block_time = @{$result}[5]->{result}->{timestamp} == 0 ? '': localtime(hex(@{$result}[5]->{result}->{timestamp}));
 
-   
-   
-    # conditional formating:
     my $res_sync = 100;
-    # my $res_startingBlock = 'none';
-    # my $res_currentBlock = 'none';
-    # my $res_highestBlock = 'none';
     
     if (@{$result}[6]->{result}) {
         my $res_sync = hex(@{$result}[6]->{result}->{highestBlock}) != 0 ? (hex(@{$result}[6]->{result}->{currentBlock}) * 100) / hex(@{$result}[6]->{result}->{highestBlock}) : 'none';
-        # my $res_startingBlock = hex(@{$result}[6]->{result}->{startingBlock});
-        # my $res_currentBlock = hex(@{$result}[6]->{result}->{currentBlock});
-        # my $res_highestBlock = hex(@{$result}[6]->{result}->{highestBlock});
     } 
-    
-
-    # Alerts management 
-    # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
-
-    # if (my $cached_sync = $cache->get('node_sync')) {
-    #     if ($cached_sync == 100 && $res_sync < 100) {
-    #         #alert
-    #     }
-    # } else {
-    #     $cache->set('node_sync', $res_sync);
-    # }
-
-    # if (my $cached_price = $cache->get('gas_price')) {
-    #     if ($cached_price != $gas_price) {
-    #         #alert
-    #     }
-    # } else {
-    #     $cache->set('gas_price', $gas_price);
-    # }
 
     $self->{sync} = { sync_status => $res_sync };
 
@@ -217,27 +188,11 @@ sub manage_selection {
 
     my $calculated_block_usage = hex(@{$result}[5]->{result}->{gasUsed}) / hex(@{$result}[5]->{result}->{gasLimit}) * 100;
 
-    # use Data::Dumper;
-    # print Dumper($calculated_block_usage) ;
-    # print Dumper(hex(@{$result}[5]->{result}->{gasUsed}));
-    # print Dumper(hex(@{$result}[5]->{result}->{gasLimit}));
-
     $self->{block} =  { block_size => hex(@{$result}[5]->{result}->{size}), 
                         block_gas => hex(@{$result}[5]->{result}->{gasUsed}),
                         block_usage => $calculated_block_usage,
-                        # block_difficulty => hex(@{$result}[5]->{result}->{totalDifficulty}), 
                         block_uncles => scalar(@{$$result[5]->{result}->{uncles}}), 
-                        block_transactions => scalar(@{$$result[5]->{result}->{transactions}})};
-
-    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Node status: [is_mining: ' . @{$result}[0]->{result} . '] [sync_start: ' . $res_startingBlock . 
-    #                                                             '] [sync_current: ' . $res_currentBlock . '] [sync_highest: ' . $res_highestBlock . '] [sync: ' . $res_sync . '%]');
-    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Client: [coinbase: ' . @{$result}[1]->{result} . ']');
-    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Global: [hashrate: ' . hex(@{$result}[3]->{result}) . 
-    #                                                             '] [block_number: ' . (defined @{$result}[4]->{result} ? hex(@{$result}[4]->{result}) : 0) . ']');
-    # $self->{output}->output_add(severity  => 'OK', long_msg => 'Last block: [block_time: ' . $res_block_time . '] [block_gas_limit: ' . hex(@{$result}[5]->{result}->{gasLimit}) . 
-    #                                                             '] [block_miner: ' . @{$result}[5]->{result}->{miner} . '] [block_hash: ' . @{$result}[5]->{result}->{hash} . 
-    #                                                             '] [last_block_number: ' . hex(@{$result}[5]->{result}->{number}) . ']');
-    
+                        block_transactions => scalar(@{$$result[5]->{result}->{transactions}})};   
 }
 
 1;
@@ -246,26 +201,4 @@ __END__
 
 =head1 MODE
 
-Check eth module metrics parity (eth_mining, eth_coinbase, eth_gasPrice, eth_hashrate, eth_blockNumber, eth_getBlockByNumber::timestamp)
-
-=over 8
-
-=item B<--unknown-status>
-
-Set unknown threshold for listening status (Default: '').
-
-=item B<--warning-status>
-
-Set warning threshold for listening status (Default: '').
-
-=item B<--critical-status>
-
-Set critical threshold for listening status (Default: '%{is_mining} !~ /true/').
-
-=item B<--warning-peers> B<--critical-peers>
-
-Warning and Critical threhsold on the number of peer
-
-=back
-
-=cut
+Check eth module metrics parity (Gas, blocks and syncing status)

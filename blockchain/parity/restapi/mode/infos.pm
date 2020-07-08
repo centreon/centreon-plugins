@@ -67,25 +67,7 @@ sub manage_selection {
 
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
 
-    # use Data::Dumper;
-    # print Dumper($result);
-
-    # Parity version construction
     my $res_parity_version = @{$result}[0]->{result}->{version}->{major} . '.' . @{$result}[0]->{result}->{version}->{minor} .  '.' . @{$result}[0]->{result}->{version}->{patch};
-
-
-    # Alerts management 
-    # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
-
-    # if (my $cached_count = $cache->get('peers_count')) {
-    #     if ($peer_count < $cached_count) {
-    #         #alert
-    #     } elsif ($peer_count > $cached_count) {
-    #         #alert
-    #     }
-    # } else {
-    #     $cache->set('peers_count', $peer_count);
-    # }
 
     $self->{output}->output_add(short_msg =>  "Parity version: '" . $res_parity_version . "'. Chain name: '" . @{$result}[1]->{result} . 
                                             "'. Node name: '" . @{$result}[3]->{result} . "'. is_validator: '" . @{$result}[2]->{result} . "'.", severity => 'OK');
@@ -97,26 +79,4 @@ __END__
 
 =head1 MODE
 
-Check parity network cross module metrics  (parity_versionInfo, parity_chain, eth_mining, parity_nodeName)
-
-=over 8
-
-=item B<--unknown-status>
-
-Set unknown threshold for listening status (Default: '').
-
-=item B<--warning-status>
-
-Set warning threshold for listening status (Default: '').
-
-=item B<--critical-status>
-
-Set critical threshold for listening status (Default: '%{listening} !~ /true/').
-
-=item B<--warning-peers> B<--critical-peers>
-
-Warning and Critical threhsold on the number of peer
-
-=back
-
-=cut
+Check parity network cross module metrics  (Parity version, chain name and node name and type)
