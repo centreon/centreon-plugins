@@ -27,7 +27,7 @@ my $map_status = { 1 => 'Normal', 2 => 'Failed' };
 
 my $mapping = {
     synoSystemsystemFanStatus => { oid => '.1.3.6.1.4.1.6574.1.4.1', map => $map_status  },
-    synoSystemcpuFanStatus    => { oid => '.1.3.6.1.4.1.6574.1.4.2', map => map_status  }
+    synoSystemcpuFanStatus    => { oid => '.1.3.6.1.4.1.6574.1.4.2', map => $map_status  }
 };
 my $oid_fan = '.1.3.6.1.4.1.6574.1.4';
 
