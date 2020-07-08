@@ -28,7 +28,7 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|disk|system|raid)$';
+    $self->{regexp_threshold_overload_check_section_option} = '^(?:fan|psu|disk|system|raid)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -36,14 +36,14 @@ sub set_system {
         # system, fan, psu
         default => [
             ['Normal', 'OK'],
-            ['Failed', 'CRITICAL'],
+            ['Failed', 'CRITICAL']
         ],
         disk => [
             ['Normal', 'OK'],
             ['Initialized', 'OK'],
             ['NotInitialized', 'OK'],
             ['SystemPartitionFailed', 'CRITICAL'],
-            ['Crashed', 'CRITICAL'],
+            ['Crashed', 'CRITICAL']
         ],
         raid => [
             ['Normal', 'OK'],
@@ -66,8 +66,8 @@ sub set_system {
             ['RaidExpandingUnfinishedSHR', 'OK'],
             ['RaidConvertSHRToPool', 'OK'],
             ['RaidMigrateSHR1ToSHR2', 'OK'],
-            ['RaidUnknownStatus', 'UNKNOWN'],
-        ],
+            ['RaidUnknownStatus', 'UNKNOWN']
+        ]
     };
     
     $self->{components_path} = 'storage::synology::snmp::mode::components';
@@ -85,11 +85,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { });
+
     return $self;
 }
 

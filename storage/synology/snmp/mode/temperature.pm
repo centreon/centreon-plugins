@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -37,10 +37,10 @@ sub set_counters {
                 key_values => [ { name => 'temperature' } ],
                 output_template => 'system temperature: %s C',
                 perfdatas => [
-                    { value => 'temperature', template => '%s', unit => 'C' },
-                ],
+                    { template => '%s', unit => 'C' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -66,7 +66,7 @@ sub manage_selection {
     );
 
     $self->{global} = {
-        temperature => $snmp_result->{$oid_synoSystemtemperature},
+        temperature => $snmp_result->{$oid_synoSystemtemperature}
     };
 }
 

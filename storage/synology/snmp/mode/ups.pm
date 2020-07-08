@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0, skipped_code => { -10 => 1 } },
+        { name => 'global', type => 0, skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -37,26 +37,26 @@ sub set_counters {
                 key_values => [ { name => 'ups_load' } ],
                 output_template => 'ups load: %s%%',
                 perfdatas => [
-                    { value => 'ups_load', template => '%s', min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'charge-remaining', nlabel => 'battery.charge.remaining.percent', set => {
                 key_values => [ { name => 'charge_remain' } ],
                 output_template => 'battery charge remaining: %s%%',
                 perfdatas => [
-                    { value => 'charge_remain', template => '%s', min => 0, max => 100, unit => '%' },
-                ],
+                    { template => '%s', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
         { label => 'lifetime-remaining', nlabel => 'battery.lifetime.remaining.seconds', set => {
                 key_values => [ { name => 'lifetime_remain' } ],
                 output_template => 'battery estimated lifetime: %s seconds',
                 perfdatas => [
-                    { value => 'lifetime_remain', template => '%s', min => 0, unit => 's' },
-                ],
+                    { template => '%s', min => 0, unit => 's' }
+                ]
             }
-        },
+        }
     ];
 }
 

@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'components'  => 'storage::synology::snmp::mode::hardware',
         'cpu'         => 'snmp_standard::mode::cpu',
         'ha'          => 'storage::synology::snmp::mode::ha',
@@ -42,8 +42,8 @@ sub new {
         'temperature' => 'storage::synology::snmp::mode::temperature',
         'time'        => 'snmp_standard::mode::ntp',
         'ups'         => 'storage::synology::snmp::mode::ups',
-        'uptime'      => 'snmp_standard::mode::uptime',
-    );
+        'uptime'      => 'snmp_standard::mode::uptime'
+    };
 
     return $self;
 }
