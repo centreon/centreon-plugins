@@ -140,44 +140,18 @@ sub manage_selection {
                             { method => 'parity_netPeers', params => [], id => "4", jsonrpc => "2.0" },
                             { method => 'parity_enode', params => [], id => "5", jsonrpc => "2.0" },
                             { method => 'parity_nodeName', params => [], id => "6", jsonrpc => "2.0" },
-                            { method => 'parity_transactionsLimit', params => [], id => "7", jsonrpc => "2.0" }, #TO CHECK parity_transactionsLimit could be done once, at the beginning of the process 
+                            { method => 'parity_transactionsLimit', params => [], id => "7", jsonrpc => "2.0" }, 
                             { method => 'net_peerCount', params => [], id => "8", jsonrpc => "2.0" } ]; 
                             
     my $result = $options{custom}->request_api(method => 'POST', query_form_post => $query_form_post);
 
-    # use Data::Dumper;
-    # print Dumper($result);
-
-    # Parity version construction
     my $res_parity_version = @{$result}[0]->{result}->{version}->{major} . '.' . @{$result}[0]->{result}->{version}->{minor} .  '.' . @{$result}[0]->{result}->{version}->{patch};
 
-    # Alerts management 
-    # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
-
-    # if (my $cached_version = $cache->get('parity_version')) {
-    #     if ($res_parity_version ne $cached_version) {
-    #         #alert
-    #     }
-    # } else {
-    #     $cache->set('parity_version', $res_parity_version);
-    # }
-
-    # if (my $cached_name = $cache->get('chain_name')) {
-    #     if ($cached_name ne @{$result}[1]->{result}) {
-    #         #alert
-    #     }
-    # } else {
-    #     $cache->set('chain_name', @{$result}[1]->{result});
-    # }
-    
-    # use Data::Dumper;
-    # print Dumper($result);
-
-    $self->{mempool} = { mempool_usage => scalar(@{$$result[2]->{result}}) / @{$result}[6]->{result} * 100, #TO CHECK division entière 
+    $self->{mempool} = { mempool_usage => scalar(@{$$result[2]->{result}}) / @{$result}[6]->{result} * 100, 
                          mempool_size => @{$result}[6]->{result},
                          tx_pending => scalar(@{$$result[2]->{result}}) }; 
 
-    $self->{peers} = { peers_usage => @{$result}[3]->{result}->{connected} / @{$result}[3]->{result}->{max} * 100, #TO CHECK division entière 
+    $self->{peers} = { peers_usage => @{$result}[3]->{result}->{connected} / @{$result}[3]->{result}->{max} * 100, 
                        peers_max => @{$result}[3]->{result}->{max},
                        peers_limit => @{$result}[3]->{result}->{max},
                        peers_connected => @{$result}[3]->{result}->{connected} }; 
@@ -189,26 +163,4 @@ __END__
 
 =head1 MODE
 
-Check parity module metrics parity (parity_versionInfo, parity_chain, parity_pendingTransactions, parity_netPeers, parity_enode, parity_nodeName, parity_transactionsLimit)
-
-=over 8
-
-=item B<--unknown-status>
-
-Set unknown threshold for listening status (Default: '').
-
-=item B<--warning-status>
-
-Set warning threshold for listening status (Default: '').
-
-=item B<--critical-status>
-
-Set critical threshold for listening status (Default: '%{listening} !~ /true/').
-
-=item B<--warning-peers> B<--critical-peers>
-
-Warning and Critical threhsold on the number of peer
-
-=back
-
-=cut
+Check parity module metrics parity (Mempool and peers)

@@ -110,9 +110,6 @@ sub manage_selection {
 
     my $result = $options{custom}->request_api(url_path => '/disk');
 
-    # use Data::Dumper;
-    # print Dumper($result);
-
     $self->{global} = { disk_free => $result->{free},
                         disk_available => $result->{available},
                         disk_size => $result->{size},

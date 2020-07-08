@@ -25,7 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use bigint;
-# use Time::Seconds;
 use Digest::MD5 qw(md5_hex);
 
 sub set_counters {
@@ -77,14 +76,10 @@ sub custom_block_output {
     if (0 eq $self->{result_values}->{block_count}) {
         return sprintf("No block yet...");
     } else {
-        # my $time_elapsed = time() - $self->{result_values}->{last_block_ts};
-        # my $t = Time::Seconds->new($time_elapsed);
-
         return sprintf(
-            "Block frequency: '%.2f/min', Last block (#%s)",# was %s ago",
+            "Block frequency: '%.2f/min', Last block (#%s)",
             $self->{result_values}->{block_count},
-            $self->{result_values}->{last_block},
-            # $t->pretty
+            $self->{result_values}->{last_block}
         );
     }
 }
@@ -188,6 +183,6 @@ __END__
 
 =head1 MODE
 
-Check Parity eth-poller for stats 
+Check Parity eth-poller for statsitics about blocks, transactions and forks
 
 =cut

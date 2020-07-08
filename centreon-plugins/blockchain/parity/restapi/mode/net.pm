@@ -94,19 +94,6 @@ sub manage_selection {
 
     my $peer_count = hex(@{$result}[1]->{result});
 
-    # Alerts management 
-    # my $cache = Cache::File->new( cache_root => './parity-restapi-cache' );
-
-    # if (my $cached_count = $cache->get('peers_count')) {
-    #     if ($peer_count < $cached_count) {
-    #         #alert
-    #     } elsif ($peer_count > $cached_count) {
-    #         #alert
-    #     }
-    # } else {
-    #     $cache->set('peers_count', $peer_count);
-    # }
-
     $self->{network} = { peers => hex(@{$result}[1]->{result}) };
 
     $self->{output}->output_add(long_msg => "Node status: [is_listening: " . @{$result}[0]->{result} . ']', severity => 'OK');
@@ -119,25 +106,3 @@ __END__
 =head1 MODE
 
 Check network module metrics parity (net_isListening, net_peerCount)
-
-=over 8
-
-=item B<--unknown-status>
-
-Set unknown threshold for listening status (Default: '').
-
-=item B<--warning-status>
-
-Set warning threshold for listening status (Default: '').
-
-=item B<--critical-status>
-
-Set critical threshold for listening status (Default: '%{listening} !~ /true/').
-
-=item B<--warning-peers> B<--critical-peers>
-
-Warning and Critical threhsold on the number of peer
-
-=back
-
-=cut
