@@ -37,7 +37,7 @@ sub load {
     push @{$self->{request}}, {
         oid => $oid_systemBatteryTableEntry,
         start => $mapping->{systemBatteryStateSettings}->{oid},
-        start => $mapping->{systemBatteryLocationName}->{oid}
+        end => $mapping->{systemBatteryLocationName}->{oid}
     };
 }
 
