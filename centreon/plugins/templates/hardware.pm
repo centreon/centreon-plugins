@@ -166,7 +166,7 @@ sub check_options {
         }
     }
 
-    $self->{overload_th} = {};
+    $self->{overload_th} = ();
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         next if (!defined($val) || $val eq '');
         my @values = split (/,/, $val);
@@ -181,7 +181,9 @@ sub check_options {
         } else {
              ($section, $instance, $status, $filter) = @values;
         }
+        # Be strict on plain threshold-overload section, but allow regex forms
         if (defined($self->{regexp_threshold_overload_check_section_option}) && 
+            $section =~ /^[a-z.]*$/ &&
             $section !~ /$self->{regexp_threshold_overload_check_section_option}/) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
             $self->{output}->option_exit();
@@ -196,8 +198,7 @@ sub check_options {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
+        push @{$self->{overload_th}}, {section => $section, filter => $filter, status => $status, instance => $instance };
     }
 
     if ($self->{performance} == 1) {
@@ -466,9 +467,9 @@ sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
 
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i && 
+    foreach (@{$self->{overload_th}}) {
+        if ($options{section} =~ /$_->{section}/i) {
+            if ($options{value} =~ /$_->{filter}/i &&
                 (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
                 $status = $_->{status};
                 return $status;
