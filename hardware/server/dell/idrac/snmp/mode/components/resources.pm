@@ -79,6 +79,7 @@ our @EXPORT_OK = qw(%map_probe_status %map_state %map_status %map_amperage_type 
     7 => 'failed',
     8 => 'non-raid',
     9 => 'removed',
+    10 => 'readonly',
 );
 
 %map_vdisk_state = (

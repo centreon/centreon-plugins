@@ -69,6 +69,7 @@ sub set_system {
             ['failed', 'CRITICAL'],
             ['non-raid', 'OK'],
             ['removed', 'OK'],
+            ['readonly', 'WARNING'],
         ],
         'pdisk.smartalert' => [
             ['off', 'OK'],
@@ -88,7 +89,11 @@ sub set_system {
         'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'];
 
     $self->{regexp_threshold_overload_check_section_option} = 
-        '^(?:' . join('|', @{$self->{components_module}}). ')\.(?:status|state)$';
+        '^(' .
+        '(psu|punit|temperature|voltage|amperage|systembattery|coolingunit|coolingdevice|processor|memory|pci|network|slot|fru|storagectrl|storagebattery|pdisk)\.status' .
+        '|(punit|temperature|voltage|amperage|systembattery|coolingunit|coolingdevice|processor|memory|pci|pdisk|vdisk)\.state' .
+        '|(pdisk)\.smartalert' .
+        ')$';
 }
 
 sub snmp_execute {
