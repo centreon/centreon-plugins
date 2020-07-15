@@ -67,7 +67,7 @@ Try {
         $returnArray += $returnObject
     }
     
-    $returnArray | ConvertTo-JSON-20
+    $returnArray | ConvertTo-JSON-20 -forceArray $true
 } Catch {
     Write-Host $Error[0].Exception
     exit 1
