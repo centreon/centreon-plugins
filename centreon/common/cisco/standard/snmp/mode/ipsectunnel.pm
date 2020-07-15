@@ -32,7 +32,7 @@ sub set_counters {
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0 },
-        { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok' },
+        { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -53,7 +53,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'In' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'traffic-out', set => {
@@ -62,7 +62,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'Out' },
                 closure_custom_output => $self->can('custom_traffic_output'),
                 closure_custom_perfdata => $self->can('custom_traffic_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_traffic_threshold'),
+                closure_custom_threshold_check => $self->can('custom_traffic_threshold')
             }
         },
         { label => 'drop-in', set => {
@@ -71,7 +71,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_drop_calc'), closure_custom_calc_extra_options => { label_ref => 'In' },
                 closure_custom_output => $self->can('custom_drop_output'),
                 closure_custom_perfdata => $self->can('custom_drop_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_drop_threshold'),
+                closure_custom_threshold_check => $self->can('custom_drop_threshold')
             }
         },
         { label => 'drop-out', set => {
@@ -80,7 +80,7 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_drop_calc'), closure_custom_calc_extra_options => { label_ref => 'Out' },
                 closure_custom_output => $self->can('custom_drop_output'),
                 closure_custom_perfdata => $self->can('custom_drop_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_drop_threshold'),
+                closure_custom_threshold_check => $self->can('custom_drop_threshold')
             }
         },
         { label => 'sa-total', set => {
@@ -99,7 +99,7 @@ sub custom_traffic_perfdata {
 
     my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{thlabel});
     my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{thlabel});
-    
+
     $self->{output}->perfdata_add(
         label => 'traffic_' . lc($self->{result_values}->{label}), unit => 'b/s',
         instances => $self->use_instances(extra_instance => $options{extra_instance}) ? $self->{result_values}->{display} : undef,
@@ -113,18 +113,18 @@ sub custom_traffic_perfdata {
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    return $exit;
+    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
 }
 
 sub custom_traffic_output {
     my ($self, %options) = @_;
     
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
-    my $msg = sprintf("Traffic %s : %s/s",
-                      $self->{result_values}->{label},
-                      $traffic_value . $traffic_unit);
-    return $msg;
+    return sprintf(
+        'Traffic %s : %s/s',
+        $self->{result_values}->{label},
+        $traffic_value . $traffic_unit
+    );
 }
 
 sub custom_traffic_calc {
@@ -176,15 +176,14 @@ sub custom_drop_perfdata {
 sub custom_drop_threshold {
     my ($self, %options) = @_;
     
-    my $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{pkts_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
-    return $exit;
+    return $self->{perfdata}->threshold_check(value => $self->{result_values}->{pkts_per_seconds}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
 }
 
 sub custom_drop_output {
     my ($self, %options) = @_;
     
     return sprintf(
-        "Drop %s : %s pkts/s",
+        'Drop %s : %s pkts/s',
         $self->{result_values}->{label}, $self->{result_values}->{pkts_per_seconds}
     );
 }
@@ -224,7 +223,7 @@ sub new {
     
     $options{options}->add_options(arguments => {
         'filter-name:s' => { name => 'filter_name' },
-        'filter-sa:s'   => { name => 'filter_sa' },
+        'filter-sa:s'   => { name => 'filter_sa' }
     });
 
     return $self;
@@ -262,10 +261,10 @@ sub manage_selection {
     
     $self->{tunnel} = {};    
     my $request_oids = [
-        { oid => $oid_cikeTunnelEntry, end => $mapping->{cikeTunActiveTime}->{oid} },
-        { oid => $oid_cipSecTunnelEntry, begin => $mapping2->{cipSecTunInOctets}->{oid} },
-        { oid => $oid_cipSecEndPtEntry },
-        { oid => $oid_cipSecTunIkeTunnelIndex },
+        { oid => $oid_cikeTunnelEntry, start => $mapping->{cikeTunLocalValue}->{oid}, end => $mapping->{cikeTunActiveTime}->{oid} },
+        { oid => $oid_cipSecTunnelEntry, start => $mapping2->{cipSecTunInOctets}->{oid} end => $mapping2->{cipSecTunOutDropPkts}->{oid} },
+        { oid => $oid_cipSecEndPtEntry, start => $mapping3->{cipSecEndPtLocalAddr1}->{oid}, end => $mapping3->{cipSecEndPtRemoteAddr2}->{oid} },
+        { oid => $oid_cipSecTunIkeTunnelIndex }
     ];
     my $results = $options{snmp}->get_multiple_table(oids => $request_oids);
 
@@ -321,7 +320,7 @@ sub manage_selection {
         }
     }
     
-    $self->{cache_name} = "cisco_ipsectunnel_" . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
+    $self->{cache_name} = 'cisco_ipsectunnel_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_sa}) ? md5_hex($self->{option_results}->{filter_sa}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all'));
