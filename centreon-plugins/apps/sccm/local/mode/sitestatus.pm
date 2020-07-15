@@ -89,14 +89,16 @@ sub set_counters {
 
     $self->{maps_counters}->{sites} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'display' }, { name => 'SiteName' }, { name => 'Type' }, { name => 'Mode' },
-                    { name => 'Status' }, { name => 'SecondarySiteCMUpdateStatus' } ],
+                key_values => [
+                    { name => 'display' }, { name => 'SiteName' }, { name => 'Type' }, { name => 'Mode' },
+                    { name => 'Status' }, { name => 'SecondarySiteCMUpdateStatus' }
+                ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold
             }
-        },
+        }
     ];
 }
 
@@ -120,7 +122,7 @@ sub new {
         'ps-exec-only'      => { name => 'ps_exec_only' },
         'ps-display'        => { name => 'ps_display' },
         'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '' }
     });
 
     return $self;
