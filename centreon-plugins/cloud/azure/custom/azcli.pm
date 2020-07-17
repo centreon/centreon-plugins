@@ -209,6 +209,28 @@ sub azure_get_metrics {
     return $results, $raw_results;
 }
 
+sub azure_get_resource_health_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "rest --only-show-errors --output json";
+    $cmd_options .= " --uri /subscriptions/" . $self->{subscription} . "/resourceGroups/" .
+        $options{resource_group} . "/providers/" . $options{resource_namespace} . "/" . $options{resource_type} .
+        "/" . $options{resource} . "/providers/Microsoft.ResourceHealth/availabilityStatuses/current?api-version=" . $options{api_version};
+
+    return $cmd_options; 
+}
+
+sub azure_get_resource_health {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->azure_get_resource_health_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results;
+}
+
 sub azure_list_resources_set_cmd {
     my ($self, %options) = @_;
 
