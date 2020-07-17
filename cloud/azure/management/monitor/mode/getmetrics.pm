@@ -115,15 +115,15 @@ sub check_options {
     }
 
     $self->{az_resource} = $self->{option_results}->{resource};
+    $self->{az_resource_group} = $self->{option_results}->{resource_group};
+    $self->{az_resource_type} = $self->{option_results}->{resource_type};
+    $self->{az_resource_namespace} = $self->{option_results}->{resource_namespace};
 
-    if ($self->{az_resource} =~ /^\/subscriptions\/.*\/resourceGroups\/.*\/providers\/Microsoft\..*\/.*\/.*$/) {
-        $self->{az_resource_group} = '';
-        $self->{az_resource_type} = '';
-        $self->{az_resource_namespace} = '';
-    } else {
-        $self->{az_resource_group} = $self->{option_results}->{resource_group};
-        $self->{az_resource_type} = $self->{option_results}->{resource_type};
-        $self->{az_resource_namespace} = $self->{option_results}->{resource_namespace};
+    if ($self->{az_resource} =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/(.*)\/(.*)$/) {
+        $self->{az_resource_group} = $1;
+        $self->{az_resource_namespace} = $2;
+        $self->{az_resource_type} = $3;
+        $self->{az_resource} = $4;
     }
 
     $self->{az_metrics} = [];
@@ -157,15 +157,15 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my ($results, $raw_results) = $options{custom}->azure_get_metrics(
-        resource            => $self->{az_resource},
-        resource_group      => $self->{az_resource_group},
-        resource_type       => $self->{az_resource_type},
-        resource_namespace  => $self->{az_resource_namespace},
-        metrics             => $self->{az_metrics},
-        aggregations        => $self->{az_aggregation},
-        timeframe           => $self->{az_timeframe},
-        interval            => $self->{az_interval},
-        dimension           => $self->{az_metrics_dimension}
+        resource => $self->{az_resource},
+        resource_group => $self->{az_resource_group},
+        resource_type => $self->{az_resource_type},
+        resource_namespace => $self->{az_resource_namespace},
+        metrics => $self->{az_metrics},
+        aggregations => $self->{az_aggregation},
+        timeframe => $self->{az_timeframe},
+        interval => $self->{az_interval},
+        dimension => $self->{az_metrics_dimension}
     );
 
     $self->{metrics} = {};
