@@ -223,6 +223,11 @@ sub manage_selection {
     $self->{ssid} = {};
     foreach my $oid (keys %$snmp_result) {
         if ($oid =~ /^$oid_bsnDot11EssSsid/ && !defined($self->{ssid}->{ $snmp_result->{$oid} })) {
+            if (defined($self->{option_results}->{filter_ssid}) && $self->{option_results}->{filter_ssid} ne '' &&
+                $snmp_result->{$oid} !~ /$self->{option_results}->{filter_ssid}/) {
+                $self->{output}->output_add(long_msg => "skipping '" . $snmp_result->{$oid} . "': no matching filter.", debug => 1);
+                next;
+            }
             $self->{ssid}->{ $snmp_result->{$oid} } = { display => $snmp_result->{$oid}, total => 0 };
             next;
         }
