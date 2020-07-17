@@ -38,7 +38,7 @@ sub set_counters {
                 output_template => 'used: %s %%',
                 perfdatas => [
                     { label => 'used', template => '%d',
-                      unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
+                      unit => '%', min => 0, max => 100, label_extra_instance => 1 }
                 ]
             }
         }
@@ -57,11 +57,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'filter-type:s'     => { name => 'filter_type', },
-        'filter-fs:s'       => { name => 'filter_fs', },
-        'name:s'            => { name => 'name' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' }
+        'filter-type:s'       => { name => 'filter_type', },
+        'filter-fs:s'         => { name => 'filter_fs', },
+        'filter-mountpoint:s' => { name => 'filter_mountpoint' }
     });
 
     return $self;
@@ -83,16 +81,11 @@ sub manage_selection {
         my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
 
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
-                 $fs !~ /$self->{option_results}->{filter_fs}/);
+            $fs !~ /$self->{option_results}->{filter_fs}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-                 $type !~ /$self->{option_results}->{filter_type}/);
-        
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-            && $mount !~ /$self->{option_results}->{name}/i);
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-            && $mount !~ /$self->{option_results}->{name}/);
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-            && $mount ne $self->{option_results}->{name});
+            $type !~ /$self->{option_results}->{filter_type}/);
+        next if (defined($self->{option_results}->{filter_mountpoint}) && $self->{option_results}->{filter_mountpoint} ne '' &&
+            $mount !~ /$self->{option_results}->{filter_mountpoint}/);
 
         $percent =~ s/%//g;
         next if ($percent eq '-');
@@ -128,17 +121,9 @@ Threshold warning in percent.
 
 Threshold critical in percent.
 
-=item B<--name>
+=item B<--filter-mountpoint>
 
-Set the storage mount point (empty means 'check all storages')
-
-=item B<--regexp>
-
-Allows to use regexp to filter storage mount point (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Filter filesystem (regexp can be used).
 
 =item B<--filter-type>
 
