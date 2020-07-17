@@ -136,14 +136,14 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-state:s'    => { name => 'filter_state', },
+        'filter-state:s'     => { name => 'filter_state', },
         'filter-interface:s' => { name => 'filter_interface' },
-        'units:s'           => { name => 'units', default => 'b/s' },
-        'speed:s'           => { name => 'speed' },
-        'no-loopback'       => { name => 'no_loopback', },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} ne "RU"' },
+        'units:s'            => { name => 'units', default => 'b/s' },
+        'speed:s'            => { name => 'speed' },
+        'no-loopback'        => { name => 'no_loopback', },
+        'unknown-status:s'   => { name => 'unknown_status', default => '' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '%{status} ne "RU"' },
     });
     
     return $self;
@@ -236,7 +236,7 @@ sub manage_selection {
     $self->do_selection(custom => $options{custom});
     $self->{cache_name} = 'cache_linux_local_' . $options{custom}->get_identifier() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_interface}) ? md5_hex($self->{option_results}->{filter_interface}) : md5_hex('all'));
 }
 
 1;
