@@ -128,14 +128,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-state:s'    => { name => 'filter_state', },
-        'name:s'            => { name => 'name' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' },
-        'no-loopback'       => { name => 'no_loopback', },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '' },
-        'critical-status:s' => { name => 'critical_status', default => '%{status} ne "RU"' }
+        'filter-state:s'     => { name => 'filter_state', },
+        'filter-interface:s' => { name => 'filter_interface' },
+        'no-loopback'        => { name => 'no_loopback', },
+        'unknown-status:s'   => { name => 'unknown_status', default => '' },
+        'warning-status:s'   => { name => 'warning_status', default => '' },
+        'critical-status:s'  => { name => 'critical_status', default => '%{status} ne "RU"' }
     });
 
     return $self;
@@ -197,14 +195,9 @@ sub do_selection {
 
         next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $states !~ /$self->{option_results}->{filter_state}/);
-
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-            && $interface_name !~ /$self->{option_results}->{name}/i);
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-            && $interface_name !~ /$self->{option_results}->{name}/);
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-            && $interface_name ne $self->{option_results}->{name});
+            $states !~ /$self->{option_results}->{filter_state}/);
+        next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
+            $interface_name !~ /$self->{option_results}->{filter_interface}/);
 
         $self->{interface}->{$interface_name} = {
             display => $interface_name,
@@ -300,17 +293,9 @@ in-error, out-error, in-discard, out-discard
 Threshold critical in percent of total packets. Can be:
 in-error, out-error, in-discard, out-discard
 
-=item B<--name>
+=item B<--filter-interface>
 
-Set the interface name (empty means 'check all interfaces')
-
-=item B<--regexp>
-
-Allows to use regexp to filter storage mount point (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Filter interface name (regexp can be used).
 
 =item B<--filter-state>
 

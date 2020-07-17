@@ -123,7 +123,7 @@ Threshold critical in percent.
 
 =item B<--filter-mountpoint>
 
-Filter filesystem (regexp can be used).
+Filter filesystem mount point (regexp can be used).
 
 =item B<--filter-type>
 

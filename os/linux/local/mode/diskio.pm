@@ -140,12 +140,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'name:s'                => { name => 'name' },
-        'regexp'                => { name => 'use_regexp' },
-        'regexp-isensitive'     => { name => 'use_regexpi' },
-        'interrupt-frequency:s' => { name => 'interrupt_frequency', default => 1000 },
-        'bytes-per-sector:s'    => { name => 'bytes_per_sector', default => 512 },
-        'skip'                  => { name => 'skip' }
+        'filter-partition-name:s' => { name => 'filter_partition_name' },
+        'interrupt-frequency:s'   => { name => 'interrupt_frequency', default => 1000 },
+        'bytes-per-sector:s'      => { name => 'bytes_per_sector', default => 512 },
+        'skip'                    => { name => 'skip' }
     });
 
     return $self;
@@ -175,12 +173,8 @@ sub manage_selection {
     while ($disk_parts =~ /^\s*\S+\s+\S+\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+\S+\s+(\S+)\s*/msg) {
         my ($partition_name, $read_sector, $write_sector, $read_ms, $write_ms, $ms_ticks) = ($1, $2, $4, $3, $5, $6);
 
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-            && $partition_name !~ /$self->{option_results}->{name}/i);
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-            && $partition_name !~ /$self->{option_results}->{name}/);
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-            && $partition_name ne $self->{option_results}->{name});
+        next if (defined($self->{option_results}->{filter_partition_name}) && $self->{option_results}->{filter_partition_name} ne '' &&
+            $partition_name !~ /$self->{option_results}->{filter_partition_name}/);
 
         if (defined($self->{option_results}->{skip}) && $read_sector == 0 && $write_sector == 0) {
             $self->{output}->output_add(long_msg => "skipping device '" . $partition_name . "': no read/write IO.", debug => 1);
@@ -213,7 +207,7 @@ sub manage_selection {
 
     $self->{cache_name} = 'cache_linux_local_' . $options{custom}->get_identifier()  . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
-        (defined($self->{option_results}->{name}) ? md5_hex($self->{option_results}->{name}) : md5_hex('all'));
+        (defined($self->{option_results}->{filter_partition_name}) ? md5_hex($self->{option_results}->{filter_partition_name}) : md5_hex('all'));
 }
 
 1;
@@ -276,17 +270,9 @@ Thresholds.
 Can be: 'read-usage', 'write-usage', 'read-time', 'write-time',
 'utils'.
 
-=item B<--name>
+=item B<--filter-partition-name>
 
-Set the partition name (empty means 'check all partitions')
-
-=item B<--regexp>
-
-Allows to use regexp to filter partition name (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Filter partition name (regexp can be used).
 
 =item B<--bytes-per-sector>
 

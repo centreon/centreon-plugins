@@ -129,12 +129,9 @@ sub new {
     $options{options}->add_options(arguments => {
         'filter-type:s'       => { name => 'filter_type', },
         'filter-fs:s'         => { name => 'filter_fs', },
+        'filter-mountpoint:s' => { name => 'filter_mountpoint' },
         'units:s'             => { name => 'units', default => '%' },
-        'free'                => { name => 'free' },
-        'name:s'              => { name => 'name' },
-        'regexp'              => { name => 'use_regexp' },
-        'regexp-isensitive'   => { name => 'use_regexpi' },
-        'space-reservation:s' => { name => 'space_reservation' }
+        'free'                => { name => 'free' }
     });
 
     return $self;
@@ -156,16 +153,11 @@ sub manage_selection {
         my ($fs, $type, $size, $used, $available, $percent, $mount) = ($1, $2, $3, $4, $5, $6, $7);
 
         next if (defined($self->{option_results}->{filter_fs}) && $self->{option_results}->{filter_fs} ne '' &&
-                 $fs !~ /$self->{option_results}->{filter_fs}/);
+            $fs !~ /$self->{option_results}->{filter_fs}/);
         next if (defined($self->{option_results}->{filter_type}) && $self->{option_results}->{filter_type} ne '' &&
-                 $type !~ /$self->{option_results}->{filter_type}/);
-
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-            && $mount !~ /$self->{option_results}->{name}/i);
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-            && $mount !~ /$self->{option_results}->{name}/);
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-            && $mount ne $self->{option_results}->{name});
+            $type !~ /$self->{option_results}->{filter_type}/);
+        next if (defined($self->{option_results}->{filter_mountpoint}) && $self->{option_results}->{filter_mountpoint} ne '' &&
+            $mount !~ /$self->{option_results}->{filter_mountpoint}/);
 
         $size *= 1024;
         if (defined($self->{option_results}->{space_reservation})) {
@@ -211,17 +203,9 @@ Units of thresholds (Default: '%') ('%', 'B').
 
 Thresholds are on free space left.
 
-=item B<--name>
+=item B<--filter-mountpoint>
 
-Set the storage mount point (empty means 'check all storages')
-
-=item B<--regexp>
-
-Allows to use regexp to filter storage mount point (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Filter filesystem mount point (regexp can be used).
 
 =item B<--filter-type>
 
