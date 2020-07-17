@@ -137,10 +137,8 @@ sub new {
 
     $options{options}->add_options(arguments => {
         'filter-state:s'    => { name => 'filter_state', },
+        'filter-interface:s' => { name => 'filter_interface' },
         'units:s'           => { name => 'units', default => 'b/s' },
-        'name:s'            => { name => 'name' },
-        'regexp'            => { name => 'use_regexp' },
-        'regexp-isensitive' => { name => 'use_regexpi' },
         'speed:s'           => { name => 'speed' },
         'no-loopback'       => { name => 'no_loopback', },
         'unknown-status:s'  => { name => 'unknown_status', default => '' },
@@ -205,14 +203,9 @@ sub do_selection {
 
         next if (defined($self->{option_results}->{no_loopback}) && $values =~ /LOOPBACK/ms);
         next if (defined($self->{option_results}->{filter_state}) && $self->{option_results}->{filter_state} ne '' &&
-                 $states !~ /$self->{option_results}->{filter_state}/);
-
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && defined($self->{option_results}->{use_regexpi}) 
-            && $interface_name !~ /$self->{option_results}->{name}/i);
-        next if (defined($self->{option_results}->{name}) && defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi}) 
-            && $interface_name !~ /$self->{option_results}->{name}/);
-        next if (defined($self->{option_results}->{name}) && !defined($self->{option_results}->{use_regexp}) && !defined($self->{option_results}->{use_regexpi})
-            && $interface_name ne $self->{option_results}->{name});
+            $states !~ /$self->{option_results}->{filter_state}/);
+        next if (defined($self->{option_results}->{filter_interface}) && $self->{option_results}->{filter_interface} ne '' &&
+            $interface_name !~ /$self->{option_results}->{filter_interface}/);
 
         $self->{interface}->{$interface_name} = {
             display => $interface_name,
@@ -294,17 +287,9 @@ Can used special variables like: %{status}, %{display}
 Units of thresholds (Default: 'b/s') ('%', 'b/s').
 Percent can be used only if --speed is set.
 
-=item B<--name>
+=item B<--filter-interface>
 
-Set the interface name (empty means 'check all interfaces')
-
-=item B<--regexp>
-
-Allows to use regexp to filter intefaces (with option --name).
-
-=item B<--regexp-isensitive>
-
-Allows to use regexp non case-sensitive (with --regexp).
+Filter interface name (regexp can be used).
 
 =item B<--filter-state>
 
