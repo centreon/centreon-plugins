@@ -29,8 +29,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{namespace} = 'Microsoft.Compute';
-    $self->{type} = 'virtualMachines';
+    $self->{az_resource_namespace} = 'Microsoft.Compute';
+    $self->{az_resource_type} = 'virtualMachines';
 }
 
 1;

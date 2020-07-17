@@ -29,8 +29,8 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{namespace} = 'Microsoft.Storage';
-    $self->{type} = 'storageAccounts';
+    $self->{az_resource_namespace} = 'Microsoft.Storage';
+    $self->{az_resource_type} = 'storageAccounts';
 }
 
 1;

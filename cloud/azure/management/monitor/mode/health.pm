@@ -68,12 +68,14 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "resource:s"        => { name => 'resource' },
-        "resource-group:s"  => { name => 'resource_group' },
-        "warning-status:s"  => { name => 'warning_status', default => '' },
-        "critical-status:s" => { name => 'critical_status', default => '%{status} =~ /^Unavailable$/' },
-        "unknown-status:s"  => { name => 'unknown_status', default => '' },
-        "ok-status:s"       => { name => 'ok_status', default => '%{status} =~ /^Available$/' },
+        "resource:s"            => { name => 'resource' },
+        "resource-group:s"      => { name => 'resource_group' },
+        "resource-type:s"       => { name => 'resource_type' },
+        "resource-namespace:s"  => { name => 'resource_namespace' },
+        "warning-status:s"      => { name => 'warning_status', default => '' },
+        "critical-status:s"     => { name => 'critical_status', default => '%{status} =~ /^Unavailable$/' },
+        "unknown-status:s"      => { name => 'unknown_status', default => '' },
+        "ok-status:s"           => { name => 'ok_status', default => '%{status} =~ /^Available$/' },
     });
     
     return $self;
@@ -83,15 +85,22 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    $self->{option_results}->{api_version} = '2017-07-01';
-
     if (!defined($self->{option_results}->{resource})) {
-        $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group option or --resource <id>.");
+        $self->{output}->add_option_msg(short_msg => "Need to specify either --resource <name> with --resource-group, --resource-type and --resource-namespace options or --resource <id>.");
         $self->{output}->option_exit();
     }
-    
+
     $self->{az_resource} = $self->{option_results}->{resource};
-    $self->{az_resource_group} = $self->{option_results}->{resource_group} if (defined($self->{option_results}->{resource_group}));
+    $self->{az_resource_group} = $self->{option_results}->{resource_group};
+    $self->{az_resource_type} = $self->{option_results}->{resource_type};
+    $self->{az_resource_namespace} = $self->{option_results}->{resource_namespace};
+
+    if ($self->{az_resource} =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/(.*)\/(.*)\/(.*)$/) {
+        $self->{az_resource_group} = $1;
+        $self->{az_resource_namespace} = $2;
+        $self->{az_resource_type} = $3;
+        $self->{az_resource} = $4;
+    }
 
     $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status', 'ok_status']);
 }
@@ -99,18 +108,12 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $resource_group = $self->{az_resource_group};
-    my $resource_name = $self->{az_resource};
-    if ($self->{az_resource} =~ /^\/subscriptions\/.*\/resourceGroups\/(.*)\/providers\/Microsoft\.Compute\/virtualMachines\/(.*)$/i) {
-        $resource_group = $1;
-        $resource_name = $2;
-    }
-
     my $status = $options{custom}->azure_get_resource_health(
-        resource => $resource_name,
-        resource_group => $resource_group,
-        resource_type => $self->{type},
-        resource_namespace => $self->{namespace}
+        resource => $self->{az_resource},
+        resource_group => $self->{az_resource_group},
+        resource_type => $self->{az_resource_type},
+        resource_namespace => $self->{az_resource_namespace},
+        api_version => '2020-05-01'
     );
 
     $self->{health} = {
@@ -125,23 +128,7 @@ __END__
 
 =head1 MODE
 
-Check virtual machine resources CPU metrics.
-
-Example:
-
-Using resource name :
-
-perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=cpu
---resource=MYSQLINSTANCE --resource-group=MYHOSTGROUP --filter-metric='Credits' --aggregation='average'
---critical-cpu-credits-remaining-average='10' --verbose
-
-Using resource id :
-
-perl centreon_plugins.pl --plugin=cloud::azure::compute::virtualmachine::plugin --custommode=azcli --mode=cpu
---resource='/subscriptions/xxx/resourceGroups/xxx/providers/Microsoft.Compute/virtualMachines/xxx'
---filter-metric='Credits' --aggregation='average' --critical-cpu-credits-remaining-average='10' --verbose
-
-Default aggregation: 'average' / All aggregations are valid.
+Check resource health status. Usefull to determine host status (ie UP/DOWN).
 
 =over 8
 
@@ -153,20 +140,13 @@ Set resource name or id (Required).
 
 Set resource group (Required if resource's name is used).
 
-=item B<--filter-metric>
+=item B<--resource-namespace>
 
-Filter metrics (Can be: 'CPU Credits Remaining', 'CPU Credits Consumed',
-'Percentage CPU') (Can be a regexp).
+Set resource namespace (Required if resource's name is used).
 
-=item B<--warning-$metric$-$aggregation$>
+=item B<--resource-type>
 
-Thresholds warning ($metric$ can be: 'cpu-credits-remaining', 'cpu-credits-consumed', 
-'percentage-cpu', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
-
-=item B<--critical-$metric$-$aggregation$>
-
-Thresholds critical ($metric$ can be: 'cpu-credits-remaining', 'cpu-credits-consumed', 
-'percentage-cpu', $aggregation$ can be: 'minimum', 'maximum', 'average', 'total').
+Set resource type (Required if resource's name is used).
 
 =back
 
