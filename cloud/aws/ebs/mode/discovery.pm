@@ -52,7 +52,6 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $volumes = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
         service => 'ec2',
         command => 'describe-volumes'
     );

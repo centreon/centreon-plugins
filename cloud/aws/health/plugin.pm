@@ -34,6 +34,11 @@ sub new {
         'events'  => 'cloud::aws::health::mode::events'
     };
 
+    $self->{customdefault} = {
+        paws   => { region => 'us-east-1' },
+        awscli => { region => 'us-east-1' }
+    };
+
     $self->{custom_modes}->{paws} = 'cloud::aws::custom::paws';
     $self->{custom_modes}->{awscli} = 'cloud::aws::custom::awscli';
     return $self;

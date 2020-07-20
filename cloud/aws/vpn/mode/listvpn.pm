@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{connection} = $options{custom}->vpn_list_connections(region => $self->{option_results}->{region});
+    $self->{connection} = $options{custom}->vpn_list_connections();
 }
 
 sub run {

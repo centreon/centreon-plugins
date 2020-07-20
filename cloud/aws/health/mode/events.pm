@@ -99,7 +99,7 @@ sub check_options {
         $self->{filter_options}->{'filter_' . $_} = undef;
         if (defined($self->{option_results}->{'filter_' . $_})) {
             foreach my $option (@{$self->{option_results}->{'filter_' . $_}}) {
-                next if ($options eq '');
+                next if ($option eq '');
 
                 $self->{filter_options}->{'filter_' . $_} = [] if (!defined($self->{'filter_' . $_}));
                 push @{$self->{filter_options}->{'filter_' . $_}}, $option;
@@ -116,18 +116,41 @@ sub manage_selection {
     );
 
     $self->{global} = { total => 0, open => 0, closed => 0, upcoming => 0 };
+    my $events = {};
     foreach my $entry (@$results) {
         $self->{global}->{ lc($entry->{statusCode}) }++;
         $self->{global}->{total}++;
 
+        $events->{ $entry->{arn} } = $entry;
+    }
+
+    my $affected_entities;
+    my @event_arns = sort { $events->{$b}->{startTime} cmp $events->{$a}->{startTime} } keys %$events;
+    if (scalar(@event_arns) > 0) {
+        $affected_entities = $options{custom}->health_describe_affected_entities(filter_event_arns => \@event_arns);
+    }
+
+    foreach (@event_arns) {
+        my $entity = '';
+        if (defined($affected_entities)) {
+            $entity = '[affected entity: -]';
+            foreach my $affected (@$affected_entities) {
+                if ($events->{$_}->{arn} eq $affected->{eventArn}) {
+                    $entity = '[affected entity: ' . $affected->{entityValue} . ']';
+                    last;
+                }
+            }
+        }
+
         $self->{output}->output_add(long_msg => 
             sprintf(
-                '[service: %s][region: %s][status: %s][type: %s][start: %s]',
-                $entry->{service},
-                $entry->{region},
-                $entry->{statusCode},
-                $entry->{eventTypeCode},
-                $entry->{startTime}
+                '[service: %s][region: %s][status: %s][type: %s][start: %s]%s',
+                $events->{$_}->{service},
+                $events->{$_}->{region},
+                $events->{$_}->{statusCode},
+                $events->{$_}->{eventTypeCode},
+                $events->{$_}->{startTime},
+                $entity
             )
         );
     }

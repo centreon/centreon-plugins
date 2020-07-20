@@ -52,7 +52,6 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $buckets = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
         service => 's3api',
         command => 'list-buckets'
     );

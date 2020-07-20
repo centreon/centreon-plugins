@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{instances} = $options{custom}->ec2_list_resources(region => $self->{option_results}->{region});
+    $self->{instances} = $options{custom}->ec2_list_resources();
 }
 
 sub run {

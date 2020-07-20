@@ -68,8 +68,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments =>  {
-        'region:s'                      => { name => 'region' },
-        'spot-fleet-request-id:s'       => { name => 'spot_fleet_request_id' }
+        'spot-fleet-request-id:s' => { name => 'spot_fleet_request_id' }
     });
 
     return $self;
@@ -78,11 +77,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 
     if (!defined($self->{option_results}->{spot_fleet_request_id}) || $self->{option_results}->{spot_fleet_request_id} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --spot-fleet-request-id option.");
@@ -95,7 +89,7 @@ sub manage_selection {
     my ($self, %options) = @_;
  
     $self->{global} = { active => 0, healthy => 0, unhealthy => 0 };
-    $self->{instances} = $options{custom}->ec2spot_get_active_instances_status(region => $self->{option_results}->{region}, spot_fleet_request_id => $self->{option_results}->{spot_fleet_request_id});
+    $self->{instances} = $options{custom}->ec2spot_get_active_instances_status(spot_fleet_request_id => $self->{option_results}->{spot_fleet_request_id});
 
     foreach my $instance_id (keys %{$self->{instances}}) {
         $self->{global}->{active}++;

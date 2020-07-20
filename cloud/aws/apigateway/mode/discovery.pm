@@ -32,7 +32,7 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "prettify"  => { name => 'prettify' },
+        "prettify"  => { name => 'prettify' }
     });
     
     return $self;
@@ -52,7 +52,6 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $apis = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
         service => 'apigateway',
         command => 'get-rest-apis'
     );

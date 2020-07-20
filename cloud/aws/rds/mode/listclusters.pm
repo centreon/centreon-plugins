@@ -45,7 +45,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{instances} = $options{custom}->rds_list_clusters(region => $self->{option_results}->{region});
+    $self->{instances} = $options{custom}->rds_list_clusters();
 }
 
 sub run {

@@ -55,7 +55,6 @@ sub run {
     my %asgs;
 
     my $instances = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
         service => 'ec2',
         command => 'describe-instances'
     );

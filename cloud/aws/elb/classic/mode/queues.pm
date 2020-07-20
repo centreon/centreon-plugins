@@ -177,7 +177,6 @@ sub manage_selection {
             push @{$self->{aws_dimensions}}, { Name => 'AvailabilityZone', Value => $self->{option_results}->{availability_zone} };
         }
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/ELB',
             dimensions => $self->{aws_dimensions},
             metrics => $self->{aws_metrics},

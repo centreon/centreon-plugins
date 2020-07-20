@@ -47,7 +47,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{metrics} = $options{custom}->cloudwatch_list_metrics(
-        region => $self->{option_results}->{region},
         namespace => $self->{option_results}->{namespace},
         metric => $self->{option_results}->{metric}
     );

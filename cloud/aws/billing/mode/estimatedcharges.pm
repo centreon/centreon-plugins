@@ -88,7 +88,6 @@ sub manage_selection {
 
     foreach my $service (@{$self->{option_results}->{service}}) {
         my $metric_results = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/Billing',
             dimensions => [
                 { Name => 'ServiceName', Value => $service },
