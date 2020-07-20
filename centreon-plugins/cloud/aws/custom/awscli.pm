@@ -641,6 +641,38 @@ sub vpn_list_connections {
     return $connections_results;
 }
 
+sub health_describe_events_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "health describe-events --region $self->{option_results}->{region} --output json";
+
+    my ($filter, $filter_append) = ('', '');
+    foreach ((['service', 'services'], ['region', 'regions'], ['entity_value', 'entityValues'], ['event_status', 'eventStatusCodes'])) {
+        next if (!defined($options{ $_->[0] }));
+
+        foreach my $entry (@{$options{ $_->[0] }}) {
+            $filter .= $filter_append . $_->[1] . '=' . $entry;
+            $filter_append = ',';
+        }
+    }
+
+    $cmd_options .= " --filter '$filter'" if ($filter ne '');
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options;
+}
+
+sub health_describe_events {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->health_describe_events_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results->{events};
+}
+
 1;
 
 __END__
