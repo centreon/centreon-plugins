@@ -64,13 +64,11 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "region:s"        => { name => 'region' },
-                                    "name:s@"	      => { name => 'name' },
-                                    "node-id:s" 	  => { name => 'node_id' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "name:s@"	      => { name => 'name' },
+        "node-id:s" 	  => { name => 'node_id' },
+    });
+
     return $self;
 }
 
@@ -115,13 +113,12 @@ sub manage_selection {
             push @{$self->{aws_dimensions}}, { Name => 'CacheNodeId', Value => $self->{option_results}->{node_id} };
         }
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/ElastiCache',
             dimensions => $self->{aws_dimensions},
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
-            period => $self->{aws_period},
+            period => $self->{aws_period}
         );
 
         foreach my $metric (@{$self->{aws_metrics}}) {

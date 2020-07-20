@@ -52,7 +52,6 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $streams = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
         service => 'kinesis',
         command => 'list-streams'
     );

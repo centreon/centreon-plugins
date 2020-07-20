@@ -30,13 +30,18 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{ $self->{modes} } = (
-        'estimated-charges'     => 'cloud::aws::billing::mode::estimatedcharges',
-        'list-services'         => 'cloud::aws::billing::mode::listservices',
-    );
+    $self->{modes} = {
+        'estimated-charges' => 'cloud::aws::billing::mode::estimatedcharges',
+        'list-services'     => 'cloud::aws::billing::mode::listservices'
+    };
 
-    $self->{custom_modes}{paws} = 'cloud::aws::custom::paws';
-    $self->{custom_modes}{awscli} = 'cloud::aws::custom::awscli';
+    $self->{customdefault} = {
+        paws   => { region => 'us-east-1' },
+        awscli => { region => 'us-east-1' }
+    };
+
+    $self->{custom_modes}->{paws} = 'cloud::aws::custom::paws';
+    $self->{custom_modes}->{awscli} = 'cloud::aws::custom::awscli';
     return $self;
 }
 

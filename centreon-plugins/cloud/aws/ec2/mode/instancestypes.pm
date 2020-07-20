@@ -151,23 +151,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments =>  {
-        "region:s"          => { name => 'region' },
         "filter-family:s"   => { name => 'filter_family' },
         "filter-type:s"     => { name => 'filter_type' },
-        "running"           => { name => 'running' },
+        "running"           => { name => 'running' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 }
 
 sub manage_selection {
@@ -189,7 +178,7 @@ sub manage_selection {
         }
     }
 
-    $self->{instances} = $options{custom}->ec2_list_resources(region => $self->{option_results}->{region});
+    $self->{instances} = $options{custom}->ec2_list_resources();
 
     foreach my $instance (@{$self->{instances}}) {
         next if ($instance->{Type} !~ /instance/ || (defined($self->{option_results}->{running}) && $instance->{State} !~ /running/));

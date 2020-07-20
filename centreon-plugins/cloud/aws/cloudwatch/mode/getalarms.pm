@@ -107,9 +107,7 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{alarms}->{global} = { alarm => {} };
-    my $alarm_results = $options{custom}->cloudwatch_get_alarms(
-        region => $self->{option_results}->{region},
-    );
+    my $alarm_results = $options{custom}->cloudwatch_get_alarms();
 
     my $last_time;
     if (defined($self->{option_results}->{memory})) {

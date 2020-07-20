@@ -52,7 +52,6 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $load_balancers = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
         service => 'elbv2',
         command => 'describe-load-balancers'
     );

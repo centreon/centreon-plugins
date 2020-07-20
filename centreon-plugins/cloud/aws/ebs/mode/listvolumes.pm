@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{volume} = $options{custom}->ebs_list_volumes(region => $self->{option_results}->{region});
+    $self->{volume} = $options{custom}->ebs_list_volumes();
 }
 
 sub run {

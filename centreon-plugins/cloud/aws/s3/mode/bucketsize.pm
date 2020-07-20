@@ -124,13 +124,12 @@ sub manage_selection {
     foreach my $instance (@{$self->{aws_instance}}) {
         foreach my $storage_type (@{$self->{aws_storage_type}}) {
             $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-                region => $self->{option_results}->{region},
                 namespace => 'AWS/S3',
                 dimensions => [ {Name => 'StorageType', Value => $storage_type }, { Name => 'BucketName', Value => $instance } ],
                 metrics => $self->{aws_metrics},
                 statistics => $self->{aws_statistics},
                 timeframe => $self->{aws_timeframe},
-                period => $self->{aws_period},
+                period => $self->{aws_period}
             );
             
             foreach my $metric (@{$self->{aws_metrics}}) {

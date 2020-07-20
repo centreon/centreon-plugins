@@ -166,7 +166,6 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     my $metric_results = $options{custom}->cloudwatch_get_metrics(
-        region => $self->{option_results}->{region},
         namespace => $self->{option_results}->{namespace},
         dimensions => $self->{aws_dimensions},
         metrics => $self->{aws_metrics},

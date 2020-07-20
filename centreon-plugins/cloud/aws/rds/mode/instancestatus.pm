@@ -118,24 +118,18 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "filter-instanceid:s" => { name => 'filter_instanceid' },
-                                    "warning-status:s"    => { name => 'warning_status', default => '' },
-                                    "critical-status:s"   => { name => 'critical_status', default => '' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        "filter-instanceid:s" => { name => 'filter_instanceid' },
+        "warning-status:s"    => { name => 'warning_status', default => '' },
+        "critical-status:s"   => { name => 'critical_status', default => '' },
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
@@ -159,7 +153,7 @@ sub manage_selection {
         available => 0, 'backing-up' => 0, failed => 0, maintenance => 0, stopped => 0, 'storage-full' => 0,
     };
     $self->{aws_instances} = {};
-    my $result = $options{custom}->rds_get_instances_status(region => $self->{option_results}->{region});
+    my $result = $options{custom}->rds_get_instances_status();
     foreach my $instance_id (keys %{$result}) {
         if (defined($self->{option_results}->{filter_instanceid}) && $self->{option_results}->{filter_instanceid} ne '' &&
             $instance_id !~ /$self->{option_results}->{filter_instanceid}/) {

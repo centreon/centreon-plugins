@@ -120,7 +120,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        "region:s"              => { name => 'region' },
         "filter-asg:s"          => { name => 'filter_asg', default => '' },
         "warning-instances:s"   => { name => 'warning_instances', default => '' },
         "critical-instances:s"  => { name => 'critical_instances',
@@ -134,11 +133,6 @@ sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
-
     $self->change_macros(macros => ['warning_instances', 'critical_instances']);
 }
 
@@ -147,7 +141,7 @@ sub manage_selection {
 
     $self->{aws_autoscaling_groups} = {};
 
-    my $result = $options{custom}->asg_get_resources(region => $self->{option_results}->{region});
+    my $result = $options{custom}->asg_get_resources();
 
     foreach my $asg (@{$result}) {
         my $instance_count = 0;

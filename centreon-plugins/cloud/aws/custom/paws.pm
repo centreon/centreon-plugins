@@ -56,6 +56,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'PAWS OPTIONS', once => 1);
 
     $self->{output} = $options{output};
+    $self->{custommode_name} = $options{custommode_name};
 
     return $self;
 }
@@ -72,7 +73,31 @@ sub set_options {
     $self->{option_results} = $options{option_results};
 }
 
-sub set_defaults {}
+sub set_defaults {
+    my ($self, %options) = @_;
+
+    foreach (keys %{$options{default}}) {
+        if ($_ eq $self->{custommode_name}) {
+            if (ref($options{default}->{$_}) eq 'ARRAY') {
+                for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
+                    foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
+                        if (!defined($self->{option_results}->{$opt}[$i])) {
+                            $self->{option_results}->{$opt}[$i] = $options{default}->{$_}[$i]->{$opt};
+                        }
+                    }
+                }
+            }
+            
+            if (ref($options{default}->{$_}) eq 'HASH') {
+                foreach my $opt (keys %{$options{default}->{$_}}) {
+                    if (!defined($self->{option_results}->{$opt})) {
+                        $self->{option_results}->{$opt} = $options{default}->{$_}->{$opt};
+                    }
+                }
+            }
+        }
+    }  
+}
 
 sub check_options {
     my ($self, %options) = @_;
@@ -93,7 +118,7 @@ sub check_options {
     }
 
     if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --region option.');
         $self->{output}->option_exit();
     }
 
@@ -115,7 +140,7 @@ sub cloudwatch_get_metrics {
     my $metric_results = {};
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $options{region});
+        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $start_time = DateTime->now->subtract(seconds => $options{timeframe})->iso8601;
         my $end_time = DateTime->now->iso8601;
 
@@ -173,7 +198,7 @@ sub cloudwatch_get_alarms {
     my $alarm_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $options{region});
+        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $alarms = $cw->DescribeAlarms();
         foreach my $alarm (@{$alarms->{MetricAlarms}}) {
             push @$alarm_results, {
@@ -198,7 +223,7 @@ sub cloudwatch_list_metrics {
     my $metric_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $options{region});
+        my $cw = Paws->service('CloudWatch', caller => $lwp_caller, region => $self->{option_results}->{region});
         my %cw_options = ();
         $cw_options{Namespace} = $options{namespace} if (defined($options{namespace}));
         $cw_options{MetricName} = $options{metric} if (defined($options{metric}));
@@ -233,7 +258,7 @@ sub cloudwatchlogs_describe_log_groups {
     my $log_groups_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $cw = Paws->service('CloudWatchLogs', caller => $lwp_caller, region => $options{region});
+        my $cw = Paws->service('CloudWatchLogs', caller => $lwp_caller, region => $self->{option_results}->{region});
         my %cw_options = ();
         while ((my $list_log_groups = $cw->DescribeLogGroups(%cw_options))) {
             foreach (@{$list_log_groups->{logGroups}}) {
@@ -258,7 +283,7 @@ sub cloudwatchlogs_filter_log_events {
     my $log_groups_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $cw = Paws->service('CloudWatchLogs', caller => $lwp_caller, region => $options{region});
+        my $cw = Paws->service('CloudWatchLogs', caller => $lwp_caller, region => $self->{option_results}->{region});
         my %cw_options = ();
         $cw_options{StartTime} = $options{start_time} if (defined($options{start_time}));
         $cw_options{LogStreamNames} = [@{$options{LogStreamNames}}] if (defined($options{LogStreamNames}));
@@ -285,7 +310,7 @@ sub ebs_list_volumes {
     my $volume_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $ebsvolume = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $ebsvolume = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $ebsvolume_requests = $ebsvolume->DescribeVolumes(DryRun => 0);
         foreach my $request (@{$ebsvolume_requests->{Volumes}}) {
             my @name_tags;
@@ -316,7 +341,7 @@ sub ec2_get_instances_status {
     my $instance_results = {};
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $instances = $ec2->DescribeInstanceStatus(DryRun => 0, IncludeAllInstances => 1);
 
         foreach (@{$instances->{InstanceStatuses}}) {
@@ -340,7 +365,7 @@ sub ec2spot_get_active_instances {
     my $instance_results = {};
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $instances = $ec2->DescribeSpotFleetInstances('SpotFleetRequestId' => $options{spot_fleet_request_id}, DryRun => 0, IncludeAllInstances => 1);
 
         foreach (@{$instances->{ActiveInstances}}) {
@@ -364,7 +389,7 @@ sub ec2spot_list_fleet_requests {
     my $resource_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $ec2spot = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $ec2spot = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $spot_fleet_requests = $ec2spot->DescribeSpotFleetRequests(DryRun => 0);
 
         foreach (@{$spot_fleet_requests->{SpotFleetRequestConfigs}}) {
@@ -389,7 +414,7 @@ sub ec2_list_resources {
     my $resource_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $ec2 = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $list_instances = $ec2->DescribeInstances(DryRun => 0);
 
         foreach my $reservation (@{$list_instances->{Reservations}}) {
@@ -433,7 +458,7 @@ sub asg_get_resources {
     my $autoscaling_groups = {};
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $asg = Paws->service('AutoScaling', caller => $lwp_caller, region => $options{region});
+        my $asg = Paws->service('AutoScaling', caller => $lwp_caller, region => $self->{option_results}->{region});
         $autoscaling_groups = $asg->DescribeAutoScalingGroups();
     };
     if ($@) {
@@ -450,7 +475,7 @@ sub rds_get_instances_status {
     my $instance_results = {};
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
+        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $instances = $rds->DescribeDBInstances();
         foreach (@{$instances->{DBInstances}}) {
             $instance_results->{$_->{DBInstanceIdentifier}} = { state => $_->{DBInstanceStatus} };
@@ -470,7 +495,7 @@ sub rds_list_instances {
     my $instance_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
+        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $list_instances = $rds->DescribeDBInstances();
 
         foreach my $instance (@{$list_instances->{DBInstances}}) {
@@ -497,7 +522,7 @@ sub rds_list_clusters {
     my $cluster_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $options{region});
+        my $rds = Paws->service('RDS', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $list_clusters = $rds->DescribeDBClusters();
 
         foreach my $cluster (@{$list_clusters->{DBClusters}}) {
@@ -522,7 +547,7 @@ sub vpn_list_connections {
     my $connections_results = [];
     eval {
         my $lwp_caller = new Paws::Net::LWPCaller();
-        my $vpn = Paws->service('EC2', caller => $lwp_caller, region => $options{region});
+        my $vpn = Paws->service('EC2', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $list_vpn = $vpn->DescribeVpnConnections();
         foreach my $connection (@{$list_vpn->{VpnConnections}}) {
             my @name_tags;
@@ -544,6 +569,81 @@ sub vpn_list_connections {
     }
 
     return $connections_results;
+}
+
+sub health_describe_events {
+    my ($self, %options) = @_;
+
+    my $event_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $health = Paws->service('Health', caller => $lwp_caller, region => $self->{option_results}->{region});
+        my $health_options = { Filter => {} };
+        foreach ((['service', 'Services'], ['region', 'Regions'], ['entity_value', 'EntityValues'], ['event_status', 'EventStatusCodes'])) {
+            next if (!defined($options{ $_->[0] }));
+            $health_options->{Filter}->{ $_->[1] } = $_->[0];
+        }
+
+        while ((my $events = $health->DescribeEvents(%$health_options))) {
+            foreach (@{$events->{Events}}) {
+                push @$event_results, {
+                    arn => $_->{Arn},
+                    service => $_->{Service},
+                    eventTypeCode => $_->{EventTypeCode},
+                    eventTypeCategory => $_->{EventTypeCategory},
+                    region => $_->{Region},
+                    startTime => $_->{StartTime},
+                    lastUpdatedTime => $_->{LastUpdatedTime},
+                    statusCode => $_->{StatusCode}
+                };
+            }
+
+            last if (!defined($events->{NextToken}));
+            $health_options->{NextToken} = $events->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $event_results;
+}
+
+sub health_describe_affected_entities {
+    my ($self, %options) = @_;
+
+    my $entities_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $health = Paws->service('Health', caller => $lwp_caller, region => $self->{option_results}->{region});
+        my $health_options = { Filter => {} };
+        if (defined($options{filter_event_arns})) {
+            $health_options->{Filter}->{EventArns} = $options{filter_event_arns};
+        }
+
+        while ((my $entities = $health->DescribeAffectedEntities(%$health_options))) {
+            foreach (@{$entities->{Entities}}) {
+                push @$entities_results, {
+                    entityArn => $_->{EntityArn},
+                    eventArn => $_->{EventArn},
+                    entityValue => $_->{EntityValue},
+                    awsAccountId => $_->{AwsAccountId},
+                    lastUpdatedTime => $_->{LastUpdatedTime},
+                    statusCode => $_->{StatusCode}
+                };
+            }
+
+            last if (!defined($entities->{NextToken}));
+            $health_options->{NextToken} = $entities->{NextToken};
+        }
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $entities_results;
 }
 
 1;

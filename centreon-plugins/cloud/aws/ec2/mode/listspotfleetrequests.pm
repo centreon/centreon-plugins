@@ -43,7 +43,7 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{spot_fleet_requests} = $options{custom}->ec2spot_list_fleet_requests(region => $self->{option_results}->{region});
+    $self->{spot_fleet_requests} = $options{custom}->ec2spot_list_fleet_requests();
 }
 
 sub run {

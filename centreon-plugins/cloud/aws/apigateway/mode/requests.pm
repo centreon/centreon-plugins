@@ -141,7 +141,6 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/ApiGateway',
             dimensions => [ { Name => 'ApiName', Value => $instance } ],
             metrics => $self->{aws_metrics},

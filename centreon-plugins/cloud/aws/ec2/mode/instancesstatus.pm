@@ -120,10 +120,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "region:s"            => { name => 'region' },
         "filter-instanceid:s" => { name => 'filter_instanceid' },
         "warning-status:s"    => { name => 'warning_status', default => '' },
-        "critical-status:s"   => { name => 'critical_status', default => '' },
+        "critical-status:s"   => { name => 'critical_status', default => '' }
     });
     
     return $self;
@@ -132,11 +131,6 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
@@ -160,7 +154,7 @@ sub manage_selection {
         pending => 0, running => 0, 'shutting-down' => 0, terminated => 0, stopping => 0, stopped => 0,
     };
     $self->{aws_instances} = {};
-    my $result = $options{custom}->ec2_get_instances_status(region => $self->{option_results}->{region});
+    my $result = $options{custom}->ec2_get_instances_status();
     foreach my $instance_id (keys %{$result}) {
         if (defined($self->{option_results}->{filter_instanceid}) && $self->{option_results}->{filter_instanceid} ne '' &&
             $instance_id !~ /$self->{option_results}->{filter_instanceid}/) {

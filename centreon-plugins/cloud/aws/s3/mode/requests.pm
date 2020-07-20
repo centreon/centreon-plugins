@@ -59,23 +59,17 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                    "name:s@"	       => { name => 'name' },
-                                    "filter-metric:s"  => { name => 'filter_metric' },
-                                });
-    
+    $options{options}->add_options(arguments => {
+        'name:s@'	      => { name => 'name' },
+        'filter-metric:s' => { name => 'filter_metric' }
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-
-    if (!defined($self->{option_results}->{region}) || $self->{option_results}->{region} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --region option.");
-        $self->{output}->option_exit();
-    }
 
     if (!defined($self->{option_results}->{name}) || $self->{option_results}->{name} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify --name option.");
@@ -108,13 +102,12 @@ sub manage_selection {
     my %metric_results;
     foreach my $instance (@{$self->{aws_instance}}) {
         $metric_results{$instance} = $options{custom}->cloudwatch_get_metrics(
-            region => $self->{option_results}->{region},
             namespace => 'AWS/S3',
             dimensions => [ { Name => 'BucketName', Value => $instance } ],
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
-            period => $self->{aws_period},
+            period => $self->{aws_period}
         );
         
         foreach my $metric (@{$self->{aws_metrics}}) {

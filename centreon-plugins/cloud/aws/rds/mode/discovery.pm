@@ -52,7 +52,6 @@ sub run {
     $disco_stats->{start_time} = time();
 
     my $db_instances = $options{custom}->discovery(
-        region => $self->{option_results}->{region},
         service => 'rds',
         command => 'describe-db-instances'
     );
