@@ -579,7 +579,7 @@ sub health_describe_events {
         my $lwp_caller = new Paws::Net::LWPCaller();
         my $health = Paws->service('Health', caller => $lwp_caller, region => $self->{option_results}->{region});
         my $health_options = { Filter => {} };
-        foreach ((['service', 'Services'], ['region', 'Regions'], ['entity_value', 'EntityValues'], ['event_status', 'EventStatusCodes'])) {
+        foreach ((['service', 'Services'], ['region', 'Regions'], ['entity_value', 'EntityValues'], ['event_status', 'EventStatusCodes'], ['event_category', 'EventTypeCategories'])) {
             next if (!defined($options{ $_->[0] }));
             $health_options->{Filter}->{ $_->[1] } = $_->[0];
         }

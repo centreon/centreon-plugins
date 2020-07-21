@@ -35,8 +35,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'global', cb_prefix_output => 'prefix_global_output', type => 0 },
-        
+        { name => 'global', cb_prefix_output => 'prefix_global_output', type => 0 }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -56,7 +55,7 @@ sub set_counters {
                 ]
             }
         },
-         { label => 'closed', nlabel => 'events.closed.count', set => {
+        { label => 'closed', nlabel => 'events.closed.count', set => {
                 key_values => [ { name => 'closed' } ],
                 output_template => 'closed: %s',
                 perfdatas => [
@@ -81,10 +80,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-service:s@'      => { name => 'filter_service' },
-        'filter-region:s@'       => { name => 'filter_region' },
-        'filter-entity-value:s@' => { name => 'filter_entity_value' },
-        'filter-event-status:s@' => { name => 'filter_event_status' }
+        'filter-service:s@'         => { name => 'filter_service' },
+        'filter-region:s@'          => { name => 'filter_region' },
+        'filter-entity-value:s@'    => { name => 'filter_entity_value' },
+        'filter-event-status:s@'    => { name => 'filter_event_status' },
+        'filter-event-category:s@'  => { name => 'filter_event_category' },
+        'display-affected-entities' => { name => 'display_affected_entities' }
     });
 
     return $self;
@@ -95,7 +96,7 @@ sub check_options {
     $self->SUPER::check_options(%options);
 
     $self->{filter_options} = {};
-    foreach (('service', 'region', 'entity_value', 'event_status')) {
+    foreach (('service', 'region', 'entity_value', 'event_status', 'event_category')) {
         $self->{filter_options}->{'filter_' . $_} = undef;
         if (defined($self->{option_results}->{'filter_' . $_})) {
             foreach my $option (@{$self->{option_results}->{'filter_' . $_}}) {
@@ -126,8 +127,8 @@ sub manage_selection {
 
     my $affected_entities;
     my @event_arns = sort { $events->{$b}->{startTime} cmp $events->{$a}->{startTime} } keys %$events;
-    if (scalar(@event_arns) > 0) {
-        $affected_entities = $options{custom}->health_describe_affected_entities(filter_event_arns => \@event_arns);
+    if (scalar(@event_arns) > 0 && defined($self->{option_results}->{display_affected_entities})) {
+        $affected_entities = $options{custom}->health_describe_affected_entities(filter_event_arns => [@event_arns]);
     }
 
     foreach (@event_arns) {
@@ -185,6 +186,15 @@ Example: --filter-entity-value=i-34ab692e --filter-entity-value=vol-426ab23e
 
 Filter result by event status (multiple option).
 Example: --filter-event-status=open --filter-event-status=closed
+
+=item B<--filter-event-category>
+
+Filter result by event category (multiple option).
+Example: --filter-event-category=issue
+
+=item B<--display-affected-entities>
+
+Display affected entities by the event.
 
 =item B<--warning-*> B<--critical-*>
 
