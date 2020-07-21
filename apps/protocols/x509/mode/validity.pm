@@ -94,7 +94,9 @@ sub run {
         $self->{option_results}->{servername} ? ( SSL_hostname => $self->{option_results}->{servername} ):(),
     );
     if (!defined($client)) {
-        $self->{output}->output_add(severity => 'CRITICAL',
+        # The real purpose of this check is testing the certificate,
+        # so this is an UNKNOWN status error.
+        $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => "failed to accept or ssl handshake: $!,$SSL_ERROR");
         $self->{output}->display();
         $self->{output}->exit()
@@ -104,7 +106,9 @@ sub run {
     my $cert;
     eval { $cert = $client->peer_certificate() };
     if ($@) {
-        $self->{output}->output_add(severity => 'CRITICAL',
+        # The real purpose of this check is testing the certificate,
+        # so this is an UNKNOWN status error.
+        $self->{output}->output_add(severity => 'UNKNOWN',
                                     short_msg => sprintf("%s", $@));
         $self->{output}->display();
         $self->{output}->exit()
