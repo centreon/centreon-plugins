@@ -674,13 +674,11 @@ sub health_describe_events_set_cmd {
     my $cmd_options = "health describe-events --region $self->{option_results}->{region} --output json";
 
     my ($filter, $filter_append) = ('', '');
-    foreach ((['service', 'services'], ['region', 'regions'], ['entity_value', 'entityValues'], ['event_status', 'eventStatusCodes'])) {
-        next if (!defined($options{ $_->[0] }));
+    foreach ((['service', 'services'], ['region', 'regions'], ['entity_value', 'entityValues'], ['event_status', 'eventStatusCodes'], ['event_category', 'eventTypeCategories'])) {
+        next if (!defined($options{ 'filter_' . $_->[0] }));
 
-        foreach my $entry (@{$options{ $_->[0] }}) {
-            $filter .= $filter_append . $_->[1] . '=' . $entry;
-            $filter_append = ',';
-        }
+        $filter .= $filter_append . $_->[1] . '=' . join(',', @{$options{ 'filter_' . $_->[0] }});
+        $filter_append = ',';
     }
 
     $cmd_options .= " --filter '$filter'" if ($filter ne '');
@@ -705,12 +703,9 @@ sub health_describe_affected_entities_set_cmd {
 
     my $cmd_options = "health describe-affected-entities --region $self->{option_results}->{region} --output json";
 
-    my ($filter, $filter_append) = ('', '');
+    my $filter = '';
     if (defined($options{filter_event_arns})) {
-        foreach my $entry (@{$options{filter_event_arns}}) {
-            $filter .= $filter_append . 'eventArns=' . $entry;
-            $filter_append = ',';
-        }
+        $filter = 'eventArns=' . join(',', @{$options{filter_event_arns}});
     }
 
     $cmd_options .= " --filter '$filter'" if ($filter ne '');
@@ -722,10 +717,14 @@ sub health_describe_affected_entities_set_cmd {
 sub health_describe_affected_entities {
     my ($self, %options) = @_;
 
-    my $cmd_options = $self->health_describe_affected_entities_set_cmd(%options);
-    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    my $all_results = [];
+    while (my @elements = splice(@{$options{filter_event_arns}}, 0, 10)) {
+        my $cmd_options = $self->health_describe_affected_entities_set_cmd(filter_event_arns => \@elements);
+        my $raw_results = $self->execute(cmd_options => $cmd_options);
+        push $all_results, @{$raw_results->{entities}};
+    }
 
-    return $raw_results->{entities};
+    return $all_results;
 }
 
 1;
