@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ssms::restapi::custom::api;
+package apps::cisco::ssms::restapi::custom::api;
 
 use strict;
 use warnings;

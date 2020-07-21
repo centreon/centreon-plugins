@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ssms::restapi::mode::alerts;
+package apps::cisco::ssms::restapi::mode::alerts;
 
 use base qw(centreon::plugins::templates::counter);
 

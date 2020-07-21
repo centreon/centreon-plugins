@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ssms::restapi::plugin;
+package apps::cisco::ssms::restapi::plugin;
 
 use strict;
 use warnings;
@@ -31,11 +31,11 @@ sub new {
 
     $self->{version} = '0.1';
     $self->{modes} = {
-        'alerts'   => 'network::cisco::ssms::restapi::mode::alerts',
-        'licenses' => 'network::cisco::ssms::restapi::mode::licenses'
+        'alerts'   => 'apps::cisco::ssms::restapi::mode::alerts',
+        'licenses' => 'apps::cisco::ssms::restapi::mode::licenses'
     };
 
-    $self->{custom_modes}->{api} = 'network::cisco::ssms::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::cisco::ssms::restapi::custom::api';
     return $self;
 }
 
