@@ -86,6 +86,15 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
 
+    # Workaround for ignored timeout. When the Timeout option is added to
+    # IO::Socket::SSL->new(), it gets ignored in out environment (el7).
+    local $SIG{ALRM} = sub {
+        $self->{output}->output_add(severity => 'UNKNOWN', short_msg => "Could not connect, timeout!");
+        $self->{output}->display();
+        $self->{output}->exit()
+    };
+    alarm $self->{option_results}->{timeout};
+
     # Global variables
     my $client = IO::Socket::SSL->new(
         PeerHost => $self->{option_results}->{hostname},
@@ -109,7 +118,10 @@ sub run {
         $self->{output}->display();
         $self->{output}->exit()
     }
-    
+
+    # Clear timeout
+    alarm 0;
+
     my $subject = Net::SSLeay::X509_NAME_get_text_by_NID(
         Net::SSLeay::X509_get_subject_name($cert), 13); # NID_CommonName
     $subject =~ s{\0$}{}; # work around Bug in Net::SSLeay <1.33
