@@ -102,7 +102,7 @@ sub check_options {
             foreach my $option (@{$self->{option_results}->{'filter_' . $_}}) {
                 next if ($option eq '');
 
-                $self->{filter_options}->{'filter_' . $_} = [] if (!defined($self->{'filter_' . $_}));
+                $self->{filter_options}->{'filter_' . $_} = [] if (!defined($self->{filter_options}->{'filter_' . $_}));
                 push @{$self->{filter_options}->{'filter_' . $_}}, $option;
             }
         }
