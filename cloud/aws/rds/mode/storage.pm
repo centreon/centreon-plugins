@@ -49,7 +49,7 @@ sub set_counters {
                 label => lc($metric) . '-' . lc($statistic), set => {
                     key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
                     output_template => $metric . ': %.2f %s',
-                    output_change_bytes => 2,
+                    output_change_bytes => 1,
                     perfdatas => [
                         { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
                           template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
