@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package network::cisco::ssms::restapi::mode::licenses;
+package apps::cisco::ssms::restapi::mode::licenses;
 
 use base qw(centreon::plugins::templates::counter);
 
