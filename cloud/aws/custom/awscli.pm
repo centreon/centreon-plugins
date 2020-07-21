@@ -721,7 +721,7 @@ sub health_describe_affected_entities {
     while (my @elements = splice(@{$options{filter_event_arns}}, 0, 10)) {
         my $cmd_options = $self->health_describe_affected_entities_set_cmd(filter_event_arns => \@elements);
         my $raw_results = $self->execute(cmd_options => $cmd_options);
-        push $all_results, @{$raw_results->{entities}};
+        push @$all_results, @{$raw_results->{entities}};
     }
 
     return $all_results;
