@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package cloud::aws::rds::mode::network;
+package cloud::aws::rds::mode::storage;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -26,13 +26,13 @@ use strict;
 use warnings;
 
 my %map_type = (
-    "instance" => "DBInstanceIdentifier",
-    "cluster"  => "DBClusterIdentifier",
+    instance => "DBInstanceIdentifier",
+    cluster  => "DBClusterIdentifier"
 );
 
 sub prefix_metric_output {
     my ($self, %options) = @_;
-    
+
     return ucfirst($options{instance_value}->{type}) . " '" . $options{instance_value}->{display} . "' " . $options{instance_value}->{stat} . " ";
 }
 
@@ -40,21 +40,22 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All network metrics are ok", skipped_code => { -10 => 1 } },
+        { name => 'metric', type => 1, cb_prefix_output => 'prefix_metric_output', message_multiple => "All storage metrics are ok", skipped_code => { -10 => 1 } }
     ];
 
     foreach my $statistic ('minimum', 'maximum', 'average', 'sum') {
-        foreach my $metric ('NetworkReceiveThroughput', 'NetworkTransmitThroughput') {
-            my $entry = { label => lc($metric) . '-' . lc($statistic), set => {
-                                key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
-                                output_template => $metric . ': %.2f %s/s',
-                                output_change_bytes => 1,
-                                perfdatas => [
-                                    { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
-                                      template => '%.2f', unit => 'B/s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                                ],
-                            }
-                        };
+        foreach my $metric ('FreeStorageSpace', 'FreeableMemory') {
+            my $entry = {
+                label => lc($metric) . '-' . lc($statistic), set => {
+                    key_values => [ { name => $metric . '_' . $statistic }, { name => 'display' }, { name => 'type' }, { name => 'stat' } ],
+                    output_template => $metric . ': %.2f %s',
+                    output_change_bytes => 2,
+                    perfdatas => [
+                        { label => lc($metric) . '_' . lc($statistic), value => $metric . '_' . $statistic , 
+                          template => '%s', unit => 'B', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                    ]
+                }
+            };
             push @{$self->{maps_counters}->{metric}}, $entry;
         }
     }
@@ -101,7 +102,7 @@ sub check_options {
 
     $self->{aws_timeframe} = defined($self->{option_results}->{timeframe}) ? $self->{option_results}->{timeframe} : 600;
     $self->{aws_period} = defined($self->{option_results}->{period}) ? $self->{option_results}->{period} : 60;
-    
+
     $self->{aws_statistics} = ['Average'];
     if (defined($self->{option_results}->{statistic})) {
         $self->{aws_statistics} = [];
@@ -131,9 +132,9 @@ sub manage_selection {
             metrics => $self->{aws_metrics},
             statistics => $self->{aws_statistics},
             timeframe => $self->{aws_timeframe},
-            period => $self->{aws_period},
+            period => $self->{aws_period}
         );
-        
+
         foreach my $metric (@{$self->{aws_metrics}}) {
             foreach my $statistic (@{$self->{aws_statistics}}) {
                 next if (!defined($metric_results{$instance}->{$metric}->{lc($statistic)}) && !defined($self->{option_results}->{zeroed}));
@@ -158,12 +159,12 @@ __END__
 
 =head1 MODE
 
-Check RDS instances network metrics.
+Check RDS instances storage metrics.
 
 Example: 
-perl centreon_plugins.pl --plugin=cloud::aws::rds::plugin --custommode=paws --mode=network --region='eu-west-1'
---type='cluster' --name='centreon-db-ppd-cluster' --filter-metric='Transmit' --statistic='sum'
---critical-networktransmitthroughput-sum='10' --verbose
+perl centreon_plugins.pl --plugin=cloud::aws::rds::plugin --custommode=paws --mode=storage --region='eu-west-1'
+--type='cluster' --name='centreon-db-ppd-cluster' --filter-metric='FreeStorageSpace' --statistic='average'
+--critical-freestoragespace-average='10G:' --verbose
 
 Works for the following database engines : aurora, mysql, mariadb.
 
@@ -183,17 +184,17 @@ Set the instance name (Required) (Can be multiple).
 
 =item B<--filter-metric>
 
-Filter metrics (Can be: 'NetworkReceiveThroughput', 'NetworkTransmitThroughput') 
+Filter metrics (Can be: 'freestoragespace', 'freeablememory') 
 (Can be a regexp).
 
 =item B<--warning-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
+Thresholds warning ($metric$ can be: 'freestoragespace', 'freeablememory',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =item B<--critical-$metric$-$statistic$>
 
-Thresholds warning ($metric$ can be: 'networkreceivethroughput', 'networktransmitthroughput',
+Thresholds warning ($metric$ can be: 'freestoragespace', 'freeablememory',
 $statistic$ can be: 'minimum', 'maximum', 'average', 'sum').
 
 =back
