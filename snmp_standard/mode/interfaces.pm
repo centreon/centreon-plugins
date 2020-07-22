@@ -1315,13 +1315,6 @@ sub add_result_traffic {
         $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
         $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     } else {
-
-        if (defined($self->{map_speed_dsl})) {
-            foreach (@{$self->{map_speed_dsl}}) {
-                
-            }
-        }
-
         my $interface_speed = 0;
         if (defined($self->{results}->{$self->{oid_speed64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
             $interface_speed = $self->{results}->{$self->{oid_speed64} . '.' . $options{instance}} * 1000000;
@@ -1335,6 +1328,15 @@ sub add_result_traffic {
         
         $self->{int}->{$options{instance}}->{speed_in} = $interface_speed;
         $self->{int}->{$options{instance}}->{speed_out} = $interface_speed;
+
+        if (defined($self->{map_speed_dsl})) {
+            foreach (@{$self->{map_speed_dsl}}) {
+                next if (!defined($_->{src_index}) || $_->{src_index} != $options{instance});
+                $self->{int}->{$options{instance}}->{speed_in} = $_->{speed_in} if (defined($_->{speed_in}));
+                $self->{int}->{$options{instance}}->{speed_out} = $_->{speed_out} if (defined($_->{speed_out}));
+            }
+        }
+
         $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
         $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     }
