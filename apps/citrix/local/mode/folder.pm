@@ -83,7 +83,7 @@ sub run {
         my $folderDN = $obj->{FolderDN};
         my $query2 = "ASSOCIATORS OF {Citrix_ServerFolder.FolderDN='" . $folderDN . "'} WHERE AssocClass=Citrix_ServersInFolder Role=Antecedent";
         my $resultset2 = $wmi->ExecQuery($query2);
-        my $numServers = keys $resultset2;
+        my $numServers = keys %{$resultset2};
         $self->{output}->output_add(long_msg => $numServers . " servers in folder '" . $folderDN . "'");
         my $exit = $self->{perfdata}->threshold_check(value => $numServers, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
