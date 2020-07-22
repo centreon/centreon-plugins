@@ -46,7 +46,7 @@ sub custom_threshold_output {
                  eval "$self->{instance_mode}->{option_results}->{warning_status}") {
             $status = 'warning';
         }
-        
+
         $self->{instance_mode}->{last_status} = 0;
         if (eval "$self->{instance_mode}->{check_status}") {
             $self->{instance_mode}->{last_status} = 1;
@@ -61,6 +61,7 @@ sub custom_threshold_output {
 
 sub custom_status_output {
     my ($self, %options) = @_;
+
     my $msg = 'Status : ' . $self->{result_values}->{opstatus} . ' (admin: ' . $self->{result_values}->{admstatus} . ')';
     if (defined($self->{instance_mode}->{option_results}->{add_duplex_status})) {
         $msg .= ' (duplex: ' . $self->{result_values}->{duplexstatus} . ')';
@@ -107,12 +108,12 @@ sub custom_cast_calc {
 # Traffic
 sub custom_traffic_perfdata {
     my ($self, %options) = @_;
-    
+
     if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{result_values}->{traffic_per_seconds} /= 8;
         $self->{result_values}->{speed} /= 8 if (defined($self->{result_values}->{speed}));
     }
-    
+
     my ($warning, $critical);
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label}, total => $self->{result_values}->{speed}, cast_int => 1);
@@ -121,7 +122,7 @@ sub custom_traffic_perfdata {
         $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $self->{label});
         $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $self->{label});
     }
-    
+
     if (defined($self->{instance_mode}->{option_results}->{nagvis_perfdata})) {
         $self->{output}->perfdata_add(
             label => $self->{result_values}->{label},
@@ -146,7 +147,7 @@ sub custom_traffic_perfdata {
 
 sub custom_traffic_threshold {
     my ($self, %options) = @_;
-    
+
     my $exit = 'ok';
     if ($self->{instance_mode}->{option_results}->{units_traffic} eq '%' && defined($self->{result_values}->{speed})) {
         $exit = $self->{perfdata}->threshold_check(value => $self->{result_values}->{traffic_prct}, threshold => [ { label => 'critical-' . $self->{thlabel}, exit_litteral => 'critical' }, { label => 'warning-' . $self->{thlabel}, exit_litteral => 'warning' } ]);
@@ -158,7 +159,7 @@ sub custom_traffic_threshold {
 
 sub custom_traffic_output {
     my ($self, %options) = @_;
-    
+
     my ($traffic_value, $traffic_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{traffic_per_seconds}, network => 1);    
     return sprintf(
         'Traffic %s : %s/s (%s)',
@@ -169,7 +170,7 @@ sub custom_traffic_output {
 
 sub custom_traffic_calc {
     my ($self, %options) = @_;
-    
+
     return -10 if (defined($self->{instance_mode}->{last_status}) && $self->{instance_mode}->{last_status} == 0);
     if ($options{new_datas}->{$self->{instance} . '_mode_traffic'} ne $options{old_datas}->{$self->{instance} . '_mode_traffic'}) {
         $self->{error_msg} = 'buffer creation';
@@ -181,7 +182,7 @@ sub custom_traffic_calc {
         $self->{error_msg} = 'skipped';
         return -2;
     }
-    
+
     $self->{result_values}->{traffic_per_seconds} = $diff_traffic / $options{delta_time};
     if (defined($options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}}) && 
         $options{new_datas}->{$self->{instance} . '_speed_' . $options{extra_options}->{label_ref}} > 0) {
@@ -238,7 +239,7 @@ sub custom_errors_threshold {
 
 sub custom_errors_output {
     my ($self, %options) = @_;
-    
+
     return sprintf(
         'Packets %s : %.2f%% (%s)',
         $self->{result_values}->{label},
@@ -495,7 +496,7 @@ sub set_counters_cast {
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
-        },
+        }
     ;
 }
 
@@ -620,8 +621,8 @@ sub set_oids_label {
     $self->{oids_label} = {
         'ifdesc'  => { oid => '.1.3.6.1.2.1.2.2.1.2', cache => 'reload_cache_index_value' },
         'ifalias' => { oid => '.1.3.6.1.2.1.31.1.1.1.18', cache => 'reload_cache_index_value' },
-        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value', },
-        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index', },
+        'ifname'  => { oid => '.1.3.6.1.2.1.31.1.1.1.1', cache => 'reload_cache_index_value' },
+        'ipaddr'  => { oid => '.1.3.6.1.2.1.4.20.1.2',  cache => 'reload_cache_values_index' }
     };
 }
 
@@ -660,6 +661,11 @@ sub set_oids_traffic {
     $self->{oid_speed64} = '.1.3.6.1.2.1.31.1.1.1.15'; # need multiple by '1000000'
     $self->{oid_in64} = '.1.3.6.1.2.1.31.1.1.1.6'; # in B
     $self->{oid_out64} = '.1.3.6.1.2.1.31.1.1.1.10'; # in B
+    $self->{oid_iftype} = '.1.3.6.1.2.1.2.2.1.3';
+    $self->{oid_adslAtucCurrAttainableRate} = '.1.3.6.1.2.1.10.94.1.1.2.1.8';
+    $self->{oid_adslAturCurrAttainableRate} = '.1.3.6.1.2.1.10.94.1.1.3.1.8';
+    $self->{oid_xdsl2LineStatusAttainableRateDs} = '.1.3.6.1.2.1.10.251.1.1.1.1.20';
+    $self->{oid_xdsl2LineStatusAttainableRateUs} = '.1.3.6.1.2.1.10.251.1.1.1.1.21';
 }
 
 sub set_oids_cast {
@@ -775,29 +781,30 @@ sub new {
         $options{no_interfaceid_options} : 0;
 
     $options{options}->add_options(arguments => {
-        'add-global'              => { name => 'add_global' },
-        'add-status'              => { name => 'add_status' },
-        'add-duplex-status'       => { name => 'add_duplex_status' },
-        'warning-status:s'        => { name => 'warning_status', default => $self->default_warning_status() },
-        'critical-status:s'       => { name => 'critical_status', default => $self->default_critical_status() },
-        'global-admin-up-rule:s'    => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
-        'global-oper-up-rule:s'     => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
-        'global-admin-down-rule:s'  => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
-        'global-oper-down-rule:s'   => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
-        'interface:s'             => { name => 'interface' },
-        'units-traffic:s'         => { name => 'units_traffic', default => '%' },
-        'units-errors:s'          => { name => 'units_errors', default => '%' },
-        'speed:s'                 => { name => 'speed' },
-        'speed-in:s'              => { name => 'speed_in' },
-        'speed-out:s'             => { name => 'speed_out' },
-        'no-skipped-counters'     => { name => 'no_skipped_counters' },
-        'display-transform-src:s' => { name => 'display_transform_src' },
-        'display-transform-dst:s' => { name => 'display_transform_dst' },
-        'show-cache'              => { name => 'show_cache' },
-        'reload-cache-time:s'     => { name => 'reload_cache_time', default => 180 },
-        'nagvis-perfdata'         => { name => 'nagvis_perfdata' },
-        'force-counters32'        => { name => 'force_counters32' },
-         'force-counters64'       => { name => 'force_counters64' }
+        'add-global'               => { name => 'add_global' },
+        'add-status'               => { name => 'add_status' },
+        'add-duplex-status'        => { name => 'add_duplex_status' },
+        'warning-status:s'         => { name => 'warning_status', default => $self->default_warning_status() },
+        'critical-status:s'        => { name => 'critical_status', default => $self->default_critical_status() },
+        'global-admin-up-rule:s'   => { name => 'global_admin_up_rule', default => $self->default_global_admin_up_rule() },
+        'global-oper-up-rule:s'    => { name => 'global_oper_up_rule', default => $self->default_global_oper_up_rule() },
+        'global-admin-down-rule:s' => { name => 'global_admin_down_rule', default => $self->default_global_admin_down_rule() },
+        'global-oper-down-rule:s'  => { name => 'global_oper_down_rule', default => $self->default_global_oper_down_rule() },
+        'interface:s'              => { name => 'interface' },
+        'units-traffic:s'          => { name => 'units_traffic', default => '%' },
+        'units-errors:s'           => { name => 'units_errors', default => '%' },
+        'speed:s'                  => { name => 'speed' },
+        'speed-in:s'               => { name => 'speed_in' },
+        'speed-out:s'              => { name => 'speed_out' },
+        'no-skipped-counters'      => { name => 'no_skipped_counters' },
+        'display-transform-src:s'  => { name => 'display_transform_src' },
+        'display-transform-dst:s'  => { name => 'display_transform_dst' },
+        'show-cache'               => { name => 'show_cache' },
+        'reload-cache-time:s'      => { name => 'reload_cache_time', default => 180 },
+        'nagvis-perfdata'          => { name => 'nagvis_perfdata' },
+        'force-counters32'         => { name => 'force_counters32' },
+        'force-counters64'         => { name => 'force_counters64' },
+        'map-speed-dsl:s@'         => { name => 'map_speed_dsl' }
     });
     if ($self->{no_traffic} == 0) {
         $options{options}->add_options(arguments => { 'add-traffic' => { name => 'add_traffic' } });
@@ -838,9 +845,9 @@ sub check_options {
 
     $self->set_oids_label();
     $self->check_oids_label();
-    
+
     $self->{statefile_cache}->check_options(%options);
-    
+
     if (defined($self->{option_results}->{add_traffic}) && 
         (!defined($self->{option_results}->{units_traffic}) || $self->{option_results}->{units_traffic} !~ /^(%|b\/s)$/)) {
         $self->{output}->add_option_msg(short_msg => 'Wrong option --units-traffic.');
@@ -851,7 +858,7 @@ sub check_options {
         $self->{output}->add_option_msg(short_msg => 'Wrong option --units-errors.');
         $self->{output}->option_exit();
     }
-    
+
     $self->{get_speed} = 0;
     if ((!defined($self->{option_results}->{speed}) || $self->{option_results}->{speed} eq '') &&
         ((!defined($self->{option_results}->{speed_in}) || $self->{option_results}->{speed_in} eq '') ||
@@ -874,7 +881,7 @@ sub check_options {
             $self->{checking} .= $_;
         }
     }
-    
+
     $self->change_macros(macros => ['warning_status', 'critical_status']);
     $self->{check_status} = $self->default_check_status();
     $self->{check_status} =~ s/%\{(.*?)\}/\$self->{result_values}->{$1}/g;
@@ -882,8 +889,8 @@ sub check_options {
 
 sub get_display_value {
     my ($self, %options) = @_;
-    my $value = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
 
+    my $value = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_display} . "_" . $options{id});
     if (defined($self->{option_results}->{display_transform_src})) {
         $self->{option_results}->{display_transform_dst} = '' if (!defined($self->{option_results}->{display_transform_dst}));
         eval "\$value =~ s{$self->{option_results}->{display_transform_src}}{$self->{option_results}->{display_transform_dst}}";
@@ -893,7 +900,7 @@ sub get_display_value {
 
 sub check_oids_options_change {
     my ($self, %options) = @_;
-    
+
     my ($regexp, $regexp_append) = ('', '');
     foreach (('oid_display', 'oid_filter', 'oid_extra_display')) {
         if (my $value = $self->{statefile_cache}->get(name => $_)) {
@@ -906,6 +913,7 @@ sub check_oids_options_change {
             return 1;
         }
     }
+
     return 0;
 }
 
@@ -944,7 +952,7 @@ sub reload_cache {
     $datas->{oid_extra_display} = $self->{option_results}->{oid_extra_display};
     $datas->{last_timestamp} = time();
     $datas->{all_ids} = [];
-    
+
     my $snmp_get = [
         { oid => $self->{oids_label}->{$self->{option_results}->{oid_filter}}->{oid} },
     ];
@@ -981,7 +989,7 @@ sub reload_cache {
 
 sub add_selected_interface {
     my ($self, %options) = @_;
-    
+
     $self->{int}->{$options{id}} = { display => $self->get_display_value(id => $options{id}), extra_display => '' };
     if (defined($self->{option_results}->{oid_extra_display})) {
         my $name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_extra_display} . '_' . $options{id});
@@ -991,7 +999,7 @@ sub add_selected_interface {
 
 sub get_selection {
     my ($self, %options) = @_;
-    
+
     # init cache file
     my $has_cache_file = $self->{statefile_cache}->read(statefile => 'cache_snmpstandard_' . $self->{snmp}->get_hostname()  . '_' . $self->{snmp}->get_port() . '_' . $self->{mode});
     if (defined($self->{option_results}->{show_cache})) {
@@ -1001,7 +1009,7 @@ sub get_selection {
 
     $self->{int} = {};
     my $timestamp_cache = $self->{statefile_cache}->get(name => 'last_timestamp');
-    
+
     if ($has_cache_file == 0 || $self->check_oids_options_change() ||
         !defined($timestamp_cache) || ((time() - $timestamp_cache) > (($self->{option_results}->{reload_cache_time}) * 60))) {
         $self->reload_cache();
@@ -1018,7 +1026,7 @@ sub get_selection {
         }
     } else {
         foreach (@{$all_ids}) {
-            my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . "_" . $_);
+            my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . '_' . $_);
             next if (!defined($filter_name));
             if (!defined($self->{option_results}->{interface})) {
                 $self->add_selected_interface(id => $_);
@@ -1029,7 +1037,23 @@ sub get_selection {
             }
         }
     }
-    
+
+    if (defined($self->{option_results}->{map_speed_dsl})) {
+        $self->{map_speed_dsl} = [];
+        foreach (@{$self->{option_results}->{map_speed_dsl}}) {
+            my ($src, $dst) = split /,/;
+            next if (!defined($dst) || $dst eq '' || !defined($src) || $src eq '');
+            push @{$self->{map_speed_dsl}}, { src => $src, dst => $dst };
+        }
+        foreach (@{$all_ids}) {
+            my $filter_name = $self->{statefile_cache}->get(name => $self->{option_results}->{oid_filter} . '_' . $_);
+            for (my $i = 0; $i < scalar(@{$self->{map_speed_dsl}}); $i++) {
+                $self->{map_speed_dsl}->[$i]->{src_index} = $_ if ($filter_name =~ /$self->{map_speed_dsl}->[$i]->{src}/);
+                $self->{map_speed_dsl}->[$i]->{dst_index} = $_ if ($filter_name =~ /$self->{map_speed_dsl}->[$i]->{dst}/);
+            }
+        }
+    }
+
     if (scalar(keys %{$self->{int}}) <= 0) {
         $self->{output}->add_option_msg(short_msg => "No entry found (maybe you should reload cache file)");
         $self->{output}->option_exit();
@@ -1038,13 +1062,13 @@ sub get_selection {
 
 sub load_status {
     my ($self, %options) = @_;
-    
+
     $self->set_oids_status();
     my $oids = [$self->{oid_adminstatus}, $self->{oid_opstatus}];
     if (defined($self->{option_results}->{add_duplex_status})) {
         push @$oids, $self->{oid_duplexstatus};
     }
-    
+
     $self->{snmp}->load(oids => $oids, instances => $self->{array_interface_selected});
 }
 
@@ -1065,6 +1089,15 @@ sub load_traffic {
             $self->{snmp}->load(oids => [$self->{oid_speed64}], instances => $self->{array_interface_selected});
         }
     }
+
+    return if (!defined($self->{map_speed_dsl}));
+    my $dst_indexes = [map { $_->{dst_index} } grep { defined($_->{dst_index}) } @{$self->{map_speed_dsl}}];
+    if (scalar(@$dst_indexes) <= 0) {
+        $self->{map_speed_dsl} = undef;
+        return ;
+    }
+
+    $self->{snmp}->load(oids => [$self->{oid_iftype}], instances => $dst_indexes);
 }
 
 sub load_errors {
@@ -1149,7 +1182,8 @@ sub manage_selection {
     $self->$custom_load_method() if ($custom_load_method);
 
     $self->{results} = $self->{snmp}->get_leef();
-    
+
+    $self->pre_result();
     $self->add_result_global() if (defined($self->{option_results}->{add_global}));    
     foreach (@{$self->{array_interface_selected}}) {
         $self->add_result_status(instance => $_) if (defined($self->{option_results}->{add_status}));
@@ -1198,6 +1232,45 @@ sub add_result_global {
     }
 }
 
+sub pre_result {
+    my ($self, %options) = @_;
+
+    if (defined($self->{map_speed_dsl})) {
+        my $oids = [];
+
+        foreach (@{$self->{map_speed_dsl}}) {
+            next if (!defined($_->{dst_index}));
+            next if (!defined($self->{results}->{ $self->{oid_iftype} . '.' . $_->{dst_index} }));
+            # 94 = adsl, 251 => vdsl2
+            if ($self->{results}->{ $self->{oid_iftype} . '.' . $_->{dst_index} } == 94) {
+                push @$oids, $self->{oid_adslAtucCurrAttainableRate} . '.' . $_->{dst_index}, $self->{oid_adslAturCurrAttainableRate} . '.' . $_->{dst_index};
+            } elsif ($self->{results}->{ $self->{oid_iftype} . '.' . $_->{dst_index} } == 251) {
+                push @$oids, $self->{oid_xdsl2LineStatusAttainableRateDs} . '.' . $_->{dst_index}, $self->{oid_xdsl2LineStatusAttainableRateUs} . '.' . $_->{dst_index};
+            }
+        }
+
+        if (scalar(@$oids) > 0) {
+            my $results = $self->{snmp}->get_leef(oids => $oids);
+            for (my $i = 0; $i < scalar(@{$self->{map_speed_dsl}}); $i++) {
+                next if (!defined($self->{map_speed_dsl}->[$i]->{dst_index}));
+                next if (!defined($self->{results}->{ $self->{oid_iftype} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));
+                # 94 = adsl, 251 => vdsl2
+                if ($self->{results}->{ $self->{oid_iftype} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} } == 94) {
+                    $self->{map_speed_dsl}->[$i]->{speed_in} = $results->{ $self->{oid_adslAturCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
+                        if (defined($results->{ $self->{oid_adslAturCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));
+                    $self->{map_speed_dsl}->[$i]->{speed_out} = $results->{ $self->{oid_adslAtucCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
+                        if (defined($results->{ $self->{oid_adslAtucCurrAttainableRate} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));                    
+                } elsif ($self->{results}->{ $self->{oid_iftype} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} } == 251) {
+                    $self->{map_speed_dsl}->[$i]->{speed_in} = $results->{ $self->{oid_xdsl2LineStatusAttainableRateDs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
+                        if (defined($results->{ $self->{oid_xdsl2LineStatusAttainableRateDs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));
+                    $self->{map_speed_dsl}->[$i]->{speed_out} = $results->{ $self->{oid_xdsl2LineStatusAttainableRateUs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }
+                        if (defined($results->{ $self->{oid_xdsl2LineStatusAttainableRateUs} . '.' . $self->{map_speed_dsl}->[$i]->{dst_index} }));     
+                }
+            }
+        }
+    }
+}
+
 sub add_result_status {
     my ($self, %options) = @_;
     
@@ -1231,7 +1304,7 @@ sub add_result_traffic {
     }
     $self->{int}->{$options{instance}}->{in} *= 8 if (defined($self->{int}->{$options{instance}}->{in}));
     $self->{int}->{$options{instance}}->{out} *= 8 if (defined($self->{int}->{$options{instance}}->{out}));
-    
+
     $self->{int}->{$options{instance}}->{speed_in} = 0;
     $self->{int}->{$options{instance}}->{speed_out} = 0;
     if ($self->{get_speed} == 0) {
@@ -1242,15 +1315,22 @@ sub add_result_traffic {
         $self->{int}->{$options{instance}}->{speed_in} = $self->{option_results}->{speed_in} * 1000000 if (defined($self->{option_results}->{speed_in}) && $self->{option_results}->{speed_in} ne '');
         $self->{int}->{$options{instance}}->{speed_out} = $self->{option_results}->{speed_out} * 1000000 if (defined($self->{option_results}->{speed_out}) && $self->{option_results}->{speed_out} ne '');
     } else {
+
+        if (defined($self->{map_speed_dsl})) {
+            foreach (@{$self->{map_speed_dsl}}) {
+                
+            }
+        }
+
         my $interface_speed = 0;
-        if (defined($self->{results}->{$self->{oid_speed64} . "." . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
-            $interface_speed = $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} * 1000000;
+        if (defined($self->{results}->{$self->{oid_speed64} . '.' . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
+            $interface_speed = $self->{results}->{$self->{oid_speed64} . '.' . $options{instance}} * 1000000;
             # If 0, we put the 32 bits
             if ($interface_speed == 0) {
-                $interface_speed = $self->{results}->{$self->{oid_speed32} . "." . $options{instance}};
+                $interface_speed = $self->{results}->{$self->{oid_speed32} . '.' . $options{instance}};
             }
         } else {
-            $interface_speed = $self->{results}->{$self->{oid_speed32} . "." . $options{instance}};
+            $interface_speed = $self->{results}->{$self->{oid_speed32} . '.' . $options{instance}};
         }
         
         $self->{int}->{$options{instance}}->{speed_in} = $interface_speed;
@@ -1305,7 +1385,7 @@ sub add_result_cast {
 
 sub add_result_speed {
     my ($self, %options) = @_;
-    
+
     my $interface_speed = 0;
     if (defined($self->{results}->{$self->{oid_speed64} . "." . $options{instance}}) && $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} ne '') {
         $interface_speed = $self->{results}->{$self->{oid_speed64} . "." . $options{instance}} * 1000000;
@@ -1435,6 +1515,14 @@ Set interface speed for incoming traffic (in Mb).
 =item B<--speed-out>
 
 Set interface speed for outgoing traffic (in Mb).
+
+=item B<--map-speed-dsl>
+
+Get interface speed configuration for interface type 'adsl' and 'vdsl2'.
+
+Syntax: --map-speed-dsl=interface-src-name,interface-dsl-name
+
+E.g: --map-speed-dsl=Et0.835,Et0-vdsl2
 
 =item B<--no-skipped-counters>
 
