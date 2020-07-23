@@ -246,7 +246,7 @@ __END__
 
 =head1 NAME
 
-NSClient++ Rest API
+NSClient++ Rest API (New v1 & Legacy)
 
 =head1 CUSTOM MODE OPTIONS
 
