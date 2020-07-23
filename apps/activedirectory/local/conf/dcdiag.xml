@@ -10,10 +10,10 @@
 	</dcdiag>
 	<dcdiag language="fr">
 		<messages>
-			<global>D.marrage du test.*?:\s+(.*?)\n.*?(a r.ussi|a .chou.|warning)</global>
-			<ok>a r.ussi</ok>
+			<global>D.*?marrage du test.*?:\s+(.*?)\n.*?(a r.*?ussi|a .*?chou.|warning)</global>
+			<ok>a r.*?ussi</ok>
 			<warning>warning</warning>
-			<critical>a .chou.</critical>
+			<critical>a .*?chou.</critical>
 		</messages>
 	</dcdiag>
 </root>
