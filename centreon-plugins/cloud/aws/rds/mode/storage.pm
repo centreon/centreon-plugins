@@ -113,7 +113,7 @@ sub check_options {
         }
     }
 
-    foreach my $metric ('NetworkReceiveThroughput', 'NetworkTransmitThroughput') {
+    foreach my $metric ('FreeStorageSpace', 'FreeableMemory') {
         next if (defined($self->{option_results}->{filter_metric}) && $self->{option_results}->{filter_metric} ne ''
             && $metric !~ /$self->{option_results}->{filter_metric}/);
 
