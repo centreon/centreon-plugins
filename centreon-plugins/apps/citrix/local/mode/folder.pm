@@ -31,13 +31,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"           => { name => 'warning', },
-                                  "critical:s"          => { name => 'critical', },
-                                  "folder:s"            => { name => 'folder', },
-                                  "filter-folder"       => { name => 'filter_folder', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'     => { name => 'warning' },
+        'critical:s'    => { name => 'critical' },
+        'folder:s'      => { name => 'folder' },
+        'filter-folder' => { name => 'filter_folder' }
+    });
+
     $self->{wql_filter} = '';
     return $self;
 }
@@ -68,8 +68,10 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    $self->{output}->output_add(severity => 'Ok',
-                                short_msg => "All folders are ok");
+    $self->{output}->output_add(
+        severity => 'Ok',
+        short_msg => 'All folders are ok'
+    );
   
     my $wmi = Win32::OLE->GetObject('winmgmts:root\citrix');
     if (!defined($wmi)) {
@@ -83,18 +85,22 @@ sub run {
         my $folderDN = $obj->{FolderDN};
         my $query2 = "ASSOCIATORS OF {Citrix_ServerFolder.FolderDN='" . $folderDN . "'} WHERE AssocClass=Citrix_ServersInFolder Role=Antecedent";
         my $resultset2 = $wmi->ExecQuery($query2);
-        my $numServers = keys $resultset2;
+        my $numServers = keys %$resultset2;
         $self->{output}->output_add(long_msg => $numServers . " servers in folder '" . $folderDN . "'");
         my $exit = $self->{perfdata}->threshold_check(value => $numServers, threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
         if (!$self->{output}->is_status(value => $exit, compare => 'ok', litteral => 1)) {
-            $self->{output}->output_add(severity => $exit,
-                                        short_msg => $numServers . " servers in in folder '" . $folderDN . "'");
+            $self->{output}->output_add(
+                severity => $exit,
+                short_msg => $numServers . " servers in in folder '" . $folderDN . "'"
+            );
         }
-        $self->{output}->perfdata_add(label => 'servers_' . $folderDN,
-                                      value => $numServers,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'servers_' . $folderDN,
+            value => $numServers,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
     }
 
  
