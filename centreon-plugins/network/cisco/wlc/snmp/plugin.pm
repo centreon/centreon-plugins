@@ -38,6 +38,7 @@ sub new {
         'cpu'                     => 'centreon::common::airespace::snmp::mode::cpu',
         'hardware'                => 'centreon::common::airespace::snmp::mode::hardware',
         'interfaces'              => 'snmp_standard::mode::interfaces', 
+        'list-groups'             => 'centreon::common::airespace::snmp::mode::listgroups',
         'list-interfaces'         => 'snmp_standard::mode::listinterfaces',
         'memory'                  => 'centreon::common::airespace::snmp::mode::memory'
     };
