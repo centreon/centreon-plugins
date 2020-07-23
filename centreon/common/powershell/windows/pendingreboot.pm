@@ -120,7 +120,6 @@ Try {
         CCMClientSDK = $SCCM;
         PendComputerRename = $CompPendRen;
         PendFileRename = $PendFileRename;
-        PendFileRenVal = $RegValuePFRO;
         RebootPending = ($CompPendRen -or $CBSRebootPend -or $WUAURebootReq -or $SCCM -or $PendFileRename)
     }
 
