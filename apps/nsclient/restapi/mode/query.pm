@@ -165,7 +165,7 @@ __END__
 
 =head1 MODE
 
-Query NSClient Rest API.
+Query NSClient Legacy API.
 
 =over 8
 
