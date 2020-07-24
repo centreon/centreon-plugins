@@ -31,7 +31,7 @@ my %state_map = (
     1   => 'started',
     2   => 'stopping',
     3   => 'stopped',
-    4   => 'unknown',
+    4   => 'unknown'
 );
 
 sub new {
@@ -39,12 +39,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"          => { name => 'name' },
-                                  "regexp"          => { name => 'use_regexp' },
-                                  "filter-state:s"  => { name => 'filter_state' },
-                                });
+    $options{options}->add_options(arguments => {
+        'name:s'          => { name => 'name' },
+        'regexp'          => { name => 'use_regexp' },
+        'filter-state:s'  => { name => 'filter_state' }
+    });
+
     $self->{result} = {};
     return $self;
 }
