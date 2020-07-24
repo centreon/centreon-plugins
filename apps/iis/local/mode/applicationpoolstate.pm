@@ -20,92 +20,80 @@
 
 package apps::iis::local::mode::applicationpoolstate;
 
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
 use Win32::OLE;
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
 
-my %state_map = (
-    0   => 'starting',
-    1   => 'started',
-    2   => 'stopping',
-    3   => 'stopped',
-    4   => 'unknown',
-);
+sub custom_status_output {
+    my ($self, %options) = @_;
+
+    return sprintf(
+        'state: %s [auto: %s]',
+        $self->{result_values}->{state},
+        $self->{result_values}->{auto_start}
+    );
+}
+
+sub prefix_pool_output {
+    my ($self, %options) = @_;
+
+    return "Application pool '" . $options{instance_value}->{name} . "' ";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'pools', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All application pools are ok' }
+    ];
+
+    $self->{maps_counters}->{pools} = [
+        { label => 'status', threshold => 0, set => {
+                key_values => [ { name => 'name' }, { name => 'auto_start' }, { name => 'state' } ],
+                closure_custom_output => $self->can('custom_status_output'),
+                closure_custom_perfdata => sub { return 0; },
+                closure_custom_threshold_check => \&catalog_status_threshold
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning"             => { name => 'warning', },
-                                  "critical"            => { name => 'critical', },
-                                  "pools:s"             => { name => 'pools', },
-                                  "auto"                => { name => 'auto', },
-                                  "exclude:s"           => { name => 'exclude', },
-                                });
-    $self->{pools_rules} = {};
-    $self->{wql_filter} = '';
-    $self->{threshold} = 'CRITICAL';
+
+    $options{options}->add_options(arguments => { 
+        'filter-name:s'     => { name => 'filter_name' },
+        'unknown-status:s'  => { name => 'unknown_status', default => '' },
+        'warning-status:s'  => { name => 'warning_status', default => '' },
+        'critical-status:s' => { name => 'critical_status', default => '%{auto_start} eq "on" and not %{state} =~ /started|starting/' }
+    });
+
     return $self;
 }
 
 sub check_options {
     my ($self, %options) = @_;
-    $self->SUPER::init(%options);
+    $self->SUPER::check_options(%options);
 
-    if (!defined($self->{option_results}->{pools}) && !defined($self->{option_results}->{auto})) {
-       $self->{output}->add_option_msg(short_msg => "Need to specify at least '--pools' or '--auto' option.");
-       $self->{output}->option_exit();
-    }
-    
-    if (defined($self->{option_results}->{pools})) {
-        my $append = '';
-        foreach my $rule (split /,/, $self->{option_results}->{pools}) {
-            if ($rule !~ /^([^\!=]*)(\!=|=){0,1}(.*){0,1}/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong rule in --pools option: " . $rule);
-                $self->{output}->option_exit();
-            }
-            if (!defined($1) || $1 eq '') {
-                $self->{output}->add_option_msg(short_msg => "Need pool name for rule: " . $rule);
-                $self->{output}->option_exit();
-            }
-            
-            my $poolname = $1;
-            my $operator = defined($2) && $2 ne '' ? $2 : '!=';
-            my $state = defined($3) && $3 ne '' ? lc($3) : 'started';
-            
-            if ($operator !~ /^(=|\!=)$/) {
-                $self->{output}->add_option_msg(short_msg => "Wrong operator for rule: " . $rule . ". Should be '=' or '!='.");
-                $self->{output}->option_exit();
-            }
-            
-            if ($state !~ /^(started|starting|stopped|stopping|unknown)$/i) {
-                $self->{output}->add_option_msg(short_msg => "Wrong state for rule: " . $rule . ". See help for available state.");
-                $self->{output}->option_exit();
-            }
-            
-            $self->{service_rules}->{$poolname} = {operator => $operator, state => $state};
-            $self->{wql_filter} .= $append . "Name = '" . $poolname  . "'";
-            $append = ' Or ';
-        }
-        
-        if ($self->{wql_filter} eq '') {
-            $self->{output}->add_option_msg(short_msg => "Need to specify one rule for --pools option.");
-            $self->{output}->option_exit();
-        }
-    }
-        
-    $self->{threshold} = 'WARNING' if (defined($self->{option_results}->{warning}));
-    $self->{threshold} = 'CRITICAL' if (defined($self->{option_results}->{critical}));
+    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
-sub check_auto {
+my $state_map = {
+    0   => 'starting',
+    1   => 'started',
+    2   => 'stopping',
+    3   => 'stopped',
+    4   => 'unknown'
+};
+
+sub manage_selection {
     my ($self, %options) = @_;
-    
+
     my $wmi = Win32::OLE->GetObject('winmgmts:root\WebAdministration');
     if (!defined($wmi)) {
         $self->{output}->add_option_msg(short_msg => "Cant create server object:" . Win32::OLE->LastError());
@@ -113,74 +101,29 @@ sub check_auto {
     }
     my $query = "Select Name, AutoStart From ApplicationPool";
     my $resultset = $wmi->ExecQuery($query);
+
+    $self->{pools} = {};
     foreach my $obj (in $resultset) {
         my $name = $obj->{Name};
-        my $state = $obj->GetState();
-        
-        # Not an Auto service
-        next if ($obj->{AutoStart} == 0);
+        my $state = $state_map->{ $obj->GetState() };
 
-        if (defined($self->{option_results}->{exclude}) && $self->{option_results}->{exclude} ne '' && $name =~ /$self->{option_results}->{exclude}/) {
-            $self->{output}->output_add(long_msg => "Skipping pool '" . $name . "'");
+        if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' &&
+            $name !~ /$self->{option_results}->{filter_name}/) {
+            $self->{output}->output_add(long_msg => "skipping pool '" . $name . "': no matching filter.", debug => 1);
             next;
         }
-    
-        $self->{output}->output_add(long_msg => "Pool '" . $name . "' state: " . $state_map{$state});
-        if ($state_map{$state} !~ /^started$/i) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Service '" . $name . "' is " . $state_map{$state});
-        }
-    }
-}
 
-sub check {
-    my ($self, %options) = @_;
-    
-    my $result = {};
-    my $wmi = Win32::OLE->GetObject('winmgmts:root\WebAdministration');
-    if (!defined($wmi)) {
-        $self->{output}->add_option_msg(short_msg => "Cant create server object:" . Win32::OLE->LastError());
+        $self->{pools}->{$name} = {
+            name => $name,
+            state => $state,
+            auto_start => $obj->{AutoStart} == 0 ? 'off' : 'on'
+        };
+    }
+
+    if (scalar(keys %{$self->{pools}}) <= 0) {
+        $self->{output}->add_option_msg(short_msg => 'No application pool found');
         $self->{output}->option_exit();
     }
-    my $query = 'Select Name From ApplicationPool Where ' . $self->{wql_filter};
-    my $resultset = $wmi->ExecQuery($query);
-    foreach my $obj (in $resultset) {
-        $result->{$obj->{Name}} = {state => $obj->GetState()};
-    }
- 
-    foreach my $name (sort(keys %{$self->{service_rules}})) {
-        if (!defined($result->{$name})) {
-            $self->{output}->output_add(severity => 'UNKNOWN',
-                                        short_msg => "Pool '" . $name . "' not found");
-            next;
-        }
-        
-        $self->{output}->output_add(long_msg => "Pool '" . $name . "' state: " . $state_map{$result->{$name}->{state}});
-        if ($self->{service_rules}->{$name}->{operator} eq '=' && 
-            $state_map{$result->{$name}->{state}} eq $self->{service_rules}->{$name}->{state}) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Pool '" . $name . "' is " . $state_map{$result->{$name}->{state}});
-        } elsif ($self->{service_rules}->{$name}->{operator} eq '!=' && 
-                 $state_map{$result->{$name}->{state}} ne $self->{service_rules}->{$name}->{state}) {
-            $self->{output}->output_add(severity => $self->{threshold},
-                                        short_msg => "Service '" . $name . "' is " . $state_map{$result->{$name}->{state}});
-        }
-    }
-}
-
-sub run {
-    my ($self, %options) = @_;
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'All application pools are ok');
-    if (defined($self->{option_results}->{auto})) {
-        $self->check_auto();
-    } else {
-        $self->check();
-    }
-   
-    $self->{output}->display();
-    $self->{output}->exit();
 }
 
 1;
@@ -189,36 +132,28 @@ __END__
 
 =head1 MODE
 
-Check IIS Application Pools State.
+Check IIS application pools.
 
 =over 8
 
-=item B<--warning>
+=item B<--filter-name>
 
-Return warning.
+Filter application pool name (can be a regexp).
 
-=item B<--critical>
+=item B<--unknown-status>
 
-Return critical.
+Set unknown threshold for status.
+Can used special variables like: %{name}, %{state}, %{auto_start}.
 
-=item B<--pools>
+=item B<--warning-status>
 
-Application Pool to monitor.
-Syntax: [pool_name[[=|!=]state]],...
-Available states are:
-- 'started',
-- 'starting',
-- 'stopped',
-- 'stopping'
-- 'unknown'
+Set warning threshold for status.
+Can used special variables like: %{name}, %{state}, %{auto_start}.
 
-=item B<--auto>
+=item B<--critical-status>
 
-Return threshold for auto start pools not starting.
-
-=item B<--exclude>
-
-Exclude some pool for --auto option (Can be a regexp).
+Set critical threshold for status (Default: '%{auto_start} eq "on" and not %{state} =~ /started|starting/').
+Can used special variables like: %{name}, %{state}, %{auto_start}.
 
 =back
 

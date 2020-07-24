@@ -39,12 +39,12 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "name:s"          => { name => 'name' },
-                                  "regexp"          => { name => 'use_regexp' },
-                                  "filter-state:s"  => { name => 'filter_state' },
-                                });
+    $options{options}->add_options(arguments => {
+        'name:s'         => { name => 'name' },
+        'regexp'         => { name => 'use_regexp' },
+        'filter-state:s' => { name => 'filter_state' }
+    });
+
     $self->{result} = {};
     return $self;
 }
@@ -93,13 +93,17 @@ sub run {
 	
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {
-        $self->{output}->output_add(long_msg => "'" . $name . "' [AutoStart = " . $self->{result}->{$name}->{AutoStart} . '] [' . 
-                                                'State = ' . $state_map{$self->{result}->{$name}->{State}} .
-                                                ']');
+        $self->{output}->output_add(long_msg => 
+            "'" . $name . "' .
+            '[AutoStart = " . $self->{result}->{$name}->{AutoStart} . ']' .
+            '[State = ' . $state_map{$self->{result}->{$name}->{State}} . ']'
+        );
     }
     
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => 'List application pools:');
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => 'List application pools:'
+    );
     $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1, force_long_output => 1);
     $self->{output}->exit();
 }
@@ -115,10 +119,11 @@ sub disco_show {
 
     $self->manage_selection();
     foreach my $name (sort(keys %{$self->{result}})) {     
-        $self->{output}->add_disco_entry(name => $name,
-                                         auto_start => $self->{result}->{$name}->{AutoStart},
-                                         state => $state_map{$self->{result}->{$name}->{State}}
-                                         );
+        $self->{output}->add_disco_entry(
+            name => $name,
+            auto_start => $self->{result}->{$name}->{AutoStart},
+            state => $state_map{$self->{result}->{$name}->{State}}
+        );
     }
 }
 
