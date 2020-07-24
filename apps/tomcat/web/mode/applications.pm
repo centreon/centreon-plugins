@@ -115,7 +115,7 @@ sub manage_selection {
     );
 
     $self->{application} = {};
-    while ($webcontent =~ /^(.*?):(.*?):(.*?):(.*)/mg) {
+    while ($webcontent =~ /^(.*?)\s*:\s*(.*?)\s*:\s*(.*?)\s*:\s*(.*)/mg) {
         my ($context, $state, $sessions, $contextpath) = ($1, $2, $3, $4);
 
         next if (defined($self->{option_results}->{filter_path}) && $self->{option_results}->{filter_path} ne '' &&
