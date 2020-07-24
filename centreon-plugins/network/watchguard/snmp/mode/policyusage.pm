@@ -122,6 +122,11 @@ sub manage_selection {
             $self->{output}->output_add(long_msg => "skipping '" . $result->{wgPolicyName} . "': no matching filter.", debug => 1);
             next;
         }
+
+        # Must be a Watchguard bug, where wgPolicyCurrActiveConns sporadically returns 2^32−1...
+        if ($result->{wgPolicyCurrActiveConns} == 4294967295) {
+            $result->{wgPolicyCurrActiveConns} = 0;
+        }
         
         $self->{policy}->{$instance} = { display => $result->{wgPolicyName}, 
             %$result
