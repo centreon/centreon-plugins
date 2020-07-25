@@ -43,6 +43,24 @@ sub set_counters {
                     { template => '%s', min => 0 }
                 ]
             }
+        },
+        { label => 'tunnels-traffic-in-total', nlabel => 'ipsec.tunnels.traffic.in.total.bitspersecond', set => {
+                key_values => [ { name => 'total_in', per_second => 1 } ],
+                output_template => 'Total Traffic In : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'b/s' }
+                ]
+            }
+        },
+        { label => 'tunnels-traffic-out-total', nlabel => 'ipsec.tunnels.traffic.out.total.bitspersecond', set => {
+                key_values => [ { name => 'total_out', per_second => 1 } ],
+                output_template => 'Total Traffic Out : %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'b/s' }
+                ]
+            }
         }
     ];
 
@@ -97,6 +115,11 @@ my $mapping2 = {
     wgIpsecTunnelOutKbytes  => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.29' },
 };
 
+# We could use the following OIDs for global counters :
+# wgIpsecEndpointPairTotalInAccKbytes  - The total inbound IPSec traffic  - 1.3.6.1.4.1.3097.5.1.2.3
+# wgIpsecEndpointPairTotalOutAccKbytes - The total outbound IPSec traffic - 1.3.6.1.4.1.3097.5.1.2.4
+# But we would then not satisfy filter options, let's then compute these ourselves.
+
 sub manage_selection {
     my ($self, %options) = @_;
     
@@ -120,6 +143,8 @@ sub manage_selection {
         $self->{tunnel}->{$instance} = { display => $name };
     }
 
+    my $total_in = 0;
+    my $total_out = 0;
     if (scalar(keys %{$self->{tunnel}}) > 0) {
         $options{snmp}->load(oids => [
                 map($_->{oid}, values(%$mapping2))
@@ -132,11 +157,13 @@ sub manage_selection {
             my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
             $result->{wgIpsecTunnelInKbytes} *= 1024 * 8;
             $result->{wgIpsecTunnelOutKbytes} *= 1024 * 8;
+            $total_in += $result->{wgIpsecTunnelInKbytes};
+            $total_out += $result->{wgIpsecTunnelOutKbytes};
             $self->{tunnel}->{$_} = { %{$self->{tunnel}->{$_}}, %$result };
         }
     }
 
-    $self->{global} = { total => scalar(keys %{$self->{tunnel}}) };
+    $self->{global} = { total => scalar(keys %{$self->{tunnel}}), total_in => $total_in, total_out => $total_out };
 
     $self->{cache_name} = 'watchguard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
@@ -165,7 +192,7 @@ Example: --filter-counters='tunnels-total'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'tunnels-total', 'tunnel-traffic-in', 'tunnel-traffic-out'.
+Can be: 'tunnels-total', 'tunnels-traffic-in-total', 'tunnels-traffic-out-total', 'tunnel-traffic-in', 'tunnel-traffic-out'.
 
 =back
 
