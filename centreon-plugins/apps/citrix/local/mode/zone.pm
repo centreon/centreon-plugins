@@ -31,13 +31,13 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                { 
-                                  "warning:s"           => { name => 'warning', },
-                                  "critical:s"          => { name => 'critical', },
-                                  "zone:s"              => { name => 'zone', },
-                                  "filter-zone"         => { name => 'filter_zone', },
-                                });
+    $options{options}->add_options(arguments => { 
+        'warning:s'   => { name => 'warning' },
+        'critical:s'  => { name => 'critical' },
+        'zone:s'      => { name => 'zone' },
+        'filter-zone' => { name => 'filter_zone' }
+    });
+
     $self->{wql_filter} = '';
     return $self;
 }
@@ -68,9 +68,11 @@ sub check_options {
 sub run {
     my ($self, %options) = @_;
     
-    $self->{output}->output_add(severity => 'Ok',
-                                short_msg => "All zones are ok");
-  
+    $self->{output}->output_add(
+        severity => 'Ok',
+        short_msg => 'All zones are ok'
+    );
+
     my $wmi = Win32::OLE->GetObject('winmgmts:root\citrix');
     if (!defined($wmi)) {
         $self->{output}->add_option_msg(short_msg => "Cant create server object:" . Win32::OLE->LastError());
@@ -89,14 +91,17 @@ sub run {
             $self->{output}->output_add(severity => $exit,
                                         short_msg => $numServers . " servers in zone '" . $zone . "'");
         }
-        $self->{output}->perfdata_add(label => 'servers_' . $zone,
-                                      value => $numServers,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'servers',
+            nlabel => 'zone.servers.count',
+            instances => $zone,
+            value => $numServers,
+            warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
+            critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
+            min => 0
+        );
     }
 
- 
     $self->{output}->display();
     $self->{output}->exit();
 }
