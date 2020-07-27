@@ -1087,7 +1087,7 @@ sub apply_pfdata_min {
     my ($self, %options) = @_;
 
     my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    eval "\$pattern_pf = '$options{args}->{pattern_pf}'";
     my $min;
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1121,7 +1121,7 @@ sub apply_pfdata_sum {
     my ($self, %options) = @_;
 
     my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    eval "\$pattern_pf = '$options{args}->{pattern_pf}'";
     my ($sum, $num) = (0, 0);
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
@@ -1138,7 +1138,7 @@ sub apply_pfdata_average {
     my ($self, %options) = @_;
 
     my $pattern_pf;
-    eval "\$pattern_pf = \"$options{args}->{pattern_pf}\"";
+    eval "\$pattern_pf = '$options{args}->{pattern_pf}'";
     my ($sum, $num) = (0, 0);
     for (my $i = 0; $i < scalar(@{$self->{perfdatas}}); $i++) {
         next if ($self->{perfdatas}->[$i]->{label} !~ /$pattern_pf/);
