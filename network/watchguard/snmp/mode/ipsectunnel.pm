@@ -140,11 +140,13 @@ sub manage_selection {
             instance_regexp => '^(.*)$'
         );
         $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+        # tunnel ID moved... so we use the display
         foreach (keys %{$self->{tunnel}}) {
             my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
             $result->{wgIpsecTunnelInKbytes} *= 1024 * 8;
             $result->{wgIpsecTunnelOutKbytes} *= 1024 * 8;
-            $self->{tunnel}->{$_} = { %{$self->{tunnel}->{$_}}, %$result };
+            $self->{tunnel}->{ $self->{tunnel}->{$_}->{display} } = { %{$self->{tunnel}->{$_}}, %$result };
+            delete $self->{tunnel}->{$_};
         }
     }
 
