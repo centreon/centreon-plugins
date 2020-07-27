@@ -82,8 +82,8 @@ sub set_counters {
         },
         { label => 'traffic-in', nlabel => 'vpn.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
-                output_change_bytes => 1,
                 output_template => 'Traffic in: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
@@ -91,8 +91,8 @@ sub set_counters {
         },
         { label => 'traffic-out', nlabel => 'vpn.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
-                output_change_bytes => 1,
                 output_template => 'Traffic out: %s %s/s',
+                output_change_bytes => 2,
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
