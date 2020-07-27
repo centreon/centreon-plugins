@@ -39,12 +39,48 @@ sub prefix_tunnel_output {
     return "Tunnel '" . $options{instance_value}->{display} . "' ";
 }
 
+sub custom_traffic_calc {
+    my ($self, %options) = @_;
+
+    my ($checked, $total_bits) = (0, 0);
+    foreach (keys %{$options{new_datas}}) {
+        if (/^$self->{instance}_traffic_$options{extra_options}->{label_ref}_/) {
+            $checked |= 1;
+            my $new_bits = $options{new_datas}->{$_};
+            next if (!defined($options{old_datas}->{$_}));
+            my $old_bits = $options{old_datas}->{$_};
+
+            $checked |= 2;
+            my $diff_bits = $new_bits - $old_bits;
+            if ($diff_bits < 0) {
+                $total_bits += $new_bits;
+            } else {
+                $total_bits += $diff_bits;
+            }
+        }
+    }
+
+    if ($checked == 0) {
+        $self->{error_msg} = 'skipped (no value)';
+        return -10;
+    }
+    if ($checked == 1) {
+        $self->{error_msg} = 'buffer creation';
+        return -1;
+    }
+
+    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
+    $self->{result_values}->{traffic_per_second} = $total_bits / $options{delta_time};
+    return 0;
+}
+
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
-        { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok' }
+        { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
@@ -60,20 +96,28 @@ sub set_counters {
 
     $self->{maps_counters}->{tunnel} = [
         { label => 'tunnel-traffic-in', nlabel => 'ipsec.tunnel.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'wgIpsecTunnelInKbytes', per_second => 1 }, { name => 'display' } ],
+                key_values => [],
+                manual_keys => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'in' },
                 output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
+                output_use => 'traffic_per_second',
+                threshold_use => 'traffic_per_second',
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', value => 'traffic_per_second', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'tunnel-traffic-out', nlabel => 'ipsec.tunnel.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'wgIpsecTunnelOutKbytes', per_second => 1 }, { name => 'display' } ],
+                key_values => [],
+                manual_keys => 1,
+                closure_custom_calc => $self->can('custom_traffic_calc'), closure_custom_calc_extra_options => { label_ref => 'out' },
                 output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
+                output_use => 'traffic_per_second', 
+                threshold_use => 'traffic_per_second',
                 perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                    { template => '%s', value => 'traffic_per_second', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         }
@@ -99,8 +143,12 @@ my $mapping = {
 
 my $oid_wgIpsecTunnelEntry = '.1.3.6.1.4.1.3097.6.5.1.2.1';
 my $mapping2 = {
-    wgIpsecTunnelInKbytes   => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.28' },
-    wgIpsecTunnelOutKbytes  => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.29' }
+    selector_remote_ip_one => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.20' }, # wgIpsecTunnelSelectorRemoteIPOne
+    selector_remote_ip_two => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.21' }, # wgIpsecTunnelSelectorRemoteIPTwo
+    selector_local_ip_one  => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.24' }, # wgIpsecTunnelSelectorLocalIPOne
+    selector_local_ip_two  => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.25' }, # wgIpsecTunnelSelectorLocalIPTwo
+    traffic_in             => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.28' }, # wgIpsecTunnelInKbytes
+    traffic_out            => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.29' } # wgIpsecTunnelOutKbytes
 };
 
 # We could use the following OIDs for global counters :
@@ -118,6 +166,7 @@ sub manage_selection {
     );
 
     $self->{tunnel} = {};
+    $self->{global} = { total => 0 };
     foreach (keys %$snmp_result) {
         next if (!/$mapping->{wgIpsecTunnelLocalAddr}->{oid}\.(.*)/);
         my $instance = $1;
@@ -130,6 +179,7 @@ sub manage_selection {
         }
 
         $self->{tunnel}->{$instance} = { display => $name };
+        $self->{global}->{total}++;
     }
 
     if (scalar(keys %{$self->{tunnel}}) > 0) {
@@ -140,17 +190,25 @@ sub manage_selection {
             instance_regexp => '^(.*)$'
         );
         $snmp_result = $options{snmp}->get_leef(nothing_quit => 1);
+
         # tunnel ID moved... so we use the display
-        foreach (keys %{$self->{tunnel}}) {
+        # we can have tunnels with same display
+        my @instances = keys %{$self->{tunnel}};
+        foreach (@instances) {
             my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
-            $result->{wgIpsecTunnelInKbytes} *= 1024 * 8;
-            $result->{wgIpsecTunnelOutKbytes} *= 1024 * 8;
-            $self->{tunnel}->{ $self->{tunnel}->{$_}->{display} } = { %{$self->{tunnel}->{$_}}, %$result };
+            $result->{traffic_in} = $result->{traffic_in} * 1024 * 8;
+            $result->{traffic_out} = $result->{traffic_out} * 1024 * 8;
+
+            my $uuid = $self->{tunnel}->{$_}->{display} . '_' . $result->{selector_local_ip_one} . '_' . $result->{selector_local_ip_two} . '_' .
+                $result->{selector_remote_ip_one} . '_' . $result->{selector_remote_ip_two};
+            $self->{tunnel}->{ $self->{tunnel}->{$_}->{display} } = { display => $self->{tunnel}->{$_}->{display} }
+                if (!defined($self->{tunnel}->{ $self->{tunnel}->{$_}->{display} }));
+            $self->{tunnel}->{ $self->{tunnel}->{$_}->{display} }->{'traffic_in_' . $uuid} = $result->{traffic_in};
+            $self->{tunnel}->{ $self->{tunnel}->{$_}->{display} }->{'traffic_out_' . $uuid} = $result->{traffic_out};
+
             delete $self->{tunnel}->{$_};
         }
     }
-
-    $self->{global} = { total => scalar(keys %{$self->{tunnel}}) };
 
     $self->{cache_name} = 'watchguard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
