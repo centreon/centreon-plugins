@@ -27,20 +27,50 @@ use warnings;
 use Digest::MD5 qw(md5_hex);
 use Socket;
 
+sub prefix_global_output {
+    my ($self, %options) = @_;
+
+    return 'Total ';
+}
+
+sub prefix_tunnel_output {
+    my ($self, %options) = @_;
+
+    return "Tunnel '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'global', type => 0 },
+        { name => 'global', type => 0, cb_prefix_output => 'prefix_global_output' },
         { name => 'tunnel', type => 1, cb_prefix_output => 'prefix_tunnel_output', message_multiple => 'All tunnels are ok' }
     ];
 
     $self->{maps_counters}->{global} = [
         { label => 'tunnels-total', nlabel => 'ipsec.tunnels.total.count', set => {
                 key_values => [ { name => 'total' } ],
-                output_template => 'Total Tunnels: %s',
+                output_template => 'tunnels: %s',
                 perfdatas => [
                     { template => '%s', min => 0 }
+                ]
+            }
+        },
+        { label => 'tunnels-traffic-in', nlabel => 'ipsec.tunnels.traffic.in.bitspersecond', set => {
+                key_values => [ { name => 'total_in', per_second => 1 } ],
+                output_template => 'traffic in: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'b/s' }
+                ]
+            }
+        },
+        { label => 'tunnels-traffic-out', nlabel => 'ipsec.tunnels.traffic.out.bitspersecond', set => {
+                key_values => [ { name => 'total_out', per_second => 1 } ],
+                output_template => 'traffic out: %s %s/s',
+                output_change_bytes => 2,
+                perfdatas => [
+                    { template => '%s', min => 0, unit => 'b/s' }
                 ]
             }
         }
@@ -49,7 +79,7 @@ sub set_counters {
     $self->{maps_counters}->{tunnel} = [
         { label => 'tunnel-traffic-in', nlabel => 'ipsec.tunnel.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'wgIpsecTunnelInKbytes', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic In : %s %s/s',
+                output_template => 'traffic in: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
@@ -58,7 +88,7 @@ sub set_counters {
         },
         { label => 'tunnel-traffic-out', nlabel => 'ipsec.tunnel.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'wgIpsecTunnelOutKbytes', per_second => 1 }, { name => 'display' } ],
-                output_template => 'Traffic Out : %s %s/s',
+                output_template => 'traffic out: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
                     { template => '%s', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
@@ -66,12 +96,6 @@ sub set_counters {
             }
         }
     ];
-}
-
-sub prefix_tunnel_output {
-    my ($self, %options) = @_;
-
-    return "Tunnel '" . $options{instance_value}->{display} . "' ";
 }
 
 sub new {
@@ -88,24 +112,30 @@ sub new {
 
 my $mapping = {
     wgIpsecTunnelLocalAddr  => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.2' },
-    wgIpsecTunnelPeerAddr   => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.3' },
+    wgIpsecTunnelPeerAddr   => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.3' }
 };
 
 my $oid_wgIpsecTunnelEntry = '.1.3.6.1.4.1.3097.6.5.1.2.1';
 my $mapping2 = {
     wgIpsecTunnelInKbytes   => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.28' },
-    wgIpsecTunnelOutKbytes  => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.29' },
+    wgIpsecTunnelOutKbytes  => { oid => '.1.3.6.1.4.1.3097.6.5.1.2.1.29' }
 };
+
+# We could use the following OIDs for global counters :
+# wgIpsecEndpointPairTotalInAccKbytes  - The total inbound IPSec traffic  - 1.3.6.1.4.1.3097.5.1.2.3
+# wgIpsecEndpointPairTotalOutAccKbytes - The total outbound IPSec traffic - 1.3.6.1.4.1.3097.5.1.2.4
+# But we would then not satisfy filter options, let's then compute these ourselves.
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{tunnel} = {};    
+
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_wgIpsecTunnelEntry,
         start => $mapping->{wgIpsecTunnelLocalAddr}->{oid},
         end => $mapping->{wgIpsecTunnelPeerAddr}->{oid}
     );
+
+    $self->{tunnel} = {};
     foreach (keys %$snmp_result) {
         next if (!/$mapping->{wgIpsecTunnelLocalAddr}->{oid}\.(.*)/);
         my $instance = $1;
@@ -120,6 +150,7 @@ sub manage_selection {
         $self->{tunnel}->{$instance} = { display => $name };
     }
 
+    my ($total_in, $total_out) = (0, 0);
     if (scalar(keys %{$self->{tunnel}}) > 0) {
         $options{snmp}->load(oids => [
                 map($_->{oid}, values(%$mapping2))
@@ -132,11 +163,13 @@ sub manage_selection {
             my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
             $result->{wgIpsecTunnelInKbytes} *= 1024 * 8;
             $result->{wgIpsecTunnelOutKbytes} *= 1024 * 8;
+            $total_in += $result->{wgIpsecTunnelInKbytes};
+            $total_out += $result->{wgIpsecTunnelOutKbytes};
             $self->{tunnel}->{$_} = { %{$self->{tunnel}->{$_}}, %$result };
         }
     }
 
-    $self->{global} = { total => scalar(keys %{$self->{tunnel}}) };
+    $self->{global} = { total => scalar(keys %{$self->{tunnel}}), total_in => $total_in, total_out => $total_out };
 
     $self->{cache_name} = 'watchguard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
@@ -165,7 +198,8 @@ Example: --filter-counters='tunnels-total'
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'tunnels-total', 'tunnel-traffic-in', 'tunnel-traffic-out'.
+Can be: 'tunnels-total', 'tunnels-traffic-in', 'tunnels-traffic-out',
+'tunnel-traffic-in', 'tunnel-traffic-out'.
 
 =back
 
