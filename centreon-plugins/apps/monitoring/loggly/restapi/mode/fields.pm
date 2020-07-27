@@ -38,16 +38,16 @@ sub set_counters {
                 key_values => [ { name => 'events' } ],
                 output_template => 'Matching events: %s',
                 perfdatas => [
-                    { template => '%s', value => 'events', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'fields', nlabel => 'fields.count', display_ok => 1, set => {
                 key_values => [ { name => 'fields' } ],
                 output_template => 'Matching fields: %s',
                 perfdatas => [
-                    { template => '%s', value => 'fields', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
     ];
@@ -57,10 +57,10 @@ sub set_counters {
                 key_values => [ { name => 'count' }, { name => 'display' } ],
                 output_template => 'matching events: %s',
                 perfdatas => [
-                    { template => '%s', value => 'count', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -116,10 +116,13 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->api_fields();
+    my $results = $options{custom}->api_fields(
+        time_period => $self->{option_results}->{time_period},
+        query => $self->{option_results}->{query},
+        field => $self->{option_results}->{field}
+    );
 
-    my $events = 0;
-    my $fields = 0;
+    my ($events, $fields) = (0, 0);
 
     $self->{field} = {};
     foreach (@{$results->{$self->{option_results}->{field}}}) {

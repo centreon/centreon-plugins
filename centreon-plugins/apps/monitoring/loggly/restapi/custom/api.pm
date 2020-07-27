@@ -26,7 +26,7 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use URI::Encode;
+use Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -44,14 +44,17 @@ sub new {
 
     if (!defined($options{noptions})) {
         $options{options}->add_options(arguments =>  {
-            'hostname:s'       => { name => 'hostname' },
-            'port:s'           => { name => 'port'},
-            'proto:s'          => { name => 'proto' },
-            'api-password:s'   => { name => 'api_password' },
-            'timeout:s'        => { name => 'timeout', default => 30 }
+            'hostname:s'             => { name => 'hostname' },
+            'port:s'                 => { name => 'port'},
+            'proto:s'                => { name => 'proto' },
+            'api-password:s'         => { name => 'api_password' },
+            'timeout:s'              => { name => 'timeout', default => 30 },
+            'unknown-http-status:s'  => { name => 'unknown_http_status' },
+            'warning-http-status:s'  => { name => 'warning_http_status' },
+            'critical-http-status:s' => { name => 'critical_http_status' }
         });
     }
-    
+
     $options{options}->add_help(package => __PACKAGE__, sections => 'REST API OPTIONS', once => 1);
 
     $self->{output} = $options{output};
@@ -71,19 +74,22 @@ sub set_defaults {}
 sub check_options {
     my ($self, %options) = @_;
 
-    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : undef;
+    $self->{hostname} = (defined($self->{option_results}->{hostname})) ? $self->{option_results}->{hostname} : '';
     $self->{port} = (defined($self->{option_results}->{port})) ? $self->{option_results}->{port} : 443;
     $self->{proto} = (defined($self->{option_results}->{proto})) ? $self->{option_results}->{proto} : 'https';
     $self->{timeout} = (defined($self->{option_results}->{timeout})) ? $self->{option_results}->{timeout} : 30;
     $self->{ssl_opt} = (defined($self->{option_results}->{ssl_opt})) ? $self->{option_results}->{ssl_opt} : undef;
-    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : undef;
+    $self->{api_password} = (defined($self->{option_results}->{api_password})) ? $self->{option_results}->{api_password} : '';
+    $self->{unknown_http_status} = (defined($self->{option_results}->{unknown_http_status})) ? $self->{option_results}->{unknown_http_status} : '%{http_code} < 200 or %{http_code} >= 300';
+    $self->{warning_http_status} = (defined($self->{option_results}->{warning_http_status})) ? $self->{option_results}->{warning_http_status} : '';
+    $self->{critical_http_status} = (defined($self->{option_results}->{critical_http_status})) ? $self->{option_results}->{critical_http_status} : '';
 
-    if (!defined($self->{hostname}) || $self->{hostname} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --hostname option.");
+    if ($self->{hostname} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --hostname option.');
         $self->{output}->option_exit();
     }
-    if (!defined($self->{api_password}) || $self->{api_password} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Need to specify --api-password option.");
+    if ($self->{api_password} eq '') {
+        $self->{output}->add_option_msg(short_msg => 'Need to specify --api-password option.');
         $self->{output}->option_exit();
     }
 
@@ -113,8 +119,11 @@ sub request_api {
     my ($self, %options) = @_;
 
     $self->settings();
-    my $content = $self->{http}->request(%options, 
-        warning_status => '', unknown_status => '%{http_code} < 200 or %{http_code} >= 300', critical_status => ''
+    my $content = $self->{http}->request(
+        %options, 
+        unknown_status => $self->{unknown_http_status},
+        warning_status => $self->{warning_http_status},
+        critical_status => $self->{critical_http_status}
     );
 
     my $decoded;
@@ -122,12 +131,10 @@ sub request_api {
         $decoded = JSON::XS->new->decode($content);
     };
     if ($@) {
-        $self->{output}->output_add(long_msg => $content, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
         $self->{output}->option_exit();
     }
     if (!defined($decoded)) {
-        $self->{output}->output_add(long_msg => $decoded, debug => 1);
         $self->{output}->add_option_msg(short_msg => "Error while retrieving data (add --debug option for detailed message)");
         $self->{output}->option_exit();
     }
@@ -138,29 +145,43 @@ sub request_api {
 sub internal_search {
     my ($self, %options) = @_;
 
-    my $uri = URI::Encode->new({encode_reserved => 1});
-    my $status = $self->request_api(method => 'GET', url_path => '/apiv2/search?size=1&from=-' . $self->{option_results}->{time_period} . 'm&q=' . $uri->encode($self->{option_results}->{query}));
+    my $status = $self->request_api(
+        method => 'GET',
+        url_path => '/apiv2/search',
+        get_param => [
+            'size=1',
+            'from=' . $options{time_period} . 'm',
+            'q=' . $options{query}
+        ]
+    );
     return $status->{rsid}->{id};
 }
 
 sub internal_events {
     my ($self, %options) = @_;
 
-    my $status = $self->request_api(method => 'GET', url_path => '/apiv2/events?rsid=' . $options{id});
+    my $status = $self->request_api(
+        method => 'GET',
+        url_path => '/apiv2/events',
+        get_param => ['rsid=' . $options{id}]
+    );
     return $status;
 }
 
 sub api_events {
     my ($self, %options) = @_;
 
-    my $id = $self->internal_search();
+    my $id = $self->internal_search(
+        time_period => $options{time_period},
+        query => $options{query}
+    );
     my $status = $self->internal_events(id => $id);
 
     # Get a proper output message
     my $message = '';
-    if(length($self->{option_results}->{output_field}) && scalar($status->{events}) && defined($status->{events}[0]->{event})) {
-        $message = $status->{events}[0]->{event};
-        for (split /\./, $self->{option_results}->{output_field}) {
+    if (length($options{output_field}) && scalar($status->{events}) && defined($status->{events}->[0]->{event})) {
+        $message = $status->{events}->[0]->{event};
+        for (split /\./, $options{output_field}) {
             if (defined($message->{$_})) {
                 $message = $message->{$_};
             } else {
@@ -171,8 +192,7 @@ sub api_events {
     }
 
     # Message may be messed-up with wrongly encoded characters, let's force some cleanup
-    utf8::decode($message);
-    utf8::encode($message);
+    $message = Encode::encode('UTF-8', $message);
     $message =~ s/[\r\n]//g;
     $message =~ s/^\s+|\s+$//g;
 
@@ -187,23 +207,32 @@ sub api_events {
 sub internal_fields {
     my ($self, %options) = @_;
 
-    my $uri = URI::Encode->new({encode_reserved => 1});
     # 300 limitation comes from the API : https://documentation.solarwinds.com/en/Success_Center/loggly/Content/admin/api-retrieving-data.htm
-    my $status = $self->request_api(method => 'GET', url_path => '/apiv2/fields/' . $self->{option_results}->{field} .'/?facet_size=300&from=-' . $self->{option_results}->{time_period} . 'm&q=' . $uri->encode($self->{option_results}->{query}));
+    my $status = $self->request_api(
+        method => 'GET',
+        url_path => '/apiv2/fields/'
+        get_param => [
+            'facet_size=300',
+            'from=' . $options{time_period} . 'm',
+            'q=' . $options{query}
+        ]
+    );
     return $status;
 }
 
 sub api_fields {
     my ($self, %options) = @_;
 
-    my $status = $self->internal_fields();
+    my $status = $self->internal_fields(
+        time_period => $options{time_period},
+        query => $options{query}
+    );
 
     # Fields may be messed-up with wrongly encoded characters, let's force some cleanup
-    foreach (@{$status->{$self->{option_results}->{field}}}) {
-        utf8::decode($_->{term});
-        utf8::encode($_->{term});
-        $_->{term} =~ s/[\r\n]//g;
-        $_->{term} =~ s/^\s+|\s+$//g;
+    for (my $i = 0; $i < scalar(@{$status->{ $options{field} }}); $i++) {
+        $status->{ $options{field} }->[$i]->{term} = Encode::encode('UTF-8', $status->{ $options{field} }->[$i]->{term});
+        $status->{ $options{field} }->[$i]->{term} =~ s/[\r\n]//g;
+        $status->{ $options{field} }->[$i]->{term} =~ s/^\s+|\s+$//g;
     }
 
     return $status;
