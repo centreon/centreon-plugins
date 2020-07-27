@@ -34,7 +34,7 @@ sub custom_usage_output {
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
     return sprintf(
-        'Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)',
+        'usage total: %s used: %s (%.2f%%) free: %s (%.2f%%)',
         $total_size_value . " " . $total_size_unit,
         $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
         $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
@@ -54,7 +54,7 @@ sub set_counters {
                 key_values => [ { name => 'count' } ],
                 output_template => 'Partitions count : %d',
                 perfdatas => [
-                    { label => 'count', value => 'count', template => '%d', min => 0 }
+                    { label => 'count', template => '%d', min => 0 }
                 ]
             }
         }
@@ -65,7 +65,7 @@ sub set_counters {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'used', value => 'used', template => '%d', min => 0, max => 'total',
+                    { label => 'used', template => '%d', min => 0, max => 'total',
                       unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -74,25 +74,25 @@ sub set_counters {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'free', value => 'free', template => '%d', min => 0, max => 'total',
+                    { label => 'free', template => '%d', min => 0, max => 'total',
                       unit => 'B', cast_int => 1, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'usage-prct', display_ok => 0, nlabel => 'storage.space.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'display' } ],
-                output_template => 'Used : %.2f %%',
+                output_template => 'used: %.2f %%',
                 perfdatas => [
-                    { label => 'used_prct', value => 'prct_used', template => '%.2f', min => 0, max => 100,
+                    { label => 'used_prct', template => '%.2f', min => 0, max => 100,
                       unit => '%', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
         { label => 'inodes', nlabel => 'storage.inodes.usage.percentage', set => {
                 key_values => [ { name => 'inodes' }, { name => 'display' } ],
-                output_template => 'Inodes Used: %s %%',
+                output_template => 'Inodes used: %s %%',
                 perfdatas => [
-                    { label => 'inodes', value => 'inodes', template => '%d',
+                    { label => 'inodes', template => '%d',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
@@ -123,7 +123,8 @@ sub new {
         'display-transform-dst:s' => { name => 'display_transform_dst' },
         'show-cache'              => { name => 'show_cache' },
         'space-reservation:s'     => { name => 'space_reservation' },
-        'force-use-mib-percent'   => { name => 'force_use_mib_percent' }
+        'force-use-mib-percent'   => { name => 'force_use_mib_percent' },
+        'force-counters32'        => { name => 'force_counters32' }
     });
 
     $self->{diskpath_id_selected} = [];
@@ -169,6 +170,17 @@ sub manage_selection {
     my ($self, %options) = @_;
     
     $self->get_selection(snmp => $options{snmp});
+
+    delete($mapping->{dskPercent}) if (!defined($self->{option_results}->{force_use_mib_percent}));
+    if (!defined($self->{option_results}->{force_counters32})) {
+        delete($mapping->{dskTotal32});
+        delete($mapping->{dskUsed32});
+    } else {
+        delete($mapping->{dskTotalLow});
+        delete($mapping->{dskTotalHigh});
+        delete($mapping->{dskUsedLow});
+        delete($mapping->{dskUsedHigh});
+    }
 
     $options{snmp}->load(
         oids => [ map($_->{oid}, values(%$mapping)) ],
@@ -378,6 +390,10 @@ The value is in percent of total (Default: none) (results like 'df' command).
 =item B<--force-use-mib-percent>
 
 Can be used if you have counters overload by big disks.
+
+=item B<--force-counters32>
+
+Force to use 32 bits counters. Should be used when 64 bits high/low components are not available.
 
 =back
 
