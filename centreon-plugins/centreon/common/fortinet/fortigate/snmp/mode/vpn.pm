@@ -46,7 +46,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'users', set => {
+        { label => 'users', nlabel => 'vpn.users.logged.count', set => {
                 key_values => [ { name => 'users' } ],
                 output_template => 'Logged users: %s',
                 perfdatas => [
@@ -54,7 +54,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'sessions', set => {
+        { label => 'sessions', nlabel => 'vpn.websessions.active.count', set => {
                 key_values => [ { name => 'sessions' }],
                 output_template => 'Active web sessions: %s',
                 perfdatas => [
@@ -62,9 +62,9 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'tunnels', set => {
+        { label => 'tunnels', nlabel => 'vpn.tunnels.active.count', set => {
                 key_values => [ { name => 'tunnels' } ],
-                output_template => 'Active Tunnels: %s',
+                output_template => 'Active tunnels: %s',
                 perfdatas => [
                     { label => 'active_tunnels', template => '%d', min => 0, unit => 'tunnels', label_extra_instance => 1 }
                 ]
@@ -80,19 +80,19 @@ sub set_counters {
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'traffic-in', set => {
+        { label => 'traffic-in', nlabel => 'vpn.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'traffic_in', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 1,
-                output_template => 'Traffic In: %s %s/s',
+                output_template => 'Traffic in: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
             }
         },
-        { label => 'traffic-out', set => {
+        { label => 'traffic-out', nlabel => 'vpn.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'traffic_out', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 1,
-                output_template => 'Traffic Out: %s %s/s',
+                output_template => 'Traffic out: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1 }
                 ]
@@ -235,8 +235,8 @@ sub manage_selection {
                 display => $name,
                 instance => $instance,
                 state => $result->{fgVpnTunEntStatus},
-                traffic_in => $result->{fgVpnTunEntInOctets},
-                traffic_out => $result->{fgVpnTunEntOutOctets},
+                traffic_in => $result->{fgVpnTunEntInOctets} * 8,
+                traffic_out => $result->{fgVpnTunEntOutOctets} * 8
             };
         }
     }    

@@ -30,75 +30,65 @@ use Digest::MD5 qw(md5_hex);
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'status : ' . $self->{result_values}->{status} . ' [admin: ' . $self->{result_values}->{admin} . ']';
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{display} = $options{new_datas}->{$self->{instance} . '_display'};
-    $self->{result_values}->{status} = $options{new_datas}->{$self->{instance} . '_status'};
-    $self->{result_values}->{admin} = $options{new_datas}->{$self->{instance} . '_admin'};
-    return 0;
+    return 'status: ' . $self->{result_values}->{status} . ' [admin: ' . $self->{result_values}->{admin} . ']';
 }
 
 sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All access points are ok', skipped_code => { -10 => 1 } },
+        { name => 'ap', type => 1, cb_prefix_output => 'prefix_ap_output', message_multiple => 'All access points are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{ap} = [
         { label => 'status', threshold => 0, set => {
                 key_values => [ { name => 'status' }, { name => 'admin' }, { name => 'display' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold
             }
         },
-        { label => 'in-traffic', set => {
+        { label => 'in-traffic', nlabel => 'accesspoint.traffic.in.bitspersecond', set => {
                 key_values => [ { name => 'in', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
-                output_template => 'traffic in : %s %s/s',
+                output_template => 'traffic in: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_in', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'out-traffic', set => {
+        { label => 'out-traffic', nlabel => 'accesspoint.traffic.out.bitspersecond', set => {
                 key_values => [ { name => 'out', per_second => 1 }, { name => 'display' } ],
                 output_change_bytes => 2,
-                output_template => 'traffic out : %s %s/s',
+                output_template => 'traffic out: %s %s/s',
                 perfdatas => [
                     { label => 'traffic_out', template => '%.2f',
                       min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'clients', set => {
+        { label => 'clients', nlabel => 'accesspoint.clients.current.count', set => {
                 key_values => [ { name => 'clients' }, { name => 'display' } ],
-                output_template => 'current client connections : %s',
+                output_template => 'current client connections: %s',
                 perfdatas => [
                     { label => 'clients', template => '%s',
                       min => 0, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'cpu', set => {
+        { label => 'cpu', nlabel => 'accesspoint.cpu.utilization.percentage', set => {
                 key_values => [ { name => 'cpu' }, { name => 'display' } ],
-                output_template => 'cpu usage : %.2f %%',
+                output_template => 'cpu usage: %.2f %%',
                 perfdatas => [
                     { label => 'cpu', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
                 ]
             }
         },
-        { label => 'memory', set => {
+        { label => 'memory', nlabel => 'accesspoint.memory.usage.bytes', set => {
                 key_values => [ { name => 'memory' }, { name => 'display' } ],
-                output_template => 'memory usage : %.2f %%',
+                output_template => 'memory usage: %.2f %%',
                 perfdatas => [
                     { label => 'memory', template => '%.2f',
                       unit => '%', min => 0, max => 100, label_extra_instance => 1, instance_use => 'display' }
@@ -206,7 +196,7 @@ sub manage_selection {
 
     foreach (keys %{$self->{ap}}) {
         my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);        
-        
+
         $self->{ap}->{$_}->{status} = $result->{fgWcWtpSessionConnectionState};
         $self->{ap}->{$_}->{in} = defined($result->{fgWcWtpSessionWtpByteRxCount}) ? ($result->{fgWcWtpSessionWtpByteRxCount} * 8) : undef;
         $self->{ap}->{$_}->{out} = defined($result->{fgWcWtpSessionWtpByteTxCount}) ? ($result->{fgWcWtpSessionWtpByteTxCount} * 8) : undef;
@@ -215,7 +205,7 @@ sub manage_selection {
         $self->{ap}->{$_}->{memory} = $result->{fgWcWtpSessionWtpMemoryUsage};
     }
 
-    $self->{cache_name} = "fortigate_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+    $self->{cache_name} = 'fortigate_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }

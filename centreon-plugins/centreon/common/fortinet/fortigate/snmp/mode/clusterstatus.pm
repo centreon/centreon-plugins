@@ -31,7 +31,7 @@ sub custom_status_output {
     my ($self, %options) = @_;
     
     return sprintf(
-        "status is '%s' [Hostname: %s] [Role: %s] [Checksum: %s]",
+        "status is '%s' [hostname: %s] [role: %s] [checksum: %s]",
         $self->{result_values}->{sync_status},
         $self->{result_values}->{hostname},
         $self->{result_values}->{role},
@@ -58,14 +58,14 @@ sub custom_status_calc {
 
 sub prefix_status_output {
     my ($self, %options) = @_;
-    
+
     return "Node '" . $options{instance_value}->{serial} . "' ";
 }
 
 sub prefix_global_output {
     my ($self, %options) = @_;
-    
-    return "Nodes ";
+
+    return 'Nodes ';
 }
 
 sub set_counters {
@@ -77,33 +77,33 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-nodes', display_ok => 0, set => {
+        { label => 'total-nodes', nlabel => 'cluster.nodes.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'total_nodes' } ],
-                output_template => 'Total nodes: %d',
+                output_template => 'total nodes: %d',
                 perfdatas => [
                     { label => 'total_nodes', template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'synchronized', set => {
+        { label => 'synchronized', nlabel => 'cluster.nodes.synchronized.count', set => {
                 key_values => [ { name => 'synchronized' } ],
-                output_template => 'Synchronized: %d',
+                output_template => 'synchronized: %d',
                 perfdatas => [
                     { label => 'synchronized_nodes', template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'not-synchronized', set => {
+        { label => 'not-synchronized', nlabel => 'cluster.nodes.notsynchronized.count',set => {
                 key_values => [ { name => 'not_synchronized' } ],
-                output_template => 'Not Synchronized: %d',
+                output_template => 'not synchronized: %d',
                 perfdatas => [
                     { label => 'not_synchronized_nodes', template => '%d', min => 0 }
                 ]
             }
         },
-        { label => 'total-checksums', display_ok => 0, set => {
+        { label => 'total-checksums', nlabel => 'cluster.checksums.total.count', display_ok => 0, set => {
                 key_values => [ { name => 'total_checksums' } ],
-                output_template => 'Total Checksums: %d',
+                output_template => 'total checksums: %d',
                 perfdatas => [
                     { label => 'total_checksums', template => '%d', min => 0 }
                 ]
@@ -140,7 +140,7 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
+
     $self->change_macros(macros => ['warning_status', 'critical_status']);
 }
 
@@ -174,7 +174,7 @@ sub manage_selection {
         $self->{output}->option_exit();
     }
 
-    $self->{output}->output_add(short_msg => "HA mode: " . $map_ha_mode->{ $mode->{$oid_fgHaSystemMode} });
+    $self->{output}->output_add(short_msg => 'HA mode: ' . $map_ha_mode->{ $mode->{$oid_fgHaSystemMode} });
 
     my $snmp_result = $options{snmp}->get_table(
         oid => $oid_fgHaStatsEntry,
