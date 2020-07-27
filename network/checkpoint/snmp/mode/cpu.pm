@@ -25,39 +25,6 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
-sub set_counters {
-    my ($self, %options) = @_;
-
-    $self->{maps_counters_type} = [
-        { name => 'cpu_avg', type => 0, cb_prefix_output => 'prefix_cpu_avg_output' },
-        { name => 'cpu_core', type => 1, cb_prefix_output => 'prefix_cpu_core_output' }
-    ];
-
-    $self->{maps_counters}->{cpu_avg} = [
-        { label => 'average', nlabel => 'cpu.utilization.percentage', set => {
-                key_values => [ { name => 'average' }, { name => 'count' } ],
-                output_template => '%.2f %%',
-                perfdatas => [
-                    { label => 'total_cpu_avg', value => 'average', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
-            }
-        },
-    ];
-
-    $self->{maps_counters}->{cpu_core} = [
-        { label => 'core', nlabel => 'core.cpu.utilization.percentage', set => {
-                key_values => [ { name => 'cpu' }, { name => 'display' } ],
-                output_template => 'usage : %.2f %%',
-                perfdatas => [
-                    { label => 'cpu', value => 'cpu', template => '%.2f',
-                      min => 0, max => 100, unit => '%', label_extra_instance => 1, instance_use => 'display' },
-                ],
-            }
-        },
-    ];
-}
-
 sub prefix_cpu_avg_output {
     my ($self, %options) = @_;
 
@@ -70,9 +37,40 @@ sub prefix_cpu_core_output {
     return "CPU '" . $options{instance_value}->{display} . "' ";
 }
 
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'cpu_avg', type => 0, cb_prefix_output => 'prefix_cpu_avg_output' },
+        { name => 'cpu_core', type => 1, cb_prefix_output => 'prefix_cpu_core_output' }
+    ];
+
+    $self->{maps_counters}->{cpu_avg} = [
+        { label => 'average', nlabel => 'cpu.utilization.percentage', set => {
+                key_values => [ { name => 'average' } ],
+                output_template => '%.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
+            }
+        }
+    ];
+
+    $self->{maps_counters}->{cpu_core} = [
+        { label => 'core', nlabel => 'core.cpu.utilization.percentage', set => {
+                key_values => [ { name => 'cpu' } ],
+                output_template => 'usage: %.2f %%',
+                perfdatas => [
+                    { template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+}
+
 sub new {
     my ($class, %options) = @_;
-    my $self = $class->SUPER::new(package => __PACKAGE__, %options);
+    my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
@@ -84,11 +82,11 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{cpu_avg} = {};
-    $self->{cpu_core} = {};
-
     my $oid_cputable = '.1.3.6.1.4.1.2620.1.6.7.5.1.5';
     my $result = $options{snmp}->get_table(oid => $oid_cputable, nothing_quit => 1);
+
+    $self->{cpu_avg} = {};
+    $self->{cpu_core} = {};
 
     my $cpu = 0;
     my $i = 0;
@@ -118,7 +116,7 @@ __END__
 
 =head1 MODE
 
-Check CPUs
+Check cpu usage.
 
 =over 8
 
