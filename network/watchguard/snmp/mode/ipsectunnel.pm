@@ -55,24 +55,6 @@ sub set_counters {
                     { template => '%s', min => 0 }
                 ]
             }
-        },
-        { label => 'tunnels-traffic-in', nlabel => 'ipsec.tunnels.traffic.in.bitspersecond', set => {
-                key_values => [ { name => 'total_in', per_second => 1 } ],
-                output_template => 'traffic in: %s %s/s',
-                output_change_bytes => 2,
-                perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s' }
-                ]
-            }
-        },
-        { label => 'tunnels-traffic-out', nlabel => 'ipsec.tunnels.traffic.out.bitspersecond', set => {
-                key_values => [ { name => 'total_out', per_second => 1 } ],
-                output_template => 'traffic out: %s %s/s',
-                output_change_bytes => 2,
-                perfdatas => [
-                    { template => '%s', min => 0, unit => 'b/s' }
-                ]
-            }
         }
     ];
 
@@ -150,7 +132,6 @@ sub manage_selection {
         $self->{tunnel}->{$instance} = { display => $name };
     }
 
-    my ($total_in, $total_out) = (0, 0);
     if (scalar(keys %{$self->{tunnel}}) > 0) {
         $options{snmp}->load(oids => [
                 map($_->{oid}, values(%$mapping2))
@@ -163,13 +144,11 @@ sub manage_selection {
             my $result = $options{snmp}->map_instance(mapping => $mapping2, results => $snmp_result, instance => $_);
             $result->{wgIpsecTunnelInKbytes} *= 1024 * 8;
             $result->{wgIpsecTunnelOutKbytes} *= 1024 * 8;
-            $total_in += $result->{wgIpsecTunnelInKbytes};
-            $total_out += $result->{wgIpsecTunnelOutKbytes};
             $self->{tunnel}->{$_} = { %{$self->{tunnel}->{$_}}, %$result };
         }
     }
 
-    $self->{global} = { total => scalar(keys %{$self->{tunnel}}), total_in => $total_in, total_out => $total_out };
+    $self->{global} = { total => scalar(keys %{$self->{tunnel}}) };
 
     $self->{cache_name} = 'watchguard_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' . $self->{mode} . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all')) . '_' .
