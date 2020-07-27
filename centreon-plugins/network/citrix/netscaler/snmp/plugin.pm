@@ -42,6 +42,7 @@ sub new {
             'vserver-status'        => 'network::citrix::netscaler::snmp::mode::vserverstatus',
             'memory'                => 'network::citrix::netscaler::snmp::mode::memory',
             'connections'           => 'network::citrix::netscaler::snmp::mode::connections',
+            'uptime'                => 'snmp_standard::mode::uptime'
     );
 
     return $self;
