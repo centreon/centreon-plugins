@@ -20,66 +20,65 @@
 
 package network::citrix::netscaler::snmp::mode::cpu;
     
-use base qw(centreon::plugins::mode);
+use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
+
+sub prefix_cpu_output {
+    my ($self, %options) = @_;
+
+    return "CPU '" . $options{instance_value}->{name} . "' usage";
+}
+
+sub set_counters {
+    my ($self, %options) = @_;
+
+    $self->{maps_counters_type} = [
+        { name => 'cpu', type => 1, cb_prefix_output => 'prefix_cpu_output', message_multiple => 'All CPUs are ok' }
+    ];
+
+    $self->{maps_counters}->{cpu} = [
+        { label => 'usage', nlabel => 'cpu.utilization.percentage', set => {
+                key_values => [ { name => 'cpu_usage' }, { name => 'name' } ],
+                output_template => ': %.2f %%',
+                perfdatas => [
+                    { label => 'cpu', template => '%.2f', min => 0, max => 100, unit => '%', label_extra_instance => 1 }
+                ]
+            }
+        }
+    ];
+}
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'warning:s'  => { name => 'warning' },
-        'critical:s' => { name => 'critical' },
     });
 
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::init(%options);
-    
-    if (($self->{perfdata}->threshold_validate(label => 'warning', value => $self->{option_results}->{warning})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong warning threshold '" . $self->{option_results}->{warning} . "'.");
-       $self->{output}->option_exit();
-    }
-    if (($self->{perfdata}->threshold_validate(label => 'critical', value => $self->{option_results}->{critical})) == 0) {
-       $self->{output}->add_option_msg(short_msg => "Wrong critical threshold '" . $self->{option_results}->{critical} . "'.");
-       $self->{output}->option_exit();
-    }
-}
+my $mapping = {
+    name       => { oid => '.1.3.6.1.4.1.5951.4.1.1.41.6.1.1' }, # nsCPUname
+    cpu_usage  => { oid => '.1.3.6.1.4.1.5951.4.1.1.41.6.1.2' }  # nsCPUusage
+};
 
-sub run {
+sub manage_selection {
     my ($self, %options) = @_;
-    $self->{snmp} = $options{snmp};
 
     my $oid_nsCPUEntry = '.1.3.6.1.4.1.5951.4.1.1.41.6';
-    my $oid_nsCPUname = '.1.3.6.1.4.1.5951.4.1.1.41.6.1.1';
-    my $oid_nsCPUusage = '.1.3.6.1.4.1.5951.4.1.1.41.6.1.2';
-    my $result = $self->{snmp}->get_table(oid => $oid_nsCPUEntry, nothing_quit => 1);
-    
-    foreach my $oid ($self->{snmp}->oid_lex_sort(keys %$result)) {
-        next if ($oid !~ /^$oid_nsCPUname\.(.*)$/);
-        my $name = $result->{$oid};
-        my $value = $result->{$oid_nsCPUusage . '.' . $1};
-        
-        my $exit = $self->{perfdata}->threshold_check(value => $value,
-                                                      threshold => [ { label => 'critical', 'exit_litteral' => 'critical' }, { label => 'warning', exit_litteral => 'warning' } ]);
-        
-        $self->{output}->output_add(severity => $exit,
-                                    short_msg => sprintf("CPU '%s' Usage: %.2f%%", $name, $value));
-        $self->{output}->perfdata_add(label => "cpu_" . $name, unit => '%',
-                                      value => $value,
-                                      warning => $self->{perfdata}->get_perfdata_for_output(label => 'warning'),
-                                      critical => $self->{perfdata}->get_perfdata_for_output(label => 'critical'),
-                                      min => 0, max => 100);
-    }
+    my $snmp_result = $options{snmp}->get_table(oid => $oid_nsCPUEntry, nothing_quit => 1);
 
-    $self->{output}->display();
-    $self->{output}->exit();
+    $self->{cpu} = {};
+    foreach (keys %$snmp_result) {
+        next if (! /^$mapping->{name}->{oid}\.(.*)$/);
+
+        my $result = $options{snmp}->map_instance(mapping => $mapping, results => $snmp_result, instance => $1);
+        $self->{cpu}->{ $result->{name} } = $result;
+    }
 }
     
 1;
@@ -92,11 +91,11 @@ Check cpu usage (NS-MIB-smiv2).
 
 =over 8
 
-=item B<--warning>
+=item B<--warning-usage>
 
 Threshold warning in percent.
 
-=item B<--critical>
+=item B<--critical-usage>
 
 Threshold critical in percent.
 
