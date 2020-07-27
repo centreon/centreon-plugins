@@ -33,14 +33,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'events', nlabel => 'events.count', display_ok => 1, set => {
+        { label => 'events', nlabel => 'events.count', set => {
                 key_values => [ { name => 'events' } ],
                 output_template => 'Matching events: %s',
                 perfdatas => [
-                    { template => '%s', value => 'events', min => 0 },
-                ],
+                    { template => '%s', value => 'events', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -76,7 +76,11 @@ sub check_options {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $results = $options{custom}->api_events();
+    my $results = $options{custom}->api_events(
+        time_period => $self->{option_results}->{time_period},
+        query => $self->{option_results}->{query},
+        output_field => $self->{option_results}->{output_field}
+    );
     $self->{global} = { events => $results->{total_events} };
     if (length($results->{message})) {
         $self->{output}->output_add(long_msg => 'Last ' . $self->{option_results}->{output_field} . ': ' . $results->{message});

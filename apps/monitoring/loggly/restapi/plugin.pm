@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '1.0';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'events' => 'apps::monitoring::loggly::restapi::mode::events',
-        'fields' => 'apps::monitoring::loggly::restapi::mode::fields',
-    );
+        'fields' => 'apps::monitoring::loggly::restapi::mode::fields'
+    };
 
-    $self->{custom_modes}{api} = 'apps::monitoring::loggly::restapi::custom::api';
+    $self->{custom_modes}->{api} = 'apps::monitoring::loggly::restapi::custom::api';
     return $self;
 }
 
