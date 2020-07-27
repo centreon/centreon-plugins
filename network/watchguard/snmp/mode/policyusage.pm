@@ -34,40 +34,40 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{policy} = [
-        { label => 'current-connections', set => {
+        { label => 'current-connections', nlabel => 'policy.connections.current.count', set => {
                 key_values => [ { name => 'wgPolicyCurrActiveConns' }, { name => 'display' } ],
-                output_template => 'Current connections : %s',
+                output_template => 'current connections: %s',
                 perfdatas => [
-                    { label => 'current_connections', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'current_connections', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'total-connections', set => {
+        { label => 'total-connections', nlabel => 'policy.connections.total.count', set => {
                 key_values => [ { name => 'wgPolicyActiveStreams', diff => 1 }, { name => 'display' } ],
-                output_template => 'Total connections : %s',
+                output_template => 'total connections: %s',
                 perfdatas => [
-                    { label => 'total_connections', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'total_connections', template => '%s', min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'l3-traffic', set => {
+        { label => 'l3-traffic', nlabel => 'policy.traffic.l3.bitspersecond', set => {
                 key_values => [ { name => 'wgPolicyL3PackageBytes', per_second => 1 }, { name => 'display' } ],
-                output_template => 'L3 Traffic : %s %s/s',
+                output_template => 'L3 traffic: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_l3', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'traffic_l3', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
-        { label => 'l2-traffic', set => {
+        { label => 'l2-traffic', nlabel => 'policy.traffic.l2.bitspersecond', set => {
                 key_values => [ { name => 'wgPolicyL2PackageBytes', per_second => 1 }, { name => 'display' } ],
-                output_template => 'L2 Traffic : %s %s/s',
+                output_template => 'L2 traffic: %s %s/s',
                 output_change_bytes => 2,
                 perfdatas => [
-                    { label => 'traffic_l2', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'traffic_l2', template => '%.2f', min => 0, unit => 'b/s', label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -94,7 +94,7 @@ my $mapping = {
     wgPolicyL3PackageBytes  => { oid => '.1.3.6.1.4.1.3097.4.2.2.1.3' },
     wgPolicyActiveStreams   => { oid => '.1.3.6.1.4.1.3097.4.2.2.1.12' },
     wgPolicyCurrActiveConns => { oid => '.1.3.6.1.4.1.3097.4.2.2.1.18' },
-    wgPolicyL2PackageBytes  => { oid => '.1.3.6.1.4.1.3097.4.2.2.1.19' },
+    wgPolicyL2PackageBytes  => { oid => '.1.3.6.1.4.1.3097.4.2.2.1.19' }
 };
 
 my $oid_wgPolicyEntry = '.1.3.6.1.4.1.3097.4.2.2.1';
@@ -108,9 +108,10 @@ sub manage_selection {
     }
     
     $self->{policy} = {};
-    my $snmp_result = $options{snmp}->get_table(oid => $oid_wgPolicyEntry,
-                                                nothing_quit => 1);
-
+    my $snmp_result = $options{snmp}->get_table(
+        oid => $oid_wgPolicyEntry,
+        nothing_quit => 1
+    );
 
     foreach my $oid (keys %{$snmp_result}) {
         next if ($oid !~ /^$mapping->{wgPolicyName}->{oid}\.(.*)$/);
@@ -127,8 +128,12 @@ sub manage_selection {
         if ($result->{wgPolicyCurrActiveConns} == 4294967295) {
             $result->{wgPolicyCurrActiveConns} = 0;
         }
-        
-        $self->{policy}->{$instance} = { display => $result->{wgPolicyName}, 
+
+        $result->{wgPolicyL3PackageBytes} *= 8;
+        $result->{wgPolicyL2PackageBytes} *= 8;
+
+        $self->{policy}->{$instance} = {
+            display => $result->{wgPolicyName}, 
             %$result
         };
     }
@@ -137,8 +142,8 @@ sub manage_selection {
         $self->{output}->add_option_msg(short_msg => "No policy found.");
         $self->{output}->option_exit();
     }
-    
-    $self->{cache_name} = "watchguard_" . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
+
+    $self->{cache_name} = 'watchguard_' . $self->{mode} . '_' . $options{snmp}->get_hostname()  . '_' . $options{snmp}->get_port() . '_' .
         (defined($self->{option_results}->{filter_counters}) ? md5_hex($self->{option_results}->{filter_counters}) : md5_hex('all')) . '_' .
         (defined($self->{option_results}->{filter_name}) ? md5_hex($self->{option_results}->{filter_name}) : md5_hex('all'));
 }
