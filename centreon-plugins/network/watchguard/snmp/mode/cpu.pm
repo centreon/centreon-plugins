@@ -27,39 +27,36 @@ use warnings;
 
 sub set_counters {
     my ($self, %options) = @_;
-    
+
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_cpu_output' }
     ];
-    
+
     $self->{maps_counters}->{global} = [
-        { label => '1min', set => {
+        { label => '1min', nlabel => 'cpu.utilization.1m.percentage', set => {
                 key_values => [ { name => '1min' } ],
-                output_template => '1 minute : %.2f %%',
+                output_template => '1 minute: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_1min', value => '1min', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu_1min', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
-        { label => '5min', set => {
+        { label => '5min', nlabel => 'cpu.utilization.5m.percentage', set => {
                 key_values => [ { name => '5min' } ],
-                output_template => '5 minutes : %.2f %%',
+                output_template => '5 minutes: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_5min', value => '5min', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu_5min', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
         },
-        { label => '15min', set => {
+        { label => '15min', nlabel => 'cpu.utilization.15m.percentage', set => {
                 key_values => [ { name => '15min' } ],
-                output_template => '15 minutes : %.2f %%',
+                output_template => '15 minutes: %.2f %%',
                 perfdatas => [
-                    { label => 'cpu_15min', value => '15min', template => '%.2f',
-                      min => 0, max => 100, unit => '%' },
-                ],
+                    { label => 'cpu_15min', template => '%.2f', min => 0, max => 100, unit => '%' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -73,11 +70,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { 
+    });
+
     return $self;
 }
 
@@ -92,13 +88,18 @@ sub manage_selection {
     my $oid_wgSystemCpuUtil1 = '.1.3.6.1.4.1.3097.6.3.77.0';
     my $oid_wgSystemCpuUtil5 = '.1.3.6.1.4.1.3097.6.3.78.0';
     my $oid_wgSystemCpuUtil15 = '.1.3.6.1.4.1.3097.6.3.79.0';
-    my $snmp_result = $options{snmp}->get_leef(oids => [
+    my $snmp_result = $options{snmp}->get_leef(
+        oids => [
             $oid_wgSystemCpuUtil1, $oid_wgSystemCpuUtil5, $oid_wgSystemCpuUtil15
-        ], nothing_quit => 1);
+        ], 
+        nothing_quit => 1
+    );
 
-    $self->{global} = { '1min' => $snmp_result->{$oid_wgSystemCpuUtil1} / 100,
-                        '5min' => $snmp_result->{$oid_wgSystemCpuUtil5} / 100,
-                        '15min' => $snmp_result->{$oid_wgSystemCpuUtil15} / 100 };
+    $self->{global} = {
+        '1min' => $snmp_result->{$oid_wgSystemCpuUtil1} / 100,
+        '5min' => $snmp_result->{$oid_wgSystemCpuUtil5} / 100,
+        '15min' => $snmp_result->{$oid_wgSystemCpuUtil15} / 100
+    };
 }
 
 1;
@@ -114,16 +115,11 @@ Check CPU usages.
 =item B<--filter-counters>
 
 Only display some counters (regexp can be used).
-Example: --filter-counters='^(1min|5min)$'
+Example: --filter-counters='^1min|5min$'
 
-=item B<--warning-*>
+=item B<--warning-*> B<--critical-*>
 
 Threshold warning.
-Can be: '1min', '5min', '15min'.
-
-=item B<--critical-*>
-
-Threshold critical.
 Can be: '1min', '5min', '15min'.
 
 =back
