@@ -30,12 +30,12 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
-        'folder'   => 'apps::citrix::local::mode::folder',
-        'license'  => 'apps::citrix::local::mode::license',
-        'session'  => 'apps::citrix::local::mode::session',
-        'zone'     => 'apps::citrix::local::mode::zone',
-    );
+    $self->{modes} = {
+        'folder'  => 'apps::citrix::local::mode::folder',
+        'license' => 'apps::citrix::local::mode::license',
+        'session' => 'apps::citrix::local::mode::session',
+        'zone'    => 'apps::citrix::local::mode::zone'
+    };
 
     return $self;
 }
