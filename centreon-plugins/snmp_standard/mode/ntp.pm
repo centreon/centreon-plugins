@@ -93,7 +93,7 @@ sub get_target_time {
     if (defined($self->{option_results}->{timezone}) && $self->{option_results}->{timezone} ne '') {
         $timezone = $self->{option_results}->{timezone};
     } elsif (defined($remote_date[9])) {
-        $timezone = sprintf("%s%02d%02d", $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
+        $timezone = sprintf('%s%02d%02d', $remote_date[7], $remote_date[8], $remote_date[9]); # format +0630
     }
 
     my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
@@ -113,7 +113,12 @@ sub get_target_time {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my ($disant_time, $remote_date, $timezone) = $self->get_target_time(%options);
+    my ($distant_time, $remote_date, $timezone) = $self->get_target_time(%options);
+    if ($distant_time == 0) {
+        $self->{output}->add_option_msg(short_msg => "Couldn't get system date: local time: 0");
+        $self->{output}->option_exit();
+    }
+
     my $ref_time;
     if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
@@ -122,12 +127,8 @@ sub manage_selection {
             %ntp = Net::NTP::get_ntp_response($self->{option_results}->{ntp_hostname}, $self->{option_results}->{ntp_port});
         };
         if ($@) {
-            $self->{output}->output_add(
-                severity => 'UNKNOWN',
-                short_msg => "Couldn't connect to ntp server: " . $@
-            );
-            $self->{output}->display();
-            $self->{output}->exit();
+            $self->{output}->add_option_msg(short_msg => "Couldn't connect to ntp server: " . $@);
+            $self->{output}->option_exit();
         }
 
         $ref_time = $ntp{'Transmit Timestamp'};
@@ -135,17 +136,17 @@ sub manage_selection {
         $ref_time = time();
     }
 
-    my $offset = $disant_time - $ref_time;
+    my $offset = $distant_time - $ref_time;
     my $remote_date_formated = sprintf(
         'Local Time : %02d-%02d-%02dT%02d:%02d:%02d (%s)',
         $remote_date->[0], $remote_date->[1], $remote_date->[2],
         $remote_date->[3], $remote_date->[4], $remote_date->[5], $timezone
     );
 
-    $self->{offset} = { 
+    $self->{offset} = {
         offset => sprintf('%d', $offset),
-        date => $remote_date_formated,
-    };    
+        date => $remote_date_formated
+    };
 }
 
 1;
