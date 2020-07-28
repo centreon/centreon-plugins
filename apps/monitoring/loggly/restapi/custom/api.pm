@@ -26,7 +26,6 @@ use strict;
 use warnings;
 use centreon::plugins::http;
 use JSON::XS;
-use Encode;
 
 sub new {
     my ($class, %options) = @_;
@@ -128,7 +127,7 @@ sub request_api {
 
     my $decoded;
     eval {
-        $decoded = JSON::XS->new->decode($content);
+        $decoded = JSON::XS->new->utf8->decode($content);
     };
     if ($@) {
         $self->{output}->add_option_msg(short_msg => "Cannot decode json response: $@");
@@ -150,7 +149,7 @@ sub internal_search {
         url_path => '/apiv2/search',
         get_param => [
             'size=1',
-            'from=' . $options{time_period} . 'm',
+            'from=-' . $options{time_period} . 'm',
             'q=' . $options{query}
         ]
     );
@@ -192,7 +191,6 @@ sub api_events {
     }
 
     # Message may be messed-up with wrongly encoded characters, let's force some cleanup
-    $message = Encode::encode('UTF-8', $message);
     $message =~ s/[\r\n]//g;
     $message =~ s/^\s+|\s+$//g;
 
@@ -210,10 +208,10 @@ sub internal_fields {
     # 300 limitation comes from the API : https://documentation.solarwinds.com/en/Success_Center/loggly/Content/admin/api-retrieving-data.htm
     my $status = $self->request_api(
         method => 'GET',
-        url_path => '/apiv2/fields/'
+        url_path => '/apiv2/fields/' . $options{field} . '/',
         get_param => [
             'facet_size=300',
-            'from=' . $options{time_period} . 'm',
+            'from=-' . $options{time_period} . 'm',
             'q=' . $options{query}
         ]
     );
@@ -225,12 +223,12 @@ sub api_fields {
 
     my $status = $self->internal_fields(
         time_period => $options{time_period},
+        field => $options{field},
         query => $options{query}
     );
 
     # Fields may be messed-up with wrongly encoded characters, let's force some cleanup
     for (my $i = 0; $i < scalar(@{$status->{ $options{field} }}); $i++) {
-        $status->{ $options{field} }->[$i]->{term} = Encode::encode('UTF-8', $status->{ $options{field} }->[$i]->{term});
         $status->{ $options{field} }->[$i]->{term} =~ s/[\r\n]//g;
         $status->{ $options{field} }->[$i]->{term} =~ s/^\s+|\s+$//g;
     }
