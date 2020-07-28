@@ -162,7 +162,7 @@ sub check_options {
         }
     }
 
-    $self->{overload_th} = {};
+    $self->{overload_th} = [];
     foreach my $val (@{$self->{option_results}->{threshold_overload}}) {
         next if (!defined($val) || $val eq '');
         my @values = split (/,/, $val);
