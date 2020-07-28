@@ -28,10 +28,7 @@ use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(controlstation|datamover)$';
-    
+
     $self->{cb_hook2} = 'cmd_execute';
     
     $self->{thresholds} = {
@@ -71,19 +68,21 @@ sub set_system {
 sub cmd_execute {
     my ($self, %options) = @_;
     
-    ($self->{stdout}) = centreon::plugins::misc::execute(output => $self->{output},
-                                                         options => $self->{option_results},
-                                                         sudo => $self->{option_results}->{sudo},
-                                                         command => $self->{option_results}->{command},
-                                                         command_path => $self->{option_results}->{command_path},
-                                                         command_options => $self->{option_results}->{command_options});
+    ($self->{stdout}) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'hostname:s'        => { name => 'hostname' },
         'remote'            => { name => 'remote' },
@@ -94,7 +93,7 @@ sub new {
         'sudo'              => { name => 'sudo' },
         'command:s'         => { name => 'command', default => 'getreason' },
         'command-path:s'    => { name => 'command_path', default => '/nas/sbin' },
-        'command-options:s' => { name => 'command_options', default => '2>&1' },
+        'command-options:s' => { name => 'command_options', default => '2>&1' }
     });
 
     return $self;

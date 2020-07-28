@@ -28,8 +28,7 @@ use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(hwstatus|temperature|memory)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|memory)$';
     
     $self->{cb_hook2} = 'cmd_execute';
@@ -37,8 +36,8 @@ sub set_system {
     $self->{thresholds} = {
         hwstatus => [
             ['BATTERY OK', 'OK'],
-            ['.*', 'CRITICAL'],
-        ],
+            ['.*', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::devices::safenet::hsm::protecttoolkit::mode::components';
@@ -48,12 +47,15 @@ sub set_system {
 sub cmd_execute {
     my ($self, %options) = @_;
     
-    ($self->{stdout}) = centreon::plugins::misc::execute(output => $self->{output},
-                                                         options => $self->{option_results},
-                                                         sudo => $self->{option_results}->{sudo},
-                                                         command => $self->{option_results}->{command},
-                                                         command_path => $self->{option_results}->{command_path},
-                                                         command_options => $self->{option_results}->{command_options});
+    ($self->{stdout}) = centreon::plugins::misc::execute(
+        output => $self->{output},
+        options => $self->{option_results},
+        sudo => $self->{option_results}->{sudo},
+        command => $self->{option_results}->{command},
+        command_path => $self->{option_results}->{command_path},
+        command_options => $self->{option_results}->{command_options}
+    );
+
     $self->{stdout} =~ s/\r//msg;
     my ($model, $firmware, $fm_status, $transport_mode, $security_mode) = ('unknown', 'unknown', 'unknown', 'unknown', 'unknown');
     $model = $1 if ($self->{stdout} =~ /^Model\s+:\s+(.*?)\s*\n/msi);
@@ -68,30 +70,30 @@ sub cmd_execute {
 
 sub display {
     my ($self, %options) = @_;
-    
-    $self->{output}->output_add(severity => 'OK',
-                                short_msg => sprintf("Hardware status is OK")
-                                );
+
+    $self->{output}->output_add(
+        severity => 'OK',
+        short_msg => sprintf("Hardware status is OK")
+    );
 }
 
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                  "hostname:s"        => { name => 'hostname' },
-                                  "remote"            => { name => 'remote' },
-                                  "ssh-option:s@"     => { name => 'ssh_option' },
-                                  "ssh-path:s"        => { name => 'ssh_path' },
-                                  "ssh-command:s"     => { name => 'ssh_command', default => 'ssh' },
-                                  "timeout:s"         => { name => 'timeout', default => 30 },
-                                  "sudo"              => { name => 'sudo' },
-                                  "command:s"         => { name => 'command', default => 'ctconf' },
-                                  "command-path:s"    => { name => 'command_path' },
-                                  "command-options:s" => { name => 'command_options', default => '-v' },
-                                });
+
+    $options{options}->add_options(arguments => {
+        'hostname:s'        => { name => 'hostname' },
+        'remote'            => { name => 'remote' },
+        'ssh-option:s@'     => { name => 'ssh_option' },
+        'ssh-path:s'        => { name => 'ssh_path' },
+        'ssh-command:s'     => { name => 'ssh_command', default => 'ssh' },
+        'timeout:s'         => { name => 'timeout', default => 30 },
+        'sudo'              => { name => 'sudo' },
+        'command:s'         => { name => 'command', default => 'ctconf' },
+        'command-path:s'    => { name => 'command_path' },
+        'command-options:s' => { name => 'command_options', default => '-v' }
+    });
 
     return $self;
 }

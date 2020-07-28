@@ -27,9 +27,9 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|amperage|coolingdevice)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -37,7 +37,7 @@ sub set_system {
             ['unknown', 'UNKNOWN'],
             ['enabled', 'OK'],
             ['notReady', 'WARNING'],
-            ['enabledAndNotReady', 'WARNING'],
+            ['enabledAndNotReady', 'WARNING']
         ],
         'default.status' => [
             ['other', 'UNKNOWN'],
@@ -45,7 +45,7 @@ sub set_system {
             ['ok', 'OK'],
             ['nonCritical', 'WARNING'],
             ['critical', 'CRITICAL'],
-            ['nonRecoverable', 'CRITICAL'],
+            ['nonRecoverable', 'CRITICAL']
         ],
         'probe.status' => [
             ['other', 'UNKNOWN'],
@@ -57,7 +57,7 @@ sub set_system {
             ['nonCriticalLower', 'WARNING'],
             ['criticalLower', 'CRITICAL'],
             ['nonRecoverableLower', 'CRITICAL'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         'pdisk.state' => [
             ['unknown', 'UNKNOWN'],
@@ -69,31 +69,26 @@ sub set_system {
             ['failed', 'CRITICAL'],
             ['non-raid', 'OK'],
             ['removed', 'OK'],
-            ['readonly', 'WARNING'],
+            ['readonly', 'WARNING']
         ],
         'pdisk.smartalert' => [
             ['off', 'OK'],
-            ['on', 'WARNING'],
+            ['on', 'WARNING']
         ],
         'vdisk.state' => [
             ['unknown', 'UNKNOWN'],
             ['online', 'OK'],
             ['failed', 'CRITICAL'],
-            ['degraded', 'WARNING'],
-        ],
+            ['degraded', 'WARNING']
+        ]
     };
 
     $self->{components_path} = 'hardware::server::dell::idrac::snmp::mode::components';
-    $self->{components_module} = ['psu', 'punit', 'temperature', 'voltage', 'amperage', 
+    $self->{components_module} = [
+        'psu', 'punit', 'temperature', 'voltage', 'amperage', 
         'systembattery', 'coolingunit', 'coolingdevice', 'processor', 'memory', 'pci', 'network', 
-        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'];
-
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(' .
-        '(psu|punit|temperature|voltage|amperage|systembattery|coolingunit|coolingdevice|processor|memory|pci|network|slot|fru|storagectrl|storagebattery|pdisk)\.status' .
-        '|(punit|temperature|voltage|amperage|systembattery|coolingunit|coolingdevice|processor|memory|pci|pdisk|vdisk)\.state' .
-        '|(pdisk)\.smartalert' .
-        ')$';
+        'slot', 'fru', 'storagectrl', 'storagebattery', 'pdisk', 'vdisk'
+    ];
 }
 
 sub snmp_execute {
@@ -107,11 +102,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

@@ -32,7 +32,6 @@ use centreon::common::radlan::snmp::mode::components::resources qw(
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(?:fan|psu|temperature)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
 
     $self->{cb_hook2} = 'snmp_execute';

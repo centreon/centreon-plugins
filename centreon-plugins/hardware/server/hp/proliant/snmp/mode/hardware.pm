@@ -28,9 +28,7 @@ use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(ilo|cpu|idectl|ideldrive|idepdrive|pc|psu|sasctl|sasldrive|saspdrive|scsictl|scsildrive|scsipdrive|fcahostctl|fcaexternalctl|fcaexternalacc|fcaldrive|fcapdrive|dactl|daacc|daldrive|dapdrive|fan|pnic|lnic|temperature)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
 
     $self->{cb_hook1} = 'get_system_information';
@@ -42,14 +40,14 @@ sub set_system {
             ['ok', 'OK'],
             ['degraded', 'WARNING'],
             ['failed', 'CRITICAL'],
-            ['disabled', 'OK'],
+            ['disabled', 'OK']
         ],
         ideldrive => [
             ['other', 'UNKNOWN'],
             ['ok', 'OK'],
             ['rebuilding', 'WARNING'],
             ['degraded', 'WARNING'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         sasldrive => [
             ['other', 'UNKNOWN'],
@@ -57,7 +55,7 @@ sub set_system {
             ['degraded', 'WARNING'],
             ['rebuilding', 'WARNING'],
             ['failed', 'CRITICAL'],
-            ['offline', 'CRITICAL'],
+            ['offline', 'CRITICAL']
         ],
         scsildrive => [
             ['other', 'UNKNOWN'],
@@ -70,7 +68,7 @@ sub set_system {
             ['rebuilding', 'WARNING'],
             ['wrongDrive', 'CRITICAL'],
             ['badConnect', 'CRITICAL'],
-            ['disabled', 'OK'],
+            ['disabled', 'OK']
         ],
         fcaexternalaccbattery => [
             ['other', 'UNKNOWN'],
@@ -78,7 +76,7 @@ sub set_system {
             ['degraded', 'WARNING'],
             ['failed', 'CRITICAL'],
             ['recharging', 'WARNING'],
-            ['not present', 'OK'],
+            ['not present', 'OK']
         ],
         fcaldrive => [
             ['other', 'UNKNOWN'],
@@ -95,7 +93,7 @@ sub set_system {
             ['notAvailable', 'WARNING'],
             ['hardError', 'CRITICAL'],
             ['queuedForExpansion', 'WARNING'],
-            ['shutdown', 'WARNING'],
+            ['shutdown', 'WARNING']
         ],
         daaccbattery => [
             ['other', 'UNKNOWN'],
@@ -103,7 +101,7 @@ sub set_system {
             ['degraded', 'WARNING'],
             ['failed', 'CRITICAL'],
             ['recharging', 'WARNING'],
-            ['not present', 'OK'],
+            ['not present', 'OK']
         ],
         daldrive => [
             ['other', 'UNKNOWN'],
@@ -120,39 +118,41 @@ sub set_system {
             ['notAvailable', 'WARNING'],
             ['hardError', 'CRITICAL'],
             ['queuedForExpansion', 'WARNING'],
-            ['shutdown', 'WARNING'],
+            ['shutdown', 'WARNING']
         ],
         lnic => [
             ['other', 'OK'],
             ['ok', 'OK'],
             ['degraded', 'WARNING'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         temperature => [
             ['other', 'OK'],
             ['ok', 'OK'],
             ['degraded', 'WARNING'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         # ilo, pnic, fan, dapdrive, daacc, dactl, fcapdrive, fcaexternalacc, fcaexternalctl, fcahostctl, scsipdrive, scsictl, saspdrive, sasctl, psu, pc, idepdrive, idectl
         default => [
             ['other', 'UNKNOWN'],
             ['ok', 'OK'],
             ['degraded', 'WARNING'],
-            ['failed', 'CRITICAL'],
-        ],
+            ['failed', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::server::hp::proliant::snmp::mode::components';
-    $self->{components_module} = ['cpu', 'idectl', 'ideldrive', 'idepdrive', 'pc', 'psu',
+    $self->{components_module} = [
+        'cpu', 'idectl', 'ideldrive', 'idepdrive', 'pc', 'psu',
         'sasctl', 'sasldrive', 'saspdrive', 'scsictl', 'scsildrive', 'scsipdrive',
         'fcahostctl', 'fcaexternalctl', 'fcaexternalacc', 'fcaldrive', 'fcapdrive',
-        'dactl', 'daacc', 'daldrive', 'dapdrive', 'fan', 'pnic', 'lnic', 'temperature', 'ilo'];
+        'dactl', 'daacc', 'daldrive', 'dapdrive', 'fan', 'pnic', 'lnic', 'temperature', 'ilo'
+    ];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -161,11 +161,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

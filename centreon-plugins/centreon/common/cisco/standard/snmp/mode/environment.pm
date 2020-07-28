@@ -29,7 +29,6 @@ use centreon::plugins::misc;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|temperature|voltage|module|physical|sensor)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|sensor.*)$';
 
     $self->{cb_hook2} = 'snmp_execute';

@@ -28,7 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(vimm|ca|psu|fan|gfc|lfc)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
     
     $self->{cb_hook2} = 'snmp_execute';

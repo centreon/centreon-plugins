@@ -28,10 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    # To check with a regexp
-    #$self->{regexp_threshold_overload_check_section_option} = '';
-    #$self->{cb_threshold_overload_check_section_option} = 'callbackname';
-
     #$self->{regexp_threshold_numeric_check_section_option} = '';
     #$self->{cb_threshold_numeric_check_section_option} = 'callbackname';
 
@@ -92,7 +88,7 @@ sub new {
     if ($self->{performance} == 1) {
         $options{options}->add_options(arguments => {
             'warning:s@'  => { name => 'warning' },
-            'critical:s@' => { name => 'critical' },
+            'critical:s@' => { name => 'critical' }
         });
     }
 
@@ -101,14 +97,14 @@ sub new {
     if ($self->{filter_exclude} == 1) {
         $options{options}->add_options(arguments => {
             'exclude:s'     => { name => 'exclude' },
-            'filter:s@'     => { name => 'filter' },
+            'filter:s@'     => { name => 'filter' }
         });
     }
     $self->{absent} = (defined($options{no_absent}) && $options{no_absent} == 1) ?
         0 : 1;
     if ($self->{absent} == 1) {
         $options{options}->add_options(arguments => {
-            'absent-problem:s@' => { name => 'absent_problem' },
+            'absent-problem:s@' => { name => 'absent_problem' }
         });
     }
 
@@ -126,7 +122,7 @@ sub new {
         foreach my $component (@{$self->{components_module}}) {
             $options{options}->add_options(arguments => {
                 'warning-count-' . $component . ':s'  => { name => 'warning_count_' . $component },
-                'critical-count-' . $component . ':s' => { name => 'critical_count_' . $component },
+                'critical-count-' . $component . ':s' => { name => 'critical_count_' . $component }
             });
         }
     }
@@ -181,23 +177,12 @@ sub check_options {
         } else {
              ($section, $instance, $status, $filter) = @values;
         }
-        if (defined($self->{regexp_threshold_overload_check_section_option}) && 
-            $section !~ /$self->{regexp_threshold_overload_check_section_option}/) {
-            $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload section '" . $val . "'.");
-            $self->{output}->option_exit();
-        }
-        $self->call_object_callback(
-            method_name => $self->{cb_threshold_overload_check_section_option}, 
-            section => $section,
-            option_value => $val
-        );
 
         if ($self->{output}->is_litteral_status(status => $status) == 0) {
             $self->{output}->add_option_msg(short_msg => "Wrong threshold-overload status '" . $val . "'.");
             $self->{output}->option_exit();
         }
-        $self->{overload_th}->{$section} = [] if (!defined($self->{overload_th}->{$section}));
-        push @{$self->{overload_th}->{$section}}, {filter => $filter, status => $status, instance => $instance };
+        push @{$self->{overload_th}}, { section => $section, filter => $filter, status => $status, instance => $instance };
     }
 
     if ($self->{performance} == 1) {
@@ -466,9 +451,9 @@ sub get_severity {
     my ($self, %options) = @_;
     my $status = 'UNKNOWN'; # default 
 
-    if (defined($self->{overload_th}->{$options{section}})) {
-        foreach (@{$self->{overload_th}->{$options{section}}}) {            
-            if ($options{value} =~ /$_->{filter}/i && 
+     foreach (@{$self->{overload_th}}) {
+        if ($options{section} =~ /$_->{section}/i) {
+            if ($options{value} =~ /$_->{filter}/i &&
                 (!defined($options{instance}) || $options{instance} =~ /$_->{instance}/)) {
                 $status = $_->{status};
                 return $status;

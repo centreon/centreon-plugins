@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(?:fan|voltage|temperature|psu)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:fan|voltage|temperature)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -37,16 +36,16 @@ sub set_system {
         psu => [
             ['good', 'OK'],
             ['failed', 'CRITICAL'],
-            ['notPowered', 'WARNING'],
+            ['notPowered', 'WARNING']
         ],
         fan => [
             ['good', 'OK'],
-            ['failed', 'CRITICAL'],
+            ['failed', 'CRITICAL']
         ],
         default => [
             ['inRange', 'OK'],
-            ['outOfRange', 'CRITICAL'],
-        ],
+            ['outOfRange', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'network::allied::snmp::mode::components';
@@ -65,8 +64,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

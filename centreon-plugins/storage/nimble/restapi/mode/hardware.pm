@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-        
-    $self->{regexp_threshold_overload_check_section_option} = '^(?:disk|fan|psu|temperature)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:fan|temperature)$';
 
     $self->{cb_hook2} = 'execute_custom';

@@ -29,14 +29,12 @@ use centreon::plugins::misc;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^fan|psu|voltage|sf$';
-    
     $self->{cb_hook2} = 'command_execute';
     
     $self->{thresholds} = {        
         default => [
-            ['^(?!(OK)$)' => 'CRITICAL'],
-        ],
+            ['^(?!(OK)$)' => 'CRITICAL']
+        ]
     };
     
     $self->{components_exec_load} = 0;
@@ -63,7 +61,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'hostname:s'        => { name => 'hostname' },
         'remote'            => { name => 'remote' },
@@ -74,7 +72,7 @@ sub new {
         'sudo'              => { name => 'sudo' },
         'command:s'         => { name => 'command', default => 'lom' },
         'command-path:s'    => { name => 'command_path', default => '/usr/sbin' },
-        'command-options:s' => { name => 'command_options', default => '-fpv 2>&1'},
+        'command-options:s' => { name => 'command_options', default => '-fpv 2>&1'}
     });
 
     return $self;

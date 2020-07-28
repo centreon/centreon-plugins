@@ -27,17 +27,15 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|board)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
         default => [
             ['disabled', 'OK'],
             ['ok', 'OK'],
-            ['failed', 'CRITICAL'],
-        ],
+            ['failed', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'network::polycom::rmx::snmp::mode::components';
@@ -48,7 +46,7 @@ my %map_status = (1 => 'disabled', 2 => 'ok', 3 => 'failed');
 my $mapping = {
     hardwareFanStatus               => { oid => '.1.3.6.1.4.1.13885.110.1.3.2.1', map => \%map_status },
     hardwarePowerSupplyStatus       => { oid => '.1.3.6.1.4.1.13885.110.1.3.3.1', map => \%map_status },
-    hardwareIntegratedBoardStatus   => { oid => '.1.3.6.1.4.1.13885.110.1.3.4.1', map => \%map_status },
+    hardwareIntegratedBoardStatus   => { oid => '.1.3.6.1.4.1.13885.110.1.3.4.1', map => \%map_status }
 };
 
 sub snmp_execute {
@@ -64,11 +62,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

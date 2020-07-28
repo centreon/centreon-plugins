@@ -28,7 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^sensors$';
     $self->{regexp_threshold_numeric_check_section_option} = '^sensors$';
 
     $self->{cb_hook1} = 'get_system_information';

@@ -27,9 +27,8 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(harddisk|fan|psu|temperature)$';
-    $self->{regexp_threshold_overload_check_section_option} = '^(component|cpu|harddisk|fan|logicaldrive|memory|pcie|psu|raidcontroller)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -40,14 +39,14 @@ sub set_system {
             ['major', 'CRITICAL'],
             ['critical', 'CRITICAL'],
             ['absence', 'UNKNOWN'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         'logicaldrive' => [
             ['offline', 'OK'],
             ['partial degraded', 'WARNING'],
             ['degraded', 'CRITICAL'],
             ['optimal', 'OK'],
-            ['unknown', 'UNKNOWN'],
+            ['unknown', 'UNKNOWN']
         ],
         'raidcontroller' => [
             ['memory correctable error', 'WARNING'],
@@ -55,13 +54,15 @@ sub set_system {
             ['memory ECC error reached limit', 'CRITICAL'],
             ['NVRAM uncorrectable error', 'CRITICAL'],
             ['ok', 'OK'],
-            ['unknown', 'UNKNOWN'],
-        ],
+            ['unknown', 'UNKNOWN']
+        ]
     };
 
     $self->{components_path} = 'hardware::server::huawei::ibmc::snmp::mode::components';
-    $self->{components_module} = ['component', 'cpu', 'harddisk', 'fan', 'logicaldrive',
-        'memory', 'pcie', 'psu', 'raidcontroller', 'temperature'];
+    $self->{components_module} = [
+        'component', 'cpu', 'harddisk', 'fan', 'logicaldrive',
+        'memory', 'pcie', 'psu', 'raidcontroller', 'temperature'
+    ];
 }
 
 sub snmp_execute {
@@ -75,11 +76,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

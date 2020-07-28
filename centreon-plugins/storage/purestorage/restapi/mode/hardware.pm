@@ -27,12 +27,11 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(entity)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
-    
+
     $self->{cb_hook2} = 'restapi_execute';
-    
+
     $self->{thresholds} = {
         entity => [
             ['ok', 'OK'],
@@ -53,10 +52,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_load_components => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
+
+    $options{options}->add_options(arguments => { });
 
     return $self;
 }

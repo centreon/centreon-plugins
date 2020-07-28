@@ -29,7 +29,6 @@ use hardware::pdu::schleifenbauer::gateway::snmp::mode::components::resources qw
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|humidity|contact)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|humidity|contact)$';
 
     $self->{cb_hook2} = 'snmp_execute';
@@ -44,7 +43,7 @@ sub snmp_execute {
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => [
         { oid => $oid_deviceName },
-        { oid => $oid_pdumeasuresEntry },
+        { oid => $oid_pdumeasuresEntry }
     ]);
 }
 
@@ -53,8 +52,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

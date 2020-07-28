@@ -27,9 +27,8 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(fan|temperature|voltage)$';
-    $self->{regexp_threshold_overload_check_section_option} = '^(psu)$';
     
     $self->{cb_hook2} = 'snmp_execute';
     
@@ -37,8 +36,8 @@ sub set_system {
         'psu' => [
             ['ok', 'OK'],
             ['critical', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
-        ],
+            ['unknown', 'UNKNOWN']
+        ]
     };
 
     $self->{components_path} = 'network::barracuda::cloudgen::snmp::mode::components';
@@ -56,10 +55,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-    });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

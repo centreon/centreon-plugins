@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(disk)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(fan|temperature|power)$';
     
     $self->{cb_hook1} = 'get_version'; # before the loads
@@ -59,7 +58,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
 
     return $self;

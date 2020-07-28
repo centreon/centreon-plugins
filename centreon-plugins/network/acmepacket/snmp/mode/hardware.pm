@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(voltage|temperature|fan|psu)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(voltage|temperature|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';    
@@ -42,8 +41,8 @@ sub set_system {
             ['shutdown', 'CRITICAL'],
             ['notPresent', 'OK'],
             ['notFunctioning', 'CRITICAL'],
-            ['unknown', 'UNKNOWN'],
-        ],
+            ['unknown', 'UNKNOWN']
+        ]
     };
     
     $self->{components_path} = 'network::acmepacket::snmp::mode::components';
@@ -61,11 +60,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

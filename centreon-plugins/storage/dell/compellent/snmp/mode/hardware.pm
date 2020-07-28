@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(ctrl|disk|encl|ctrlfan|ctrlpower|ctrlvoltage|ctrltemp|enclfan|enclpower|encliomod|encltemp|volume|cache|server|sc)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(ctrltemp|ctrlvoltage|ctrlfan|encltemp)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -43,8 +41,10 @@ sub set_system {
     };
     
     $self->{components_path} = 'storage::dell::compellent::snmp::mode::components';
-    $self->{components_module} = ['ctrl', 'disk', 'ctrlfan', 'ctrlpower', 'ctrlvoltage', 'ctrltemp',
-        'encl', 'enclfan', 'enclpower', 'encliomod', 'encltemp', 'volume', 'cache', 'server', 'sc'];
+    $self->{components_module} = [
+        'ctrl', 'disk', 'ctrlfan', 'ctrlpower', 'ctrlvoltage', 'ctrltemp',
+        'encl', 'enclfan', 'enclpower', 'encliomod', 'encltemp', 'volume', 'cache', 'server', 'sc'
+    ];
 }
 
 sub snmp_execute {
@@ -58,11 +58,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => { });
+
     return $self;
 }
 

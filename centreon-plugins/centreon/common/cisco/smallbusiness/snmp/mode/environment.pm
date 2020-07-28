@@ -32,7 +32,6 @@ use centreon::common::cisco::smallbusiness::snmp::mode::components::resources qw
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(?:fan|psu|temperature)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^temperature$';
 
     $self->{cb_hook2} = 'snmp_execute';
@@ -44,13 +43,13 @@ sub set_system {
             ['warning', 'WARNING'],
             ['critical', 'CRITICAL'],
             ['shutdown', 'CRITICAL'],
-            ['notFunctioning', 'CRITICAL'],
+            ['notFunctioning', 'CRITICAL']
         ],
         temperature => [
             ['ok', 'OK'],
             ['unavailable', 'OK'],
-            ['nonoperational', 'CRITICAL'],
-        ],
+            ['nonoperational', 'CRITICAL']
+        ]
     };
 
     $self->{components_path} = 'centreon::common::cisco::smallbusiness::snmp::mode::components';
@@ -82,8 +81,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

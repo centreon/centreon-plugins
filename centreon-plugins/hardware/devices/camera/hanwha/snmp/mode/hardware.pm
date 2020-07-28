@@ -27,19 +27,17 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^service|sdcard$';
 
     $self->{cb_hook2} = 'snmp_execute';    
     $self->{thresholds} = {
         service => [
             ['low', 'OK'],
-            ['high', 'CRITICAL'],
+            ['high', 'CRITICAL']
         ],
         sdcard => [
             ['normal', 'OK'],
-            ['fail', 'CRITICAL'],
-        ],
+            ['fail', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::devices::camera::hanwha::snmp::mode::components';
@@ -58,9 +56,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1, no_performance => 1, no_absent => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
-    
+
     return $self;
 }
 

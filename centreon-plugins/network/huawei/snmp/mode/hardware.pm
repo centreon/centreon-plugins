@@ -29,7 +29,6 @@ use centreon::plugins::statefile;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|temperature)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(fan|temperature)$';
     
     $self->{cb_hook1} = 'init_cache';
@@ -38,8 +37,8 @@ sub set_system {
     $self->{thresholds} = {
         fan => [
             ['abnormal', 'CRITICAL'],
-            ['normal', 'OK'],
-        ],
+            ['normal', 'OK']
+        ]
     };
     
     $self->{components_path} = 'network::huawei::snmp::mode::components';
@@ -64,10 +63,10 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
-        'reload-cache-time:s'   => { name => 'reload_cache_time', default => 180 },
-        'short-name'            => { name => 'short_name' },
+        'reload-cache-time:s' => { name => 'reload_cache_time', default => 180 },
+        'short-name'          => { name => 'short_name' }
     });
 
     $self->{statefile_cache} = centreon::plugins::statefile->new(%options);    

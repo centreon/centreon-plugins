@@ -28,8 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|module)$';
-    
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {

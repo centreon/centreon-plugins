@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|humidity|switch|serial|water)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|humidity)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -43,23 +42,23 @@ sub set_system {
             ['lowCritical', 'CRITICAL'],
             ['sensorError', 'CRITICAL'],
             ['relayOn', 'OK'],
-            ['relayOff', 'OK'],
+            ['relayOff', 'OK']
         ],
         default2 => [
             ['noStatus', 'OK'],
             ['normal', 'OK'],
             ['critical', 'CRITICAL'],
-            ['sensorError', 'CRITICAL'],
-        ],
+            ['sensorError', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'hardware::sensors::akcp::snmp::mode::components';
     $self->{components_module} = ['temperature', 'humidity', 'switch', 'serial', 'water'];
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -68,11 +67,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 
