@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(disk|enclosure|fru|sensor|vdisk)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = 
         '^(sensor)$';
     

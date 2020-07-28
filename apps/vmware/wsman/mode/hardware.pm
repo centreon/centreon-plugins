@@ -29,8 +29,6 @@ use apps::vmware::wsman::mode::components::resources qw($mapping_HealthState $ma
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(omc_discretesensor|omc_fan|omc_psu|vmware_storageextent|vmware_controller|vmware_storagevolume|vmware_battery|vmware_sassataport|cim_card|cim_computersystem|cim_numericsensor|cim_memory|cim_processor|cim_recordlog)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(cim_numericsensor)$';
     
     $self->{cb_hook1} = 'get_type';

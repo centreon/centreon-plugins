@@ -28,7 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|voltage)$';
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan.speed|voltage)$';
 
     $self->{cb_hook2} = 'snmp_execute';
@@ -36,8 +35,8 @@ sub set_system {
     $self->{thresholds} = {
         fan => [
             ['abnormal', 'CRITICAL'],
-            ['normal', 'OK'],
-        ],
+            ['normal', 'OK']
+        ]
     };
 
     $self->{components_path} = 'network::raisecom::snmp::mode::components';
@@ -56,9 +55,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

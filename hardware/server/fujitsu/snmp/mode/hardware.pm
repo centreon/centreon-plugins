@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|fan|psu|voltage|cpu|memory)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan|voltage|power)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -46,7 +45,7 @@ sub set_system {
             ['hot-spare', 'OK'],
             ['mirror', 'OK'],
             ['raid', 'OK'],
-            ['hidden', 'OK'],
+            ['hidden', 'OK']
         ],        
         cpu => [
             ['unknown', 'UNKNOWN'],
@@ -56,7 +55,7 @@ sub set_system {
             ['error', 'CRITICAL'],
             ['prefailure-warning', 'WARNING'],
             ['fail', 'CRITICAL'], # can be failed also
-            ['missing-termination', 'WARNING'],
+            ['missing-termination', 'WARNING']
         ],        
         voltage => [
             ['unknown', 'UNKNOWN'],
@@ -66,7 +65,7 @@ sub set_system {
             ['too-high', 'WARNING'],
             ['out-of-range', 'CRITICAL'],
             ['battery-prefailure', 'CRITICAL'],
-            ['warning', 'WARNING'],
+            ['warning', 'WARNING']
         ],        
         fan => [
             ['unknown', 'UNKNOWN'],
@@ -92,7 +91,7 @@ sub set_system {
             ['not-available', 'OK'],
             ['temperature-warning', 'WARNING'], # can be also temperature-warning-toohot
             ['temperature-critical-toohot', 'CRITICAL'],
-            ['temperature-normal', 'OK'],            
+            ['temperature-normal', 'OK']         
         ],        
         psu => [
             ['unknown', 'UNKNOWN'],
@@ -110,8 +109,8 @@ sub set_system {
             ['non-redundant-ac-fail', 'WARNING'],
             
             ['degraded', 'WARNING'],
-            ['critical', 'CRITICAL'],
-        ],
+            ['critical', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::server::fujitsu::snmp::mode::components';
@@ -120,7 +119,7 @@ sub set_system {
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }
@@ -129,11 +128,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

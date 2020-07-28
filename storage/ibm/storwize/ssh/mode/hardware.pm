@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(array|drive|enclosure|enclosurebattery|enclosurecanister|enclosurepsu|host|portfc|portsas|vdisk|node|quorum|mdisk)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(systemstats)$';
     
     $self->{cb_hook2} = 'ssh_execute';
@@ -83,8 +81,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     $self->{ssh_commands} = '';
     return $self;

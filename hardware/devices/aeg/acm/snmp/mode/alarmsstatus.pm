@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(simple|multiple)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -37,12 +35,12 @@ sub set_system {
             ['true', 'CRITICAL'],
             ['false', 'OK'],
             ['on', 'CRITICAL'],
-            ['off', 'OK'],
+            ['off', 'OK']
         ],
         multiple => [
             ['true', 'CRITICAL'],
-            ['false', 'OK'],
-        ],
+            ['false', 'OK']
+        ]
     };
     
     $self->{components_path} = 'hardware::devices::aeg::acm::snmp::mode::components';
@@ -60,10 +58,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-    });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

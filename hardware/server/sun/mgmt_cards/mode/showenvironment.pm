@@ -28,9 +28,6 @@ use centreon::plugins::misc;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^temperature|si|disk|fan|voltage|psu|sensors$';
 
     $self->{cb_hook2} = 'execute_command';
 
@@ -39,34 +36,34 @@ sub set_system {
     $self->{thresholds} = {        
         temperature => [
             ['^(?!(OK)$)', 'CRITICAL'],
-            ['^OK$', 'OK'],
+            ['^OK$', 'OK']
         ],
         si => [
             ['^(?!(OFF)$)', 'CRITICAL'],
-            ['^OFF$', 'OK'],
+            ['^OFF$', 'OK']
         ],
         disk => [
             ['^(?!(OK|NOT PRESENT)$)', 'CRITICAL'],
-            ['^OK|NOT PRESENT$', 'OK'],
+            ['^OK|NOT PRESENT$', 'OK']
         ],
         fan => [
             ['^(?!(OK|NOT PRESENT)$)', 'CRITICAL'],
-            ['^OK|NOT PRESENT$', 'OK'],
+            ['^OK|NOT PRESENT$', 'OK']
         ],
         voltage => [
             ['^(?!(OK)$)', 'CRITICAL'],
-            ['^OK$', 'OK'],
+            ['^OK$', 'OK']
         ],
         psu => [
             ['^(?!(OK|NOT PRESENT)$)', 'CRITICAL'],
-            ['^OK|NOT PRESENT$', 'OK'],
+            ['^OK|NOT PRESENT$', 'OK']
         ],
         sensors => [
             ['^(?!(OK)$)', 'CRITICAL'],
-            ['^OK$', 'OK'],
-        ],
+            ['^OK$', 'OK']
+        ]
     };
-    
+
     $self->{components_path} = 'hardware::server::sun::mgmt_cards::components::showenvironment';
     $self->{components_module} = ['temperature', 'si', 'disk', 'fan', 'voltage', 'psu', 'sensors'];
 }
@@ -75,7 +72,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1, no_absent => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'hostname:s'       => { name => 'hostname' },
         'port:s'           => { name => 'port', default => 23 },
@@ -83,7 +80,7 @@ sub new {
         'password:s'       => { name => 'password' },
         'timeout:s'        => { name => 'timeout', default => 30 },
         'command-plink:s'  => { name => 'command_plink', default => 'plink' },
-        'ssh'              => { name => 'ssh' },
+        'ssh'              => { name => 'ssh' }
     });
 
     return $self;

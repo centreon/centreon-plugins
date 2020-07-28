@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(temperature|fan|vrm|psu|cpu|memory|nic|battery|ctrl|driveencl|pdrive|ldrive|bios)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan)$';
     
     $self->{cb_hook2} = 'api_execute';
@@ -43,19 +41,21 @@ sub set_system {
             ['NOT APPLICABLE', 'OK'],
             ['n/a', 'OK'],
             ['Unknown', 'UNKNOWN'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         nic => [
             ['Ok', 'OK'],
             ['Unknown', 'OK'],
             ['Disabled', 'OK'],
-            ['.*', 'CRITICAL'],
-        ],
+            ['.*', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::server::hp::ilo::xmlapi::mode::components';
-    $self->{components_module} = ['fan', 'temperature', 'vrm', 'psu', 'cpu', 'memory', 'nic', 'battery', 'ctrl',
-        'driveencl', 'pdrive', 'ldrive', 'bios'];
+    $self->{components_module} = [
+        'fan', 'temperature', 'vrm', 'psu', 'cpu', 'memory', 'nic', 'battery', 'ctrl',
+        'driveencl', 'pdrive', 'ldrive', 'bios'
+    ];
 }
 
 sub api_execute {
@@ -68,10 +68,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

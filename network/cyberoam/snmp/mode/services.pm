@@ -28,8 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(service)$';
-
     $self->{cb_hook2} = 'snmp_execute';
 
     $self->{thresholds} = {
@@ -40,8 +38,8 @@ sub set_system {
             ['running', 'OK'],
             ['exiting', 'CRITICAL'],
             ['dead', 'CRITICAL'],
-            ['unregistered', 'OK'],
-        ],
+            ['unregistered', 'OK']
+        ]
     };
 
     $self->{components_path} = 'network::cyberoam::snmp::mode::components';
@@ -60,8 +58,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

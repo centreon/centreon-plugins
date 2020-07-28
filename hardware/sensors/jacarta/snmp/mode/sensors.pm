@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|humidity|input)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|humidity)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -42,12 +41,12 @@ sub set_system {
             ['below-low-critical', 'CRITICAL'],
             ['above-high-warning', 'WARNING'],
             ['above-high-critical', 'CRITICAL'],
-            ['sensorError', 'CRITICAL'],
+            ['sensorError', 'CRITICAL']
         ],
         input => [
             ['normal', 'OK'],
-            ['triggered', 'CRITICAL'],
-        ],
+            ['triggered', 'CRITICAL']
+        ]
     };
     
     $self->{components_path} = 'hardware::sensors::jacarta::snmp::mode::components';
@@ -70,10 +69,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-    });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(temperature|voltage|fan|psu|disk|raidvolume)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -36,14 +35,14 @@ sub set_system {
     $self->{thresholds} = {
         default => [
             ['Normal', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         raidvolume => [
             ['Optimal', 'OK'],
-            ['.*', 'CRITICAL'],
-        ],
+            ['.*', 'CRITICAL']
+        ]
     };
-    
+
     $self->{components_path} = 'hardware::server::lenovo::xcc::snmp::mode::components';
     $self->{components_module} = ['temperature', 'voltage', 'fan', 'psu', 'disk', 'raidvolume'];
 }
@@ -59,11 +58,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

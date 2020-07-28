@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|disk)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|voltage)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -38,21 +37,21 @@ sub set_system {
             ['unknown', 'UNKNOWN'],
             ['normal', 'OK'],
             ['failed', 'CRITICAL'],
-            ['absent', 'OK'],
+            ['absent', 'OK']
         ],
         psu => [
             ['unknown', 'UNKNOWN'],
             ['normal', 'OK'],
             ['failed', 'CRITICAL'],
-            ['absent', 'OK'],
+            ['absent', 'OK']
         ],
         disk => [
             ['operational', 'OK'],
             ['failed', 'CRITICAL'],
-            ['degrading', 'WARNING'],
-        ],
+            ['degrading', 'WARNING']
+        ]
     };
-    
+
     $self->{components_path} = 'network::redback::snmp::mode::components';
     $self->{components_module} = ['fan', 'psu', 'temperature', 'voltage', 'disk'];
 }
@@ -68,10 +67,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {
+    });
 
     return $self;
 }

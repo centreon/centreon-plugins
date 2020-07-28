@@ -27,8 +27,6 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(video|fan|psu|temperature|audio|storage|casing)$';
 
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature)$';
 
@@ -37,35 +35,35 @@ sub set_system {
     $self->{thresholds} = {
         video => [
             ['signalOk', 'OK'],
-            ['noSignal', 'CRITICAL'],
+            ['noSignal', 'CRITICAL']
         ],
         psu => [
-            ['failure', 'CRITICAL'],
+            ['failure', 'CRITICAL']
             ['ok', 'OK'],
         ],
         fan => [
             ['failed', 'CRITICAL'],
-            ['ok', 'OK'],
+            ['ok', 'OK']
         ],
         temperature => [
             ['failed', 'CRITICAL'],
             ['outOfBoundary', 'CRITICAL'],
-            ['ok', 'OK'],
+            ['ok', 'OK']
         ],
         audio => [
             ['signalOk', 'OK'],
-            ['noSignal', 'CRITICAL'],
+            ['noSignal', 'CRITICAL']
         ],
         storage => [
             ['yes', 'OK'],
-            ['no', 'CRITICAL'],
+            ['no', 'CRITICAL']
         ],
         casing => [
             ['open', 'OK'],
-            ['closed', 'WARNING'],
-        ],
+            ['closed', 'WARNING']
+        ]
     };
-    
+
     $self->{components_path} = 'hardware::devices::video::axis::snmp::mode::components';
     $self->{components_module} = ['video', 'psu', 'fan', 'temperature', 'audio', 'storage', 'casing'];
 }
@@ -81,10 +79,8 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                {
-                                });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

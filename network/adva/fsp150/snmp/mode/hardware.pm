@@ -29,15 +29,12 @@ use network::adva::fsp150::snmp::mode::components::resources qw($oids);
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(?:shefl|card)$';
-
     $self->{cb_hook2} = 'snmp_execute';
 
     $self->{thresholds} = {
         operational => [
             ['normal', 'OK'],
-            ['outage', 'CRITICAL'],
+            ['outage', 'CRITICAL']
         ],
         secondary => [
             ['fault', 'CRITICAL'],
@@ -66,8 +63,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1, force_new_perfdata => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => { 
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

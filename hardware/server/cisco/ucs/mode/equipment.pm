@@ -29,8 +29,6 @@ use hardware::server::cisco::ucs::mode::components::resources qw($thresholds);
 sub set_system {
     my ($self, %options) = @_;
 
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|psu|chassis|iocard|blade|fex|cpu|memory|localdisk)\.(presence|operability|overall_status)$';
-
     $self->{cb_hook2} = 'snmp_execute';
 
     $self->{thresholds} = $thresholds;
@@ -51,8 +49,7 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_performance => 1);
     bless $self, $class;
 
-    $options{options}->add_options(arguments => {
-    });
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }

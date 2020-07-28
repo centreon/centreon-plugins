@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(psu)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fanspeed|voltage)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -38,8 +37,8 @@ sub set_system {
             ['normal', 'OK'],
             ['not present', 'OK'],
             ['failed', 'CRITICAL'],
-            ['not supported', 'UNKNOWN'],
-        ],
+            ['not supported', 'UNKNOWN']
+        ]
     };
     
     $self->{components_path} = 'network::citrix::netscaler::snmp::mode::components';
@@ -69,11 +68,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments =>
-                                { 
-                                });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

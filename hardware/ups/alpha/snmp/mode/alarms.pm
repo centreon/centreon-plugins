@@ -27,18 +27,16 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(alarm)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
         alarm => [
             ['on', 'CRITICAL'],
-            ['off', 'OK'],
-        ],
+            ['off', 'OK']
+        ]
     };
-    
+
     $self->{components_path} = 'hardware::ups::alpha::snmp::mode::components';
     $self->{components_module} = ['alarm'];
 }
@@ -47,7 +45,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1, no_load_components => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
 
     return $self;

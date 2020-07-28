@@ -27,9 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-        
-    $self->{regexp_threshold_overload_check_section_option} =
-        '^(?:ad|aic|aoc|camera|st|software|temperature|vic|vis|voc|webex)';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(?:aiclatency|aocdelay)$';
 
     $self->{cb_hook2} = 'execute_custom';
@@ -38,16 +36,16 @@ sub set_system {
         connection_status => [
             ['NotConnected', 'OK'],
             ['Connected', 'OK'],
-            ['Unknown', 'UNKNOWN'],
+            ['Unknown', 'UNKNOWN']
         ],
         connected => [
             ['True', 'OK'],
             ['False', 'WARNING'],
-            ['Unknown', 'UNKNOWN'],
+            ['Unknown', 'UNKNOWN']
         ],
         temperature => [
             ['Normal', 'OK'],
-            ['.*', 'CRITICAL'],
+            ['.*', 'CRITICAL']
         ],
         software_status => [
             ['None', 'OK'],

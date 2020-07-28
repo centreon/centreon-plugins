@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-        
-    $self->{regexp_threshold_overload_check_section_option} = '^(disk|fan|iomodule|psu|dpe|battery|ssd|sp)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|power)$';
 
     $self->{cb_hook1} = 'init_custom';
@@ -54,9 +53,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, force_new_perfdata => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {});
-    
+
     return $self;
 }
 

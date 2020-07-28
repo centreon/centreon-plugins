@@ -25,10 +25,7 @@ use network::alcatel::omniswitch::snmp::mode::components::resources qw(%oids);
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = 
-        '^(?:backplane|chassis|container|fan|module|other|port|psu|sensor|stack|unknown)\.(?:oper|admin|status)$';
-    
+
     $self->{cb_hook2} = 'snmp_execute';
     
     $self->{thresholds} = {
@@ -90,10 +87,9 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-    });
-    
+
+    $options{options}->add_options(arguments => {});
+
     return $self;
 }
 

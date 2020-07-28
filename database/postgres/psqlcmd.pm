@@ -108,7 +108,7 @@ sub check_options {
     $self->{psql_cmd} = $self->{option_results}->{psql_cmd};
     
     # If we want a command line: password with variable "PGPASSWORD".
-    #  psql -d template1 -A -R '-====-' -F '#====#' -c "select code from films"
+    #  psql -d template1 -A -R "-====-" -F "#====#" -c "select code from films"
  
     if (!defined($self->{host}) || $self->{host} eq '') {
         $self->{output}->add_option_msg(short_msg => "Need to specify host argument.");
@@ -182,21 +182,13 @@ sub quote {
 sub command_execution {
     my ($self, %options) = @_;
     
-    my ($lerror, $stdout, $exit_code) = centreon::plugins::misc::backtick(
-                                                 command => $self->{psql_cmd},
-                                                 arguments =>  [@{$self->{args}}, '-c', $options{request}],
-                                                 timeout => 30,
-                                                 wait_exit => 1,
-                                                 redirect_stderr => 1
-                                                 );
-    if ($exit_code <= -1000) {
-        if ($exit_code == -1000) {
-            $self->{output}->output_add(severity => 'UNKNOWN', 
-                                        short_msg => $stdout);
-        }
-        $self->{output}->display();
-        $self->{output}->exit();
-    }
+    my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        command => $self->{psql_cmd},
+        command_options =>  join(' ', @{$self->{args}}) . ' -c "' . $options{request} . '"',
+        wait_exit => 1,
+        redirect_stderr => 1,
+        options => { timeout => 30 }
+    );
     
     return ($exit_code, $stdout); 
 }

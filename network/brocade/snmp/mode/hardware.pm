@@ -27,8 +27,7 @@ use warnings;
 
 sub set_system {
     my ($self, %options) = @_;
-    
-    $self->{regexp_threshold_overload_check_section_option} = '^(switch|sensor)$';
+
     $self->{regexp_threshold_numeric_check_section_option} = '^(temperature|fan)$';
     
     $self->{cb_hook2} = 'snmp_execute';
@@ -40,15 +39,15 @@ sub set_system {
             ['below-min', 'WARNING'],
             ['nominal', 'OK'],
             ['above-max', 'CRITICAL'],
-            ['absent', 'OK'],
+            ['absent', 'OK']
         ],
         switch => [
             ['online', 'OK'],
             ['offline', 'WARNING'],
             ['testing', 'WARNING'],
             ['faulty', 'CRITICAL'],
-            ['absent', 'OK'],
-        ],
+            ['absent', 'OK']
+        ]
     };
     
     $self->{components_path} = 'network::brocade::snmp::mode::components';
@@ -59,16 +58,15 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_load_components => 1);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-    });
+
+    $options{options}->add_options(arguments => {});
 
     return $self;
 }
 
 sub snmp_execute {
     my ($self, %options) = @_;
-    
+
     $self->{snmp} = $options{snmp};
     $self->{results} = $self->{snmp}->get_multiple_table(oids => $self->{request});
 }

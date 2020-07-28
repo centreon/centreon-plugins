@@ -28,8 +28,6 @@ use warnings;
 sub set_system {
     my ($self, %options) = @_;
     
-    $self->{regexp_threshold_overload_check_section_option} = '^(fan|lcc|psu|battery|memory|cpu|iomodule|cable)$';
-    
     $self->{cb_hook2} = 'navisphere_execute';
     
     $self->{thresholds} = {
@@ -89,10 +87,9 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, no_absent => 1, no_performance => 1);
     bless $self, $class;
     
-    $options{options}->add_options(arguments =>
-                                {
-                                  "getcrus-options:s"   => { name => 'getcrus_options', default => '-all' },
-                                });
+    $options{options}->add_options(arguments => {
+        'getcrus-options:s' => { name => 'getcrus_options', default => '-all' }
+    });
     
     return $self;
 }
