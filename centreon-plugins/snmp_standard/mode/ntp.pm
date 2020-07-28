@@ -49,10 +49,10 @@ sub set_counters {
                 key_values => [ { name => 'offset' }, { name => 'date' } ],
                 closure_custom_output => $self->can('custom_usage_output'),
                 perfdatas => [
-                    { label => 'offset', value => 'offset', template => '%d', unit => 's' },
-                ],
+                    { label => 'offset', template => '%d', unit => 's' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -60,11 +60,11 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
         'ntp-hostname:s' => { name => 'ntp_hostname' },
         'ntp-port:s'     => { name => 'ntp_port', default => 123 },
-        'timezone:s'     => { name => 'timezone' },
+        'timezone:s'     => { name => 'timezone' }
     });
 
     return $self;
@@ -98,13 +98,13 @@ sub get_target_time {
 
     my $tz = centreon::plugins::misc::set_timezone(name => $timezone);
     my $dt = DateTime->new(
-      year       => $remote_date[0],
-      month      => $remote_date[1],
-      day        => $remote_date[2],
-      hour       => $remote_date[3],
-      minute     => $remote_date[4],
-      second     => $remote_date[5],
-      %$tz
+        year       => $remote_date[0],
+        month      => $remote_date[1],
+        day        => $remote_date[2],
+        hour       => $remote_date[3],
+        minute     => $remote_date[4],
+        second     => $remote_date[5],
+        %$tz
     );
 
     return ($dt->epoch, \@remote_date, $timezone);
@@ -117,7 +117,7 @@ sub manage_selection {
     my $ref_time;
     if (defined($self->{option_results}->{ntp_hostname}) && $self->{option_results}->{ntp_hostname} ne '') {
         my %ntp;
-        
+
         eval {
             %ntp = Net::NTP::get_ntp_response($self->{option_results}->{ntp_hostname}, $self->{option_results}->{ntp_port});
         };
@@ -129,7 +129,7 @@ sub manage_selection {
             $self->{output}->display();
             $self->{output}->exit();
         }
-        
+
         $ref_time = $ntp{'Transmit Timestamp'};
     } else {
         $ref_time = time();
@@ -143,7 +143,7 @@ sub manage_selection {
     );
 
     $self->{offset} = { 
-        offset => sprintf("%d", $offset),
+        offset => sprintf('%d', $offset),
         date => $remote_date_formated,
     };    
 }

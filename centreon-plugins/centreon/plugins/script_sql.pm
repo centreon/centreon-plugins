@@ -75,7 +75,7 @@ sub init {
         $self->{options}->display_help();
         $self->{output}->option_exit();
     }
-    if (defined($options{version}) && !defined($self->{mode_name})&& !defined($self->{dynmode_name})) {
+    if (defined($options{version}) && !defined($self->{mode_name}) && !defined($self->{dynmode_name})) {
         $self->version();
     }
     if (defined($self->{list_mode})) {

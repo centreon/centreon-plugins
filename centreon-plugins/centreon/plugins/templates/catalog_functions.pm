@@ -25,7 +25,7 @@ use warnings;
 use Exporter;
 
 our @ISA = qw(Exporter);
-our @EXPORT_OK = qw(catalog_status_threshold catalog_status_calc);
+our @EXPORT_OK = qw(catalog_status_threshold catalog_status_threshold_ng catalog_status_calc);
 
 sub catalog_status_threshold {
     my ($self, %options) = @_;
@@ -49,6 +49,34 @@ sub catalog_status_threshold {
             $status = 'warning';
         } elsif (defined($self->{instance_mode}->{option_results}->{'unknown_' . $label}) && $self->{instance_mode}->{option_results}->{'unknown_' . $label} ne '' &&
             eval "$self->{instance_mode}->{option_results}->{'unknown_' . $label}") {
+            $status = 'unknown';
+        }
+    };
+    if (defined($message)) {
+        $self->{output}->output_add(long_msg => 'filter status issue: ' . $message);
+    }
+
+    return $status;
+}
+
+sub catalog_status_threshold_ng {
+    my ($self, %options) = @_;
+    my $status = 'ok';
+    my $message;
+
+    eval {
+        local $SIG{__WARN__} = sub { $message = $_[0]; };
+        local $SIG{__DIE__} = sub { $message = $_[0]; };
+
+        my $label = $self->{label};
+        if (defined($self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}) && $self->{instance_mode}->{option_results}->{'critical-' . $label} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{'critical-' . $self->{label}}") {
+            $status = 'critical';
+        } elsif (defined($self->{instance_mode}->{option_results}->{'warning-' . $label}) && $self->{instance_mode}->{option_results}->{'warning-' . $label} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{'warning-' . $label}") {
+            $status = 'warning';
+        } elsif (defined($self->{instance_mode}->{option_results}->{'unknown-' . $label}) && $self->{instance_mode}->{option_results}->{'unknown-' . $label} ne '' &&
+            eval "$self->{instance_mode}->{option_results}->{'unknown-' . $label}") {
             $status = 'unknown';
         }
     };
