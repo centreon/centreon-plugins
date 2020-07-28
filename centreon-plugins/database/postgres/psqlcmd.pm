@@ -183,6 +183,7 @@ sub command_execution {
     my ($self, %options) = @_;
     
     my ($stdout, $exit_code) = centreon::plugins::misc::execute(
+        output => $self->{output},
         command => $self->{psql_cmd},
         command_options =>  join(' ', @{$self->{args}}) . ' -c "' . $options{request} . '"',
         wait_exit => 1,
