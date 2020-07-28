@@ -61,9 +61,14 @@ sub new {
 
 sub init {
     my ($self, %options) = @_;
+    my $unkn = defined($self->{threshold_unkn}) ? $self->{threshold_unkn} : 'unknown-' . $self->{thlabel};
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{thlabel};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{thlabel}; 
-    
+
+    if (($self->{perfdata}->threshold_validate(label => $unkn, value => $options{option_results}->{$unkn})) == 0) {
+        $self->{output}->add_option_msg(short_msg => "Wrong $unkn threshold '" . $options{option_results}->{$unkn} . "'.");
+        $self->{output}->option_exit();
+    }
     if (($self->{perfdata}->threshold_validate(label => $warn, value => $options{option_results}->{$warn})) == 0) {
         $self->{output}->add_option_msg(short_msg => "Wrong $warn threshold '" . $options{option_results}->{$warn} . "'.");
         $self->{output}->option_exit();
@@ -107,7 +112,8 @@ sub threshold_check {
     if (defined($self->{closure_custom_threshold_check})) {
         return &{$self->{closure_custom_threshold_check}}($self, %options);
     }
-    
+
+    my $unkn = defined($self->{threshold_unkn}) ? $self->{threshold_unkn} : 'unknown-' . $self->{thlabel};
     my $warn = defined($self->{threshold_warn}) ? $self->{threshold_warn} : 'warning-' . $self->{thlabel};
     my $crit = defined($self->{threshold_crit}) ? $self->{threshold_crit} : 'critical-' . $self->{thlabel};
     
@@ -121,7 +127,8 @@ sub threshold_check {
     return $self->{perfdata}->threshold_check(
         value => $value, threshold => [
             { label => $crit, exit_litteral => 'critical' },
-            { label => $warn, exit_litteral => 'warning' }
+            { label => $warn, exit_litteral => 'warning' },
+            { label => $unkn, exit_litteral => 'unknown' }
         ]
     );
 }

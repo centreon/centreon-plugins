@@ -222,7 +222,7 @@ sub set_counters {
             ]
         }
     ];
-    
+
     $self->{maps_counters}->{trunk_global} = [
         {
             label => 'status', type => 2, critical_default => '%{status} =~ /uninitialized|down/', 
@@ -314,23 +314,13 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'               => { name => 'filter_name' },
-        'units-traffic:s'             => { name => 'units_traffic', default => '%' },
-        'speed:s'                     => { name => 'speed' },
-        'add-interfaces'              => { name => 'add_interfaces' }
+        'filter-name:s'   => { name => 'filter_name' },
+        'units-traffic:s' => { name => 'units_traffic', default => '%' },
+        'speed:s'         => { name => 'speed' },
+        'add-interfaces'  => { name => 'add_interfaces' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => [
-        'unknown_status', 'warning_status', 'critical_status',
-        'unknown_interface_status', 'warning_interface_status', 'critical_interface_status'
-    ]);
 }
 
 my $map_trunk_status = {

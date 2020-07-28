@@ -203,7 +203,7 @@ sub check_options {
             push @$change_macros_opt, 'unknown-' . $_->{label}, 'warning-' . $_->{label}, 'critical-' . $_->{label}
                 if (defined($_->{type}) && $_->{type} == 2);
             $_->{obj}->{instance_mode} = $self;
-            $_->{obj}->init(option_results => $self->{option_results});
+            $_->{obj}->init(option_results => $self->{option_results}) if (!defined($_->{type}) || $_->{type} != 2);
         }
     }
 
