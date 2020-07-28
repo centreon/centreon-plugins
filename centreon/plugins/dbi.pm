@@ -99,8 +99,10 @@ sub handle_ALRM {
 
     $self->prepare_destroy();
     $self->disconnect();
-    $self->{output}->output_add(severity => $self->{sql_errors_exit},
-                                short_msg => 'Timeout');
+    $self->{output}->output_add(
+        severity => $self->{sql_errors_exit},
+        short_msg => 'Timeout'
+    );
     $self->{output}->display();
     $self->{output}->exit();
 }

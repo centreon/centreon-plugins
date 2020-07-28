@@ -123,7 +123,7 @@ sub new {
         'filter-counters-block:s' => { name => 'filter_counters_block' },
         'filter-counters:s'       => { name => 'filter_counters' },
         'display-ok-counters:s'   => { name => 'display_ok_counters' },
-        'list-counters'           => { name => 'list_counters' },
+        'list-counters'           => { name => 'list_counters' }
     });
     $self->{statefile_value} = undef;
     if (defined($options{statefile}) && $options{statefile}) {
@@ -150,21 +150,24 @@ sub new {
 
             if (!defined($_->{threshold}) || $_->{threshold} != 0) {
                 $options{options}->add_options(arguments => {
-                    'warning-' . $thlabel . ':s'     => { name => 'warning-' . $thlabel },
-                    'critical-' . $thlabel . ':s'    => { name => 'critical-' . $thlabel },
+                    'unknown-' . $thlabel . ':s'  => { name => 'unknown-' . $thlabel, default => $_->{unknown_default} },
+                    'warning-' . $thlabel . ':s'  => { name => 'warning-' . $thlabel, default => $_->{warning_default} },
+                    'critical-' . $thlabel . ':s' => { name => 'critical-' . $thlabel, default => $_->{critical_default} }
                 });
 
                 if (defined($_->{nlabel})) {
                     $options{options}->add_options(arguments => {
-                        'warning-' . $_->{label} . ':s'     => { name => 'warning-' . $_->{label}, redirect => 'warning-' . $thlabel },
-                        'critical-' . $_->{label} . ':s'    => { name => 'critical-' . $_->{label}, redirect => 'critical-' . $thlabel },
+                        'unknown-' . $_->{label} . ':s'  => { name => 'unknown-' . $_->{label}, redirect => 'unknown-' . $thlabel },
+                        'warning-' . $_->{label} . ':s'  => { name => 'warning-' . $_->{label}, redirect => 'warning-' . $thlabel },
+                        'critical-' . $_->{label} . ':s' => { name => 'critical-' . $_->{label}, redirect => 'critical-' . $thlabel }
                     });
                 }
             }
+
             $_->{obj} = centreon::plugins::values->new(
                 statefile => $self->{statefile_value},
                 output => $self->{output}, perfdata => $self->{perfdata},
-                label => $_->{label}, nlabel => $_->{nlabel}, thlabel => $thlabel,
+                label => $_->{label}, nlabel => $_->{nlabel}, thlabel => $thlabel
             );
             $_->{obj}->set(%{$_->{set}});
         }
@@ -193,13 +196,19 @@ sub check_options {
         $self->{output}->display(nolabel => 1, force_ignore_perfdata => 1);
         $self->{output}->exit();
     }
+
+    my $change_macros_opt = [];
     foreach my $key (keys %{$self->{maps_counters}}) {
         foreach (@{$self->{maps_counters}->{$key}}) {
+            push @$change_macros_opt, 'unknown-' . $_->{label}, 'warning-' . $_->{label}, 'critical-' . $_->{label}
+                if (defined($_->{type}) && $_->{type} == 2);
             $_->{obj}->{instance_mode} = $self;
             $_->{obj}->init(option_results => $self->{option_results});
         }
     }
-    
+
+    $self->change_macros(macros => $change_macros_opt) if (scalar(@$change_macros_opt) > 0);
+
     if (defined($self->{statefile_value})) {
         $self->{statefile_value}->check_options(%options);
     }

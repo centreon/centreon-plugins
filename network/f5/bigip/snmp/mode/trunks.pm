@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 use Digest::MD5 qw(md5_hex);
 
 sub custom_traffic_perfdata {
@@ -224,11 +224,13 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{trunk_global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, critical_default => '%{status} =~ /uninitialized|down/', 
+            set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 output_template => "status is '%s'", output_error_template => 'status: %s',
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'traffic-in', set => {
@@ -296,11 +298,11 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{interfaces} = [
-        { label => 'interface-status', threshold => 0, set => {
+        { label => 'interface-status', type => 2, set => {
                 key_values => [ { name => 'status' }, { name => 'display' } ],
                 output_template => "status is '%s'",
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -315,12 +317,6 @@ sub new {
         'filter-name:s'               => { name => 'filter_name' },
         'units-traffic:s'             => { name => 'units_traffic', default => '%' },
         'speed:s'                     => { name => 'speed' },
-        'unknown-status:s'            => { name => 'unknown_status', default => '' },
-        'warning-status:s'            => { name => 'warning_status', default => '' },
-        'critical-status:s'           => { name => 'critical_status', default => '%{status} =~ /uninitialized|down/' },
-        'unknown-interface-status:s'  => { name => 'unknown_interface_status', default => '' },
-        'warning-interface-status:s'  => { name => 'warning_interface_status', default => '' },
-        'critical-interface-status:s' => { name => 'critical_interface_status', default => '' },
         'add-interfaces'              => { name => 'add_interfaces' }
     });
 

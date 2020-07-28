@@ -63,7 +63,7 @@ sub new {
     $options{options}->add_help(package => __PACKAGE__, sections => 'sqlpluscmd OPTIONS', once => 1);
 
     $self->{output} = $options{output};
-    $self->{custommode_name} = $options{custommode_name};
+    $self->{sqlmode_name} = $options{sqlmode_name};
     $self->{args} = undef;
     $self->{stdout} = undef;
     $self->{columns} = undef;
@@ -87,7 +87,7 @@ sub set_defaults {
     my ($self, %options) = @_;
 
     foreach (keys %{$options{default}}) {
-        if ($_ eq $self->{custommode_name}) {
+        if ($_ eq $self->{sqlmode_name}) {
             for (my $i = 0; $i < scalar(@{$options{default}->{$_}}); $i++) {
                 foreach my $opt (keys %{$options{default}->{$_}[$i]}) {
                     if (!defined($self->{option_results}->{$opt}[$i])) {
