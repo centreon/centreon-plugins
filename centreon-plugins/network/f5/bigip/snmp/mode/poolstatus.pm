@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng catalog_status_calc);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -42,45 +42,47 @@ sub set_counters {
     my ($self, %options) = @_;
     
     $self->{maps_counters_type} = [
-        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All Pools are ok', skipped_code => { -10 => 1 } },
+        { name => 'pool', type => 1, cb_prefix_output => 'prefix_pool_output', message_multiple => 'All Pools are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{pool} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, warning_default => '%{state} eq "enabled" and %{status} eq "yellow"', critical_default => '%{state} eq "enabled" and %{status} eq "red"',  
+            set => {
                 key_values => [ { name => 'state' }, { name => 'status' }, { name => 'reason' },{ name => 'display' } ],
                 closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'current-server-connections', set => {
                 key_values => [ { name => 'ltmPoolStatServerCurConns' }, { name => 'display' } ],
                 output_template => 'current server connections: %s',
                 perfdatas => [
-                    { label => 'current_server_connections', value => 'ltmPoolStatServerCurConns', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'current_server_connections', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'current-active-members', display_ok => 0, set => {
                 key_values => [ { name => 'ltmPoolActiveMemberCnt' }, { name => 'display' } ],
                 output_template => 'current active members: %s',
                 perfdatas => [
-                    { label => 'current_active_members', value => 'ltmPoolActiveMemberCnt', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'current_active_members', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
         },
         { label => 'current-total-members', display_ok => 0, set => {
                 key_values => [ { name => 'ltmPoolMemberCnt' }, { name => 'display' } ],
                 output_template => 'current total members: %s',
                 perfdatas => [
-                    { label => 'current_total_members', value => 'ltmPoolMemberCnt', template => '%s',
-                      min => 0, label_extra_instance => 1, instance_use => 'display' },
-                ],
+                    { label => 'current_total_members', template => '%s',
+                      min => 0, label_extra_instance => 1, instance_use => 'display' }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -96,20 +98,10 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        'filter-name:s'     => { name => 'filter_name' },
-        'unknown-status:s'  => { name => 'unknown_status', default => '' },
-        'warning-status:s'  => { name => 'warning_status', default => '%{state} eq "enabled" and %{status} eq "yellow"' },
-        'critical-status:s' => { name => 'critical_status', default => '%{state} eq "enabled" and %{status} eq "red"' },
+        'filter-name:s' => { name => 'filter_name' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['warning_status', 'critical_status', 'unknown_status']);
 }
 
 my $map_pool_status = {
