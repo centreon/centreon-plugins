@@ -91,8 +91,6 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'warning:s'       => { name => 'warning' },
-        'critical:s'      => { name => 'critical' },
         'force-oid:s'     => { name => 'force_oid' },
         'check-overload'  => { name => 'check_overload' },
         'reboot-window:s' => { name => 'reboot_window', default => 5000 },
