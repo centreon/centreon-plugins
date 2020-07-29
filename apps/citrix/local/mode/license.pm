@@ -60,7 +60,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total-usage', nlabel => 'licenses.usage.count', set => {
+        { label => 'licenses-usage', nlabel => 'licenses.usage.count', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
@@ -68,7 +68,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-usage-free', display_ok => 0, nlabel => 'licenses.free.count', set => {
+        { label => 'licenses-usage-free', display_ok => 0, nlabel => 'licenses.free.count', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
@@ -76,7 +76,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'total-usage-prct', display_ok => 0, nlabel => 'licenses.usage.percentage', set => {
+        { label => 'licenses-usage-prct', display_ok => 0, nlabel => 'licenses.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' } ],
                 output_template => 'used: %.2f %%',
                 perfdatas => [
@@ -87,7 +87,7 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{licenses} = [
-        { label => 'usage', nlabel => 'license.usage.count', set => {
+        { label => 'license-usage', nlabel => 'license.usage.count', set => {
                 key_values => [ { name => 'used' }, { name => 'free' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
@@ -95,7 +95,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-free', display_ok => 0, nlabel => 'license.free.count', set => {
+        { label => 'license-usage-free', display_ok => 0, nlabel => 'license.free.count', set => {
                 key_values => [ { name => 'free' }, { name => 'used' }, { name => 'prct_used' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
@@ -103,7 +103,7 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'usage-prct', display_ok => 0, nlabel => 'license.usage.percentage', set => {
+        { label => 'license-usage-prct', display_ok => 0, nlabel => 'license.usage.percentage', set => {
                 key_values => [ { name => 'prct_used' }, { name => 'used' }, { name => 'free' }, { name => 'prct_free' }, { name => 'total' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_license_output'),
                 perfdatas => [
@@ -184,8 +184,8 @@ Filter license name.
 =item B<--warning-*> B<--critical-*>
 
 Thresholds.
-Can be: 'usage', 'usage-free, 'usage-prct' (%),
-'total-usage', 'total-usage-free', 'total-usage-prct' (%).
+Can be: 'license-usage', 'license-usage-free, 'license-usage-prct' (%),
+'licenses-usage', 'licenses-usage-free', 'licenses-usage-prct' (%).
 
 =back
 
