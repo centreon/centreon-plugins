@@ -34,7 +34,7 @@ sub new {
     $options{options}->add_options(arguments => {
         'group'     => { name => 'group' },
         'inventory' => { name => 'inventory' },
-        'prettify'  => { name => 'prettify' },
+        'prettify'  => { name => 'prettify' }
     });
 
     return $self;
