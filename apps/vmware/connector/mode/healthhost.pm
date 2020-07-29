@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -61,7 +60,7 @@ sub set_counters {
             group => [
                 { name => 'global_host', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_problems', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'global_summary', type => 1 },
+                { name => 'global_summary', type => 1 }
             ]
         }
     ];
@@ -71,22 +70,24 @@ sub set_counters {
                 key_values => [ { name => 'total_problems' }, { name => 'total' } ],
                 output_template => '%s total health issue(s) found',
                 perfdatas => [
-                    { label => 'total_problems', value => 'total_problems', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'total_problems', template => '%s',
+                      min => 0, max => 'total' }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{global_host} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
+            set => {
                 key_values => [ { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{global_problems} = [
@@ -100,27 +101,27 @@ sub set_counters {
                 key_values => [ { name => 'total_problems' }, { name => 'total' } ],
                 output_template => '%s total health issue(s) found',
                 perfdatas => [
-                    { label => 'problems', value => 'total_problems', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 },
-                ],
+                    { label => 'problems', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'problems-yellow', nlabel => 'host.health.yellow.current.count', set => {
                 key_values => [ { name => 'yellow' }, { name => 'total' } ],
                 output_template => '%s yellow health issue(s) found',
                 perfdatas => [
-                    { label => 'problems_yellow', value => 'yellow', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 },
-                ],
+                    { label => 'problems_yellow', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'problems-red', nlabel => 'host.health.red.current.count', set => {
                 key_values => [ { name => 'red' }, { name => 'total' } ],
                 output_template => '%s red health issue(s) found',
                 perfdatas => [
-                    { label => 'problems_red', value => 'red', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 },
-                ],
+                    { label => 'problems_red', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
+                ]
             }
         },
     ];
@@ -129,9 +130,9 @@ sub set_counters {
         { label => 'global-summary', threshold => 0, set => {
                 key_values => [ { name => 'type' }, { name => 'name' }, { name => 'summary' } ],
                 closure_custom_output => $self->can('custom_summary_output'),
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
 }
 
@@ -163,26 +164,16 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => {
-        "esx-hostname:s"        => { name => 'esx_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "storage-status"        => { name => 'storage_status' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
-    });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    $options{options}->add_options(arguments => {
+        'esx-hostname:s'     => { name => 'esx_hostname' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'scope-cluster:s'    => { name => 'scope_cluster' },
+        'storage-status'     => { name => 'storage_status' }
+    });
+
+    return $self;
 }
 
 sub manage_selection {
@@ -190,8 +181,10 @@ sub manage_selection {
 
     $self->{global} = { total_problems => 0, total => 0 };
     $self->{host} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'healthhost');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'healthhost'
+    );
 
     foreach my $host_id (keys %{$response->{data}}) {
         my $host_name = $response->{data}->{$host_id}->{name};
@@ -201,8 +194,8 @@ sub manage_selection {
             },
             global_summary => {},
             global_problems => {
-                ok => 0, total_problems => 0, red => 0, yellow => 0, total => 0,
-            }, 
+                ok => 0, total_problems => 0, red => 0, yellow => 0, total => 0
+            }
         };
         
         my $i = 0;
@@ -219,7 +212,7 @@ sub manage_selection {
                         $self->{host}->{$host_name}->{global_summary}->{$i} = {
                             type => defined($entry->{type}) ? $entry->{type} : '',
                             name => $entry->{name},
-                            summary => $entry->{summary},
+                            summary => $entry->{summary}
                         };
                     }
                 }
@@ -227,7 +220,7 @@ sub manage_selection {
                 $i++;
             }
         }
-        
+
         $self->{global}->{total_problems} += $self->{host}->{$host_name}->{global_problems}->{red} + $self->{host}->{$host_name}->{global_problems}->{yellow};
         $self->{global}->{total} +=  $self->{host}->{$host_name}->{global_problems}->{total};
     }

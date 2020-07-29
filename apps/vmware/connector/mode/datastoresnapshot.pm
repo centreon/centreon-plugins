@@ -25,20 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'accessible ' . $self->{result_values}->{accessible};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{accessible} = $options{new_datas}->{$self->{instance} . '_accessible'};
-    return 0;
+    return 'accessible ' . $self->{result_values}->{accessible};
 }
 
 sub set_counters {
@@ -49,20 +41,21 @@ sub set_counters {
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_snapshot', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'files', cb_prefix_output => 'prefix_files_output',  message_multiple => 'All snapshot files are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'files', cb_prefix_output => 'prefix_files_output',  message_multiple => 'All snapshot files are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{accessible} !~ /^true|1$/i',
+            set => {
                 key_values => [ { name => 'accessible' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{global_snapshot} = [
@@ -71,21 +64,21 @@ sub set_counters {
                 output_template => 'total snapshots [size = %s %s]',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_size', value => 'total', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'total_size', template => '%s', unit => 'B', 
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{files} = [
         { label => 'snapshot', nlabel => 'datastore.snapshot.usage.bytes', set => {
-                key_values => [ { name => 'total' } ],
+                key_values => [ { name => 'total' } ]
                 output_template => '[size = %s %s]',
                 output_change_bytes => 1,
-                closure_custom_perfdata => sub { return 0; },
+                closure_custom_perfdata => sub { return 0; }
             }
-        },
+        }
     ];
 }
 
@@ -111,32 +104,24 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
-    $options{options}->add_options(arguments => { 
-        "datastore-name:s"      => { name => 'datastore_name' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
-    });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    $options{options}->add_options(arguments => { 
+        'datastore-name:s'   => { name => 'datastore_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
+    });
+
+    return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{datastore} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'datastoresnapshot');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'datastoresnapshot'
+    );
 
     my $i = 0;
     foreach my $ds_id (keys %{$response->{data}}) {
@@ -148,14 +133,14 @@ sub manage_selection {
             },
             global_snapshot => {
                 total => 0
-            }, 
+            }
         };
         
         foreach (@{$response->{data}->{$ds_id}->{snapshost}}) {
             $self->{datastore}->{$ds_name}->{files}->{$i} = { 
                 folder_path => $_->{folder_path},
                 path        => $_->{path},
-                total       => $_->{size},  
+                total       => $_->{size}
             };
             $self->{datastore}->{$ds_name}->{global_snapshot}->{total} += $_->{size};
             $i++;

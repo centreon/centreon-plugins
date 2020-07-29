@@ -24,20 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'accessible ' . $self->{result_values}->{accessible};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{accessible} = $options{new_datas}->{$self->{instance} . '_accessible'};
-    return 0;
+    return 'accessible ' . $self->{result_values}->{accessible};
 }
 
 sub set_counters {
@@ -45,7 +37,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'datastore', type => 1, cb_prefix_output => 'prefix_datastore_output', message_multiple => 'All Datastores are ok' },
+        { name => 'datastore', type => 1, cb_prefix_output => 'prefix_datastore_output', message_multiple => 'All datastores are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -54,9 +46,9 @@ sub set_counters {
                 output_template => 'Total rate of reading data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_read_rate', value => 'read', template => '%s',
-                      unit => 'B/s', min => 0 },
-                ],
+                    { label => 'total_read_rate', template => '%s',
+                      unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'total-write', nlabel => 'datastore.write.usage.bytespersecond', set => {
@@ -64,20 +56,21 @@ sub set_counters {
                 output_template => 'Total rate of writing data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'total_write_rate', value => 'write', template => '%s',
-                      unit => 'B/s', min => 0 },
-                ],
+                    { label => 'total_write_rate', template => '%s',
+                      unit => 'B/s', min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{datastore} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{accessible} !~ /^true|1$/i',
+            set => {
                 key_values => [ { name => 'accessible' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'read', nlabel => 'datastore.read.usage.bytespersecond', set => {
@@ -85,9 +78,9 @@ sub set_counters {
                 output_template => 'rate of reading data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'read_rate', value => 'read', template => '%s',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'read_rate', template => '%s',
+                      unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write', nlabel => 'datastore.write.usage.bytespersecond', set => {
@@ -95,11 +88,11 @@ sub set_counters {
                 output_template => 'rate of writing data: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'write_rate', value => 'write', template => '%s',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'write_rate', template => '%s',
+                      unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -115,22 +108,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "datastore-name:s"      => { name => 'datastore_name' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'datastore-name:s'   => { name => 'datastore_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
     });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    return $self;
 }
 
 sub manage_selection {
@@ -138,8 +121,10 @@ sub manage_selection {
 
     $self->{global} = { read => 0, write => 0 };
     $self->{datastore} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'datastoreio');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'datastoreio'
+    );
 
     foreach my $ds_id (keys %{$response->{data}}) {
         my $ds_name = $response->{data}->{$ds_id}->{name};

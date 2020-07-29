@@ -27,7 +27,7 @@ use warnings;
 use centreon::plugins::misc;
 use centreon::plugins::statefile;
 
-sub catalog_status_threshold {
+sub custom_status_threshold {
     my ($self, %options) = @_;
     my $status = 'ok';
     my $message;
@@ -58,7 +58,8 @@ sub catalog_status_threshold {
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("alarm [%s] [%s] [%s] [%s] %s/%s", 
+    my $msg = sprintf(
+        'alarm [%s] [%s] [%s] [%s] %s/%s', 
         $self->{result_values}->{status},
         $self->{result_values}->{type},
         $self->{result_values}->{entity_name},
@@ -105,7 +106,7 @@ sub set_counters {
         { name => 'datacenter', type => 2, cb_prefix_output => 'prefix_datacenter_output', cb_long_output => 'datacenter_long_output', message_multiple => 'All datacenters are ok', 
             group => [ 
                 { name => 'alarm', cb_init => 'alarm_reset', skipped_code => { -11 => 1 } },
-                { name => 'dc_metrics', display => 0, skipped_code => { -11 => 1 } },
+                { name => 'dc_metrics', display => 0, skipped_code => { -11 => 1 } }
             ]
         }
     ];
@@ -115,27 +116,29 @@ sub set_counters {
                 key_values => [ { name => 'yellow' } ],
                 output_template => '%s warning alarm(s) found(s)',
                 perfdatas => [
-                    { label => 'total_alarm_warning', value => 'yellow', template => '%s', min => 0 },
-                ],
+                    { label => 'total_alarm_warning', template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'total-alarm-critical', nlabel => 'datacenter.alarms.critical.current.count', set => {
                 key_values => [ { name => 'red' } ],
                 output_template => '%s critical alarm(s) found(s)',
                 perfdatas => [
-                    { label => 'total_alarm_critical', value => 'red', template => '%s', min => 0 },
-                ],
+                    { label => 'total_alarm_critical', template => '%s', min => 0 }
+                ]
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{alarm} = [
         { label => 'status', threshold => 0, set => {
-                key_values => [ { name => 'entity_name' }, { name => 'status' }, 
-                    { name => 'time' }, { name => 'description' }, { name => 'name' }, { name => 'type' }, { name => 'since' } ],
+                key_values => [
+                    { name => 'entity_name' }, { name => 'status' }, 
+                    { name => 'time' }, { name => 'description' }, { name => 'name' }, { name => 'type' }, { name => 'since' }
+                ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => $self->can('custom_status_threshold')
             }
         },
     ];
@@ -146,7 +149,7 @@ sub set_counters {
                 output_template => '',
                 closure_custom_threshold_check => sub { return 'ok' },
                 closure_custom_calc => $self->can('custom_dcmetrics_calc'), closure_custom_calc_extra_options => { label_ref => 'warning' },
-                closure_custom_perfdata => $self->can('custom_dcmetrics_perfdata'),
+                closure_custom_perfdata => $self->can('custom_dcmetrics_perfdata')
             }
         },
         { label => 'alarm-critical', threshold => 0, set => {
@@ -154,9 +157,9 @@ sub set_counters {
                 output_template => '',
                 closure_custom_threshold_check => sub { return 'ok' },
                 closure_custom_calc => $self->can('custom_dcmetrics_calc'), closure_custom_calc_extra_options => { label_ref => 'critical' },
-                closure_custom_perfdata => $self->can('custom_dcmetrics_perfdata'),
+                closure_custom_perfdata => $self->can('custom_dcmetrics_perfdata')
             }
-        },
+        }
     ];
 }
 

@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -48,20 +48,22 @@ sub set_counters {
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_cpu', cb_prefix_output => 'prefix_global_cpu_output', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output',  message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'cpu', display_long => 0, cb_prefix_output => 'prefix_cpu_output',  message_multiple => 'All CPUs are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
+            set => {
                 key_values => [ { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 
     $self->{maps_counters}->{global_cpu} = [
@@ -69,20 +71,20 @@ sub set_counters {
                 key_values => [ { name => 'cpu_average' } ],
                 output_template => '%s %%',
                 perfdatas => [
-                    { label => 'cpu_total', value => 'cpu_average', template => '%s', unit => '%', 
-                      min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { label => 'cpu_total', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'total-cpu-mhz', nlabel => 'host.cpu.utilization.mhz', set => {
                 key_values => [ { name => 'cpu_average_mhz' }, { name => 'cpu_average_mhz_max' } ],
                 output_template => '%s MHz',
                 perfdatas => [
-                    { label => 'cpu_total_MHz', value => 'cpu_average_mhz', template => '%s', unit => 'MHz', 
-                      min => 0, max => 'cpu_average_mhz_max', label_extra_instance => 1 },
-                ],
+                    { label => 'cpu_total_MHz', template => '%s', unit => 'MHz', 
+                      min => 0, max => 'cpu_average_mhz_max', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{cpu} = [
@@ -90,11 +92,11 @@ sub set_counters {
                 key_values => [ { name => 'cpu_usage' }, { name => 'display' } ],
                 output_template => 'usage : %s',
                 perfdatas => [
-                    { label => 'cpu', value => 'cpu_usage', template => '%s', unit => '%', 
-                      min => 0, max => 100, label_extra_instance => 1 },
-                ],
+                    { label => 'cpu', template => '%s', unit => '%', 
+                      min => 0, max => 100, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -131,19 +133,10 @@ sub new {
         "esx-hostname:s"        => { name => 'esx_hostname' },
         "filter"                => { name => 'filter' },
         "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        "scope-cluster:s"       => { name => 'scope_cluster' }
     });
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    return $self;
 }
 
 sub manage_selection {

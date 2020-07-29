@@ -30,7 +30,7 @@ sub new {
     bless $self, $class;
 
     $self->{version} = '0.1';
-    %{$self->{modes}} = (
+    $self->{modes} = {
         'alarm-datacenter'     => 'apps::vmware::connector::mode::alarmdatacenter',
         'alarm-host'           => 'apps::vmware::connector::mode::alarmhost',
         'countvm-host'         => 'apps::vmware::connector::mode::countvmhost', 
@@ -70,9 +70,9 @@ sub new {
         'uptime-host'          => 'apps::vmware::connector::mode::uptimehost',
         'vmoperation-cluster'  => 'apps::vmware::connector::mode::vmoperationcluster',
         'vsan-cluster-usage'   => 'apps::vmware::connector::mode::vsanclusterusage',
-    );
+    };
 
-    $self->{custom_modes}{connector} = 'apps::vmware::connector::custom::connector';
+    $self->{custom_modes}->{connector} = 'apps::vmware::connector::custom::connector';
     return $self;
 }
 
