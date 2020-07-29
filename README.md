@@ -74,4 +74,4 @@ I can set threshold with options ``--warning`` and ``--critical``:
     $ perl centreon_plugins.pl --plugin=os::linux::snmp::plugin --mode=load --hostname=127.0.0.1 --snmp-version=2c --snmp-community=public --warning=1,2,3 --critical=2,3,4
     OK: Load average: 0.00, 0.00, 0.00 | 'load1'=0.00;0:1;0:2;0; 'load5'=0.00;0:2;0:3;0; 'load15'=0.00;0:3;0:4;0;
 
-For more information or help, please read 'user/guide.rst' or go to https://docs.centreon.com/docs/centreon-plugins/en/latest/
+For more information or help, please read 'doc/en/user/guide.rst'.
