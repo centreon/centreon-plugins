@@ -25,20 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'accessible ' . $self->{result_values}->{accessible};
-    return $msg;
-}
-
-sub custom_status_calc {
-    my ($self, %options) = @_;
-
-    $self->{result_values}->{accessible} = $options{new_datas}->{$self->{instance} . '_accessible'};
-    return 0;
+    return 'accessible ' . $self->{result_values}->{accessible};
 }
 
 sub set_counters {
@@ -46,7 +38,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'datastore', type => 1, cb_prefix_output => 'prefix_datastore_output', message_multiple => 'All Datastores are ok' },
+        { name => 'datastore', type => 1, cb_prefix_output => 'prefix_datastore_output', message_multiple => 'All Datastores are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -54,67 +46,68 @@ sub set_counters {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
-                    { label => 'poweredon', value => 'poweredon', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'poweredon', template => '%s',
+                      min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'total-off', nlabel => 'datastore.vm.poweredoff.current.count', set => {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
-                    { label => 'poweredoff', value => 'poweredoff', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'poweredoff', template => '%s',
+                      min => 0, max => 'total' }
+                ]
             }
         },
         { label => 'total-suspended', nlabel => 'datastore.vm.suspended.current.count', set => {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
-                    { label => 'suspended', value => 'suspended', template => '%s',
-                      min => 0, max => 'total' },
-                ],
+                    { label => 'suspended', template => '%s',
+                      min => 0, max => 'total' }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{datastore} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{accessible} !~ /^true|1$/i',
+            set => {
                 key_values => [ { name => 'accessible' } ],
-                closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'on', nlabel => 'datastore.vm.poweredon.current.count', set => {
                 key_values => [ { name => 'poweredon' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredon',
                 perfdatas => [
-                    { label => 'poweredon', value => 'poweredon', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 },
-                ],
+                    { label => 'poweredon', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'off', nlabel => 'datastore.vm.poweredoff.current.count', set => {
                 key_values => [ { name => 'poweredoff' }, { name => 'total' } ],
                 output_template => '%s VM(s) poweredoff',
                 perfdatas => [
-                    { label => 'poweredoff', value => 'poweredoff', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 },
-                ],
+                    { label => 'poweredoff', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'suspended', nlabel => 'datastore.vm.suspended.current.count', set => {
                 key_values => [ { name => 'suspended' }, { name => 'total' } ],
                 output_template => '%s VM(s) suspended',
                 perfdatas => [
-                    { label => 'suspended', value => 'suspended', template => '%s',
-                      min => 0, max => 'total', label_extra_instance => 1 },
-                ],
+                    { label => 'suspended', template => '%s',
+                      min => 0, max => 'total', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -130,22 +123,12 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "datastore-name:s"      => { name => 'datastore_name' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{accessible} !~ /^true|1$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'datastore-name:s'   => { name => 'datastore_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -153,8 +136,10 @@ sub manage_selection {
 
     $self->{global} = { poweredon => 0, poweredoff => 0, suspended => 0, total => 0 };
     $self->{datastore} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'datastorecountvm');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'datastorecountvm'
+    );
 
     foreach my $ds_id (keys %{$response->{data}}) {
         my $ds_name = $response->{data}->{$ds_id}->{name};

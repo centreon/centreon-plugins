@@ -24,20 +24,18 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
-    return $msg;
+    return '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
 }
 
 sub custom_device_output {
     my ($self, %options) = @_;
 
-    my $msg = sprintf("%s %s device connected",  $self->{result_values}->{device_connected}, $self->{instance_mode}->{option_results}->{device});
-    return $msg;
+    return sprintf("%s %s device connected",  $self->{result_values}->{device_connected}, $self->{instance_mode}->{option_results}->{device});
 }
 
 sub set_counters {
@@ -45,7 +43,7 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' },
+        { name => 'vm', type => 1, cb_prefix_output => 'prefix_vm_output', message_multiple => 'All virtual machines are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
@@ -53,30 +51,32 @@ sub set_counters {
                 key_values => [ { name => 'device_connected' } ],
                 closure_custom_output => $self->can('custom_device_output'),
                 perfdatas => [
-                    { label => 'total_device_connected', value => 'device_connected', template => '%s',
-                      min => 0 },
-                ],
+                    { label => 'total_device_connected', template => '%s',
+                      min => 0 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{vm} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{connection_state} !~ /^connected$/i',
+            set => {
                 key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'device-connected', nlabel => 'vm.devices.connected.count', set => {
                 key_values => [ { name => 'device_connected' }, { name => 'display' } ],
                 oclosure_custom_output => $self->can('custom_device_output'),
                 perfdatas => [
-                    { label => 'device_connected', value => 'device_connected', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'device_connected', template => '%s',
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -88,7 +88,7 @@ sub prefix_vm_output {
         $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
     }
     $msg .= ' : ';
-    
+
     return $msg;
 }
 
@@ -96,7 +96,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         "vm-hostname:s"         => { name => 'vm_hostname' },
         "filter"                => { name => 'filter' },
@@ -107,10 +107,7 @@ sub new {
         "filter-os:s"           => { name => 'filter_os' },
         "filter-uuid:s"         => { name => 'filter_uuid' },
         "display-description"   => { name => 'display_description' },
-        "device:s"              => { name => 'device' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        "device:s"              => { name => 'device' }
     });
 
     return $self;
@@ -119,10 +116,9 @@ sub new {
 sub check_options {
     my ($self, %options) = @_;
     $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+
     if (!defined($self->{option_results}->{device}) || $self->{option_results}->{device} eq '') {
-        $self->{output}->add_option_msg(short_msg => "Please set device option.");
+        $self->{output}->add_option_msg(short_msg => 'Please set device option.');
         $self->{output}->option_exit();
     }
 }
@@ -132,8 +128,10 @@ sub manage_selection {
 
     $self->{global} = { device_connected => 0 };
     $self->{vm} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'devicevm');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'devicevm'
+    );
 
     foreach my $vm_id (keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
@@ -141,13 +139,13 @@ sub manage_selection {
             display => $vm_name, 
             connection_state => $response->{data}->{$vm_id}->{connection_state},
             power_state => $response->{data}->{$vm_id}->{power_state},
-            device_connected => $response->{data}->{$vm_id}->{total_device_connected},
+            device_connected => $response->{data}->{$vm_id}->{total_device_connected}
         };
-        
+
         if (defined($self->{option_results}->{display_description})) {
             $self->{vm}->{$vm_name}->{config_annotation} = $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'});
         }
-        
+
         $self->{global}->{device_connected} += $self->{vm}->{$vm_name}->{device_connected};
     }
 }

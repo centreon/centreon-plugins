@@ -29,7 +29,7 @@ sub set_counters {
     my ($self, %options) = @_;
 
     $self->{maps_counters_type} = [
-        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' },
+        { name => 'cluster', type => 1, cb_prefix_output => 'prefix_cluster_output', message_multiple => 'All clusters are ok' }
     ];
     
     $self->{maps_counters}->{cluster} = [
@@ -37,32 +37,32 @@ sub set_counters {
                 key_values => [ { name => 'iopsRead' } ],
                 output_template => 'read IOPS: %s',
                 perfdatas => [
-                    { value => 'iopsRead', template => '%s', unit => 'iops', min => 0 },
-                ],
+                    { template => '%s', unit => 'iops', min => 0 }
+                ]
             }
         },
         { label => 'backend-write-usage', nlabel => 'cluster.vsan.backend.write.usage.iops', set => {
                 key_values => [ { name => 'iopsWrite' } ],
                 output_template => 'write IOPS: %s',
                 perfdatas => [
-                    { value => 'iopsWrite', template => '%s', unit => 'iops', min => 0 },
-                ],
+                    { template => '%s', unit => 'iops', min => 0 }
+                ]
             }
         },
         { label => 'backend-congestions', nlabel => 'cluster.vsan.backend.congestions.count', set => {
                 key_values => [ { name => 'congestion' } ],
                 output_template => 'congestions: %s',
                 perfdatas => [
-                    { value => 'congestion', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'backend-outstanding-io', nlabel => 'cluster.vsan.backend.outstanding.io.count', set => {
                 key_values => [ { name => 'oio' } ],
                 output_template => 'outstanding IO: %s',
                 perfdatas => [
-                    { value => 'oio', template => '%s', min => 0 },
-                ],
+                    { template => '%s', min => 0 }
+                ]
             }
         },
         { label => 'backend-throughput-read', nlabel => 'cluster.vsan.backend.throughput.read.bytespersecond', display_ok => 0, set => {
@@ -70,8 +70,8 @@ sub set_counters {
                 output_template => 'read throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'throughputRead', template => '%s', unit => 'B/s', min => 0 },
-                ],
+                    { template => '%s', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'backend-throughput-write', nlabel => 'cluster.vsan.backend.throughput.write.bytespersecond', display_ok => 0, set => {
@@ -79,26 +79,26 @@ sub set_counters {
                 output_template => 'write throughput: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { value => 'throughputWrite', template => '%s', unit => 'B/s', min => 0 },
-                ],
+                    { template => '%s', unit => 'B/s', min => 0 }
+                ]
             }
         },
         { label => 'backend-latency-read', nlabel => 'cluster.vsan.backend.latency.read.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'latencyAvgRead' } ],
                 output_template => 'read latency: %s ms',
                 perfdatas => [
-                    { value => 'latencyAvgRead', template => '%s', unit => 'ms', min => 0 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0 }
+                ]
             }
         },
         { label => 'backend-latency-write', nlabel => 'cluster.vsan.backend.latency.write.milliseconds', display_ok => 0, set => {
                 key_values => [ { name => 'latencyAvgWrite' } ],
                 output_template => 'write latency: %s ms',
                 perfdatas => [
-                    { value => 'latencyAvgWrite', template => '%s', unit => 'ms', min => 0 },
-                ],
+                    { template => '%s', unit => 'ms', min => 0 }
+                ]
             }
-        },
+        }
     ];
 }
 

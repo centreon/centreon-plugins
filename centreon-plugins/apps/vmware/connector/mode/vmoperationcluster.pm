@@ -35,32 +35,29 @@ sub set_counters {
 
     $self->{maps_counters}->{cluster} = [
         { label => 'svmotion', nlabel => 'cluster.operations.svmotion.current.count', set => {
-                key_values => [ { name => 'numSVMotion', diff => 1  }, { name => 'display' } ],
+                key_values => [ { name => 'numSVMotion', diff => 1 }, { name => 'display' } ],
                 output_template => 'SVMotion %s',
                 perfdatas => [
-                    { label => 'svmotion', value => 'numSVMotion', template => '%s',
-                      label_extra_instance => 1 },
-                ],
+                    { label => 'svmotion', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'vmotion', nlabel => 'cluster.operations.vmotion.current.count', set => {
-                key_values => [ { name => 'numVMotion', diff => 1  }, { name => 'display' } ],
+                key_values => [ { name => 'numVMotion', diff => 1 }, { name => 'display' } ],
                 output_template => 'VMotion %s',
                 perfdatas => [
-                    { label => 'vmotion', value => 'numVMotion', template => '%s',
-                      label_extra_instance => 1 },
-                ],
+                    { label => 'vmotion', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'clone', nlabel => 'cluster.operations.clone.current.count', set => {
-                key_values => [ { name => 'numClone', diff => 1  }, { name => 'display' } ],
+                key_values => [ { name => 'numClone', diff => 1 }, { name => 'display' } ],
                 output_template => 'Clone %s',
                 perfdatas => [
-                    { label => 'clone', value => 'numClone', template => '%s',
-                      label_extra_instance => 1 },
-                ],
+                    { label => 'clone', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -76,9 +73,9 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "cluster:s"               => { name => 'cluster' },
-        "filter"                  => { name => 'filter' },
-        "scope-datacenter:s"      => { name => 'scope_datacenter' },
+        'cluster:s'          => { name => 'cluster' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
     });
     
     return $self;
@@ -88,16 +85,18 @@ sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{cluster} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'vmoperationcluster');
-    
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'vmoperationcluster'
+    );
+
     foreach my $cluster_id (keys %{$response->{data}}) {
         my $cluster_name = $response->{data}->{$cluster_id}->{name};        
         $self->{cluster}->{$cluster_name} = { 
             display => $cluster_name, 
             numVMotion => $response->{data}->{$cluster_id}->{'vmop.numVMotion.latest'},
             numClone => $response->{data}->{$cluster_id}->{'vmop.numClone.latest'},
-            numSVMotion => $response->{data}->{$cluster_id}->{'vmop.numSVMotion.latest'},
+            numSVMotion => $response->{data}->{$cluster_id}->{'vmop.numSVMotion.latest'}
         };
     }
     

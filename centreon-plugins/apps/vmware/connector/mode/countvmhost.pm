@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -75,12 +75,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{host} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
+            set => {
                 key_values => [ { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'on', nlabel => 'host.vm.poweredon.current.count', set => {
@@ -125,20 +127,10 @@ sub new {
         'esx-hostname:s'     => { name => 'esx_hostname' },
         'filter'             => { name => 'filter' },
         'scope-datacenter:s' => { name => 'scope_datacenter' },
-        'scope-cluster:s'    => { name => 'scope_cluster' },
-        'unknown-status:s'   => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
-        'warning-status:s'   => { name => 'warning_status', default => '' },
-        'critical-status:s'  => { name => 'critical_status', default => '' }
+        'scope-cluster:s'    => { name => 'scope_cluster' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {

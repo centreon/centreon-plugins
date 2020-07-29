@@ -25,13 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
-    return $msg;
+    return '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
 }
 
 sub set_counters {
@@ -42,19 +41,21 @@ sub set_counters {
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_vm', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'datastore', cb_prefix_output => 'prefix_datastore_output',  message_multiple => 'All datastores are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'datastore', cb_prefix_output => 'prefix_datastore_output',  message_multiple => 'All datastores are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i',
+            set => {
                 key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{global_vm} = [
@@ -62,11 +63,11 @@ sub set_counters {
                 key_values => [ { name => 'total_latency' } ],
                 output_template => 'max total latency is %s ms',
                 perfdatas => [
-                    { label => 'max_total_latency', value => 'total_latency', template => '%s', unit => 'ms', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'max_total_latency', template => '%s', unit => 'ms', 
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{datastore} = [
@@ -74,20 +75,20 @@ sub set_counters {
                 key_values => [ { name => 'read' } ],
                 output_template => '%s read iops',
                 perfdatas => [
-                    { label => 'riops', value => 'read', template => '%s', unit => 'iops', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'riops', template => '%s', unit => 'iops', 
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write', nlabel => 'vm.datastore.write.usage.iops', set => {
                 key_values => [ { name => 'write' } ],
                 output_template => '%s write iops',
                 perfdatas => [
-                    { label => 'wiops', value => 'write', template => '%s', unit => 'iops', 
-                      min => 0, max => 'write', label_extra_instance => 1 },
-                ],
+                    { label => 'wiops', template => '%s', unit => 'iops', 
+                      min => 0, max => 'write', label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -99,7 +100,7 @@ sub prefix_vm_output {
         $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
     }
     $msg .= ' : ';
-    
+
     return $msg;
 }
 
@@ -110,7 +111,7 @@ sub vm_long_output {
     if (defined($options{instance_value}->{config_annotation})) {
         $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
     }
-    
+
     return $msg;
 }
 
@@ -124,7 +125,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => {
         'vm-hostname:s'        => { name => 'vm_hostname' },
         'filter'               => { name => 'filter' },
@@ -136,20 +137,10 @@ sub new {
         'filter-uuid:s'        => { name => 'filter_uuid' },
         'display-description'  => { name => 'display_description' },
         'datastore-name:s'     => { name => 'datastore_name' },
-        'filter-datastore:s'   => { name => 'filter_datastore' },
-        'unknown-status:s'     => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
-        'warning-status:s'     => { name => 'warning_status', default => '' },
-        'critical-status:s'    => { name => 'critical_status', default => '' },
+        'filter-datastore:s'   => { name => 'filter_datastore' }
     });
-    
+
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
@@ -172,7 +163,7 @@ sub manage_selection {
 
     foreach my $vm_id (keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
-        
+
         $self->{vm}->{$vm_name} = { display => $vm_name, 
             datastore => {}, 
             global => {
@@ -181,7 +172,7 @@ sub manage_selection {
             },
             global_vm => {
                 total_latency => $response->{data}->{$vm_id}->{'disk.maxTotalLatency.latest'},
-            },
+            }
         };
 
         if (defined($self->{option_results}->{display_description})) {

@@ -31,31 +31,29 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-        { name => 'container', type => 1, cb_prefix_output => 'prefix_container_output', message_multiple => 'All containers are ok' },
+        { name => 'container', type => 1, cb_prefix_output => 'prefix_container_output', message_multiple => 'All containers are ok' }
     ];
     
     $self->{maps_counters}->{global} = [
         { label => 'total-requests', nlabel => 'connector.requests.total.count', set => {
-                key_values => [ { name => 'requests', diff => 1  } ],
+                key_values => [ { name => 'requests', diff => 1 } ],
                 output_template => 'Total %s requests',
                 perfdatas => [
-                    { label => 'requests', value => 'requests', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'requests', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{container} = [
         { label => 'requests', nlabel => 'connector.requests.total.count', set => {
-                key_values => [ { name => 'requests', diff => 1  } ],
+                key_values => [ { name => 'requests', diff => 1 } ],
                 output_template => '%s requests',
                 perfdatas => [
-                    { label => 'requests', value => 'requests', template => '%s',
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'requests', template => '%s', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -69,7 +67,7 @@ sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, statefile => 1);
     bless $self, $class;
-    
+
     $options{options}->add_options(arguments => { 
     });
 
@@ -81,8 +79,10 @@ sub manage_selection {
 
     $self->{global} = { requests => 0 };
     $self->{container} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'stats');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'stats'
+    );
 
     foreach my $container_name (keys %{$response->{data}}) {
         $self->{container}->{$container_name} = {

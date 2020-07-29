@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold catalog_status_calc);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
@@ -44,7 +44,12 @@ sub set_counters {
     ];
     
     $self->{maps_counters}->{cluster} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2,
+            unknown_default => '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i',
+            warning_default => '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i',
+            critical_default => '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i', 
+            set => {
                 key_values => [
                     { name => 'overall_status' },
                     { name => 'vsan_status' },
@@ -52,10 +57,9 @@ sub set_counters {
                     { name => 'drs_enabled' },
                     { name => 'display' }
                 ],
-                closure_custom_calc => \&catalog_status_calc,
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -73,22 +77,12 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => { 
-        'cluster-name:s'        => { name => 'cluster_name' },
-        'filter'                => { name => 'filter' },
-        'scope-datacenter:s'    => { name => 'scope_datacenter' },
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{overall_status} =~ /gray/i || %{vsan_status} =~ /gray/i' },
-        'warning-status:s'      => { name => 'warning_status', default => '%{overall_status} =~ /yellow/i || %{vsan_status} =~ /yellow/i' },
-        'critical-status:s'     => { name => 'critical_status', default => '%{overall_status} =~ /red/i || %{vsan_status} =~ /red/i' }
+        'cluster-name:s'     => { name => 'cluster_name' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' }
     });
 
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {

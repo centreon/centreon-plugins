@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -87,10 +86,12 @@ sub custom_usage_output {
     my ($total_size_value, $total_size_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{total});
     my ($total_used_value, $total_used_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{used});
     my ($total_free_value, $total_free_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{free});
-    my $msg = sprintf("Memory 'consumed' Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
-                   $total_size_value . " " . $total_size_unit,
-                   $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
-                   $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free});
+    my $msg = sprintf(
+        "Memory 'consumed' Usage Total: %s Used: %s (%.2f%%) Free: %s (%.2f%%)",
+        $total_size_value . " " . $total_size_unit,
+        $total_used_value . " " . $total_used_unit, $self->{result_values}->{prct_used},
+        $total_free_value . " " . $total_free_unit, $self->{result_values}->{prct_free}
+    );
     return $msg;
 }
 
@@ -117,16 +118,16 @@ sub custom_overhead_output {
     my ($self, %options) = @_;
 
     my ($overhead_value, $overhead_unit) = $self->{perfdata}->change_bytes(value => $self->{result_values}->{overhead});
-    my $msg = sprintf("Memory Overhead: %s",
-                      $overhead_value . " " . $overhead_unit);
-    return $msg;
+    return sprintf(
+        "Memory Overhead: %s",
+        $overhead_value . " " . $overhead_unit
+    );
 }
 
 sub custom_memstate_output {
     my ($self, %options) = @_;
 
-    my $msg = 'Memory state is ' . $self->{result_values}->{mem_state_str};
-    return $msg;
+    return 'Memory state is ' . $self->{result_values}->{mem_state_str};
 }
 
 sub set_counters {
@@ -137,12 +138,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{host} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
+            set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'consumed-memory', nlabel => 'host.memory.usage.bytes', set => {
@@ -150,27 +153,27 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_usage_calc'),
                 closure_custom_output => $self->can('custom_usage_output'),
                 closure_custom_perfdata => $self->can('custom_usage_perfdata'),
-                closure_custom_threshold_check => $self->can('custom_usage_threshold'),
+                closure_custom_threshold_check => $self->can('custom_usage_threshold')
             }
         },
         { label => 'overhead-memory', nlabel => 'host.memory.overhead.bytes', set => {
                 key_values => [ { name => 'overhead' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_overhead_output'),
                 perfdatas => [
-                    { label => 'overhead', value => 'overhead', template => '%s', unit => 'B', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'overhead', template => '%s', unit => 'B', 
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'state-memory', nlabel => 'host.memory.state.count', set => {
                 key_values => [ { name => 'mem_state' }, { name => 'mem_state_str' }, { name => 'display' } ],
                 closure_custom_output => $self->can('custom_memstate_output'),
                 perfdatas => [
-                    { label => 'state', value => 'mem_state', template => '%s', 
-                      min => 0, max => 3, label_extra_instance => 1 },
-                ],
+                    { label => 'state', template => '%s', 
+                      min => 0, max => 3, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -186,35 +189,27 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        "esx-hostname:s"        => { name => 'esx_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "units:s"               => { name => 'units', default => '%' },
-        "free"                  => { name => 'free' },
-        "no-memory-state"       => { name => 'no_memory_state' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'esx-hostname:s'     => { name => 'esx_hostname' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'scope-cluster:s'    => { name => 'scope_cluster' },
+        'units:s'            => { name => 'units', default => '%' },
+        'free'               => { name => 'free' },
+        'no-memory-state'    => { name => 'no_memory_state' }
     });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{host} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'memhost');
-    
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'memhost'
+    );
+
     foreach my $host_id (keys %{$response->{data}}) {
         my $host_name = $response->{data}->{$host_id}->{name};
         $self->{host}->{$host_name} = { 
@@ -224,7 +219,7 @@ sub manage_selection {
             overhead => $response->{data}->{$host_id}->{'mem.overhead.average'},
             mem_state => $response->{data}->{$host_id}->{mem_state},
             mem_state_str => $response->{data}->{$host_id}->{mem_state_str},
-            total => $response->{data}->{$host_id}->{mem_size},
+            total => $response->{data}->{$host_id}->{mem_size}
         };        
     }    
 }

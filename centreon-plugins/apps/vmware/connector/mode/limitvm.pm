@@ -24,7 +24,7 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_limit_output {
     my ($self, %options) = @_;
@@ -47,7 +47,7 @@ sub custom_limit_calc {
     $self->{result_values}->{connection_state} = $options{new_datas}->{$self->{instance} . '_connection_state'};
     $self->{result_values}->{power_state} = $options{new_datas}->{$self->{instance} . '_power_state'};
     $self->{result_values}->{name} = $options{new_datas}->{$self->{instance} . '_name'};
-    
+
     return 0;
 }
 
@@ -63,38 +63,46 @@ sub set_counters {
         },
         { name => 'disk_alarms', type => 2, cb_long_output => 'disk_long_output', message_multiple => '0 disk limit problem(s) detected', format_output => '%s disk limit problem(s) detected', display_counter_problem => { label => 'disk_alerts', nlabel => 'vm.limit.disk.alerts.count', min => 0 },
           group => [ { name => 'disk_alarm', cb_prefix_output => 'prefix_vm_output', skipped_code => { -11 => 1 } } ] 
-        },
+        }
     ];
     
     $self->{maps_counters}->{cpu_alarm} = [
-        { label => 'cpu-status', threshold => 0, set => {
+        {
+            label => 'cpu-status', type => 2, critical_default => '%{connection_state} !~ /^connected$/i || %{limit} != -1',
+            set => {
                 key_values => [ { name => 'name' }, { name => 'connection_state' }, { name => 'power_state' }, { name => 'cpu_limit' } ],
                 closure_custom_calc => $self->can('custom_limit_calc'), closure_custom_calc_extra_options => { label_ref => 'cpu' },
                 closure_custom_output => $self->can('custom_limit_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{memory_alarm} = [
-        { label => 'memory-status', threshold => 0, set => {
+        {
+            label => 'memory-status', type => 2, critical_default => '%{connection_state} !~ /^connected$/i || %{limit} != -1',
+            set => {
                 key_values => [ { name => 'name' }, { name => 'connection_state' }, { name => 'power_state' }, { name => 'memory_limit' } ],
                 closure_custom_calc => $self->can('custom_limit_calc'), closure_custom_calc_extra_options => { label_ref => 'memory' },
                 closure_custom_output => $self->can('custom_limit_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{disk_alarm} = [
-        { label => 'disk-status', threshold => 0, set => {
+        {
+            label => 'disk-status', type => 2, critical_default => '%{connection_state} !~ /^connected$/i || %{limit} != -1',
+            set => {
                 key_values => [ { name => 'name' }, { name => 'connection_state' }, { name => 'power_state' }, { name => 'disk_limit' } ],
                 closure_custom_calc => $self->can('custom_limit_calc'), closure_custom_calc_extra_options => { label_ref => 'disk' },
                 closure_custom_output => $self->can('custom_limit_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
 }
 
@@ -134,37 +142,25 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "vm-hostname:s"         => { name => 'vm_hostname' },
-        "filter"                => { name => 'filter' },
-        "filter-description:s"  => { name => 'filter_description' },
-        "filter-os:s"           => { name => 'filter_os' },
-        "filter-uuid:s"         => { name => 'filter_uuid' },
-        "display-description"   => { name => 'display_description' },
-        "check-disk-limit"      => { name => 'check_disk_limit' },
-        "warning-disk-status:s"     => { name => 'warning_disk_status', default => '' },
-        "critical-disk-status:s"    => { name => 'critical_disk_status', default => '%{connection_state} !~ /^connected$/i || %{limit} != -1' },
-        "warning-cpu-status:s"      => { name => 'warning_cpu_status', default => '' },
-        "critical-cpu-status:s"     => { name => 'critical_cpu_status', default => '%{connection_state} !~ /^connected$/i || %{limit} != -1' },
-        "warning-memory-status:s"   => { name => 'warning_memory_status', default => '' },
-        "critical-memory-status:s"  => { name => 'critical_memory_status', default => '%{connection_state} !~ /^connected$/i || %{limit} != -1' },
+        'vm-hostname:s'        => { name => 'vm_hostname' },
+        'filter'               => { name => 'filter' },
+        'filter-description:s' => { name => 'filter_description' },
+        'filter-os:s'          => { name => 'filter_os' },
+        'filter-uuid:s'        => { name => 'filter_uuid' },
+        'display-description'  => { name => 'display_description' },
+        'check-disk-limit'     => { name => 'check_disk_limit' }
     });
     
     return $self;
 }
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['warning_disk_status', 'critical_disk_status','warning_memory_status', 'critical_memory_status',
-        'warning_cpu_status', 'critical_cpu_status']);
-}
-
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'limitvm');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'limitvm'
+    );
 
     my $i = 0;
     $self->{cpu_alarms}->{global} = { cpu_alarm => {} };
@@ -172,7 +168,7 @@ sub manage_selection {
     $self->{disk_alarms}->{global} = { disk_alarm => {} } if (defined($self->{option_results}->{check_disk_limit}));
     foreach my $vm_id (keys %{$response->{data}}) {
         my $vm_name = $response->{data}->{$vm_id}->{name};
-        
+
         $self->{cpu_alarms}->{global}->{cpu_alarm}->{$i} = {
             name => $vm_name,
             config_annotation => defined($self->{option_results}->{display_description}) ? $options{custom}->strip_cr(value => $response->{data}->{$vm_id}->{'config.annotation'}) : undef,
@@ -187,7 +183,7 @@ sub manage_selection {
             power_state => $response->{data}->{$vm_id}->{power_state},
             memory_limit => $response->{data}->{$vm_id}->{'config.memoryAllocation.limit'}
         };
-        
+
         if (defined($self->{option_results}->{check_disk_limit})) {
             $self->{disk_alarms}->{global}->{disk_alarm}->{$i} = {
                 name => $vm_name,
@@ -196,14 +192,14 @@ sub manage_selection {
                 power_state => $response->{data}->{$vm_id}->{power_state},
                 disk_limit => -1
             };
-            
+
             foreach (@{$response->{data}->{$vm_id}->{'config.storageIOAllocation.limit'}}) {
                 if ($_->{limit} != -1) {
                     $self->{disk_alarms}->{global}->{disk_alarm}->{$i}->{disk_limit} = 1;
                 }
             }
         }
-        
+
         $i++;
     }
 }

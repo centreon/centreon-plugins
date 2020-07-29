@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
-    return $msg;
+    return '[connection state ' . $self->{result_values}->{connection_state} . '][power state ' . $self->{result_values}->{power_state} . ']';
 }
 
 sub custom_usage_perfdata {
@@ -141,17 +140,19 @@ sub set_counters {
                 { name => 'global_active', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_overhead', type => 0, skipped_code => { -10 => 1 } },
                 { name => 'global_vmmemctl', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'global_shared', type => 0, skipped_code => { -10 => 1 } },
+                { name => 'global_shared', type => 0, skipped_code => { -10 => 1 } }
             ]
         }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i',
+            set => {
                 key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         }
     ];
@@ -166,6 +167,7 @@ sub set_counters {
             }
         }
     ];
+
     $self->{maps_counters}->{global_active} = [
         { label => 'active', nlabel => 'vm.memory.active.usage.bytes', set => {
                 key_values => [ { name => 'active' }, { name => 'total' } ],
@@ -176,34 +178,37 @@ sub set_counters {
             }
         }
     ];
+
     $self->{maps_counters}->{global_overhead} = [
         { label => 'overhead', nlabel => 'vm.memory.overhead.bytes', set => {
                 key_values => [ { name => 'overhead' } ],
                 closure_custom_output => $self->can('custom_overhead_output'),
                 perfdatas => [
-                    { label => 'overhead', value => 'overhead', template => '%s', unit => 'B', 
+                    { label => 'overhead', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 }
                 ]
             }
         }
     ];
+
     $self->{maps_counters}->{global_vmmemctl} = [
         { label => 'ballooning', nlabel => 'vm.memory.ballooning.bytes', set => {
                 key_values => [ { name => 'vmmemctl' } ],
                 closure_custom_output => $self->can('custom_ballooning_output'),
                 perfdatas => [
-                    { label => 'ballooning', value => 'vmmemctl', template => '%s', unit => 'B', 
+                    { label => 'ballooning', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 }
                 ]
             }
         }
     ];
+
     $self->{maps_counters}->{global_shared} = [
         { label => 'shared', nlabel => 'vm.memory.shared.bytes', set => {
                 key_values => [ { name => 'shared' } ],
                 closure_custom_output => $self->can('custom_shared_output'),
                 perfdatas => [
-                    { label => 'shared', value => 'shared', template => '%s', unit => 'B', 
+                    { label => 'shared', template => '%s', unit => 'B', 
                       min => 0, label_extra_instance => 1 }
                 ]
             }
@@ -240,30 +245,20 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => {
-        'vm-hostname:s'         => { name => 'vm_hostname' },
-        'filter'                => { name => 'filter' },
-        'scope-datacenter:s'    => { name => 'scope_datacenter' },
-        'scope-cluster:s'       => { name => 'scope_cluster' },
-        'scope-host:s'          => { name => 'scope_host' },
-        'filter-description:s'  => { name => 'filter_description' },
-        'filter-os:s'           => { name => 'filter_os' },
-        'filter-uuid:s'         => { name => 'filter_uuid' },
-        'display-description'   => { name => 'display_description' },
-        'units:s'               => { name => 'units', default => '%' },
-        'free'                  => { name => 'free' },
-        'unknown-status:s'      => { name => 'unknown_status', default => '%{connection_state} !~ /^connected$/i or %{power_state}  !~ /^poweredOn$/i' },
-        'warning-status:s'      => { name => 'warning_status', default => '' },
-        'critical-status:s'     => { name => 'critical_status', default => '' },
+        'vm-hostname:s'        => { name => 'vm_hostname' },
+        'filter'               => { name => 'filter' },
+        'scope-datacenter:s'   => { name => 'scope_datacenter' },
+        'scope-cluster:s'      => { name => 'scope_cluster' },
+        'scope-host:s'         => { name => 'scope_host' },
+        'filter-description:s' => { name => 'filter_description' },
+        'filter-os:s'          => { name => 'filter_os' },
+        'filter-uuid:s'        => { name => 'filter_uuid' },
+        'display-description'  => { name => 'display_description' },
+        'units:s'              => { name => 'units', default => '%' },
+        'free'                 => { name => 'free' }
     });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    return $self;
 }
 
 sub manage_selection {
@@ -281,8 +276,8 @@ sub manage_selection {
         $self->{vm}->{$vm_name} = { display => $vm_name, 
             global => {
                 connection_state => $response->{data}->{$vm_id}->{connection_state},
-                power_state => $response->{data}->{$vm_id}->{power_state},
-            },
+                power_state => $response->{data}->{$vm_id}->{power_state}
+            }
         };
 
         foreach (('consumed', 'active', 'overhead', 'vmmemctl', 'shared')) {

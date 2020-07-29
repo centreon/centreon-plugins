@@ -25,13 +25,12 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 use centreon::plugins::misc;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -48,20 +47,22 @@ sub set_counters {
         { name => 'host', type => 3, cb_prefix_output => 'prefix_host_output', cb_long_output => 'host_long_output', indent_long_output => '    ', message_multiple => 'All ESX hosts are ok', 
             group => [
                 { name => 'global', type => 0, skipped_code => { -10 => 1 } },
-                { name => 'datastore', cb_prefix_output => 'prefix_datastore_output',  message_multiple => 'All datastores latencies are ok', type => 1, skipped_code => { -10 => 1 } },
+                { name => 'datastore', cb_prefix_output => 'prefix_datastore_output',  message_multiple => 'All datastores latencies are ok', type => 1, skipped_code => { -10 => 1 } }
             ]
         }
     ];
     
     $self->{maps_counters}->{global} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
+            set => {
                 key_values => [ { name => 'state' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
-        },
+        }
     ];
     
     $self->{maps_counters}->{datastore} = [
@@ -69,20 +70,20 @@ sub set_counters {
                 key_values => [ { name => 'read_latency' }, { name => 'display' } ],
                 output_template => 'read : %s ms',
                 perfdatas => [
-                    { label => 'trl', value => 'read_latency', template => '%s', unit => 'ms', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'trl', template => '%s', unit => 'ms', 
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'write-latency', nlabel => 'host.datastore.latency.write.milliseconds', set => {
                 key_values => [ { name => 'write_latency' }, { name => 'display' } ],
                 output_template => 'write : %s ms',
                 perfdatas => [
-                    { label => 'twl', value => 'write_latency', template => '%s', unit => 'ms', 
-                      min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'twl', template => '%s', unit => 'ms', 
+                      min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -110,33 +111,25 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "esx-hostname:s"        => { name => 'esx_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "datastore-name:s"      => { name => 'datastore_name' },
-        "filter-datastore:s"    => { name => 'filter_datastore' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'esx-hostname:s'     => { name => 'esx_hostname' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'scope-cluster:s'    => { name => 'scope_cluster' },
+        'datastore-name:s'   => { name => 'datastore_name' },
+        'filter-datastore:s' => { name => 'filter_datastore' }
     });
     
     return $self;
-}
-
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{host} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'datastorehost');
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'datastorehost'
+    );
 
     foreach my $host_id (keys %{$response->{data}}) {
         my $host_name = $response->{data}->{$host_id}->{name};

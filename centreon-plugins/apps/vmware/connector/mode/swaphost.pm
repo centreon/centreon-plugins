@@ -24,13 +24,12 @@ use base qw(centreon::plugins::templates::counter);
 
 use strict;
 use warnings;
-use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold);
+use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_ng);
 
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    my $msg = 'status : ' . $self->{result_values}->{status};
-    return $msg;
+    return 'status : ' . $self->{result_values}->{status};
 }
 
 sub custom_status_calc {
@@ -48,12 +47,14 @@ sub set_counters {
     ];
 
     $self->{maps_counters}->{host} = [
-        { label => 'status', threshold => 0, set => {
+        {
+            label => 'status', type => 2, unknown_default => '%{status} !~ /^connected$/i',
+            set => {
                 key_values => [ { name => 'state' }, { name => 'display' } ],
                 closure_custom_calc => $self->can('custom_status_calc'),
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
-                closure_custom_threshold_check => \&catalog_status_threshold,
+                closure_custom_threshold_check => \&catalog_status_threshold_ng
             }
         },
         { label => 'swap-in', nlabel => 'host.swap.in.usage.bytespersecond', set => {
@@ -61,9 +62,9 @@ sub set_counters {
                 output_template => 'Swap In: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'swap_in', value => 'swap_in', template => '%s',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'swap_in', template => '%s',
+                      unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
         },
         { label => 'swap-out', nlabel => 'host.swap.out.usage.bytespersecond', set => {
@@ -71,11 +72,11 @@ sub set_counters {
                 output_template => 'Swap Out: %s %s/s',
                 output_change_bytes => 1,
                 perfdatas => [
-                    { label => 'swap_out', value => 'swap_out', template => '%s',
-                      unit => 'B/s', min => 0, label_extra_instance => 1 },
-                ],
+                    { label => 'swap_out', template => '%s',
+                      unit => 'B/s', min => 0, label_extra_instance => 1 }
+                ]
             }
-        },
+        }
     ];
 }
 
@@ -91,39 +92,31 @@ sub new {
     bless $self, $class;
     
     $options{options}->add_options(arguments => { 
-        "esx-hostname:s"        => { name => 'esx_hostname' },
-        "filter"                => { name => 'filter' },
-        "scope-datacenter:s"    => { name => 'scope_datacenter' },
-        "scope-cluster:s"       => { name => 'scope_cluster' },
-        "unknown-status:s"      => { name => 'unknown_status', default => '%{status} !~ /^connected$/i' },
-        "warning-status:s"      => { name => 'warning_status', default => '' },
-        "critical-status:s"     => { name => 'critical_status', default => '' },
+        'esx-hostname:s'    => { name => 'esx_hostname' },
+        'filter'             => { name => 'filter' },
+        'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'scope-cluster:s'    => { name => 'scope_cluster' }
     });
-    
-    return $self;
-}
 
-sub check_options {
-    my ($self, %options) = @_;
-    $self->SUPER::check_options(%options);
-    
-    $self->change_macros(macros => ['unknown_status', 'warning_status', 'critical_status']);
+    return $self;
 }
 
 sub manage_selection {
     my ($self, %options) = @_;
 
     $self->{host} = {};
-    my $response = $options{custom}->execute(params => $self->{option_results},
-        command => 'swaphost');
-    
+    my $response = $options{custom}->execute(
+        params => $self->{option_results},
+        command => 'swaphost'
+    );
+
     foreach my $host_id (keys %{$response->{data}}) {
         my $host_name = $response->{data}->{$host_id}->{name};
         $self->{host}->{$host_name} = { 
             display => $host_name, 
             state => $response->{data}->{$host_id}->{state},
             swap_in => $response->{data}->{$host_id}->{'mem.swapinRate.average'},
-            swap_out => $response->{data}->{$host_id}->{'mem.swapoutRate.average'},
+            swap_out => $response->{data}->{$host_id}->{'mem.swapoutRate.average'}
         };        
     }    
 }
