@@ -184,6 +184,42 @@ sub tower_list_projects {
     return $raw_results->{results};
 }
 
+sub tower_list_job_templates_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "job_template list --insecure --all-pages --format json";
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
+        
+    return $cmd_options; 
+}
+
+sub tower_list_job_templates {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_list_job_templates_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results->{results};
+}
+
+sub tower_list_schedules {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'method unsupported (try to use --custommode=api)');
+    $self->{output}->option_exit();
+}
+
+sub tower_list_unified_jobs {
+    my ($self, %options) = @_;
+
+    $self->{output}->add_option_msg(short_msg => 'method unsupported (try to use --custommode=api)');
+    $self->{output}->option_exit();
+}
+
 1;
 
 __END__
