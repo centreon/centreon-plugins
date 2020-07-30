@@ -137,7 +137,7 @@ sub tower_list_hosts {
     my $cmd_options = $self->tower_list_hosts_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
-    return $raw_results;
+    return $raw_results->{results};
 }
 
 sub tower_list_inventories_set_cmd {
@@ -159,7 +159,7 @@ sub tower_list_inventories {
     my $cmd_options = $self->tower_list_inventories_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
-    return $raw_results;
+    return $raw_results->{results};
 }
 
 sub tower_list_projects_set_cmd {
@@ -181,7 +181,7 @@ sub tower_list_projects {
     my $cmd_options = $self->tower_list_projects_set_cmd(%options);
     my $raw_results = $self->execute(cmd_options => $cmd_options);
     
-    return $raw_results;
+    return $raw_results->{results};
 }
 
 1;

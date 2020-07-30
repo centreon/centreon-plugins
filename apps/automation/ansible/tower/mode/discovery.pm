@@ -61,7 +61,7 @@ sub run {
     $disco_stats->{end_time} = time();
     $disco_stats->{duration} = $disco_stats->{end_time} - $disco_stats->{start_time};
 
-    foreach my $host (@{$hosts->{results}}) {
+    foreach my $host (@$hosts) {
         my %host;
         $host{name} = $host->{name};
         $host{id} = $host->{id};
