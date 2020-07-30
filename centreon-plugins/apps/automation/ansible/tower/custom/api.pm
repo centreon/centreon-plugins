@@ -138,9 +138,10 @@ sub request_api {
 
     $self->settings();
     while (1) {
+        my $path = defined($options{force_endpoint}) ? $self->{api_path} . $options{force_endpoint} : $self->{api_path} . $options{endpoint} . '?page_size=100&page=' . $page;
         my $content = $self->{http}->request(
             method => defined($options{method}) ? $options{method} : 'GET', 
-            url_path => $self->{api_path} . $options{endpoint} . '?page_size=100&page=' . $page,
+            url_path => $path,
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
@@ -184,6 +185,32 @@ sub tower_list_projects {
     my ($self, %options) = @_;
 
     return $self->request_api(endpoint => '/projects/');
+}
+
+sub tower_list_job_templates {
+    my ($self, %options) = @_;
+
+    return $self->request_api(endpoint => '/job_templates/');
+}
+
+sub tower_list_schedules {
+    my ($self, %options) = @_;
+
+    my $schedules = $self->request_api(endpoint => '/schedules/');
+    if (defined($options{add_job_status})) {
+        for (my $i = 0; $i < scalar(@$schedules); $i++) {
+            my $job = $self->request_api(force_endpoint => '/schedules/' . $schedules->[$i]->{id} . '/jobs/?order_by=-id&page_size=1');
+            $schedules->[$i]->{last_job} = $job->[0];
+        }
+    }
+
+    return $schedules;
+}
+
+sub tower_list_unified_jobs {
+    my ($self, %options) = @_;
+
+    return $self->request_api(endpoint => '/unified_jobs/');
 }
 
 1;

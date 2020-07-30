@@ -18,7 +18,7 @@
 # limitations under the License.
 #
 
-package apps::automation::ansible::tower::mode::hosts;
+package apps::automation::ansible::tower::mode::jobtemplates;
 
 use base qw(centreon::plugins::templates::counter);
 
@@ -29,13 +29,13 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub prefix_output_global {
     my ($self, %options) = @_;
 
-    return 'Hosts ';
+    return 'Job templates ';
 }
 
-sub prefix_output_host {
+sub prefix_output_jobtpl {
     my ($self, %options) = @_;
 
-    return "Host '" . $options{instance_value}->{display} . "' ";
+    return "Job template '" . $options{instance_value}->{display} . "' ";
 }
 
 sub set_counters {
@@ -43,29 +43,33 @@ sub set_counters {
 
     $self->{maps_counters_type} = [
         { name => 'global', type => 0, cb_prefix_output => 'prefix_output_global' },
-        { name => 'hosts', type => 1, cb_prefix_output => 'prefix_output_host', message_multiple => 'All hosts are ok', skipped_code => { -10 => 1 } }
+        { name => 'jobtpl', type => 1, cb_prefix_output => 'prefix_output_jobtpl', message_multiple => 'All job templates are ok', skipped_code => { -10 => 1 } }
     ];
 
     $self->{maps_counters}->{global} = [
-        { label => 'total', nlabel => 'hosts.total.count', set => {
+        { label => 'total', nlabel => 'jobtemplates.total.count', set => {
                 key_values => [ { name => 'total' } ],
                 output_template => 'total: %d',
                 perfdatas => [
                     { value => 'total', template => '%d', min => 0 }
                 ]
             }
-        },
-        { label => 'failed', nlabel => 'hosts.failed.count', set => {
-                key_values => [ { name => 'failed' }, { name => 'total' } ],
-                output_template => 'failed: %d',
+        }
+    ];
+
+    foreach ((['successful', 1], ['failed', 1], ['running', 1], ['canceled', 0], ['pending', 0], ['default', 0], ['never', 0])) {
+        push @{$self->{maps_counters}->{global}}, {
+                label => $_->[0], nlabel => 'jobtemplates.' . $_->[0] . '.count', display_ok => $_->[1], set => {
+                key_values => [ { name => $_->[0] }, { name => 'total' } ],
+                output_template => $_->[0] . ': %d',
                 perfdatas => [
                     { template => '%d', min => 0, max => 'total' }
                 ]
             }
-        }
-    ];
+        };
+    }
 
-    $self->{maps_counters}->{hosts} = [
+    $self->{maps_counters}->{jobtpl} = [
         {
             label => 'job-status', type => 2,
             unknown_default => '%{last_job_status} =~ /default/',
@@ -86,8 +90,7 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s'        => { name => 'filter_name' },
-        'display-failed-hosts' => { name => 'display_failed_hosts' }
+        'filter-name:s' => { name => 'filter_name' }
     });
 
     return $self;
@@ -96,32 +99,26 @@ sub new {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $hosts = $options{custom}->tower_list_hosts();
+    my $jobs = $options{custom}->tower_list_job_templates();
 
-    $self->{global} = {
-        total => scalar(@$hosts),
-        failed => 0
-    };
-    $self->{hosts} = {};
+    $self->{global} = { total => 0, failed => 0, successful => 0, canceled => 0, default => 0, pending => 0, running => 0, never => 0 };
+    $self->{jobtpl} = {};
 
-    my $failed_hosts = [];
-    foreach my $host (@$hosts) {
+    foreach my $job (@$jobs) {
         next if (defined($self->{option_results}->{filter_name}) && $self->{option_results}->{filter_name} ne '' 
-            && $host->{name} !~ /$self->{option_results}->{filter_name}/);
+            && $job->{name} !~ /$self->{option_results}->{filter_name}/);
 
-        $self->{hosts}->{ $host->{id} } = {
-            display => $host->{name},
-            last_job_status => $host->{summary_fields}->{last_job}->{status}
+        $self->{jobtpl}->{ $job->{id} } = {
+            display => $job->{name},
+            last_job_status => defined($job->{summary_fields}->{last_job}->{status}) ? $job->{summary_fields}->{last_job}->{status} : 'never'
         };
+        $self->{global}->{total}++;
 
-        if ($host->{has_active_failures}) {
-            $self->{global}->{failed}++; 
-            push @$failed_hosts, $host->{name};
+        if (defined($job->{summary_fields}->{last_job}->{status})) {
+            $self->{global}->{ $job->{summary_fields}->{last_job}->{status} }++;
+        } else {
+            $self->{global}->{never}++;
         }
-    }
-
-    if (defined($self->{option_results}->{display_failed_hosts})) {
-        $self->{output}->output_add(long_msg => 'Failed hosts list: ' . join(', ', @$failed_hosts)); 
     }
 }
 
@@ -131,17 +128,13 @@ __END__
 
 =head1 MODE
 
-Check hosts.
+Check job templates.
 
 =over 8
 
 =item B<--filter-name>
 
-Filter host name (Can use regexp).
-
-=item B<--display-failed-hosts>
-
-Display failed hosts list in verbose output.
+Filter job template name (Can use regexp).
 
 =item B<--unknown-job-status>
 
@@ -161,7 +154,7 @@ Can used special variables like: %{last_job_status}, %{display}
 =item B<--warning-*> B<--critical-*> 
 
 Thresholds.
-Can be: 'total', 'failed'.
+Can be: 'total', 'successful', 'failed', 'running', 'canceled', 'pending', 'default', 'never'.
 
 =back
 

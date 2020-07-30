@@ -25,6 +25,18 @@ use base qw(centreon::plugins::templates::counter);
 use strict;
 use warnings;
 
+sub prefix_output_global {
+    my ($self, %options) = @_;
+
+    return 'Inventories ';
+}
+
+sub prefix_output_inventories {
+    my ($self, %options) = @_;
+
+    return "Inventory '" . $options{instance_value}->{display} . "' ";
+}
+
 sub set_counters {
     my ($self, %options) = @_;
 
@@ -113,18 +125,6 @@ sub set_counters {
     ];
 }
 
-sub prefix_output_global {
-    my ($self, %options) = @_;
-
-    return "Inventories ";
-}
-
-sub prefix_output_inventories {
-    my ($self, %options) = @_;
-
-    return "Inventory '" . $options{instance_value}->{display} . "' ";
-}
-
 sub new {
     my ($class, %options) = @_;
     my $self = $class->SUPER::new(package => __PACKAGE__, %options, force_new_perfdata => 1);
@@ -139,17 +139,15 @@ sub new {
 
 sub manage_selection {
     my ($self, %options) = @_;
-    
-    $self->{global} = { total => 0, failed => 0 };
 
     my $inventories = $options{custom}->tower_list_inventories();
 
-    $self->{global}->{total} = scalar(@$inventories);
-
+    $self->{global} = { total => 0, failed => 0 };
+    $self->{inventories} = {};
     foreach my $inventory (@$inventories) {
         next if (defined($self->{option_results}->{filter_inventory}) && $self->{option_results}->{filter_inventory} ne '' 
             && $inventory->{name} !~ /$self->{option_results}->{filter_inventory}/);
-        
+
         $self->{inventories}->{ $inventory->{id} } = {
             display => $inventory->{name},
             total_hosts => $inventory->{total_hosts},
@@ -159,6 +157,7 @@ sub manage_selection {
             total_groups => $inventory->{total_groups},
             groups_with_active_failures => $inventory->{groups_with_active_failures}
         };
+        $self->{global}->{total}++;
 
         $self->{global}->{failed}++ if ($inventory->{has_active_failures});
     }

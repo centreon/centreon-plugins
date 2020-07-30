@@ -31,9 +31,12 @@ sub new {
 
     $self->{version} = '1.0';
     $self->{modes} = {
-        'discovery'   => 'apps::automation::ansible::tower::mode::discovery',
-        'hosts'       => 'apps::automation::ansible::tower::mode::hosts',
-        'inventories' => 'apps::automation::ansible::tower::mode::inventories'
+        'discovery'     => 'apps::automation::ansible::tower::mode::discovery',
+        'hosts'         => 'apps::automation::ansible::tower::mode::hosts',
+        'inventories'   => 'apps::automation::ansible::tower::mode::inventories',
+        'jobs'          => 'apps::automation::ansible::tower::mode::jobs',
+        'job-templates' => 'apps::automation::ansible::tower::mode::jobtemplates',
+        'schedules'     => 'apps::automation::ansible::tower::mode::schedules'
     };
 
     $self->{custom_modes}->{api} = 'apps::automation::ansible::tower::custom::api';
