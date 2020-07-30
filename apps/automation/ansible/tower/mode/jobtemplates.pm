@@ -90,16 +90,61 @@ sub new {
     bless $self, $class;
 
     $options{options}->add_options(arguments => {
-        'filter-name:s' => { name => 'filter_name' }
+        'filter-name:s'            => { name => 'filter_name' },
+        'launch-job-template-id:s' => { name => 'launch_job_template_id' },
+        'launch-extra-vars:s'      => { name => 'launch_extra_vars' },
+        'launch-tags:s'            => { name => 'launch_tags' },
+        'launch-limit:s'           => { name => 'launch_limit' },
+        'launch-inventory:s'       => { name => 'launch_inventory' },
+        'launch-credential:s'      => { name => 'launch_credential' },
+        'launch-max-retries:s'     => { name => 'launch_max_retries', default => 5 },
+        'launch-retry-interval:s'  => { name => 'launch_retry_interval', default => 10 }
     });
 
     return $self;
 }
 
+sub launch_job {
+    my ($self, %options) = @_;
+
+    my $job = $options{custom}->tower_launch_job_template(
+        launch_job_template_id => $self->{option_results}->{launch_job_template_id},
+        launch_extra_vars => $self->{option_results}->{launch_extra_vars},
+        launch_tags => $self->{option_results}->{launch_tags},
+        launch_limit => $self->{option_results}->{launch_limit},
+        launch_inventory => $self->{option_results}->{launch_inventory},
+        launch_credential => $self->{option_results}->{launch_credential}
+    );
+
+    my $job_id = $job->{id};
+    my ($job_completed, $retry_idx, $job_result);
+    $retry_idx = 0;
+    while (!defined($job_completed) && $retry_idx < $self->{option_results}->{launch_max_retries}) {
+        sleep($self->{option_results}->{launch_retry_interval}) if ($retry_idx > 0);
+        $job_result = $options{custom}->tower_get_job(job_id => $job_id);
+
+        $job_completed = $job_result->{finished};
+        $retry_idx++;
+    }
+
+    if ($retry_idx >= $self->{option_results}->{launch_max_retries}) {
+        $self->{output}->add_option_msg(short_msg => 'cannot get the last job result');
+        $self->{output}->option_exit();
+    }
+
+    $job->{summary_fields}->{last_job} = $job_result;
+    return [$job];
+}
+
 sub manage_selection {
     my ($self, %options) = @_;
 
-    my $jobs = $options{custom}->tower_list_job_templates();
+    my $jobs;
+    if (defined($self->{option_results}->{launch_job_template_id}) && $self->{option_results}->{launch_job_template_id} =~ /\d+/) {
+        $jobs = $self->launch_job(custom => $options{custom});
+    } else {
+        $jobs = $options{custom}->tower_list_job_templates();
+    }
 
     $self->{global} = { total => 0, failed => 0, successful => 0, canceled => 0, default => 0, pending => 0, running => 0, never => 0 };
     $self->{jobtpl} = {};
@@ -135,6 +180,38 @@ Check job templates.
 =item B<--filter-name>
 
 Filter job template name (Can use regexp).
+
+=item B<--launch-job-template-id>
+
+The job_template id to launch.
+
+=item B<--launch-inventory>
+
+Specify inventory for job template to run.
+
+=item B<--launch-credential>
+
+Specify machine credential for job template to run.
+
+=item B<--launch-tags>
+
+Specify tagged actions in the playbook to run.
+
+=item B<--launch-limit>
+
+Specify host limit for job template to run.
+
+=item B<--launch-extra-vars>
+
+yaml format text that contains extra variables to pass on.
+
+=item B<--launch-max-retries>
+
+Number of retries to get job result once launched (Default: 5).
+
+=item B<--launch-retry-interval>
+
+Number of seconds between retries (Default : 10).
 
 =item B<--unknown-job-status>
 
