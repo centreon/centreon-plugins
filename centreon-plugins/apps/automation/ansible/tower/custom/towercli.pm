@@ -220,6 +220,56 @@ sub tower_list_unified_jobs {
     $self->{output}->option_exit();
 }
 
+sub tower_launch_job_template_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "job launch --job-template=$options{launch_job_template_id} ";
+    $cmd_options .= " --inventory '$options{launch_inventory}'" if (defined($options{launch_inventory}));
+    $cmd_options .= " --credential '$options{launch_credential}'" if (defined($options{launch_credential}));
+    $cmd_options .= " --tags '$options{launch_tags}'" if (defined($options{launch_tags}));
+    $cmd_options .= " --limit '$options{launch_limit}'" if (defined($options{launch_limit}));
+    $cmd_options .= " --extra-vars '$options{launch_extra_vars}'" if (defined($options{launch_extra_vars}));
+    $cmd_options .= ' --insecure --format json';
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
+        
+    return $cmd_options; 
+}
+
+sub tower_launch_job_template {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_launch_job_template_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+
+    return $raw_results;
+}
+
+sub tower_get_job_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+    
+    my $cmd_options = "job get $options{job_id} --insecure --format json";
+    $cmd_options .= " --tower-host '$self->{hostname}'" if (defined($self->{hostname}));
+    $cmd_options .= " --tower-username '$self->{username}'" if (defined($self->{username}));
+    $cmd_options .= " --tower-password '$self->{password}'" if (defined($self->{password}));
+        
+    return $cmd_options; 
+}
+
+sub tower_get_job {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->tower_get_job_set_cmd(%options);
+    my $raw_results = $self->execute(cmd_options => $cmd_options);
+    
+    return $raw_results;
+}
+
 1;
 
 __END__

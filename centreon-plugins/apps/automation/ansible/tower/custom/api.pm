@@ -142,6 +142,7 @@ sub request_api {
         my $content = $self->{http}->request(
             method => defined($options{method}) ? $options{method} : 'GET', 
             url_path => $path,
+            query_form_post => $options{query_form_post},
             unknown_status => $self->{unknown_http_status},
             warning_status => $self->{warning_http_status},
             critical_status => $self->{critical_http_status}
@@ -161,6 +162,8 @@ sub request_api {
             $self->{output}->add_option_msg(short_msg => "Cannot decode response (add --debug option to display returned content)");
             $self->{output}->option_exit();
         }
+
+        return $decoded if (defined($options{direct_hash}) && $options{direct_hash} == 1);
 
         push @$results, @{$decoded->{results}};
         last if (!defined($decoded->{next}));
@@ -211,6 +214,41 @@ sub tower_list_unified_jobs {
     my ($self, %options) = @_;
 
     return $self->request_api(endpoint => '/unified_jobs/');
+}
+
+sub tower_launch_job_template {
+    my ($self, %options) = @_;
+
+    my $json_request = {};
+    $json_request->{inventory} = $options{launch_inventory} if (defined($options{launch_inventory}) && $options{launch_inventory} ne '');
+    $json_request->{credential} = $options{launch_credential} if (defined($options{launch_credential}));
+    $json_request->{job_tags} = $options{launch_tags} if (defined($options{launch_tags}));
+    $json_request->{limit} = $options{launch_limit} if (defined($options{launch_limit}));
+    $json_request->{extra_vars} = $options{launch_extra_vars} if (defined($options{launch_extra_vars}));
+
+    my $encoded;
+    eval {
+        $encoded = JSON::XS->new->utf8->encode($json_request);
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => 'Cannot encode request: ' . $@);
+        $self->{output}->option_exit();
+    }
+
+    my $job = $self->request_api(
+        method => 'POST',
+        force_endpoint => '/job_templates/' . $options{launch_job_template_id} . '/launch/',
+        query_form_post => $encoded,
+        direct_hash => 1
+    );
+
+    return $job;
+}
+
+sub tower_get_job {
+    my ($self, %options) = @_;
+
+    return $self->request_api(force_endpoint => '/jobs/' . $options{job_id} . '/', direct_hash => 1);
 }
 
 1;
