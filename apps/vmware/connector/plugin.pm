@@ -56,6 +56,7 @@ sub new {
         'memory-host'          => 'apps::vmware::connector::mode::memoryhost',
         'memory-vm'            => 'apps::vmware::connector::mode::memoryvm',
         'net-host'             => 'apps::vmware::connector::mode::nethost',
+        'net-vm'               => 'apps::vmware::connector::mode::netvm',
         'service-host'         => 'apps::vmware::connector::mode::servicehost',
         'snapshot-vm'          => 'apps::vmware::connector::mode::snapshotvm',
         'stat-connectors'      => 'apps::vmware::connector::mode::statconnectors',
