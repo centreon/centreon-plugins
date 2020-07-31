@@ -29,7 +29,7 @@ use centreon::plugins::templates::catalog_functions qw(catalog_status_threshold_
 sub custom_status_output {
     my ($self, %options) = @_;
 
-    return 'status ' . $self->{result_values}->{connection_state};
+    return 'status ' . $self->{result_values}->{connection_state} . ' [' . $self->{result_values}->{power_state} . ']';
 }
 
 sub custom_overall_output {
@@ -49,7 +49,7 @@ sub set_counters {
         {
             label => 'status', type => 2, unknown_default => '%{connection_state} !~ /^connected$/i',
             set => {
-                key_values => [ { name => 'connection_state' } ],
+                key_values => [ { name => 'connection_state' }, { name => 'power_state' } ],
                 closure_custom_output => $self->can('custom_status_output'),
                 closure_custom_perfdata => sub { return 0; },
                 closure_custom_threshold_check => \&catalog_status_threshold_ng
@@ -77,7 +77,7 @@ sub prefix_vm_output {
     if (defined($options{instance_value}->{config_annotation})) {
         $msg .= ' [annotation: ' . $options{instance_value}->{config_annotation} . ']';
     }
-    $msg .= ' : ';
+    $msg .= ': ';
     
     return $msg;
 }
@@ -116,6 +116,7 @@ sub manage_selection {
         $self->{vm}->{$vm_name} = {
             display => $vm_name, 
             connection_state => $response->{data}->{$vm_id}->{connection_state},
+            power_state => $response->{data}->{$vm_id}->{power_state},
             overall_status => $response->{data}->{$vm_id}->{overall_status}
         };
 
@@ -166,22 +167,22 @@ Search in following host(s) (can be a regexp).
 
 =item B<--unknown-status>
 
-Set warning threshold for status (Default: '%{connection_state} !~ /^connected$/i').
-Can used special variables like: %{connection_state}
+Set unknown threshold for status (Default: '%{connection_state} !~ /^connected$/i').
+Can used special variables like: %{connection_state}, %{power_state}
 
 =item B<--warning-status>
 
-Set warning threshold for status (Default: '').
+Set warning threshold for status.
 Can used special variables like: %{connection_state}
 
 =item B<--critical-status>
 
-Set critical threshold for status (Default: '').
-Can used special variables like: %{connection_state}
+Set critical threshold for status.
+Can used special variables like: %{connection_state}, %{power_state}
 
 =item B<--unknown-overall-status>
 
-Set warning threshold for status (Default: '%{overall_status} =~ /gray/i').
+Set unknown threshold for status (Default: '%{overall_status} =~ /gray/i').
 Can used special variables like: %{overall_status}
 
 =item B<--warning-overall-status>
