@@ -149,6 +149,7 @@ sub new {
         'datastore-name:s'   => { name => 'datastore_name' },
         'filter'             => { name => 'filter' },
         'scope-datacenter:s' => { name => 'scope_datacenter' },
+        'filter-host:s'      => { name => 'filter_host' },
         'units:s'            => { name => 'units', default => '%' },
         'free'               => { name => 'free' }
     });
@@ -201,13 +202,23 @@ sub custom_usage_calc {
 sub manage_selection {
     my ($self, %options) = @_;
 
-    $self->{datastore} = {};
     my $response = $options{custom}->execute(
         params => $self->{option_results},
         command => 'datastoreusage'
     );
+
+    $self->{datastore} = {};
     foreach my $ds_id (keys %{$response->{data}}) {
         my $ds_name = $response->{data}->{$ds_id}->{name};
+
+        if (defined($response->{data}->{$ds_id}->{hosts}) && defined($self->{option_results}->{filter_host}) && $self->{option_results}->{filter_host} ne '') {
+            my $filtered = 0;
+            foreach (@{$response->{data}->{$ds_id}->{hosts}}) {
+                $filtered = 1 if (/$self->{option_results}->{filter_host}/);
+            }
+            next if ($filtered == 0);
+        }
+
         if ($response->{data}->{$ds_id}->{size} <= 0) {
             $self->{output}->output_add(long_msg => "skipping datastore '" . $ds_name . "': no total size");
             next;
@@ -247,6 +258,10 @@ Datastore name is a regexp.
 =item B<--scope-datacenter>
 
 Search in following datacenter(s) (can be a regexp).
+
+=item B<--filter-host>
+
+Filter datastores attached to hosts (can be a regexp).
 
 =item B<--unknown-status>
 
