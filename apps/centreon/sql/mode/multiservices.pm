@@ -49,9 +49,11 @@ sub custom_hosts_perfdata {
     my ($self, %options) = @_;
 
     foreach my $hstate ('up', 'down', 'unreachable') {
-        $self->{output}->perfdata_add(label => 'total_host_' . $hstate,
-                                      value => $self->{result_values}->{'total_'.$hstate},
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'total_host_' . $hstate,
+            value => $self->{result_values}->{'total_' . $hstate},
+            min => 0
+        );
     }
 
 }
@@ -102,11 +104,12 @@ sub custom_services_perfdata {
     my ($self, %options) = @_;
 
     foreach my $sstate ('ok', 'warning', 'critical', 'unknown') {
-        $self->{output}->perfdata_add(label => 'total_service_' . $sstate,
-                                      value => $self->{result_values}->{'total_'.$sstate},
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'total_service_' . $sstate,
+            value => $self->{result_values}->{$sstate . '_total'},
+            min => 0
+        );
     }
-
 }
 
 sub custom_services_threshold {
@@ -146,7 +149,6 @@ sub custom_groups_calc {
     $self->{result_values}->{up} = $options{new_datas}->{$self->{instance} . '_up'};
     $self->{result_values}->{down} = $options{new_datas}->{$self->{instance} . '_down'};
     $self->{result_values}->{unreachable} = $options{new_datas}->{$self->{instance} . '_unreachable'};
-
 
     return 0
 }
@@ -195,20 +197,24 @@ sub custom_groups_perfdata {
     foreach my $hstate ('up', 'down', 'unreachable') {
         my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $hstate);
         my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $hstate);
-        $self->{output}->perfdata_add(label => 'host_' . $hstate . '_' . $self->{result_values}->{instance},
-                                      value => $self->{result_values}->{$hstate},
-                                      warning => $warning,
-                                      critical => $critical,
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'host_' . $hstate . '_' . $self->{result_values}->{instance},
+            value => $self->{result_values}->{$hstate},
+            warning => $warning,
+            critical => $critical,
+            min => 0
+        );
     }
     foreach my $sstate ('ok', 'warning', 'critical', 'unknown') {
         my $warning = $self->{perfdata}->get_perfdata_for_output(label => 'warning-' . $sstate);
         my $critical = $self->{perfdata}->get_perfdata_for_output(label => 'critical-' . $sstate);
-        $self->{output}->perfdata_add(label => 'service_' . $sstate . '_' . $self->{result_values}->{instance},
-                                      value => $self->{result_values}->{$sstate},
-                                      warning => $warning,
-                                      critical => $critical,
-                                      min => 0);
+        $self->{output}->perfdata_add(
+            label => 'service_' . $sstate . '_' . $self->{result_values}->{instance},
+            value => $self->{result_values}->{$sstate},
+            warning => $warning,
+            critical => $critical,
+            min => 0
+        );
     }
 
 }
@@ -249,20 +255,22 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_services_calc'),
                 closure_custom_output => $self->can('custom_services_output'),
                 closure_custom_threshold_check => $self->can('custom_services_threshold'),
-                closure_custom_perfdata => $self->can('custom_services_perfdata'),
+                closure_custom_perfdata => $self->can('custom_services_perfdata')
             }
         },
     ];
+
     $self->{maps_counters}->{totalhost} = [
         { label => 'total-host', threshold => 0, set => {
                 key_values => [ { name => 'up' }, { name => 'down' }, { name => 'unreachable' } ],
                 closure_custom_calc => $self->can('custom_hosts_calc'),
                 closure_custom_output => $self->can('custom_hosts_output'),
                 closure_custom_threshold_check => $self->can('custom_hosts_threshold'),
-                closure_custom_perfdata => $self->can('custom_hosts_perfdata'),
+                closure_custom_perfdata => $self->can('custom_hosts_perfdata')
             }
-        },
+        }
     ];
+
     $self->{maps_counters}->{logicalgroups} = [
         { label => 'group-svc-global', threshold => 0, set => {
                 key_values => [ { name => 'ok' }, { name => 'unknown' }, { name => 'critical' }, { name => 'warning' },
@@ -270,10 +278,9 @@ sub set_counters {
                 closure_custom_calc => $self->can('custom_groups_calc'),
                 closure_custom_output => $self->can('custom_groups_output'),
                 closure_custom_threshold_check => $self->can('custom_groups_threshold'),
-                closure_custom_perfdata => $self->can('custom_groups_perfdata'),
+                closure_custom_perfdata => $self->can('custom_groups_perfdata')
             }
         }
-
     ];
 }
 
@@ -282,15 +289,15 @@ sub new {
     my $self = $class->SUPER::new(package => __PACKAGE__, %options);
     bless $self, $class;
 
-    $options{options}->add_options(arguments =>
-                                {
-                                  "config-file:s"       => { name => 'config_file' },
-                                  "json-data:s"         => { name => 'json_data' },
-                                  "warning-groups:s"    => { name => 'warning_groups' },
-                                  "critical-groups:s"   => { name => 'critical_groups' },
-                                  "warning-total:s"     => { name => 'warning_total' },
-                                  "critical-total:s"    => { name => 'critical_total' }
-                                });
+    $options{options}->add_options(arguments => {
+        'config-file:s'     => { name => 'config_file' },
+        'json-data:s'       => { name => 'json_data' },
+        'warning-groups:s'  => { name => 'warning_groups' },
+        'critical-groups:s' => { name => 'critical_groups' },
+        'warning-total:s'   => { name => 'warning_total' },
+        'critical-total:s'  => { name => 'critical_total' }
+    });
+
     return $self;
 }
 
@@ -362,7 +369,7 @@ sub parse_json_config {
 
     my $json_text = do {
        open(my $json_fh, "<:encoding(UTF-8)", $options{config})
-         or die("Can't open \$filename\": $!\n");
+         or die("Can't open '$options{config}': $!");
          local $/;
          <$json_fh>
     };
@@ -424,9 +431,11 @@ sub manage_selection {
                 $self->{output}->add_option_msg(short_msg => "Cannot find host_name_filter nor service_name_filter in config file");
                 $self->{output}->option_exit();
             }
-            $self->{logicalgroups}->{$group} = { display => $group,
-                                                 up => 0, down => 0, unreachable => 0,
-                                                 ok => 0, warning => 0, critical => 0, unknown => 0 };
+            $self->{logicalgroups}->{$group} = {
+                display => $group,
+                up => 0, down => 0, unreachable => 0,
+                ok => 0, warning => 0, critical => 0, unknown => 0
+            };
 
             my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
                          FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
@@ -455,9 +464,11 @@ sub manage_selection {
         print Dumper($self->{instance_mode}->{inventory});
     } elsif ($config_data->{mode} eq 'exactmatch') {
         foreach my $group (keys %{$config_data->{selection}}) {
-            $self->{logicalgroups}->{$group} = { display => $group,
-                                                 up => 0, down => 0, unreachable => 0,
-                                                 ok => 0, warning => 0, critical => 0, unknown => 0 };
+            $self->{logicalgroups}->{$group} = {
+                display => $group,
+                up => 0, down => 0, unreachable => 0,
+                ok => 0, warning => 0, critical => 0, unknown => 0
+            };
             foreach my $tuple (keys %{$config_data->{selection}->{$group}}) {
                 my $query = "SELECT hosts.name, services.description, hosts.state as hstate, services.state as sstate, services.output as soutput
                              FROM centreon_storage.hosts, centreon_storage.services WHERE hosts.host_id=services.host_id
