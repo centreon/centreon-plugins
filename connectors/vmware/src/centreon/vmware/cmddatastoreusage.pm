@@ -50,16 +50,42 @@ sub run {
 
     my $multiple = 0;
     my $filters = $self->build_filter(label => 'name', search_option => 'datastore_name', is_regexp => 'filter');
-    my @properties = ('summary');
+    my @properties = ('summary', 'host');
 
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => $filters);
     return if (!defined($result));
+
+    my $mapped_host = {};
+    my $host_array = [];
+    foreach my $entity_view (@$result) {
+        if (defined($entity_view->host)) {
+            foreach (@{$entity_view->host}) {
+                if (!defined($mapped_host->{ $_->{key}->{value} } )) {
+                    push @$host_array, $_->{key};
+                    $mapped_host->{ $_->{key}->{value} } = '-';
+                }
+            }
+        }
+    }
+
+    if (scalar(@$host_array) > 0) {
+        my $result_hosts = centreon::vmware::common::get_views($self->{connector}, $host_array, ['name']);
+        foreach (@$result_hosts) {
+            $mapped_host->{ $_->{mo_ref}->{value} } = $_->{name};
+        }
+    }
 
     my $data = {};
     foreach my $entity_view (@$result) {
         my $entity_value = $entity_view->{mo_ref}->{value};
 
-        $data->{$entity_value} = { name => $entity_view->summary->name, accessible => $entity_view->summary->accessible };
+        $data->{$entity_value} = { name => $entity_view->summary->name, accessible => $entity_view->summary->accessible, hosts => [] };
+        if (defined($entity_view->host)) {
+            foreach (@{$entity_view->host}) {
+                push @{$data->{$entity_value}->{hosts}}, $mapped_host->{ $_->{key}->{value} };
+            }
+        }
+
         next if (centreon::vmware::common::is_accessible(accessible => $entity_view->summary->accessible) == 0);
 
         # capacity 0...
