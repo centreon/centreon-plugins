@@ -103,12 +103,12 @@ sub run {
         
         if (scalar(@$instances) > 0) {
             push @$query_perfs, {
-                              entity => $entity_view,
-                              metrics => [ 
-                                {label => 'datastore.totalReadLatency.average', instances => $instances},
-                                {label => 'datastore.totalWriteLatency.average', instances => $instances}
-                              ]
-                             };
+                entity => $entity_view,
+                metrics => [ 
+                    { label => 'datastore.totalReadLatency.average', instances => $instances },
+                    { label => 'datastore.totalWriteLatency.average', instances => $instances }
+                ]
+            };
         }
     }
     

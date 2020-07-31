@@ -54,24 +54,24 @@ sub run {
 
     my $result = centreon::vmware::common::search_entities(command => $self, view_type => 'Datastore', properties => \@properties, filter => $filters);
     return if (!defined($result));
-    
+
     my $data = {};
     foreach my $entity_view (@$result) {
         my $entity_value = $entity_view->{mo_ref}->{value};
-        
+
         $data->{$entity_value} = { name => $entity_view->summary->name, accessible => $entity_view->summary->accessible };
         next if (centreon::vmware::common::is_accessible(accessible => $entity_view->summary->accessible) == 0);
-        
+
         # capacity 0...
         if ($entity_view->summary->capacity <= 0) {
             $data->{$entity_value}->{size} = 0;
             next;
         }
-        
+
         # in Bytes
         $data->{$entity_value}->{size} = $entity_view->summary->capacity;
         $data->{$entity_value}->{free} = $entity_view->summary->freeSpace;
-        
+
         my ($total_uncommited, $prct_uncommited);
         my $msg_uncommited = '';
         if (defined($entity_view->summary->uncommitted)) {

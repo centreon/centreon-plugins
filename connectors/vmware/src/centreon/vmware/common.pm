@@ -499,14 +499,14 @@ sub search_entities {
     my $begin_views = [];
 
     foreach my $scope (['scope_datacenter', 'Datacenter'], ['scope_cluster', 'ClusterComputeResource'], ['scope_host', 'HostSystem']) {
-        if (defined($options{command}->{$$scope[0]}) && $options{command}->{$$scope[0]} ne '') {
-            my $filters = { name => qr/$options{command}->{$$scope[0]}/ };
+        if (defined($options{command}->{$scope->[0]}) && $options{command}->{$scope->[0]} ne '') {
+            my $filters = { name => qr/$options{command}->{$scope->[0]}/ };
             if (scalar(@$begin_views) > 0) {
                 my $temp_views = [];
                 while ((my $view = shift @$begin_views)) {
                     my ($status, $views) = find_entity_views(
                         connector => $options{command}->{connector},
-                        view_type => $$scope[1],
+                        view_type => $scope->[1],
                         properties => $properties,
                         filter => $filters, 
                         begin_entity => $view,
@@ -518,12 +518,12 @@ sub search_entities {
                 }
 
                 if (scalar(@$temp_views) == 0) {
-                    set_response(code => 1, short_message => "Cannot find '$$scope[1]' object");
+                    set_response(code => 1, short_message => "Cannot find '$scope->[1]' object");
                     return undef;
                 }
                 push @$begin_views, @$temp_views;
             } else {
-                my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $$scope[1], properties => $properties, filter => $filters);
+                my ($status, $views) = find_entity_views(connector => $options{command}->{connector}, view_type => $scope->[1], properties => $properties, filter => $filters);
                 # We quit. No scope find
                 return undef if ($status <= 0);
                 push @$begin_views, @$views;
