@@ -285,7 +285,6 @@ sub manage_selection {
     foreach my $host_id (keys %{$response->{data}}) {
         my $host_name = $response->{data}->{$host_id}->{name};
         $self->{host}->{$host_name} = { display => $host_name, 
-            cpu => {},
             global => {
                 state => $response->{data}->{$host_id}->{state},    
             },
