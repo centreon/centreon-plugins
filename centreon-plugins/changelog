@@ -1,3 +1,22 @@
+2020-08-03 Quentin Garnier <qgarnier@centreon.com>
+ * Plugin added: Netapp Ontap Rest API
+ * Plugin added: Netdata Rest API
+ * Plugin added: Gorgone Rest API
+ * Plugin added: Nimble Rest API
+ * Plugin added: Cisco SSMS Rest API
+ * Plugin added: Loggly
+ * Plugin added: Nginx Plus Rest API
+ * Plugin added: IP-Label newtest Rest API
+ * Plugin added: Aws Health
+ * Core: add option --no-component-count (#2062)
+ * Core: can use unknown thresholds for counter modes
+ * Mode added: [cisco/standard/snmp] 'vss'
+ * Mode added: [paloalto/standard/snmp] 'signatures'
+ * Mode added: [checkpoint/snmp] 'ra-users'
+ * Break: [linux/local] refactoring
+ * Break: [iis/local] refactoring
+ * Break: [ansible/tower] refactoring
+
 2020-06-02 Quentin Garnier <qgarnier@centreon.com>
  * Plugin added: pfsense FauxAPI
  * Plugin added: IIS Rest API
