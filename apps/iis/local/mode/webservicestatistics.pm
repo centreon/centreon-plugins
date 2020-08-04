@@ -57,14 +57,6 @@ sub set_counters {
                 ]
             }
         },
-        { label => 'connections-attempt', nlabel => 'site.connections.attempt.persecond', set => {
-                key_values => [ { name => 'connections_attempt', per_second => 1 } ],
-                output_template => 'connections attempt: %s/s',
-                perfdatas => [
-                    { template => '%d', unit => '/s', min => 0, label_extra_instance => 1 }
-                ]
-            }
-        },
         { label => 'requests-post', nlabel => 'site.requests.post.persecond', set => {
                 key_values => [ { name => 'requests_post', per_second => 1 } ],
                 output_template => 'requests post: %s/s',
