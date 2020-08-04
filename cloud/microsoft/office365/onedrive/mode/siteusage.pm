@@ -287,9 +287,6 @@ sub manage_selection {
     }
 
     foreach my $site (@{$results}, @{$results_daily}) {
-        # As it's used as the instance label, let's keep the URL as short as possible, removing its domain name...
-        $site->{'Site URL'} =~ s/^[^\/]*\/\/[^\/]*//;
-
         if (defined($self->{option_results}->{filter_url}) && $self->{option_results}->{filter_url} ne '' &&
             $site->{'Site URL'} !~ /$self->{option_results}->{filter_url}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $site->{'Site URL'} . "': no matching filter name.", debug => 1);
