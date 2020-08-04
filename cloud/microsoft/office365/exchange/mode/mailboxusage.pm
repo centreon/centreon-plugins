@@ -257,9 +257,6 @@ sub manage_selection {
     }
 
     foreach my $mailbox (@{$results}, @{$results_daily}) {
-        # Let's lc the instance label to make metrics "clean"...
-        $mailbox->{'User Principal Name'} = lc($mailbox->{'User Principal Name'});
-
         if (defined($self->{option_results}->{filter_mailbox}) && $self->{option_results}->{filter_mailbox} ne '' &&
             $mailbox->{'User Principal Name'} !~ /$self->{option_results}->{filter_mailbox}/) {
             $self->{output}->output_add(long_msg => "skipping  '" . $mailbox->{'User Principal Name'} . "': no matching filter name.", debug => 1);
