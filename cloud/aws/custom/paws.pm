@@ -646,6 +646,25 @@ sub health_describe_affected_entities {
     return $entities_results;
 }
 
+sub sqs_list_queues {
+    my ($self, %options) = @_;
+    my $queues_results = [];
+    eval {
+        my $lwp_caller = new Paws::Net::LWPCaller();
+        my $queues = Paws->service('SQS', caller => $lwp_caller, region => $self->{option_results}->{region});
+        my $list_queues = $queues->ListQueues();
+        foreach my $queue (@{$list_queues->{QueueUrls}}) {
+            push @{$queues_results}, $queue;
+        };
+    };
+    if ($@) {
+        $self->{output}->add_option_msg(short_msg => "error: $@");
+        $self->{output}->option_exit();
+    }
+
+    return $queues_results;
+}
+
 1;
 
 __END__

@@ -727,6 +727,26 @@ sub health_describe_affected_entities {
     return $all_results;
 }
 
+sub sqs_list_queues_set_cmd {
+    my ($self, %options) = @_;
+
+    return if (defined($self->{option_results}->{command_options}) && $self->{option_results}->{command_options} ne '');
+
+    my $cmd_options = "sqs list-queues --region $self->{option_results}->{region} --output json";
+    $cmd_options .= " --endpoint-url $self->{endpoint_url}" if (defined($self->{endpoint_url}) && $self->{endpoint_url} ne '');
+
+    return $cmd_options;
+}
+
+sub sqs_list_queues {
+    my ($self, %options) = @_;
+
+    my $cmd_options = $self->sqs_list_queues_set_cmd(%options);
+    my $queues_results = $self->execute(cmd_options => $cmd_options);
+
+    return $queues_results->{QueueUrls};
+}
+
 1;
 
 __END__
